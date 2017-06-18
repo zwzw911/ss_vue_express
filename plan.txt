@@ -1,0 +1,6 @@
+1. db structure
+	user
+	user sugar
+	
+	
+2. api
