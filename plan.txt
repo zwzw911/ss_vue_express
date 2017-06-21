@@ -1,3 +1,6 @@
+1. 添加新POST字段已经相关的test case：update_sub_Field/enent_field
+2. 添加对应的enum
+3. 添加对应的error
 1. db structure
 	user
 	user sugar

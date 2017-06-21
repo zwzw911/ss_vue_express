@@ -642,6 +642,102 @@ const validateSingleSearchParamsFormat=function(test){
     test.done()
 }
 
+/***************************************************************************/
+/***************   editSubField   *******************/
+/***************************************************************************/
+const validateEditSubFieldFormat=function(test){
+    test.expect(7)
+    let func=testModule.validateEditSubFieldFormat
+    let result,value
+
+    //1     value is undefined
+    // value=[]
+    result=func(value)
+    test.equal(result.rc,validateFormatError.editSubFieldMustBeObject.rc,'subField is undefined,not object check fail')
+    //2      value is array
+    value=[]
+    result=func(value)
+    test.equal(result.rc,validateFormatError.editSubFieldMustBeObject.rc,'subField is [],not object check fail')
+
+    //3      key number smaller than 2
+    value={k1:undefined}
+    result=func(value)
+    test.equal(result.rc,validateFormatError.editSubFieldKeyNumberWrong.rc,'subField key number is 1, check fail')
+    //4      key number larger than 3
+    value={k1:undefined,k2:undefined,k3:undefined,k4:undefined,}
+    result=func(value)
+    test.equal(result.rc,validateFormatError.editSubFieldKeyNumberWrong.rc,'subField key number is 14, check fail')
+
+    //5      key not validate
+    value={k1:undefined,k2:undefined,k3:undefined}
+    result=func(value)
+    test.equal(result.rc,validateFormatError.editSubFieldKeyNameWrong.rc,'subField key not validate, check fail')
+
+    //6      from/to 2选1
+    value={from:undefined,to:undefined}
+    result=func(value)
+    // console.log(result)
+    test.equal(result.rc,validateFormatError.editSubFieldFromOrToExistOne.rc,'subField key not validate, check fail')
+
+    //7     right result
+    value={from:undefined,eleArray:undefined}
+    result=func(value)
+    // console.log(result)
+    test.equal(result.rc,0,'subField key not validate, check fail')
+
+    test.done()
+}
+
+/***************************************************************************/
+/***************   EventFormat   *******************/
+/***************************************************************************/
+const validateEventFormat=function(test) {
+    test.expect(8)
+    let func = testModule.validateEventFormat
+    let result, value
+
+    //1     value is undefined
+    // value=[]
+    result=func(value)
+    test.equal(result.rc,validateFormatError.eventMustBeObject.rc,'event is undefined,not object check fail')
+    //2      value is array
+    value=[]
+    result=func(value)
+    test.equal(result.rc,validateFormatError.eventMustBeObject.rc,'event is [],not object check fail')
+
+    //3      key number smaller than 4
+    value={k1:undefined}
+    result=func(value)
+    test.equal(result.rc,validateFormatError.eventKeyNumberWrong.rc,'event key number is 1, check fail')
+    //4      key number larger than 5
+    value={k1:undefined,k2:undefined,k3:undefined,k4:undefined,k5:undefined,k6:undefined,}
+    result=func(value)
+    test.equal(result.rc,validateFormatError.eventKeyNumberWrong.rc,'event key number is 6, check fail')
+
+    //5      key not validate
+    value={k1:undefined,k2:undefined,k3:undefined,k4:undefined,k5:undefined}
+    result=func(value)
+    test.equal(result.rc,validateFormatError.eventFieldKeyNameWrong.rc,'event key invalidate, check fail')
+
+    //6      4个key时，只有targetId 可以不存在
+    value={eventId:undefined,sourceId:undefined,targetId:undefined,status:undefined}
+    result=func(value)
+    // console.log(result)
+    test.equal(result.rc,validateFormatError.eventMandatoryKeyNotExist.rc,'event key miss nabdatory field, check fail')
+
+    //7     right result
+    value={eventId:undefined,sourceId:undefined,cDate:undefined,status:undefined}
+    result=func(value)
+    // console.log(result)
+    test.equal(result.rc,0,'event key no targetId, check fail')
+    //7     right result
+    value={eventId:undefined,sourceId:undefined,targetId:undefined,cDate:undefined,status:undefined}
+    result=func(value)
+    // console.log(result)
+    test.equal(result.rc,0,'event contain all 5 keys, check fail')
+
+    test.done()
+}
 
 exports.validate={
     validateReqBody,
@@ -650,5 +746,6 @@ exports.validate={
     validateFilterFieldValueFormat,  //part：filterFieldValue，
     validateSingleSearchParamsFormat,
     validateSearchParamsFormat,
-
+    validateEditSubFieldFormat,
+    validateEventFormat
 }

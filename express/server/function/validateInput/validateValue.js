@@ -12,7 +12,7 @@
 // import {regex} from '../../define/regex/regex'
 // import {coll as e_coll} from '../../define/enum/node'
 // import {searchMaxPage} from '../../config/global/globalSettingRule'
-
+"use strict";
 const validateHelper=require('./validateHelper')
 const dataTypeCheck=validateHelper.dataTypeCheck
 const generateErrorMsg=validateHelper.generateErrorMsg
@@ -36,6 +36,8 @@ const searchMaxPage=require('../../constant/config/globalConfiguration').searchM
 
 const rightResult={rc:0}
 
+const e_eventStatus=require('../../constant/enum/node_runtime').EventStatus
+// const arr_eventField=require('../../constant/define/node').EVENT_FIELD
 
 /*********************************************/
 /*         检测create/update 输入值并返回结果        */
@@ -712,6 +714,84 @@ function validateRecIdArr(value,maxLength){
     return rc
 }
 
+/*        格式固定，所以无需inputRule
+* 1. from/to的值为objectId
+* 2. eleArray的值类型为array，且其中每个元素的值为object_id
+* */
+function validateEditSubFieldValue(v){
+
+    if(true==='from' in v){
+        if(false===dataTypeCheck.isObject(v['from'])){
+            return validateValueError.fromMustBeObjectId
+        }
+    }
+
+    if(true==='to' in v){
+        if(false===dataTypeCheck.isObject(v['to'])){
+            return validateValueError.toMustBeObjectId
+        }
+    }
+
+    if(!v['eleArray']){
+        return validateValueError.eleArrayNotDefine
+    }
+
+    if(false===dataTypeCheck.isArray(v['eleArray'])){
+        return validateValueError.eleArrayMustBeArray
+    }
+
+    //如果eleArray为空，报错（空数据意味着没有操作对象，那就根本不应该传送editSubField这个part）
+    if(0===v['eleArray'].length){
+        return validateValueError.eleArrayCantEmpty
+    }
+
+    //eleArray中每个元素必须为objectId
+    for(let singleEle of v['eleArray']){
+        // console.log(`${singleEle}`)
+        if(false===regex.objectId.test(singleEle)){
+            return validateValueError.eleArrayMustContainObjectId
+        }
+    }
+
+    return rightResult
+}
+
+
+/*          由server内部生成，所以无需inputRule
+* 0. 所有字段必须赋值
+* 1. eventId是否在enum的指定范围内
+* 2. sourceId和targetId（如果存在）是否为objectId
+* 3. status是否位于enum指定范围内
+ */
+function validateEventValue(v,eventIdEnum){
+    //0. 所有字段必须赋值
+    for(let singleField in v){
+        if(false===dataTypeCheck.isSetValue(v[singleField])){
+            return validateValueError.valueNotSet(singleField)
+        }
+    }
+
+    //1. eventId是否在enum的指定范围内
+    if(-1===Object.values(eventIdEnum).indexOf(v['eventId'])){
+        return validateValueError.eventIdNotValid
+    }
+
+    //2. sourceId和targetId（如果存在）是否为objectId
+    if(false===dataTypeCheck.isObject(v['sourceId'])){
+        return validateValueError.sourceIdMustBeObjectId
+    }
+    if(v['targetId'] && false===dataTypeCheck.isObject(v['targetId'])){
+        return validateValueError.targetIdMustBeObjectId
+    }
+
+    //3. status是否位于enum指定范围内
+    if(-1===Object.values(e_eventStatus).indexOf(v['status'])){
+        return validateValueError.eventStatusNotValid
+    }
+
+    return rightResult
+}
+
 module.exports= {
     validateCreateRecorderValue,    //调用_validateRecorderValue
     validateUpdateRecorderValue,        //调用_validateRecorderValue
@@ -732,4 +812,7 @@ module.exports= {
     validateCurrentPageValue,
     validateRecIdArr, //对记录进行批量处理（删除/更新），需要传入的part
 
+
+    validateEditSubFieldValue,
+    validateEventValue,
 }

@@ -111,6 +111,20 @@ const validateError={
         singleSearchParamsElementCompOpWrong:{rc:69654,msg:{client:`查询值格式不正确`,server:`查询参数中，操作符不是预定义的符号之一`}},
 
 
+        editSubFieldMustBeObject:{rc:69665,msg:{client:`输入值格式不正确`,server:`更新子字段的值必须是object`}},
+        editSubFieldKeyNumberWrong:{rc:69666,msg:{client:`输入值格式不正确`,server:`更新子字段中键值的数量不正确`}},
+        editSubFieldKeyNameWrong:{rc:69667,msg:{client:`输入值格式不正确`,server:`更新子字段中键值的名称不是预定义`}},
+        editSubFieldFromOrToExistOne:{rc:69668,msg:{client:`输入值格式不正确`,server:`更新子字段中from或者to字段，必须2者选1`}},
+
+
+        eventMustBeObject:{rc:69660,msg:{client:`输入值格式不正确`,server:`事件必须是object`}},
+        eventKeyNumberWrong:{rc:69661,msg:{client:`输入值格式不正确`,server:`事件中键值的数量不正确`}},
+        eventMandatoryKeyNotExist:{rc:69662,msg:{client:`输入值格式不正确`,server:`事件中必选键不存在`}},
+        eventFieldKeyNameWrong:{rc:69663,msg:{client:`输入值格式不正确`,server:`事件中键值的名称不是预定义`}},
+
+
+
+
         //static（总结构）
 /*        staticValuesTypeWrong:{rc:69660,msg:{client:'参数格式不正确',server:'参数类型不正确，必须是JSON'}},
         staticValuesFormatMissSearchParams:{rc:69662,msg:{client:'参数格式不正确',server:'参数格式不正确，必须必须包含SearchParams'}},
@@ -214,6 +228,20 @@ const validateError={
         recIdArrValueExceedMax:{rc:69754,msg:'recIdArr超出最大长度'},//一般根据paganition.pageSize
         recIdArrValueEleShouldString:{rc:69755,msg:'recIdArr中每个元素必须是字符'},
         recIdArrValueEleShouldObjectId:{rc:69756,msg:'recIdArr中每个元素必须是objectId'},
+        /*              validateEditSubFieldValue           */
+        fromMustBeObjectId:{rc:69772,msg:'from的值必须是objectId'},
+        toMustBeObjectId:{rc:69773,msg:'to的值必须是objectId'},
+        eleArrayNotDefine:{rc:69774,msg:'eleArray必须有值'},
+        eleArrayMustBeArray:{rc:69775,msg:'eleArray必须是数组'},
+        eleArrayCantEmpty:{rc:69776,msg:'eleArray不能为空'},
+        eleArrayMustContainObjectId:{rc:69778,msg:'eleArray中元素必须是objectId'},
+        /*              validateEventValue          */
+        valueNotSet(fieldName){return {rc:69761,msg:`${fieldName}的值未定义`}},
+        eventIdNotValid:{rc:69762,msg:`事件未定义`},
+        sourceIdMustBeObjectId:{rc:69772,msg:'sourceId的值必须是objectId'},
+        targetIdMustBeObjectId:{rc:69773,msg:'targetId的值必须是objectId'},
+        eventStatusNotValid:{rc:69774,msg:'事件状态的值不正确'},
+
         //
         unknownRuleType:{rc:69716,msg:'未知rule类型'},
     }

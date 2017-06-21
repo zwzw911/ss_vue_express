@@ -57,6 +57,8 @@ const ValidatePart={
     CURRENT_COLL:'currentColl',//当前操作的coll
     FILTER_FIELD_VALUE:'filterFieldValue', //对单个字段完成autoComplete的功能（提供可选的项目）{field1:xxx}后者{field;{fk:xxxx}}
     RECORD_ID_ARRAY:'recIdArr', //recId数组，用于批量操作
+    EDIT_SUB_FIELD: 'editSubField',      //当对mixed或者array字段操作时使用，无需inputRule
+    EVENT_FIELD: 'eventField',      //事件（当前暂时只用于 群 事件），无需inputRule
 }
 
 

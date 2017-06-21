@@ -467,11 +467,60 @@ function validateFilterFieldValue(test){
 
     test.done()
 }
+
+
+/***************************************************************************/
+/***************   editSubField   *******************/
+/***************************************************************************/
+const validateEditSubFieldValue=function(test) {
+    test.expect(7)
+    let func = testModule.validateEditSubFieldValue
+    let result, value
+
+    //1 from not objectId
+    value={from:undefined}
+    result=func(value)
+    test.equal(result.rc,validateValueError.fromMustBeObjectId.rc,'editSubField key from must be objectId check fail')
+
+    //2 to not objectId
+    value={to:undefined}
+    result=func(value)
+    test.equal(result.rc,validateValueError.toMustBeObjectId.rc,'editSubField key to must be objectId check fail')
+
+    //3 eleArray not array
+    value={eleArray:undefined}
+    result=func(value)
+    test.equal(result.rc,validateValueError.eleArrayNotDefine.rc,'editSubField key eleArray must be array check fail')
+    //4 eleArray not array
+    value={eleArray:{}}
+    result=func(value)
+    test.equal(result.rc,validateValueError.eleArrayMustBeArray.rc,'editSubField key eleArray must be array check fail')
+
+    //5 eleArray中每个元素必须是objectId
+    value={eleArray:[1,2,3]}
+    result=func(value)
+    test.equal(result.rc,validateValueError.eleArrayMustContainObjectId.rc,'editSubField key eleArray must be array check fail')
+    //6 right result: 空数组
+    value={eleArray:[]}
+    result=func(value)
+    test.equal(result.rc,validateValueError.eleArrayCantEmpty.rc,'editSubField key eleArray cant empty check fail')
+
+    //7 right result
+    value={eleArray:['58c0c32486e5a6d02657303f']}
+    result=func(value)
+    test.equal(result.rc,0,'editSubField key eleArray must contain object id check fail')
+
+    test.done()
+}
+
+
 module.exports={
-    validateCreateRecorderValue, //完成公共部分，单个value的验证交给validateSingleRecorderFieldValue
+/*    validateCreateRecorderValue, //完成公共部分，单个value的验证交给validateSingleRecorderFieldValue
     validateRecorderId, //因为结构简单，所有公共部分和实际单个value的验证一起完成
     validateRecIdArr,//批量处理
     validateSingleRecorderFieldValue,   // 单个value的验证，但是必须通过validateCreateRecorderValue调用
     validateSearchParamsValue,  //检测所有的searchParams，validateStaticSearchParamsValue+validateCurrentCollValue+validateCurrentPageValue
-    validateFilterFieldValue,//part: filterFieldValue检测
+    validateFilterFieldValue,//part: filterFieldValue检测*/
+
+    validateEditSubFieldValue,
 }

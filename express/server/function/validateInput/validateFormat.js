@@ -20,6 +20,9 @@ const rightResult={rc:0}
 const e_validatePart=require('../../constant/enum/node').ValidatePart
 const e_keyForSearchParams=require('../../constant/enum/node').KeyForSearchParams
 
+const arr_editSubField=require('../../constant/define/node').SUB_FIELD
+const arr_eventField=require('../../constant/define/node').EVENT_FIELD
+
 //检测req.body.values是否存在且为object
 function validateReqBody(reqBody){
     //reqBody未定义
@@ -651,6 +654,91 @@ function validateStaticSearchParamsFormat(searchParams,inputRules){
     return rightResult
 }*/
 
+/*               用于对mixed或者array进行操作
+ * 1. value是否为object
+ * 2. value中键值的数量是否为2～3之间（from/to必须有一个）
+ * 3. value中键值的名称是否validate
+ * 4. 如果键数量为2，From/to 必须2者有其一
+ *
+*   v:{
+*       from: 从哪条记录
+*       to:    到哪条记录
+*       eleArray: 一般array都是外键，所以值为objectId
+*       }
+                    */
+function validateEditSubFieldFormat(v){
+    // const SUB_FIELD=['from','to','eleArray']
+
+    //1. 是否为object
+    if(false===dataTypeCheck.isObject(v)){
+        return validateFormatError.editSubFieldMustBeObject
+    }
+    //2 v中的字段数量是否正常
+    let vKeyLength=Object.keys(v).length
+    if(2>vKeyLength || 3<vKeyLength){
+        return validateFormatError.editSubFieldKeyNumberWrong
+    }
+    //3 v中每个字段名是否为预定义
+    for(let singleKey in v){
+        if(-1===arr_editSubField.indexOf(singleKey)){
+            return validateFormatError.editSubFieldKeyNameWrong
+        }
+    }
+    //4 如果v中键数量为2，From/to 必须2者有其一
+    if(2===vKeyLength){
+        if(true==='from' in v && true==='to' in v){
+            return validateFormatError.editSubFieldFromOrToExistOne
+        }
+    }
+
+    return rightResult
+}
+
+/*
+* 由于event是server内部处理，所以无需inputRule，只需要（内部产生的）值
+*
+* 1. eventValue是否为object
+* 2. eventValue中键值的数量是否为4～5之间（targetId是optional）
+* 3. eventValue中键值的数量是否为4，则targetId不能存在
+* 4. eventValue中键值的名称是否validate
+*
+* @. ev:
+* { eventId:enum(int): 			必须。具体的事件，记录在js中，方便查找
+* . sourceId: user_ object_id		必须。事件发起人
+* . targetId: user_ object_id		可选。受事件影响的人
+* . status:  enum				必须。当前事件的状态
+* . cDate: 创建时间			必须
+* }
+
+ * */
+function validateEventFormat(ev){
+    //event可能有的field
+    // const EVENT_FIELD=['eventId','sourceId','targetId','status','cDate']
+
+    //1. ev是否为object
+    if(false===dataTypeCheck.isObject(ev)){
+        return validateFormatError.eventMustBeObject
+    }
+    //2 ev中的字段数量是否正常
+    let evKeyLength=Object.keys(ev).length
+    if(4>evKeyLength || 5<evKeyLength){
+        return validateFormatError.eventKeyNumberWrong
+    }
+    //3 eventValue中键值的数量是否为4，则targetId不能存在
+    if(4===evKeyLength){
+        if(true==='targetId' in ev){
+            return validateFormatError.eventMandatoryKeyNotExist
+        }
+    }
+    //4 ev中每个字段名是否为预定义
+    for(let singleKey in ev){
+        if(-1===arr_eventField.indexOf(singleKey)){
+            return validateFormatError.eventFieldKeyNameWrong
+        }
+    }
+
+    return rightResult
+}
 
 
 module.exports={
@@ -671,4 +759,6 @@ module.exports={
     validateFilterFieldValueFormat, //对ilterFieldValue（为单个字段提供autoComplete的功能） {field1:{value:keyword}} or {billType:{name:{value:keyword}}}
     // validateStaticInputFormat,
     // validateStaticSearchParamsFormat,
+    validateEditSubFieldFormat,
+    validateEventFormat,
 }
