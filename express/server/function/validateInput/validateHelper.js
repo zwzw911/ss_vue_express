@@ -4,7 +4,7 @@
  * 1. dataTypeCheck：判断数据类型和数据是否为空
  * 2. valueTypeCheck: 根据数据类型，自动调用对应的dataTypeCheck进行检查
  * 3. ruleFormatCheck： 检查手工定义的rule文件（根据mongodb的定义），是否有错
- * 4. generateErrorMsg：产生可读的错误信息
+ * 4. genInputError：产生可读的错误信息
  * 5. valueMatchRuleDefineCheck：出入值和某个rule（min/max/minLenght/maxLength），是否符合
  */
 'use strict'
@@ -298,7 +298,7 @@ function ruleFormatCheck(collName,singleFieldName,singleFieldInputRules){
     //console.log(inputRules[inputRule]['type'])
     switch (singleFieldInputRules['type']){
 
-        case serverDataType.int:
+        case serverDataType.INT:
             if(false===dataTypeCheck.isSetValue(singleFieldInputRules['min'])){
                 rc['rc']=validateHelperError.needMin.rc
                 rc['msg']=`${chineseName}的${validateHelperError.needMin.msg}`
@@ -312,7 +312,7 @@ function ruleFormatCheck(collName,singleFieldName,singleFieldInputRules){
             }
             break;
         //和int处理方式一样
-        case serverDataType.float:
+        case serverDataType.FLOAT:
             if(false===dataTypeCheck.isSetValue(singleFieldInputRules['min'])){
                 rc['rc']=validateHelperError.needMin.rc
                 rc['msg']=`${chineseName}的${validateHelperError.needMin.msg}`
@@ -325,7 +325,7 @@ function ruleFormatCheck(collName,singleFieldName,singleFieldInputRules){
                 return rc
             }
             break;
-        case serverDataType.number:
+        case serverDataType.NUMBER:
             //console.log(inputRules[inputRule]['maxLength'])
             if(false===dataTypeCheck.isSetValue(singleFieldInputRules['maxLength'])){
                 rc['rc']=validateHelperError.needMaxLength.rc
@@ -334,7 +334,7 @@ function ruleFormatCheck(collName,singleFieldName,singleFieldInputRules){
                 return rc
             };
             break
-        case serverDataType.string:
+        case serverDataType.STRING:
             //string: 如果即没有format，也没有enum，则必须有maxLenght
             if(false===dataTypeCheck.isSetValue(singleFieldInputRules['format']) && false===dataTypeCheck.isSetValue(singleFieldInputRules['enum'])){
                 if(false===dataTypeCheck.isSetValue(singleFieldInputRules['maxLength'])){
@@ -346,7 +346,7 @@ function ruleFormatCheck(collName,singleFieldName,singleFieldInputRules){
 
             break
         //ObjectId必须有format，用来出错时返回错误
-        case serverDataType.objectId:
+        case serverDataType.OBJECT_ID:
             if(false===dataTypeCheck.isSetValue(singleFieldInputRules['format'])){
                 rc['rc']=validateHelperError.needFormat.rc
                 rc['msg']=`${chineseName}的${validateHelperError.needFormat.msg}`
@@ -525,42 +525,63 @@ function ruleFormatCheck(collName,singleFieldName,singleFieldInputRules){
 * return：
 * 字符串
 * */
-const generateErrorMsg=function(fieldRule,currentSingleRule){
+const genInputError=function(fieldRule,currentSingleRule){
     let ruleDefine=fieldRule[currentSingleRule]['define']
+    let ruleRc=fieldRule[currentSingleRule]['error']['rc']
     let chineseName=fieldRule['chineseName']
+
     switch(currentSingleRule){
-        case serverRuleType.require:
-            return `${chineseName}不能为空`
-        case serverRuleType.maxLength:
-            return `${chineseName}所包含的字符数不能超过${ruleDefine}个`
-        case serverRuleType.minLength:
-            return `${chineseName}所包含的字符数不能少于${ruleDefine}个`
-        case serverRuleType.exactLength:
-            return `${chineseName}所包含的字符数不等于${ruleDefine}个`
-        case serverRuleType.max:
-            return `${chineseName}所包含的字符数不能大于${ruleDefine}`
-        case serverRuleType.min:
-            return `${chineseName}所包含的字符数不能小于${ruleDefine}`
-        case serverRuleType.format:
+        case serverRuleType.REQUIRE:
+            return {rc:ruleRc,msg:`${chineseName}不能为空`}
+        case serverRuleType.MAX_LENGTH:
+            return {rc:ruleRc,msg:`${chineseName}所包含的字符数不能超过${ruleDefine}个`}
+            // return `${chineseName}所包含的字符数不能超过${ruleDefine}个`
+        case serverRuleType.MIN_LENGTH:
+            return {rc:ruleRc,msg:`${chineseName}所包含的字符数不能少于${ruleDefine}个`}
+            // return `${chineseName}所包含的字符数不能少于${ruleDefine}个`
+        case serverRuleType.ARRAY_MIN_LENGTH:
+            return {rc:ruleRc,msg:`${chineseName}所包含的数据量未达到${ruleDefine}个`}
+        case serverRuleType.ARRAY_MAX_LENGTH:
+            return {rc:ruleRc,msg:`${chineseName}所包含的数据量不能超过${ruleDefine}个`}
+        case serverRuleType.EXACT_LENGTH:
+            return {rc:ruleRc,msg:`${chineseName}所包含的字符数不等于${ruleDefine}个`}
+            // return `${chineseName}所包含的字符数不等于${ruleDefine}个`
+        case serverRuleType.MAX:
+            return {rc:ruleRc,msg:`${chineseName}所包含的字符数不能大于${ruleDefine}`}
+            // return `${chineseName}所包含的字符数不能大于${ruleDefine}`
+        case serverRuleType.MIN:
+            return {rc:ruleRc,msg:`${chineseName}所包含的字符数不能小于${ruleDefine}`}
+            // return `${chineseName}所包含的字符数不能小于${ruleDefine}`
+        case serverRuleType.ENUM:
+            return {rc:ruleRc,msg:`${chineseName}不是预定义的值`}
+        // return `${chineseName}所包含的字符数不能小于${ruleDefine}`
+        case serverRuleType.FORMAT:
             switch (ruleDefine) {
                 case regex.password:
-                    return `${chineseName}的格式不正确，必须由6至20个字母数字和特殊符号组成`
+                    return {rc:ruleRc,msg:`${chineseName}的格式不正确，必须由6至20个字母数字和特殊符号组成`}
+                    // return `${chineseName}的格式不正确，必须由6至20个字母数字和特殊符号组成`
                 //break;
                 case regex.objectId:
-                    return `${chineseName}的格式不正确，必须是objectId`
+                    return {rc:ruleRc,msg:`${chineseName}的格式不正确，必须是objectId`}
+                    // return `${chineseName}的格式不正确，必须是objectId`
                 //break;
                 case regex.userName:
-                    return `${chineseName}的格式不正确，必须由2至20个字符组成`
+                    return {rc:ruleRc,msg:`${chineseName}的格式不正确，必须由2至20个字符组成`}
+                    // return `${chineseName}的格式不正确，必须由2至20个字符组成`
                 case regex.mobilePhone:
-                    return `${chineseName}的格式不正确，必须由11至13个数字组成`
+                    return {rc:ruleRc,msg:`${chineseName}的格式不正确，必须由11个数字组成`}
+                    // return `${chineseName}的格式不正确，必须由11至13个数字组成`
                 case regex.originalThumbnail:
-                    return `${chineseName}的格式不正确，文件名由2到20个字符组成`
+                    return {rc:ruleRc,msg:`${chineseName}的格式不正确，文件名由2到20个字符组成`}
+                    // return `${chineseName}的格式不正确，文件名由2到20个字符组成`
                 //hashedThumbnail不用单独列出，是内部检查，使用default错误消息即可
                 default:
-                    return `${chineseName}的格式不正确`
+                    return {rc:ruleRc,msg:`${chineseName}的格式不正确`}
+                    // return `${chineseName}的格式不正确`
             }
         case serverRuleType:
-            return `${chineseName}(枚举值)不正确`
+            return {rc:ruleRc,msg:`ruleType ${chineseName}(枚举值)不正确`}
+            // return `${chineseName}(枚举值)不正确`
     }
 
 
@@ -570,6 +591,17 @@ const generateErrorMsg=function(fieldRule,currentSingleRule){
  *   值是否满足对应的rule
  */
 const valueMatchRuleDefineCheck={
+
+    //只处理当require为true
+    require(fieldValue,requireDefine=true){
+        return dataTypeCheck.isSetValue(fieldValue) && !dataTypeCheck.isEmpty(fieldValue) //防止输入空字符/object/array等
+        // console.log(`field value fieldValueSetFlag ${JSON.stringify(fieldValueSetFlag)}`)
+        // console.log(`requireDefine ${JSON.stringify(requireDefine)}`)
+        // let requireFlag=fieldRule[e_serverRuleType.REQUIRE]['define']
+        
+
+        
+    },
     exceedMaxLength(value, maxLength) {
         // console.log( `exceed enter`)
         //length属性只能在数字/字符/数组上执行
@@ -611,13 +643,14 @@ const valueMatchRuleDefineCheck={
     },
 
     //广义比较，包括null和undefined的比较
-    equalTo(value, equalToValue) {
+    /*          equalTo 改在client执行*/
+/*    equalTo(value, equalToValue) {
         //return (false===dataTypeCheck.isEmpty(value) && value===equalToValue)
         if(value instanceof Date && equalToValue instanceof Date){
             return value.toLocaleString()===equalToValue.toLocaleString()
         }
         return value === equalToValue
-    },
+    },*/
 
     format(value, format) {
         return format.test(value)
@@ -643,7 +676,7 @@ module.exports={
     dataTypeCheck,
     valueTypeCheck,
     ruleFormatCheck,
-    generateErrorMsg,
+    genInputError,
     valueMatchRuleDefineCheck,
 
 }

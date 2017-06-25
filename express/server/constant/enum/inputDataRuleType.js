@@ -17,6 +17,9 @@ const ServerRuleType={
     FORMAT:'format',
     // "EQUAL_TO":'equalTo', //可能不需要了
     ENUM:'enum',
+
+    ARRAY_MIN_LENGTH:'arrayMinLength',
+    ARRAY_MAX_LENGTH:'arrayMaxLength'
 }
 
 //采用字符，而不是symbol，否则无法读取key：value对
@@ -31,6 +34,7 @@ const ServerDataType={
     FOLDER:'folder',
     NUMBER:'number',
     OBJECT_ID:'objectId',//mongodb的id
+
 }
 
 

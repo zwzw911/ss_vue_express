@@ -3,7 +3,7 @@
  */
 "use strict";
 const fs=require('fs')
-const serverEnum=require('../constant/enum/mongoStore')
+const serverEnum=require('../constant/enum/mongo')
 console.log(`${JSON.stringify(serverEnum)}`)
 
 let convetedEnum={}

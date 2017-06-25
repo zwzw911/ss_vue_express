@@ -11,7 +11,7 @@ const regex=require('../../../regex/regex').regex
 
 
 /*        field有enum才需要require        */
-const mongoEnum=require('../../../enum/mongoStore')
+const mongoEnum=require('../../../enum/mongo')
 
 const article= {
     name: {
@@ -20,13 +20,13 @@ const article= {
         'require': {define: true, error: {rc: 10000}, mongoError: {rc: 30000, msg: '文档名不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         'minLength': {define: 1, error: {rc: 10002}, mongoError: {rc: 30002, msg: '文档名至少1个字符'}},
         'maxLength': {define: 255, error: {rc: 10004}, mongoError: {rc: 30004, msg: '文档名的长度不能超过255个字符'}},
-        'format': {define: regex.folderFileName, error: {rc: 10005}, mongoError: {rc: 30005, msg: '文档名必须由1-255个字符组成'}} //server端使用
+        'format': {define: regex.fileName, error: {rc: 10005}, mongoError: {rc: 30005, msg: '文档名必须由1-255个字符组成'}} //server端使用
     },
     status: {
         'chineseName': '文档状态',
         'type': serverDataType.ENUM,
         'require': {define: true, error: {rc: 10000}, mongoError: {rc: 20000, msg: '文档状态不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
-        'enum':{define:Object.values(mongoEnum.ARTICLE_STATUS.DB),error:{rc:10028},mongoError:{rc:20028,msg:'文档状态不正确'}},//server端使用
+        'enum':{define:Object.values(mongoEnum.ArticleStatus.DB),error:{rc:10028},mongoError:{rc:20028,msg:'文档状态不正确'}},//server端使用
     },
 
     folderId: {

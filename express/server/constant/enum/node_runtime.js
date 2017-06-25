@@ -2,7 +2,7 @@
  * Created by wzhan039 on 2017-06-21.
  */
 
-const Event={
+/*const Event={
     //群
     PUBLIC_GROUP:{
         CREATE_GROUP: 0, //群创建
@@ -19,8 +19,12 @@ const EventStatus={
         ONGOING: 0, //事件处理中
         DONE:1, //事件处理完毕
         DENY:2, //事件被拒绝
-}
+}*/
+
+
+
 module.exports={
-    Event,
-    EventStatus,
+/*    Event,
+    EventStatus,*/
+
 }

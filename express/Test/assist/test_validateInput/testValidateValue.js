@@ -44,7 +44,24 @@ let rules ={
             'type':e_serverDataType.NUMBER,
             'require': {define: false, error: {rc: 10047},mongoError:{rc:20047,msg:'父类别不能为空'}},
             // 'format':{define:regex.objectId,error:{rc:10048},mongoError:{rc:20048,msg:'父类别的id格式不正确'}},//format == mongodb_match
-        }
+        },
+        rembuiser:{
+            'chineseName':'报销人',
+            'type':[e_serverDataType.OBJECT_ID],
+            'require': {define: false, error: {rc: 10047},mongoError:{rc:20047,msg:'报销人不能为空'}},
+            'format':{define:regex.objectId,error:{rc:10048},mongoError:{rc:20048,msg:'报销人的id格式不正确'}},//format == mongodb_match
+            arrayMinLength:{define:1,error:{rc:10049},mongoError:{rc:20049,msg:'报销人的数量未达到最小数量'}},
+            arrayMaxLength:{define:2,error:{rc:10050},mongoError:{rc:20050,msg:'报销人的数量超过最大数量'}},
+        },
+        inOutEnum:{
+            'chineseName': '支取数组类型',
+            //'default':'male',
+            'type':[e_serverDataType.STRING],
+            'require': {define: false, error: {rc: 10051},mongoError:{rc:20051,msg:'支取类型不能为空'}},
+            'enum':{define:['in','out'],error:{rc:10052},mongoError:{rc:20052,msg:'支取类型不正确'}},
+            arrayMinLength:{define:0,error:{rc:10053},mongoError:{rc:20053,msg:'支取类型的数量未达到最小数量'}},
+            arrayMaxLength:{define:2,error:{rc:10054},mongoError:{rc:20054,msg:'支取类型的数量超过最大数量'}},
+        },
     }
 }
 
@@ -68,22 +85,70 @@ let fkConfig =
 /*                  create是update超集             */
 const validateCreateRecorderValue=function(test){
     let funcCreate=testModule.validateCreateRecorderValue
-    test.expect(2)
+    test.expect(10)
+    let value,result
+    let rule=rules.billType
 
 
-    //3, create时，rule中为require的字段，value中没有
-    let rule={name:{'require':{define:true,error:{rc:10000}}},age:{'require':{define:false,error:{rc:10000}}}}
-    let value={age:{value:10}}
-    let result=funcCreate(value,rule)
+    //1, create时，rule中为require的字段，value中没有
+    value={age:{value:10}}
+    result=funcCreate(value,rule)
     // console.log(`error1 is ${JSON.stringify(result)}`)
     test.equal(result.name.rc,validateValueError.mandatoryFieldMiss('name').rc,"required field not set in value")
-
-    //4, create时，rule中为require的字段，value为null
+    //2, create时，rule中为require的字段，value为null
     value={name:{value:null}}
     result=funcCreate(value,rule)
     // console.log(`error2 is ${JSON.stringify(result)}`)
     test.equal(result.name.rc,rule.name.require.error.rc,"required field is null in value")
-    
+
+    //3, type为array，但是其中值不符合要求
+    value={name:{value:'asdf'},rembuiser:{value:[1]}}
+    result=funcCreate(value,rule)
+    // console.log(`error2 is ${JSON.stringify(result)}`)
+    test.equal(result.rembuiser.rc,rule.rembuiser.format.error.rc,"rembuiser must be objectId")
+
+    //4, type为array，但是其中值符合要求
+    value={name:{value:'asdf'},rembuiser:{value:['58c0c32486e5a6d02657303f']}}
+    result=funcCreate(value,rule)
+    // console.log(`error2 is ${JSON.stringify(result)}`)
+    test.equal(result.rembuiser.rc,0,"required field is null in value")
+
+    //5.  type为array，但是对应的值不是array
+    value={name:{value:'asdf'},rembuiser:{value:1}}
+    result=funcCreate(value,rule)
+    // console.log(`error2 is ${JSON.stringify(result)}`)
+    test.equal(result.rembuiser.rc,validateValueError.CUDTypeWrong.rc,"type is array, but value is not array")
+
+    //6.  type为array，但是对应的值未达到min
+    value={name:{value:'asdf'},rembuiser:{value:[]}}
+    result=funcCreate(value,rule)
+    // console.log(`error2 is ${JSON.stringify(result)}`)
+    test.equal(result.rembuiser.rc,rule.rembuiser.arrayMinLength.error.rc,"type is array, but value is not array")
+
+    //7.  type为array，但是对应的值超过max
+    value={name:{value:'asdf'},rembuiser:{value:[1,2,3]}}
+    result=funcCreate(value,rule)
+    // console.log(`error2 is ${JSON.stringify(result)}`)
+    test.equal(result.rembuiser.rc,rule.rembuiser.arrayMaxLength.error.rc,"type is array, but value is not array")
+
+    //8.  type为array，但是对应的值类型不正确
+    value={name:{value:'asdf'},inOutEnum:{value:[1]}}
+    result=funcCreate(value,rule)
+    // console.log(`error2 is ${JSON.stringify(result)}`)
+    test.equal(result.inOutEnum.rc,validateValueError.CUDTypeWrong.rc,"type is array, but value is not array")
+
+    //9.  type为array，但是对应的值不在范围内
+    value={name:{value:'asdf'},inOutEnum:{value:['any']}}
+    result=funcCreate(value,rule)
+    // console.log(`error2 is ${JSON.stringify(result)}`)
+    test.equal(result.inOutEnum.rc,rule.inOutEnum.enum.error.rc,"type is array, but value is not array")
+
+    //10.  type为array，且ARRAY_MIX_LENGTH为0， 此时，对应的值为空可以pass
+    value={name:{value:'asdf'},inOutEnum:{value:[]}}
+    result=funcCreate(value,rule)
+    // console.log(`error2 is ${JSON.stringify(result)}`)
+    test.equal(result.inOutEnum.rc,0,"type is array, but value is not array")
+
     test.done()
 }
 
@@ -185,7 +250,7 @@ const validateSingleRecorderFieldValue=function(test){
     // let error={rc:1234,msg:''}
 
     test.expect(15)
-
+    // test.expect(1)
     rule={
         mandatoryField1:{
             chineseName:'必填字段1',
@@ -224,6 +289,7 @@ const validateSingleRecorderFieldValue=function(test){
 
     //2. create: require=true的字段输入为null
     value={mandatoryField1:{value:null}}
+    // console.log(`rulke`)
     result=funcCreate(value,rule)
     // console.log(`resul is ${JSON.stringify(result)}`)
     test.equal(result.mandatoryField1.rc,rule.mandatoryField1.require.error.rc,'when create new recorder, the required field value is not set')
@@ -515,12 +581,12 @@ const validateEditSubFieldValue=function(test) {
 
 
 module.exports={
-/*    validateCreateRecorderValue, //完成公共部分，单个value的验证交给validateSingleRecorderFieldValue
+    validateCreateRecorderValue, //完成公共部分，单个value的验证交给validateSingleRecorderFieldValue
     validateRecorderId, //因为结构简单，所有公共部分和实际单个value的验证一起完成
     validateRecIdArr,//批量处理
     validateSingleRecorderFieldValue,   // 单个value的验证，但是必须通过validateCreateRecorderValue调用
     validateSearchParamsValue,  //检测所有的searchParams，validateStaticSearchParamsValue+validateCurrentCollValue+validateCurrentPageValue
-    validateFilterFieldValue,//part: filterFieldValue检测*/
+    validateFilterFieldValue,//part: filterFieldValue检测
 
     validateEditSubFieldValue,
 }

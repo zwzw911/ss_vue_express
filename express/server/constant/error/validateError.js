@@ -203,7 +203,7 @@ const validateError={
             return {rc:69705,msg:`未知字段${fieldName}`}//inputValue中的字段，没有在inputRule中定义（即client试图传入db中没有的字段）
         },*/
         // CUDValueNotDefineWithRequireTrue:{rc:69704,msg:'待检测的输入值未定义，而rule中require为true'},
-        CUDTypeWrong:{rc:69706,msg:'类型不正确'},
+        CUDTypeWrong:{rc:69706,msg:'值的数据类型不正确'},
 
 
 

@@ -1,12 +1,12 @@
 /**
- * Created by wzhan039 on 2017-06-10.
+ * Created by wzhan039 on 2017-06-22.
  *
  * 定义用户信息
  */
 
 'use strict'
 const mongoose=require('mongoose');
-const fs=require('fs')
+// const fs=require('fs')
 const regex=require('../../../../constant/regex/regex').regex
 const connectedDb=require('../../common/connection').dbSS;
 

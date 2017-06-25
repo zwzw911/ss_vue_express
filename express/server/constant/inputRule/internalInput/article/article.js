@@ -31,7 +31,7 @@ const article= {
     //虽然mongodb中定义的是array+objectId，但是实际处理时，从client传递的只是objectId，所以定义的时候，只检查objectId
     tagsId: {
         'chineseName': '分类',
-        'type': serverDataType.OBJECT_ID,
+        'type': [serverDataType.OBJECT_ID],
         'require': {define: true, error: {rc: 10000}, mongoError: {rc: 20000, msg: '文档分类不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         // 'minLength': {define: 6, error: {rc: 10002}, mongoError: {rc: 20002, msg: '密码至少6个字符'}},
         // 'maxLength': {define: 20, error: {rc: 10004}, mongoError: {rc: 20004, msg: '密码的长度不能超过20个字符'}},
@@ -40,7 +40,7 @@ const article= {
     //虽然mongodb中定义的是array+objectId，但是实际处理时，从client传递的只是objectId，所以定义的时候，只检查objectId
     articleImagesId: {
         'chineseName': '文档图片',
-        'type': serverDataType.OBJECT_ID,
+        'type': [serverDataType.OBJECT_ID],
         'require': {define: true, error: {rc: 10000}, mongoError: {rc: 20000, msg: '文档图片不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         // 'minLength': {define: 6, error: {rc: 10002}, mongoError: {rc: 20002, msg: '密码至少6个字符'}},
         // 'maxLength': {define: 20, error: {rc: 10004}, mongoError: {rc: 20004, msg: '密码的长度不能超过20个字符'}},
@@ -49,7 +49,7 @@ const article= {
     //虽然mongodb中定义的是array+objectId，但是实际处理时，从client传递的只是objectId，所以定义的时候，只检查objectId
     articleAttachmentsId: {
         'chineseName': '文档附件',
-        'type': serverDataType.OBJECT_ID,
+        'type': [serverDataType.OBJECT_ID],
         'require': {define: true, error: {rc: 10000}, mongoError: {rc: 20000, msg: '文档附件不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         // 'minLength': {define: 6, error: {rc: 10002}, mongoError: {rc: 20002, msg: '密码至少6个字符'}},
         // 'maxLength': {define: 20, error: {rc: 10004}, mongoError: {rc: 20004, msg: '密码的长度不能超过20个字符'}},
@@ -58,7 +58,7 @@ const article= {
     //虽然mongodb中定义的是array+objectId，但是实际处理时，从client传递的只是objectId，所以定义的时候，只检查objectId
     articleCommentsId: {
         'chineseName': '文档附件',
-        'type': serverDataType.OBJECT_ID,
+        'type': [serverDataType.OBJECT_ID],
         'require': {define: true, error: {rc: 10000}, mongoError: {rc: 20000, msg: '文档附件不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         // 'minLength': {define: 6, error: {rc: 10002}, mongoError: {rc: 20002, msg: '密码至少6个字符'}},
         // 'maxLength': {define: 20, error: {rc: 10004}, mongoError: {rc: 20004, msg: '密码的长度不能超过20个字符'}},

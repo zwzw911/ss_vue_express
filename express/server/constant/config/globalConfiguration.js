@@ -134,6 +134,10 @@ const paginationSetting={
     },
 }
 
+//设定各种数据的最大值（例如，文档最大值，文档最大评论数等）
+const maxNumber={
+
+}
 //当使用suggest功能为用户提供可选项时，最大提供多少
 const suggestLimit={
     department:{
