@@ -15,7 +15,7 @@ const connectedDb=require('../../common/connection').dbSS;
 //mongoose.Promise = Promise
 const mongoSetting=require('../../common/configuration')
 
-const browserInputRule=require('../../../../constant/inputRule/browserInput/admin/category').category
+const browserInputRule=require('../../../../constant/inputRule/browserInput/admin/admin_user').admin_user
 // const internalInputRule=require('../../../../constant/inputRule/internalInput/article/folder').folder
 //根据inputRule的rule设置，对mongoose设置内建validator
 const collInputRule=browserInputRule
@@ -28,6 +28,8 @@ const serverRuleType=require('../../../../constant/enum/inputDataRuleType').Serv
 const assist=require('../../common/assist')
 
 
+//gene by server/maintain/generateMongoEnum
+const enumValue=require('../enumValue')
 
 /*
 * schema definition
@@ -36,14 +38,23 @@ const assist=require('../../common/assist')
 * */
 
 /*                           department                        */
-const collName='category'
+const collName='admin_user'
 
 const collFieldDefine={
-        name:{type:String,},
-        parentCategoryId:{type:mongoose.Schema.Types.ObjectId,ref:"categorys"}, //
-        cDate:{type:Date,default:Date.now},
-        uDate:{type:Date,default:Date.now},
-        dDate:{type:Date},
+    name:{type:String,unique:true},
+    //account:{type:String,unique:true}, //email或者手机号
+    password:{type:String}, //加密后的密码
+    type:{type:Number,enum:enumValue.AdminUserType},
+    /*头像size较小，采用base64Url。 好处：减少http请求；坏处：增加前后端处理复杂度
+     * 例如： 评论：3人各自做2次评论。
+     * 如果是图片，要发起3次http请求；
+     * 如果是baseUrl：需要将用户信息单独提取（而不是直接为每个评论直接读取用户信息），分成评论和用户信息，然后在client组合。只有一次http，但是处理比较复杂
+     * */
+    // photoBaseUrl:{type:String},
+    userPriority:{type:Number,enum:enumValue.AdminPriorityType},
+    cDate:{type:Date,default:Date.now},
+    uDate:{type:Date,default:Date.now},
+    dDate:{type:Date},
 }
 
 console.log(`before: ${JSON.stringify(collFieldDefine)}`)

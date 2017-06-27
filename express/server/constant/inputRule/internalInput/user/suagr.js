@@ -14,19 +14,19 @@ const sugar= {
         'chineseName': '用户',
         'type': serverDataType.OBJECT_ID,
         //require=false：client无需此字段，server通过函数（必须有salt来sha密码）保证由此字段
-        'require': {define: true, error: {rc: 10000}, mongoError: {rc: 20000, msg: '用户不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        'require': {define: true, error: {rc: 10740}, mongoError: {rc: 20740, msg: '用户不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
 /*        'minLength': {define: 1, error: {rc: 10002}, mongoError: {rc: 20002, msg: '糖至少1个字符'}},
         'maxLength': {define: 10, error: {rc: 10004}, mongoError: {rc: 20004, msg: '糖的长度不能超过10个字符'}},*/
-        'format': {define: regex.objectId, error: {rc: 10005}, mongoError: {rc: 20005, msg: '用户id由24个字符组成'}} //server端使用
+        'format': {define: regex.objectId, error: {rc: 10742}, mongoError: {rc: 20742, msg: '用户id由24个字符组成'}} //server端使用
     },
     sugar: {
         'chineseName': '糖',
         'type': serverDataType.string,
         //require=false：client无需此字段，server通过函数（必须有salt来sha密码）保证由此字段
-        'require': {define: false, error: {rc: 10000}, mongoError: {rc: 20000, msg: '糖不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
-        'minLength': {define: 1, error: {rc: 10002}, mongoError: {rc: 20002, msg: '糖至少1个字符'}},
-        'maxLength': {define: 10, error: {rc: 10004}, mongoError: {rc: 20004, msg: '糖的长度不能超过10个字符'}},
-        'format': {define: regex.salt, error: {rc: 10005}, mongoError: {rc: 20005, msg: '糖必须由1-10个字符组成'}} //server端使用
+        'require': {define: false, error: {rc: 10744}, mongoError: {rc: 20744, msg: '糖不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        'minLength': {define: 1, error: {rc: 10746}, mongoError: {rc: 20746, msg: '糖至少1个字符'}},
+        'maxLength': {define: 10, error: {rc: 10748}, mongoError: {rc: 20748, msg: '糖的长度不能超过10个字符'}},
+        'format': {define: regex.salt, error: {rc: 10750}, mongoError: {rc: 20750, msg: '糖必须由1-10个字符组成'}} //server端使用
     },
 
 }

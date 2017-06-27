@@ -6,7 +6,7 @@
 
 'use strict'
 const mongoose=require('mongoose');
-const fs=require('fs')
+// const fs=require('fs')
 const regex=require('../../../../constant/regex/regex').regex
 const connectedDb=require('../../common/connection').dbSS;
 
@@ -18,7 +18,7 @@ const mongoSetting=require('../../common/configuration')
 const browserInputRule=require('../../../../constant/inputRule/browserInput/article/article_comment').article_comment
 const internalInputRule=require('../../../../constant/inputRule/internalInput/article/article_comment').article_comment
 //根据inputRule的rule设置，对mongoose设置内建validator
-const collInputRule=Object.assign(browserInputRule,internalInputRule)
+const collInputRule=Object.assign({},browserInputRule,internalInputRule)
 
 
 const serverRuleType=require('../../../../constant/enum/inputDataRuleType').ServerRuleType

@@ -136,6 +136,28 @@ const paginationSetting={
 
 //设定各种数据的最大值（例如，文档最大值，文档最大评论数等）
 const maxNumber={
+    article:{
+        tagNumberPerArticle:5,//每篇文档5个关键字
+        imagesNumberPerArticle:5,//每篇文档最多内插图片数量
+        attachmentNumberPerArticle:5,//每篇文档最多附件数量
+        commentNumberPerArticle:500,
+    },
+    friend:{
+        maxFriendsNumberPerGroup:500, //每个朋友分组最多500人
+        maxMemberNumberPerPublicGroup:200,//每个群最多200人
+        maxAdministratorPerPublicGroup:10,//每个群最多10个管理员
+        maxGroupUserCanJoinIn:20,//每个用户最多加入20个群
+    },
+    impeach:{
+        maxImageNumber:10,//最多插入的图片
+        maxAttachmentNumber:10,//最多插入附件
+        maxCommentNumber:200,//每篇最多200评论
+    },
+    impeachAttachment:{
+        maxImageNumber:10,//最多插入的图片
+        maxAttachmentNumber:10,//最多插入附件
+
+    },
 
 }
 //当使用suggest功能为用户提供可选项时，最大提供多少
@@ -165,6 +187,14 @@ const uploadFileDefine={
     },
     user_thumb:{
         size:100*1024,// in byte
+    },
+    impeach_image:{
+        maxSizeInByte:2*1024*1024, //byte
+        maxSizeInMB:2, //byte
+    },
+    impeach_attachment:{
+        maxSizeInByte:10*1024*1024, //byte
+        maxSizeInMB:10, //byte
     },
 }
 //可以更改的设定
@@ -625,5 +655,6 @@ module.exports={
     suggestLimit,
     searchMaxPage,//search时，最大的页码
     uploadFileDefine,
+    maxNumber,
 }
 

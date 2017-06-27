@@ -18,7 +18,7 @@ const mongoSetting=require('../../common/configuration')
 const browserInputRule=require('../../../../constant/inputRule/browserInput/article/like_dislike').like_dislike
 const internalInputRule=require('../../../../constant/inputRule/internalInput/article/like_dislike').like_dislike
 //根据inputRule的rule设置，对mongoose设置内建validator
-const collInputRule=Object.assign(browserInputRule,internalInputRule)
+const collInputRule=Object.assign({},browserInputRule,internalInputRule)
 
 const serverRuleType=require('../../../../constant/enum/inputDataRuleType').ServerRuleType
 

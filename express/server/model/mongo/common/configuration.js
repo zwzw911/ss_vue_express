@@ -33,7 +33,7 @@ const schemaOptions={
     toObject:toObjectOptions,
 /*    true：使用mongoose内定的validate方法(根据字段中的定义决定使用对应的validator)。false：使用自定义的validate方法。true: 自动验证，通过保存；false:可以采用自定义验证，并且可以保存不合格数据（即需要自己做数据验证来决定是否可以保存；不做自定义验证的话，任何数据都可以保存了）
     默认使用false，永远通过代码调用自定义validate方法来验证*/
-    validateBeforeSave:false,
+    validateBeforeSave:true,
 
 
     //versionKey,		//（**不要设成false除非你知道自己在干啥**）。 设置version key的名称，默认是__v,可以生成任意字符串。

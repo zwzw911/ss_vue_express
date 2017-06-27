@@ -13,10 +13,10 @@ const folder= {
     name: {
         'chineseName': '目录名称',
         'type': serverDataType.STRING,
-        'require': {define: true, error: {rc: 10000}, mongoError: {rc: 30000, msg: '目录名不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
-        'minLength': {define: 1, error: {rc: 10002}, mongoError: {rc: 30002, msg: '目录名至少1个字符'}},
-        'maxLength': {define: 255, error: {rc: 10004}, mongoError: {rc: 30004, msg: '目录名的长度不能超过20个字符'}},
-        'format': {define: regex.folderName, error: {rc: 10005}, mongoError: {rc: 30005, msg: '目录名必须由12-255个字符组成'}} //server端使用
+        'require': {define: true, error: {rc: 10190}, mongoError: {rc: 20190, msg: '目录名不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        'minLength': {define: 1, error: {rc: 10192}, mongoError: {rc: 20192, msg: '目录名至少1个字符'}},
+        'maxLength': {define: 255, error: {rc: 10194}, mongoError: {rc: 20194, msg: '目录名的长度不能超过20个字符'}},
+        'format': {define: regex.folderName, error: {rc: 10196}, mongoError: {rc: 20196, msg: '目录名必须由12-255个字符组成'}} //server端使用
     },
 
 
@@ -24,10 +24,10 @@ const folder= {
     parentFolderId: {
         'chineseName': '上级目录',
         'type': serverDataType.OBJECT_ID,
-        'require': {define: false, error: {rc: 10000}, mongoError: {rc: 20000, msg: '上级目录不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        'require': {define: false, error: {rc: 10198}, mongoError: {rc: 20198, msg: '上级目录不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         // 'minLength': {define: 6, error: {rc: 10002}, mongoError: {rc: 20002, msg: '密码至少6个字符'}},
         // 'maxLength': {define: 20, error: {rc: 10004}, mongoError: {rc: 20004, msg: '密码的长度不能超过20个字符'}},
-        'format': {define: regex.objectId, error: {rc: 10005}, mongoError: {rc: 20005, msg: '上级目录必须是objectId'}} //server端使用
+        'format': {define: regex.objectId, error: {rc: 10200}, mongoError: {rc: 20200, msg: '上级目录必须是objectId'}} //server端使用
     },
 }
 

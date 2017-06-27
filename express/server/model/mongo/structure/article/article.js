@@ -16,7 +16,7 @@ const connectedDb=require('../../common/connection').dbSS;
 const mongoSetting=require('../../common/configuration')
 
 const browserInputRule=require('../../../../constant/inputRule/browserInput/article/article').article
-const internalInputRule=require('../../../../constant/inputRule/internalInput/article/article').artilcle
+const internalInputRule=require('../../../../constant/inputRule/internalInput/article/article').article
 
 const serverRuleType=require('../../../../constant/enum/inputDataRuleType').ServerRuleType
 
@@ -26,8 +26,10 @@ const serverRuleType=require('../../../../constant/enum/inputDataRuleType').Serv
 const assist=require('../../common/assist')
 
 //根据inputRule的rule设置，对mongoose设置内建validator
-const collInputRule=Object.assign(browserInputRule,internalInputRule)
+const collInputRule=Object.assign({},browserInputRule,internalInputRule)
 
+//gene by server/maintain/generateMongoEnum
+const enumValue=require('../enumValue')
 /*
 * schema definition
 * 内置validator的定义放在ruleDefine中
@@ -39,7 +41,7 @@ const collName='article'
 
 const collFieldDefine={
     name:{type:String,},
-    status:{type:String}, //enum， 通过setMongooseBuildInValidator从inputRule中获得对应的enum定义
+    status:{type:Number, enum:enumValue.ArticleStatus}, //enum， 通过setMongooseBuildInValidator从inputRule中获得对应的enum定义
     authorId:{type:mongoose.Schema.Types.ObjectId,ref:"users"}, //
     folderId:{type:mongoose.Schema.Types.ObjectId,ref:"folders"},
     pureContent:{type:String},
@@ -48,7 +50,7 @@ const collFieldDefine={
     tagsId:{type:[mongoose.Schema.Types.ObjectId],ref:'tags'},
     articleImagesId:{type:[mongoose.Schema.Types.ObjectId],ref:'article_images'},
     articleAttachmentsId:{type:[mongoose.Schema.Types.ObjectId],ref:'article_attachments'},
-    articleCommentsId:{type:[mongoose.Schema.Types.ObjectId],ref:'comments'},
+    articleCommentsId:{type:[mongoose.Schema.Types.ObjectId],ref:'article_comments'},
     cDate:{type:Date,default:Date.now},
     uDate:{type:Date,default:Date.now},
     dDate:{type:Date},

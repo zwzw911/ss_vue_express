@@ -14,10 +14,10 @@ const like_dislike= {
     authorId: {
         'chineseName': '提交者',
         'type': serverDataType.OBJECT_ID,
-        'require': {define: true, error: {rc: 10000}, mongoError: {rc: 20000, msg: '提交者不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        'require': {define: true, error: {rc: 10214}, mongoError: {rc: 20214, msg: '提交者不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         // 'minLength': {define: 6, error: {rc: 10002}, mongoError: {rc: 20002, msg: '密码至少6个字符'}},
         // 'maxLength': {define: 20, error: {rc: 10004}, mongoError: {rc: 20004, msg: '密码的长度不能超过20个字符'}},
-        'format': {define: regex.OBJECT_ID, error: {rc: 10005}, mongoError: {rc: 20005, msg: '提交者必须是objectId'}} //server端使用
+        'format': {define: regex.OBJECT_ID, error: {rc: 10216}, mongoError: {rc: 20216, msg: '提交者必须是objectId'}} //server端使用
     },
 /*    like: {
         'chineseName': '喜欢',

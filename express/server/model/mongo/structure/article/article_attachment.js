@@ -6,7 +6,7 @@
 
 'use strict'
 const mongoose=require('mongoose');
-const fs=require('fs')
+// const fs=require('fs')
 const regex=require('../../../../constant/regex/regex').regex
 const connectedDb=require('../../common/connection').dbSS;
 
@@ -17,6 +17,8 @@ const mongoSetting=require('../../common/configuration')
 
 // const browserInputRule=require('../../../../constant/inputRule/browserInput/article/article_i').article
 const internalInputRule=require('../../../../constant/inputRule/internalInput/article/article_attachment').article_attachment
+//根据inputRule的rule设置，对mongoose设置内建validator
+const collInputRule=internalInputRule
 
 const serverRuleType=require('../../../../constant/enum/inputDataRuleType').ServerRuleType
 
@@ -25,8 +27,7 @@ const serverRuleType=require('../../../../constant/enum/inputDataRuleType').Serv
 
 const assist=require('../../common/assist')
 
-//根据inputRule的rule设置，对mongoose设置内建validator
-const collInputRule=internalInputRule
+
 
 /*
 * schema definition

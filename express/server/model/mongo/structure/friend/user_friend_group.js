@@ -6,7 +6,7 @@
 
 'use strict'
 const mongoose=require('mongoose');
-const fs=require('fs')
+// const fs=require('fs')
 const regex=require('../../../../constant/regex/regex').regex
 const connectedDb=require('../../common/connection').dbSS;
 

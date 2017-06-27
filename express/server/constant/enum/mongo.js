@@ -21,7 +21,7 @@ const AdminUserType={
         NORMAL:1,
     },
     SHOW:{
-        ROOT:'群主',
+        ROOT:'超级管理员',
         NORMAL:'管理员',        
     }
 
@@ -98,6 +98,41 @@ const PenalizeType={
     },
 
 }
+
+const ImpeachType={
+    DB:{
+        ARTICLE: 0,
+        COMMENT:1,
+
+    },
+    SHOW:{
+        ARTICLE: '举报文档',
+        COMMENT:'举报评论',
+    },
+
+}
+
+const ImpeachStatus={
+    DB:{
+        NEW: 0,
+        COMMIT:1,
+        ACCEPT:2,
+        ASSIGN:3,
+        ONGOING:4,
+        REJECT:5,
+        DONE:6,
+    },
+    SHOW:{
+        NEW: '新建',
+        COMMIT:'提交',
+        ACCEPT:'接受',
+        ASSIGN:'分配',
+        ONGOING:'处理中',
+        REJECT:'驳回',
+        DONE:'处理完',
+    },
+
+}
 module.exports={
     ArticleStatus,
     AdminUserType,
@@ -106,4 +141,6 @@ module.exports={
     PublicGroupEventType,
     EventStatus,
     PenalizeType,
+    ImpeachType,
+    ImpeachStatus,
 }

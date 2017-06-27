@@ -1,0 +1,23 @@
+{
+  "name": "ss_vue_express",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "dompurify": "^0.8.9",
+    "express": "^4.15.3",
+    "express-session": "^1.15.3",
+    "ioredis": "^3.1.1",
+    "mongoose": "^4.10.6"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com//zwzw911/ss_vue_express"
+  },
+  "author": "zwzw911",
+  "license": "ISC"
+}
