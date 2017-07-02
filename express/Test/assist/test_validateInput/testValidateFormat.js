@@ -57,7 +57,11 @@ let fkAdditionalFieldsConfig =
             // nestedPrefix: 'parentBillTypeFields',
             // forSelect: 'name age',
             // forSetValue: ['name', 'age']
-        }
+        },
+        notExistFiled:{
+            relatedColl: 'billType',
+            relatedFields:['name','age'],//那些字段是允许作为搜索值
+        },
     }
 
 
@@ -462,7 +466,7 @@ const validateSearchInputFormat=function(test){
     }
 }*/
 const validateSearchParamsFormat=function(test){
-    test.expect(11)
+    test.expect(12)
 
     let func = testModule.validateSearchParamsFormat
     //let error = miscError.validateFunc.validateInputSearchFormat
@@ -512,10 +516,14 @@ const validateSearchParamsFormat=function(test){
     //console.log(result)
     test.equal(result.rc,validateFormatError.searchParamsFKFiledValueMustBeObject.rc,'search input value FK key not object check fail')
     /*              外键的关联字段必须在rule中定义           */
-    value={'parentBillType':{'notExistFiled':1}}
+    value={'notExistFiled':{'notExistFiled':1}}
     result=func(value,fkAdditionalFieldsConfig,'billType',rules)
     //console.log(result)
     test.equal(result.rc,validateFormatError.searchParamsFKNoRelatedRule.rc,'search input value FK key not exist check fail')
+    value={'parentBillType':{'notExistFiled':1}}
+    result=func(value,fkAdditionalFieldsConfig,'billType',rules)
+    //console.log(result)
+    test.equal(result.rc,validateFormatError.searchParamsFKRelatedFieldInvalid.rc,'search input value FK key not exist check fail')
     /*              外键的关联字段未在fkconfig的relatedFields中定义          */
     value={'parentBillType':{'parentBillType':1}}
     result=func(value,fkAdditionalFieldsConfig,'billType',rules)

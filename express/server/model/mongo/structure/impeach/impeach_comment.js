@@ -41,7 +41,7 @@ const collName='article_comment'
 
 const collFieldDefine={
     authorId:{type:mongoose.Schema.Types.ObjectId,ref:"users"}, //普通用户发起举报
-    impeachId:{type:mongoose.Schema.Types.ObjectId,ref:"impeachs"},
+    impeachId:{type:mongoose.Schema.Types.ObjectId,ref:"impeaches"},
     content:{type:String,},
     impeachImagesId:{type:[mongoose.Schema.Types.ObjectId],ref:'impeach_images'},
     impeachAttachmentsId:{type:[mongoose.Schema.Types.ObjectId],ref:'impeach_attachments'},

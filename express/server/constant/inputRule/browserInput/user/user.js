@@ -36,6 +36,9 @@ const user= {
         'maxLength': {define: 20, error: {rc: 10720}, mongoError: {rc: 20720, msg: '密码的长度不能超过20个字符'}},
         'format': {define: regex.password, error: {rc: 10722}, mongoError: {rc: 20722, msg: '密码必须由6-20个字符组成'}} //server端使用
     },
+
+
+
 }
 
 module.exports={

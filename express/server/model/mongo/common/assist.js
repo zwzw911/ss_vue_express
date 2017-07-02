@@ -24,19 +24,23 @@ function setMongooseBuildInValidator(collFieldDefine,collInputRule){
                     if(serverRuleTypeMatchMongooseRuleType[singleRuleName]){//rule是否在mongo中有对应的内建validator
                         let singleRuleValue=collInputRule[singleFiled][singleRuleName]
 // console.log(`singleRuleValue ${JSON.stringify(singleRuleValue)}`)
-                        //如果define是format，且value为ObjectID，则无需在mongo上设置对应的内建validator（因为type为objectId的字段会自动判断输入值是否为objectId,er无需添加额外的validator）
+                        //如果define是format，且value为ObjectID，则无需在mongo上设置对应的内建validator（因为type为objectId的字段会优先尝试将输入值转化成objectId,而不是尝试使用已有的内建validator，如match等）
                         if(serverRuleType.FORMAT===singleRuleName){
                             if(regex.objectId===singleRuleValue['define']){
                                 continue
                             }
                         }
-                        //如果rule是enum，只需要define，而无需msg
+                        //如果rule是enum，且数据类型是string，自动设置mongoose对应的enum（如果是enum+[String]，需要自己手工设定validator，因为mongoose不支持）
                         //enum:['in','out']
-                        if(serverRuleType.ENUM===singleRuleName){
+                        if(serverRuleType.ENUM===singleRuleName && 'string'===collInputRule[singleFiled]['type']){
                             // if(collFieldDefine[singleFiled]){//对应的field在mongo中有定义，则为此field添加validator
-                                collFieldDefine[singleFiled][serverRuleTypeMatchMongooseRuleType.enum]=singleRuleValue['define']
-                                //collFieldDefine[singleFiled][ruleMatch[singleRuleName]].push(singleRuleValue['define'])
-                                continue
+                            collFieldDefine[singleFiled][serverRuleTypeMatchMongooseRuleType.enum]={}
+                            collFieldDefine[singleFiled][serverRuleTypeMatchMongooseRuleType.enum]['values']=singleRuleValue['define']
+                            collFieldDefine[singleFiled][serverRuleTypeMatchMongooseRuleType.enum]['message']=`错误代码${singleRuleValue['mongoError']['rc']}:${singleRuleValue['mongoError']['msg']}`
+                            // collFieldDefine[singleFiled][ruleMatch[singleRuleName]].push(singleRuleValue['define'])
+/*                            console.log(`singleRuleValue['define'] type is ${typeof singleRuleValue['define']}`)
+                            console.log(`singleRuleValue['define'][0] type is ${typeof singleRuleValue['define'][0]}`)*/
+                            continue
                             // }
                         }
 

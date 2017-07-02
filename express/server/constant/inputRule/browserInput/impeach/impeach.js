@@ -61,7 +61,7 @@ const impeach= {
 
     impeachType: {
         'chineseName': '举报的对象',
-        'type': serverDataType.ENUM,
+        'type': serverDataType.STRING,
         'require': {define: true, error: {rc: 10530}, mongoError: {rc: 20530, msg: '举报的对象不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         'enum':{define:Object.values(mongoEnum.ImpeachType.DB),error:{rc:10532},mongoError:{rc:20532,msg:'未知举报的对象'}},//server端使用
     },
@@ -108,7 +108,7 @@ const impeach= {
 
     impeachStatus: {
         'chineseName': '文档状态',
-        'type': serverDataType.ENUM,
+        'type': serverDataType.STRING,
         'require': {define: true, error: {rc: 10546}, mongoError: {rc: 20546, msg: '文档状态不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         'enum':{define:Object.values(mongoEnum.ImpeachStatus.DB),error:{rc:10548},mongoError:{rc:20548,msg:'文档状态不正确'}},//server端使用
     },

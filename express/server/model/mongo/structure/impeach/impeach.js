@@ -40,18 +40,38 @@ const enumValue=require('../enumValue')
 /*                           department                        */
 const collName='impeach'
 
+/*               直接自定义validator（而不是通过函数产生），为了加快执行速度         */
+const impeachImage_arrayMaxLengthValidator={
+    validator(v){
+        return v.length<=collInputRule['impeachImagesId'][serverRuleType.ARRAY_MAX_LENGTH]['define']
+    },
+    message:`错误代码${collInputRule['impeachImagesId'][serverRuleType.ARRAY_MAX_LENGTH]['mongoError']['rc']}:${collInputRule['impeachImagesId'][serverRuleType.ARRAY_MAX_LENGTH]['mongoError']['msg']}`
+}
+const impeachAttachment_arrayMaxLengthValidator={
+    validator(v){
+        return v.length<=collInputRule['impeachAttachmentsId'][serverRuleType.ARRAY_MAX_LENGTH]['define']
+    },
+    message:`错误代码${collInputRule['impeachAttachmentsId'][serverRuleType.ARRAY_MAX_LENGTH]['mongoError']['rc']}:${collInputRule['impeachAttachmentsId'][serverRuleType.ARRAY_MAX_LENGTH]['mongoError']['msg']}`
+}
+const impeachComment_arrayMaxLengthValidator={
+    validator(v){
+        return v.length<=collInputRule['impeachCommentsId'][serverRuleType.ARRAY_MAX_LENGTH]['define']
+    },
+    message:`错误代码${collInputRule['impeachCommentsId'][serverRuleType.ARRAY_MAX_LENGTH]['mongoError']['rc']}:${collInputRule['impeachCommentsId'][serverRuleType.ARRAY_MAX_LENGTH]['mongoError']['msg']}`
+}
+
 const collFieldDefine={
     title:{type:String,},
     content:{type:String},
-    impeachImagesId:{type:[mongoose.Schema.Types.ObjectId],ref:'impeach_images'},
-    impeachAttachmentsId:{type:[mongoose.Schema.Types.ObjectId],ref:'impeach_attachments'},
-    impeachCommentsId:{type:[mongoose.Schema.Types.ObjectId],ref:'impeach_comments'},
-    impeachType:{type:Number,enum:enumValue.ImpeachType},
-    impeachArticleId:{type:mongoose.Schema.Types.ObjectId,ref:"articles"}, //
-    impeachCommentId:{type:mongoose.Schema.Types.ObjectId,ref:"article_comments"}, //举报的文档评论
+    impeachImagesId:{type:[mongoose.Schema.Types.ObjectId],ref:'impeach_images',validate:[impeachImage_arrayMaxLengthValidator]},
+    impeachAttachmentsId:{type:[mongoose.Schema.Types.ObjectId],ref:'impeach_attachments',validate:[impeachAttachment_arrayMaxLengthValidator]},
+    impeachCommentsId:{type:[mongoose.Schema.Types.ObjectId],ref:'impeach_comments',validate:[impeachComment_arrayMaxLengthValidator]},
+    impeachType:{type:String,},//enum:enumValue.ImpeachType
+    impeachedArticleId:{type:mongoose.Schema.Types.ObjectId,ref:"articles"}, //
+    impeachedCommentId:{type:mongoose.Schema.Types.ObjectId,ref:"article_comments"}, //举报的文档评论
     impeachedUserId:{type:mongoose.Schema.Types.ObjectId,ref:"users"}, //
     creatorId:{type:mongoose.Schema.Types.ObjectId,ref:"users"}, //
-    impeachStatus:{type:Number,enum:enumValue.ImpeachStatus}, //enum， 通过setMongooseBuildInValidator从inputRule中获得对应的enum定义
+    impeachStatus:{type:String,}, //enum:enumValue.ImpeachStatus       enum， 通过setMongooseBuildInValidator从inputRule中获得对应的enum定义
     cDate:{type:Date,default:Date.now},
     // uDate:{type:Date,default:Date.now},
     // dDate:{type:Date},

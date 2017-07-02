@@ -344,7 +344,7 @@ function validateSearchParamsFormat(searchParams,collFKConfig,collName,inputRule
                 let fieldRelatedCollName=fieldFKConfig['relatedColl']
                 let fieldRelatedFieldName=fieldFKConfig['relatedFields']
                 // console.log(`fieldRelatedCollName: ${fieldRelatedCollName}.  fieldRelatedFieldName:${JSON.stringify(fieldRelatedFieldName)}`)
-                //3 外键：首先检查对应的外键字段是否存在（一般是存在的，如果不存在，说明FKconfig设置有误。保险起见还是检查）
+                //3 外键：检查fkConfig定义了field，但是此field未在inputRule中定义（说明fkConfig的定义有误）
                 if(false===singleFieldName in inputRulesForSearch[fieldRelatedCollName]){
                     return validateFormatError.searchParamsFKNoRelatedRule
                 }

@@ -39,31 +39,70 @@ const enumValue=require('../enumValue')
 /*                           department                        */
 const collName='article'
 
+
+/*               直接自定义validator（而不是通过函数产生），为了加快执行速度         */
+const tag_arrayMinLengthValidator={
+    validator(v){
+/*        console.log(`tag is ${JSON.stringify(v)}`)
+        console.log(`tag length is ${JSON.stringify(v.length)}`)*/
+        return v.length>=collInputRule['tagsId'][serverRuleType.ARRAY_MIN_LENGTH]['define']
+    },
+    message:`错误代码${collInputRule['tagsId'][serverRuleType.ARRAY_MIN_LENGTH]['mongoError']['rc']}:${collInputRule['tagsId'][serverRuleType.ARRAY_MIN_LENGTH]['mongoError']['msg']}`
+}
+const tag_arrayMaxLengthValidator={
+    validator(v){
+        return v.length<=collInputRule['tagsId'][serverRuleType.ARRAY_MAX_LENGTH]['define']
+    },
+    message:`错误代码${collInputRule['tagsId'][serverRuleType.ARRAY_MAX_LENGTH]['mongoError']['rc']}:${collInputRule['tagsId'][serverRuleType.ARRAY_MAX_LENGTH]['mongoError']['msg']}`
+}
+
+const image_arrayMaxLengthValidator={
+    validator(v){
+        return v.length<=collInputRule['articleImagesId'][serverRuleType.ARRAY_MAX_LENGTH]['define']
+    },
+    message:`错误代码${collInputRule['articleImagesId'][serverRuleType.ARRAY_MAX_LENGTH]['mongoError']['rc']}:${collInputRule['articleImagesId'][serverRuleType.ARRAY_MAX_LENGTH]['mongoError']['msg']}`
+}
+
+const attachment_arrayMaxLengthValidator={
+    validator(v){
+        return v.length<=collInputRule['articleAttachmentsId'][serverRuleType.ARRAY_MAX_LENGTH]['define']
+    },
+    message:`错误代码${collInputRule['articleAttachmentsId'][serverRuleType.ARRAY_MAX_LENGTH]['mongoError']['rc']}:${collInputRule['articleAttachmentsId'][serverRuleType.ARRAY_MAX_LENGTH]['mongoError']['msg']}`
+}
+
+const comment_arrayMaxLengthValidator={
+    validator(v){
+        return v.length<=collInputRule['articleCommentsId'][serverRuleType.ARRAY_MAX_LENGTH]['define']
+    },
+    message:`错误代码${collInputRule['articleCommentsId'][serverRuleType.ARRAY_MAX_LENGTH]['mongoError']['rc']}:${collInputRule['articleCommentsId'][serverRuleType.ARRAY_MAX_LENGTH]['mongoError']['msg']}`
+}
+
 const collFieldDefine={
     name:{type:String,},
-    status:{type:Number, enum:enumValue.ArticleStatus}, //enum， 通过setMongooseBuildInValidator从inputRule中获得对应的enum定义
+    status:{type:String,}, //enum， 通过setMongooseBuildInValidator从inputRule中获得对应的enum定义
     authorId:{type:mongoose.Schema.Types.ObjectId,ref:"users"}, //
     folderId:{type:mongoose.Schema.Types.ObjectId,ref:"folders"},
     pureContent:{type:String},
     htmlContent:{type:String},//一般设置成pureContent的2倍大小
-    categoryId:{type:mongoose.Schema.Types.ObjectId,ref:"categorys"},
-    tagsId:{type:[mongoose.Schema.Types.ObjectId],ref:'tags'},
-    articleImagesId:{type:[mongoose.Schema.Types.ObjectId],ref:'article_images'},
-    articleAttachmentsId:{type:[mongoose.Schema.Types.ObjectId],ref:'article_attachments'},
-    articleCommentsId:{type:[mongoose.Schema.Types.ObjectId],ref:'article_comments'},
+    categoryId:{type:mongoose.Schema.Types.ObjectId,ref:"categories"},
+    tagsId:{type:[mongoose.Schema.Types.ObjectId],ref:'tags',validate:[tag_arrayMinLengthValidator,tag_arrayMaxLengthValidator]},
+    articleImagesId:{type:[mongoose.Schema.Types.ObjectId],ref:'article_images',validate:[image_arrayMaxLengthValidator]},
+    articleAttachmentsId:{type:[mongoose.Schema.Types.ObjectId],ref:'article_attachments',validate:[attachment_arrayMaxLengthValidator]},
+    articleCommentsId:{type:[mongoose.Schema.Types.ObjectId],ref:'article_comments',validate:[comment_arrayMaxLengthValidator]},
     cDate:{type:Date,default:Date.now},
     uDate:{type:Date,default:Date.now},
     dDate:{type:Date},
 }
 
-console.log(`before: ${JSON.stringify(collFieldDefine)}`)
+// console.log(`before: ${JSON.stringify(collFieldDefine)}`)
 
 if(mongoSetting.configuration.setBuildInValidatorFlag){
     assist.setMongooseBuildInValidator(collFieldDefine,collInputRule)
 }
 
 
-console.log(`after: ${JSON.stringify(collFieldDefine)}`)
+// console.log(`after: ${JSON.stringify(collFieldDefine)}`)
+// console.log(`after: ${JSON.stringify(collFieldDefine['authorId']['match'])}`)
 /*
 * 根据define/validateRule/validateRule的rule设置schema的rule
 * */

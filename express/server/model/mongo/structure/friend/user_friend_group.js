@@ -38,10 +38,20 @@ const assist=require('../../common/assist')
 /*                           department                        */
 const collName='user_friend_group'
 
+/*               直接自定义validator（而不是通过函数产生），为了加快执行速度         */
+const friendsInGroup_arrayMaxLengthValidator={
+    validator(v){
+         //        console.log(`tag is ${JSON.stringify(v)}`)
+         // console.log(`friendsInGroup length is ${JSON.stringify(v.length)}`)
+        return v.length<collInputRule['friendsInGroup'][serverRuleType.ARRAY_MAX_LENGTH]['define']
+    },
+    message:`错误代码${collInputRule['friendsInGroup'][serverRuleType.ARRAY_MAX_LENGTH]['mongoError']['rc']}:${collInputRule['friendsInGroup'][serverRuleType.ARRAY_MAX_LENGTH]['mongoError']['msg']}`
+}
+
 const collFieldDefine={
     name:{type:String,},
     userId:{type:mongoose.Schema.Types.ObjectId,ref:"users"}, //
-    friendsInGroup:{type:[mongoose.Schema.Types.ObjectId],ref:'users'},
+    friendsInGroup:{type:[mongoose.Schema.Types.ObjectId],ref:'users',validate:[friendsInGroup_arrayMaxLengthValidator]},
     cDate:{type:Date,default:Date.now},
     uDate:{type:Date,default:Date.now},
     dDate:{type:Date},

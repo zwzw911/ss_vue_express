@@ -15,12 +15,12 @@ const connectedDb=require('../../common/connection').dbSS;
 //mongoose.Promise = Promise
 const mongoSetting=require('../../common/configuration')
 
-// const browserInputRule=require('../../../../constant/inputRule/browserInput/article/article_i').article
+// const browserInputRule=require('../../../../constant/inputRule/browserInput/article/article_attachment').article_attachment
 const internalInputRule=require('../../../../constant/inputRule/internalInput/article/article_attachment').article_attachment
 //根据inputRule的rule设置，对mongoose设置内建validator
+// const collInputRule=Object.assign({},browserInputRule,internalInputRule)
 const collInputRule=internalInputRule
-
-const serverRuleType=require('../../../../constant/enum/inputDataRuleType').ServerRuleType
+// const serverRuleType=require('../../../../constant/enum/inputDataRuleType').ServerRuleType
 
 
 // const collections=['department','employee','billType','bill']

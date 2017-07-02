@@ -51,10 +51,21 @@ const configuration={
     setBuildInValidatorFlag:true,
 }
 
+
+const updateOptions={
+    'new':true,//是否返回更新后的doc。默认false，返回原始doc
+    'select':'', //返回哪些字段
+    'upsert':false,//如果doc不存在，是否创建新的doc，默认false
+    runValidators:false,//更新时是否执行validator。因为默写cavert，默认false
+    setDefaultsOnInsert:false,//当upsert为true && 设为true，则插入文档时，使用default。
+    'sort':'_id',//如果找到多个文档（应该不太可能），按照什么顺序选择第一个文档进行update。
+}
+
 module.exports={
     schemaOptions,
     toObjectOptions,
     configuration,
+    updateOptions,
 }
 
 

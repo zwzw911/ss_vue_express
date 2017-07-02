@@ -8,7 +8,7 @@
 const mongoose=require('mongoose');
 // const fs=require('fs')
 const regex=require('../../../../constant/regex/regex').regex
-const connectedDb=require('../../common/connection').dbSS;
+const connectedDb=require('../../common/connection_admin').dbAdmin;
 
 //使用ES6的promise
 //mongoose.Promise=Promise
@@ -16,9 +16,9 @@ const connectedDb=require('../../common/connection').dbSS;
 const mongoSetting=require('../../common/configuration')
 
 const browserInputRule=require('../../../../constant/inputRule/browserInput/admin/admin_user').admin_user
-// const internalInputRule=require('../../../../constant/inputRule/internalInput/article/folder').folder
+const internalInputRule=require('../../../../constant/inputRule/internalInput/admin/admin_user').admin_user
 //根据inputRule的rule设置，对mongoose设置内建validator
-const collInputRule=browserInputRule
+const collInputRule=Object.assign({},browserInputRule,internalInputRule)
 
 const serverRuleType=require('../../../../constant/enum/inputDataRuleType').ServerRuleType
 
@@ -40,18 +40,42 @@ const enumValue=require('../enumValue')
 /*                           department                        */
 const collName='admin_user'
 
+const serPriority_arrayMaxLength={
+    validator(v){
+        return v.length<collInputRule['userPriority'][serverRuleType.ARRAY_MAX_LENGTH]['define']
+
+        // return v.length<=collInputRule['articleCommentsId'][serverRuleType.ARRAY_MAX_LENGTH]['define']
+    },
+    message:`错误代码${collInputRule['userPriority'][serverRuleType.ARRAY_MAX_LENGTH]['mongoError']['rc']}:${collInputRule['userPriority'][serverRuleType.ARRAY_MAX_LENGTH]['mongoError']['msg']}`
+}
+const userPriority_Enum={
+    validator(v){
+        let enumDefine=collInputRule['userPriority'][serverRuleType.ENUM]['define']
+        for(let singleValue of v){
+            if(-1===enumDefine.indexOf(singleValue)){
+                return false
+            }
+        }
+        return true
+
+        // return v.length<=collInputRule['articleCommentsId'][serverRuleType.ARRAY_MAX_LENGTH]['define']
+    },
+    message:`错误代码${collInputRule['userPriority'][serverRuleType.ENUM]['mongoError']['rc']}:${collInputRule['userPriority'][serverRuleType.ENUM]['mongoError']['msg']}`
+}
+
 const collFieldDefine={
     name:{type:String,unique:true},
     //account:{type:String,unique:true}, //email或者手机号
     password:{type:String}, //加密后的密码
-    type:{type:Number,enum:enumValue.AdminUserType},
+    userType:{type:String,}, //enum只能支持string，不支持Number
+    // userType:{type:String,enum:['0','1']},//enum只能支持string，不支持Number
     /*头像size较小，采用base64Url。 好处：减少http请求；坏处：增加前后端处理复杂度
      * 例如： 评论：3人各自做2次评论。
      * 如果是图片，要发起3次http请求；
      * 如果是baseUrl：需要将用户信息单独提取（而不是直接为每个评论直接读取用户信息），分成评论和用户信息，然后在client组合。只有一次http，但是处理比较复杂
      * */
     // photoBaseUrl:{type:String},
-    userPriority:{type:Number,enum:enumValue.AdminPriorityType},
+    userPriority:{type:[String],validate:[serPriority_arrayMaxLength,userPriority_Enum]},
     cDate:{type:Date,default:Date.now},
     uDate:{type:Date,default:Date.now},
     dDate:{type:Date},

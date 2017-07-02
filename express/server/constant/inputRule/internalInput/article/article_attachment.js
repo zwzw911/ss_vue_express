@@ -18,8 +18,8 @@ const article_attachment= {
         'chineseName': '文档附件名称',
         'type': serverDataType.STRING,
         'require': {define: true, error: {rc: 10230}, mongoError: {rc: 20230, msg: '文档附件名称不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
-        'minLength': {define: 4, error: {rc: 10232}, mongoError: {rc: 23232, msg: '文档附件名称至少4个字符'}},
-        'maxLength': {define: 255, error: {rc: 10234}, mongoError: {rc: 20234, msg: '文档附件的长度不能超过255个字符'}},
+        // 'minLength': {define: 4, error: {rc: 10232}, mongoError: {rc: 23232, msg: '文档附件名称至少4个字符'}},
+        // 'maxLength': {define: 255, error: {rc: 10234}, mongoError: {rc: 20234, msg: '文档附件的长度不能超过255个字符'}},
         'format': {define: regex.fileName, error: {rc: 10236}, mongoError: {rc: 20236, msg: '文档附件必须由4-255个字符组成'}} //server端使用
     },
     hashName: {

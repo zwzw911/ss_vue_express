@@ -18,9 +18,9 @@ const article_image= {
         'chineseName': '文档图片名称',
         'type': serverDataType.STRING,
         'require': {define: true, error: {rc: 10260}, mongoError: {rc: 20260, msg: '文档图片名称不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
-        'minLength': {define: 4, error: {rc: 10262}, mongoError: {rc: 20262, msg: '文档图片名称至少4个字符'}},
-        'maxLength': {define: 255, error: {rc: 10264}, mongoError: {rc: 20264, msg: '文档名的长度不能超过255个字符'}},
-        'format': {define: regex.fileName, error: {rc: 10266}, mongoError: {rc: 20266, msg: '文档名必须由4-255个字符组成'}} //server端使用
+        // 'minLength': {define: 4, error: {rc: 10262}, mongoError: {rc: 20262, msg: '文档图片名称至少4个字符'}},
+        // 'maxLength': {define: 255, error: {rc: 10264}, mongoError: {rc: 20264, msg: '文档名的长度不能超过255个字符'}},
+        'format': {define: regex.imageName, error: {rc: 10266}, mongoError: {rc: 20266, msg: '文档名必须由4-255个字符组成'}} //server端使用
     },
     hashName: {
         'chineseName': '文档图片名称',

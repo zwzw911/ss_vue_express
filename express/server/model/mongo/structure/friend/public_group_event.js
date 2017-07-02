@@ -42,11 +42,11 @@ const collName='public_group_event'
 
 const collFieldDefine={
     publicGroupId:{type:mongoose.Schema.Types.ObjectId,ref:"public_groups"},
-    eventType:{type:Number,enum:enumValue.PublicGroupEventType},
+    eventType:{type:String,},//通过函数自动产生，enum:enumValue.PublicGroupEventType
     //account:{type:String,unique:true}, //email或者手机号
     sourceId:{type:mongoose.Schema.Types.ObjectId,ref:"users"},
     targetId:{type:[mongoose.Schema.Types.ObjectId],ref:"users"},
-    status:{type:Number,enum:enumValue.EventStatus},
+    status:{type:String,},//通过函数自动产生，enum:enumValue.EventStatus
 
     cDate:{type:Date,default:Date.now},
 /*    uDate:{type:Date,default:Date.now},

@@ -22,11 +22,14 @@ function genMongooseEnum(){
     for(let singleEnumName in serverEnum){ //ARTICLE_STATUS
         // let tmp=[]
         // convertedEnum[singleEnumName]=[]
+        console.log(`singleEnumName ${singleEnumName}`)
         convertedEnum+=`const ${singleEnumName}=[`
         for(let singleEnumItemName in serverEnum[singleEnumName]['DB']){
             let valueInDB=serverEnum[singleEnumName]['DB'][singleEnumItemName]
+            console.log(`valueInDB ${valueInDB}`)
+            console.log(`valueInDB type ${typeof valueInDB}`)
             // let valueForShow=serverEnum[singleEnumName]['SHOW'][singleEnumItemName]
-            convertedEnum+=`${valueInDB},`
+            convertedEnum+=`"${valueInDB}",` //因为mongoose 的enum只接受String，所以通过generateMongoEnum，需要把Number转换成String(通过添加")
             // tmp.push(valueInDB)
         }
         convertedEnum+=`] `

@@ -23,9 +23,9 @@ const admin_sugar= {
         'chineseName': '糖',
         'type': serverDataType.string,
         //require=false：client无需此字段，server通过函数（必须有salt来sha密码）保证由此字段
-        'require': {define: false, error: {rc: 10034}, mongoError: {rc: 20034, msg: '糖不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
-        'minLength': {define: 1, error: {rc: 10036}, mongoError: {rc: 20036, msg: '糖至少1个字符'}},
-        'maxLength': {define: 10, error: {rc: 10038}, mongoError: {rc: 20038, msg: '糖的长度不能超过10个字符'}},
+        'require': {define: true, error: {rc: 10034}, mongoError: {rc: 20034, msg: '糖不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        // 'minLength': {define: 1, error: {rc: 10036}, mongoError: {rc: 20036, msg: '糖至少1个字符'}},
+        // 'maxLength': {define: 10, error: {rc: 10038}, mongoError: {rc: 20038, msg: '糖的长度不能超过10个字符'}},
         'format': {define: regex.salt, error: {rc: 10040}, mongoError: {rc: 20040, msg: '糖必须由1-10个字符组成'}} //server端使用
     },
 

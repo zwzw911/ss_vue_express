@@ -8,7 +8,7 @@
 const mongoose=require('mongoose');
 const fs=require('fs')
 const regex=require('../../../../constant/regex/regex').regex
-const connectedDb=require('../../common/connection').dbSS;
+const connectedDb=require('../../common/connection_admin').dbAdmin;
 
 //使用ES6的promise
 //mongoose.Promise=Promise
@@ -39,8 +39,8 @@ const assist=require('../../common/assist')
 const collName='category'
 
 const collFieldDefine={
-        name:{type:String,},
-        parentCategoryId:{type:mongoose.Schema.Types.ObjectId,ref:"categorys"}, //
+        name:{type:String, unique:true},
+        parentCategoryId:{type:mongoose.Schema.Types.ObjectId,ref:"categories"}, //
         cDate:{type:Date,default:Date.now},
         uDate:{type:Date,default:Date.now},
         dDate:{type:Date},

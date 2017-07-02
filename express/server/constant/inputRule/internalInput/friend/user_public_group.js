@@ -25,7 +25,7 @@ const user_public_group= {
     },
 
 
-    userJoinGroupId: {
+    currentJoinGroup: {
         'chineseName': '用户所处群',
         'type': [serverDataType.OBJECT_ID],
         'require': {define: false, error: {rc: 10434}, mongoError: {rc: 20434, msg: '用户所处群不能为空'}},//若尚未加入任何群，字段为空

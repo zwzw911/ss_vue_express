@@ -18,8 +18,8 @@ const impeach_attachment= {
         'chineseName': '举报附件名称',
         'type': serverDataType.STRING,
         'require': {define: true, error: {rc: 10000}, mongoError: {rc: 30000, msg: '举报附件名称不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
-        'minLength': {define: 4, error: {rc: 10002}, mongoError: {rc: 30002, msg: '举报附件名称至少4个字符'}},
-        'maxLength': {define: 255, error: {rc: 10004}, mongoError: {rc: 30004, msg: '举报附件的长度不能超过255个字符'}},
+        // 'minLength': {define: 4, error: {rc: 10002}, mongoError: {rc: 30002, msg: '举报附件名称至少4个字符'}},
+        // 'maxLength': {define: 255, error: {rc: 10004}, mongoError: {rc: 30004, msg: '举报附件的长度不能超过255个字符'}},
         'format': {define: regex.fileName, error: {rc: 10005}, mongoError: {rc: 30005, msg: '举报附件必须由4-255个字符组成'}} //server端使用
     },
     hashName: {

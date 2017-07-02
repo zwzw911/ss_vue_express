@@ -18,15 +18,16 @@ const article= {
         'chineseName': '文档名',
         'type': serverDataType.STRING,
         'require': {define: true, error: {rc: 10100}, mongoError: {rc: 10000, msg: '文档名不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
-        'minLength': {define: 2, error: {rc: 10102}, mongoError: {rc: 10102, msg: '文档名至少2个字符'}},
+        'minLength': {define: 1, error: {rc: 10102}, mongoError: {rc: 10102, msg: '文档名至少1个字符'}},
         'maxLength': {define: 50, error: {rc: 10104}, mongoError: {rc: 10104, msg: '文档名的长度不能超过50个字符'}},
         // 'format': {define: regex.fileName, error: {rc: 10005}, mongoError: {rc: 30005, msg: '文档名必须由1-255个字符组成'}} //server端使用
     },
     status: {
         'chineseName': '文档状态',
-        'type': serverDataType.ENUM,
+        'type': serverDataType.STRING,
         'require': {define: true, error: {rc: 10106}, mongoError: {rc: 20106, msg: '文档状态不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         'enum':{define:Object.values(mongoEnum.ArticleStatus.DB),error:{rc:10108},mongoError:{rc:20108,msg:'文档状态不正确'}},//server端使用
+
     },
 
     folderId: {

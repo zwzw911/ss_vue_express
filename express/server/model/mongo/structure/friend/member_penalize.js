@@ -43,9 +43,9 @@ const collName='member_penalize'
 const collFieldDefine={
     creatorId:{type:mongoose.Schema.Types.ObjectId,ref:"users"},
     publicGroupId:{type:mongoose.Schema.Types.ObjectId,ref:"public_groups"},
-    membersId:{type:mongoose.Schema.Types.ObjectId,ref:"users"},
-    penalizeType:{type:Number,enum:enumValue.PenalizeType},
-    duration:{type:Number},
+    memberId:{type:mongoose.Schema.Types.ObjectId,ref:"users"},
+    penalizeType:{type:String,},//enum:enumValue.PenalizeType
+    duration:{type:Number},//unit：day
 
     cDate:{type:Date,default:Date.now},
     // uDate:{type:Date,default:Date.now},

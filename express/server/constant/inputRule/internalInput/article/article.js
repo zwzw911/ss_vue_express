@@ -41,7 +41,7 @@ const article= {
     articleImagesId: {
         'chineseName': '文档图片',
         'type': [serverDataType.OBJECT_ID],
-        'require': {define: true, error: {rc: 10142}, mongoError: {rc: 20142, msg: '文档图片不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        'require': {define: false, error: {rc: 10142}, mongoError: {rc: 20142, msg: '文档图片不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         // 'arrayMinLength': {define: 0, error: {rc: 10002}, mongoError: {rc: 20002, msg: '至少设置1个标签'}},
         'arrayMaxLength': {define: maxNumber.article.imagesNumberPerArticle, error: {rc: 10144}, mongoError: {rc: 20144, msg: `最多插入${maxNumber.article.imagesNumberPerArticle}个图片`}},
         'format': {define: regex.objectId, error: {rc: 10146}, mongoError: {rc: 20146, msg: '文档图片必须是objectId'}} //server端使用
@@ -50,7 +50,7 @@ const article= {
     articleAttachmentsId: {
         'chineseName': '文档附件',
         'type': [serverDataType.OBJECT_ID],
-        'require': {define: true, error: {rc: 10148}, mongoError: {rc: 20148, msg: '文档附件不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        'require': {define: false, error: {rc: 10148}, mongoError: {rc: 20148, msg: '文档附件不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         // 'arrayMinLength': {define: 1, error: {rc: 10002}, mongoError: {rc: 20002, msg: '至少设置1个标签'}},
         'arrayMaxLength': {define: maxNumber.article.attachmentNumberPerArticle, error: {rc: 10150}, mongoError: {rc: 20150, msg: `最多添加${maxNumber.article.attachmentNumberPerArticle}个附件`}},
         'format': {define: regex.objectId, error: {rc: 10152}, mongoError: {rc: 20152, msg: '文档附件片必须是objectId'}} //server端使用
@@ -59,7 +59,7 @@ const article= {
     articleCommentsId: {
         'chineseName': '留言',
         'type': [serverDataType.OBJECT_ID],
-        'require': {define: true, error: {rc: 10154}, mongoError: {rc: 20154, msg: '文档留言不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        'require': {define: false, error: {rc: 10154}, mongoError: {rc: 20154, msg: '文档留言不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         // 'minLength': {define: 6, error: {rc: 10002}, mongoError: {rc: 20002, msg: '密码至少6个字符'}},
         'arrayMaxLength': {define: maxNumber.article.commentNumberPerArticle, error: {rc: 10156}, mongoError: {rc: 20156, msg: `最多添加${maxNumber.article.commentNumberPerArticle}个留言`}},
         'format': {define: regex.objectId, error: {rc: 10158}, mongoError: {rc: 20158, msg: '文档留言片必须是objectId'}} //server端使用

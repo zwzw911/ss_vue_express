@@ -47,9 +47,19 @@ const assist=require('../../common/assist')
 /*                           department                        */
 const collName='user_public_group'
 
+/*               直接自定义validator（而不是通过函数产生），为了加快执行速度         */
+const currentJoinGroup_arrayMaxLengthValidator={
+    validator(v){
+        //        console.log(`tag is ${JSON.stringify(v)}`)
+        // console.log(`friendsInGroup length is ${JSON.stringify(v.length)}`)
+        return v.length<collInputRule['currentJoinGroup'][serverRuleType.ARRAY_MAX_LENGTH]['define']
+    },
+    message:`错误代码${collInputRule['currentJoinGroup'][serverRuleType.ARRAY_MAX_LENGTH]['mongoError']['rc']}:${collInputRule['currentJoinGroup'][serverRuleType.ARRAY_MAX_LENGTH]['mongoError']['msg']}`
+}
+
 const collFieldDefine={
-    creatorId:{type:mongoose.Schema.Types.ObjectId,ref:"users"},
-    currentJoinGroup:{type:[mongoose.Schema.Types.ObjectId],ref:"public_groups"},
+    userId:{type:mongoose.Schema.Types.ObjectId,ref:"users"},
+    currentJoinGroup:{type:[mongoose.Schema.Types.ObjectId],ref:"public_groups",validate:[currentJoinGroup_arrayMaxLengthValidator]},
 
 
     cDate:{type:Date,default:Date.now},

@@ -19,6 +19,24 @@ const user= {
          'maxLength':{define:20,error:{rc:10004},mongoError:{rc:20004,msg:'密码的长度不能超过20个字符'}},*/
         'format':{define:regex.sha1Hash,error:{rc:10726},mongoError:{rc:20726,msg:'密码必须由40个字符组成'}} //加密密码只在server端使用
     },
+
+    photoPathId: {
+        'chineseName': '头像存储路径',
+        'type': serverDataType.OBJECT_ID,
+        'require': {define: false, error: {rc: 10716}, mongoError: {rc: 20716, msg: '头像存储路径不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        // 'minLength': {define: 6, error: {rc: 10718}, mongoError: {rc: 20718, msg: '密码至少6个字符'}},
+        // 'maxLength': {define: 20, error: {rc: 10720}, mongoError: {rc: 20720, msg: '密码的长度不能超过20个字符'}},
+        'format': {define: regex.password, error: {rc: 10722}, mongoError: {rc: 20722, msg: '密码必须由6-20个字符组成'}} //server端使用
+    },
+
+    photoHashName: {
+        'chineseName': '头像hash名',
+        'type': serverDataType.STRING,
+        'require': {define: false, error: {rc: 10716}, mongoError: {rc: 20716, msg: '头像hash名不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        // 'minLength': {define: 6, error: {rc: 10718}, mongoError: {rc: 20718, msg: '密码至少6个字符'}},
+        // 'maxLength': {define: 20, error: {rc: 10720}, mongoError: {rc: 20720, msg: '密码的长度不能超过20个字符'}},
+        'format': {define: regex.hashedThumbnail, error: {rc: 10722}, mongoError: {rc: 20722, msg: '头像hash名由43~44个字符组成'}} //server端使用
+    },
 }
 
 module.exports={

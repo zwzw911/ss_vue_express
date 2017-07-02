@@ -23,7 +23,7 @@ const member_penalize= {
         'format': {define: regex.objectId, error: {rc: 10302}, mongoError: {rc: 20302, msg: '群必须是objectId'}} //server端使用
     },
 
-    membersIdId: {
+    memberId: {
         'chineseName': '成员',
         'type': serverDataType.OBJECT_ID,
         'require': {define: true, error: {rc: 10304}, mongoError: {rc: 20304, msg: '成员不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
@@ -32,7 +32,7 @@ const member_penalize= {
 
     penalizeType: {
         'chineseName': '处罚类型',
-        'type': serverDataType.ENUM,
+        'type': serverDataType.STRING,
         'require': {define: true, error: {rc: 10308}, mongoError: {rc: 20308, msg: '处罚类型不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         'enum':{define:Object.values(mongoEnum.PenalizeType.DB),error:{rc:10310},mongoError:{rc:20310,msg:'未知处罚类型'}},//server端使用
     },

@@ -2,6 +2,7 @@
  * Created by Ada on 2017/6/10.
  * mongoose connection
  */
+"use strict";
 const mongoose=require('mongoose');
 mongoose.Promise=Promise
 
@@ -18,6 +19,7 @@ dbSS.on('connected',function(){
 const url={
     'default':'mongodb://127.0.0.1:27017/ss',
     'sugar':'mongodb://127.0.0.1:27017/sugar', //sugar分开存储，保证安全
+    'admin':'mongodb://127.0.0.1:27017/admin', //admin分开存储，保证admin信息不会泄露
 }
 const options={db: { native_parser: true }};
 const dbSS=mongoose.createConnection(url.default,options)
@@ -29,7 +31,7 @@ dbSugar.on('error',console.error.bind(console,'sugar connection error'))
 dbSS.on('connected',function(){
     console.log('ss connected')
     dbSugar.on('connected',function(){
-        "use strict";
+
         console.log('sugar connected')
     })
 })

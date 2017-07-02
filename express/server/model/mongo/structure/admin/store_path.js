@@ -8,7 +8,7 @@
 const mongoose=require('mongoose');
 const fs=require('fs')
 const regex=require('../../../../constant/regex/regex').regex
-const connectedDb=require('../../common/connection').dbSS;
+const connectedDb=require('../../common/connection_admin').dbAdmin;
 
 //使用ES6的promise
 //mongoose.Promise=Promise
@@ -39,7 +39,8 @@ const assist=require('../../common/assist')
 const collName='store_path'
 
 const collFieldDefine={
-        path:{type:String,},
+    name:{type:String,unique:true},
+    path:{type:String,validate:{validator:function(v){fs.statSync(v).isDirectory()},message:`invalid path`}},
 
 }
 

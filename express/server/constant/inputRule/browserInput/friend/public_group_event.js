@@ -23,7 +23,7 @@ const public_group_event= {
 
     eventType: {
         'chineseName': '群事件类型',
-        'type': serverDataType.ENUM,
+        'type': serverDataType.STRING,
         'require': {define: true, error: {rc: 10364}, mongoError: {rc: 20364, msg: '群事件类型不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         'enum':{define:Object.values(mongoEnum.PublicGroupEventType.DB),error:{rc:10366},mongoError:{rc:20366,msg:'未知群事件类型'}},//server端使用
     },
@@ -40,7 +40,7 @@ const public_group_event= {
 
     status: {
         'chineseName': '事件状态',
-        'type': serverDataType.ENUM,
+        'type': serverDataType.STRING,
         'require': {define: true, error: {rc: 10372}, mongoError: {rc: 20372, msg: '事件状态不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         'enum':{define:Object.values(mongoEnum.EventStatus.DB),error:{rc:10374},mongoError:{rc:20374,msg:'未知事件状态'}},//server端使用
     },

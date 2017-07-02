@@ -14,7 +14,7 @@ const category= {
         'chineseName': '分类名称',
         'type': serverDataType.STRING,
         'require': {define: true, error: {rc: 10050}, mongoError: {rc: 20050, msg: '分类名不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
-        'minLength': {define: 1, error: {rc: 10052}, mongoError: {rc: 20052, msg: '分类名至少1个字符'}},
+        'minLength': {define: 2, error: {rc: 10052}, mongoError: {rc: 20052, msg: '分类名至少2个字符'}},
         'maxLength': {define: 50, error: {rc: 10054}, mongoError: {rc:20054, msg: '分类名的长度不能超过50个字符'}},
         // 'format': {define: regex.folderName, error: {rc: 10005}, mongoError: {rc: 30005, msg: '目录名必须由12-255个字符组成'}} //server端使用
     },

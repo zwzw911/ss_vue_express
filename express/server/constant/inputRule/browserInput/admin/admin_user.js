@@ -17,7 +17,7 @@ const admin_user= {
         'chineseName': '用户名',
         'type': serverDataType.STRING,
         'require': {define: true, error: {rc: 10000}, mongoError: {rc: 20000, msg: '用户名不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
-        'minLength': {define: 1, error: {rc: 10002}, mongoError: {rc: 20002, msg: '用户名至少1个字符'}},
+        'minLength': {define: 2, error: {rc: 10002}, mongoError: {rc: 20002, msg: '用户名至少2个字符'}},
         'maxLength': {define: 20, error: {rc: 10004}, mongoError: {rc: 20004, msg: '用户名的长度不能超过20个字符'}},
         // 'format': {define: regex.folderName, error: {rc: 10005}, mongoError: {rc: 30005, msg: '目录名必须由12-255个字符组成'}} //server端使用
     },
@@ -36,7 +36,7 @@ const admin_user= {
     //user type
     userType: {
         'chineseName': '管理员类型',
-        'type': serverDataType.ENUM,
+        'type': serverDataType.STRING,
         'require': {define: true, error: {rc: 10014}, mongoError: {rc: 20014, msg: '管理员类型不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         'enum':{define:Object.values(mongoEnum.AdminUserType.DB),error:{rc:10016},mongoError:{rc:20016,msg:'管理员类型不正确'}},//server端使用
     },
@@ -44,9 +44,11 @@ const admin_user= {
     //user priority
     userPriority: {
         'chineseName': '用户权限',
-        'type': [serverDataType.ENUM],
-        'require': {define: true, error: {rc: 10018}, mongoError: {rc: 20018, msg: '用户权限不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        'type': [serverDataType.STRING],
+        'require': {define: false, error: {rc: 10018}, mongoError: {rc: 20018, msg: '用户权限不能为空'}},//用户权限初始可以为空，以后ROOT用户进行分配
         'enum':{define:Object.values(mongoEnum.AdminPriorityType.DB),error:{rc:10020},mongoError:{rc:20020,msg:'用户权限不正确'}},//server端使用
+         // 'arrayMinLength': {define: 1, error: {rc: 10002}, mongoError: {rc: 20002, msg: '至少设置1个权限'}},
+        'arrayMaxLength': {define: Object.values(mongoEnum.AdminPriorityType.DB).length, error: {rc: 10021}, mongoError: {rc: 20021, msg: `最多拥有${Object.values(mongoEnum.AdminPriorityType.DB).length}个权限`}},
     },
 }
 

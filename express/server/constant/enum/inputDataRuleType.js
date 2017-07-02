@@ -19,7 +19,8 @@ const ServerRuleType={
     ENUM:'enum',
 
     ARRAY_MIN_LENGTH:'arrayMinLength',
-    ARRAY_MAX_LENGTH:'arrayMaxLength'
+    ARRAY_MAX_LENGTH:'arrayMaxLength',
+    // ARRAY_EXACT_LENGTH:'arrayExactLength',
 }
 
 //采用字符，而不是symbol，否则无法读取key：value对
@@ -35,6 +36,7 @@ const ServerDataType={
     NUMBER:'number',
     OBJECT_ID:'objectId',//mongodb的id
 
+    BOOLEAN:'boolean'
 }
 
 
