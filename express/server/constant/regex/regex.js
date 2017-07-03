@@ -6,7 +6,7 @@
 // ~`!@#%&)(_=}{:"><,;'\[\]\\\^\$\*\+\|\?\.\-  转义正则特殊字符
 const regex={
     singleSpecialChar:/^[A-Za-z0-9~`!@#%&)(_=}{:"><,;'\[\]\\\^\$\*\+\|\?\.\-]$/,
-    email:/(\w+\.)*\w+@(\w+\.)+[A-Za-z]+/,
+    email:/^([\w\u4e00-\u9fa5\-]+\.)*[\w\u4e00-\u9fa5\-]+@([\w\u4e00-\u9fa5\-]+\.)+[A-Za-z]+$/,//^[\w\u4e00-\u9fa5]+@[\w-]+(\.[\w-]+)+$
     sessionId:/\w+/,
     ip:/^(((\d{1,2})|(1\d{2})|(2[0-4]\d)|(25[0-5]))\.){3}((\d{1,2})|(1\d{2})|(2[0-4]\d)|(25[0-5]))$/,
     sha1Hash:/^[0-9a-f]{40}$/,
@@ -23,7 +23,7 @@ const regex={
     //strictPassword:/^(?=.*[0-9])(?=.*[A-Za-z])(?=.*[~`!@#%&)(_=}{:"><,;'\[\]\\\^\$\*\+\|\?\.\-])[A-Za-z0-9~`!@#%&)(_=}{:"><,;'\[\]\\\^\$\*\+\|\?\.\-]{6,20}$/,//字母数字，特殊符号
     //loosePassword:/^(?=.*[0-9])(?=.*[A-Za-z])[A-Za-z0-9]{2,20}$/,//宽松密码设置，字母数字
     //loosePassword:/^[A-Za-z0-9]{2,20}$/,//宽松密码设置，字母数字
-
+    account:/^(([\w\u4e00-\u9fa5\-]+\.)*[\w\u4e00-\u9fa5\-]+@([\w\u4e00-\u9fa5\-]+\.)+[A-Za-z]+|1\d{10})$/,//mail或者手机
     mobilePhone:/^1\d{10}$/, //11位的手机号
     // account:/[(\w+\.)*\w+@(\w+\.)+[A-Za-z]+|^1\d{10}$]/,
     imageName:/^[\u4E00-\u9FFF\w]{1,250}\.(jpg|png|jpeg)$/,
@@ -35,7 +35,8 @@ const regex={
     pageNum:/^\d{1,4}$/,
     hashName:/^[0-9a-f]{40}\.\w{3,4}$/, //hash名+后缀
     captcha:/^[a-zA-Z0-9]{4}$/,
-    hashedThumbnail:/^[0-9a-f]{40}\.(jpg|jpeg|png)$/,
+    // hashedThumbnail:/^[0-9a-f]{32}\.(jpg|jpeg|png)$/, //md5，非重要数据，节省空间
+    dataUrlThumbnail:/^data:image\/(png|jpg|jpeg);base64,/,
     originalThumbnail:/^[\u4E00-\u9FFF\w]{2,20}\.(jpg|jpeg|png)$/,//
     // number采用isNaN判断，而无需正则
     // number:/^-?\d{1,}$/,//只能对字符正常工作，如果是纯数值会出错（1.0会true）; 无法处理巨大数字，因为会被parseFloat转换成科学计数法(1.23e+45}，从而无法用统一的regex处理

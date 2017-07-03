@@ -18,9 +18,9 @@ const impeach_image= {
         'chineseName': '举报图片名称',
         'type': serverDataType.STRING,
         'require': {define: true, error: {rc: 10610}, mongoError: {rc: 20610, msg: '举报图片名称不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
-        'minLength': {define: 4, error: {rc: 10612}, mongoError: {rc: 20612, msg: '举报图片名称至少4个字符'}},
-        'maxLength': {define: 255, error: {rc: 10614}, mongoError: {rc: 20614, msg: '举报图片名的长度不能超过255个字符'}},
-        'format': {define: regex.fileName, error: {rc: 10616}, mongoError: {rc: 20616, msg: '举报图片名必须由4-255个字符组成'}} //server端使用
+        // 'minLength': {define: 4, error: {rc: 10612}, mongoError: {rc: 20612, msg: '举报图片名称至少4个字符'}},
+        // 'maxLength': {define: 255, error: {rc: 10614}, mongoError: {rc: 20614, msg: '举报图片名的长度不能超过255个字符'}},
+        'format': {define: regex.imageName, error: {rc: 10616}, mongoError: {rc: 20616, msg: '举报图片名必须由4-255个字符组成'}} //server端使用
     },
     hashName: {
         'chineseName': '举报图片名称',
@@ -28,7 +28,7 @@ const impeach_image= {
         'require': {define: true, error: {rc: 10618}, mongoError: {rc: 20618, msg: '举报图片名称不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         // 'minLength': {define: 4, error: {rc: 10002}, mongoError: {rc: 30002, msg: '文档图片名称至少4个字符'}},
         // 'maxLength': {define: 255, error: {rc: 10004}, mongoError: {rc: 30004, msg: '文档名的长度不能超过255个字符'}},
-        'format': {define: regex.hashImageName, error: {rc: 10620}, mongoError: {rc: 20620, msg: 'hash名必须由44个字符组成'}} //server端使用
+        'format': {define: regex.hashImageName, error: {rc: 10620}, mongoError: {rc: 20620, msg: 'hash名必须由44~45个字符组成'}} //server端使用
     },
     pathId: {
         'chineseName': '存储路径',

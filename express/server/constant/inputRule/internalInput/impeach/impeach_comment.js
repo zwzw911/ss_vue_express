@@ -30,7 +30,7 @@ const impeach_comment= {
     impeachImagesId: {
         'chineseName': '评论图片',
         'type': [serverDataType.OBJECT_ID],
-        'require': {define: true, error: {rc: 10574}, mongoError: {rc: 20574, msg: '评论图片不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        'require': {define: false, error: {rc: 10574}, mongoError: {rc: 20574, msg: '评论图片不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         // 'arrayMinLength': {define: 0, error: {rc: 10002}, mongoError: {rc: 20002, msg: '至少设置1个标签'}},
         'arrayMaxLength': {define: maxNumber.impeachAttachment.maxImageNumber, error: {rc: 10576}, mongoError: {rc: 20576, msg: `评论中最多插入${maxNumber.impeachAttachment.maxImageNumber}个图片`}},
         'format': {define: regex.objectId, error: {rc: 10578}, mongoError: {rc: 20578, msg: '评论图片必须是objectId'}} //server端使用
@@ -39,7 +39,7 @@ const impeach_comment= {
     impeachAttachmentsId: {
         'chineseName': '评论附件',
         'type': [serverDataType.OBJECT_ID],
-        'require': {define: true, error: {rc: 10580}, mongoError: {rc: 20580, msg: '评论附件不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        'require': {define: false, error: {rc: 10580}, mongoError: {rc: 20580, msg: '评论附件不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         // 'arrayMinLength': {define: 1, error: {rc: 10002}, mongoError: {rc: 20002, msg: '至少设置1个标签'}},
         'arrayMaxLength': {define: maxNumber.impeachAttachment.maxAttachmentNumber, error: {rc: 10582}, mongoError: {rc: 20582, msg: `评论中最多添加${maxNumber.impeachAttachment.maxAttachmentNumber}个附件`}},
         'format': {define: regex.objectId, error: {rc: 10584}, mongoError: {rc: 20584, msg: '评论附件必须是objectId'}} //server端使用

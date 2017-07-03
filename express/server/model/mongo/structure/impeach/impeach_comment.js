@@ -37,14 +37,29 @@ const assist=require('../../common/assist')
 * */
 
 /*                           department                        */
-const collName='article_comment'
+const collName='impeach_comment'
+
+/*               直接自定义validator（而不是通过函数产生），为了加快执行速度         */
+const impeachCommentImage_arrayMaxLengthValidator={
+    validator(v){
+        return v.length<=collInputRule['impeachImagesId'][serverRuleType.ARRAY_MAX_LENGTH]['define']
+    },
+    message:`错误代码${collInputRule['impeachImagesId'][serverRuleType.ARRAY_MAX_LENGTH]['mongoError']['rc']}:${collInputRule['impeachImagesId'][serverRuleType.ARRAY_MAX_LENGTH]['mongoError']['msg']}`
+}
+const impeachCommentAttachment_arrayMaxLengthValidator={
+    validator(v){
+        return v.length<=collInputRule['impeachAttachmentsId'][serverRuleType.ARRAY_MAX_LENGTH]['define']
+    },
+    message:`错误代码${collInputRule['impeachAttachmentsId'][serverRuleType.ARRAY_MAX_LENGTH]['mongoError']['rc']}:${collInputRule['impeachAttachmentsId'][serverRuleType.ARRAY_MAX_LENGTH]['mongoError']['msg']}`
+}
+
 
 const collFieldDefine={
     authorId:{type:mongoose.Schema.Types.ObjectId,ref:"users"}, //普通用户发起举报
     impeachId:{type:mongoose.Schema.Types.ObjectId,ref:"impeaches"},
     content:{type:String,},
-    impeachImagesId:{type:[mongoose.Schema.Types.ObjectId],ref:'impeach_images'},
-    impeachAttachmentsId:{type:[mongoose.Schema.Types.ObjectId],ref:'impeach_attachments'},
+    impeachImagesId:{type:[mongoose.Schema.Types.ObjectId],ref:'impeach_images',validate:[impeachCommentImage_arrayMaxLengthValidator]},
+    impeachAttachmentsId:{type:[mongoose.Schema.Types.ObjectId],ref:'impeach_attachments',validate:[impeachCommentAttachment_arrayMaxLengthValidator]},
     cDate:{type:Date,default:Date.now},
     //uDate:{type:Date,default:Date.now},//评论无法更改
     // dDate:{type:Date},  //只能由admin删除

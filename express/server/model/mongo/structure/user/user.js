@@ -39,12 +39,15 @@ const collFieldDefine={
         name:{type:String,unique:true},
         account:{type:String,unique:true}, //email或者手机号
         password:{type:String}, //加密后的密码
+/*        /!*  理论上浏览器只会执行一次http请求，但是如果用户数多，会对每个用户执行http，所以暂时使用dataUrl    *!/
+        photoPathId:{type:mongoose.Schema.Types.ObjectId,ref:'paths'},
+        photoHashName:{type:String},//md5*/
         /*头像size较小，采用base64Url。 好处：减少http请求；坏处：增加前后端处理复杂度
         * 例如： 评论：3人各自做2次评论。
         * 如果是图片，要发起3次http请求；
         * 如果是baseUrl：需要将用户信息单独提取（而不是直接为每个评论直接读取用户信息），分成评论和用户信息，然后在client组合。只有一次http，但是处理比较复杂
         * */
-        photoBaseUrl:{type:String},
+        photoDataUrl:{type:String},
         cDate:{type:Date,default:Date.now},
         uDate:{type:Date,default:Date.now},
         dDate:{type:Date},

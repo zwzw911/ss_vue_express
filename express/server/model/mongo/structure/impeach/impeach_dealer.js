@@ -42,7 +42,7 @@ const assist=require('../../common/assist')
 const collName='impeach_dealer'
 
 const collFieldDefine={
-    impeachId:{type:mongoose.Schema.Types.ObjectId,ref:"impeachws"},
+    impeachId:{type:mongoose.Schema.Types.ObjectId,ref:"impeaches"},
     assignerId:{type:mongoose.Schema.Types.ObjectId,ref:"admin_users"},
     dealerId:{type:mongoose.Schema.Types.ObjectId,ref:"admin_users"},
 
