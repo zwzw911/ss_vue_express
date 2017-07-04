@@ -32,10 +32,12 @@ const AdminPriorityType={
     DB:{
         IMPEACH:'0',      //可以处理 举报
         ASSIGN_IMPEACH:'1',
+        PENALIZE:'2',//处罚普通用户
     },
     SHOW:{
         IMPEACH:'举报',
         ASSIGN_IMPEACH:'分配举报',
+        PENALIZE:'处罚用户',//处罚普通用户
     },
     
 
@@ -93,11 +95,13 @@ const PenalizeType={
     DB:{
         NO_ARTICLE: '0',
         NO_COMMENT:'1',
+        NO_TOPIC:'2',
 
     },
     SHOW:{
         NO_ARTICLE: '禁止写文档',
         NO_COMMENT:'禁止评论',
+        NO_TOPIC:'禁止创建系列',
     },
 
 }

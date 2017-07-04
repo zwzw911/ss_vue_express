@@ -173,14 +173,24 @@ console.log(`===============================================`)
                 result=doc.validateSync()
                 // doc.save(function(err){console.log(`FORMAT err is ${JSON.stringify(err)}`)})
                 console.log(`ARRAY_MIX_LENGTH check for field ${fieldName}-----${JSON.stringify(result)}`)
+                console.log(`collInputRule[fieldName][serverRuleType.REQUIRE]['define']: ${JSON.stringify(collInputRule[fieldName][serverRuleType.REQUIRE]['define'])}`)
                 //获得结果
-                //如果字段是require，且minLength是1，此时产生的测试字符为空，会触发require的验证
+                //如果字段是require，且minLength是1，此时产生的测试字符为空数组，会触发require的验证
                 if(1===collInputRule[fieldName][serverRuleType.ARRAY_MIN_LENGTH]['define'] && true===collInputRule[fieldName][serverRuleType.REQUIRE]['define']){
                     singleRule=collInputRule[fieldName][serverRuleType.REQUIRE]
-                }else{
-                    singleRule=collInputRule[fieldName][serverRuleType.ARRAY_MIN_LENGTH]
+                    errMsg=`错误代码${singleRule['mongoError']['rc']}:${singleRule['mongoError']['msg']}`
                 }
-                errMsg=`错误代码${singleRule['mongoError']['rc']}:${singleRule['mongoError']['msg']}`
+                //如果字段非require，且minLength是1，此时产生的测试字符为空数组，mongoose不报任何错
+                else if(1===collInputRule[fieldName][serverRuleType.ARRAY_MIN_LENGTH]['define'] && false===collInputRule[fieldName][serverRuleType.REQUIRE]['define']){
+                    // errMsg=mongooseErrHandler(result).msg
+                    test.equal(result,undefined,`${fieldName}的值${JSON.stringify(value[fieldName])}的数组长度没有达到最小值${arrayMinLength}`)
+                    return
+                }
+                else{
+                    singleRule=collInputRule[fieldName][serverRuleType.ARRAY_MIN_LENGTH]
+                    errMsg=`错误代码${singleRule['mongoError']['rc']}:${singleRule['mongoError']['msg']}`
+                }
+
                 test.equal(result['errors'][fieldName]['message'],errMsg,`${fieldName}的值${JSON.stringify(value[fieldName])}的数组长度没有达到最小值${arrayMinLength}`)
 
                 break;

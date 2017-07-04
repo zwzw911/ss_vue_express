@@ -141,6 +141,7 @@ const maxNumber={
         imagesNumberPerArticle:5,//每篇文档最多内插图片数量
         attachmentNumberPerArticle:5,//每篇文档最多附件数量
         commentNumberPerArticle:500,
+
     },
     friend:{
         maxFriendsNumberPerGroup:500, //每个朋友分组最多500人
@@ -156,7 +157,14 @@ const maxNumber={
     impeachAttachment:{
         maxImageNumber:10,//最多插入的图片
         maxAttachmentNumber:10,//最多插入附件
+    },
+    user_operation:{
+        maxTopic:100,//每个用户最多建立多少系列
+        maxArticlePerTopic:10,//每个topic最多包含的文档数
 
+        maxRecommendToUser:10,//每次最多推荐给10个用户
+        maxRecommendToGroup:10,//每次最多推荐给10个朋友圈
+        maxRecommendToPublicGroup:10,//每次最多推荐给10个群
     },
 
 }

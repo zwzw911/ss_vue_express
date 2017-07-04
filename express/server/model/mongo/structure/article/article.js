@@ -45,6 +45,11 @@ const tag_arrayMinLengthValidator={
     validator(v){
 /*        console.log(`tag is ${JSON.stringify(v)}`)
         console.log(`tag length is ${JSON.stringify(v.length)}`)*/
+        if(false===collInputRule['tagsId'][serverRuleType.REQUIRE]['define']){
+            if(0===v.length){
+                return true
+            }
+        }
         return v.length>=collInputRule['tagsId'][serverRuleType.ARRAY_MIN_LENGTH]['define']
     },
     message:`错误代码${collInputRule['tagsId'][serverRuleType.ARRAY_MIN_LENGTH]['mongoError']['rc']}:${collInputRule['tagsId'][serverRuleType.ARRAY_MIN_LENGTH]['mongoError']['msg']}`
