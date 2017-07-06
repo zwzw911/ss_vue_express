@@ -42,6 +42,7 @@ const collName='admin_user'
 
 const serPriority_arrayMaxLength={
     validator(v){
+        console.log(`v is ${JSON.stringify(v)}`)
         return v.length<collInputRule['userPriority'][serverRuleType.ARRAY_MAX_LENGTH]['define']
 
         // return v.length<=collInputRule['articleCommentsId'][serverRuleType.ARRAY_MAX_LENGTH]['define']
@@ -75,7 +76,8 @@ const collFieldDefine={
      * 如果是baseUrl：需要将用户信息单独提取（而不是直接为每个评论直接读取用户信息），分成评论和用户信息，然后在client组合。只有一次http，但是处理比较复杂
      * */
     // photoBaseUrl:{type:String},
-    userPriority:{type:[String],validate:[serPriority_arrayMaxLength,userPriority_Enum]},
+    // userPriority:{type:[String],validate:[serPriority_arrayMaxLength,userPriority_Enum]},
+    userPriority:{type:[{type:String}],validate:[serPriority_arrayMaxLength]},//
     cDate:{type:Date,default:Date.now},
     uDate:{type:Date,default:Date.now},
     dDate:{type:Date},

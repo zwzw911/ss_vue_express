@@ -1,30 +1,34 @@
 /**
- * Created by wzhan039 on 2017-06-21.
+ * Created by wzhan039 on 2017-07-06.
  */
 
-/*const Event={
-    //群
-    PUBLIC_GROUP:{
-        CREATE_GROUP: 0, //群创建
-        NEW_USER_APPLY_JOIN:1, //新成员 申请 加入
-        INVITE_NEW_USER:2, //群成员邀请 新成员 加入
-        ADD_ADMINISTRATOR:3,  //提升普通用户 为 群 管理员
-        REMOVE_ADMINISTRATOR:4,  //降级 群 管理员 为 普通用户
-        REMOVE_MEMBER:5, //管理员 踢 成员
-        MEMBER_QUIT:6, //用户退 群
-    }
+
+
+const HashType={
+    MD5:'md5',
+    SHA1:'sha1',
+    SHA256:'sha256',
+    SHA512:'sha512',
+    RIPEMD160:'ripemd160',
 }
 
-const EventStatus={
-        ONGOING: 0, //事件处理中
-        DONE:1, //事件处理完毕
-        DENY:2, //事件被拒绝
-}*/
+const CryptType={
+    BLOW_FISH:'blowfish',
+    AES192:'aes192',
+}
 
-
-
+const GmGetter={
+    SIZE:'size' ,// returns the size (WxH) of the image
+    FORMAT:'format' ,// returns the image format (gif, jpeg, png, etc)
+    DEPTH:'depth' ,// returns the image color depth
+    COLOR:'color' ,// returns the number of colors
+    RES:'res' ,// returns the image resolution
+    FILE_SIZE:'filesize' ,// returns image filesize
+    IDENTIFY:'identify' ,// returns all image data available
+    ORIENTATION:'orientation' ,// returns the EXIF orientation of the image
+}
 module.exports={
-/*    Event,
-    EventStatus,*/
-
+    HashType,
+    CryptType,
+    GmGetter,
 }

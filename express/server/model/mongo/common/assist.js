@@ -30,14 +30,27 @@ function setMongooseBuildInValidator(collFieldDefine,collInputRule){
                                 continue
                             }
                         }
-                        //如果rule是enum，且数据类型是string，自动设置mongoose对应的enum（如果是enum+[String]，需要自己手工设定validator，因为mongoose不支持）
+                        //如果当前字段带有enum的rule，（如果是enum+[String]，需要自己手工设定validator，因为mongoose不支持）
                         //enum:['in','out']
-                        if(serverRuleType.ENUM===singleRuleName && 'string'===collInputRule[singleFiled]['type']){
+                        if(serverRuleType.ENUM===singleRuleName){
+                            //且数据类型是string，自动设置mongoose对应的enum
+                            if('string'===collInputRule[singleFiled]['type']){
+                                collFieldDefine[singleFiled][serverRuleTypeMatchMongooseRuleType.enum]={}
+                                collFieldDefine[singleFiled][serverRuleTypeMatchMongooseRuleType.enum]['values']=singleRuleValue['define']
+                                collFieldDefine[singleFiled][serverRuleTypeMatchMongooseRuleType.enum]['message']=`错误代码${singleRuleValue['mongoError']['rc']}:${singleRuleValue['mongoError']['msg']}`
+                            }
+                            //如果type是['string']，说明当前字段的值是数组，且数组内值为enum
+                            if(collInputRule[singleFiled]['type'] && 'string'===collInputRule[singleFiled]['type'][0]){
+                                collFieldDefine[singleFiled]['type'][0][serverRuleTypeMatchMongooseRuleType.enum]={
+                                    // enum:{
+                                        values:singleRuleValue['define'],
+                                        message:`错误代码${singleRuleValue['mongoError']['rc']}:${singleRuleValue['mongoError']['msg']}`
+                                    // }
+                                }
+
+                            }
                             // if(collFieldDefine[singleFiled]){//对应的field在mongo中有定义，则为此field添加validator
-                            collFieldDefine[singleFiled][serverRuleTypeMatchMongooseRuleType.enum]={}
-                            collFieldDefine[singleFiled][serverRuleTypeMatchMongooseRuleType.enum]['values']=singleRuleValue['define']
-                            collFieldDefine[singleFiled][serverRuleTypeMatchMongooseRuleType.enum]['message']=`错误代码${singleRuleValue['mongoError']['rc']}:${singleRuleValue['mongoError']['msg']}`
-                            // collFieldDefine[singleFiled][ruleMatch[singleRuleName]].push(singleRuleValue['define'])
+                         // collFieldDefine[singleFiled][ruleMatch[singleRuleName]].push(singleRuleValue['define'])
 /*                            console.log(`singleRuleValue['define'] type is ${typeof singleRuleValue['define']}`)
                             console.log(`singleRuleValue['define'][0] type is ${typeof singleRuleValue['define'][0]}`)*/
                             continue

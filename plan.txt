@@ -9,12 +9,15 @@
 2. api
 
 
-1. validateValue时，如果字段的值是数组[ObjectId]/[enum]，需要检查是不是有重复值（防止重复元素，例如，同一条评论出现多次）
+1. 如果字段的值是数组[ObjectId]/[enum]，需要检查是不是有重复值（防止重复元素，例如，同一条评论出现多次），在一个新的函数中（而不是validateValue）检测重复
 2. 把除了admin_user之外的所有model中，field类型为enum的，全部改成String===>done
-3. 新增数据类型bollean，需要在validateValue中添加对其的检查
+3. 新增数据类型bollean，需要在validateHelper-valueTypeCheck中添加对其的检查(validateValue调用此函数进行type的检测)
 
 1. 添加新表 recommend（记录用户的推荐（以及用户收到的推荐））/admin_penalize（记录管理员直接对普通用户做出的处罚，包括禁止写文档/系列/评论）/topic（普通用户新建的系列）/user_punished_history(记录用户的处罚历史已经处罚状态)=========>done
 
-1. 添加新表，给用户存储收藏的文档
+1. 添加新表，给用户存储收藏的文档==========> done: collection
 1.1 只有一级目录
 1.2 字段：creatorId/name（收藏夹名称）/articlesId（收藏夹中的文档）
+
+
+1. install gm========>done

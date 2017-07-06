@@ -86,17 +86,39 @@ console.log(`===============================================`)
                 //产生数据
                 delete value[fieldName]
                 value[fieldName]='invalidValue'//如果dataType是[String]，mongoose也会自动把值转换成单个字符串，例如输入的值是数组，['invalidValue','invalidValue1']，转换成'invalidValue,invalidValue1'
+                // value[fieldName]=['v','a']
                 console.log(`after modify value is ${JSON.stringify(value)}`)
                 //进行验证
                 doc=new testModel(value)
                 console.log(`doc value is ${JSON.stringify(doc)}`)
-                doc.save((e)=>{console.log(`err is ${JSON.stringify(e)}`)})
+                // doc.save((e)=>{console.log(`err is ${JSON.stringify(e)}`)})
+                // test.equal(result,undefined,`${fieldName}的值${JSON.stringify(value[fieldName])}不是预定义的enum值`)
+                // return
                 result=doc.validateSync()
+
+
+
+
                 console.log(`Enum check for field ${fieldName}-----${JSON.stringify(result)}`)
                 //获得结果
                 singleRule=collInputRule[fieldName][serverRuleType.ENUM]
                 errMsg=`错误代码${singleRule['mongoError']['rc']}:${singleRule['mongoError']['msg']}`
-                test.equal(result['errors'][fieldName]['message'],errMsg,`${fieldName}的值${JSON.stringify(value[fieldName])}不是预定义的enum值`)
+                //enum分成2种：单个enum（string）值，enum数组。mongoose给出的错误格式略有不同
+                //type: string
+                if('string'===collInputRule[fieldName]['type']){
+                    test.equal(result['errors'][fieldName]['message'],errMsg,`${fieldName}的值${JSON.stringify(value[fieldName])}不是预定义的enum值`)
+                }
+                //type:[string]
+                if(collInputRule[fieldName]['type'][0] && 'string'===collInputRule[fieldName]['type'][0]){
+                    let fieldNamePlusIndex=Object.keys(result['errors'])[0] // {errors:{enumField.0}}
+                    let tmp=fieldNamePlusIndex.split('.')
+                    let splitFieldName=tmp[0]       //对应的字段名
+                    let splitFieldValue=value[fieldName][tmp[1]]  //数组中第一个非enum值的index
+                    // console.log(`splitFieldName is ========>${splitFieldName}`)
+                    // console.log(`splitFieldValue is ========>${splitFieldValue}`)
+                    test.equal(result['errors'][fieldNamePlusIndex]['message'],errMsg,`${splitFieldName}的值${JSON.stringify(splitFieldValue)}不是预定义的enum值`)
+                }
+
                 break;
             case serverRuleType.FORMAT:
                 //产生数据

@@ -4,7 +4,10 @@
 const EVENT_FIELD=['eventId','sourceId','targetId','status','cDate']
 const SUB_FIELD=['from','to','eleArray']
 
+const pemKeyFile=``
+
 module.exports={
     EVENT_FIELD,
-    SUB_FIELD
+    SUB_FIELD,
+    pemKey,
 }

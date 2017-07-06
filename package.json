@@ -7,6 +7,7 @@
     "dompurify": "^0.8.9",
     "express": "^4.15.3",
     "express-session": "^1.15.3",
+    "gm": "^1.23.0",
     "ioredis": "^3.1.1",
     "moment": "^2.18.1",
     "mongoose": "^4.10.6"

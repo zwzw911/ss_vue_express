@@ -1,7 +1,8 @@
 /**
- * Created by wzhan039 on 2017-06-10.
+ * Created by wzhan039 on 2017-07-05.
  *
- * 定义用户信息
+ * 统计用户阅读情况
+ * 因为所有数据不是从client传入，而是server在读取去文档过程中产生，所以无需配置任何validator
  */
 
 'use strict'
@@ -15,11 +16,8 @@ const connectedDb=require('../../common/connection').dbSS;
 //mongoose.Promise = Promise
 const mongoSetting=require('../../common/configuration')
 
-const browserInputRule=require('../../../../constant/inputRule/browserInput/user_operation/topic').topic
-const internalInputRule=require('../../../../constant/inputRule/internalInput/user_operation/topic').topic
-//根据inputRule的rule设置，对mongoose设置内建validator
-// const collInputRule=internalInputRule
-const collInputRule=Object.assign({},browserInputRule,internalInputRule)
+/*const browserInputRule=require('../../../../constant/inputRule/browserInput/user/user').user
+const internalInputRule=require('../../../../constant/inputRule/internalInput/user/user').user
 
 const serverRuleType=require('../../../../constant/enum/inputDataRuleType').ServerRuleType
 
@@ -28,7 +26,8 @@ const serverRuleType=require('../../../../constant/enum/inputDataRuleType').Serv
 
 const assist=require('../../common/assist')
 
-
+//根据inputRule的rule设置，对mongoose设置内建validator
+const collInputRule=Object.assign({},browserInputRule,internalInputRule)*/
 
 /*
 * schema definition
@@ -36,27 +35,15 @@ const assist=require('../../common/assist')
 * required(all)/min_max(number)/enum_match_minLength_maxLength()
 * */
 
-const collName='topic'
-
-/*               直接自定义validator（而不是通过函数产生），为了加快执行速度         */
-const articlesId_arrayMaxLengthValidator= {
-    validator(v){
-        return v.length <= collInputRule['articlesId'][serverRuleType.ARRAY_MAX_LENGTH]['define']
-    },
-    message: `错误代码${collInputRule['articlesId'][serverRuleType.ARRAY_MAX_LENGTH]['mongoError']['rc']}:${collInputRule['articlesId'][serverRuleType.ARRAY_MAX_LENGTH]['mongoError']['msg']}`
-
-}
-
+const collName='read_article'
 const collFieldDefine={
-        name:{type:String},
-        desc:{type:String},
-        creatorId:{type:mongoose.Schema.Types.ObjectId,ref:"users"},
-        articlesId:{type:[mongoose.Schema.Types.ObjectId],ref:"articles",validate:[articlesId_arrayMaxLengthValidator]},
-        cDate:{type:Date,default:Date.now},
-        uDate:{type:Date,default:Date.now},
-        dDate:{type:Date},
+    articleId:{type:mongoose.Schema.Types.ObjectId,ref:"articles"},
+    userId:{type:mongoose.Schema.Types.ObjectId,ref:"users"},
+    cDate:{type:Date,default:Date.now},
+
 }
 
+/*
 console.log(`before: ${JSON.stringify(collFieldDefine)}`)
 
 if(mongoSetting.configuration.setBuildInValidatorFlag){
@@ -65,6 +52,7 @@ if(mongoSetting.configuration.setBuildInValidatorFlag){
 
 
 console.log(`after: ${JSON.stringify(collFieldDefine)}`)
+*/
 /*
 * 根据define/validateRule/validateRule的rule设置schema的rule
 * */
@@ -137,7 +125,17 @@ const billModel=dbFinance.model('bills',billSchema)*/
 //console.log(billModel)
 module.exports={
     collSchema,
+/*        department:departmentSchema,
+        employee:employeeSchema,
+        billType:billTypeSchema,
+        bill:billSchema*/
+
     collModel,
+/*        department:departmentModel,
+        employee:employeeModel,
+        billType:billTypeModel,
+        bill:billModel,*/
+
     //以下export，为了mongoValidate
     // collections,
     collFieldDefine,

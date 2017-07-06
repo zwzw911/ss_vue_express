@@ -18,7 +18,7 @@ const mongoSetting=require('../../common/configuration')
 const browserInputRule=require('../../../../constant/inputRule/browserInput/user_operation/recommend').recommend
 const internalInputRule=require('../../../../constant/inputRule/internalInput/user_operation/recommend').recommend
 //根据inputRule的rule设置，对mongoose设置内建validator
-const collInputRule=Object.assign(browserInputRule,internalInputRule)
+const collInputRule=Object.assign({},browserInputRule,internalInputRule)
 
 const serverRuleType=require('../../../../constant/enum/inputDataRuleType').ServerRuleType
 

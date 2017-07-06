@@ -47,31 +47,33 @@ const pagination=function({total,currentPage,pageSize=10,pageLength=10}){
             if(end>start && currentPage>=start && currentPage<=end){
                 if(currentPage===start){
                     //当前页位于第一个loop的第一页
-                    if(start==1){
+                    showPrevious= !(start==1)
+                   /* if(start==1){
                         showPrevious=false;
                     }else{
                         showPrevious=true
-                    }
+                    }*/
                     //当前页位于非第一个loop的第一个
-
-                    if(end>start){
+                    showNext= end>start
+                    /*if(end>start){
                         showNext=true
                     }else{
                         showNext=false
-                    }
+                    }*/
                 }
                 if(currentPage===end){
-                    if(currentPage<totalPage){
+                    showNext=currentPage<totalPage
+                    /*if(currentPage<totalPage){
                         showNext=true
                     }else{
                         showNext=false
-                    }
-
-                    if(currentPage>start){
+                    }*/
+                    showPrevious=currentPage>start
+                    /*if(currentPage>start){
                         showPrevious=true;
                     }else{
                         showPrevious=false;
-                    }
+                    }*/
 
                 }
                 if(currentPage<end && currentPage>start){
@@ -100,7 +102,7 @@ const pagination=function({total,currentPage,pageSize=10,pageLength=10}){
     ////当前在客户端显示的所有页数对应的总记录数（以便client可以在不要求server的信息时，直接计算分页信息。用于添加记录时在client直接计算分页信息）
     // let totalRecorderNumberForShownPage=total >= end*pageSize ? end*pageSize:total
     //pageSize;返回给前端使用
-    //return {start:start,end:end,currentPage:currentPage,showPrevious:showPrevious,showNext:showNext,totalPage:totalPage,pageSize:pageSize,pageLength:pageLength,
+    // return {start:start,end:end,currentPage:currentPage,showPrevious:showPrevious,showNext:showNext,totalPage:totalPage,pageSize:pageSize,pageLength:pageLength,
     return {currentPage:currentPage,total:total,pageSize:pageSize,pageLength:pageLength
         // totalRecorderNumberForShownPage:totalRecorderNumberForShownPage
     }

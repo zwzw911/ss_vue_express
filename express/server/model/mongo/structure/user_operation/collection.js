@@ -15,15 +15,15 @@ const connectedDb=require('../../common/connection').dbSS;
 //mongoose.Promise = Promise
 const mongoSetting=require('../../common/configuration')
 
-const browserInputRule=require('../../../../constant/inputRule/browserInput/user_operation/topic').topic
-const internalInputRule=require('../../../../constant/inputRule/internalInput/user_operation/topic').topic
+const browserInputRule=require('../../../../constant/inputRule/browserInput/user_operation/collection').collection
+const internalInputRule=require('../../../../constant/inputRule/internalInput/user_operation/collection').collection
 //根据inputRule的rule设置，对mongoose设置内建validator
 // const collInputRule=internalInputRule
 const collInputRule=Object.assign({},browserInputRule,internalInputRule)
 
 const serverRuleType=require('../../../../constant/enum/inputDataRuleType').ServerRuleType
 
-
+// console.log(`rule in model is ${JSON.stringify(collInputRule)}`)
 // const collections=['department','employee','billType','bill']
 
 const assist=require('../../common/assist')
@@ -36,7 +36,7 @@ const assist=require('../../common/assist')
 * required(all)/min_max(number)/enum_match_minLength_maxLength()
 * */
 
-const collName='topic'
+const collName='collection'
 
 /*               直接自定义validator（而不是通过函数产生），为了加快执行速度         */
 const articlesId_arrayMaxLengthValidator= {
@@ -46,15 +46,23 @@ const articlesId_arrayMaxLengthValidator= {
     message: `错误代码${collInputRule['articlesId'][serverRuleType.ARRAY_MAX_LENGTH]['mongoError']['rc']}:${collInputRule['articlesId'][serverRuleType.ARRAY_MAX_LENGTH]['mongoError']['msg']}`
 
 }
+const topicsId_arrayMaxLengthValidator= {
+    validator(v){
+        return v.length <= collInputRule['topicsId'][serverRuleType.ARRAY_MAX_LENGTH]['define']
+    },
+    message: `错误代码${collInputRule['topicsId'][serverRuleType.ARRAY_MAX_LENGTH]['mongoError']['rc']}:${collInputRule['topicsId'][serverRuleType.ARRAY_MAX_LENGTH]['mongoError']['msg']}`
+
+}
 
 const collFieldDefine={
-        name:{type:String},
-        desc:{type:String},
-        creatorId:{type:mongoose.Schema.Types.ObjectId,ref:"users"},
-        articlesId:{type:[mongoose.Schema.Types.ObjectId],ref:"articles",validate:[articlesId_arrayMaxLengthValidator]},
-        cDate:{type:Date,default:Date.now},
-        uDate:{type:Date,default:Date.now},
-        dDate:{type:Date},
+
+    name:{type:String},
+    creatorId:{type:mongoose.Schema.Types.ObjectId}, //收藏夹创建者
+    articlesId:{type:[mongoose.Schema.Types.ObjectId],ref:"articles",validate:[articlesId_arrayMaxLengthValidator]},
+    topicsId:{type:[mongoose.Schema.Types.ObjectId],ref:"topics",validate:[topicsId_arrayMaxLengthValidator]},
+    cDate:{type:Date,default:Date.now},
+    uDate:{type:Date,default:Date.now},
+    dDate:{type:Date},
 }
 
 console.log(`before: ${JSON.stringify(collFieldDefine)}`)

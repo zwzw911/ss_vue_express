@@ -19,7 +19,7 @@ dbSS.on('connected',function(){
 const url={
     'default':'mongodb://127.0.0.1:27017/ss',
     'sugar':'mongodb://127.0.0.1:27017/sugar', //sugar分开存储，保证安全
-    'admin':'mongodb://127.0.0.1:27017/admin', //admin分开存储，保证admin信息不会泄露
+    // 'admin':'mongodb://127.0.0.1:27017/admin', //admin分开存储，保证admin信息不会泄露
 }
 const options={db: { native_parser: true }};
 const dbSS=mongoose.createConnection(url.default,options)

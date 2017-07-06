@@ -28,12 +28,12 @@ const correctValue={
     userPriority:[enumValue.AdminPriorityType.DB.IMPEACH],
 }
 
-let newDoc=new testModel(correctValue)
+/*let newDoc=new testModel(correctValue)
 newDoc.save(function(err){
     if(err){
         console.log(`correct value save failed with error ${JSON.stringify(err)}`)
     }
-})
+})*/
 // async function validatePathValue(test){
 const  validatePathValue=function(test){
     test.expect(11)
@@ -64,7 +64,6 @@ const  validatePathValue=function(test){
     generateTestCase({fieldName:field,singleRuleName:serverRuleType.REQUIRE,correctValue:correctValue,collInputRule:collInputRule,testModel:testModel,test:test})
     //8 type not in enum( Number auto cast to String)
     generateTestCase({fieldName:field,singleRuleName:serverRuleType.ENUM,correctValue:correctValue,collInputRule:collInputRule,testModel:testModel,test:test})
-
     field='userPriority'
     //9 miss userPriority
     generateTestCase({fieldName:field,singleRuleName:serverRuleType.REQUIRE,correctValue:correctValue,collInputRule:collInputRule,testModel:testModel,test:test})

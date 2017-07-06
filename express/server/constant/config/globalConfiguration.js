@@ -165,6 +165,9 @@ const maxNumber={
         maxRecommendToUser:10,//每次最多推荐给10个用户
         maxRecommendToGroup:10,//每次最多推荐给10个朋友圈
         maxRecommendToPublicGroup:10,//每次最多推荐给10个群
+
+        maxArticlePerCollection:100,//每个收藏夹最多200篇文档
+        maxTopicPerCollection:100,//每个收藏夹最多200篇系列
     },
 
 }

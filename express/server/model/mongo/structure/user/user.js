@@ -26,7 +26,7 @@ const serverRuleType=require('../../../../constant/enum/inputDataRuleType').Serv
 const assist=require('../../common/assist')
 
 //根据inputRule的rule设置，对mongoose设置内建validator
-const collInputRule=Object.assign(browserInputRule,internalInputRule)
+const collInputRule=Object.assign({},browserInputRule,internalInputRule)
 
 /*
 * schema definition
