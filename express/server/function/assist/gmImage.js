@@ -231,6 +231,7 @@ function convertFileSize({num,unit,newUnit}){
     if(0===num){
         return   {rc:0,msg:0}
     }
+    // console.log(`unit ${unit}`)
     if(unit===newUnit){
         return   {rc:0,msg:num}
     }
@@ -238,6 +239,10 @@ function convertFileSize({num,unit,newUnit}){
     //首先转换成byte
     let originFileInByte
     if(undefined===unit){
+/*        if(undefined===newUnit){
+            copnsole.log(`all byte in`)
+            return   {rc:0,msg:num}
+        }*/
         originFileInByte=num
     }else{
         switch(unit){
