@@ -20,433 +20,267 @@ const validateImage=['PNG','JPEG','IPG','GIF']
 const imageErrorDefine=require('../../constant/error/assistError').gmImage
 
 const e_gmGetter=require('../../constant/enum/node_runtime').GmGetter
+const e_command=require('../../constant/enum/node_runtime').GmCommand
+const e_gmSizeUnit=require('../../constant/enum/node_runtime').GmFileSizeUnit
 
+const gmDefine=require('../../constant/config/globalConfiguration').gm
 // let gmist=gm('H:/ss_vue_express/plan.txt')
-let gmist=gm('H:/ss_vue_express/无标题.png')
+// let gmist=gm('H:/ss_vue_express/无标题.png')
+
+
 function initImage(imageFilePath){
     return gm(imageFilePath)
-
 }
 
-async function getImageProperty(gmInst,propertyType){
+
+
+const getImageProperty_async=function (gmInst,propertyType){
     switch(propertyType){
         case e_gmGetter.FORMAT:
-            gmInst.format(function(err,result){
+            return new Promise(function(resolve,reject){
+                gmInst.format(function(err,result){
+                    if(err){
+                        return reject(imageErrorDefine.format)
+                    }else{
+                        return resolve({rc:0,msg:result})
+                    }
+
+                })
+            })
+            /*gmInst.format(function(err,result){
                 if(err){
                     return Promise.reject(imageErrorDefine.format)
                 }else{
                     return Promise.resolve({rc:0,msg:result})
                 }
 
-            })
+            })*/
             break;
         case e_gmGetter.SIZE:
-            gmInst.size(function(err,result){
-                if(err){
-                    return Promise.reject(imageErrorDefine.size)
-                }else{
-                    return Promise.resolve({rc:0,msg:result})
-                }
+            return new Promise(function(resolve,reject){
+                gmInst.size(function(err,result){
+                    if(err){
+                        return reject(imageErrorDefine.size)
+                    }else{
 
+                        return resolve({rc:0,msg:result})
+                    }
+
+                })
             })
+
             break;
         case e_gmGetter.ORIENTATION:
-            gmInst.size(function(err,result){
-                if(err){
-                    return Promise.reject(imageErrorDefine.ORIENTATION)
-                }else{
-                    return Promise.resolve({rc:0,msg:result})
-                }
+            return new Promise(function(resolve,reject){
+                gmInst.orientation(function(err,result){
+                    if(err){
+                        return reject(imageErrorDefine.ORIENTATION)
+                    }else{
+                        return resolve({rc:0,msg:result})
+                    }
 
+                })
             })
+
             break;
         case e_gmGetter.DEPTH:
-            gmInst.size(function(err,result){
-                if(err){
-                    return Promise.reject(imageErrorDefine.depth)
-                }else{
-                    return Promise.resolve({rc:0,msg:result})
-                }
+            return new Promise(function(resolve,reject){
+                gmInst.depth(function(err,result){
+                    if(err){
+                        return reject(imageErrorDefine.depth)
+                    }else{
+                        return resolve({rc:0,msg:result})
+                    }
 
+                })
             })
+
             break;
         case e_gmGetter.COLOR:
-            gmInst.size(function(err,result){
-                if(err){
-                    return Promise.reject(imageErrorDefine.color)
-                }else{
-                    return Promise.resolve({rc:0,msg:result})
-                }
+            return new Promise(function(resolve,reject){
+                gmInst.color(function(err,result){
+                    if(err){
+                        return reject(imageErrorDefine.color)
+                    }else{
+                        return resolve({rc:0,msg:result})
+                    }
 
+                })
             })
+
             break;
         case e_gmGetter.RES:
-            gmInst.size(function(err,result){
-                if(err){
-                    return Promise.reject(imageErrorDefine.res)
-                }else{
-                    return Promise.resolve({rc:0,msg:result})
-                }
+            return new Promise(function(resolve,reject){
+                gmInst.res(function(err,result){
+                    if(err){
+                        return reject(imageErrorDefine.res)
+                    }else{
+                        return resolve({rc:0,msg:result})
+                    }
 
+                })
             })
+
             break;
         case e_gmGetter.FILE_SIZE:
-            gmInst.size(function(err,result){
-                if(err){
-                    return Promise.reject(imageErrorDefine.fileSize)
-                }else{
-                    return Promise.resolve({rc:0,msg:result})
-                }
+            // console.log(`field siez in `)
+            return new Promise(function(resolve,reject){
+                gmInst.filesize(function(err,result){
+                    if(err){
+                        // console.log(`filesize err is ${JSON.stringify(err)}`)
+                        return reject(imageErrorDefine.fileSize)
+                    }else{
+                        let p=/(\d{1,}\.?\d{1,})([KkMmGg]i)?/ //1.8Ki
+                        let parseResult=result.match(p)
+                        if(parseResult[0]!==result ){
+                            return reject(imageErrorDefine.parseFileSize)
+                        }
+                        let fileSizeNum=parseFloat(parseResult[1])
+                        if(isNaN(fileSizeNum)){
+                            return reject(imageErrorDefine.parseFileSizeNum)
+                        }
+                        // console.log(`get result ${JSON.stringify(result)}`)
+                        return resolve({rc:0,msg:{sizeNum:parseResult[1],sizeUnit:parseResult[2]}})
+                        // return Promise.resolve({rc:0,msg:result})
+                    }
 
+                })
             })
+
             break;
         case e_gmGetter.IDENTIFY:
-            gmInst.size(function(err,result){
-                if(err){
-                    return Promise.reject(imageErrorDefine.identify)
-                }else{
-                    return Promise.resolve({rc:0,msg:result})
-                }
+            return new Promise(function(resolve,reject){
+                gmInst.identify(function(err,result){
+                    if(err){
+                        return reject(imageErrorDefine.identify)
+                    }else{
+                        return resolve({rc:0,msg:result})
+                    }
 
+                })
             })
+
             break;
         default:
             return Promise.reject(imageErrorDefine.unknownGetter)
     }
 }
-let result=getImageProperty(gmist,e_gmGetter.FORMAT)
-// console.log(`result is ${JSON.stringify(result)}`)
-/*class GmImage{
-    static setting
-/!*    static async getSetting(){
-        setting=await CRUDGlobalSetting.getItemSetting('imageDefine')
-    }*!/
-/!*    static async getSetting(){
-        let result=CRUDGlobalSetting.getItemSetting('inner_image')
-        return result
-    }*!/
-    /!*
-    * 不确定是不是只需要执行一次即可
-    * *!/
-    static getSetting(){
-        if(undefined===GmImage.setting){
-            console.log('init setting')
-            return CRUDGlobalSetting.getItemSetting('inner_image').then(v=>{GmImage.setting=v})
-        }
+/*let file='H:/ss_vue_express/gm_test.png'
+let gmInst=initImage(file)
+let size=getImageProperty_async(gmInst,e_gmGetter.FORMAT)
+console.log(`size is ${JSON.stringify(size)}`)*/
 
-    }
-    static getterFunc(filePath,method){
-        return new Promise(function(resolve,reject){
-            gm(filePath)[method](function(err,result){
-                if(err){
-                    //console.log(err)
-                    reject(imageErrorDefine[method])
-                }else{
-/!*                    console.log('success')
-                    console.log(result)*!/
-                    if("format"==method){
-                        if(undefined===result || validateImage.indexOf(result)===-1){
-                            reject(imageErrorDefine.invalidateFormat)
-                        }
-                    }
 
-                    resolve({rc:0,msg:result})
-                }
 
-            })
-        })
-    }
 
-    static getter={
-         size(filePath){
-            GmImage.getterFunc(filePath,'size')
-        },
-        orientation(filePath){
-            GmImage.getterFunc(filePath,'orientation')
-        },
-        format(filePath){
-            GmImage.getterFunc(filePath,'format')
-        },
-        depth(filePath){
-            GmImage.getterFunc(filePath,'depth')
-        },
-        color(filePath){
-            GmImage.getterFunc(filePath,'color')
-        },
-        res(filePath){
-            return GmImage.getterFunc(filePath,'res')
-        },
-
-//gm读取的fileSize，只保留一位小数，并且四舍五入（base 1024）。 1.75k=1.8Ki；1.44M=1.4Mi
-//{ rc: 0, msg: '246.4Ki' }
-        fileSize(filePath){
-            GmImage.getterFunc(filePath,'filesize')
-        },
-        identify(filePath){
-            GmImage.getterFunc(filePath,'identify')
-        }
-    }
-    static command={
-        resizeWidthOnly(inputFilePath,outputFilePath){
-            //只对宽度做处理，并且如果宽度小于maxWidth，则不处理
-            var maxWidth=imageDefine.normalImage.width;
-            return new Promise(function(reslove,reject){
-                gm(inputFilePath).resizeExact(maxWidth,'>').interlace('line').write(outputFilePath,function(err,result){
+function gmCommand_async(gmInst, command,savePath){
+    switch(command){
+        case e_command.RESIZE_WIDTH_ONLY:
+            let maxWidth=gmDefine.inner_image.maxWidth;
+            // return new Promise(function(reslove,reject){
+                gmInst.resizeExact(maxWidth,'>').interlace('line').write(savePath,function(err,result){
                     if(err){
-                        reject(imageErrorDefine.resize)
+                        return Promise.reject(imageErrorDefine.resize)
                     }else{
-                        resolve({rc:0})
+                        return Promise.resolve({rc:0})
                     }
 
                 })
-            })
-
-        },
-//处理普通图片，生成缩略图，固定width/height
-//!，强制转换成指定的size
-        resizeToThumbnail(inputFilePath,outputFilePath){
-            //只对宽度做处理，并且如果宽度小于maxWidth，则不处理
-            var exactWidth=imageDefine.thumbnail.width;
-            var exactHeight=imageDefine.thumbnail.Height
-            return new Promise(function(reslove,reject){
-                gm(inputFilePath).resize(exactWidth,exactHeight,'!').interlace('line').write(outputFilePath,function(err,result){
+            // })
+            break;
+        case e_command.RESIZE_USER_THUMBNAIL:
+            let userExactWidth=gmDefine.user_thumbnail.width;
+            let userExactHeight=gmDefine.user_thumbnail.height
+            // return new Promise(function(reslove,reject){
+                gmInst.resize(userExactWidth,userExactHeight,'!').interlace('line').write(savePath,function(err,result){
                     if(err){
-                        reject(imageErrorDefine.resize)
+                        return Promise.reject(imageErrorDefine.resizeUserThumbNail)
                     }else{
-                        reslove({rc:0})
+                        return Promise.resolve({rc:0})
                     }
                     //return callback(null,)
                 })
+            // })
+            break;
+        case e_command.RESIZE_THUMBNAIL:
+            let exactWidth=gmDefine.inner_image.width;
+            let exactHeight=gmDefine.inner_image.height
+            // return new Promise(function(reslove,reject){
+            gmInst.resize(exactWidth,exactHeight,'!').interlace('line').write(savePath,function(err,result){
+                if(err){
+                    return Promise.reject(imageErrorDefine.resize)
+                }else{
+                    return Promise.resolve({rc:0})
+                }
+                //return callback(null,)
             })
-
-        },
-//处理头像，resize成正方形
-        resizeUserIcon(inputFilePath,outputFilePath){
-            //只对宽度做处理，并且如果宽度小于general.innerImageMaxWidth，则不处理
-            var exactWidth=imageDefine.userIcon.width;
-            var exactHeight=imageDefine.userIcon.Height
-            return new Promise(function(reslove,reject){
-                gm(inputFilePath).resize(exactWidth,exactHeight,'!').write(outputFilePath,function(err,result){
-                    if(err){
-                        reject(imageErrorDefine.resize)
-                    }else{
-                        reslove({rc:0})
-                    }
-
-                })
-            })
-
-        }
+            // })
+            break;
+        default:
+            return Promise.reject(imageErrorDefine.resize)
     }
 
-    //其他的一些辅助函数
-    static _helper={
-        //解析GM返回的文件大小，返回数值和单位（GM返回Ki，Mi，Gi.没有单位，是Byte。除了Byte，其他都只保留1位小数，并且四舍五入。例如：1.75Ki=1.8Ki）
-        //1.8Ki，返回1.8和“ki”；900，返回900
-        //解析失败，或者单位是Gi，返回对应的错误
-        //{ rc: 0, msg: { sizeNum: '200', sizeUnit: 'Ki' } }
-         parseGmFileSize(fileSize){
-            var p=/(\d{1,}\.?\d{1,})([KkMmGg]i)?/ //1.8Ki
-            var parseResult=fileSize.match(p)
-            if(parseResult[0]!==fileSize ){
-                return runtimeNodeError.image.cantParseFileSize
-            }
-            var fileSizeNum=parseFloat(parseResult[1])
-            if(isNaN(fileSizeNum)){
-                return runtimeNodeError.image.cantParseFileSizeNum
-            }
-            //单位是Gi，直接返回大小超限
-            if('Gi'===parseResult[2]){
-                return runtimeNodeError.image.exceedMaxFileSize
-            }
-            return {rc:0,msg:{sizeNum:parseResult[1],sizeUnit:parseResult[2]}}
-        },
-
-        //把GM返回的fileSize转换成Byte，以便比较
-        //{ rc: 0, msg: 204800 }
-        convertImageFileSizeToByte(fileSizeNum,fileSizeUnit){
-            var imageFileSizeInByte,imageFileSizeNum //最终以byte为单位的大小； GM得到的size的数值部分
-            if(undefined===fileSizeUnit){
-                imageFileSizeInByte=parseInt(fileSizeNum)
-                return isNaN(imageFileSizeInByte) ? runtimeNodeError.image.cantParseFileSizeNum:{rc:0,msg:imageFileSizeInByte}
-            }
-            if('Ki'===fileSizeUnit){
-//console.log('k')
-                imageFileSizeNum =parseFloat(fileSizeNum)
-                return isNaN(imageFileSizeNum) ? runtimeNodeError.image.cantParseFileSizeNum:{rc:0,msg:parseInt(fileSizeNum*1024)}
-            }
-            if('Mi'===fileSizeUnit){
-                imageFileSizeNum=parseFloat(fileSizeNum)
-                return isNaN(imageFileSizeNum) ? runtimeNodeError.image.cantParseFileSizeNum:{rc:0,msg:parseInt(fileSizeNum*1024*1024)}
-            }
-        }
-    }
-}*/
-/*var test=async function(){
-    await GmImage.getSetting()
-    console.log(GmImage.setting)
-    await GmImage.getSetting()
 }
 
-var test1=async function(){
-    await GmImage.getSetting()
-    let a= await GmImage.getter.res('H:/gj/resource/defaultUserIcon/b10e366431927231a487f08d9d1aae67f1ec18b4.png')
-/!*    a.then((v)=>{console.log(v)})
-    console.log(a)*!/
-    //console.log(a)
-    return a
-}
-
-var test2=async function(){
-    return await test1()
-    //return a
-}*/
-exports.image={
-    // GmImage,
-/*    test,
-    test1,
-    test2,*/
-}
-/*var getterFunc=function(filePath,method,callback){
-    gm(filePath)[method](function(err,result){
-        if(err){
-            return callback(err,imageErrorDefine[method])
-        }
-        return callback(null,{rc:0,msg:result})
-    })
-}
-var size=function(filePath,callback){
-    getterFunc(filePath,'size',function(err,result){
-        //将getterFunc的结果原样传出
-        return callback(err,result) //{ rc: 0, msg: { width: 104, height: 104 } }
-    })
-}
-var orientation=function(filePath,callback){
-    getterFunc(filePath,'orientation',function(err,result){
-        return callback(err,result)
-    })
-}
-var format=function(filePath,callback){
-    getterFunc(filePath,'format',function(err,result){
-        if(err){
-            return callback(err,result)
-        }
-        if(undefined===result.msg || validateImage.indexOf(result.msg)===-1){
-            return callback(null,imageErrorDefine.invalidateFormat)
-        }
-        //返回文件类型
-        return callback(null,result)
-    })
-}
-var depth=function(filePath,callback){
-    getterFunc(filePath,'depth',function(err,result){
-        return callback(err,result)
-    })
-}
-var color=function(filePath,callback){
-    getterFunc(filePath,'color',function(err,result){
-        return callback(err,result)
-    })
-}
-var res=function(filePath,callback){
-    getterFunc(filePath,'res',function(err,result){
-        return callback(err,result)
-    })
-}
-
-//gm读取的fileSize，只保留一位小数，并且四舍五入（base 1024）。 1.75k=1.8Ki；1.44M=1.4Mi
-//{ rc: 0, msg: '246.4Ki' }
-var fileSize=function(filePath,callback){
-    getterFunc(filePath,'filesize',function(err,result){
-        return callback(err,result)
-    })
-}
-var identify=function(filePath,callback){
-    getterFunc(filePath,'identify',function(err,result){
-        return callback(err,result)
-    })
-}
-
-/!*              处理图片方法                  *!/
-//处理普通图片，只关心width
-var resizeWidthOnly=function(inputFilePath,outputFilePath,callback){
-    //只对宽度做处理，并且如果宽度小于maxWidth，则不处理
-    var maxWidth=imageDefine.normalImage.width;
-    gm(inputFilePath).resizeExact(maxWidth,'>').interlace('line').write(outputFilePath,function(err,result){
-        if(err){
-            return callback(err,imageErrorDefine.resize)
-        }
-        return callback(null,{rc:0})
-    })
-}
-//处理普通图片，生成缩略图，固定width/height
-//!，强制转换成指定的size
-var resizeToThumbnail=function(inputFilePath,outputFilePath,callback){
-    //只对宽度做处理，并且如果宽度小于maxWidth，则不处理
-    var exactWidth=imageDefine.thumbnail.width;
-    var exactHeight=imageDefine.thumbnail.Height
-    gm(inputFilePath).resize(exactWidth,exactHeight,'!').interlace('line').write(outputFilePath,function(err,result){
-        if(err){
-            return callback(err,imageErrorDefine.resize)
-        }
-        return callback(null,{rc:0})
-    })
-}
-//处理头像，resize成正方形
-var resizeUserIcon=function(inputFilePath,outputFilePath,callback){
-    //只对宽度做处理，并且如果宽度小于general.innerImageMaxWidth，则不处理
-    var exactWidth=imageDefine.userIcon.width;
-    var exactHeight=imageDefine.userIcon.Height
-    gm(inputFilePath).resize(exactWidth,exactHeight,'!').write(outputFilePath,function(err,result){
-        if(err){
-            return callback(err,imageErrorDefine.resize)
-        }
-        return callback(null,{rc:0})
-    })
-}*/
 /*
-* inputFilePath,outputFilePath:输入和输出文件路径（包含文件名）
-* width,height: 设定的最大宽度和高度。数值。px
-* exactSize：输出图形的width、height和定义的一致。 true：一致，false：只要关心width（大于width，缩小，否则不变）
-* interlace：输出图形是否采用交错（GIF/PNG）或渐进（JPG）。true：交错或渐进，false：普通
+* @num: 原始文件的大小（数字部分）
+* @unit：原始文件的大小（单位，byte：空，KB：ki，MB：Mi，GB:Gi）
+* @newUnit；要转换成的单位
 * */
-/*var generalResizeImage=function(inputFilePath,outputFilePath,width,height,exactSize,interlace,callback){
-    var signal//signal:! or >.  !:忽略图片原始比例   >: 只关心width，如果没有超出，不做处理
+function convertFileSize({num,unit,newUnit}){
+    if(0===num){
+        return   {rc:0,msg:0}
+    }
+    if(unit===newUnit){
+        return   {rc:0,msg:num}
+    }
 
-    if(true===exactSize){
-        signal='!'
-        if(true===interlace){
-
-        }else{
-
-        }
+    //首先转换成byte
+    let originFileInByte
+    if(undefined===unit){
+        originFileInByte=num
     }else{
-        signal='>'
-        if(true===interlace){
-
-        }else{
-
+        switch(unit){
+            case e_gmSizeUnit.KB:
+                originFileInByte=Math.floor(num*1024)
+                break;
+            case e_gmSizeUnit.MB:
+                originFileInByte=Math.floor(num*1024*1024)
+                break;
+            case e_gmSizeUnit.GB:
+                originFileInByte=Math.floor(num*1024*1024*1024)
+                break;
+            default:
+                return imageErrorDefine.unknownUnit
         }
     }
 
+    //从byte转换成指定的单位
+    let convertedSize
+    if(undefined===newUnit){
+        return {rc:0,msg:originFileInByte}
+    }else{
+        switch(newUnit){
+            case e_gmSizeUnit.KB:
+                convertedSize=(originFileInByte/1024).toFixed(2)*1
+                break;
+            case e_gmSizeUnit.MB:
+                convertedSize=(originFileInByte/1024/1024).toFixed(2)*1
+                break;
+            case e_gmSizeUnit.GB:
+                convertedSize=(originFileInByte/1024/1024/1024).toFixed(2)*1
+                break;
+            default:
+                return imageErrorDefine.unknownUnit
+        }
+        return {rc:0,msg:convertedSize}
+    }
 
-}*/
-/*
-exports.image={
-    getter:{
-        size:size,//width,height
-        orientation:orientation,//TopLeft
-        format:format,//PNG,JPEG,GIF,undefined
-        depth:depth,//8 or 16,一般都是8
-        color:color,
-        res:res,//72x72 pixels/inch    37.79x37.79 pixels/centimeter
-        fileSize:fileSize,//Ki,Mi,Gi
-        identify:identify
-    },
-    command:{
-        resizeWidthOnly:resizeWidthOnly,
-        resizeToThumbnail:resizeToThumbnail,
-        resizeUserIcon:resizeUserIcon
-    },
-    GmImage,
-}*/
+}
+
+module.exports={
+    initImage,
+    getImageProperty_async,
+    gmCommand_async,
+    convertFileSize,
+}

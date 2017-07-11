@@ -200,7 +200,7 @@ async function readName({dbModel,nameToBeSearched,recorderLimit,readNameField,or
     //})
 }
 
-//作为外键时，是否存在
+//作为外键时，是否存在(存在放回doc，否则返回null)
 //selectedFields:'-cDate -uDate -dDate'
 async function findById({dbModel,id,selectedFields='-cDate -uDate -dDate'}){
     // console.log(`find by id :${id}`)

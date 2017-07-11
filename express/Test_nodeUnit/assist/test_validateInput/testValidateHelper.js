@@ -283,7 +283,7 @@ const valueTypeCheck=function(test){
 
 const valueMatchRuleDefineCheck=function(test){
     let func=testModule.valueMatchRuleDefineCheck
-    test.expect(40)
+    test.expect(35)
 
     let value,result,tmp
 
@@ -375,7 +375,7 @@ const valueMatchRuleDefineCheck=function(test){
     result=func.exactLength(value,0)
     test.equal(result,false,'exactLength: object length failed')
 
-    /*          equalTo         */
+/*    /!*          equalTo         *!/
     value=null
     result=func.equalTo(value,null)
     test.equal(result,true,'equalTo: null equal failed')
@@ -392,7 +392,7 @@ const valueMatchRuleDefineCheck=function(test){
     value=new Date('2016-02-02')
     tmp=new Date('2016-02-02')
     result=func.equalTo(value,tmp)
-    test.equal(result,true,'equalTo: date equal failed')
+    test.equal(result,true,'equalTo: date equal failed')*/
 
     /*          exceedMax           */
     value=1234.0

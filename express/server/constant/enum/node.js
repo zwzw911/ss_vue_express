@@ -4,6 +4,12 @@
  */
 'use strict'
 
+const TimeUnit={
+    MS:'ms',//毫秒
+    SEC:'second',//秒
+    MIN:'minute',
+    HOUR:'hour',
+}
 const RandomStringType={
     BASIC:'basic',
     NORMAL:'normal',
@@ -20,7 +26,7 @@ const UserState={
 //不用symbol，而用字符。因为需要作为error已经unifiedRouterController的key使用
 const Coll={
     USER:'user',
-    USER_SUGAR:'userSugar',
+    USER_SUGAR:'sugar',
 
 }
 
@@ -54,7 +60,7 @@ const ValidatePart={
     RECORD_INFO:'recordInfo',//create或者update是，传入的记录
     RECORD_ID:'recordId',// for update/delete。{recorderId:xxx}记录的Id（因为在rule中没有对应的rule（db自动生成），所以给予单独part，来验证）；外键有对应的rule，所以直接放在recorderInfo中处理
     CURRENT_PAGE:'currentPage',//当前页数，最大不超过10
-    CURRENT_COLL:'currentColl',//当前操作的coll
+    // CURRENT_COLL:'currentColl',//当前操作的coll   //coll手工在server的代码中加入，所以无需检测
     FILTER_FIELD_VALUE:'filterFieldValue', //对单个字段完成autoComplete的功能（提供可选的项目）{field1:xxx}后者{field;{fk:xxxx}}
     RECORD_ID_ARRAY:'recIdArr', //recId数组，用于批量操作
     EDIT_SUB_FIELD: 'editSubField',      //当对mixed或者array字段操作时使用，无需inputRule
@@ -68,6 +74,21 @@ const KeyForSearchParams={
     COMP_OP:'compOp',
 }
 
+/*const Method={
+    CREATE:'create',//0
+    SEARCH:'search',//1
+    UPDATE:'update',//2
+    DELETE:'delete'//3
+}*/
+
+const Method={
+    CREATE:0,//0 'create'
+    SEARCH:1,//1 'search'
+    UPDATE:2,//2  'update'
+    DELETE:3 //3 'delete'
+}
+
+
 module.exports={
     RandomStringType,
     UserState,
@@ -77,4 +98,6 @@ module.exports={
     MongooseOp,
     ValidatePart,
     KeyForSearchParams,
+    TimeUnit,
+    Method,
 }

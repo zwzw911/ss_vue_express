@@ -94,7 +94,7 @@ const validateCreateRecorderValue=function(test){
     value={age:{value:10}}
     result=funcCreate(value,rule)
     // console.log(`error1 is ${JSON.stringify(result)}`)
-    test.equal(result.name.rc,validateValueError.mandatoryFieldMiss('name').rc,"required field not set in value")
+    test.equal(result.name.rc,rule.name.require.error.rc,"required field not set in value")
     //2, create时，rule中为require的字段，value为null
     value={name:{value:null}}
     result=funcCreate(value,rule)

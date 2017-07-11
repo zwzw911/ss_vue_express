@@ -110,7 +110,7 @@ const validateReqBody=function(test) {
 const validatePartFormat=function(test){
     let func=testModule.validatePartFormat
     let inputValue,result,exceptPart
-    test.expect(12)
+    test.expect(11)
 
 
 
@@ -138,12 +138,12 @@ const validatePartFormat=function(test){
     test.equal(result.rc,validateFormatError.inputValuePartNotMatch.rc,'miss part define in exceptPart')
 
 
-    //4. currentColl必须是string
+   /* //4. currentColl必须是string
     inputValue={'currentColl':1}
     exceptPart=[validatePart.CURRENT_COLL]
     result=func(inputValue,exceptPart)
     // console.log(`result is ${JSON.stringify(result)}`)
-    test.equal(result.rc,validateFormatError.inputValuePartCurrentCollValueFormatWrong.rc,'currentColl part value is not string')
+    test.equal(result.rc,validateFormatError.inputValuePartCurrentCollValueFormatWrong.rc,'currentColl part value is not string')*/
     //5. currentPage必须是整数
     inputValue={'currentPage':1.1}
     exceptPart=[validatePart.CURRENT_PAGE]
@@ -178,8 +178,8 @@ const validatePartFormat=function(test){
 
 
     //110. all part correct
-    inputValue={'currentColl':'coll','currentPage':1,'recordInfo':{},'searchParams':{}}
-    exceptPart=[validatePart.CURRENT_COLL,validatePart.CURRENT_PAGE,validatePart.RECORD_INFO,validatePart.SEARCH_PARAMS]
+    inputValue={'currentPage':1,'recordInfo':{},'searchParams':{}}
+    exceptPart=[validatePart.CURRENT_PAGE,validatePart.RECORD_INFO,validatePart.SEARCH_PARAMS]
     result=func(inputValue,exceptPart)
     // console.log(`result is ${JSON.stringify(result)}`)
     test.equal(result.rc,0,'all 4 part check fail')

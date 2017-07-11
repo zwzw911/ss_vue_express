@@ -80,7 +80,8 @@ function _validateRecorderValue(inputValue,collRules,ifCreate){
             if(collRules[fieldName][e_serverRuleType.REQUIRE]['define'] ){
                 //只检查是否定义，如果定义（即使为{value:undefined}），交给validateSingleRecorderFieldValue处理
                 if(false===dataTypeCheck.isSetValue(inputValue[fieldName])  ){
-                    rc[fieldName]=validateValueError.mandatoryFieldMiss(fieldName)
+                    // rc[fieldName]=validateValueError.mandatoryFieldMiss(fieldName)
+                    rc[fieldName]= genInputError(collRules[fieldName],e_serverRuleType.REQUIRE)  //require错误，返回字段require对应的rc，而不是返回一个common rc（mandatoryFieldMiss）
                     // console.log(`validate result of created is ${JSON.stringify(rc)}`)
                     return rc
                 }
@@ -700,14 +701,14 @@ function validateStaticSearchParamsValue(searchParams,rules){
     return rc
 }
 
-function validateCurrentCollValue(collValue){
+/*function validateCurrentCollValue(collValue){
 // console.log(`inputValue[e_validatePart.currentColl] is ${inputValue[e_validatePart.currentColl]}`)
 //     console.log(`e_coll is ${JSON.stringify(e_coll)}`)
     if(false===collValue in e_coll){
         return validateValueError.undefinedCurrentColl
     }
     return {rc:0}
-}
+}*/
 
 function validateCurrentPageValue(currentPage){
     //传入可能是字符，需要转换成整数
@@ -857,7 +858,7 @@ module.exports= {
     validateStaticSearchParamsValue,
 
     validateRecorderId,//直接验证记录主键的值（而不是外键，虽然都是objectId）
-    validateCurrentCollValue,
+    // validateCurrentCollValue,
     validateCurrentPageValue,
     validateRecIdArr, //对记录进行批量处理（删除/更新），需要传入的part
 

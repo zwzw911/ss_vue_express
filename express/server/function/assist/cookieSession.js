@@ -57,7 +57,7 @@ function getCookieOption(){
 //同时设置cookie和session（Redis）的duration
 function setSessionDuration(timeInMinute){
     setCookieDuration(timeInMinute)
-    sessionOption.storeOptions.redis.ttl=timeInMinute*60 //转换成second
+    storeOption.redis.ttl=timeInMinute*60 //转换成second
 }
 function getSessionOption(){
     // setCookieDuration(timeInMinute)
@@ -65,15 +65,21 @@ function getSessionOption(){
 }
 
 function getStore(){
-    return new sessionStore(storeOption)
+    return new sessionStore(storeOption.redis)
 }
 
+
+/*app.use(session({
+    store: new RedisStore(options),
+    secret: 'keyboard cat'
+}));*/
 function getSession(){
+    let finalOption
     let store=getStore()
-    return expressSession({
-        store,
-        sessionOption,
-    })
+    finalOption=Object.assign({},sessionOption)
+    finalOption.store=store
+    // console.log(`finalOption ${JSON.stringify(finalOption)}`)
+    return expressSession(finalOption)
 }
 
 module.exports={

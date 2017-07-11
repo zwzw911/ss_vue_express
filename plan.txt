@@ -21,3 +21,6 @@
 
 
 1. install gm========>done
+
+
+1. dataConvert es7化

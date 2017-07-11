@@ -29,10 +29,10 @@ const generalCookieSetting={
 }
 
 
-/*
+/*/!*
 * session相关设置，包含cookie和session2部分
 * 直接读取文件，而不用存入redis
-* */
+* *!/
 const session={
     cookie:Object.assign({maxAge:900000},generalCookieSetting),//ms, 900second
     session:{
@@ -49,7 +49,7 @@ const session={
             
         },
     }
-}
+}*/
 /*               转移到model/model定义中了   */
 /*const mongoSetting={
     schemaOptions:{
@@ -65,29 +65,29 @@ const session={
 const searchSetting={
     maxKeyNum:5, //对某个字段，最大选取5个字段，作为select的条件
 }
-//内部设定，无法更改
+/*//内部设定，无法更改
 const internalSetting={
-    /*      cookie-session      login refer（refer是本server地址，则跳转到refer）*/
+    /!*      cookie-session      login refer（refer是本server地址，则跳转到refer）*!/
     reqProtocol:'http',
     reqHostname:'127.0.0.1',
     reqPort:3002,//默认是80
-    /*                         文档状态                         */
+    /!*                         文档状态                         *!/
     state:['正在编辑','编辑完成'],
-    /*                          默认文件夹                          */
+    /!*                          默认文件夹                          *!/
     defaultRootFolderName:['我的文件夹','垃圾箱'],
-/*   /!*                      interval                            *!/
+/!*   /!*                      interval                            *!/
     sameRequestInterval:1000,//两次get/post之间的间隔ms
-    differentRequestInterval:500,//get/post之间的间隔ms*/
-    /*                      pagination                          */
+    differentRequestInterval:500,//get/post之间的间隔ms*!/
+    /!*                      pagination                          *!/
     validPaginationString:['last','first'],//可用的页码字符（一般是数字，但有时可以是字符）
 
     pemPath:['g:/ss_express/ss-express/other/key/key.pem','h:/ss_express/ss-express/other/key/key.pem'],
 
-    /*          global setting 保存位置*/
+    /!*          global setting 保存位置*!/
     globalSettingBackupPath:'h:/ss_express/ss-express/setting.txt',
     globalSettingBackupSize:10*1024,//byte
 
-}
+}*/
 
 
 /*//设置每次读取的记录数量===》用paginationSetting的pageSize代替
@@ -208,6 +208,30 @@ const uploadFileDefine={
         maxSizeInMB:10, //byte
     },
 }
+
+
+const gm={
+    inner_image:{
+        maxWidth:750,//最宽750px，超过自动缩减
+        maxHeight:600,//最高600px，超过自动缩减
+        maxSize:1000,//图片size最大1M
+    },
+    user_thumbnail:{
+        width:95,
+        height:95,
+        maxSize:100,//kb
+    }
+}
+
+const intervalCheck={
+    expireTimeBetween2Req:500, //ms，两次请求间隔最小时间
+    expireTimeOfRejectTimes:600,//秒，不同的拒绝次数，会导致不同的拒绝时长（Lua {30,60,120,240,600}
+    timesInDuration:5,//定义的时间段内，最多允许的请求次数
+    //检查最大请求次数的时间段
+    duration:60,//second。定义的时间段
+    rejectTimesThreshold:5,//达到此拒绝次数，拒绝时间设成600
+
+}
 //可以更改的设定
 //type:int 如果有max属性，说明可以修改（只要小于max）;否则不能修改
 // path:folder;
@@ -215,106 +239,8 @@ const uploadFileDefine={
 //和普通的input略有不同，必需加上default作为初始设置，其它一致，以便重复使用inputCheck函数
 const defaultSetting= {
     //defaultRedirectURL:'http://127.0.0.1:3000/',
-    inner_image: {
-        //ueditor上传文件的路径。可以是目录或者软连接，但是必须放在project目录下，以便node读取
-        uploadPath: {
-            default: 'h:/ss_express/ss-express/',
-            chineseName:'图片上传目录',
-            type: e_serverDataType.folder,
-            require:{define:true,error:{rc:60000}},
-            maxLength: {define:1024,error:{rc:60002}},
-        },
-        maxWidth: {
-            default:750,
-            chineseName:"上传图片最大宽度",
-            type:e_serverDataType.INT,
-            unit:'px',
-            require:{define:true,error:{rc:60004}},
-            max:{define:750,error:{rc:60006}},
-            min:{define:50,error:{rc:60007}}
-        },//px。从tmall获得，使用Gm转换成对应的格式
-        maxHeight:{
-            default: 600,
-            chineseName:"上传图片最大高度",
-            type:e_serverDataType.INT,
-            require:{define:true,error:{rc:60008}},
-            max:{define:600,error:{rc:60010}},
-            min:{define:80,error:{rc:60011}}
-        },//px。无所谓
-        maxSize: {
-            default: 900,
-            chineseName:"上传图片最大尺寸",
-            type:e_serverDataType.INT,
-            require:{define:true,error:{rc:60012}},
-            min:{define:600,error:{rc:60013}},
-            max:{define:900,error:{rc:60014}}, //Ki(如果大于1M，gm返回的是1.1Mi）
-            //client: {rc: 60001, msg: '图片大小不能超过900KB'}
-        },
-        maxNum: {
-            default: 5,
-            chineseName:"最多上传图片数量",
-            type:e_serverDataType.INT,
-            require:{define:true,error:{rc:60016}},
-            max:{define:5,error:{rc:60018}},
-            min:{define:1,error:{rc:60019}},
-            //client: {rc: 60002, msg: '最多插入5张图片'}
-        }//最多插入图片数量
-    },
-    userIcon: {
-        fileName: {
-            default:'H:/gj/resource/defaultUserIcon/b10e366431927231a487f08d9d1aae67f1ec18b4.png',
-            chineseName:'头像文件名',
-            type:e_serverDataType.FILE,
-            require:{define:true,error:{rc:60020}},
-            //maxLength:{define:45,error:{rc:60022}},
-            format:{define:regex.hashImageName,error:{rc:60022}},
-        },
-        uploadDir:{
-            default: 'H:/ss_express/ss-express/user_icon/',
-            chineseName:'头像保存绝对目录',
-            type:e_serverDataType.FOLDER,
-            require:{define:true,error:{rc:60024}},
-            maxLength:{define:1024,error:{rc:60026}},
 
-        },
-/*        uploadDir: {
-            default:  'user_icon/',
-            chineseName:'头像保存目录',
-            type:e_serverDataType.folder,
-            require:{define:true,error:{rc:60024}},
-            maxLength:{define:1024,error:{rc:60026}},
-            //client: {
-            //    type:{rc: 60010, msg: '头像上传失败，请联系管理员'},
-            //    maxLength:{rc: 60010, msg:'头像存储路径最多包含1024个字符'}
-            //}
-        },*/
-        //只需要顶一个GM读取文件的大小，MultiParty的大小从这个值转换（通过generalFunction.parseGmFileSize和generalFunction.convertImageFileSizeToByte
-        userIconMaxSizeGm: {
-            default: 200,//Ki
-            chineseName: '头像文件最大尺寸',
-            type: e_serverDataType.INT,
-            require:{define:true,error:{rc:60028}},
-            min: {define: 100, error: {rc: 60029}},
-            max: {define: 200, error: {rc: 60030}},
-        },
-            //client: {rc: 60011, msg: '上传文件超过限制，无法保存'}},//无单位（byte）/Ki/Mi（最多一位小数，因为gm读取的size就是如此）
-        userIconWidth: {
-            default: 95,
-            type:e_serverDataType.INT,
-            chineseName:'头像文件最大宽度',
-            require:{define:true,error:{rc:60031}},
-            max:{define:104,error:{rc:60032}},
-            min:{define:80,error:{rc:60033}},
-        },//px
-        userIconHeight: {
-            default: 95,
-            type:e_serverDataType.INT,
-            chineseName:'头像文件最大高度',
-            require:{define:true,error:{rc:60033}},
-            max:{define:104,error:{rc:60034}},
-            min:{define:80,error:{rc:60035}},
-        }//px
-    },
+
     article: {
         articleAuthorNum: {
             default: 20,
@@ -586,65 +512,7 @@ const defaultSetting= {
         },
     },
     //检查用户请求频率和间隔()
-    intervalCheck:{
-        expireTimeBetween2Req:{
-            default:500,//ms
-            chineseName:'两次请求间隔时间',
-            type:e_serverDataType.INT,
-            unit:'毫秒',
-            require:{define:true,error:{rc:60200}},
-            min:{define:200,error:{rc:60201}},
-            max:{define:1000,error:{rc:60202}},
-        },
-//        不在需要，防止设置不正确，小于duration。直接在脚本中设成duration的整数倍3
-/*        expireTimeOfReqList:{
-            default:600,//second
-            chineseName:'所有请求列表',
-            type:e_serverDataType.INT,
-            unit:'秒',
-            require:{define:true,error:{rc:60305}},
-            min:{define:300,error:{rc:60306}},
-            max:{d可以efine:600,error:{rc:63207}},
-        },*/
-        expireTimeOfRejectTimes:{
-            default:600,//second//必需大于等于rejectFlag的最大时间（Lua {30,60,120,240,600}
-            chineseName:'拒绝次数最长保存请求时间',
-            type:e_serverDataType.INT,
-            unit:'秒',
-            require:{define:true,error:{rc:60305}},
-            min:{define:600,error:{rc:60306}},
-            max:{define:3600,error:{rc:63207}},
-        },
-        timesInDuration:{
-            default:5,
-            chineseName:'时间段内最大请求次数',
-            type:e_serverDataType.INT,
-            //unit:'ms',
-            require:{define:true,error:{rc:60205}},
-            min:{define:5,error:{rc:60206}},
-            max:{define:30,error:{rc:60207}},
-        },
-        //检查最大请求次数的时间段
-        duration:{
-            default:60,//second
-            chineseName:'时间段',
-            type:e_serverDataType.INT,
-            unit:'秒',
-            require:{define:true,error:{rc:60300}},
-            min:{define:20,error:{rc:60301}},
-            max:{define:60,error:{rc:60302}},
-        },
-        rejectTimesThreshold:{
-            default:5,
-            chineseName:'拒绝次数门限值',
-            type:e_serverDataType.INT,
-            unit:'次',
-            require:{define:true,error:{rc:60300}},
-            min:{define:5,error:{rc:60301}},
-            max:{define:30,error:{rc:60302}},
-        }
 
-    },
     Lua:{
         scriptPath:{
             default:'H:/gj/server/model/redis/Lua/',
@@ -659,13 +527,15 @@ module.exports={
 	defaultSetting,
 	// mongoSetting,/*               转移到model/model定义中了   */
     searchSetting,
-	internalSetting,
-	session,
+	// internalSetting,
+	// session,
     // pageSetting,
     paginationSetting,
     suggestLimit,
     searchMaxPage,//search时，最大的页码
     uploadFileDefine,
     maxNumber,
+    gm,
+    intervalCheck,
 }
 

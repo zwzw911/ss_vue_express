@@ -27,8 +27,23 @@ const GmGetter={
     IDENTIFY:'identify' ,// returns all image data available
     ORIENTATION:'orientation' ,// returns the EXIF orientation of the image
 }
+
+const GmCommand={
+    RESIZE_WIDTH_ONLY:'resizeWidthOnly', //对图片的宽度进行处理
+    RESIZE_USER_THUMBNAIL:'resizeUserThumbnail',//对用户头像进行处理
+    RESIZE_THUMBNAIL:'resizeThumbnail',//对普通图片生成缩略图
+}
+
+const GmFileSizeUnit={
+    KB:'ki',
+    MB:'Mi',
+    GB:'Gi'
+}
 module.exports={
     HashType,
     CryptType,
     GmGetter,
+    GmCommand,
+    GmFileSizeUnit,
+
 }

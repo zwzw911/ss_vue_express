@@ -53,14 +53,14 @@ const collFieldDefine={
         dDate:{type:Date},
 }
 
-console.log(`before: ${JSON.stringify(collFieldDefine)}`)
+// console.log(`${__filename}:before: ${JSON.stringify(collFieldDefine)}`)
 
 if(mongoSetting.configuration.setBuildInValidatorFlag){
     assist.setMongooseBuildInValidator(collFieldDefine,collInputRule)
 }
 
 
-console.log(`after: ${JSON.stringify(collFieldDefine)}`)
+// console.log(`${__filename}:after: ${JSON.stringify(collFieldDefine)}`)
 /*
 * 根据define/validateRule/validateRule的rule设置schema的rule
 * */
