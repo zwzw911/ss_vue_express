@@ -39,6 +39,7 @@ const collFieldDefine={
         name:{type:String,unique:true},
         account:{type:String,unique:true}, //email或者手机号
         password:{type:String}, //加密后的密码
+        docStatus:{type:String},//实现 事务 的一致性
 /*        /!*  理论上浏览器只会执行一次http请求，但是如果用户数多，会对每个用户执行http，所以暂时使用dataUrl    *!/
         photoPathId:{type:mongoose.Schema.Types.ObjectId,ref:'paths'},
         photoHashName:{type:String},//md5*/

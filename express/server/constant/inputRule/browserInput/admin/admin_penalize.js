@@ -10,7 +10,8 @@ const serverDataType=require('../../../enum/inputDataRuleType').ServerDataType
 const regex=require('../../../regex/regex').regex
 
 /*        field有enum才需要require        */
- const mongoEnum=require('../../../enum/mongo')
+ // const mongoEnum=require('../../../enum/mongo')
+const enumValue=require('../../../../model/mongo/structure/enumValue')
 
 const admin_penalize= {
 
@@ -39,7 +40,7 @@ const admin_penalize= {
         'chineseName': '受罚类型',
         'type': serverDataType.STRING,
         'require': {define: true, error: {rc: 10080}, mongoError: {rc: 20080, msg: '受罚类型不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
-        'enum':{define:Object.values(mongoEnum.PenalizeType.DB),error:{rc:10082},mongoError:{rc:20082,msg:'受罚类型不正确'}},//server端使用
+        'enum':{define:enumValue.PenalizeType,error:{rc:10082},mongoError:{rc:20082,msg:'受罚类型不正确'}},//server端使用
     },
 
     //user priority

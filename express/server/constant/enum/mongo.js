@@ -140,6 +140,21 @@ const ImpeachStatus={
     },
 
 }
+
+/*      为了实现原子性（若干表同时操作，回滚）
+*   内部使用，所以无需SHOW
+* */
+const DocStatus={
+    DB:{
+        // initial ， pending ， applied ， done ， canceling 和 canceled
+        PENDING:'1',//主表记录完成，对应的外键尚未操作完成
+        APPLIED:'2',//对应的外键完成
+        DONE:'3',    //主表doc完成
+    },
+}
+
+
+
 module.exports={
     ArticleStatus,
     AdminUserType,
@@ -150,4 +165,5 @@ module.exports={
     PenalizeType,
     ImpeachType,
     ImpeachStatus,
+    DocStatus,
 }

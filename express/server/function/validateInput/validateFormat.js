@@ -85,11 +85,11 @@ function  validatePartFormat (inputValue,exceptedParts){
         }
         //3.2 每个part的value的类型
         switch (partKey){
-            case e_validatePart.CURRENT_COLL:
+/*            case e_validatePart.CURRENT_COLL:
                 if(false===dataTypeCheck.isString(inputValue[partKey])){
                     return validateFormatError.inputValuePartCurrentCollValueFormatWrong
                 }
-                break
+                break*/
             case e_validatePart.CURRENT_PAGE:
                 //先要转换成int
                 inputValue[partKey]=dataTypeCheck.isInt(inputValue[partKey])

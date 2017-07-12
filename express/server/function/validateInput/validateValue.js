@@ -80,6 +80,7 @@ function _validateRecorderValue(inputValue,collRules,ifCreate){
             if(collRules[fieldName][e_serverRuleType.REQUIRE]['define'] ){
                 //只检查是否定义，如果定义（即使为{value:undefined}），交给validateSingleRecorderFieldValue处理
                 if(false===dataTypeCheck.isSetValue(inputValue[fieldName])  ){
+                    // console.log(`va in`)
                     // rc[fieldName]=validateValueError.mandatoryFieldMiss(fieldName)
                     rc[fieldName]= genInputError(collRules[fieldName],e_serverRuleType.REQUIRE)  //require错误，返回字段require对应的rc，而不是返回一个common rc（mandatoryFieldMiss）
                     // console.log(`validate result of created is ${JSON.stringify(rc)}`)
@@ -129,6 +130,7 @@ function _validateRecorderValue(inputValue,collRules,ifCreate){
                 for(let singleFieldValue of fieldValue){
 /*console.log(`singleFieldValue is ${singleFieldValue}`)
                     console.log(`fieldRule is ${JSON.stringify(fieldRule)}`)*/
+// console.log(`1`)
                     let tmpRc=validateSingleRecorderFieldValue(singleFieldValue,fieldRule)
                     if(tmpRc.rc>0){
                         rc[fieldName]=tmpRc
@@ -137,6 +139,7 @@ function _validateRecorderValue(inputValue,collRules,ifCreate){
                 }
 
             }else{
+                // console.log(`2`)
                 rc[fieldName]=validateSingleRecorderFieldValue(fieldValue,fieldRule)
             }
 
@@ -196,7 +199,7 @@ function validateSingleRecorderFieldValue(fieldValue,fieldRule){
     //首先检查require
     // 如果require为true
     if(true===fieldRule[e_serverRuleType.REQUIRE]['define']){
-        // console.log(`requier = true`)
+        // console.log(`field ${chineseName} requier check ${valueMatchRuleDefineCheck.require(fieldValue)}`)
         if(false===valueMatchRuleDefineCheck.require(fieldValue)){
             return genInputError(fieldRule,e_serverRuleType.REQUIRE)
         }

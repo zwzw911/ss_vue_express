@@ -36,7 +36,7 @@ async function create({dbModel,value}){
         console.log(`create err is ${JSON.stringify(err)}`)
         //1. mongoose返回的是reject，只能通过catch捕获
         //     2. 捕获后，通过reject在await中返回。因为reject后，此错误会在async/await直接传递到最外层，所以需要returnResult对错误处理
-            return Promise.reject(mongooseErrorHandler(mongooseOpEnum.insertMany,err))
+            return Promise.reject(mongooseErrorHandler(err))
             // return mongooseErrorHandler(mongooseOpEnum.insertMany,err)
     })
 /*    let finalResult=result.toObject()
@@ -62,7 +62,7 @@ async function update({dbModel,updateOptions,id,values}){
 /*             使用传统的findById/set/save ,以便利用save middleware（bill的amount正负设置）     */
     let doc= await dbModel.findById(id).catch(
         (err)=>{
-            return Promise.reject(mongooseErrorHandler(mongooseOpEnum.findByIdAndUpdate,err))
+            return Promise.reject(mongooseErrorHandler(err))
         }
     )
     //console.log(`update: oringal value is ${JSON.stringify(doc)}`)
@@ -79,7 +79,7 @@ async function update({dbModel,updateOptions,id,values}){
 // console.log(`update: after set value is ${JSON.stringify(doc)}`)
     let result=await doc.save().catch(
         (err)=>{
-            return Promise.reject(mongooseErrorHandler(mongooseOpEnum.findByIdAndUpdate,err))
+            return Promise.reject(mongooseErrorHandler(err))
         }
     )
     //update成功，返回的是原始记录，需要转换成可辨认格式
@@ -98,14 +98,14 @@ async function remove({dbModel,updateOptions,id}){
 	if(id.length===1){
         let result= await dbModel.findByIdAndUpdate(id[0],values,updateOptions).catch(
             (err)=>{
-                return Promise.reject(mongooseErrorHandler(mongooseOpEnum.findByIdAndUpdate,err))
+                return Promise.reject(mongooseErrorHandler(err))
             }
         )
 	}
 	if(id.length>1){
 		let result= await dbModel.updateMany({_id:{$in:id}},values,updateOptions).catch(
             (err)=>{
-                return Promise.reject(mongooseErrorHandler(mongooseOpEnum.updateMany,err))
+                return Promise.reject(mongooseErrorHandler(err))
             }
         )
 	}
@@ -133,7 +133,7 @@ async  function removeAll({dbModel}){
         //remove放回一个promise
         await dbModel.remove({}).catch(
             function(err){
-                return Promise.reject(mongooseErrorHandler(mongooseOpEnum.remove,err))
+                return Promise.reject(mongooseErrorHandler(err))
             }
         )
         return Promise.resolve({rc:0})
@@ -154,7 +154,7 @@ async  function removeAll({dbModel}){
 
 //readName主要是为suggestList提供选项，所以无需过滤被删除的记录（因为这些记录可能作为其他记录的外键存在）
 //currentDb:在bill中选择billType时候，最上级的billType不能出现（因为这些billType只是用作统计用的）。因此需要添加这个参数，判断当前是否为bill
-async function readName({dbModel,nameToBeSearched,recorderLimit,readNameField,originalColl}){
+async function readName({dbModel,readNameField,nameToBeSearched,recorderLimit=10,originalColl}){
     //return new Promise(function(resolve,reject){
         //过滤标记为删除的记录
         // let condition={dDate:{$exists:false}}
@@ -185,7 +185,7 @@ async function readName({dbModel,nameToBeSearched,recorderLimit,readNameField,or
         let result = await dbModel.find(condition,readNameField,option)
             .catch(
                 function(err){
-                    return Promise.reject(mongooseErrorHandler(mongooseOpEnum.readName,err))
+                    return Promise.reject(mongooseErrorHandler(err))
                 }
             )
         return Promise.resolve({rc:0,msg:result})
@@ -209,7 +209,7 @@ async function findById({dbModel,id,selectedFields='-cDate -uDate -dDate'}){
         function(err){
             // console.log(`findbyid errr is ${JSON.stringify(err)}`)
             // console.log(`converted err is ${JSON.stringify(mongooseErrorHandler(mongooseOpEnum.findById,err))}`)
-            return Promise.reject(mongooseErrorHandler(mongooseOpEnum.findById,err))
+            return Promise.reject(mongooseErrorHandler(err))
         })
     // let finalResult=result.toObject()
     // delete finalResult.__v
@@ -217,32 +217,43 @@ async function findById({dbModel,id,selectedFields='-cDate -uDate -dDate'}){
     return Promise.resolve({rc:0,msg:result})
 }
 
+
+async function find({dbModel,condition,selectedFields='-cDate -uDate -dDate'}){
+    // console.log(`find by id :${id}`)
+    let result=await dbModel.find(condition,selectedFields)
+        .catch(
+            function(err){
+                console.log(`find errr is ${JSON.stringify(err)}`)
+                // console.log(`converted err is ${JSON.stringify(mongooseErrorHandler(mongooseOpEnum.findById,err))}`)
+                return Promise.reject(mongooseErrorHandler(err))
+            })
+    // let finalResult=result.toObject()
+    // delete finalResult.__v
+    // console.log(`findbyid result is ${JSON.stringify(result)}`)
+    return Promise.resolve({rc:0,msg:result})
+}
+
+async function findByIdAndUpdate({dbModel,id,updateFieldsValue}){
+    // console.log(`find by id :${id}`)
+    let result=await dbModel.findByIdAndUpdate(id,updateFieldsValue)
+        .catch(
+            function(err){
+                // console.log(`findbyid errr is ${JSON.stringify(err)}`)
+                // console.log(`converted err is ${JSON.stringify(mongooseErrorHandler(mongooseOpEnum.findById,err))}`)
+                return Promise.reject(mongooseErrorHandler(err))
+            })
+    // let finalResult=result.toObject()
+    // delete finalResult.__v
+    // console.log(`findbyid result is ${JSON.stringify(result)}`)
+    return Promise.resolve({rc:0,msg:result})
+}
 //统计数量
 //condition: {field:value, field2:value2}
 //count返回一个query，所以不能采用await，而是在callback返回promise
-async function countRec({model,condition}){
-    // console.log(`dbModel.modelName of count is ${JSON.stringify(model.modelName)}`)
-    // console.log(`model count in`)
-    // console.log(`model count condition :${JSON.stringify(condition)}`)
-/*    return new Promise(
-        function(resolve,reject){
-            model.count(condition,function (err,counter){
-                if(err){
-                    // console.log(`count err is ${JSON.stringify(err)}`)
-                    // return Promise.
-                    reject(returnResult(mongooseErrorHandler(mongooseOpEnum.count,err)))
-                }else{
-                    // return {rc:0,msg:counter}
-                    // console.log(`count result is ${JSON.stringify(counter)}`)
-                    // return Promise.
-                    resolve({rc:0,msg:counter})
-                }
-            })
-    })*/
-
-    let result=await model.count(condition).catch(
+async function countRec({dbModel,condition}){
+      let result=await dbModel.count(condition).catch(
         (err)=>{
-            return Promise.reject(mongooseErrorHandler(mongooseOpEnum.count,err))
+            return Promise.reject(mongooseErrorHandler(err))
         }
     )
 
@@ -251,6 +262,17 @@ async function countRec({model,condition}){
 
 }
 
+async function deleteOne({dbModel,condition}){
+    let result=await dbModel.deleteOne(condition).catch(
+        (err)=>{
+            return Promise.reject(mongooseErrorHandler(err))
+        }
+    )
+
+    return Promise.resolve({rc:0,msg:result})
+
+
+}
 /*
 * readRecorderNum:在当前页上读取的记录数
 * skipRecorderNumInPage：在当前页上跳过的记录数
@@ -290,7 +312,7 @@ async function search ({dbModel,populateOpt,searchParams,paginationInfo,readReco
     .catch(
         (err)=>{
             // console.log (`search err is ${JSON.stringify(err)}`)
-            return Promise.reject(mongooseErrorHandler(mongooseOpEnum.search,err))
+            return Promise.reject(mongooseErrorHandler(err))
         }
     )
     //console.log(`find result is ${JSON.stringify(result)}`)
@@ -389,7 +411,7 @@ async function checkBillTypeOkForBill({dbModel,id}){
         }) //
 /*    console.log(`checkBillTypeOkForBill result is ${JSON.stringify(findResult)}`)
         console.log(`checkBillTypeOkForBill count is ${findResult}`)*/
-        let result= (findResult.length===0) ? false:true
+        let result= (findResult.length!==0) //? false:true
         return Promise.resolve({rc:0,msg:result})
 
 
@@ -402,9 +424,12 @@ module.exports= {
     update,
     remove,
     removeAll,//测试用
+    deleteOne,
     //readAll,
     readName,
     findById,
+    find,
+    findByIdAndUpdate,
     countRec,
     // count,
     search,

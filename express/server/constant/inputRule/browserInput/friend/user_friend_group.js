@@ -36,7 +36,7 @@ const user_friend_group= {
     friendsInGroup:{
         'chineseName': '好友分组',
         'type': [serverDataType.OBJECT_ID],
-        'require': {define: true, error: {rc: 10420}, mongoError: {rc: 20420, msg: '好友分组不能为空'}},//必须存在，可以为空数组
+        'require': {define: false, error: {rc: 10420}, mongoError: {rc: 20420, msg: '好友分组不能为空'}},//必须存在，可以为空数组
         // 'arrayMinLength': {define: 0, error: {rc: 10002}, mongoError: {rc: 20002, msg: '密码至少6个字符'}},
         'arrayMaxLength': {define: maxNumber.friend.maxFriendsNumberPerGroup, error: {rc: 10422}, mongoError: {rc: 20422, msg: `好友分组最多包含${maxNumber.friend.maxFriendsNumberPerGroup}个好友`}},
         'format': {define: regex.objectId, error: {rc: 10424}, mongoError: {rc: 20424, msg: '好友必须是objectId'}} //server端使用

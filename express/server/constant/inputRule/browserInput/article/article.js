@@ -11,7 +11,8 @@ const regex=require('../../../regex/regex').regex
 
 
 /*        field有enum才需要require        */
-const mongoEnum=require('../../../enum/mongo')
+// const mongoEnum=require('../../../enum/mongo')
+const enumValue=require('../../../../model/mongo/structure/enumValue')
 
 const article= {
     name: {
@@ -26,7 +27,7 @@ const article= {
         'chineseName': '文档状态',
         'type': serverDataType.STRING,
         'require': {define: true, error: {rc: 10106}, mongoError: {rc: 20106, msg: '文档状态不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
-        'enum':{define:Object.values(mongoEnum.ArticleStatus.DB),error:{rc:10108},mongoError:{rc:20108,msg:'文档状态不正确'}},//server端使用
+        'enum':{define:enumValue.ArticleStatus,error:{rc:10108},mongoError:{rc:20108,msg:'文档状态不正确'}},//server端使用
 
     },
 

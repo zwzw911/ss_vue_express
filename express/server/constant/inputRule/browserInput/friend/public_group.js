@@ -11,7 +11,9 @@ const regex=require('../../../regex/regex').regex
 
 
 /*        field有enum才需要require        */
-const mongoEnum=require('../../../enum/mongo')
+// const mongoEnum=require('../../../enum/mongo')
+const enumValue=require('../../../../model/mongo/structure/enumValue')
+
 /*              获得 某些设置值            */
 const maxNumber=require('../../../config/globalConfiguration').maxNumber
 
@@ -47,7 +49,8 @@ const public_group= {
         'chineseName': '新成员加入规则',
         'type': serverDataType.STRING,
         'require': {define: true, error: {rc: 10352}, mongoError: {rc: 20352, msg: '新成员加入规则不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
-        'enum':{define:Object.values(mongoEnum.PublicGroupJoinInRule.DB),error:{rc:10354},mongoError:{rc:20354,msg:'新成员加入规则不正确'}},//server端使用
+        // 'enum':{define:Object.values(mongoEnum.PublicGroupJoinInRule.DB),error:{rc:10354},mongoError:{rc:20354,msg:'新成员加入规则不正确'}},//server端使用
+        'enum':{define:enumValue.PublicGroupJoinInRule,error:{rc:10354},mongoError:{rc:20354,msg:'新成员加入规则不正确'}},//server端使用
     },
 
 

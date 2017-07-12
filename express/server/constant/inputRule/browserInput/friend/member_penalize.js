@@ -11,7 +11,8 @@ const regex=require('../../../regex/regex').regex
 
 
 /*        field有enum才需要require        */
-const mongoEnum=require('../../../enum/mongo')
+// const mongoEnum=require('../../../enum/mongo')
+const enumValue=require('../../../../model/mongo/structure/enumValue')
 
 const member_penalize= {
 
@@ -34,7 +35,8 @@ const member_penalize= {
         'chineseName': '处罚类型',
         'type': serverDataType.STRING,
         'require': {define: true, error: {rc: 10308}, mongoError: {rc: 20308, msg: '处罚类型不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
-        'enum':{define:Object.values(mongoEnum.PenalizeType.DB),error:{rc:10310},mongoError:{rc:20310,msg:'未知处罚类型'}},//server端使用
+        // 'enum':{define:Object.values(mongoEnum.PenalizeType.DB),error:{rc:10310},mongoError:{rc:20310,msg:'未知处罚类型'}},//server端使用
+        'enum':{define:enumValue.PenalizeType,error:{rc:10310},mongoError:{rc:20310,msg:'未知处罚类型'}},//server端使用
     },
 
     duration: {

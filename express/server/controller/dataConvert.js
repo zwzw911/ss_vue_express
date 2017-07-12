@@ -7,10 +7,10 @@
  * 3. constructUpdateCriteria：对传入的update的参数，将其中value为null的字段，转换成mongodb中unset
  */
 
-var dataTypeCheck=require('./validateInput/validateHelper').dataTypeCheck
-var dataType=require('../define/enum/validEnum').dataType
-var compOp=require('../define/enum/node').compOp
-var inputRules=require('../define/validateRule/inputRule').inputRule //genNativeSearchCondition
+const dataTypeCheck=require('../function/validateInput/validateHelper').dataTypeCheck
+const dataType=require('../constant/enum/inputDataRuleType').ServerDataType
+const compOp=require('../constant/enum/node').CompOp
+// const inputRules=require('../constant/validateRule/inputRule').inputRule //genNativeSearchCondition
 /*将前端传入的search value转换成mongodb对应的select condition（如此方便在mongodb中直接使用，来进行调试）。
  *  返回一个object {field；{condition}}
  * 分成2个函数，好处是层次清楚：
@@ -32,7 +32,7 @@ var inputRules=require('../define/validateRule/inputRule').inputRule //genNative
  *           3. collName
  *           当前对哪一个coll进行搜索
  * */
-var genNativeSearchCondition=function(clientSearchParams,collName,fkAdditionalFieldsConfig){
+const genNativeSearchCondition=function(clientSearchParams,collInputRule,collFkConfig){
     //所有的查询条件都是 或
     let fieldsType={} //{name:dataType.string,age:dataType.int}  普通字段，只有一个key，外键：可能有一个以上的key
     let result={}
@@ -43,11 +43,11 @@ console.log(`dataTypeCheck.isEmpty(clientSearchParams) is ${JSON.stringify(dataT
         for(let singleField in clientSearchParams){
 
             //普通字段
-            if(false===singleField in fkAdditionalFieldsConfig){
+            if(false===singleField in collFkConfig){
                 //普通的外键的变量分开（外键的必须在冗余字段的for中定义，否则会重复使用）
                 let fieldValue,fieldRule,fieldValueType,fieldCondition,fieldResult={}
                 fieldValue=clientSearchParams[singleField]
-                fieldRule=inputRules[collName][singleField]
+                fieldRule=collInputRule[singleField]
                 /*            fieldValueType=fieldRule['type']
                  if(dataType.string===fieldValueType){
                  fieldValue=new RegExp(fieldValue,'i')
@@ -57,8 +57,8 @@ console.log(`dataTypeCheck.isEmpty(clientSearchParams) is ${JSON.stringify(dataT
                 result['$or'].push(fieldResult)
             }
             //外键字段
-            if(fkAdditionalFieldsConfig[singleField]){
-                let fkConfig=fkAdditionalFieldsConfig[singleField]
+            if(collFkConfig[singleField]){
+                let fkConfig=collFkConfig[singleField]
                 for(let fkRedundantField in clientSearchParams[singleField]){
                     //每个外键字段的变量要重新定义，否则fieldResult会重复push
                     let fieldValue,fieldRule,fieldValueType,fieldCondition,fieldResult={}
@@ -161,22 +161,27 @@ function subGenNativeSearchCondition(fieldValue,fieldRule){
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 //前端传入的数据是{filed:{value:'xxx'}}的格式，需要转换成普通的key:value mongoose能辨认的格式{filed:'xxx'}
-var convertCreateUpdateValueToServerFormat=function(values){
-    let result={}
+const convertCreateUpdateValueToServerFormat=function(values){
+/*    let result={}
+     for(let key in values){
+     if(values[key]['value'] || null===values[key]['value'] ){
+     result[key]=values[key]['value']
+     }
+     }
+     return result*/
     for(let key in values){
         if(values[key]['value'] || null===values[key]['value'] ){
-            result[key]=values[key]['value']
+            values[key]=values[key]['value']
         }
     }
-    return result
 }
 
 //对create传入的参数进行检测，如果设置为null或者空值（空对象，空数组，空字符串），就认为无需传入db而直接删除
-var constructCreateCriteria=function(formattedValues){
+const constructCreateCriteria=function(formattedValues){
     for(let key in formattedValues){
         if(formattedValues[key]===null || dataTypeCheck.isEmpty(formattedValues[key])){
             delete formattedValues[key]
-            continue
+            // continue
         }
 
 
@@ -186,7 +191,7 @@ var constructCreateCriteria=function(formattedValues){
 
 //对update传入的参数进行检测，如果设置为null或者空对象/数字/字符，就认为对应的field是要删除的，放入$unset中（如果此field是外键，还要把对应的冗余字段$unset掉）
 //formattedValues: 经过convertClientValueToServerFormat处理的输入条件
-var constructUpdateCriteria=function(formattedValues,singleCollFKConfig){
+const constructUpdateCriteria=function(formattedValues,singleCollFKConfig){
     // console.log(`fkconfig is ${JSON.stringify(singleCollFKConfig)}`)
     for(let key in formattedValues){
         if(formattedValues[key]===null || dataTypeCheck.isEmpty(formattedValues[key])){
@@ -210,7 +215,7 @@ var constructUpdateCriteria=function(formattedValues,singleCollFKConfig){
 }
 
 //将mongosse的document转换成object，并删除不需要在client显示的字段
-var convertToClient=function(document,skipFields){
+const convertToClient=function(document,skipFields){
     let clientDoc=document.toObject()
     for(let fieldName of skipFields){
         delete  clientDoc[fieldName]

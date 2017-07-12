@@ -50,12 +50,12 @@ const mongooseErrorHandler=function(err){
         if(err.code){
             switch (err.code){
                 case 11000:
-                    return errorDefine.common.duplicate(err.errmsg)
+                    return error.common.duplicate(err.errmsg)
 
                     break;
                 default:
 
-                    return errorDefine.common.unknownErrorType(err)
+                    return error.common.unknownErrorType(err)
 
             }
         }
@@ -75,8 +75,7 @@ const mongooseErrorHandler=function(err){
                     let rc={}
                     let tmp=err.errors[single]['message'].split(':')
                     let regResultTmp=tmp[0].match(/.+(\d{5})/)
-                    let returnCode=regResultTmp[1]
-                    rc['rc']=returnCode
+                    rc['rc']=regResultTmp[1]
                     rc['msg']=tmp[1]
                     return rc
                 }else{
@@ -100,11 +99,11 @@ const mongooseErrorHandler=function(err){
 
 /*    //具体操作祥光的error
     console.log(`common err is ${JSON.stringify(mongooseOp)}`)
-    return errorDefine['common'][mongooseOp](err)*/
+    return error['common'][mongooseOp](err)*/
 }
 
 //常见错误
-const errorDefine={
+const error={
     common:{
         unknownErrorType:function(err){
             return {rc:30000,msg:{client:`未知数据操作错误`,server:`${JSON.stringify(err)}`}}
@@ -112,7 +111,7 @@ const errorDefine={
         duplicate:function(errmsg){
             //'E11000 duplicate key error index: finance.billtypes.$name_1 dup key: { : \"aa\" }'=======>finance  billType   name
             //3.2.9   E11000 duplicate key error collection: finance.billtypes index: name_1 dup key: { : "aa" }
-            // console.log(`mongoError->errorDefine: ${errmsg}`)
+            // console.log(`mongoError->error: ${errmsg}`)
             let regex=/.*collection:\s(.*)\sindex:\s(.*)\sdup\skey:\s{\s:\s\"(.*)\"\s\}/
             let match=errmsg.match(regex)
             // console.log(`match is ${JSON.stringify(match)}`)
@@ -152,6 +151,10 @@ const errorDefine={
             // console.log(`ready to return mongooseErrorHandler`)
             return {rc:30002,msg:{client:`${field}的值已经存在`,server:`集合:${coll}-字段:${field}-值:${dupValue},重复`}}
         },
+		//和duplicate不同，这是在insert前查找到的错误（而不是insert的时候通过mogoose得到的错误）
+		uniqueFieldValue(coll,fieldName,fieldValue){
+            return {rc:30004,msg:{client:`${fieldName}的值已经存在`,server:`集合:${coll}-字段:${fieldName}-值:${fieldValue},已经存在`}}
+        },
 		/*insertMany:function(err){
 			return {rc:30003,msg:{client:`数据库错误，请联系管理员`,server:`insertMany err is ${JSON.stringify(err)}`}}
 		},
@@ -181,5 +184,5 @@ const errorDefine={
 
 module.exports={
     mongooseErrorHandler,
-    errorDefine
+    error,
 }

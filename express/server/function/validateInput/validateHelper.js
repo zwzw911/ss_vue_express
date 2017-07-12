@@ -464,7 +464,7 @@ function ruleFormatCheck(collName,singleFieldName,singleFieldInputRules){
                 rc['msg']=`${chineseName}的${validateHelperError.enumDefineLengthMustLargerThanZero.msg}`
                 return rc
             }
-            continue
+            // continue
 
         }
 
@@ -594,6 +594,8 @@ const valueMatchRuleDefineCheck={
 
     //只处理当require为true
     require(fieldValue,requireDefine=true){
+        // console.log(`dataTypeCheck.isSetValue(fieldValue) ${dataTypeCheck.isSetValue(fieldValue)}`)
+        // console.log(`!dataTypeCheck.isEmpty(fieldValue)) ${!dataTypeCheck.isEmpty(fieldValue)}`)
         return dataTypeCheck.isSetValue(fieldValue) && !dataTypeCheck.isEmpty(fieldValue) //防止输入空字符/object/array等
         // console.log(`field value fieldValueSetFlag ${JSON.stringify(fieldValueSetFlag)}`)
         // console.log(`requireDefine ${JSON.stringify(requireDefine)}`)
