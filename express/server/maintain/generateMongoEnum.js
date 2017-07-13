@@ -1,5 +1,6 @@
 /**
  * Created by wzhan039 on 2017-06-16.
+ * 读取 constant/enum/mongo 中数据，将DB中的数据组合到一个array中，以便给mongoose的field的enum定义
  */
 "use strict";
 const fs=require('fs')

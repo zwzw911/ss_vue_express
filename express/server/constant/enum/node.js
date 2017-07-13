@@ -23,12 +23,12 @@ const UserState={
 
 }
 
-//不用symbol，而用字符。因为需要作为error已经unifiedRouterController的key使用
+/*//不用symbol，而用字符。因为需要作为error已经unifiedRouterController的key使用
 const Coll={
     USER:'user',
     USER_SUGAR:'sugar',
 
-}
+}*/
 
 
 const Env={
@@ -92,7 +92,7 @@ const Method={
 module.exports={
     RandomStringType,
     UserState,
-    Coll,
+    // Coll,
     Env,
     CompOp,
     MongooseOp,

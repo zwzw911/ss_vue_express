@@ -1,0 +1,50 @@
+/*    gene by server/maintain/generateMongoCollToEnum     */ 
+ 
+    "use strict"
+const Coll={
+    /*       admin           */
+    ADMIN_PENALIZE:'admin_penalize',
+    ADMIN_SUGAR:'admin_sugar',
+    ADMIN_USER:'admin_user',
+    CATAGORY:'catagory',
+    STORE_PATH:'store_path',
+    /*       article           */
+    ARTICLE:'article',
+    ARTICLE_ATTACHMENT:'article_attachment',
+    ARTICLE_COMMENT:'article_comment',
+    ARTICLE_IMAGE:'article_image',
+    FOLDER:'folder',
+    LIKE_DISLIKE:'like_dislike',
+    LIKE_DISLIKE_STATIC:'like_dislike_static',
+    TAG:'tag',
+    /*       friend           */
+    MEMBER_PENALIZE:'member_penalize',
+    PUBLIC_GROUP:'public_group',
+    PUBLIC_GROUP_EVENT:'public_group_event',
+    PUBLIC_GROUP_INTERACTION:'public_group_interaction',
+    USER_FRIEND_GROUP:'user_friend_group',
+    USER_PUBLIC_GROUP:'user_public_group',
+    /*       impeach           */
+    IMPEACH:'impeach',
+    IMPEACH_ATTACHMENT:'impeach_attachment',
+    IMPEACH_COMMENT:'impeach_comment',
+    IMPEACH_DEALER:'impeach_dealer',
+    IMPEACH_IMAGE:'impeach_image',
+    /*       user           */
+    SUGAR:'sugar',
+    USER:'user',
+    /*       user_behavior           */
+    READ_ARTICLE:'read_article',
+    USER_INPUT_KEYWORD:'user_input_keyword',
+    /*       user_operation           */
+    COLLECTION:'collection',
+    RECOMMEND:'recommend',
+    TOPIC:'topic',
+}
+
+
+// console.log(`${JSON.stringify(Field[Coll.USER])}`)
+module.exports={
+    Coll,
+    // Field,
+}

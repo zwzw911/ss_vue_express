@@ -11,7 +11,7 @@ const assert=require('assert')
 const e_part=require('../../server/constant/enum/node').ValidatePart
 
 const common_operation=require('../../server/model/mongo/operation/common_operation')
-const dbModel=require('../../server/model/mongo/dbModel').DbModel
+const dbModel=require('../../server/model/mongo/dbModel')
 
 describe('POST /register', function() {
     let data={values:{recordInfo:{}}},url='/register'
@@ -108,13 +108,13 @@ describe('POST /register', function() {
     it('correct value', function(done) {
 
 
-        data.values[e_part.RECORD_INFO]={name:{value:'123456789'},account:{value:'15921776543'},password:{value:'123456'},notExist:{value:123}}
+        data.values[e_part.RECORD_INFO]={name:{value:'123456789'},account:{value:'15921776543'},password:{value:'123456'},notExist:{value:123}}//
         request(app).post(url).set('Accept', 'application/json').send(data)
             .end(function(err, res) {
                 // if (err) return done(err);
 
                 let parsedRes=JSON.parse(res.text)
-                // console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
+                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
                 assert.deepStrictEqual(parsedRes.rc,0)
                 // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
                 done();
@@ -123,6 +123,7 @@ describe('POST /register', function() {
 
     before('remove exist test user', async function(){
         /*              清理已有数据              */
+        // console.log(`###############`)
         let result=await common_operation.find({dbModel:dbModel.user,condition:{name:'123456789',account:'15921776543'}})
         // console.log(`find result ${JSON.stringify(result)}`)
         if(0===result.rc && result.msg[0]){
@@ -133,5 +134,5 @@ describe('POST /register', function() {
             result=await common_operation.deleteOne({dbModel:dbModel.user_friend_group,condition:{userId:userId}})
             // console.log(`delete result is ${JSON.stringify(result)}`)
         }
-    })
+    });
 })

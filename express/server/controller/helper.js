@@ -60,6 +60,12 @@ function commonCheck(req,exceptedpart){
     return result
 }
 
+
+function validatePartFormat({req,exceptedPart,collName,collFkConfig,CollInputRule}){
+
+}
+
+
 /*  在commonCheck后执行，确保所有part都存在，且值的数据类型正确
 * @req:需要检查的part的值
 * @exceptedPart:需要检查的part

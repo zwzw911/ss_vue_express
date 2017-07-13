@@ -3,7 +3,7 @@
  * 记录所有coll之间的关联
  */
 
-const e_coll=require('../../constant/enum/node').Coll
+const e_coll=require('../../constant/enum/DB_Coll').Coll
 
 const fkConfig={
     /*          user            */

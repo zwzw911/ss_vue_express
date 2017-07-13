@@ -11,7 +11,7 @@ const router = express.Router();
 
 const e_userState=require('../../constant/enum/node').UserState
 const e_part=require('../../constant/enum/node').ValidatePart
-const e_coll=require('../../constant/enum/node').Coll
+// const e_coll=require('../../constant/enum/node').Coll
 const e_method=require('../../constant/enum/node').Method
 
 const e_hashType=require('../../constant/enum/node_runtime').HashType
@@ -21,8 +21,11 @@ const e_docStatus=require('../../constant/enum/mongo').DocStatus.DB
 
 const currentEnv=require('../../constant/config/appSetting').currentEnv
 
-const dbModel=require('../../model/mongo/dbModel').DbModel
+const dbModel=require('../../model/mongo/dbModel')
 const fkConfig=require('../../model/mongo/fkConfig').fkConfig
+
+const e_coll=require('../../constant/enum/DB_Coll').Coll
+const e_field=require('../../constant/enum/DB_field').Field
 
 const helper=require('../helper')
 const common_operation=require('../../model/mongo/operation/common_operation')
@@ -62,7 +65,7 @@ const logic=async function(req){
     if(result.rc>0){
         return Promise.reject(result)
     }
-
+    // console.log(`commonCheck ${JSON.stringify(result)}`)
     //检查输入参数是否正确
     result=helper.validatePartValue({req:req,exceptedPart:exceptedPart,coll:e_coll.USER,inputRule:user_browserInputRule,method:e_method.CREATE})
     if(result.rc>0){
@@ -74,7 +77,8 @@ const logic=async function(req){
 
 
     /*      因为name是unique，所以要检查用户名是否存在(unique check)     */
-    let condition={name:docValue['name']['value']} //,dDate:{$exists:0}   重复性检查包含已经删除的用户
+    // let field=e_field.USER.NAME
+    let condition={name:docValue[e_field.USER.NAME]['value']} //,dDate:{$exists:0}   重复性检查包含已经删除的用户
     let docStatusResult=await common_operation.find({dbModel:dbModel.user,condition:condition})
 
     if(docStatusResult.rc>0){
@@ -84,13 +88,13 @@ const logic=async function(req){
     // console.log(`docStatusResult.msg[0] ${JSON.stringify(docStatusResult.msg[0])}`)
     // let existRecord=docStatusResult.msg[0]
     //因为coll有外键，所有还要进一步检查重复的记录的状态是否为done
-    if(docStatusResult.msg[0] && e_docStatus.DONE===docStatusResult.msg[0]['docStatus']){
+    if(docStatusResult.msg[0] && e_docStatus.DONE===docStatusResult.msg[0][e_field.USER.DOC_STATUS]){
         // console.log(`inini`)
-        return Promise.reject(mongoError.common.uniqueFieldValue(e_coll.USER,'name',docValue['name']['value']))
+        return Promise.reject(mongoError.common.uniqueFieldValue(e_coll.USER,e_field.USER.NAME,docValue[e_field.USER.NAME]['value']))
     }
 
     //如果用户在db中存在，但是创建到一半，则删除用户(然后重新开始流程)
-    if(docStatusResult.msg[0] && e_docStatus.PENDING===docStatusResult.msg[0]['docStatus']){
+    if(docStatusResult.msg[0] && e_docStatus.PENDING===docStatusResult.msg[0][e_field.USER.DOC_STATUS]){
         result=await common_operation.deleteOne({dbModel:dbModel.user,condition:condition})
         // onsole.log(`docStatusResult ${JSON.stringify(docStatusResult)}`)
         if(result.rc>0){
@@ -98,13 +102,13 @@ const logic=async function(req){
         }
         //删除可能的关联记录
         //sugar
-        result=await common_operation.deleteOne({dbModel:dbModel.sugar,condition:{userId:docStatusResult.msg[0]['id']}})
+        result=await common_operation.deleteOne({dbModel:dbModel.sugar,condition:{userId:docStatusResult.msg[0][e_field.USER.ID]}})
         // onsole.log(`docStatusResult ${JSON.stringify(docStatusResult)}`)
         if(result.rc>0){
             return Promise.reject(result)
         }
         //user_friend_group
-        result=await common_operation.deleteOne({dbModel:dbModel.user_friend_group,condition:{userId:docStatusResult.msg[0]['id']}})
+        result=await common_operation.deleteOne({dbModel:dbModel.user_friend_group,condition:{userId:docStatusResult.msg[0][e_field.USER.ID]}})
         // onsole.log(`docStatusResult ${JSON.stringify(docStatusResult)}`)
         if(result.rc>0){
             return Promise.reject(result)
@@ -117,15 +121,15 @@ const logic=async function(req){
     let sugarLength=5 //1~10
     let sugar=generateRandomString(sugarLength)
     // console.log(`sugar init ${sugar}`)
-    result=hash(`${docValue['password']['value']}${sugar}`,e_hashType.SHA256)
+    result=hash(`${docValue[e_field.USER.PASSWORD]['value']}${sugar}`,e_hashType.SHA256)
     // console.log(`hash   ${JSON.stringify(result)}`)
     if(result.rc>0){
         return Promise.reject(result)
     }
-    docValue['password']['value']=result.msg
-    docValue['docStatus']={'value':e_docStatus.PENDING}
+    docValue[e_field.USER.PASSWORD]['value']=result.msg
+    docValue[e_field.USER.DOC_STATUS]={'value':e_docStatus.PENDING}
 
-
+    // console.log(`docValue   ${JSON.stringify(docValue)}`)
 
     //对内部产生的值进行检测（开发时使用，上线后为了减低负荷，无需使用）
     if(e_env.DEV===currentEnv){
