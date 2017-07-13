@@ -24,7 +24,7 @@ const paginationSetting=require('../constant/config/globalConfiguration').pagina
 /*                      error               */
 const helperError=require('../constant/error/controller/helperError').helper
 
-const e_dbModel=require('../model/mongo/dbModel').DbModel
+const e_dbModel=require('../model/mongo/dbModel')
 const common_operation=require('../model/mongo/operation/common_operation')
 
 /*var pageError=require('../../define/error/pageError')

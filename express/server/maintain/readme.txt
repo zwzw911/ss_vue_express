@@ -1,3 +1,7 @@
+generateAllRuleInOneFile.js
+将inputRule下browser和internal中的rule组合到一个文件，方便使用
+
+
 generateMongoCollToEnum
 通过fs遍历model/mongo/structure目录，读取其下所有js文件的文件名（文件名就是coll名），然后写入constant/enum/DB_Coll中，以便可以通过枚举直接使用coll名
 
