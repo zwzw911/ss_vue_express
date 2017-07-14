@@ -18,7 +18,7 @@ const user= {
         'require': {define: true, error: {rc: 10724},mongoError:{rc:20724,msg:'密码不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         /*            'minLength':{define:6,error:{rc:10002},mongoError:{rc:20002,msg:'密码至少6个字符'}},
          'maxLength':{define:20,error:{rc:10004},mongoError:{rc:20004,msg:'密码的长度不能超过20个字符'}},*/
-        'format':{define:regex.sha256,error:{rc:10726},mongoError:{rc:20726,msg:'密码必须由64个字符组成'}} //加密密码采用sha256，减少CPU负荷
+        'format':{define:/^[0-9a-f]{64}$/,error:{rc:10726},mongoError:{rc:20726,msg:'密码必须由64个字符组成'}} //加密密码采用sha256，减少CPU负荷
     },
 
 

@@ -108,7 +108,7 @@ describe('POST /register', function() {
     it('correct value', function(done) {
 
 
-        data.values[e_part.RECORD_INFO]={name:{value:'123456789'},account:{value:'15921776543'},password:{value:'123456'},notExist:{value:123}}//
+        data.values[e_part.RECORD_INFO]={name:{value:'123456789'},account:{value:'15921776543'},password:{value:'123456'}}//,notExist:{value:123}
         request(app).post(url).set('Accept', 'application/json').send(data)
             .end(function(err, res) {
                 // if (err) return done(err);

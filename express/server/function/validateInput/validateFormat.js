@@ -155,7 +155,8 @@ function  validatePartFormat (inputValue,exceptedParts){
  *
  * */
 function validateCURecordInfoFormat(recordInfo,rule){
-
+// console.log(`recordInfo ===>${JSON.stringify(recordInfo)}`)
+//     console.log(`rule ===>${JSON.stringify(rule)}`)
     let inputValueFields=Object.keys(recordInfo)
     let collRulesFields=Object.keys(rule)
 

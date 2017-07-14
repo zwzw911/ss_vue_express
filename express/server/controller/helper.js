@@ -61,8 +61,69 @@ function commonCheck(req,exceptedpart){
 }
 
 
-function validatePartFormat({req,exceptedPart,collName,collFkConfig,CollInputRule}){
+function validatePartFormat({req,exceptedPart,collName,fkConfig,inputRule}){
 
+    let checkPartFormatResult
+    for(let singlePart of exceptedPart){
+        switch (singlePart){
+            case e_part.EVENT_FIELD:
+                checkPartFormatResult=validateFormat.validateEventFormat(req.body.values[e_part.EVENT_FIELD])
+                if(checkPartFormatResult.rc>0){
+                    return checkPartFormatResult//返回全部检查结果，为了统一格式，设置一个非0的rc
+                }
+                break;
+            case e_part.CURRENT_PAGE:
+                break;
+            case e_part.RECORD_ID_ARRAY:
+/*                checkPartValueResult=validateValue.validateRecIdArr(req.body.values[e_part.RECORD_ID_ARRAY])
+                if(checkPartValueResult.rc>0){
+                    return checkPartValueResult
+                }*/
+                break;
+            case e_part.SEARCH_PARAMS:
+                checkPartFormatResult=validateFormat.validateSearchParamsFormat(req.body.values[e_part.SEARCH_PARAMS],fkConfig[collName],collName,inputRule)
+                // console.log(   `search params value result is ${JSON.stringify(validateValueResult)}`)
+                // for(let singleFieldName in checkPartFormatResult){
+                    if(checkPartFormatResult['rc']>0){
+                        return checkPartFormatResult
+                    }
+                // }
+                break;
+            case e_part.RECORD_ID:
+                break;
+            case e_part.RECORD_INFO:
+                // console.log('=====>in')
+                checkPartFormatResult=validateFormat.validateCURecordInfoFormat(req.body.values[e_part.RECORD_INFO],inputRule[collName])
+// console.log(`RECORD_INFO ====> ${JSON.stringify(checkPartFormatResult)}`)
+                if(checkPartFormatResult.rc>0){
+                    /*            returnResult(checkResult[singleField])
+                     return res.json(checkResult[singleField])*/
+                    //return checkResult[singleField]
+                    return checkPartFormatResult//返回全部检查结果，为了统一格式，设置一个非0的rc
+                }
+
+                break;
+            case e_part.EDIT_SUB_FIELD:
+                checkPartFormatResult=validateFormat.validateEditSubFieldFormat(req.body.values[e_part.FILTER_FIELD_VALUE])
+                // console.log(   `checkFilterFieldValueResult check result is  ${JSON.stringify(checkFilterFieldValueResult)}`)
+                if(checkPartFormatResult.rc>0){
+                    return checkPartFormatResult
+                }
+                break;
+            case e_part.FILTER_FIELD_VALUE:
+                //3.2 检查filterFieldValue的和value
+                checkPartFormatResult=validateFormat.validateFilterFieldValueFormat(req.body.values[e_part.FILTER_FIELD_VALUE],fkConfig[collName],collName,inputRule)
+                // console.log(   `checkFilterFieldValueResult check result is  ${JSON.stringify(checkFilterFieldValueResult)}`)
+                if(checkPartFormatResult.rc>0){
+                    return checkPartFormatResult
+                }
+                break;
+            default:
+                return helperError.unknownPartInFormatCheck
+        }
+    }
+
+    return {rc:0}
 }
 
 
@@ -71,7 +132,7 @@ function validatePartFormat({req,exceptedPart,collName,collFkConfig,CollInputRul
 * @exceptedPart:需要检查的part
 * @inputRule:如果需要检查的part中有RECORD_INFO/FILTER_VALUE/SEARCH_PARAMS，需要inputRule，可能只有一个coll，也有可能多个个coll（如果有外键，需要把外键对应的Rule加入）
 * */
-function validatePartValue({req,exceptedPart,coll,inputRule,method,fkConfig}){
+function validatePartValue({req,exceptedPart,collName,inputRule,method,fkConfig}){
     let checkPartValueResult
     for(let singlePart of exceptedPart){
         switch (singlePart){
@@ -90,11 +151,11 @@ function validatePartValue({req,exceptedPart,coll,inputRule,method,fkConfig}){
                 }
                 break;
             case e_part.SEARCH_PARAMS:
-                let validateValueResult=validateValue.validateSearchParamsValue(req.body.values[e_part.SEARCH_PARAMS],fkConfig,coll,inputRule)
+                checkPartValueResult=validateValue.validateSearchParamsValue(req.body.values[e_part.SEARCH_PARAMS],fkConfig,collName,inputRule)
                 // console.log(   `search params value result is ${JSON.stringify(validateValueResult)}`)
-                for(let singleFieldName in validateValueResult){
-                    if(validateValueResult[singleFieldName]['rc']>0){
-                        return {rc:9999,msg:validateValueResult}
+                for(let singleFieldName in checkPartValueResult){
+                    if(checkPartValueResult[singleFieldName]['rc']>0){
+                        return {rc:9999,msg:checkPartValueResult}
                     }
                 }
                 break;
@@ -105,15 +166,15 @@ function validatePartValue({req,exceptedPart,coll,inputRule,method,fkConfig}){
                 }
                 break;
             case e_part.RECORD_INFO:
-                console.log(`methos is ${JSON.stringify(method)}`)
+                // console.log(`methos is ${JSON.stringify(method)}`)
                 switch (method){
                     case 0://create
-                        checkPartValueResult=validateValue.validateCreateRecorderValue(req.body.values[e_part.RECORD_INFO],inputRule)
+                        checkPartValueResult=validateValue.validateCreateRecorderValue(req.body.values[e_part.RECORD_INFO],inputRule[collName])
                         break;
                     // case 1://search
                     //     break;
                     case 2://update
-                        checkPartValueResult=validateValue.validateUpdateRecorderValue(req.body.values[e_part.RECORD_INFO],inputRule)
+                        checkPartValueResult=validateValue.validateUpdateRecorderValue(req.body.values[e_part.RECORD_INFO],inputRule[collName])
                         break;
                     // case 3://delete
                     //     break;
@@ -134,7 +195,7 @@ function validatePartValue({req,exceptedPart,coll,inputRule,method,fkConfig}){
                 break;
             case e_part.FILTER_FIELD_VALUE:
                 //3.2 检查filterFieldValue的和value
-                checkPartValueResult=validateValue.validateFilterFieldValue(req.body.values[e_part.FILTER_FIELD_VALUE],fkConfig[coll],coll,inputRule)
+                checkPartValueResult=validateValue.validateFilterFieldValue(req.body.values[e_part.FILTER_FIELD_VALUE],fkConfig[collName],collName,inputRule)
                 // console.log(   `checkFilterFieldValueResult check result is  ${JSON.stringify(checkFilterFieldValueResult)}`)
                 if(checkPartValueResult.rc>0){
                     return checkPartValueResult
@@ -173,6 +234,7 @@ async function checkIfFkExist_async(value,collFkConfig,collName){
 
 module.exports= {
     commonCheck,//每个请求进来是，都要进行的操作（时间间隔检查等）
+    validatePartFormat,
     validatePartValue,//对每个part的值进行检查
 
     checkIfFkExist_async,//检测doc中外键值是否在对应的coll中存在

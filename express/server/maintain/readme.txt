@@ -1,5 +1,14 @@
 generateAllRuleInOneFile.js
-将inputRule下browser和internal中的rule组合到一个文件，方便使用
+将inputRule下browser和internal中的rule组合到一个文件，方便使用.
+1. 首先遍历model/mongo/structure，以便获得coll名称
+2. 在constatn/inputRule的browserInput/internalInput查找是否有同名文件，有的话直接require
+3. 得到的object合并成一个object
+
+4. 最后得到一个包含所有rule的object
+5. 遍历object，将其中format的值执行.toString()操作，将正则定义转换成字符（否则JSON.stringify后正则变成空对象）
+6. JSON.stringify这个object
+7. 对得到的字符串，通过正则，将format的定义的2个双引号去掉（字符变成了正则表达式），并将data:image\\/转换成data;image\/
+8. 写入文件，得到所有rule定义的文件
 
 
 generateMongoCollToEnum

@@ -59,19 +59,6 @@ function _validateRecorderValue(inputValue,collRules,ifCreate){
 
     //itemName: 字段名称
     for (let fieldName in collRules ){
-/*        rc[fieldName]={}
-        rc[fieldName]['rc']=0*/
-        // console.log(`itemName ${JSON.stringify(fieldName)}`)
-        // console.log(`field vbalue is ${JSON.stringify(inputValue[fieldName])}`)
-        //console.log(`start to check fiekd ${itemName}`)
-
-//id/_id通过validateObjectId单独验证（主要用在delete中）
-/*        //如果是id或者_id，无需rule，则直接判断(因为_id/id只可能出现在inputValue，所以此处是base隐式为inputValue)
-        if('id'===itemName || '_id'===itemName){
-            rc[itemName]=validateObjectId(inputValue[itemName]['value'])
-            // console.log(`validateObjectId result is ${JSON.stringify(rc[itemName])}`)
-            continue
-        }*/
         if(ifCreate){
             //如果rule中为require，但是inputValue中没有，返回据错误。否则后续的赋值会报错
             //require是rule中的必填字段，区别只是false/true
@@ -90,11 +77,7 @@ function _validateRecorderValue(inputValue,collRules,ifCreate){
             }
         }
 
-/*        let fieldValue
-        if(inputValue[itemName] && inputValue[itemName]['value']){
-            fieldValue=inputValue[itemName]['value']
-        }*/
-// console.log(`valie is ${JSON.stringify(inputValue[fieldName])}`)
+// console.log(`valie to be check is ${JSON.stringify(inputValue[fieldName])}`)
         //value中对应的字段是有的，才进行检测
         if(inputValue[fieldName]){
             // console.log(`inputValue[fieldName]['value'] is ${JSON.stringify(inputValue[fieldName]['value'])}`)
@@ -141,6 +124,7 @@ function _validateRecorderValue(inputValue,collRules,ifCreate){
             }else{
                 // console.log(`2`)
                 rc[fieldName]=validateSingleRecorderFieldValue(fieldValue,fieldRule)
+                // console.log(`2 result is ${JSON.stringify(rc)}` )
             }
 
 
@@ -278,7 +262,7 @@ function validateSingleRecorderFieldValue(fieldValue,fieldRule){
             }
         }
 
-
+        // console.log(`format check done}`)
     }
 
     //4 如果有maxLength属性，首先检查（防止输入的参数过于巨大）

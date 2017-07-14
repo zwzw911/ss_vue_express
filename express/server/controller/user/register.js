@@ -37,11 +37,15 @@ const genFinalReturnResult=require('../../function/assist/misc').genFinalReturnR
 const dataConvert=require('../dataConvert')
 const validateCreateRecorderValue=require('../../function/validateInput/validateValue').validateCreateRecorderValue
 
-const user_browserInputRule=require('../../constant/inputRule/browserInput/user/user').user
+/*const user_browserInputRule=require('../../constant/inputRule/browserInput/user/user').user
 const user_internalInputRule=require('../../constant/inputRule/internalInput/user/user').user
 
 // const sugar_internalInputRule=require('../../constant/inputRule/browserInput/user/').sugar
-const sugar_internalInputRule=require('../../constant/inputRule/internalInput/user/suagr').sugar
+const sugar_internalInputRule=require('../../constant/inputRule/internalInput/user/suagr').sugar*/
+
+const browserInputRule=require('../../constant/inputRule/browserInputRule').browserInputRule
+const internalInputRule=require('../../constant/inputRule/internalInputRule').internalInputRule
+const inputRule=require('../../constant/inputRule/inputRule').inputRule
 
 const mongoError=require('../../constant/error/mongo/mongoError').error
 
@@ -65,9 +69,16 @@ const logic=async function(req){
     if(result.rc>0){
         return Promise.reject(result)
     }
-    // console.log(`commonCheck ${JSON.stringify(result)}`)
+
+    //检查输入参数格式是否正确
+    result=helper.validatePartFormat({req:req,exceptedPart:exceptedPart,collName:e_coll.USER,inputRule:inputRule,fkConfig:fkConfig})
+    if(result.rc>0){
+        return Promise.reject(result)
+    }
+
+    // console.log(`validatePartFormat ${JSON.stringify(result)}`)
     //检查输入参数是否正确
-    result=helper.validatePartValue({req:req,exceptedPart:exceptedPart,coll:e_coll.USER,inputRule:user_browserInputRule,method:e_method.CREATE})
+    result=helper.validatePartValue({req:req,exceptedPart:exceptedPart,collName:e_coll.USER,inputRule:browserInputRule,method:e_method.CREATE,fkConfig:fkConfig})
     if(result.rc>0){
         return Promise.reject(result)
     }
@@ -133,8 +144,11 @@ const logic=async function(req){
 
     //对内部产生的值进行检测（开发时使用，上线后为了减低负荷，无需使用）
     if(e_env.DEV===currentEnv){
-        let collInputRule=Object.assign({},user_browserInputRule,user_internalInputRule)
-        result=validateCreateRecorderValue(docValue,collInputRule)
+        // let collInputRule=Object.assign({},user_browserInputRule,user_internalInputRule)
+        // console.log(`internal check value=============> ${JSON.stringify(docValue)}`)
+        // console.log(`internal check rule=============> ${JSON.stringify(internalInputRule[e_coll.USER])}`)
+        result=validateCreateRecorderValue(docValue,internalInputRule[e_coll.USER])
+        // console.log(`internal check=============> ${JSON.stringify(result)}`)
         // result=helper.validatePartValue({req:req,exceptedPart:exceptedPart,coll:e_coll.USER,inputRule:user_internalInputRule,method:e_method.CREATE})
         // console.log(`docValue   ${JSON.stringify(docValue)}`)
         // return console.log(`internal check  ${JSON.stringify(result)}`)

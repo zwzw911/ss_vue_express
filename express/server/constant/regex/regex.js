@@ -60,6 +60,13 @@ const regex={
     //正则中的特殊字符+单双引号+反引号（因为要放在字符串中，不转义会造成字符串中断）
     regSpecialChar:/([\'\"\`\.\|\[\]\~\\\*\?\+\^\$\(\)\=\>\<\!])/g,
     regSpecialChar1:/(\\)/g,
+
+
+    //合并rule的时候，需要将rule从object转换成string，然后通过正则将其中的正则（字符串形态）转换成正则
+    //   "format":{"define":"/^[0-9a-f]{24}$/","error":{"rc":10092}   ====> format":{"define":/^[0-9a-f]{24}$/,"error":{"rc":10092}
+    //   "format":{"define":"/^data:image\\/(png|jpg|jpeg);base64,/"  ====> "format":{"define":/^data:image\/(png|jpg|jpeg);base64,/
+    removeDoubleQuotes:/("format":\{"define"\:)("\/)(.+?)(\/",)"/g,  //    '$1/$3/,"'
+    removeDoubleSlash:/\\{2}/g//    // '\\'  正则toString后，一个\会变成2个\\，需要变回去
 }
 
 module.exports= {
