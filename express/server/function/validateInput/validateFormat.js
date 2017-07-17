@@ -112,6 +112,11 @@ function  validatePartFormat (inputValue,exceptedParts){
                     return validateFormatError.inputValuePartRecordInfoValueFormatWrong
                 }
                 break;
+            case e_validatePart.SINGLE_FIELD:
+                if(false===dataTypeCheck.isObject(inputValue[partKey])){
+                    return validateFormatError.inputValuePartSingleFieldValueFormatWrong
+                }
+                break;
             case e_validatePart.SEARCH_PARAMS:
                 if(false===dataTypeCheck.isObject(inputValue[partKey])){
                     // console.log(`searchparam errir in`)
@@ -218,6 +223,52 @@ function validateCURecordInfoFormat(recordInfo,rule){
     return rightResult
 }
 
+/*
+* 和validateCURecordInfoFormat类似，只是对应的part只有一个字段
+* */
+function validateSingleFieldFormat(singleField,collRule){
+    let inputValueFields=Object.keys(singleField)
+    let collRulesFields=Object.keys(collRule)
+
+    //1. 必须只能包含一个字段
+    if(1!==inputValueFields.length){
+        return validateFormatError.singleFieldMustOnlyOneField
+    }
+
+    let singleFieldName=inputValueFields[0]
+    //2. 判断输入值中的字段是否在inputRule中有定义
+    // for(let singleFieldName in singleField){
+        //必须是非id/_id的字段，因为这是db自动生成的
+        if(singleFieldName==='_id' && singleFieldName ==='id'){
+            return validateFormatError.singleFieldCantContainId
+        }
+        if(undefined===collRule[singleFieldName]){
+            return validateFormatError.singleFiledRuleNotDefine
+        }
+    // }
+
+    //5. 每个key的value必须是object，且有key为value的key-value对,且value不能为undefined(可以为null，说明update的时候要清空字段)
+    // for(let singleField in recordInfo){
+        //5.1 field是否为对象
+        if(false===dataTypeCheck.isObject(singleField[singleFieldName])){
+            return validateFormatError.singleFiledRValueMustBeObject
+        }
+        //5.2 此object是否只有一个key
+        if(Object.keys(singleField[singleFieldName]).length!==1){
+            return validateFormatError.singleFiledValueMustContainOneKey
+        }
+        //5.3. 且此key为value
+        if(false==='value' in singleField[singleFieldName]){
+            return validateFormatError.singleFiledValuesKeyNameWrong
+        }
+        //null值表示update的时候，要删除这个field，所以是valid的值
+        /*        if(null===recordInfo[singleField]['value']){
+         return validateFormatError.valueNotDefineWithRequireTrue
+         }*/
+    // }
+
+    return rightResult
+}
 /*          delete操作时，对recordInfo part的格式检查
 * delete格式必须是:{id:{value:}}或者{_id:{value:}}，因为id不在rule中定义，所以要单独抽出检测
 *
@@ -751,7 +802,7 @@ module.exports={
     
     validateCURecordInfoFormat,//对create/update操作的recordInfo进行检查（需要rule配合）
     //validateDelrecordInfoFormat,//对cdelete操作的recordInfo进行检查（只含id，所以无需rule配合） //暂时不需要了，通过单独的part：recorderId来提供id/_id
-
+    validateSingleFieldFormat,//对单个字段进行检查，格式和RecordInfo类似，只是只有一个字段
 
     // validateSearchInputFormat, //检查总体格式，调用validatePartFormat
     validateSearchParamsFormat,

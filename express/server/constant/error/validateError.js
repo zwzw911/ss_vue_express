@@ -44,6 +44,7 @@ const validateError={
         inputValuePartNotMatch:{rc:40108,msg:{client:`输入值格式错误`,server:`输入参数中，某个参数并非期望的参数`}},
         inputValuePartSearchParamsValueFormatWrong:{rc:40110,msg:{client:`输入值格式错误`,server:`输入参数中，searchParams的值必须为object`}},
         inputValuePartRecordInfoValueFormatWrong:{rc:40112,msg:{client:`输入值格式错误`,server:`输入参数中，recordInfo的值必须为object`}},
+        inputValuePartSingleFieldValueFormatWrong:{rc:40112,msg:{client:`输入值格式错误`,server:`输入参数中，singleField的值必须为object`}},
         inputValuePartCurrentPageValueFormatWrong:{rc:40114,msg:{client:`输入值格式错误`,server:`输入参数中，currentPage的值必须为整数`}},
         inputValuePartCurrentCollValueFormatWrong:{rc:40116,msg:{client:`输入值格式错误`,server:`输入参数中，currentColl的值必须为字符串`}},
         inputValuePartRecordIdValueFormatWrong:{rc:40118,msg:{client:`输入值格式错误`,server:`输入参数中，recordId的值必须为字符`}},
@@ -108,6 +109,13 @@ const validateError={
         eventKeyNumberWrong:{rc:40208,msg:{client:`输入值格式不正确`,server:`事件中键值的数量不正确`}},
         eventMandatoryKeyNotExist:{rc:40210,msg:{client:`输入值格式不正确`,server:`事件中必选键不存在`}},
         eventFieldKeyNameWrong:{rc:40212,msg:{client:`输入值格式不正确`,server:`事件中键值的名称不是预定义`}},
+
+        singleFieldMustOnlyOneField:{rc:40220,msg:{client:`输入值格式不正确`,server:`单个字段中只能包含一个字段`}},
+        singleFieldCantContainId:{rc:40222,msg:{client:`输入值格式不正确`,server:`单个字段中不能包含主键`}},
+        singleFiledRuleNotDefine:{rc:40224,msg:{client:'输入值格式错误',server:'待检测的输入值字段没有对应的rule'}},
+        singleFiledRValueMustBeObject:{rc:40226,msg:{client:'输入值格式错误',server:'singleField的值必须是object'}},
+        singleFiledValueMustContainOneKey:{rc:40228,msg:{client:'输入值格式错误',server:'singleField的值(object)必须只有一个键'}},
+        singleFiledValuesKeyNameWrong:{rc:40230,msg:{client:'输入值格式错误',server:'singleField的值(object)的键名必须是value'}},
     },
     validateValue:{
         //validateCreateUpdateInputValue

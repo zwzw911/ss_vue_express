@@ -56,6 +56,16 @@ const user= {
         /*            'minLength':{define:6,error:{rc:10002},mongoError:{rc:20002,msg:'密码至少6个字符'}},
          'maxLength':{define:20,error:{rc:10004},mongoError:{rc:20004,msg:'密码的长度不能超过20个字符'}},*/
         'enum':{define:enumValue.DocStatus,error:{rc:10734},mongoError:{rc:20734,msg:'document状态不是预定义的值'}} //加密密码采用sha256，减少CPU负荷
+    },
+
+    /*                          */
+    accountType:{
+        'chineseName': '账号类型',
+        'type':serverDataType.STRING,
+        'require': {define: true, error: {rc: 10736},mongoError:{rc:20736,msg:'账号类型不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        /*            'minLength':{define:6,error:{rc:10002},mongoError:{rc:20002,msg:'密码至少6个字符'}},
+         'maxLength':{define:20,error:{rc:10004},mongoError:{rc:20004,msg:'密码的长度不能超过20个字符'}},*/
+        'enum':{define:enumValue.AccountType,error:{rc:10738},mongoError:{rc:20738,msg:'账号类型不是预定义的值'}} //加密密码采用sha256，减少CPU负荷
     }
 }
 

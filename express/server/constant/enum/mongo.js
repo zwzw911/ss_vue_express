@@ -153,7 +153,17 @@ const DocStatus={
     },
 }
 
+/*      进一步区分account的类型（邮件还是手机），以便后续使用
+ *   内部使用，所以无需SHOW
+ * */
+const AccountType={
+    DB:{
+        // initial ， pending ， applied ， done ， canceling 和 canceled
+        EMAIL:'1',//account是email
+        MOBILE_PHONE:'2',//account是手机
 
+    },
+}
 
 module.exports={
     ArticleStatus,
@@ -166,4 +176,5 @@ module.exports={
     ImpeachType,
     ImpeachStatus,
     DocStatus,
+    AccountType,
 }

@@ -109,6 +109,7 @@ function writeFinalResult(toBeReadDir,resultWriteFilePath){
     let indent=`\ \ \ \ `
     let useStrict=`"use strict"\r\n`
     let convertedEnum=``
+    // convertedEnum+=`${description}`
     convertedEnum+=`${description}${indent}${useStrict}\r\n`
     convertedEnum+=`const Coll=require('./DB_Coll').Coll \r\n`
 

@@ -65,6 +65,7 @@ const ValidatePart={
     RECORD_ID_ARRAY:'recIdArr', //recId数组，用于批量操作
     EDIT_SUB_FIELD: 'editSubField',      //当对mixed或者array字段操作时使用，无需inputRule
     EVENT_FIELD: 'eventField',      //事件（当前暂时只用于 群 事件），无需inputRule
+    SINGLE_FIELD:'singleField',     //和RECORD_INFO类似，只是只有一个字段
 }
 
 

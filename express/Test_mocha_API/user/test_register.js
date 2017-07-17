@@ -13,14 +13,15 @@ const e_part=require('../../server/constant/enum/node').ValidatePart
 const common_operation=require('../../server/model/mongo/operation/common_operation')
 const dbModel=require('../../server/model/mongo/dbModel')
 
-describe('POST /register', function() {
+describe('POST /register rule check', function() {
     let data={values:{recordInfo:{}}},url='/register'
 
-/*    it('miss require field name', function(done) {
+    it('miss require field name', function(done) {
+        data.values[e_part.RECORD_INFO]={account:{value:'1'}}
         request(app).post(url).set('Accept', 'application/json').send(data)
             .end(function(err, res) {
                 // if (err) return done(err);
-                // console.log(`res ios ${JSON.stringify(res)}`)
+                console.log(`res ios ${JSON.stringify(res)}`)
                 let parsedRes=JSON.parse(res.text)
                 assert.deepStrictEqual(parsedRes.rc,99999)
                 assert.deepStrictEqual(parsedRes.msg.name.rc,10700)
@@ -101,10 +102,16 @@ describe('POST /register', function() {
                 assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
                 done();
             });
-    });*/
+    });
 
 
 
+
+})
+
+
+describe('POST /register correct value', function() {
+    let data={values:{recordInfo:{}}},url='/register'
     it('correct value', function(done) {
 
 

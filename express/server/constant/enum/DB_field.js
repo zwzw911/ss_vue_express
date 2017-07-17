@@ -190,6 +190,7 @@ const Field={
         ID:'id',
         NAME:'name',
         ACCOUNT:'account',
+        ACCOUNT_TYPE:'accountType',
         PASSWORD:'password',
         DOC_STATUS:'docStatus',
         PHOTO_DATA_URL:'photoDataUrl',

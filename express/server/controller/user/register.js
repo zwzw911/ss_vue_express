@@ -18,6 +18,7 @@ const e_hashType=require('../../constant/enum/node_runtime').HashType
 
 const e_env=require('../../constant/enum/node').Env
 const e_docStatus=require('../../constant/enum/mongo').DocStatus.DB
+const e_accountType=require('../../constant/enum/mongo').AccountType.DB
 
 const currentEnv=require('../../constant/config/appSetting').currentEnv
 
@@ -37,17 +38,13 @@ const genFinalReturnResult=require('../../function/assist/misc').genFinalReturnR
 const dataConvert=require('../dataConvert')
 const validateCreateRecorderValue=require('../../function/validateInput/validateValue').validateCreateRecorderValue
 
-/*const user_browserInputRule=require('../../constant/inputRule/browserInput/user/user').user
-const user_internalInputRule=require('../../constant/inputRule/internalInput/user/user').user
-
-// const sugar_internalInputRule=require('../../constant/inputRule/browserInput/user/').sugar
-const sugar_internalInputRule=require('../../constant/inputRule/internalInput/user/suagr').sugar*/
-
 const browserInputRule=require('../../constant/inputRule/browserInputRule').browserInputRule
 const internalInputRule=require('../../constant/inputRule/internalInputRule').internalInputRule
 const inputRule=require('../../constant/inputRule/inputRule').inputRule
 
 const mongoError=require('../../constant/error/mongo/mongoError').error
+
+const regex=require('../../constant/regex/regex').regex
 
 //检查用户状态
 //检查输入参数中part的格式和值
@@ -56,7 +53,7 @@ const mongoError=require('../../constant/error/mongo/mongoError').error
 //对内部产生的值进行检测（开发时使用，上线后为了减低负荷，无需使用）
 //对数值逻辑进行判断（外键是否有对应的记录等）
 //执行db操作并返回结果
-const logic=async function(req){
+async  function createUser(req){
     //检查用户状态
     let result=checkUserState(req,e_userState.NO_SESS)
     if(result.rc>0){
@@ -127,7 +124,7 @@ const logic=async function(req){
     }
 
 
-    //添加内部产生的值（sugar && hash password）
+    /*                  添加内部产生的值（sugar && hash password && acountType）                  */
     // console.log(`before hash is ${JSON.stringify(docValue)}`)
     let sugarLength=5 //1~10
     let sugar=generateRandomString(sugarLength)
@@ -141,8 +138,17 @@ const logic=async function(req){
     docValue[e_field.USER.DOC_STATUS]={'value':e_docStatus.PENDING}
 
     // console.log(`docValue   ${JSON.stringify(docValue)}`)
+    let accountValue=docValue[e_field.USER.ACCOUNT]['value']
+    if(regex.email.test(accountValue)){
+        docValue[e_field.USER.ACCOUNT_TYPE]={'value':e_accountType.EMAIL}
+    }
+    if(regex.mobilePhone.test(accountValue)){
+        docValue[e_field.USER.ACCOUNT_TYPE]={'value':e_accountType.MOBILE_PHONE}
+    }
 
-    //对内部产生的值进行检测（开发时使用，上线后为了减低负荷，无需使用）
+    // console.log(`docValue   ${JSON.stringify(docValue)}`)
+
+    /*              对内部产生的值进行检测（开发时使用，上线后为了减低负荷，无需使用）           */
     if(e_env.DEV===currentEnv){
         // let collInputRule=Object.assign({},user_browserInputRule,user_internalInputRule)
         // console.log(`internal check value=============> ${JSON.stringify(docValue)}`)
@@ -162,7 +168,7 @@ const logic=async function(req){
     // console.log(`value to be insert is ${JSON.stringify(docValue)}`)
     // let doc=new dbModel[currentColl](values[e_part.RECORD_INFO])
 
-    //参数转为server格式
+    /*              参数转为server格式            */
     dataConvert.convertCreateUpdateValueToServerFormat(docValue)
     dataConvert.constructCreateCriteria(docValue)
     // console.log(`docValue ${JSON.stringify(docValue)}`)
@@ -203,9 +209,85 @@ const logic=async function(req){
 }
 
 
+/*                      检查用户名/账号的唯一性                           */
+async  function  uniqueCheck(req) {
+    //检查用户状态
+    let result = checkUserState(req, e_userState.NO_SESS)
+    if (result.rc > 0) {
+        return Promise.reject(result)
+    }
+
+    //检查输入参数中part的格式和值
+    let exceptedPart = [e_part.SINGLE_FIELD]
+    result = helper.commonCheck(req, exceptedPart)
+    if (result.rc > 0) {
+        return Promise.reject(result)
+    }
+
+//检查输入参数格式是否正确
+    result = helper.validatePartFormat({
+        req: req,
+        exceptedPart: exceptedPart,
+        collName: e_coll.USER,
+        inputRule: inputRule,
+        fkConfig: fkConfig
+    })
+    if (result.rc > 0) {
+        return Promise.reject(result)
+    }
+
+// console.log(`validatePartFormat ${JSON.stringify(result)}`)
+//检查输入参数是否正确
+    result = helper.validatePartValue({
+        req: req,
+        exceptedPart: exceptedPart,
+        collName: e_coll.USER,
+        inputRule: browserInputRule,
+        // method: e_method.CREATE,
+        fkConfig: fkConfig
+    })
+    if (result.rc > 0) {
+        return Promise.reject(result)
+    }
+
+    let docValue = req.body.values[e_part.SINGLE_FIELD]
+// console.log(`docValue ${JSON.stringify(docValue)}`)
+
+    //读取字段名，进行不同的操作（userUnique或者passowrd格式）
+    let fieldName=Object.keys(docValue)[0]
+    let condition
+    let uniqueCheckResult
+    switch (fieldName){
+        case e_field.USER.NAME:
+            condition = {name: docValue[e_field.USER.NAME]['value']} //,dDate:{$exists:0}   重复性检查包含已经删除的用户
+            uniqueCheckResult = await common_operation.find({dbModel: dbModel.user, condition: condition})
+
+            if (uniqueCheckResult.rc > 0) {
+                return Promise.reject(uniqueCheckResult)
+            }
+            break;
+        case e_field.USER.ACCOUNT:
+            condition = {account: docValue[e_field.USER.ACCOUNT]['value']} //,dDate:{$exists:0}   重复性检查包含已经删除的用户
+            uniqueCheckResult = await common_operation.find({dbModel: dbModel.user, condition: condition})
+
+            if (uniqueCheckResult.rc > 0) {
+                return Promise.reject(uniqueCheckResult)
+            }
+            break;
+    }
+
+    if(uniqueCheckResult.msg.length>0){
+
+    }
+    /*      因为name是unique，所以要检查用户名是否存在(unique check)     */
+// let field=e_field.USER.NAME
+
+}
+
+
 router.post('/',function(req,res,next){
 
-    logic(req).then(
+    createUser(req).then(
         (v)=>{
             console.log(`create   register   success, result:  ${JSON.stringify(v)}`)
             return res.json(v)

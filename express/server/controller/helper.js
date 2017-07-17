@@ -103,6 +103,18 @@ function validatePartFormat({req,exceptedPart,collName,fkConfig,inputRule}){
                 }
 
                 break;
+            case e_part.SINGLE_FIELD:
+                // console.log('=====>in')
+                checkPartFormatResult=validateFormat.validateSingleFieldFormat(req.body.values[e_part.SINGLE_FIELD],inputRule[collName])
+// console.log(`RECORD_INFO ====> ${JSON.stringify(checkPartFormatResult)}`)
+                if(checkPartFormatResult.rc>0){
+                    /*            returnResult(checkResult[singleField])
+                     return res.json(checkResult[singleField])*/
+                    //return checkResult[singleField]
+                    return checkPartFormatResult//返回全部检查结果，为了统一格式，设置一个非0的rc
+                }
+
+                break;
             case e_part.EDIT_SUB_FIELD:
                 checkPartFormatResult=validateFormat.validateEditSubFieldFormat(req.body.values[e_part.FILTER_FIELD_VALUE])
                 // console.log(   `checkFilterFieldValueResult check result is  ${JSON.stringify(checkFilterFieldValueResult)}`)
@@ -189,6 +201,17 @@ function validatePartValue({req,exceptedPart,collName,inputRule,method,fkConfig}
                         //return checkResult[singleField]
                         return {rc:99999,msg:checkPartValueResult}//返回全部检查结果，为了统一格式，设置一个非0的rc
                     }
+                }
+                break;
+            case e_part.SINGLE_FIELD:
+                //获取单个字段的字段名
+                let singleFieldName=Object.keys(req.body.values[e_part.SINGLE_FIELD])[0]
+                let fieldInputValue=req.body.values[e_part.SINGLE_FIELD][singleFieldName]
+                let fieldInputRule=inputRule[collName][singleFieldName]
+                checkPartValueResult=validateValue.validateSingleRecorderFieldValue(fieldInputValue,fieldInputRule)
+                // console.log(   `checkFilterFieldValueResult check result is  ${JSON.stringify(checkFilterFieldValueResult)}`)
+                if(checkPartValueResult.rc>0){
+                    return checkPartValueResult
                 }
                 break;
             case e_part.EDIT_SUB_FIELD:

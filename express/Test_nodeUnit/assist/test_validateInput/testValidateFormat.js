@@ -110,7 +110,7 @@ const validateReqBody=function(test) {
 const validatePartFormat=function(test){
     let func=testModule.validatePartFormat
     let inputValue,result,exceptPart
-    test.expect(11)
+    test.expect(12)
 
 
 
@@ -197,6 +197,15 @@ const validatePartFormat=function(test){
     result=func(inputValue,exceptPart)
     // console.log(`result is ${JSON.stringify(result)}`)
     test.equal(result.rc,0,'recIdArr is array')
+
+    //13 singleField必须是object
+    inputValue={'singleField':1}
+    exceptPart=[validatePart.SINGLE_FIELD]
+    result=func(inputValue,exceptPart)
+    // console.log(`result searchParams is ${JSON.stringify(result)}`)
+    test.equal(result.rc,validateFormatError.inputValuePartSingleFieldValueFormatWrong.rc,'singleField part value is not object')
+
+
 
     test.done()
 }
@@ -304,6 +313,77 @@ const validateRecorderInfoFormat=function(test){
     test.done()
 }
 
+
+
+/***************************************************************************/
+/***************  validateRecorderInfoFormat   *******************/
+/***************************************************************************/
+const validateSingleFieldFormat=function(test) {
+    let func = testModule.validateSingleFieldFormat
+    let value, rules, result
+
+    //标号5，实际5（dup key无法测试）
+    test.expect(8)
+
+    rules={field1:{}}//只是为了检测是否有对应的rule存在
+
+    
+
+    //1.value的field数量小于1
+    value={}
+    result=func(value,rules)
+    // console.log(`resul is ${JSON.stringify(result)}`)
+    test.equal(result.rc,validateFormatError.singleFieldMustOnlyOneField.rc,'singleField, inputValue fields is empty')
+
+
+
+    //2 value的field数量大于1
+    rules={name:{}}
+    value={name:{value:'a'},age:{value:10}}
+    result=func(value,rules)
+    test.equal(result.rc,validateFormatError.singleFieldMustOnlyOneField.rc,"value fields number exceed 1")
+
+
+    //3. value中字段没有在rule中定义
+    rules={name:{}}
+    value={age:{value:10}}
+    result=func(value,rules)
+    // console.log(`error0 is ${JSON.stringify(result)}`)
+    test.equal(result.rc,validateFormatError.singleFiledRuleNotDefine.rc,"value field not defined in  rule")
+
+
+    //4. 键值不是对象
+    rules={field1:{}}
+    value={field1:1}
+    result=func(value,rules)
+    test.equal(result.rc,validateFormatError.singleFiledRValueMustBeObject.rc,'single field value should be object')
+    //5. 键值为空对象
+    rules={field1:{}}
+    value={field1:{}}
+    result=func(value,rules)
+    test.equal(result.rc,validateFormatError.singleFiledValueMustContainOneKey.rc,'single field value should be object, and only contain 1 key')
+
+    //6. 键值包含多余field
+    rules={field1:{}}
+    value={field1:{value:1,'anyKey':2}}
+    result=func(value,rules)
+    test.equal(result.rc,validateFormatError.singleFiledValueMustContainOneKey.rc,'single field value should be object, and only contain 1 key')
+
+    //7. 键值的field不是value
+    rules={field1:{}}
+    value={field1:{'anyKey':2}}
+    result=func(value,rules)
+    test.equal(result.rc,validateFormatError.singleFiledValuesKeyNameWrong.rc,'single field value should be object, and only contain value')
+
+
+    //8. corrent case
+    rules={field1:{}}
+    value={'field1':{value:''}}
+    result=func(value,rules)
+    test.equal(result.rc,0,'correct value check fail')
+
+    test.done()
+}
 /*                  filterFieldValue    {field1:keyword} or {billType:{name:keyword}}              */
 //
 const validateFilterFieldValueFormat=function (test){
@@ -751,9 +831,11 @@ exports.validate={
     validateReqBody,
     validatePartFormat,
     validateRecorderInfoFormat, //create/update的时候的recorderInfo
+    validateSingleFieldFormat,
     validateFilterFieldValueFormat,  //part：filterFieldValue，
     validateSingleSearchParamsFormat,
     validateSearchParamsFormat,
     validateEditSubFieldFormat,
-    validateEventFormat
+    validateEventFormat,
+
 }
