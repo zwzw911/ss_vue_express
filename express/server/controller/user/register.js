@@ -46,6 +46,15 @@ const mongoError=require('../../constant/error/mongo/mongoError').error
 
 const regex=require('../../constant/regex/regex').regex
 
+
+
+
+const userError={
+    nameAlreadyExists:{rc:50100,msg:`用户名已经存在`},
+    accountAlreadyExists:{rc:50102,msg:`账号已经存在`},
+    fieldNotSupport:{rc:50104,msg:`字段名称不正确`},
+}
+
 //检查用户状态
 //检查输入参数中part的格式和值
 //检查输入参数是否正确
@@ -211,6 +220,7 @@ async  function createUser(req){
 
 /*                      检查用户名/账号的唯一性                           */
 async  function  uniqueCheck(req) {
+    // console.log(`unique check is ${JSON.stringify(req.body.values)} `)
     //检查用户状态
     let result = checkUserState(req, e_userState.NO_SESS)
     if (result.rc > 0) {
@@ -220,6 +230,7 @@ async  function  uniqueCheck(req) {
     //检查输入参数中part的格式和值
     let exceptedPart = [e_part.SINGLE_FIELD]
     result = helper.commonCheck(req, exceptedPart)
+    // console.log(`common check result is ${JSON.stringify(result)}`)
     if (result.rc > 0) {
         return Promise.reject(result)
     }
@@ -232,6 +243,7 @@ async  function  uniqueCheck(req) {
         inputRule: inputRule,
         fkConfig: fkConfig
     })
+    // console.log(`format check result is ${JSON.stringify(result)}`)
     if (result.rc > 0) {
         return Promise.reject(result)
     }
@@ -246,6 +258,7 @@ async  function  uniqueCheck(req) {
         // method: e_method.CREATE,
         fkConfig: fkConfig
     })
+    console.log(`value check result is ${JSON.stringify(result)}`)
     if (result.rc > 0) {
         return Promise.reject(result)
     }
@@ -265,6 +278,10 @@ async  function  uniqueCheck(req) {
             if (uniqueCheckResult.rc > 0) {
                 return Promise.reject(uniqueCheckResult)
             }
+
+            if(uniqueCheckResult.msg.length>0){
+                return Promise.reject(userError.nameAlreadyExists)
+            }
             break;
         case e_field.USER.ACCOUNT:
             condition = {account: docValue[e_field.USER.ACCOUNT]['value']} //,dDate:{$exists:0}   重复性检查包含已经删除的用户
@@ -273,12 +290,19 @@ async  function  uniqueCheck(req) {
             if (uniqueCheckResult.rc > 0) {
                 return Promise.reject(uniqueCheckResult)
             }
+
+            if(uniqueCheckResult.msg.length>0){
+                return Promise.reject(userError.accountAlreadyExists)
+            }
             break;
+        default:
+            return Promise.reject(userError.fieldNotSupport)
+
     }
 
-    if(uniqueCheckResult.msg.length>0){
+    return Promise.resolve({rc:0})
 
-    }
+
     /*      因为name是unique，所以要检查用户名是否存在(unique check)     */
 // let field=e_field.USER.NAME
 
@@ -298,7 +322,21 @@ router.post('/',function(req,res,next){
 
         }
     )
+})
 
+router.post('/uniqueCheck',function(req,res,next){
+
+    uniqueCheck(req).then(
+        (v)=>{
+            console.log(`unique check  success, result:  ${JSON.stringify(v)}`)
+            return res.json(v)
+        },
+        (err)=>{
+            console.log(`unique check  fail: ${JSON.stringify(err)}`)
+            return res.json(genFinalReturnResult(err))
+
+        }
+    )
 })
 
 module.exports=router

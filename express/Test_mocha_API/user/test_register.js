@@ -143,3 +143,67 @@ describe('POST /register correct value', function() {
         }
     });
 })
+
+
+describe('POST /register/uniqueCheck ', function() {
+    let data={values:{}},url='/register/uniqueCheck'
+
+
+    it('unique name check', function(done) {
+
+
+        data.values[e_part.SINGLE_FIELD]={name:{value:'123456789'}}//,notExist:{value:123}
+        request(app).post(url).set('Accept', 'application/json').send(data)
+            .end(function(err, res) {
+                // if (err) return done(err);
+
+                let parsedRes=JSON.parse(res.text)
+                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
+                assert.deepStrictEqual(parsedRes.rc,50100)
+                // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
+                done();
+            });
+    });
+
+    it('unique account check', function(done) {
+        data.values[e_part.SINGLE_FIELD]={account:{value:'15921776543'}}//,notExist:{value:123}
+        request(app).post(url).set('Accept', 'application/json').send(data)
+            .end(function(err, res) {
+                // if (err) return done(err);
+
+                let parsedRes=JSON.parse(res.text)
+                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
+                assert.deepStrictEqual(parsedRes.rc,50102)
+                // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
+                done();
+            });
+    });
+
+    it('unique: not support field check', function(done) {
+        data.values[e_part.SINGLE_FIELD]={password:{value:'123456'}}//,notExist:{value:123}
+        request(app).post(url).set('Accept', 'application/json').send(data)
+            .end(function(err, res) {
+                // if (err) return done(err);
+
+                let parsedRes=JSON.parse(res.text)
+                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
+                assert.deepStrictEqual(parsedRes.rc,50104)
+                // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
+                done();
+            });
+    });
+
+    it('unique name check ok', function(done) {
+        data.values[e_part.SINGLE_FIELD]={name:{value:'zw'}}//,notExist:{value:123}
+        request(app).post(url).set('Accept', 'application/json').send(data)
+            .end(function(err, res) {
+                // if (err) return done(err);
+
+                let parsedRes=JSON.parse(res.text)
+                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
+                assert.deepStrictEqual(parsedRes.rc,0)
+                // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
+                done();
+            });
+    });
+})

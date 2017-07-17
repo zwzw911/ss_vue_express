@@ -90,6 +90,7 @@ const register=require('./server/controller/user/register')
 
 
 app.use('/register', register);
+// app.use('/register/uniqueCheck', register);
 // app.use('/users', users);
 
 // catch 404 and forward to error handler

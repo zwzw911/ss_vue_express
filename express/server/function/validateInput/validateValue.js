@@ -227,6 +227,7 @@ function validateSingleRecorderFieldValue(fieldValue,fieldRule){
 
     let valueTypeCheckResult
     // console.log(`fieldRule['type'] is ${JSON.stringify(fieldRule['type'])}`)
+    // console.log(`fieldRule['type'] is ${JSON.stringify(fieldRule['type'])}`)
     if(dataTypeCheck.isArray(fieldRule['type'])){
         valueTypeCheckResult= valueTypeCheck(fieldValue,fieldRule['type'][0])
     }else{
