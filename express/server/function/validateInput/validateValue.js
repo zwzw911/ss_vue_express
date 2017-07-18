@@ -27,6 +27,7 @@ const validEnum=require('../../constant/enum/inputDataRuleType')
 const e_serverDataType=validEnum.ServerDataType
 const e_serverRuleType=validEnum.ServerRuleType
 const  e_validatePart=require('../../constant/enum/node').ValidatePart
+const e_inputFieldCheckType=require('../../constant/enum/node').InputFieldCheckType
 
 const regex=require('../../constant/regex/regex').regex
 
@@ -43,9 +44,9 @@ const rightResult={rc:0}
 /*         检测create/update 输入值并返回结果        */
 /*********************************************/
 /* params:
- * inputValue:{username:{value:xxx},password:{value:yyy}} 由调用函数保证输入参数的格式正确
- * collRules： ruleDefine(以coll为单位)adminLogin。每个页面有不同的定义
- *
+ * @inputValue:{username:{value:xxx},password:{value:yyy}} 由调用函数保证输入参数的格式正确
+ * @collRules： ruleDefine(以coll为单位)adminLogin。每个页面有不同的定义
+ * @baseType: 是对coll中所有field check（例如：创建新纪录），还是根据inputValue中有的field检查（例如：更改field value或者对field进行unique检查）
  * return:
  * 返回值有2种：一种是严重错误（出错后，字段的值是否符合rule已经无关紧要）使用common：{rc:xxx,msg:yyy}，另外一种是对全部输入的field都进行检查，返回{field1:{rc:xxx,msg,yyy},field2:{rc:zzz,msg:aaa}}
  *
@@ -54,12 +55,12 @@ const rightResult={rc:0}
  * xxxxxxx2. 判断输入值中的字段是否在inputRule中有定义（防止用户输入随便定义的字段）===>放入validateFormat
  * 1. 遍历所有rule字段，如果是require=true，检查inputValue是有值，有（即使为{value:null}），交给validateSingleRecorderFieldValue处理
  * */
-function _validateRecorderValue(inputValue,collRules,ifCreate){
+function _validateRecorderValue(inputValue,collRules,baseType){
     let rc={}
 
     //itemName: 字段名称
     for (let fieldName in collRules ){
-        if(ifCreate){
+        if(e_inputFieldCheckType.BASE_INPUT_RULE===baseType){
             //如果rule中为require，但是inputValue中没有，返回据错误。否则后续的赋值会报错
             //require是rule中的必填字段，区别只是false/true
             // console.log(`field is ${fieldName}`)
@@ -138,11 +139,11 @@ function _validateRecorderValue(inputValue,collRules,ifCreate){
 
 /*      create新纪录的时候，对输入的值进行检查          */
 function validateCreateRecorderValue(inputValue,collRules){
-    return _validateRecorderValue(inputValue,collRules,true)
+    return _validateRecorderValue(inputValue,collRules,e_inputFieldCheckType.BASE_INPUT_RULE)
 }
 /*      update纪录的时候，对输入的值进行检查          */
 function validateUpdateRecorderValue(inputValue,collRules){
-    return _validateRecorderValue(inputValue,collRules,false)
+    return _validateRecorderValue(inputValue,collRules,e_inputFieldCheckType.BASE_INPUT)
 }
 
 /*/!*     delete纪录的时候，对输入的值进行检查          *!/

@@ -26,5 +26,7 @@
 1. dataConvert es7化===>done
 2. internalInputRule中，如果是enum，直接使用model/mongo/enumValue，而不是使用Object.values方法（节省资源）====>done
 
-1. controller中，添加validatePartFormat，对各part的format进行检查，防止recordInfo中出现不存在field的错误
-2. 添加API，对单独字段进行unique进行检查（以便client及时反馈结果给用户）
+1. controller中，添加validatePartFormat，对各part的format进行检查，防止recordInfo中出现不存在field的错误===>done
+2. 添加API，对单独字段进行unique进行检查（以便client及时反馈结果给用户）========>done
+
+1. 设定新enum，inputFieldCheckType，BASE_INPUTRULE,BASE_INPUT=======>done(暂时只用在_validateRecorderValue，validateSingleFieldValue的代码做了简化，不需要用此enum)

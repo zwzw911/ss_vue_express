@@ -95,12 +95,12 @@ const misc={
     unknownTimeUnit:{rc:40840,msg:{client:'内部错误',server:'时间单位未知'}},
 
     /*              checkUserState              */
-    notExpectedUserState:{rc:40850,msg:{client:'内部错误',server:'用户状态不对'}},
+    notExpectedUserState:{rc:40852,msg:{client:'内部错误',server:'用户状态不对'}},
 
 }
 const awesomeCaptcha={
     unknownHashType:{rc:40400,msg:`未知hash类型`},
-    unknownCroptType:{rc:40402,msg:`未知加密类型`},
+    unknownCryptType:{rc:40402,msg:`未知加密类型`},
 }
 
 

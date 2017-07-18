@@ -177,7 +177,9 @@ let getUserInfo=function(req){
 
 
 /*          检查当前用户状态是否和期望的一致            */
-const checkUserState=function(req, exceptState=e_userStateEnum.LOGIN){
+const checkUserState=function(req, exceptState){
+
+
     let currentUserState
     if(undefined===req.session){
         currentUserState=e_userStateEnum.NO_SESS

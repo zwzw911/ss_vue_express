@@ -13,67 +13,72 @@ const e_part=require('../../server/constant/enum/node').ValidatePart
 const common_operation=require('../../server/model/mongo/operation/common_operation')
 const dbModel=require('../../server/model/mongo/dbModel')
 
-describe('POST /register rule check', function() {
-    let data={values:{recordInfo:{}}},url='/register'
+const inputRule=require('../../server/constant/inputRule/inputRule').inputRule
+const browserInputRule=require('../../server/constant/inputRule/browserInputRule').browserInputRule
+const validateError=require('../../server/constant/error/validateError').validateError
+
+let baseUrl="/user/"
+describe('POST /user rule check', function() {
+    let data={values:{recordInfo:{}}},url=`register`,finalUrl=baseUrl+url
 
     it('miss require field name', function(done) {
         data.values[e_part.RECORD_INFO]={account:{value:'1'}}
-        request(app).post(url).set('Accept', 'application/json').send(data)
+        request(app).post(finalUrl).set('Accept', 'application/json').send(data)
             .end(function(err, res) {
                 // if (err) return done(err);
                 console.log(`res ios ${JSON.stringify(res)}`)
                 let parsedRes=JSON.parse(res.text)
                 assert.deepStrictEqual(parsedRes.rc,99999)
-                assert.deepStrictEqual(parsedRes.msg.name.rc,10700)
+                assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.require.error.rc)
                 done();
             });
     });
     it('require field name too short', function(done) {
         data.values[e_part.RECORD_INFO]={name:{value:'1'}}
-        request(app).post(url).set('Accept', 'application/json').send(data)
+        request(app).post(finalUrl).set('Accept', 'application/json').send(data)
             .end(function(err, res) {
                 // if (err) return done(err);
                 // console.log(`res ios ${JSON.stringify(res)}`)
                 let parsedRes=JSON.parse(res.text)
                 assert.deepStrictEqual(parsedRes.rc,99999)
-                assert.deepStrictEqual(parsedRes.msg.name.rc,10706)
+                assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.format.error.rc)
                 done();
             });
     });
     it('require field name too long', function(done) {
         data.values[e_part.RECORD_INFO]={name:{value:'123456789012345678901234567890'}}
-        request(app).post(url).set('Accept', 'application/json').send(data)
+        request(app).post(finalUrl).set('Accept', 'application/json').send(data)
             .end(function(err, res) {
                 // if (err) return done(err);
                 // console.log(`res ios ${JSON.stringify(res)}`)
                 let parsedRes=JSON.parse(res.text)
                 assert.deepStrictEqual(parsedRes.rc,99999)
-                assert.deepStrictEqual(parsedRes.msg.name.rc,10706)
+                assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.format.error.rc)
                 done();
             });
     });
 
     it('miss require field account', function(done) {
         data.values[e_part.RECORD_INFO]={name:{value:'123456789'}}
-        request(app).post(url).set('Accept', 'application/json').send(data)
+        request(app).post(finalUrl).set('Accept', 'application/json').send(data)
             .end(function(err, res) {
                 // if (err) return done(err);
                 // console.log(`res ios ${JSON.stringify(res)}`)
                 let parsedRes=JSON.parse(res.text)
                 assert.deepStrictEqual(parsedRes.rc,99999)
-                assert.deepStrictEqual(parsedRes.msg.account.rc,10708)
+                assert.deepStrictEqual(parsedRes.msg.account.rc,browserInputRule.user.account.require.error.rc)
                 done();
             });
     });
     it('require field account not phone or email', function(done) {
         data.values[e_part.RECORD_INFO]={name:{value:'123456789'},account:{value:'1'}}
-        request(app).post(url).set('Accept', 'application/json').send(data)
+        request(app).post(finalUrl).set('Accept', 'application/json').send(data)
             .end(function(err, res) {
                 // if (err) return done(err);
                 // console.log(`res ios ${JSON.stringify(res)}`)
                 let parsedRes=JSON.parse(res.text)
                 assert.deepStrictEqual(parsedRes.rc,99999)
-                assert.deepStrictEqual(parsedRes.msg.account.rc,10714)
+                assert.deepStrictEqual(parsedRes.msg.account.rc,browserInputRule.user.account.format.error.rc)
                 done();
             });
     });
@@ -81,42 +86,53 @@ describe('POST /register rule check', function() {
 
     it('miss require field password', function(done) {
         data.values[e_part.RECORD_INFO]={name:{value:'123456789'},account:{value:'15921776543'}}
-        request(app).post(url).set('Accept', 'application/json').send(data)
+        request(app).post(finalUrl).set('Accept', 'application/json').send(data)
             .end(function(err, res) {
                 // if (err) return done(err);
                 // console.log(`res ios ${JSON.stringify(res)}`)
                 let parsedRes=JSON.parse(res.text)
                 assert.deepStrictEqual(parsedRes.rc,99999)
-                assert.deepStrictEqual(parsedRes.msg.password.rc,10716)
+                assert.deepStrictEqual(parsedRes.msg.password.rc,browserInputRule.user.password.require.error.rc)
                 done();
             });
     });
     it('require field password not match', function(done) {
         data.values[e_part.RECORD_INFO]={name:{value:'123456789'},account:{value:'15921776543'},password:{value:'1'}}
-        request(app).post(url).set('Accept', 'application/json').send(data)
+        request(app).post(finalUrl).set('Accept', 'application/json').send(data)
             .end(function(err, res) {
                 // if (err) return done(err);
                 // console.log(`res ios ${JSON.stringify(res)}`)
                 let parsedRes=JSON.parse(res.text)
                 assert.deepStrictEqual(parsedRes.rc,99999)
-                assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
+                assert.deepStrictEqual(parsedRes.msg.password.rc,browserInputRule.user.password.format.error.rc)
+                done();
+            });
+    });
+
+    it('not exist field check', function(done) {
+        data.values[e_part.RECORD_INFO]={name:{value:'123456789'},account:{value:'15921776543'},password:{value:'1'},notExist:{value:123}}
+        request(app).post(finalUrl).set('Accept', 'application/json').send(data)
+            .end(function(err, res) {
+                // if (err) return done(err);
+                console.log(`res ios ${JSON.stringify(res)}`)
+                let parsedRes=JSON.parse(res.text)
+                // assert.deepStrictEqual(parsedRes.rc,99999)
+                assert.deepStrictEqual(parsedRes.rc,validateError.validateFormat.recordInfoFiledRuleNotDefine.rc)
                 done();
             });
     });
 
 
-
-
 })
 
 
-describe('POST /register correct value', function() {
-    let data={values:{recordInfo:{}}},url='/register'
+describe('POST /user/register correct value', function() {
+    let data={values:{recordInfo:{}}},url=`register`,finalUrl=baseUrl+url
     it('correct value', function(done) {
 
 
-        data.values[e_part.RECORD_INFO]={name:{value:'123456789'},account:{value:'15921776543'},password:{value:'123456'}}//,notExist:{value:123}
-        request(app).post(url).set('Accept', 'application/json').send(data)
+        data.values[e_part.RECORD_INFO]={name:{value:'123456789'},account:{value:'15921776543'},password:{value:'123456'}}//
+        request(app).post(finalUrl).set('Accept', 'application/json').send(data)
             .end(function(err, res) {
                 // if (err) return done(err);
 
@@ -145,15 +161,13 @@ describe('POST /register correct value', function() {
 })
 
 
-describe('POST /register/uniqueCheck ', function() {
-    let data={values:{}},url='/register/uniqueCheck'
+describe('POST /user/register/uniqueCheck ', function() {
+    let data={values:{}},url='register/uniqueCheck',finalUrl=baseUrl+url
 
 
     it('unique name check', function(done) {
-
-
         data.values[e_part.SINGLE_FIELD]={name:{value:'123456789'}}//,notExist:{value:123}
-        request(app).post(url).set('Accept', 'application/json').send(data)
+        request(app).post(finalUrl).set('Accept', 'application/json').send(data)
             .end(function(err, res) {
                 // if (err) return done(err);
 
@@ -167,7 +181,7 @@ describe('POST /register/uniqueCheck ', function() {
 
     it('unique account check', function(done) {
         data.values[e_part.SINGLE_FIELD]={account:{value:'15921776543'}}//,notExist:{value:123}
-        request(app).post(url).set('Accept', 'application/json').send(data)
+        request(app).post(finalUrl).set('Accept', 'application/json').send(data)
             .end(function(err, res) {
                 // if (err) return done(err);
 
@@ -181,7 +195,7 @@ describe('POST /register/uniqueCheck ', function() {
 
     it('unique: not support field check', function(done) {
         data.values[e_part.SINGLE_FIELD]={password:{value:'123456'}}//,notExist:{value:123}
-        request(app).post(url).set('Accept', 'application/json').send(data)
+        request(app).post(finalUrl).set('Accept', 'application/json').send(data)
             .end(function(err, res) {
                 // if (err) return done(err);
 
@@ -195,7 +209,7 @@ describe('POST /register/uniqueCheck ', function() {
 
     it('unique name check ok', function(done) {
         data.values[e_part.SINGLE_FIELD]={name:{value:'zw'}}//,notExist:{value:123}
-        request(app).post(url).set('Accept', 'application/json').send(data)
+        request(app).post(finalUrl).set('Accept', 'application/json').send(data)
             .end(function(err, res) {
                 // if (err) return done(err);
 
@@ -206,4 +220,25 @@ describe('POST /register/uniqueCheck ', function() {
                 done();
             });
     });
+})
+
+
+
+describe('POST /user/login ', function() {
+    let data={values:{}},url='login',finalUrl=baseUrl+url
+
+
+    it('user login correct', function(done) {
+        data.values[e_part.RECORD_INFO]={account:{value:'15921776543'},password:{value:'123456'}}//,notExist:{value:123}
+        request(app).post(finalUrl).set('Accept', 'application/json').send(data)
+            .end(function(err, res) {
+                // if (err) return done(err);
+
+                let parsedRes=JSON.parse(res.text)
+                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
+                assert.deepStrictEqual(parsedRes.rc,0)
+                // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
+                done();
+            });
+    })
 })

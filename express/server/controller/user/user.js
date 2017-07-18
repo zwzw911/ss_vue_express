@@ -12,7 +12,7 @@ const router = express.Router();
 const e_userState=require('../../constant/enum/node').UserState
 const e_part=require('../../constant/enum/node').ValidatePart
 // const e_coll=require('../../constant/enum/node').Coll
-const e_method=require('../../constant/enum/node').Method
+// const e_method=require('../../constant/enum/node').Method
 
 const e_hashType=require('../../constant/enum/node_runtime').HashType
 
@@ -27,20 +27,21 @@ const fkConfig=require('../../model/mongo/fkConfig').fkConfig
 
 const e_coll=require('../../constant/enum/DB_Coll').Coll
 const e_field=require('../../constant/enum/DB_field').Field
+const e_inputFieldCheckType=require('../../constant/enum/node').InputFieldCheckType
 
 const helper=require('../helper')
 const common_operation=require('../../model/mongo/operation/common_operation')
 const hash=require('../../function/assist/crypt').hash
 const generateRandomString=require('../../function/assist/misc').generateRandomString
 
-const checkUserState=require('../../function/assist/misc').checkUserState
+
 const genFinalReturnResult=require('../../function/assist/misc').genFinalReturnResult
 const dataConvert=require('../dataConvert')
 const validateCreateRecorderValue=require('../../function/validateInput/validateValue').validateCreateRecorderValue
 
-const browserInputRule=require('../../constant/inputRule/browserInputRule').browserInputRule
+// const browserInputRule=require('../../constant/inputRule/browserInputRule').browserInputRule
 const internalInputRule=require('../../constant/inputRule/internalInputRule').internalInputRule
-const inputRule=require('../../constant/inputRule/inputRule').inputRule
+// const inputRule=require('../../constant/inputRule/inputRule').inputRule
 
 const mongoError=require('../../constant/error/mongo/mongoError').error
 
@@ -53,6 +54,10 @@ const userError={
     nameAlreadyExists:{rc:50100,msg:`用户名已经存在`},
     accountAlreadyExists:{rc:50102,msg:`账号已经存在`},
     fieldNotSupport:{rc:50104,msg:`字段名称不正确`},
+    /*              login               */
+    loginMandatoryFieldNotExist(fieldName){return {rc:50106,msg:`缺少字段${fieldName}`}},
+    accountNotExist:{rc:50108,msg:`用户不存在`},
+    accountPasswordNotMatch:{rc:50110,msg:`用户或者密码不正确`},
 }
 
 //检查用户状态
@@ -63,32 +68,20 @@ const userError={
 //对数值逻辑进行判断（外键是否有对应的记录等）
 //执行db操作并返回结果
 async  function createUser(req){
-    //检查用户状态
-    let result=checkUserState(req,e_userState.NO_SESS)
+    //预先检查 sess/format/value
+    let result=helper.preCheck({
+        req:req,
+        expectUserState:e_userState.NO_SESS,
+        expectPart:[e_part.RECORD_INFO],
+        recordInfoBaseRule:e_inputFieldCheckType.BASE_INPUT_RULE,
+        collName:e_coll.USER
+    })
     if(result.rc>0){
         return Promise.reject(result)
     }
 
-    //检查输入参数中part的格式和值
-    let exceptedPart=[e_part.RECORD_INFO]
-    result=helper.commonCheck(req,exceptedPart)
-    if(result.rc>0){
-        return Promise.reject(result)
-    }
 
-    //检查输入参数格式是否正确
-    result=helper.validatePartFormat({req:req,exceptedPart:exceptedPart,collName:e_coll.USER,inputRule:inputRule,fkConfig:fkConfig})
-    if(result.rc>0){
-        return Promise.reject(result)
-    }
-
-    // console.log(`validatePartFormat ${JSON.stringify(result)}`)
-    //检查输入参数是否正确
-    result=helper.validatePartValue({req:req,exceptedPart:exceptedPart,collName:e_coll.USER,inputRule:browserInputRule,method:e_method.CREATE,fkConfig:fkConfig})
-    if(result.rc>0){
-        return Promise.reject(result)
-    }
-
+/*                      logic                               */
     let docValue=req.body.values[e_part.RECORD_INFO]
     // console.log(`docValue ${JSON.stringify(docValue)}`)
 
@@ -160,10 +153,10 @@ async  function createUser(req){
     /*              对内部产生的值进行检测（开发时使用，上线后为了减低负荷，无需使用）           */
     if(e_env.DEV===currentEnv){
         // let collInputRule=Object.assign({},user_browserInputRule,user_internalInputRule)
-        // console.log(`internal check value=============> ${JSON.stringify(docValue)}`)
+        console.log(`internal check value=============> ${JSON.stringify(docValue)}`)
         // console.log(`internal check rule=============> ${JSON.stringify(internalInputRule[e_coll.USER])}`)
         result=validateCreateRecorderValue(docValue,internalInputRule[e_coll.USER])
-        // console.log(`internal check=============> ${JSON.stringify(result)}`)
+        console.log(`internal check=============> ${JSON.stringify(result)}`)
         // result=helper.validatePartValue({req:req,exceptedPart:exceptedPart,coll:e_coll.USER,inputRule:user_internalInputRule,method:e_method.CREATE})
         // console.log(`docValue   ${JSON.stringify(docValue)}`)
         // return console.log(`internal check  ${JSON.stringify(result)}`)
@@ -172,7 +165,7 @@ async  function createUser(req){
         }
     }
 
-    // console.log(`internal check  is ${JSON.stringify(docValue)}`)
+    console.log(`internal check  is ${JSON.stringify(docValue)}`)
     // let currentColl=e_coll.USER_SUGAR
     // console.log(`value to be insert is ${JSON.stringify(docValue)}`)
     // let doc=new dbModel[currentColl](values[e_part.RECORD_INFO])
@@ -187,7 +180,7 @@ async  function createUser(req){
         return Promise.reject(userCreateResult)
     }
 
-    // return console.log(`user created  ${JSON.stringify(userCreateResult)}`)
+    console.log(`user created  ${JSON.stringify(userCreateResult)}`)
 
     //对关联表sugar进行insert操作
     let sugarValue={userId:userCreateResult.msg._id,sugar:sugar}
@@ -221,48 +214,21 @@ async  function createUser(req){
 /*                      检查用户名/账号的唯一性                           */
 async  function  uniqueCheck(req) {
     // console.log(`unique check is ${JSON.stringify(req.body.values)} `)
-    //检查用户状态
-    let result = checkUserState(req, e_userState.NO_SESS)
-    if (result.rc > 0) {
-        return Promise.reject(result)
-    }
 
-    //检查输入参数中part的格式和值
-    let exceptedPart = [e_part.SINGLE_FIELD]
-    result = helper.commonCheck(req, exceptedPart)
-    // console.log(`common check result is ${JSON.stringify(result)}`)
-    if (result.rc > 0) {
-        return Promise.reject(result)
-    }
 
-//检查输入参数格式是否正确
-    result = helper.validatePartFormat({
-        req: req,
-        exceptedPart: exceptedPart,
-        collName: e_coll.USER,
-        inputRule: inputRule,
-        fkConfig: fkConfig
+    let result=helper.preCheck({
+        req:req,
+        expectUserState:e_userState.NO_SESS,
+        expectPart:[e_part.SINGLE_FIELD],
+        collName:e_coll.USER
     })
-    // console.log(`format check result is ${JSON.stringify(result)}`)
-    if (result.rc > 0) {
+    // console.log(`precheck result is ${JSON.stringify(result)}`)
+    if(result.rc>0){
         return Promise.reject(result)
     }
 
-// console.log(`validatePartFormat ${JSON.stringify(result)}`)
-//检查输入参数是否正确
-    result = helper.validatePartValue({
-        req: req,
-        exceptedPart: exceptedPart,
-        collName: e_coll.USER,
-        inputRule: browserInputRule,
-        // method: e_method.CREATE,
-        fkConfig: fkConfig
-    })
-    console.log(`value check result is ${JSON.stringify(result)}`)
-    if (result.rc > 0) {
-        return Promise.reject(result)
-    }
 
+/*                  logic               */
     let docValue = req.body.values[e_part.SINGLE_FIELD]
 // console.log(`docValue ${JSON.stringify(docValue)}`)
 
@@ -302,14 +268,68 @@ async  function  uniqueCheck(req) {
 
     return Promise.resolve({rc:0})
 
-
-    /*      因为name是unique，所以要检查用户名是否存在(unique check)     */
-// let field=e_field.USER.NAME
-
 }
 
 
-router.post('/',function(req,res,next){
+async function login(req){
+
+    //预先检查 sess/format/value
+    let userSugarResult;
+    let result = helper.preCheck({
+        req: req,
+        expectUserState: e_userState.NO_SESS,
+        expectPart: [e_part.RECORD_INFO],
+        recordInfoBaseRule: e_inputFieldCheckType.BASE_INPUT,
+        collName: e_coll.USER
+    })
+    if (result.rc > 0) {
+        return Promise.reject(result)
+    }
+
+    /*              略有不同，需要确定字段有且只有账号和密码                */
+    // let usedColl=e_coll.USER
+    let docValue = req.body.values[e_part.RECORD_INFO]
+    let expectedField = [e_field.USER.ACCOUNT, e_field.USER.PASSWORD]
+    for (let singleInputFieldName of expectedField) {
+        if (false === singleInputFieldName in docValue) {
+            return Promise.reject(userError.loginMandatoryFieldNotExist(singleInputFieldName))
+        }
+    }
+
+//    读取sugar，并和输入的password进行运算，得到的结果进行比较
+    let condition={account:docValue[e_field.USER.ACCOUNT]['value']}
+    let userResult = await common_operation.find({dbModel: dbModel.user,condition:condition})
+    if(userResult.rc>0){
+        return Promise.reject(userResult)
+    }
+    if(0===userResult.rc && 0===userResult.msg.length){
+        return Promise.reject(userError.accountNotExist)
+    }
+    // console.log(`userResult ${JSON.stringify(userResult)}`)
+    condition={userId:userResult.msg[0]['id']}
+    let sugarResult = await common_operation.find({dbModel: dbModel.sugar,condition:condition})
+    if(sugarResult.rc>0){
+        return Promise.reject(sugarResult)
+    }
+    // console.log(`sugarResult ${JSON.stringify(sugarResult)}`)
+
+    let encryptPassword=hash(`${docValue[e_field.USER.PASSWORD]['value']}${sugarResult.msg[0][e_field.SUGAR.SUGAR]}`,e_hashType.SHA256)
+    // console.log(`encryptPassword ${JSON.stringify(encryptPassword)}`)
+    if(encryptPassword.rc>0){
+        return Promise.reject(encryptPassword)
+    }
+
+    if(userResult.msg[0][e_field.USER.PASSWORD]!==encryptPassword['msg']){
+        return Promise.reject(userError.accountPasswordNotMatch)
+    }
+
+    /*
+    *  需要设置session
+    * */
+    return Promise.resolve({rc:0})
+}
+
+router.post('/register',function(req,res,next){
 
     createUser(req).then(
         (v)=>{
@@ -324,7 +344,7 @@ router.post('/',function(req,res,next){
     )
 })
 
-router.post('/uniqueCheck',function(req,res,next){
+router.post('/register/uniqueCheck',function(req,res,next){
 
     uniqueCheck(req).then(
         (v)=>{
@@ -333,6 +353,21 @@ router.post('/uniqueCheck',function(req,res,next){
         },
         (err)=>{
             console.log(`unique check  fail: ${JSON.stringify(err)}`)
+            return res.json(genFinalReturnResult(err))
+
+        }
+    )
+})
+
+router.post('/login',function(req,res,next){
+
+    login(req).then(
+        (v)=>{
+            console.log(`login  success, result:  ${JSON.stringify(v)}`)
+            return res.json(v)
+        },
+        (err)=>{
+            console.log(`login  fail: ${JSON.stringify(err)}`)
             return res.json(genFinalReturnResult(err))
 
         }

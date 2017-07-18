@@ -86,10 +86,10 @@ app.use(function(req,res,next){
 
 
 /*              require file                */
-const register=require('./server/controller/user/register')
+const user=require('./server/controller/user/user')
 
 
-app.use('/register', register);
+app.use('/user', user);
 // app.use('/register/uniqueCheck', register);
 // app.use('/users', users);
 
