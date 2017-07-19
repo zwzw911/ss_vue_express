@@ -66,6 +66,7 @@ const ValidatePart={
     EDIT_SUB_FIELD: 'editSubField',      //当对mixed或者array字段操作时使用，无需inputRule
     EVENT_FIELD: 'eventField',      //事件（当前暂时只用于 群 事件），无需inputRule
     SINGLE_FIELD:'singleField',     //和RECORD_INFO类似，只是只有一个字段
+    METHOD:'method',    //当前操作对应的是CRUD中哪一个
 }
 
 
@@ -83,10 +84,11 @@ const KeyForSearchParams={
 }*/
 
 const Method={
-    CREATE:0,//0 'create'
-    SEARCH:1,//1 'search'
-    UPDATE:2,//2  'update'
-    DELETE:3 //3 'delete'
+    CREATE:'0',//0 'create'
+    SEARCH:'1',//1 'search'
+    UPDATE:'2',//2  'update'
+    DELETE:'3', //3 'delete'
+    MATCH:'4',// 4 用于确定输入记录是否和db中的匹配（例如登录）
 }
 
 const InputFieldCheckType={

@@ -28,16 +28,17 @@ const e_serverDataType=validEnum.ServerDataType
 const e_serverRuleType=validEnum.ServerRuleType
 const  e_validatePart=require('../../constant/enum/node').ValidatePart
 const e_inputFieldCheckType=require('../../constant/enum/node').InputFieldCheckType
+const e_method=require('../../constant/enum/node').Method
 
 const regex=require('../../constant/regex/regex').regex
 
-const e_coll=require('../../constant/enum/node').Coll
+const e_coll=require('../../constant/enum/DB_Coll').Coll
 
 const searchMaxPage=require('../../constant/config/globalConfiguration').searchMaxPage
 
 const rightResult={rc:0}
 
-//const e_eventStatus=require('../../constant/enum/node_runtime').EventStatus
+const e_eventStatus=require('../../constant/enum/mongo').EventStatus
 // const arr_eventField=require('../../constant/define/node').EVENT_FIELD
 
 /*********************************************/
@@ -795,7 +796,6 @@ function validateEditSubFieldValue(v){
     return rightResult
 }
 
-
 /*          由server内部生成，所以无需inputRule
 * 0. 所有字段必须赋值
 * 1. eventId是否在enum的指定范围内
@@ -831,6 +831,16 @@ function validateEventValue(v,eventIdEnum){
     return rightResult
 }
 
+
+
+function validateMethodValue(methodValue){
+    if(-1===Object.values(e_method).indexOf(methodValue)){
+        return validateValueError.methodValueUndefined
+    }
+    return {rc:0}
+}
+
+
 module.exports= {
     validateCreateRecorderValue,    //调用_validateRecorderValue
     validateUpdateRecorderValue,        //调用_validateRecorderValue
@@ -854,4 +864,6 @@ module.exports= {
 
     validateEditSubFieldValue,
     validateEventValue,
+
+    validateMethodValue,
 }

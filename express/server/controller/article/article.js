@@ -1,8 +1,5 @@
 /**
  * Created by Ada on 2017/7/9.
- * url：
- *  1. /user，根据method的不同，调用不同的函数进行对应的处理
- *  2. /user/unique: 用户注册的时候，对应用户名/账号进行唯一性检查
  */
 'use strict'
 
@@ -14,11 +11,8 @@ const router = express.Router();
 
 const e_userState=require('../../constant/enum/node').UserState
 const e_part=require('../../constant/enum/node').ValidatePart
-const e_method=require('../../constant/enum/node').Method
-// const e_coll=require('../../constant/enum/node').Coll
-// const e_method=require('../../constant/enum/node').Method
 
-const e_hashType=require('../../constant/enum/node_runtime').HashType
+// const e_hashType=require('../../constant/enum/node_runtime').HashType
 
 const e_env=require('../../constant/enum/node').Env
 const e_docStatus=require('../../constant/enum/mongo').DocStatus.DB
@@ -31,12 +25,12 @@ const fkConfig=require('../../model/mongo/fkConfig').fkConfig
 
 const e_coll=require('../../constant/enum/DB_Coll').Coll
 const e_field=require('../../constant/enum/DB_field').Field
-// const e_inputFieldCheckType=require('../../constant/enum/node').InputFieldCheckType
+const e_inputFieldCheckType=require('../../constant/enum/node').InputFieldCheckType
 
 const helper=require('../helper')
 const common_operation=require('../../model/mongo/operation/common_operation')
-const hash=require('../../function/assist/crypt').hash
-const generateRandomString=require('../../function/assist/misc').generateRandomString
+// const hash=require('../../function/assist/crypt').hash
+// const generateRandomString=require('../../function/assist/misc').generateRandomString
 
 
 const genFinalReturnResult=require('../../function/assist/misc').genFinalReturnResult
@@ -58,71 +52,32 @@ const userError={
     nameAlreadyExists:{rc:50100,msg:`用户名已经存在`},
     accountAlreadyExists:{rc:50102,msg:`账号已经存在`},
     fieldNotSupport:{rc:50104,msg:`字段名称不正确`},
-    /*              login_async               */
+    /*              login               */
     loginMandatoryFieldNotExist(fieldName){return {rc:50106,msg:`缺少字段${fieldName}`}},
     accountNotExist:{rc:50108,msg:`用户不存在`},
     accountPasswordNotMatch:{rc:50110,msg:`用户或者密码不正确`},
 }
 
-
-//对CRUD（输入参数带有method）操作调用对应的函数
-async function dispatcher(req){
-    //检查格式
-    // console.log(`dispatcher in`)
-    console.log(`req.body.values ${JSON.stringify(req.body.values)}`)
-    let expectUserState,expectedPart,collName=e_coll.USER,result
-
-    //dispatcher只检测req的结构，以及req中method的格式和值，以便后续可以直接根据method进行调用
-    result=helper.dispatcherPreCheck({req:req})
-    if(result.rc>0){
-        return Promise.reject(result)
-    }
-
-
-    //因为method已经检测过，所有要从req.body.values中删除，防止重复检查
-    let method=req.body.values[e_part.METHOD]
-    delete req.body.values[e_part.METHOD]
-
-
-    switch (method){
-        case e_method.CREATE: //create
-            console.log(`create in`)
-            //首先检查method是否存在，且格式/值是否正确。不同的method可能对应不同的参数配置
-            expectUserState=e_userState.NO_SESS
-            expectedPart=[e_part.RECORD_INFO]//无需
-            //因为dispatch而已经检查过req的总体结构，所以无需再次检查，而直接检查sess+partValueFormat+partValueCheck
-            result=helper.CRUDPreCheck({req:req,expectUserState:expectUserState,expectedPart:expectedPart,collName:collName,method:method})
-            console.log(`create preCheck result ${JSON.stringify(result)}`)
-            if(result.rc>0){
-                return Promise.reject(result)
-            }
-            result=await createUser_async(req)
-            console.log(`create  result ${JSON.stringify(result)}`)
-            break;
-        case e_method.SEARCH:// search
-            break;
-        case e_method.UPDATE: //update
-            break;
-        case e_method.DELETE: //delete
-            break;
-        case e_method.MATCH: //match(login_async)
-            expectUserState=e_userState.NO_SESS
-            expectedPart=[e_part.RECORD_INFO]
-            result=helper.CRUDPreCheck({req:req,expectUserState:expectUserState,expectedPart:expectedPart,collName:collName,method:method})
-            if(result.rc>0){
-                return Promise.reject(result)
-            }
-            result=await login_async(req)
-    }
-    
-    return Promise.resolve(result)
-}
-
+//检查用户状态
+//检查输入参数中part的格式和值
+//检查输入参数是否正确
 //添加内部产生的值（hash password）
 //对内部产生的值进行检测（开发时使用，上线后为了减低负荷，无需使用）
 //对数值逻辑进行判断（外键是否有对应的记录等）
 //执行db操作并返回结果
-async  function createUser_async(req){
+async  function createUser(req){
+    //预先检查 sess/format/value
+    let result=helper.preCheck({
+        req:req,
+        expectUserState:e_userState.NO_SESS,
+        expectPart:[e_part.RECORD_INFO],
+        recordInfoBaseRule:e_inputFieldCheckType.BASE_INPUT_RULE,
+        collName:e_coll.USER
+    })
+    if(result.rc>0){
+        return Promise.reject(result)
+    }
+
 
 /*                      logic                               */
     let docValue=req.body.values[e_part.RECORD_INFO]
@@ -146,7 +101,6 @@ async  function createUser_async(req){
         return Promise.reject(mongoError.common.uniqueFieldValue(e_coll.USER,e_field.USER.NAME,docValue[e_field.USER.NAME]['value']))
     }
 
-    let result
     //如果用户在db中存在，但是创建到一半，则删除用户(然后重新开始流程)
     if(docStatusResult.msg[0] && e_docStatus.PENDING===docStatusResult.msg[0][e_field.USER.DOC_STATUS]){
         result=await common_operation.deleteOne({dbModel:dbModel.user,condition:condition})
@@ -197,10 +151,10 @@ async  function createUser_async(req){
     /*              对内部产生的值进行检测（开发时使用，上线后为了减低负荷，无需使用）           */
     if(e_env.DEV===currentEnv){
         // let collInputRule=Object.assign({},user_browserInputRule,user_internalInputRule)
-        // console.log(`internal check value=============> ${JSON.stringify(docValue)}`)
+        console.log(`internal check value=============> ${JSON.stringify(docValue)}`)
         // console.log(`internal check rule=============> ${JSON.stringify(internalInputRule[e_coll.USER])}`)
         result=validateCreateRecorderValue(docValue,internalInputRule[e_coll.USER])
-        // console.log(`internal check=============> ${JSON.stringify(result)}`)
+        console.log(`internal check=============> ${JSON.stringify(result)}`)
         // result=helper.validatePartValue({req:req,exceptedPart:exceptedPart,coll:e_coll.USER,inputRule:user_internalInputRule,method:e_method.CREATE})
         // console.log(`docValue   ${JSON.stringify(docValue)}`)
         // return console.log(`internal check  ${JSON.stringify(result)}`)
@@ -209,7 +163,7 @@ async  function createUser_async(req){
         }
     }
 
-    // console.log(`internal check  is ${JSON.stringify(docValue)}`)
+    console.log(`internal check  is ${JSON.stringify(docValue)}`)
     // let currentColl=e_coll.USER_SUGAR
     // console.log(`value to be insert is ${JSON.stringify(docValue)}`)
     // let doc=new dbModel[currentColl](values[e_part.RECORD_INFO])
@@ -224,7 +178,7 @@ async  function createUser_async(req){
         return Promise.reject(userCreateResult)
     }
 
-    // console.log(`user created  ${JSON.stringify(userCreateResult)}`)
+    console.log(`user created  ${JSON.stringify(userCreateResult)}`)
 
     //对关联表sugar进行insert操作
     let sugarValue={userId:userCreateResult.msg._id,sugar:sugar}
@@ -255,76 +209,12 @@ async  function createUser_async(req){
 }
 
 
-
-async function login_async(req){
-
-/*    //预先检查 sess/format/value
-    let userSugarResult;
-    let result = helper.nonCRUDreCheck({
-        req: req,
-        expectUserState: e_userState.NO_SESS,
-        expectPart: [e_part.RECORD_INFO,e_part.METHOD],
-        // recordInfoBaseRule: e_inputFieldCheckType.BASE_INPUT,
-        collName: e_coll.USER
-    })
-    if (result.rc > 0) {
-        return Promise.reject(result)
-    }*/
-
-
-    /*                              logic                                   */
-    /*              略有不同，需要确定字段有且只有账号和密码                */
-    // let usedColl=e_coll.USER
-    let docValue = req.body.values[e_part.RECORD_INFO]
-    let expectedField = [e_field.USER.ACCOUNT, e_field.USER.PASSWORD]
-    for (let singleInputFieldName of expectedField) {
-        if (false === singleInputFieldName in docValue) {
-            return Promise.reject(userError.loginMandatoryFieldNotExist(singleInputFieldName))
-        }
-    }
-
-//    读取sugar，并和输入的password进行运算，得到的结果进行比较
-    let condition={account:docValue[e_field.USER.ACCOUNT]['value']}
-    let userResult = await common_operation.find({dbModel: dbModel.user,condition:condition})
-    if(userResult.rc>0){
-        return Promise.reject(userResult)
-    }
-    if(0===userResult.rc && 0===userResult.msg.length){
-        return Promise.reject(userError.accountNotExist)
-    }
-    // console.log(`userResult ${JSON.stringify(userResult)}`)
-    condition={userId:userResult.msg[0]['id']}
-    let sugarResult = await common_operation.find({dbModel: dbModel.sugar,condition:condition})
-    if(sugarResult.rc>0){
-        return Promise.reject(sugarResult)
-    }
-    // console.log(`sugarResult ${JSON.stringify(sugarResult)}`)
-
-    let encryptPassword=hash(`${docValue[e_field.USER.PASSWORD]['value']}${sugarResult.msg[0][e_field.SUGAR.SUGAR]}`,e_hashType.SHA256)
-    // console.log(`encryptPassword ${JSON.stringify(encryptPassword)}`)
-    if(encryptPassword.rc>0){
-        return Promise.reject(encryptPassword)
-    }
-
-    console.log(`user/pwd  ${docValue[e_field.USER.ACCOUNT]['value']}///${encryptPassword.msg}`)
-    if(userResult.msg[0][e_field.USER.PASSWORD]!==encryptPassword['msg']){
-        return Promise.reject(userError.accountPasswordNotMatch)
-    }
-
-    /*
-    *  需要设置session
-    * */
-    return Promise.resolve({rc:0})
-}
-
-
-
 /*                      检查用户名/账号的唯一性                           */
 async  function  uniqueCheck(req) {
     // console.log(`unique check is ${JSON.stringify(req.body.values)} `)
 
 
-    let result=helper.nonCRUDreCheck({
+    let result=helper.preCheck({
         req:req,
         expectUserState:e_userState.NO_SESS,
         expectPart:[e_part.SINGLE_FIELD],
@@ -336,7 +226,7 @@ async  function  uniqueCheck(req) {
     }
 
 
-    /*                  logic               */
+/*                  logic               */
     let docValue = req.body.values[e_part.SINGLE_FIELD]
 // console.log(`docValue ${JSON.stringify(docValue)}`)
 
@@ -379,13 +269,67 @@ async  function  uniqueCheck(req) {
 }
 
 
-/*        通过method，判断是CRUDM中的那个操作
-*   C: register
-*   M: match(login)
-* */
-router.post('/',function(req,res,next){
+async function login(req){
 
-    dispatcher(req).then(
+    //预先检查 sess/format/value
+    let userSugarResult;
+    let result = helper.preCheck({
+        req: req,
+        expectUserState: e_userState.NO_SESS,
+        expectPart: [e_part.RECORD_INFO],
+        recordInfoBaseRule: e_inputFieldCheckType.BASE_INPUT,
+        collName: e_coll.USER
+    })
+    if (result.rc > 0) {
+        return Promise.reject(result)
+    }
+
+    /*              略有不同，需要确定字段有且只有账号和密码                */
+    // let usedColl=e_coll.USER
+    let docValue = req.body.values[e_part.RECORD_INFO]
+    let expectedField = [e_field.USER.ACCOUNT, e_field.USER.PASSWORD]
+    for (let singleInputFieldName of expectedField) {
+        if (false === singleInputFieldName in docValue) {
+            return Promise.reject(userError.loginMandatoryFieldNotExist(singleInputFieldName))
+        }
+    }
+
+//    读取sugar，并和输入的password进行运算，得到的结果进行比较
+    let condition={account:docValue[e_field.USER.ACCOUNT]['value']}
+    let userResult = await common_operation.find({dbModel: dbModel.user,condition:condition})
+    if(userResult.rc>0){
+        return Promise.reject(userResult)
+    }
+    if(0===userResult.rc && 0===userResult.msg.length){
+        return Promise.reject(userError.accountNotExist)
+    }
+    // console.log(`userResult ${JSON.stringify(userResult)}`)
+    condition={userId:userResult.msg[0]['id']}
+    let sugarResult = await common_operation.find({dbModel: dbModel.sugar,condition:condition})
+    if(sugarResult.rc>0){
+        return Promise.reject(sugarResult)
+    }
+    // console.log(`sugarResult ${JSON.stringify(sugarResult)}`)
+
+    let encryptPassword=hash(`${docValue[e_field.USER.PASSWORD]['value']}${sugarResult.msg[0][e_field.SUGAR.SUGAR]}`,e_hashType.SHA256)
+    // console.log(`encryptPassword ${JSON.stringify(encryptPassword)}`)
+    if(encryptPassword.rc>0){
+        return Promise.reject(encryptPassword)
+    }
+
+    if(userResult.msg[0][e_field.USER.PASSWORD]!==encryptPassword['msg']){
+        return Promise.reject(userError.accountPasswordNotMatch)
+    }
+
+    /*
+    *  需要设置session
+    * */
+    return Promise.resolve({rc:0})
+}
+
+router.post('/register',function(req,res,next){
+
+    createUser(req).then(
         (v)=>{
             console.log(`create   register   success, result:  ${JSON.stringify(v)}`)
             return res.json(v)
@@ -398,7 +342,7 @@ router.post('/',function(req,res,next){
     )
 })
 
-router.post('/uniqueCheck',function(req,res,next){
+router.post('/register/uniqueCheck',function(req,res,next){
 
     uniqueCheck(req).then(
         (v)=>{
@@ -413,19 +357,19 @@ router.post('/uniqueCheck',function(req,res,next){
     )
 })
 
-/*router.post('/login_async',function(req,res,next){
+router.post('/login',function(req,res,next){
 
-    login_async(req).then(
+    login(req).then(
         (v)=>{
-            console.log(`login_async  success, result:  ${JSON.stringify(v)}`)
+            console.log(`login  success, result:  ${JSON.stringify(v)}`)
             return res.json(v)
         },
         (err)=>{
-            console.log(`login_async  fail: ${JSON.stringify(err)}`)
+            console.log(`login  fail: ${JSON.stringify(err)}`)
             return res.json(genFinalReturnResult(err))
 
         }
     )
-})*/
+})
 
 module.exports=router

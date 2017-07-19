@@ -17,6 +17,7 @@ const validateValue=require('../function/validateInput/validateValue')
 
 const e_part=require('../constant/enum/node').ValidatePart
 const e_userState=require('../constant/enum/node').UserState
+const e_method=require('../constant/enum/node').Method
 const e_coll=require('../constant/enum/DB_Coll').Coll
 const e_inputFieldCheckType=require('../constant/enum/node').InputFieldCheckType
 // var miscFunc=require('../../assist/misc')
@@ -47,7 +48,9 @@ function commonCheck(req,expectedPart){
 }
 
 
-function validatePartFormat({req,expectedPart,collName,fkConfig,inputRule}){
+
+
+function validatePartValueFormat({req,expectedPart,collName,fkConfig,inputRule}){
 
     let checkPartFormatResult
     for(let singlePart of expectedPart){
@@ -101,6 +104,8 @@ function validatePartFormat({req,expectedPart,collName,fkConfig,inputRule}){
                 }
 
                 break;
+            case e_part.METHOD://直接在validatePartFormat完成了format和value的check
+                    break
             case e_part.EDIT_SUB_FIELD:
                 checkPartFormatResult=validateFormat.validateEditSubFieldFormat(req.body.values[e_part.FILTER_FIELD_VALUE])
                 // console.log(   `checkFilterFieldValueResult check result is  ${JSON.stringify(checkFilterFieldValueResult)}`)
@@ -205,6 +210,8 @@ function validatePartValue({req,expectedPart,collName,inputRule,recordInfoBaseRu
                 break;
             case e_part.EDIT_SUB_FIELD:
                 break;
+            case e_part.METHOD://直接在validatePartFormat完成了format和value的check
+                break
             case e_part.FILTER_FIELD_VALUE:
                 //3.2 检查filterFieldValue的和value
                 checkPartValueResult=validateValue.validateFilterFieldValue(req.body.values[e_part.FILTER_FIELD_VALUE],fkConfig[collName],collName,inputRule)
@@ -243,8 +250,127 @@ async function checkIfFkExist_async(value,collFkConfig,collName){
     return Promise.resolve({rc:0})
 }
 
-//commonCheck+validatePartFormat+validatePartValue
-function preCheck({req,expectUserState,expectPart,collName,recordInfoBaseRule}){
+
+/*          预检method是否正确，以便后续能使用正确的method调用不同的CRUD方法            */
+function dispatcherPreCheck({req}){
+    // console.log(`CRUDPreCheckFormat in`)
+    let result=validateFormat.validateReqBody(req.body)
+    if(result.rc>0){return result}
+    // console.log(`validateReqBody result ${JSON.stringify(result)}`)
+    // let validateAllExpectedPart=true  //只对expectedPart中定义的part进行检查
+    let expectedPart=[e_part.METHOD]
+    // console.log(`ready to validatePartFormat`)
+    //为了能够调用validatePartFormat来检测method only，需要自己构造一个只包含了method的对象
+    let methodPart
+    if(undefined===req.body.values[e_part.METHOD]){
+        return helperError.methodPartMustExistInDispatcher
+    }else{
+        methodPart={method:req.body.values[e_part.METHOD]}
+    }
+
+    // console.log(`ready to validatePartFormat`)
+    result=validateFormat.validatePartFormat(methodPart,expectedPart)
+    if(result.rc>0){return result}
+
+    result=validateValue.validateMethodValue(methodPart[e_part.METHOD])
+    return result
+}
+
+
+/*
+* 必须和CRUDPreCheckMethod配合使用，后者用来预先检测Method，剩下的part交由本函数处理
+* */
+//validatePartValueFormat+validatePartValue
+function CRUDPreCheck({req,expectUserState,expectedPart,collName,method}){
+    // console.log(`recordInfoBaseRule ${JSON.stringify(recordInfoBaseRule)}`)
+    //检查参数
+    if(-1===Object.values(e_userState).indexOf(expectUserState)){
+        return helperError.undefinedUserState
+    }
+    if(-1===Object.values(e_coll).indexOf(collName)){
+        return helperError.undefinedColl
+    }
+
+    //检查用户状态
+    let result = checkUserState(req, expectUserState)
+    if (result.rc > 0) {
+        // return Promise.reject(result)
+        return result
+    }
+
+    //检查输入参数中part的值（格式预先检查好，某些part的值简单。例如method/currentPage，同时检测了value）
+
+
+    let recordInfoBaseRule
+    //validateReqBody+validatePartFormat检查完，就可以使用method（如果有）
+    // if(-1!==expectedPart.indexOf(e_part.METHOD)){
+    //CRUDM必须有method，所以无需进行判断，直接取值
+    //     let method=req.body.values[e_part.METHOD]
+        switch (method){
+            case e_method.CREATE:
+                recordInfoBaseRule=e_inputFieldCheckType.BASE_INPUT_RULE
+                break;
+            case e_method.DELETE:
+                break;
+            case e_method.SEARCH:
+                break;
+            case e_method.UPDATE:
+                recordInfoBaseRule=e_inputFieldCheckType.BASE_INPUT
+                break;
+            case e_method.MATCH:
+                recordInfoBaseRule=e_inputFieldCheckType.BASE_INPUT
+                break;
+                //没有default，因为在commonCheck->validatePartFormat中，已经过滤了非预定义的method
+        }
+    // }
+//检查输入参数格式是否正确
+    result = validatePartValueFormat({
+        req: req,
+        expectedPart: expectedPart,
+        collName: collName,
+        inputRule: inputRule,
+        fkConfig: fkConfig
+    })
+    // console.log(`format check result is ${JSON.stringify(result)}`)
+    if (result.rc > 0) {
+        // return Promise.reject(result)
+        return result
+    }
+
+// console.log(`validatePartValueFormat ${JSON.stringify(result)}`)
+//检查输入参数是否正确
+    //part是recordInfo
+    // if(undefined!==recordInfoBaseRule){
+        result = validatePartValue({
+            req: req,
+            expectedPart: expectedPart,
+            collName: collName,
+            inputRule: browserInputRule,
+            recordInfoBaseRule:recordInfoBaseRule,
+            fkConfig: fkConfig
+        })
+   /* }else{
+        //part非recordInfo
+        result = validatePartValue({
+            req: req,
+            expectedPart: expectPart,
+            collName: collName,
+            inputRule: browserInputRule,
+            // recordInfoBaseRule:recordInfoBaseRule,
+            fkConfig: fkConfig
+        })
+    }*/
+
+    // console.log(`value check result is ${JSON.stringify(result)}`)
+    // if (result.rc > 0) {
+        // return Promise.reject(result)
+        return result
+    // }
+}
+
+
+//没有method
+function nonCRUDreCheck({req,expectUserState,expectPart,collName}){
     // console.log(`recordInfoBaseRule ${JSON.stringify(recordInfoBaseRule)}`)
     //检查参数
     if(-1===Object.values(e_userState).indexOf(expectUserState)){
@@ -270,8 +396,9 @@ function preCheck({req,expectUserState,expectPart,collName,recordInfoBaseRule}){
         return result
     }
 
+
 //检查输入参数格式是否正确
-    result = validatePartFormat({
+    result = validatePartValueFormat({
         req: req,
         expectedPart: expectPart,
         collName: collName,
@@ -284,43 +411,30 @@ function preCheck({req,expectUserState,expectPart,collName,recordInfoBaseRule}){
         return result
     }
 
-// console.log(`validatePartFormat ${JSON.stringify(result)}`)
-//检查输入参数是否正确
-    //part是recordInfo
-    if(undefined!==recordInfoBaseRule){
-        result = validatePartValue({
-            req: req,
-            expectedPart: expectPart,
-            collName: collName,
-            inputRule: browserInputRule,
-            recordInfoBaseRule:recordInfoBaseRule,
-            fkConfig: fkConfig
-        })
-    }else{
-        //part非recordInfo
-        result = validatePartValue({
-            req: req,
-            expectedPart: expectPart,
-            collName: collName,
-            inputRule: browserInputRule,
-            // recordInfoBaseRule:recordInfoBaseRule,
-            fkConfig: fkConfig
-        })
-    }
 
-    // console.log(`value check result is ${JSON.stringify(result)}`)
-    // if (result.rc > 0) {
-        // return Promise.reject(result)
-        return result
+    result = validatePartValue({
+        req: req,
+        expectedPart: expectPart,
+        collName: collName,
+        inputRule: browserInputRule,
+        // recordInfoBaseRule:recordInfoBaseRule,
+        fkConfig: fkConfig
+    })
+
+    return result
     // }
 }
 
 
+
 module.exports= {
     commonCheck,//每个请求进来是，都要进行的操作（时间间隔检查等）
-    validatePartFormat,
+    validatePartValueFormat,
     validatePartValue,//对每个part的值进行检查
-    preCheck,//commonCheck+validatePartFormat+validatePartValue
+
+    dispatcherPreCheck,
+    CRUDPreCheck,
+    nonCRUDreCheck,//commonCheck+validatePartValueFormat+validatePartValue
 
     checkIfFkExist_async,//检测doc中外键值是否在对应的coll中存在
 }

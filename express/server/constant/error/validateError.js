@@ -43,13 +43,15 @@ const validateError={
         inputValueExceptedPartNotValid:{rc:40106,msg:{client:`输入值格式错误`,server:`期望进行检查的参数不存在`}},
         inputValuePartNotMatch:{rc:40108,msg:{client:`输入值格式错误`,server:`输入参数中，某个参数并非期望的参数`}},
         inputValuePartSearchParamsValueFormatWrong:{rc:40110,msg:{client:`输入值格式错误`,server:`输入参数中，searchParams的值必须为object`}},
-        inputValuePartRecordInfoValueFormatWrong:{rc:40112,msg:{client:`输入值格式错误`,server:`输入参数中，recordInfo的值必须为object`}},
+        inputValuePartRecordInfoValueFormatWrong:{rc:40111,msg:{client:`输入值格式错误`,server:`输入参数中，recordInfo的值必须为object`}},
         inputValuePartSingleFieldValueFormatWrong:{rc:40112,msg:{client:`输入值格式错误`,server:`输入参数中，singleField的值必须为object`}},
+        inputValuePartMethodValueFormatWrong:{rc:40113,msg:{client:`输入值格式错误`,server:`输入参数中，method的值必须为字符`}},
         inputValuePartCurrentPageValueFormatWrong:{rc:40114,msg:{client:`输入值格式错误`,server:`输入参数中，currentPage的值必须为整数`}},
         inputValuePartCurrentCollValueFormatWrong:{rc:40116,msg:{client:`输入值格式错误`,server:`输入参数中，currentColl的值必须为字符串`}},
         inputValuePartRecordIdValueFormatWrong:{rc:40118,msg:{client:`输入值格式错误`,server:`输入参数中，recordId的值必须为字符`}},
         inputValuePartFilterFieldValueFormatWrong:{rc:40120,msg:{client:`输入值格式错误`,server:`输入参数中，FilterFieldValue的值必须为对象`}},
         inputValuePartRecIdArrValueFormatWrong:{rc:40122,msg:{client:`输入值格式错误`,server:`输入参数中，recIdArr的值必须为数组`}},
+        inputValuePartEventValueFormatWrong:{rc:40122,msg:{client:`输入值格式错误`,server:`输入参数中，event的值必须为对象`}},
         inputValuePartUndefinedPart:{rc:40124,msg:{client:`输入值格式错误`,server:`输入参数中，part未定义`}},
 
         recordInfoCantEmpty:{rc:40126,msg:{client:'输入值格式错误',server:'recorderInfo不能为空'}},//在validatePart已经检测为object，次数检测为空object
@@ -116,6 +118,8 @@ const validateError={
         singleFiledRValueMustBeObject:{rc:40226,msg:{client:'输入值格式错误',server:'singleField的值必须是object'}},
         singleFiledValueMustContainOneKey:{rc:40228,msg:{client:'输入值格式错误',server:'singleField的值(object)必须只有一个键'}},
         singleFiledValuesKeyNameWrong:{rc:40230,msg:{client:'输入值格式错误',server:'singleField的值(object)的键名必须是value'}},
+
+
     },
     validateValue:{
         //validateCreateUpdateInputValue
@@ -165,6 +169,9 @@ const validateError={
 
         //
         unknownRuleType:{rc:40352,msg:'未知rule类型'},
+
+        /*              method              */
+        methodValueUndefined:{rc:40240,msg:{client:'输入值格式错误',server:'method的值不是预定义的值之一'}},
     }
 }
 

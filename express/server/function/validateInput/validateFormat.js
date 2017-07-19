@@ -19,7 +19,7 @@ const dataType=require('../../constant/enum/inputDataRuleType').ServerDataType
 const rightResult={rc:0}
 const e_validatePart=require('../../constant/enum/node').ValidatePart
 const e_keyForSearchParams=require('../../constant/enum/node').KeyForSearchParams
-
+const e_method=require('../../constant/enum/node').Method
 const arr_editSubField=require('../../constant/define/node').SUB_FIELD
 const arr_eventField=require('../../constant/define/node').EVENT_FIELD
 
@@ -42,44 +42,51 @@ function validateReqBody(reqBody){
 /* 检测输入的部分是否存在，且只有这几部分
  * params:
  * 1. inputValue:（post）传入的对象，post的输入的参数
- * 2. exceptedParts: 数组 期望参数里包含哪些部分
+ * 2. expectedParts: 数组 期望参数里包含哪些部分
  *
  * step
- * 1. 遍历exceptedParts，确定其中定义是否为预定义（在validatePart中）
- * 2. inputValuekey的数量是否等于exceptedParts的key的数量；
- * 3. 遍历inputValue，key是否都在exceptedParts中， 且inputValue中每个part对应的值的类型：
+ * 1. 遍历expectedParts，确定其中定义是否为预定义（在validatePart中）
+ * 2. inputValuekey的数量是否等于expectedParts的key的数量；
+ * 3. 遍历inputValue，key是否都在expectedParts中， 且inputValue中每个part对应的值的类型：
  *      searchParams:object
  *      recordInfo:object
  *      currentColl: string
  *      currentPage; int
  *      recoderId:string(objectId)
  */
-function  validatePartFormat (inputValue,exceptedParts){
+function  validatePartFormat (inputValue,expectedParts){
     // console.log(`dataTypeCheck.isObject(inputValue) ${dataTypeCheck.isObject(inputValue)}`)
+    // console.log(`${__filename}: inputvalue ${JSON.stringify(inputValue)}`)
+    //expectedPart和inputValue中的part必须一一对应
+    // if(validateAllExpectedPart){
+        //1  inputValue的数量是否等于expectedParts的数量
+        let inputValueKeyNum=Object.keys(inputValue).length
+        let expectedPartsNum=expectedParts.length
+        // console.log(`inputValueKeyNum is ${inputValueKeyNum}`)
+        // console.log(`expectedPartsNum is ${expectedPartsNum}`)
+        if(inputValueKeyNum!==expectedPartsNum){
+            return validateFormatError.inputValuePartNumExceed
+        }
+    // }
 
-    //1  inputValue的数量是否等于exceptedParts的数量
-    let inputValueKeyNum=Object.keys(inputValue).length
-    let exceptedPartsNum=exceptedParts.length
-    // console.log(`inputValueKeyNum is ${inputValueKeyNum}`)
-    // console.log(`exceptedPartsNum is ${exceptedPartsNum}`)
-    if(inputValueKeyNum!==exceptedPartsNum){
-        return validateFormatError.inputValuePartNumExceed
-    }
-    //2. 遍历exceptedParts，确保所有item都在validatePart中定义
-    for(let part of exceptedParts){
+    //2. 遍历expectedParts，确保所有item都在validatePart中定义
+    for(let part of expectedParts){
         // console.log(`part is ${part}`)
-        // console.log(`exceptedParts is ${JSON.stringify(exceptedParts)}`)
+        // console.log(`expectedParts is ${JSON.stringify(expectedParts)}`)
         if(-1=== Object.values(e_validatePart).indexOf(part)){
-            // console.log(`part is ${part}, not in exceptedParts is ${JSON.stringify( Object.values(e_validatePart))}`)
+            // console.log(`part is ${part}, not in expectedParts is ${JSON.stringify( Object.values(e_validatePart))}`)
             return validateFormatError.inputValueExceptedPartNotValid
         }
     }
-
+    // console.log(`${__filename}: inputvalue ${JSON.stringify(inputValue)}`)
     //3  遍历inputValue，
     for(let partKey in inputValue){
-        // 3.1 key是否都在exceptedParts中
-        if(-1===exceptedParts.indexOf(partKey)){
-            // console.log(`exceptedParts part ${JSON.stringify(exceptedParts)}`)
+        // console.log(`${__filename}: partKey ${JSON.stringify(partKey)}`)
+        // console.log(`${__filename}: expectedParts ${JSON.stringify(expectedParts)}`)
+        // console.log(`${__filename}: expectedParts.indexOf(partKey) ${JSON.stringify(expectedParts.indexOf(partKey))}`)
+        // 3.1 key是否都在expectedParts中
+        if(-1===expectedParts.indexOf(partKey)){
+            // console.log(`expectedParts part ${JSON.stringify(expectedParts)}`)
             // console.log(`unknon part ${partKey}`)
             return validateFormatError.inputValuePartNotMatch
         }
@@ -127,6 +134,19 @@ function  validatePartFormat (inputValue,exceptedParts){
                 if(false===dataTypeCheck.isObject(inputValue[partKey])){
                     // console.log(`searchparam errir in`)
                     return validateFormatError.inputValuePartSearchParamsValueFormatWrong
+                }
+                break;
+            case e_validatePart.EVENT_FIELD:
+                if(false===dataTypeCheck.isObject(inputValue[partKey])){
+                    // console.log(`searchparam errir in`)
+                    return validateFormatError.inputValuePartEventValueFormatWrong
+                }
+                break;
+            case e_validatePart.METHOD:
+                //所有枚举值都是字符
+                // if(-1===Object.values(e_method).indexOf(inputValue[partKey].toString())){
+                if(false===dataTypeCheck.isString(inputValue[partKey])){
+                    return validateFormatError.inputValuePartMethodValueFormatWrong
                 }
                 break;
             default:
@@ -793,6 +813,10 @@ function validateEventFormat(ev){
 }
 
 
+function validateMethodFormat(){
+
+}
+
 module.exports={
     validateReqBody,//检查req.body.values是否存在
 
@@ -813,4 +837,6 @@ module.exports={
     // validateStaticSearchParamsFormat,
     validateEditSubFieldFormat,
     validateEventFormat,
+
+
 }

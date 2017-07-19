@@ -9,17 +9,52 @@ const app=require('../../app')
 const assert=require('assert')
 
 const e_part=require('../../server/constant/enum/node').ValidatePart
+const e_method=require('../../server/constant/enum/node').Method
 
 const common_operation=require('../../server/model/mongo/operation/common_operation')
 const dbModel=require('../../server/model/mongo/dbModel')
 
 const inputRule=require('../../server/constant/inputRule/inputRule').inputRule
 const browserInputRule=require('../../server/constant/inputRule/browserInputRule').browserInputRule
+
 const validateError=require('../../server/constant/error/validateError').validateError
+const helpError=require('../../server/constant/error/controller/helperError').helper
 
 let baseUrl="/user/"
-describe('POST /user rule check', function() {
-    let data={values:{recordInfo:{}}},url=`register`,finalUrl=baseUrl+url
+describe('register format check', function() {
+    let data = {values: {recordInfo: {}}}, url = ``, finalUrl = baseUrl + url
+
+    it('miss part method', function(done) {
+        // data.values[e_part.RECORD_INFO]={account:{value:'1'}}
+        request(app).post(finalUrl).set('Accept', 'application/json').send(data)
+            .end(function(err, res) {
+                // if (err) return done(err);
+                console.log(`res ios ${JSON.stringify(res)}`)
+                let parsedRes=JSON.parse(res.text)
+                // assert.deepStrictEqual(parsedRes.rc,99999)
+                assert.deepStrictEqual(parsedRes.rc,helpError.methodPartMustExistInDispatcher.rc)
+                done();
+            });
+    });
+
+    it('method is unknown value', function(done) {
+        data.values[e_part.METHOD]=10
+        request(app).post(finalUrl).set('Accept', 'application/json').send(data)
+            .end(function(err, res) {
+                // if (err) return done(err);
+                console.log(`res ios ${JSON.stringify(res)}`)
+                let parsedRes=JSON.parse(res.text)
+                // assert.deepStrictEqual(parsedRes.rc,99999)
+                assert.deepStrictEqual(parsedRes.rc,validateError.validateFormat.inputValuePartMethodValueFormatWrong.rc)
+                done();
+            });
+    });
+})
+
+
+
+describe('register /user rule check', function() {
+    let data={values:{recordInfo:{},method:e_method.CREATE}},url=``,finalUrl=baseUrl+url
 
     it('miss require field name', function(done) {
         data.values[e_part.RECORD_INFO]={account:{value:'1'}}
@@ -126,8 +161,8 @@ describe('POST /user rule check', function() {
 })
 
 
-describe('POST /user/register correct value', function() {
-    let data={values:{recordInfo:{}}},url=`register`,finalUrl=baseUrl+url
+describe('register /user correct value', function() {
+    let data={values:{recordInfo:{},method:e_method.CREATE}},url=``,finalUrl=baseUrl+url
     it('correct value', function(done) {
 
 
@@ -161,8 +196,8 @@ describe('POST /user/register correct value', function() {
 })
 
 
-describe('POST /user/register/uniqueCheck ', function() {
-    let data={values:{}},url='register/uniqueCheck',finalUrl=baseUrl+url
+describe('POST /user/uniqueCheck ', function() {
+    let data={values:{}},url='uniqueCheck',finalUrl=baseUrl+url
 
 
     it('unique name check', function(done) {
@@ -224,8 +259,8 @@ describe('POST /user/register/uniqueCheck ', function() {
 
 
 
-describe('POST /user/login ', function() {
-    let data={values:{}},url='login',finalUrl=baseUrl+url
+describe('POST login /user ', function() {
+    let data={values:{method:e_method.MATCH}},url='',finalUrl=baseUrl+url
 
 
     it('user login correct', function(done) {
