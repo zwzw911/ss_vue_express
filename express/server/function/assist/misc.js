@@ -178,18 +178,25 @@ let getUserInfo=function(req){
 
 /*          检查当前用户状态是否和期望的一致            */
 const checkUserState=function(req, exceptState){
-
-
+/*
+* 一旦在app中启用了express-session，则在server端，req.session就一直存在，其中内容为cookie的设置参数（但是没有写入redis）；
+* 只有当通过诸如req.session.userId=objectId的语句，才会将cookies和userId写入到redis，如此，就可以根据client传入的sessionId，查找redis中对应的记录（cookie设置+程序存储的值）
+* 1. 一旦用户运行过某些正常的页面（某些API是用户正常打开页面时会调用，例如，createUser/login），则在session中设置对应的 lastPage，
+* 2. 而有些rest API是client 自动调用的（例如，uniqueCheck），此时需要检测是否有lastPage，且lastpage为调用此API的页面，没有或者不是，说明不是浏览器发出的操作，而可能是黑客的操作
+* 3. 一旦用户登录，直接设置userId
+* */
+//console.log(`req.session ${JSON.stringify(req.session)}`)
     let currentUserState
-    if(undefined===req.session){
-        currentUserState=e_userStateEnum.NO_SESS
-    }else if(undefined===req.session.userName){
-        //已经在get方法中获得sess
+    if(undefined===req.session.userId){
         currentUserState=e_userStateEnum.NOT_LOGIN
+/*    } else if(undefined===req.session.userId){
+        //已经在get方法中获得sess
+        currentUserState=e_userStateEnum.NOT_LOGIN*/
     }else{
         currentUserState=e_userStateEnum.LOGIN
     }
-
+// console.log(`exceptState ${JSON.stringify(exceptState)}`)
+//     console.log(`currentUserState ${JSON.stringify(currentUserState)}`)
     //和期望的相等，直接返回
     if(exceptState===currentUserState){
         return {rc:0}
@@ -201,11 +208,15 @@ const checkUserState=function(req, exceptState){
             if(e_userStateEnum.LOGIN===currentUserState){
                 return {rc:0}
             }
+            break;
+        case e_userStateEnum.LOGIN:
+            if(exceptState!==currentUserState){
+                return {rc:0}
+            }
+            break;
     }
 
     return miscError.notExpectedUserState
-
-
 
 }
 
@@ -224,7 +235,9 @@ let encodeHtml = function(s){
 };
 
 
-
+const ifUserLogin=function(req){
+    return undefined!==req.session.userId
+}
 
 
 
@@ -290,6 +303,9 @@ function genFinalReturnResult(rc){
 
 }
 
+function objectDeepCopy(sourceObj){
+    return JSON.parse(JSON.stringify(sourceObj))
+}
 module.exports={
     checkInterval_async,
     generateRandomString,
@@ -298,6 +314,7 @@ module.exports={
 
     getUserInfo,
     checkUserState,
+    ifUserLogin,
 
     encodeHtml,
 
@@ -308,4 +325,6 @@ module.exports={
     convertURLSearchString,
     escapeRegSpecialChar,
     genFinalReturnResult,
+
+    objectDeepCopy,
 }

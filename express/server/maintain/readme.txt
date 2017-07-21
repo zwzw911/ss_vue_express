@@ -32,6 +32,6 @@ generateMongofieldToEnum
 
 修改了constant/enum/mongo.js后，运行generateMongoEnum
 
-修改了coll已经对应的inputRule（添加删除改字段），运行 generateMongoFieldToEnum===>generateAllRuleInOneFile
+修改了coll已经对应的inputRule（添加删除改字段），运行 generateMongoFieldToEnum===>generateMongoUniqueFieldToEnum===>generateAllRuleInOneFile
 
-修改了structure已经对应的inputRule（添加删除了coll），运行 generateMongoCollToEnum===>generateMongoFieldToEnum===>generateMongoDbModelToEnum=>generateAllRuleInOneFile
+修改了structure已经对应的inputRule（添加删除了coll），运行 generateMongoCollToEnum===>generateMongoFieldToEnum===>generateMongoUniqueFieldToEnum===>generateMongoDbModelToEnum=>generateAllRuleInOneFile

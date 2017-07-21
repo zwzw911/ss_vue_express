@@ -8,6 +8,11 @@
  *
  */
 
+
+/*
+* "{\"cookie\":{\"originalMaxAge\":1728000000,\"expires\":\"2017-08-09T07:01:45.856Z\",\"secure\":false,\"httpOnly\":true,\"domain\":\"127.0.0.1\",\"path\":\"/\",\"sameSite\":\"lax\"},
+* \"userId\":\"597042d2996fe61464da1d5c\"}"
+* */
 'use strict'
 // var mongooseConnect=require('../model/dbConnection').mongoose;
 const expressSession=require('express-session');
@@ -49,22 +54,25 @@ let storeOption={
 
 //只是设置cookie的duration
 function setCookieDuration(timeInMinute){
-    cookieOption.maxAge=timeInMinute*60*1000 //转换成ms
+    sessionOption.cookie.maxAge=timeInMinute*60*1000 //转换成second
 }
 function getCookieOption(){
     return cookieOption
 }
 //同时设置cookie和session（Redis）的duration
-function setSessionDuration(timeInMinute){
+function setSessionDurationInMinute(timeInMinute){
     setCookieDuration(timeInMinute)
     storeOption.redis.ttl=timeInMinute*60 //转换成second
+    // console.log(`storeOption ${JSON.stringify(storeOption)}`)
 }
 function getSessionOption(){
     // setCookieDuration(timeInMinute)
+    // console.log(`storeOption ${JSON.stringify(storeOption)}`)
     return sessionOption
 }
 
 function getStore(){
+    // console.log(`tore option is ${JSON.stringify(storeOption.redis)}`)
     return new sessionStore(storeOption.redis)
 }
 
@@ -74,18 +82,20 @@ function getStore(){
     secret: 'keyboard cat'
 }));*/
 function getSession(){
+    // console.log(`======>in`)
     let finalOption
     let store=getStore()
     finalOption=Object.assign({},sessionOption)
-    finalOption.store=store
     // console.log(`finalOption ${JSON.stringify(finalOption)}`)
+    finalOption.store=store
+
     return expressSession(finalOption)
 }
 
 module.exports={
     setCookieDuration,
     getCookieOption,
-    setSessionDuration,
+    setSessionDurationInMinute,
     getSessionOption,
     getStore,
     getSession,

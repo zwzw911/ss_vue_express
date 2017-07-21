@@ -169,6 +169,9 @@ const maxNumber={
         maxArticlePerCollection:100,//每个收藏夹最多200篇文档
         maxTopicPerCollection:100,//每个收藏夹最多200篇系列
     },
+    user:{
+        maxUsedAccountNum:10,//最多记录10个历史账号
+    }
 
 }
 //当使用suggest功能为用户提供可选项时，最大提供多少

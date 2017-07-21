@@ -28,9 +28,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 const e_env=require('./server/constant/enum/node').Env
 const currentEnv=require('./server/constant/config/appSetting').currentEnv
 
-/*const session=require('./server/function/assist/cookieSession')
-session.setSessionDuration(28800) //session duration is 8hours
-app.use(session.getSession())*/
+// console.log(`=============app in=======`)
+const session=require('./server/function/assist/cookieSession')
+session.setSessionDurationInMinute(480) //session duration is 8hours
+// let op=
+app.use(session.getSession())
 
 
 /*const checkInterval_async=require('./server/function/assist/misc').checkInterval_async
@@ -86,7 +88,7 @@ app.use(function(req,res,next){
 
 
 /*              require file                */
-const user=require('./server/controller/user/user')
+const user=require('./server/controller/user/user').router
 
 
 app.use('/user', user);

@@ -2,7 +2,6 @@
  
     "use strict"
 
-const Coll=require('./DB_Coll').Coll 
 const Field={
     ADMIN_PENALIZE:{
         ID:'id',
@@ -191,6 +190,8 @@ const Field={
         NAME:'name',
         ACCOUNT:'account',
         ACCOUNT_TYPE:'accountType',
+        USED_ACCOUNT:'usedAccount',
+        LAST_ACCOUNT_UPDATE_DATE:'lastAccountUpdateDate',
         PASSWORD:'password',
         DOC_STATUS:'docStatus',
         PHOTO_DATA_URL:'photoDataUrl',

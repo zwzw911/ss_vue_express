@@ -8,6 +8,8 @@
 const serverDataType=require('../../../enum/inputDataRuleType').ServerDataType
 const regex=require('../../../regex/regex').regex
 const enumValue=require('../../../../model/mongo/structure/enumValue')
+/*              获得 某些设置值            */
+const maxNumber=require('../../../config/globalConfiguration').maxNumber
 
 const user= {
 
@@ -46,27 +48,42 @@ const user= {
         'require': {define: false, error: {rc: 10728},mongoError:{rc:20728,msg:'用户头像不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         /*            'minLength':{define:6,error:{rc:10002},mongoError:{rc:20002,msg:'密码至少6个字符'}},
          'maxLength':{define:20,error:{rc:10004},mongoError:{rc:20004,msg:'密码的长度不能超过20个字符'}},*/
-        'format':{define:regex.dataUrlThumbnail,error:{rc:10730},mongoError:{rc:20730,msg:'用户头像格式不正确'}} //加密密码采用sha256，减少CPU负荷
+        'format':{define:regex.dataUrlThumbnail,error:{rc:10729},mongoError:{rc:20729,msg:'用户头像格式不正确'}} //加密密码采用sha256，减少CPU负荷
     },
     /*              维护事务一致性             */
     docStatus:{
         'chineseName': 'document状态',
         'type':serverDataType.STRING,
-        'require': {define: true, error: {rc: 10732},mongoError:{rc:20732,msg:'document状态不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        'require': {define: true, error: {rc: 10730},mongoError:{rc:20730,msg:'document状态不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         /*            'minLength':{define:6,error:{rc:10002},mongoError:{rc:20002,msg:'密码至少6个字符'}},
          'maxLength':{define:20,error:{rc:10004},mongoError:{rc:20004,msg:'密码的长度不能超过20个字符'}},*/
-        'enum':{define:enumValue.DocStatus,error:{rc:10734},mongoError:{rc:20734,msg:'document状态不是预定义的值'}} //加密密码采用sha256，减少CPU负荷
+        'enum':{define:enumValue.DocStatus,error:{rc:10731},mongoError:{rc:20731,msg:'document状态不是预定义的值'}} //加密密码采用sha256，减少CPU负荷
     },
 
     /*                          */
     accountType:{
         'chineseName': '账号类型',
         'type':serverDataType.STRING,
-        'require': {define: true, error: {rc: 10736},mongoError:{rc:20736,msg:'账号类型不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        'require': {define: true, error: {rc: 10732},mongoError:{rc:20732,msg:'账号类型不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         /*            'minLength':{define:6,error:{rc:10002},mongoError:{rc:20002,msg:'密码至少6个字符'}},
          'maxLength':{define:20,error:{rc:10004},mongoError:{rc:20004,msg:'密码的长度不能超过20个字符'}},*/
-        'enum':{define:enumValue.AccountType,error:{rc:10738},mongoError:{rc:20738,msg:'账号类型不是预定义的值'}} //加密密码采用sha256，减少CPU负荷
-    }
+        'enum':{define:enumValue.AccountType,error:{rc:10733},mongoError:{rc:20733,msg:'账号类型不是预定义的值'}} //加密密码采用sha256，减少CPU负荷
+    },
+
+    usedAccount:{
+        'chineseName': '历史账号',
+        'type':[serverDataType.STRING],
+        'require': {define: true, error: {rc: 10734},mongoError:{rc:20734,msg:'历史账号不能为空'}},//注册的时候，就必须把account插入
+        'arrayMinLength': {define: 1, error: {rc: 10735}, mongoError: {rc: 20135, msg: '至少设置1个标签'}},
+        'arrayMaxLength': {define: maxNumber.user.maxUsedAccountNum, error: {rc: 10736}, mongoError: {rc: 20736, msg: `最多保存${maxNumber.user.maxUsedAccountNum}个历史账号`}},
+    },
+
+    lastAccountUpdateDate:{
+        'chineseName': '账号更改日期',
+        'type':[serverDataType.DATE],
+        'require': {define: true, error: {rc: 10737},mongoError:{rc:20737,msg:'账号更改日期不能为空'}},//注册的时候，就必须把account插入
+
+    },
 }
 
 module.exports={

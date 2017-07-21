@@ -1,6 +1,6 @@
 /**
  * Created by wzhan039 on 2017-07-13.
- * 读取model/mongo/structure下文件的名称，将它们写入到enum文件中
+ * 读取model/mongo/structure下所有文件的字段，如果是unique，写入文件DB_unqiueField
  */
 "use strict";
 const fs=require('fs'),path=require('path')
@@ -84,28 +84,41 @@ function generateFieldEnum(structureDir,destFilePath){
     const dbFieldDefine=require(fieldDefinePath)
     for(let singleColl in dbFieldDefine){
 
-        convertedEnum+=`${indent}${singleColl.toUpperCase()}:{\r\n`
+        let dbString=`${indent}${singleColl}:[`
+        let dbStringAlreadyWrite=false
+        // convertedEnum+=`${indent}${singleColl.toUpperCase()}:{\r\n`
         let collFields=dbFieldDefine[singleColl]
         // console.log(`${JSON.stringify(singleColl)}`)
         // console.log(`${JSON.stringify(dbFieldDefine[singleColl])}`)
-        convertedEnum+=`${indent}${indent}ID:'id',\r\n`
+        // convertedEnum+=`${indent}${indent}ID:'id',\r\n`
         for(let singleField in collFields){
             if(-1===skipField.indexOf(singleField)){
-                let singleFieldKey=singleField.replace(/([A-Z])/g,"_$1")
-                // console.log(singleField)
-                // console.log(`${singleField.toUpperCase()}:${singleField}`)
-                convertedEnum+=`${indent}${indent}${singleFieldKey.toUpperCase()}:'${singleField}',\r\n`
+                if(true===collFields[singleField]['unique']){
+                    if(false===dbStringAlreadyWrite){
+                        convertedEnum+=dbString
+                        dbStringAlreadyWrite=true
+                    }
+                    convertedEnum+=`"${singleField}",`
+                    // let singleFieldKey=singleField.replace(/([A-Z])/g,"_$1")
+                    // console.log(singleField)
+                    // console.log(`${singleField.toUpperCase()}:${singleField}`)
+                    // convertedEnum+=`${indent}${indent}${singleFieldKey.toUpperCase()}:'${singleField}',\r\n`
+                }
+
             }
 
         }
-        convertedEnum+=`${indent}},\r\n`
+        if(true===dbStringAlreadyWrite){
+            convertedEnum+=`],\r\n`
+        }
+
     }
     fs.unlinkSync(fieldDefinePath)
     return convertedEnum
 }
 
 function writeFinalResult(toBeReadDir,resultWriteFilePath){
-    let description=`/*    gene by server/maintain/generateMongoFieldToEnum     */ \r\n \r\n`
+    let description=`/*    gene by server/maintain/generateMongoUniqueFieldToEnum     */ \r\n \r\n`
     let indent=`\ \ \ \ `
     let useStrict=`"use strict"\r\n`
     let convertedEnum=``
@@ -113,8 +126,8 @@ function writeFinalResult(toBeReadDir,resultWriteFilePath){
     convertedEnum+=`${description}${indent}${useStrict}\r\n`
     // convertedEnum+=`const Coll=require('./DB_Coll').Coll \r\n`
 
-    convertedEnum+=`const Field={\r\n`
-    let exp=`\r\nmodule.exports={\r\n${indent}Field,\r\n}`
+    convertedEnum+=`const UniqueField={\r\n`
+    let exp=`\r\nmodule.exports={\r\n${indent}UniqueField,\r\n}`
 
     let result=generateFieldEnum(toBeReadDir,resultWriteFilePath)
     convertedEnum+=result
@@ -132,7 +145,7 @@ function writeFinalResult(toBeReadDir,resultWriteFilePath){
 
 // writeMiddleResult('../model/mongo/structure','../constant/enum/test.js')
 // generateFieldEnum()
-writeFinalResult('../model/mongo/structure','../constant/enum/DB_field.js')
+writeFinalResult('../model/mongo/structure','../constant/enum/DB_uniqueField.js')
 
 module.exports={
     getFileName

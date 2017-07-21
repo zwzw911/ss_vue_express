@@ -283,21 +283,22 @@ function dispatcherPreCheck({req}){
 //validatePartValueFormat+validatePartValue
 function CRUDPreCheck({req,expectUserState,expectedPart,collName,method}){
     // console.log(`recordInfoBaseRule ${JSON.stringify(recordInfoBaseRule)}`)
+    let result
     //检查参数
-    if(-1===Object.values(e_userState).indexOf(expectUserState)){
+/*    if(-1===Object.values(e_userState).indexOf(expectUserState)){
         return helperError.undefinedUserState
-    }
+    }*/
     if(-1===Object.values(e_coll).indexOf(collName)){
         return helperError.undefinedColl
     }
 
-    //检查用户状态
-    let result = checkUserState(req, expectUserState)
+/*    //检查用户状态
+    result = checkUserState(req, expectUserState)
     if (result.rc > 0) {
         // return Promise.reject(result)
         return result
-    }
-
+    }*/
+// console.log(`CRUDPreCheck： checkUserState  ${JSON.stringify(result)}`)
     //检查输入参数中part的值（格式预先检查好，某些part的值简单。例如method/currentPage，同时检测了value）
 
 
@@ -371,21 +372,22 @@ function CRUDPreCheck({req,expectUserState,expectedPart,collName,method}){
 
 //没有method
 function nonCRUDreCheck({req,expectUserState,expectPart,collName}){
+    let result
     // console.log(`recordInfoBaseRule ${JSON.stringify(recordInfoBaseRule)}`)
     //检查参数
-    if(-1===Object.values(e_userState).indexOf(expectUserState)){
+/*    if(-1===Object.values(e_userState).indexOf(expectUserState)){
         return helperError.undefinedUserState
-    }
+    }*/
     if(-1===Object.values(e_coll).indexOf(collName)){
         return helperError.undefinedColl
     }
 
-    //检查用户状态
+/*    //检查用户状态
     let result = checkUserState(req, expectUserState)
     if (result.rc > 0) {
         // return Promise.reject(result)
         return result
-    }
+    }*/
 
     //检查输入参数中part的格式和值
 
@@ -425,7 +427,25 @@ function nonCRUDreCheck({req,expectUserState,expectPart,collName}){
     // }
 }
 
+/*              字段值是否已经存在               */
+async function ifFieldValueExistInColl_async({dbModel,fieldName,fieldValue}){
+    let condition = {}
+    condition[fieldName]=fieldValue
+    // console.log(`condition ${JSON.stringify(condition)}`)
+    // {account: docValue[e_field.USER.ACCOUNT]['value']} //,dDate:{$exists:0}   重复性检查包含已经删除的用户
+    // console.log(`fieldName:${fieldName}----fieldValue ${fieldValue}`)
+    let uniqueCheckResult = await common_operation.find({dbModel: dbModel, condition: condition})
 
+    if (uniqueCheckResult.rc > 0) {
+        return Promise.reject(uniqueCheckResult)
+    }
+    // console.log(`uniqueCheckResult ${JSON.stringify(uniqueCheckResult)}`)
+    // if(uniqueCheckResult.msg.length>0){
+    // console.log(`uniqueCheckResult.msg.length>0 ${JSON.stringify(uniqueCheckResult.msg.length>0)}`)
+    // let ifExist=(uniqueCheckResult.msg.length>0)
+    return Promise.resolve({rc:0,msg:uniqueCheckResult.msg.length>0})
+    // }
+}
 
 module.exports= {
     commonCheck,//每个请求进来是，都要进行的操作（时间间隔检查等）
@@ -437,6 +457,7 @@ module.exports= {
     nonCRUDreCheck,//commonCheck+validatePartValueFormat+validatePartValue
 
     checkIfFkExist_async,//检测doc中外键值是否在对应的coll中存在
+    ifFieldValueExistInColl_async,// 检测字段值是否已经在db中存在
 }
 
 
