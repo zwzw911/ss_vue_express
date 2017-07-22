@@ -235,6 +235,12 @@ const intervalCheck={
     rejectTimesThreshold:5,//达到此拒绝次数，拒绝时间设成600
 
 }
+
+const miscConfiguration={
+    user:{
+        accountMinimumChangeDurationInHours:24,//一天只能换一次账号
+    },
+}
 //可以更改的设定
 //type:int 如果有max属性，说明可以修改（只要小于max）;否则不能修改
 // path:folder;
@@ -540,5 +546,6 @@ module.exports={
     maxNumber,
     gm,
     intervalCheck,
+    miscConfiguration,
 }
 

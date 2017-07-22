@@ -51,10 +51,10 @@ const mongoError=require('../../constant/error/mongo/mongoError').error
 
 const regex=require('../../constant/regex/regex').regex
 
+const maxNumber=require('../../constant/config/globalConfiguration').maxNumber
+const miscConfiguration=require('../../constant/config/globalConfiguration').miscConfiguration
 
-
-
-const userError={
+const controllerError={
     nameAlreadyExists:{rc:50100,msg:`用户名已经存在`}, //key名字必须固定为 field+AlreadyExists
     accountAlreadyExists:{rc:50102,msg:`账号已经存在`},
     fieldNotSupport:{rc:50104,msg:`字段名称不正确`},
@@ -68,6 +68,8 @@ const userError={
     notLogin:{rc:50112,msg:`尚未登录，无法执行用户信息更改`},
     cantUpdateOwnProfile:{rc:50114,msg:`只能更改自己的信息`},
     userNotExist:{rc:50116,msg:`用户信息不存在`},//update的时候，无法根据req.session.userId找到对应的记录
+    userNoMatchSugar:{rc:50118,msg:`用户信息不完整，请联系管理员`},
+    accountCantChange:{rc:50120,msg:`更改账号过于频繁，请明天再试`}
 }
 
 
@@ -126,7 +128,7 @@ async function dispatcher(req){
             //检查是否登录（以便从session中获得对应的userId）
             if(false===ifUserLogin(req)){
                 // console.log(`user login=======`)
-                return Promise.reject(userError.notLogin)
+                return Promise.reject(controllerError.notLogin)
             }
             // console.log(`req.session indisp ${JSON.stringify(req.session)}`)
             result=await updateUser_async(req)
@@ -169,9 +171,9 @@ async  function createUser_async(req){
             if(true===ifExist.msg){
                 switch (singleFieldName) {
                     case e_field.USER.NAME:
-                        return Promise.reject(userError.nameAlreadyExists)
+                        return Promise.reject(controllerError.nameAlreadyExists)
                     case e_field.USER.ACCOUNT:
-                        return Promise.reject(userError.accountAlreadyExists)
+                        return Promise.reject(controllerError.accountAlreadyExists)
                 }
             }
         }
@@ -317,23 +319,54 @@ async function updateUser_async(req){
     // let userId=result.msg[e_field.USER.]
 
     if(undefined===req.session.userId){
-        return Promise.reject(userError.notLogin)
+        return Promise.reject(controllerError.notLogin)
     }
     
     if(req.session.userId!==userId){
-        return Promise.reject(userError.cantUpdateOwnProfile)
+        return Promise.reject(controllerError.cantUpdateOwnProfile)
     }
 
     /*              剔除value没有变化的field            */
     // console.log(`befreo check ${JSON.stringify(docValue)}`)
-    result=await common_operation.findById({dbModel:dbModel.user,id:req.session.userId})
-    if(null===result.msg){return Promise.reject(userError.userNotExist)}
-    let originUserInfo=result.msg
+    //查找对应的记录（docStatus必须是done）
+    let condition={_id:req.session.userId,docStatus:e_docStatus.DONE}
+    result=await common_operation.find({dbModel:dbModel.user,condition:condition})
+    // console.log(`result====》 ${JSON.stringify(result)}`)
+    // console.log(`condition====》 ${JSON.stringify(condition)}`)
+    // console.log(`null===result.msg====》 ${JSON.stringify(null===result.msg)}`)
+    if(0===result.msg.length){return Promise.reject(controllerError.userNotExist)}
+    let originUserInfo=result.msg[0]
+    //如果传入了password，hash后覆盖原始值
+    if(e_field.USER.PASSWORD in docValue){
+        let sugarResult=await common_operation.find({dbModel:dbModel.sugar,condition:{ userId:originUserInfo.id}})
+        if(null===sugarResult.msg){
+            return Promise.reject(controllerError.userNoMatchSugar)
+        }
+        // console.log(`sugarResult=====> ${JSON.stringify(sugarResult)}`)
+        let sugar=sugarResult.msg[0]['sugar']
+// console.log(`sugar=====> ${JSON.stringify(sugar)}`)
+//         console.log(`password value =====> ${JSON.stringify(docValue[e_field.USER.PASSWORD]['value'])}`)
+//         console.log(`mix value =====> ${docValue[e_field.USER.PASSWORD]['value']}${sugar}`)
+        let hashPasswordResult=hash(`${docValue[e_field.USER.PASSWORD]['value']}${sugar}`,e_hashType.SHA256)
+        if(hashPasswordResult.rc>0){
+            return Promise.reject(hashPasswordResult)
+        }
+        // console.log(`hash password is ====>${hashPassword}`)
+        docValue[e_field.USER.PASSWORD]['value']=hashPasswordResult.msg
+        // console.log(` after hash password====> ${JSON.stringify(docValue)}`)
+
+    }
+    // console.log(`updateUser after compare with origin value ${JSON.stringify(docValue)}`)
+    // console.log(`originUserInfo value ${JSON.stringify(originUserInfo)}`)
     for(let singleFieldName in docValue){
         if(docValue[singleFieldName]['value']===originUserInfo[singleFieldName]){
             delete docValue[singleFieldName]
         }
     }
+
+    // console.log(`updateUser after compare with origin value ${JSON.stringify(docValue)}`)
+
+
     if(0===Object.keys(docValue).length){
         return {rc:0}
     }
@@ -345,21 +378,62 @@ async function updateUser_async(req){
             let ifExist=await helper.ifFieldValueExistInColl_async({dbModel:dbModel.user,fieldName:singleFieldName,fieldValue:docValue[singleFieldName]['value']})
 // console.log(`singleFieldName: ${singleFieldName}===fieldValue: ${docValue[singleFieldName]['value']}===ifExist ${ifExist}`)
             if(true===ifExist.msg){
-                return Promise.reject(userError[singleFieldName+'AlreadyExists'])
+                return Promise.reject(controllerError[singleFieldName+'AlreadyExists'])
             }
         }
     }
+
+    /*              如果是更新account，
+    1. 检测account是否存在usedAccount中，存在，不做任何操作
+    2. 如果不存在，usedAccount的长度是否达到最大，达到最大，将第一个元素删除，并将old的account push入数组
+    3.
+    */
+    if(true===e_field.USER.ACCOUNT in docValue){
+        // console.log(`USED_ACCOUNT CHECK IN`)
+        // console.log(`originUserInfo=======》${JSON.stringify(originUserInfo)}`)
+        // console.log(`docValue=======》${JSON.stringify(docValue)}`)
+        let originalUsedAccount=originUserInfo[e_field.USER.USED_ACCOUNT]
+        let toBeUpdateAccountValue=docValue[e_field.USER.ACCOUNT]['value']
+        // console.log(`originalUsedAccount=======》${JSON.stringify(originalUsedAccount)}`)
+        // console.log(`toBeUpdateAccountValue=======》${JSON.stringify(toBeUpdateAccountValue)}`)
+        //要更新的account没有在历史记录中
+        if(-1===originalUsedAccount.indexOf(toBeUpdateAccountValue)){
+            //检测历史记录的长度
+            while (originalUsedAccount.length>=maxNumber.user.maxUsedAccountNum){
+                originalUsedAccount.shift()
+            }
+            // console.log(`=======>not used`)
+            //检查更改账号的间隔
+            let duration=(Date.now()-originUserInfo[e_field.USER.LAST_ACCOUNT_UPDATE_DATE])/1000/60
+            // console.log(`duration=======>${duration}`)
+            if(duration<miscConfiguration.user.accountMinimumChangeDurationInHours){
+                return Promise.reject(controllerError.accountCantChange)
+            }
+            originalUsedAccount.push(toBeUpdateAccountValue)
+            // console.log(`originalUsedAccount=======>${JSON.stringify(originalUsedAccount)}`)
+            docValue[e_field.USER.USED_ACCOUNT]={value:originalUsedAccount}
+            // console.log(`docValue=======>${JSON.stringify(docValue)}`)
+            //添加最近一次更改账号的时间
+            docValue[e_field.USER.LAST_ACCOUNT_UPDATE_DATE]={value:Date.now()}
+            // console.log(`docValue=======>not used`)
+        }
+
+        // console.log(`.USER.USED_ACCOUNT======>${JSON.stringify(docValue)}`)
+    }
+
+
+
     /*              执行update操作                  */
     dataConvert.convertCreateUpdateValueToServerFormat(docValue)
     dataConvert.constructUpdateCriteria(docValue,fkConfig[e_coll.USER])
 
-    /*              如果有更改account，需要几率下来         */
+/*    /!*              如果有更改account，需要几率下来         *!/
     if(undefined!==docValue[e_field.USER.ACCOUNT]){
 
-    }
+    }*/
 
     result=await common_operation.update({dbModel:dbModel[e_coll.USER],id:userId,values:docValue})
-    return Promise.resolve(result)
+    return Promise.resolve({rc:0})
 
 }
 
@@ -370,11 +444,11 @@ async function login_async(req){
     let docValue = req.body.values[e_part.RECORD_INFO]
     let expectedField = [e_field.USER.ACCOUNT, e_field.USER.PASSWORD]
     if(Object.keys(docValue).length!==expectedField.length){
-        return Promise.reject(userError.loginFieldNumNotExpected)
+        return Promise.reject(controllerError.loginFieldNumNotExpected)
     }
     for (let singleInputFieldName of expectedField) {
         if (false === singleInputFieldName in docValue) {
-            return Promise.reject(userError.loginMandatoryFieldNotExist(singleInputFieldName))
+            return Promise.reject(controllerError.loginMandatoryFieldNotExist(singleInputFieldName))
         }
     }
 
@@ -385,7 +459,7 @@ async function login_async(req){
     //     return Promise.reject(userResult)
     // }
     if(0===userResult.rc && 0===userResult.msg.length){
-        return Promise.reject(userError.accountNotExist)
+        return Promise.reject(controllerError.accountNotExist)
     }
     // console.log(`userResult ${JSON.stringify(userResult)}`)
     condition={userId:userResult.msg[0]['id']}
@@ -403,7 +477,7 @@ async function login_async(req){
 
     // console.log(`user/pwd  ${docValue[e_field.USER.ACCOUNT]['value']}///${encryptPassword.msg}`)
     if(userResult.msg[0][e_field.USER.PASSWORD]!==encryptPassword['msg']){
-        return Promise.reject(userError.accountPasswordNotMatch)
+        return Promise.reject(controllerError.accountPasswordNotMatch)
     }
 
     /*
@@ -447,7 +521,7 @@ async  function  uniqueCheck_async(req) {
 //     console.log(`fieldValue ${fieldValue}`)
 //     console.log(`e_uniqueField[e_coll] ${JSON.stringify(e_uniqueField[e_coll.USER])}`)
     if(-1===e_uniqueField[e_coll.USER].indexOf(fieldName)){
-        return Promise.reject(userError.fieldNotSupport)
+        return Promise.reject(controllerError.fieldNotSupport)
     }
 // console.log(`indexof check done`)
     let ifAlreadyExist=await helper.ifFieldValueExistInColl_async({dbModel:dbModel[e_coll.USER],fieldName:fieldName,fieldValue:fieldValue})
@@ -455,9 +529,9 @@ async  function  uniqueCheck_async(req) {
     if(true===ifAlreadyExist.msg){
         switch (fieldName) {
             case e_field.USER.NAME:
-                return Promise.reject(userError.nameAlreadyExists)
+                return Promise.reject(controllerError.nameAlreadyExists)
             case e_field.USER.ACCOUNT:
-                return Promise.reject(userError.accountAlreadyExists)
+                return Promise.reject(controllerError.accountAlreadyExists)
         }
     }
 
@@ -516,4 +590,4 @@ router.post('/uniqueCheck_async',function(req,res,next){
     )
 })*/
 
-module.exports={router,userError}
+module.exports={router,controllerError}

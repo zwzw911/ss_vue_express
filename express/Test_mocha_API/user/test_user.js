@@ -20,7 +20,7 @@ const browserInputRule=require('../../server/constant/inputRule/browserInputRule
 const validateError=require('../../server/constant/error/validateError').validateError
 const helpError=require('../../server/constant/error/controller/helperError').helper
 
-const contollerError=require('../../server/controller/user/user').userError
+const contollerError=require('../../server/controller/user/user').controllerError
 
 const objectDeepCopy=require('../../server/function/assist/misc').objectDeepCopy
 
@@ -423,12 +423,12 @@ describe(' user1 login:', function() {
 })
 
 
-describe('POST update /user： ', function() {
+describe('update user： ', function() {
     let data = {values:{method:e_method.MATCH}}, url = '', finalUrl = baseUrl + url
 
     let sess
     before('user login first before update', function(done) {
-        // data.values.method=e_method.UPDATE
+        data.values.method=e_method.MATCH
         let user1Tmp=objectDeepCopy(newUser1)
         delete user1Tmp['name']
         // delete user1Tmp['password']
@@ -440,6 +440,7 @@ describe('POST update /user： ', function() {
                 sess=res['header']['set-cookie'][0].split(';')[0]
                 let parsedRes=JSON.parse(res.text)
                 console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
+                console.log(`sess==============> ${JSON.stringify(sess)}`)
                 assert.deepStrictEqual(parsedRes.rc,0)
                 // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
                 done();
@@ -479,7 +480,7 @@ describe('POST update /user： ', function() {
             });
     })*/
 
-    it('update use1r with  account not change', function(done) {
+    it('update user1 with  account not change', function(done) {
         data.values.method=e_method.UPDATE
         data.values[e_part.RECORD_INFO]={account:{value:newUser1.account.value},name:{value:'anotherName'}}//,notExist:{value:123}
         // console.log(`data.values ${JSON.stringify(data.values)}`)
@@ -495,6 +496,51 @@ describe('POST update /user： ', function() {
                 done();
             });
     })
+
+
+    let newPassword='asdf456'
+    it('update user1 with  password change', function(done) {
+        data.values.method=e_method.UPDATE
+        data.values[e_part.RECORD_INFO]={password:{value:newPassword},name:{value:'anotherName'}}//,notExist:{value:123}
+        // console.log(`data.values ${JSON.stringify(data.values)}`)
+        console.log(`sess==============> ${JSON.stringify(sess)}`)
+        request.agent(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[sess]).send(data)
+            .end(function(err, res) {
+                // if (err) return done(err);
+                // console.log(`res ${JSON.stringify(res['header']['set-cookie']['connect.sid'])}`)
+                let parsedRes=JSON.parse(res.text)
+                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
+                assert.deepStrictEqual(parsedRes.rc,0)
+                // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
+                done();
+            });
+    })
+    it('check new password of user1 by login', function(done) {
+        data.values.method=e_method.MATCH
+        let user1Tmp=objectDeepCopy(newUser1)
+        delete user1Tmp['name']
+        user1Tmp['password']['value']=newPassword
+        // delete user1Tmp['password']
+        data.values[e_part.RECORD_INFO]=user1Tmp//,notExist:{value:123}
+        request(app).post(finalUrl).set('Accept', 'application/json').send(data)
+            .end(function(err, res) {
+                // if (err) return done(err);
+                // console.log(`res ${JSON.stringify(res['header']['set-cookie'][0].split(';')[0])}`)
+                // sess=res['header']['set-cookie'][0].split(';')[0]
+                let parsedRes=JSON.parse(res.text)
+                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
+                // console.log(`sess==============> ${JSON.stringify(sess)}`)
+                assert.deepStrictEqual(parsedRes.rc,0)
+                // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
+                done();
+            });
+    })
+
+
+
+
+
+
 
     it('user2(register)  correct value', function(done) {
         data.values.method=e_method.CREATE
@@ -529,7 +575,7 @@ describe('POST update /user： ', function() {
             });
     })
 
-    it('update user1 account successfully', function(done) {
+    it('update user1 account successfully(must disable duration check in updateUser_async)', function(done) {
         data.values.method=e_method.UPDATE
         data.values[e_part.RECORD_INFO]={account:{value:'19912341234'}}//,notExist:{value:123}
         request.agent(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[sess]).send(data)
@@ -539,6 +585,21 @@ describe('POST update /user： ', function() {
                 let parsedRes=JSON.parse(res.text)
                 console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
                 assert.deepStrictEqual(parsedRes.rc,0)
+                // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
+                done();
+            });
+    })
+
+    it('update user1 account too frequently(must enable duration check in updateUser_async)', function(done) {
+        data.values.method=e_method.UPDATE
+        data.values[e_part.RECORD_INFO]={account:{value:'11912341235'}}//,notExist:{value:123}
+        request.agent(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[sess]).send(data)
+            .end(function(err, res) {
+                // if (err) return done(err);
+                // console.log(`res ${JSON.stringify(res['header']['set-cookie']['connect.sid'])}`)
+                let parsedRes=JSON.parse(res.text)
+                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
+                assert.deepStrictEqual(parsedRes.rc,contollerError.accountCantChange.rc)
                 // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
                 done();
             });
