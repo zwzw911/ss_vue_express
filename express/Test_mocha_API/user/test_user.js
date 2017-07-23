@@ -28,10 +28,14 @@ let baseUrl="/user/"
 let userId  //create后存储对应的id，以便后续的update操作
 let newUser1={name:{value:'123456789'},account:{value:'15921776540'},password:{value:'123456'}}
 let newUser2={name:{value:'zw'},account:{value:'15921776549'},password:{value:'654321'}}
+let newUser3={name:{value:'ada'},account:{value:'wei.ag.zhang@alcate-sbell.com.cn'},password:{value:'654321'}}
+let user3NewAccount='1952206639@qq.com'
+
 let notExistUser={name:{value:'test'},account:{value:'13912341234'},password:{value:'123456'}}
 
 let newUser1ForModel={name:'123456789',account:'15921776540',password:'123456'}
 let newUser2ForModel={name:'zw',account:'15921776549',password:'654321'}
+let newUser3ForModel={name:'ada',account:'wei.ag.zhang@alcate-sbell.com.cn',password:'654321'}
 let notExistUseForModelr={name:'test',account:'13912341234',password:'123456'}
 // let correctValueForModel={name:'123456789',account:'15921776543',password:'123456'}
 // let copyValue={name:{value:'123456789'},account:{value:'15921776543'},password:{value:'123456'}}
@@ -636,5 +640,107 @@ describe('update user： ', function() {
             result=await common_operation.deleteOne({dbModel:dbModel.user_friend_group,condition:{userId:userId}})
             // console.log(`delete result is ${JSON.stringify(result)}`)
         }
+    })
+})
+
+
+describe('retrieve password: ', function() {
+    let data = {values:{}}, url = '', finalUrl = baseUrl + url,sess
+    // let sess
+    it('create new user3)', function(done) {
+        data.values.method=e_method.CREATE
+        data.values[e_part.RECORD_INFO]=newUser3//
+        request(app).post(finalUrl).set('Accept', 'application/json').send(data)
+            .end(function(err, res) {
+                // if (err) return done(err);
+
+                let parsedRes=JSON.parse(res.text)
+                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
+                assert.deepStrictEqual(parsedRes.rc,0)
+                // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
+                done();
+            });
+    })
+
+    it('user3 login correct', function(done) {
+        // console.log(`newUser3 ${JSON.stringify(newUser1)}`)
+        data.values.method=e_method.MATCH
+        let user3Tmp=objectDeepCopy(newUser3)
+        delete user3Tmp['name']
+        data.values[e_part.RECORD_INFO]=user3Tmp//,notExist:{value:123}
+        console.log(`data.values ${JSON.stringify(data.values)}`)
+
+        request.agent(app).post(finalUrl).set('Accept', 'application/json').send(data)
+            .end(function(err, res) {
+                // if (err) return done(err);
+                sess=res['header']['set-cookie'][0].split(';')[0]
+                let parsedRes=JSON.parse(res.text)
+                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
+                assert.deepStrictEqual(parsedRes.rc,0)
+                // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
+                done();
+            });
+    })
+
+    it('user3 login correct', function(done) {
+        // console.log(`newUser3 ${JSON.stringify(newUser1)}`)
+        data.values.method=e_method.MATCH
+        let user3Tmp=objectDeepCopy(newUser3)
+        delete user3Tmp['name']
+        data.values[e_part.RECORD_INFO]=user3Tmp//,notExist:{value:123}
+        console.log(`data.values ${JSON.stringify(data.values)}`)
+
+        request.agent(app).post(finalUrl).set('Accept', 'application/json').send(data)
+            .end(function(err, res) {
+                // if (err) return done(err);
+                sess=res['header']['set-cookie'][0].split(';')[0]
+                let parsedRes=JSON.parse(res.text)
+                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
+                assert.deepStrictEqual(parsedRes.rc,0)
+                // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
+                done();
+            });
+    })
+
+    it('user3 update new account', function(done) {
+        // console.log(`newUser3 ${JSON.stringify(newUser1)}`)
+        data.values.method=e_method.UPDATE
+        data.values[e_part.RECORD_INFO]={account:{value:user3NewAccount},}//,notExist:{value:123}
+        console.log(`data.values ${JSON.stringify(data.values)}`)
+        // console.log(`sess==============> ${JSON.stringify(sess)}`)
+        request.agent(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[sess]).send(data)
+            .end(function(err, res) {
+                // if (err) return done(err);
+                // console.log(`res ${JSON.stringify(res['header']['set-cookie']['connect.sid'])}`)
+                let parsedRes=JSON.parse(res.text)
+                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
+                assert.deepStrictEqual(parsedRes.rc,0)
+                // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
+                done();
+            });
+
+    })
+
+    it('user3 use current account retrieve password', function(done) {
+        // console.log(`newUser3 ${JSON.stringify(newUser1)}`)
+        url='retrievePassword'
+        finalUrl=baseUrl+url
+        delete data.values[e_part.METHOD]
+        delete data.values[e_part.RECORD_INFO]
+        data.values[e_part.SINGLE_FIELD]={account:{value:user3NewAccount},}//,notExist:{value:123}
+        console.log(`data.values ${JSON.stringify(data.values)}`)
+        // console.log(`sess==============> ${JSON.stringify(sess)}`)
+        request.agent(app).post(finalUrl).set('Accept', 'application/json').send(data)
+            .end(function(err, res) {
+                // if (err) return done(err);
+                // console.log(`res ${JSON.stringify(res['header']['set-cookie']['connect.sid'])}`)
+                // console.log()
+                let parsedRes=JSON.parse(res.text)
+                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
+                assert.deepStrictEqual(parsedRes.rc,0)
+                // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
+                done();
+            });
+
     })
 })

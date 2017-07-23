@@ -32,4 +32,8 @@
 1. 设定新enum，inputFieldCheckType，BASE_INPUTRULE,BASE_INPUT=======>done(暂时只用在_validateRecorderValue，validateSingleFieldValue的代码做了简化，不需要用此enum)
 
 
-1. user->update->password需要hash后和原始记录比较
+1. user->update->password需要hash后和原始记录比较======》done
+
+
+1. API中，一旦输入参数检查通过，立刻调用函数转换成{field:value}的形式
+2. 使用公司邮件发邮件（且为历史账号）

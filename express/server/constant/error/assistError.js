@@ -97,6 +97,9 @@ const misc={
     /*              checkUserState              */
     notExpectedUserState:{rc:40852,msg:{client:'内部错误',server:'用户状态不对'}},
 
+    /*              sendVerificationCodeByEmail_async               */
+    sendMailError(err){return {rc:40854,msg:{client:'邮件发送出错',server:`邮件发送错误:${JSON.stringify(err)}`}}}
+
 }
 const awesomeCaptcha={
     unknownHashType:{rc:40400,msg:`未知hash类型`},

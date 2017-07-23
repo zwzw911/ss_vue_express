@@ -174,6 +174,24 @@ const maxNumber={
     }
 
 }
+
+const mailOption={
+    qq:{
+        port:465,
+        host:'smtp.qq.com',
+        secure: true,
+        auth:{
+            user:'1952206639',
+            pass:'amtlhbezlrxocc',
+        },
+    },
+
+    company:{},
+}
+const mailAccount={
+    qq:'1952206639@qq.com',
+}
+
 //当使用suggest功能为用户提供可选项时，最大提供多少
 const suggestLimit={
     department:{
@@ -547,5 +565,7 @@ module.exports={
     gm,
     intervalCheck,
     miscConfiguration,
+    mailOption,
+    mailAccount,
 }
 

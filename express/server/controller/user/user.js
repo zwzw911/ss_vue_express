@@ -15,7 +15,7 @@ const router = express.Router();
 const e_userState=require('../../constant/enum/node').UserState
 const e_part=require('../../constant/enum/node').ValidatePart
 const e_method=require('../../constant/enum/node').Method
-// const e_coll=require('../../constant/enum/node').Coll
+const e_randomStringType=require('../../constant/enum/node').RandomStringType
 // const e_method=require('../../constant/enum/node').Method
 
 const e_hashType=require('../../constant/enum/node_runtime').HashType
@@ -39,6 +39,8 @@ const common_operation=require('../../model/mongo/operation/common_operation')
 const hash=require('../../function/assist/crypt').hash
 const generateRandomString=require('../../function/assist/misc').generateRandomString
 const genFinalReturnResult=require('../../function/assist/misc').genFinalReturnResult
+const sendVerificationCodeByEmail_async=require('../../function/assist/misc').sendVerificationCodeByEmail_async
+
 const ifUserLogin=require('../../function/assist/misc').ifUserLogin
 const dataConvert=require('../dataConvert')
 const validateCreateRecorderValue=require('../../function/validateInput/validateValue').validateCreateRecorderValue
@@ -53,6 +55,8 @@ const regex=require('../../constant/regex/regex').regex
 
 const maxNumber=require('../../constant/config/globalConfiguration').maxNumber
 const miscConfiguration=require('../../constant/config/globalConfiguration').miscConfiguration
+
+const mailAccount=require('../../constant/config/globalConfiguration').mailAccount
 
 const controllerError={
     nameAlreadyExists:{rc:50100,msg:`用户名已经存在`}, //key名字必须固定为 field+AlreadyExists
@@ -69,7 +73,10 @@ const controllerError={
     cantUpdateOwnProfile:{rc:50114,msg:`只能更改自己的信息`},
     userNotExist:{rc:50116,msg:`用户信息不存在`},//update的时候，无法根据req.session.userId找到对应的记录
     userNoMatchSugar:{rc:50118,msg:`用户信息不完整，请联系管理员`},
-    accountCantChange:{rc:50120,msg:`更改账号过于频繁，请明天再试`}
+    accountCantChange:{rc:50120,msg:`更改账号过于频繁，请明天再试`},
+
+    /*              retrievePassword_async          */
+    accountNotUnique:{rc:50122,msg:`账号错误，请联系管理员`},
 }
 
 
@@ -404,11 +411,14 @@ async function updateUser_async(req){
             }
             // console.log(`=======>not used`)
             //检查更改账号的间隔
-            let duration=(Date.now()-originUserInfo[e_field.USER.LAST_ACCOUNT_UPDATE_DATE])/1000/60
-            // console.log(`duration=======>${duration}`)
-            if(duration<miscConfiguration.user.accountMinimumChangeDurationInHours){
-                return Promise.reject(controllerError.accountCantChange)
+            if(e_env.PROD===currentEnv){
+                let duration=(Date.now()-originUserInfo[e_field.USER.LAST_ACCOUNT_UPDATE_DATE])/1000/60
+                // console.log(`duration=======>${duration}`)
+                if(duration<miscConfiguration.user.accountMinimumChangeDurationInHours){
+                    return Promise.reject(controllerError.accountCantChange)
+                }
             }
+
             originalUsedAccount.push(toBeUpdateAccountValue)
             // console.log(`originalUsedAccount=======>${JSON.stringify(originalUsedAccount)}`)
             docValue[e_field.USER.USED_ACCOUNT]={value:originalUsedAccount}
@@ -540,7 +550,89 @@ async  function  uniqueCheck_async(req) {
 
 }
 
+async function retrievePassword_async(req){
+    let result
+    let newPwd //新产生的密码
+    let userId  //账号对应的记录
+    let newPwdType=e_randomStringType.NORMAL
 
+    let condition={},condition1={}  //for account/ usedAccount
+    /*          格式/值检查        */
+    result=helper.nonCRUDreCheck({
+        req:req,
+        expectUserState:e_userState.NO_SESS,
+        expectPart:[e_part.SINGLE_FIELD],
+        collName:e_coll.USER
+    })
+    if(result.rc>0){
+        return Promise.reject(result)
+    }
+
+
+    /*                  logic               */
+    let docValue = req.body.values[e_part.SINGLE_FIELD]
+// console.log(`docValue ${JSON.stringify(docValue)}`)
+
+    //读取字段名，进行不同的操作（userUnique或者password格式）
+    let fieldName=Object.keys(docValue)[0]
+    let fieldValue=Object.values(docValue)[0]['value']
+
+
+    condition[e_field.USER.ACCOUNT]=fieldValue
+    condition[e_field.USER.DOC_STATUS]=e_docStatus.DONE
+    result=await common_operation.find({dbModel:dbModel.user,condition:condition})
+    // console.log(`retrieve ped: find current account=====>${JSON.stringify(result)}`)
+    if(result.msg.length>1){
+        return Promise.reject(controllerError.accountNotUnique)
+    }
+    if(result.msg.length===1){
+        userId=result.msg[0]['id']
+        newPwd=generateRandomString(6,newPwdType)
+    }
+    //继续在usedAccount中查找
+    if(result.msg.length===0){
+        condition1[e_field.USER.USED_ACCOUNT]=fieldValue
+        condition1[e_field.USER.DOC_STATUS]=e_docStatus.DONE
+        result=await common_operation.find({dbModel:dbModel.user,condition:condition1})
+
+        switch (result.msg.length){
+            case 0:
+                return {rc:0}
+            case 1:
+                userId=result.msg[0]['id']
+                newPwd=generateRandomString(6,newPwdType)
+                break
+            default:
+                return Promise.reject(controllerError.accountNotUnique)
+        }
+    }
+    // console.log(`retrieve ped: ready to hash new pwd ${JSON.stringify(newPwd)}`)
+    // console.log(`userId ${JSON.stringify(userId)}`)
+    //hash密码，保存到db，并发送给用户，并返回通知
+    result=hash(newPwd,e_hashType.SHA256)
+    if(result.rc>0){return Promise.reject(result)}
+
+    let hashedPassword=result.msg
+    // console.log(`hashedPassword ${JSON.stringify(hashedPassword)}`)
+    result=await common_operation.findByIdAndUpdate({dbModel:dbModel.user,id:userId,updateFieldsValue:{'password':hashedPassword}})
+    if(regex.email.test(fieldValue)){
+        //通过mail发送新密码
+        let message={}
+        message['from']=mailAccount.qq
+        message['to']=mailAccount.qq  //fieldValue
+        message['subject']='iShare重置密码'
+        message['text']= `iShare为您重新设置了密码：${newPwd}。\r\n此邮件为自动发送，请勿回复。`
+        message['html']=`<p>iShare为您重新设置了密码：${newPwd}。</p><p>此邮件为自动发送，请勿回复。</p>`
+        result=await sendVerificationCodeByEmail_async(message)
+        return Promise.resolve(result)
+    }
+    if(regex.mobilePhone.test(fieldValue)){
+        //通过手机发送新密码
+
+    }
+
+
+}
 /*        通过method，判断是CRUDM中的那个操作
 *   C: register
 *   M: match(login)
@@ -575,19 +667,19 @@ router.post('/uniqueCheck_async',function(req,res,next){
     )
 })
 
-/*router.post('/login_async',function(req,res,next){
+router.post('/retrievePassword',function(req,res,next){
 
-    login_async(req).then(
+    retrievePassword_async(req).then(
         (v)=>{
-            console.log(`login_async  success, result:  ${JSON.stringify(v)}`)
+            console.log(`retrievePassword  success, result:  ${JSON.stringify(v)}`)
             return res.json(v)
         },
         (err)=>{
-            console.log(`login_async  fail: ${JSON.stringify(err)}`)
+            console.log(`retrievePassword  fail: ${JSON.stringify(err)}`)
             return res.json(genFinalReturnResult(err))
 
         }
     )
-})*/
+})
 
 module.exports={router,controllerError}

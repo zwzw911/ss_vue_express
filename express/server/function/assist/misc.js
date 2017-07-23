@@ -3,8 +3,8 @@
  * 非validate相关的函数
  */
 'use strict'
-/*require("babel-polyfill");
-require("babel-core/register")*/
+const nodeMailer=require('nodemailer')
+const mailOption=require('../../constant/config/globalConfiguration').mailOption
 
 let miscError=require('../../constant/error/assistError').misc
 
@@ -29,6 +29,8 @@ let execSHALua=require("../../model/redis/operation/redis_common_operation").exe
 let appSetting=require('../../constant/config/appSetting').currentAppSetting
 let currentEnv=require('../../constant/config/appSetting').currentEnv
 let e_env=require('../../constant/enum/node').Env
+
+
 
 const checkInterval_async=async function(req){
     //return new Promise(function(resolve,reject){
@@ -113,14 +115,15 @@ function generateRandomString(len=4,type=e_randomStringType.normal){
      if(true===strict){validString+=`${validString}!@#$%^&*()+={}[]|\?/><`}*/
     let validString
     let basicString='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    console.log(`misc==>e_randomStringType is ${JSON.stringify(type)}`)
     switch (type){
-        case e_randomStringType.basic:
+        case e_randomStringType.BASIC:
             validString=basicString
             break;
-        case e_randomStringType.normal:
+        case e_randomStringType.NORMAL:
             validString=`${basicString}abcdefghijklmnopqrstuvwxyz`
             break;
-        case e_randomStringType.complicated:
+        case e_randomStringType.COMPLICATED:
             validString=basicString+'abcdefghijklmnopqrstuvwxyz'+"`"+`!@#%&)(_=}{:"><,;'[]\^$*+|?.-`
             break;
         default:
@@ -306,6 +309,51 @@ function genFinalReturnResult(rc){
 function objectDeepCopy(sourceObj){
     return JSON.parse(JSON.stringify(sourceObj))
 }
+
+function ifCaptchaValid(captchaValue,captchaValueType){
+    let p
+    switch (captchaValueType){
+        case e_randomStringType.BASIC:
+            p=regex.randomString.basic
+            break;
+        case e_randomStringType.NORMAL:
+            p=regex.randomString.normal
+            break;
+        case e_randomStringType.COMPLICATED:
+            p=regex.randomString.complicated
+            break;
+    }
+
+    return p.test(captchaValue)
+}
+
+function sendVerificationCodeByEmail_async(message){
+    let transporter = nodeMailer.createTransport(mailOption.qq)
+    //测试是否连接成功
+/*    transporter.verify(function(error, success) {
+        if (error) {
+            console.log(error);
+        } else {
+            console.log('Server is ready to take our messages');
+        }
+    });*/
+
+
+    return new Promise(function(resolve,reject){
+        transporter.sendMail(message, function(error, info){
+            if(error){
+                return Promise.reject(miscError.sendMailError(error))
+                // console.log(error);
+            }else{
+                return Promise.resolve({rc:0,msg:'邮件已成功发送，请查收'})
+                // console.log('Message sent: ' + info.response);
+            }
+        });
+    })
+
+}
+// sendVerificationCodeByEmail_async()
+
 module.exports={
     checkInterval_async,
     generateRandomString,
@@ -327,4 +375,5 @@ module.exports={
     genFinalReturnResult,
 
     objectDeepCopy,
+    sendVerificationCodeByEmail_async,
 }
