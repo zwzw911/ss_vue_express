@@ -7,6 +7,7 @@
  */
 "use strict";
 const gm=require('gm')
+// const fs=require('fs')
 // var CRUDGlobalSetting=require('../not_used_validateFunc').func.CRUDGlobalSetting
 // var imageDefine=require('../assist/define_config/global_config').imageDefine
 // var imageDefine
@@ -15,7 +16,7 @@ const gm=require('gm')
 ).catch(
     
 )*/
-const validateImage=['PNG','JPEG','IPG','GIF']
+// const validateImage=['PNG','JPEG','IPG','GIF']
 /*              错误定义            */
 const imageErrorDefine=require('../../constant/error/assistError').gmImage
 
@@ -23,13 +24,23 @@ const e_gmGetter=require('../../constant/enum/node_runtime').GmGetter
 const e_command=require('../../constant/enum/node_runtime').GmCommand
 const e_gmSizeUnit=require('../../constant/enum/node_runtime').GmFileSizeUnit
 
-const gmDefine=require('../../constant/config/globalConfiguration').gm
+const uploadFileDefine=require('../../constant/config/globalConfiguration').uploadFileDefine
 // let gmist=gm('H:/ss_vue_express/plan.txt')
 // let gmist=gm('H:/ss_vue_express/无标题.png')
 
 
 function initImage(imageFilePath){
     return gm(imageFilePath)
+/*    return new Promise(function(resolve,reject){
+        gm(imageFilePath,function(err,inst){
+            if(err){
+                console.log(`err===>is ${JSON.stringify(err)}`)
+                return reject(err)
+            }
+            return resolve(inst)
+        })
+    })*/
+
 }
 
 
@@ -39,6 +50,7 @@ const getImageProperty_async=function (gmInst,propertyType){
         case e_gmGetter.FORMAT:
             return new Promise(function(resolve,reject){
                 gmInst.format(function(err,result){
+                    // console.log(`err is ${JSON.stringify(err)}`)
                     if(err){
                         return reject(imageErrorDefine.format)
                     }else{
@@ -176,45 +188,65 @@ console.log(`size is ${JSON.stringify(size)}`)*/
 function gmCommand_async(gmInst, command,savePath){
     switch(command){
         case e_command.RESIZE_WIDTH_ONLY:
-            let maxWidth=gmDefine.inner_image.maxWidth;
-            // return new Promise(function(reslove,reject){
+            let maxWidth=uploadFileDefine.inner_image.maxWidth;
+            return new Promise(function(resolve,reject){
                 gmInst.resizeExact(maxWidth,'>').interlace('line').write(savePath,function(err,result){
                     if(err){
-                        return Promise.reject(imageErrorDefine.resize)
+                        return reject(imageErrorDefine.resize)
                     }else{
-                        return Promise.resolve({rc:0})
+                        return resolve({rc:0})
                     }
 
                 })
-            // })
+            })
             break;
         case e_command.RESIZE_USER_THUMBNAIL:
-            let userExactWidth=gmDefine.user_thumbnail.width;
-            let userExactHeight=gmDefine.user_thumbnail.height
-            // return new Promise(function(reslove,reject){
+            let userExactWidth=uploadFileDefine.user_thumb.width;
+            let userExactHeight=uploadFileDefine.user_thumb.height
+            return new Promise(function(resolve,reject){
                 gmInst.resize(userExactWidth,userExactHeight,'!').interlace('line').write(savePath,function(err,result){
                     if(err){
-                        return Promise.reject(imageErrorDefine.resizeUserThumbNail)
+                        return reject(imageErrorDefine.resizeUserThumbNail)
                     }else{
-                        return Promise.resolve({rc:0})
+                        return resolve({rc:0})
                     }
                     //return callback(null,)
                 })
-            // })
+            })
             break;
         case e_command.RESIZE_THUMBNAIL:
-            let exactWidth=gmDefine.inner_image.width;
-            let exactHeight=gmDefine.inner_image.height
-            // return new Promise(function(reslove,reject){
-            gmInst.resize(exactWidth,exactHeight,'!').interlace('line').write(savePath,function(err,result){
-                if(err){
-                    return Promise.reject(imageErrorDefine.resize)
-                }else{
-                    return Promise.resolve({rc:0})
-                }
-                //return callback(null,)
+            let exactWidth=uploadFileDefine.article_image.maxWidth;
+            let exactHeight=uploadFileDefine.article_image.maxHeight
+            return new Promise(function(resolve,reject){
+                gmInst.resize(exactWidth,exactHeight,'!').interlace('line').write(savePath,function(err,result){
+                    if(err){
+                        return reject(imageErrorDefine.resize)
+                    }else{
+                        return resolve({rc:0})
+                    }
+                    //return callback(null,)
+                })
             })
-            // })
+            break;
+        /*             格式转换会造成文件体积变大             */
+        case e_command.CONVERT_FILE_TYPE:
+            // let exactWidth=gmDefine.inner_image.width;
+            // let exactHeight=gmDefine.inner_image.height
+            // return new Promise(function(reslove,reject){
+            // console.log(`convert file type in======`)
+            // console.log(`savePath====== ${JSON.stringify(savePath)}`)
+            // console.log(`path====== ${JSON.stringify(gmInst)}`)
+            return new Promise(function(resolve,reject){
+                gmInst.interlace('line').write(savePath,function(err){
+                    if(err){
+                        console.log(`convert file type err======${JSON.stringify(err)}`)
+                        return reject(imageErrorDefine.convertImageTypeFail)
+                    }else{
+                        return resolve({rc:0})
+                    }
+                    //return callback(null,)
+                })
+            })
             break;
         default:
             return Promise.reject(imageErrorDefine.resize)
@@ -283,6 +315,15 @@ function convertFileSize({num,unit,newUnit}){
 
 }
 
+/*gm('H:\\ss_vue_express\\test_data\\userPhoto\\tmp\\QUYrORtOhinHMep1mOw9xZYp.jpg').write('H:/ss_vue_express/test_data/userPhoto/dest/1.png',function(err){
+    if(err){
+        console.log(`convert file type err======${JSON.stringify(err)}`)
+        return Promise.reject(imageErrorDefine.convertImageTypeFail)
+    }else{
+        return Promise.resolve({rc:0})
+    }
+    //return callback(null,)
+})*/
 module.exports={
     initImage,
     getImageProperty_async,

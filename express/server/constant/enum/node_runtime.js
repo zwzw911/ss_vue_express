@@ -32,6 +32,7 @@ const GmCommand={
     RESIZE_WIDTH_ONLY:'resizeWidthOnly', //对图片的宽度进行处理
     RESIZE_USER_THUMBNAIL:'resizeUserThumbnail',//对用户头像进行处理
     RESIZE_THUMBNAIL:'resizeThumbnail',//对普通图片生成缩略图
+    CONVERT_FILE_TYPE:'convertFileType',//转换图片的格式
 }
 
 const GmFileSizeUnit={

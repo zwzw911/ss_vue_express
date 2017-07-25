@@ -105,7 +105,7 @@ const checkInterval_async=async function(req){
 
 //len:产生字符串的长度
 //type: basic(0-9A-Z)；normal(0-9A-Za-z); complicated(normal+特殊字符)
-function generateRandomString(len=4,type=e_randomStringType.normal){
+function generateRandomString(len=4,type=e_randomStringType.NORMAL){
     /*    if(undefined===len || false===dataTypeCheck.isInt(len)){
      len=4
      }*/
@@ -328,25 +328,29 @@ function ifCaptchaValid(captchaValue,captchaValueType){
 }
 
 function sendVerificationCodeByEmail_async(message){
+    // console.log(`======in=============`)
+    // console.log(`message ${JSON.stringify(message)}`)
     let transporter = nodeMailer.createTransport(mailOption.qq)
     //测试是否连接成功
-/*    transporter.verify(function(error, success) {
+    transporter.verify(function(error, success) {
         if (error) {
             console.log(error);
         } else {
             console.log('Server is ready to take our messages');
         }
-    });*/
+    });
 
 
     return new Promise(function(resolve,reject){
         transporter.sendMail(message, function(error, info){
             if(error){
+                console.log(error);
                 return Promise.reject(miscError.sendMailError(error))
-                // console.log(error);
+
             }else{
+                console.log('Message sent: ' + info.response);
                 return Promise.resolve({rc:0,msg:'邮件已成功发送，请查收'})
-                // console.log('Message sent: ' + info.response);
+
             }
         });
     })

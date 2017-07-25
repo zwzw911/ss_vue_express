@@ -456,6 +456,8 @@ module.exports= {
     CRUDPreCheck,
     nonCRUDreCheck,//commonCheck+validatePartValueFormat+validatePartValue
 
+    // covertToServerFormat,//将req中诸如RECORD_INFO/SINGLE_FIELD的值转换成server的格式，并去除不合格字段值（create：控制
+
     checkIfFkExist_async,//检测doc中外键值是否在对应的coll中存在
     ifFieldValueExistInColl_async,// 检测字段值是否已经在db中存在
 }

@@ -11,12 +11,12 @@ let error=require('../../constant/error/assistError').upload
 
 
 /*检测初始化multiParty的参数是否正确
-* @name:上传文件的名称？和client端设置的一致----无需检测
+* @name:上传文件的名称？和client端设置的一致----无需检测。默认是file
 * @maxFilesSize： 本次上传所有文件的总size（in byte）.默认2MB
-* @maxFields： 本次上传最大文件数。默认1个文件
+* @maxFileNumPerTrans： 本次上传最大文件数。默认1个文件
 * @uploadDir：上传文件存储到哪里（之后可以通过fs.rename进行重命名或者其他操作）
 */
-function checkOption({name, maxFilesSize=2097152 ,maxFields=1 ,uploadDir }){
+function checkOption({ maxFilesSize=2097152 ,maxFileNumPerTrans=1 ,uploadDir }){
     //    3 检查maxFilesSize是否为整数
     if ( false===dataTypeCheck.isInt(maxFilesSize) ) {
         return error.maxSizeNotInt(maxFilesSize)
@@ -26,12 +26,12 @@ function checkOption({name, maxFilesSize=2097152 ,maxFields=1 ,uploadDir }){
         return error.maxSizeNotPositive(maxFilesSize)
     }
     //    5 maxFileNum是否为整数
-    if(false===dataTypeCheck.isInt(maxFields)){
-        return error.maxFileNumNotInt(maxFields)
+    if(false===dataTypeCheck.isInt(maxFileNumPerTrans)){
+        return error.maxFileNumNotInt(maxFileNumPerTrans)
     }
     //    6 maxFileNum是否为正数
-    if(false===dataTypeCheck.isPositive(maxFields)){
-        return error.maxFileNumNotPositive(maxFields)
+    if(false===dataTypeCheck.isPositive(maxFileNumPerTrans)){
+        return error.maxFileNumNotPositive(maxFileNumPerTrans)
     }
 
     //    检测上传文件保存目录是否存在
@@ -43,23 +43,29 @@ function checkOption({name, maxFilesSize=2097152 ,maxFields=1 ,uploadDir }){
 }
 
 
-async function formParse_async(req,option){
-    let form=new multiparty(option)
-    // return new Promise(function(resolve,reject){
+function formParse_async(req,option){
+    // console.log(`formParse_async in ============`)
+    let form=new multiparty.Form(option)
+    // console.log(`formParse_async new ============`)
+    return new Promise(function(resolve,reject){
         form.parse(req, function (err, fields, files) {
-            let filesTmp = JSON.stringify(files, null, 2);
-            let fieldsTemp = JSON.stringify(fields, null, 2);
-
+            // console.log(`err ====>${JSON.stringify(err)}`)
+            // console.log(`fields ====>${JSON.stringify(fields)}`)
+            // console.log(`files ====>${JSON.stringify(files)}`)
+            // let filesTmp = JSON.stringify(files);
+            // let fieldsTemp = JSON.stringify(fields);
+            // console.log(`filesTmp===>${JSON.stringify(filesTmp)}`)
+            // console.log(`fieldsTemp===>${JSON.stringify(fieldsTemp)}`)
             if (err) {
                 switch (err.status) {
                     case 413:
-                        return Promise.reject(error.exceedMaxFileSize())
+                        return reject(error.exceedMaxFileSize())
                         break
                 }
             }
 
-            if(undefined===files[option['name']] || null===files[option['name']]){
-                return Promise.reject(error.uploadedFileUndefined())
+            if (undefined === files[option['name']] || null === files[option['name']]) {
+                return reject(error.uploadedFileUndefined())
             }
 //console.log(files);
             //importSetting: input的name
@@ -70,13 +76,14 @@ async function formParse_async(req,option){
              headers: [Object],
              size: 9250 } ] }*/
             if (0 === files[option['name']].length) {
-                return Promise.reject(error.uploadedFileNumIsZero())
+                return reject(error.uploadedFileNumIsZero())
                 //cb(null, upload.)
             }
 
-//console.log(files[upload.option['name']])
+// console.log(`files===>${JSON.stringify(files)}`)
             //返回文件数组
-            return Promise.resolve({rc:0,msg:files[option['name']]})
+            return resolve({rc: 0, msg: files[option['name']]})
+        })
 
     })
 }
@@ -86,7 +93,7 @@ async function formParse_async(req,option){
 
 
 
-exports.exports={
+module.exports={
     checkOption,
     formParse_async,
 }

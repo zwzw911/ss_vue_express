@@ -48,7 +48,7 @@ const user= {
         'require': {define: false, error: {rc: 10728},mongoError:{rc:20728,msg:'用户头像不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         /*            'minLength':{define:6,error:{rc:10002},mongoError:{rc:20002,msg:'密码至少6个字符'}},
          'maxLength':{define:20,error:{rc:10004},mongoError:{rc:20004,msg:'密码的长度不能超过20个字符'}},*/
-        'format':{define:regex.dataUrlThumbnail,error:{rc:10729},mongoError:{rc:20729,msg:'用户头像格式不正确'}} //加密密码采用sha256，减少CPU负荷
+        'format':{define:regex.hashedThumbnail,error:{rc:10729},mongoError:{rc:20729,msg:'用户头像格式不正确'}} //加密密码采用sha256，减少CPU负荷
     },
     /*              维护事务一致性             */
     docStatus:{

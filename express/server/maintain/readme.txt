@@ -28,7 +28,7 @@ generateMongofieldToEnum
 
 
 
-
+修改了constant/inputValue/下的rule后，运行generateAllRuleInOneFile.js
 
 修改了constant/enum/mongo.js后，运行generateMongoEnum
 

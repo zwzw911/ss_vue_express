@@ -29,7 +29,9 @@ const gmImage={
 
     unknownUnit:{rc:40534,msg:`图片文件大小的单位不正确`},
 
-    invalidateFormat:{rc:40505,msg:'图片格式不支持'},
+    invalidateFormat:{rc:40536,msg:'图片格式不支持'},
+
+    convertImageTypeFail:{rc:40538,msg:'无法转换图片格式'},
 }
 
 const upload={

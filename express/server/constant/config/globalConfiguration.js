@@ -184,6 +184,7 @@ const mailOption={
             user:'1952206639',
             pass:'amtlhbezlrxocc',
         },
+
     },
 
     company:{},
@@ -212,13 +213,20 @@ const uploadFileDefine={
     article_image:{
         maxSizeInByte:2*1024*1024, //byte
         maxSizeInMB:2, //byte
+        maxWidth:750,//最宽750px，超过自动缩减
+        maxHeight:600,//最高600px，超过自动缩减
     },
     article_attachment:{
         maxSizeInByte:10*1024*1024, //byte
         maxSizeInMB:10, //byte
     },
     user_thumb:{
-        size:100*1024,// in byte
+        size:400*1024,// in byte
+        maxHeight:10000,//px
+        maxWidth:10000,//px
+        imageType:['PNG'],
+        saveDir:'H:/ss_vue_express/test_data/userPhoto/dest/',
+        tmpSaveDir:'H:/ss_vue_express/test_data/userPhoto/tmp/'
     },
     impeach_image:{
         maxSizeInByte:2*1024*1024, //byte
@@ -232,25 +240,37 @@ const uploadFileDefine={
 
 
 const gm={
-    inner_image:{
+/*    inner_image:{
         maxWidth:750,//最宽750px，超过自动缩减
         maxHeight:600,//最高600px，超过自动缩减
         maxSize:1000,//图片size最大1M
-    },
-    user_thumbnail:{
+    },*/
+/*    user_thumbnail:{
         width:95,
         height:95,
         maxSize:100,//kb
-    }
+    }*/
 }
 
-const intervalCheck={
-    expireTimeBetween2Req:500, //ms，两次请求间隔最小时间
-    expireTimeOfRejectTimes:600,//秒，不同的拒绝次数，会导致不同的拒绝时长（Lua {30,60,120,240,600}
-    timesInDuration:5,//定义的时间段内，最多允许的请求次数
-    //检查最大请求次数的时间段
-    duration:60,//second。定义的时间段
-    rejectTimesThreshold:5,//达到此拒绝次数，拒绝时间设成600
+const intervalCheckConfiguration={
+
+    captcha:{
+        expireTimeBetween2Req:500, //ms，两次请求间隔最小时间
+        // expireTimeOfRejectTimes:600,//秒，不同的拒绝次数，会导致不同的拒绝时长（Lua {30,60,120,240,600}
+        timesInDuration:3,//定义的时间段内，最多允许的请求次数
+        //检查最大请求次数的时间段
+        duration:10,//second。定义的时间段
+        // rejectTimesThreshold:5,//达到此拒绝次数，拒绝时间设成600
+    },
+    global:{
+        expireTimeBetween2Req:500, //ms，两次请求间隔最小时间
+        expireTimeOfRejectTimes:600,//秒，不同的拒绝次数，会导致不同的拒绝时长（Lua {30,60,120,240,600}
+        timesInDuration:5,//定义的时间段内，最多允许的请求次数
+        //检查最大请求次数的时间段
+        duration:60,//second。定义的时间段
+        rejectTimesThreshold:5,//达到此拒绝次数，拒绝时间设成600
+    },
+
 
 }
 
@@ -563,7 +583,7 @@ module.exports={
     uploadFileDefine,
     maxNumber,
     gm,
-    intervalCheck,
+    intervalCheckConfiguration,
     miscConfiguration,
     mailOption,
     mailAccount,

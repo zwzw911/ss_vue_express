@@ -17,7 +17,7 @@ const updateOptions=require('../common/configuration').updateOptions
 
 
 //无需返回任何paginationInfo，因为search已经返回，并存储在client端了
-async function create({dbModel,value}){
+async function create({dbModel,value,returnResult=true}){
 //使用Promise方式，以便catch可能的错误
     /*          原本使用insertMany，输入参数是数据，返回结果也是数据         */
 /*    let result=await dbModel.insertMany(values).catch((err)=>{
@@ -44,10 +44,15 @@ async function create({dbModel,value}){
     //result.name=undefined
     //console.log(`model result is ${JSON.stringify(modelResult)}`)
     //必须返回document，以便mongoose后续操作（而不是toObject）
-    return Promise.resolve({rc:0,msg:result})
+    if(returnResult){
+        return Promise.resolve({rc:0,msg:result})
+    }else{
+        return Promise.resolve({rc:0})
+    }
+
 }
 
-async function update({dbModel,updateOptions,id,values}){
+async function update({dbModel,updateOptions,id,values,returnResult=true}){
     values['uDate']=Date.now()
     // console.log(`id is ${id}, values is ${JSON.stringify(values)}`)
     //无需执行exec返回一个promise就可以使用了？？？
@@ -83,7 +88,11 @@ async function update({dbModel,updateOptions,id,values}){
         }
     )
     //update成功，返回的是原始记录，需要转换成可辨认格式
-    return Promise.resolve({rc:0,msg:result})
+    if(returnResult){
+        return Promise.resolve({rc:0,msg:result})
+    }else{
+        return Promise.resolve({rc:0})
+    }
 
 }
 
@@ -202,7 +211,7 @@ async function readName({dbModel,readNameField,nameToBeSearched,recorderLimit=10
 
 //作为外键时，是否存在(存在放回doc，否则返回null)
 //selectedFields:'-cDate -uDate -dDate'
-async function findById({dbModel,id,selectedFields='-cDate -uDate -dDate'}){
+async function findById({dbModel,id,returnResult=true,selectedFields='-cDate -uDate -dDate'}){
     // console.log(`find by id :${id}`)
     let result=await dbModel.findById(id,selectedFields)
         .catch(
@@ -214,11 +223,15 @@ async function findById({dbModel,id,selectedFields='-cDate -uDate -dDate'}){
     // let finalResult=result.toObject()
     // delete finalResult.__v
     // console.log(`findbyid result is ${JSON.stringify(result)}`)
-    return Promise.resolve({rc:0,msg:result})
+    if(returnResult){
+        return Promise.resolve({rc:0,msg:result})
+    }else{
+        return Promise.resolve({rc:0})
+    }
 }
 
 
-async function find({dbModel,condition,selectedFields='-cDate -uDate -dDate'}){
+async function find({dbModel,condition,returnResult=true,selectedFields='-cDate -uDate -dDate'}){
     // console.log(`find by id :${id}`)
     let result=await dbModel.find(condition,selectedFields)
         .catch(
@@ -230,10 +243,14 @@ async function find({dbModel,condition,selectedFields='-cDate -uDate -dDate'}){
     // let finalResult=result.toObject()
     // delete finalResult.__v
     // console.log(`findbyid result is ${JSON.stringify(result)}`)
-    return Promise.resolve({rc:0,msg:result})
+    if(returnResult){
+        return Promise.resolve({rc:0,msg:result})
+    }else{
+        return Promise.resolve({rc:0})
+    }
 }
 
-async function findByIdAndUpdate({dbModel,id,updateFieldsValue}){
+async function findByIdAndUpdate({dbModel,id,updateFieldsValue,returnResult=true}){
     // console.log(`find by id :${id}`)
     let result=await dbModel.findByIdAndUpdate(id,updateFieldsValue)
         .catch(
@@ -245,7 +262,12 @@ async function findByIdAndUpdate({dbModel,id,updateFieldsValue}){
     // let finalResult=result.toObject()
     // delete finalResult.__v
     // console.log(`findbyid result is ${JSON.stringify(result)}`)
-    return Promise.resolve({rc:0,msg:result})
+
+    if(returnResult){
+        return Promise.resolve({rc:0,msg:result})
+    }else{
+        return Promise.resolve({rc:0})
+    }
 }
 //统计数量
 //condition: {field:value, field2:value2}
