@@ -63,14 +63,14 @@ const impeachComment_arrayMaxLengthValidator={
 const collFieldDefine={
     title:{type:String,},
     content:{type:String},
-    impeachImagesId:{type:[mongoose.Schema.Types.ObjectId],ref:'impeach_images',validate:[impeachImage_arrayMaxLengthValidator]},
-    impeachAttachmentsId:{type:[mongoose.Schema.Types.ObjectId],ref:'impeach_attachments',validate:[impeachAttachment_arrayMaxLengthValidator]},
-    impeachCommentsId:{type:[mongoose.Schema.Types.ObjectId],ref:'impeach_comments',validate:[impeachComment_arrayMaxLengthValidator]},
+    impeachImagesId:{type:[mongoose.Schema.Types.ObjectId],ref:'impeach_image',validate:[impeachImage_arrayMaxLengthValidator]},
+    impeachAttachmentsId:{type:[mongoose.Schema.Types.ObjectId],ref:'impeach_attachment',validate:[impeachAttachment_arrayMaxLengthValidator]},
+    impeachCommentsId:{type:[mongoose.Schema.Types.ObjectId],ref:'impeach_comment',validate:[impeachComment_arrayMaxLengthValidator]},
     impeachType:{type:String,},//enum:enumValue.ImpeachType
-    impeachedArticleId:{type:mongoose.Schema.Types.ObjectId,ref:"articles"}, //
-    impeachedCommentId:{type:mongoose.Schema.Types.ObjectId,ref:"article_comments"}, //举报的文档评论
-    impeachedUserId:{type:mongoose.Schema.Types.ObjectId,ref:"users"}, //
-    creatorId:{type:mongoose.Schema.Types.ObjectId,ref:"users"}, //
+    impeachedArticleId:{type:mongoose.Schema.Types.ObjectId,ref:"article"}, //
+    impeachedCommentId:{type:mongoose.Schema.Types.ObjectId,ref:"article_comment"}, //举报的文档评论
+    impeachedUserId:{type:mongoose.Schema.Types.ObjectId,ref:"user"}, //
+    creatorId:{type:mongoose.Schema.Types.ObjectId,ref:"user"}, //
     impeachStatus:{type:String,}, //enum:enumValue.ImpeachStatus       enum， 通过setMongooseBuildInValidator从inputRule中获得对应的enum定义
     cDate:{type:Date,default:Date.now},
     // uDate:{type:Date,default:Date.now},
@@ -147,7 +147,8 @@ billSchema.pre('findOneAndUpdate',function(next){
 })*/
 
 
-
+/*      mongoose使用新的方式设置model，没有的话会导致populate报错       */
+mongoose.model(collName,collSchema)
 const collModel=connectedDb.model(collName,collSchema)
 /*const departmentModel=dbFinance.model('departments',departmentSchema)
 const employeeModel=dbFinance.model('employees',employeeSchema)

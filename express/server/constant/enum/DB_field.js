@@ -23,7 +23,7 @@ const Field={
         USER_TYPE:'userType',
         USER_PRIORITY:'userPriority',
     },
-    CATAGORY:{
+    CATEGORY:{
         ID:'id',
         NAME:'name',
         PARENT_CATEGORY_ID:'parentCategoryId',
@@ -32,6 +32,11 @@ const Field={
         ID:'id',
         NAME:'name',
         PATH:'path',
+        USAGE:'usage',
+        SIZE:'size',
+        USED_SIZE:'usedSize',
+        LOW_THRESHOLD:'lowThreshold',
+        HIGH_THRESHOLD:'highThreshold',
     },
     ARTICLE:{
         ID:'id',
@@ -194,7 +199,11 @@ const Field={
         LAST_ACCOUNT_UPDATE_DATE:'lastAccountUpdateDate',
         PASSWORD:'password',
         DOC_STATUS:'docStatus',
-        PHOTO_DATA_URL:'photoDataUrl',
+        USER_TYPE:'userType',
+        PHOTO_PATH_ID:'photoPathId',
+        PHOTO_HASH_NAME:'photoHashName',
+        PHOTO_SIZE:'photoSize',
+        LAST_SIGN_IN_DATE:'lastSignInDate',
     },
     READ_ARTICLE:{
         ID:'id',

@@ -8,9 +8,7 @@
 
 
 
-const express = require('express');
-//var app=express()
-const router = express.Router();
+
 const fs=require('fs')
 
 const e_userState=require('../../constant/enum/node').UserState
@@ -24,6 +22,7 @@ const e_hashType=require('../../constant/enum/node_runtime').HashType
 const e_env=require('../../constant/enum/node').Env
 const e_docStatus=require('../../constant/enum/mongo').DocStatus.DB
 const e_accountType=require('../../constant/enum/mongo').AccountType.DB
+const e_storePathUsage=require('../../constant/enum/mongo').StorePathUsage.DB
 
 const currentEnv=require('../../constant/config/appSetting').currentEnv
 
@@ -33,22 +32,30 @@ const fkConfig=require('../../model/mongo/fkConfig').fkConfig
 const e_coll=require('../../constant/enum/DB_Coll').Coll
 const e_field=require('../../constant/enum/DB_field').Field
 const e_uniqueField=require('../../constant/enum/DB_uniqueField').UniqueField
+const e_fileSizeUnit=require('../../constant/enum/node_runtime').FileSizeUnit
 // const e_inputFieldCheckType=require('../../constant/enum/node').InputFieldCheckType
 
+const e_storePatUsage=require('../../constant/enum/mongo').StorePathUsage.DB
+
 const helper=require('../helper')
-const common_operation=require('../../model/mongo/operation/common_operation')
+const common_operation_model=require('../../model/mongo/operation/common_operation_model')
+const common_operation_document=require('../../model/mongo/operation/common_operation_document')
 const hash=require('../../function/assist/crypt').hash
 const generateRandomString=require('../../function/assist/misc').generateRandomString
-const genFinalReturnResult=require('../../function/assist/misc').genFinalReturnResult
+const convertFileSize=require('../../function/assist/misc').convertFileSize
+const objectDeepCopy=require('../../function/assist/misc').objectDeepCopy
 const sendVerificationCodeByEmail_async=require('../../function/assist/misc').sendVerificationCodeByEmail_async
+
+const populateSingleDoc_async=require('../../model/mongo/operation/helper').populateSingleDoc_async
 
 const ifUserLogin=require('../../function/assist/misc').ifUserLogin
 const dataConvert=require('../dataConvert')
 const validateCreateRecorderValue=require('../../function/validateInput/validateValue').validateCreateRecorderValue
 const validateUpdateRecorderValue=require('../../function/validateInput/validateValue').validateUpdateRecorderValue
+const validateCURecordInfoFormat=require('../../function/validateInput/validateFormat').validateCURecordInfoFormat
 // const browserInputRule=require('../../constant/inputRule/browserInputRule').browserInputRule
 const internalInputRule=require('../../constant/inputRule/internalInputRule').internalInputRule
-// const inputRule=require('../../constant/inputRule/inputRule').inputRule
+const inputRule=require('../../constant/inputRule/inputRule').inputRule  //用于dev模式下对inputValue进行格式检查
 
 const mongoError=require('../../constant/error/mongo/mongoError').error
 
@@ -59,6 +66,8 @@ const miscConfiguration=require('../../constant/config/globalConfiguration').mis
 
 const mailAccount=require('../../constant/config/globalConfiguration').mailAccount
 
+
+const mongoConfiguration=require('../../model/mongo/common/configuration')
 /*         upload user photo         */
 const gmImage=require('../../function/assist/gmImage')
 const userPhotoConfiguration=require('../../constant/config/globalConfiguration').uploadFileDefine.user_thumb
@@ -69,6 +78,9 @@ const uploadFile=require('../../function/assist/upload')
 /*         generate captcha         */
 const captchaIntervalConfiguration=require('../../constant/config/globalConfiguration').intervalCheckConfiguration.captcha
 
+
+const handleSystemError=require('../../function/assist/system').handleSystemError
+const systemError=require('../../constant/error/systemError').systemError
 
 const controllerError={
     nameAlreadyExists:{rc:50100,msg:`用户名已经存在`}, //key名字必须固定为 field+AlreadyExists
@@ -93,6 +105,7 @@ const controllerError={
     /*              upload user photo               */
     imageSizeInvalid:{rc:50130,msg:`头像的宽度或者高度超出最大值`},
 
+
     /*              captcha                          */
     intervalBetween2CaptchaTooShort:{rc:50132,msg:`请求过于频繁，请稍候再试`},
     captchaReqNumInDurationExceed:{rc:50134,msg:`请求次数过多，请稍候再试`},
@@ -101,17 +114,17 @@ const controllerError={
 
 
 //对CRUD（输入参数带有method）操作调用对应的函数
-async function dispatcher(req){
+async function dispatcher_async(req){
     //检查格式
     // console.log(`req is ${JSON.stringify(req.cookies)}`)
     // console.log(`dispatcher in`)
     // console.log(`req.body.values ${JSON.stringify(req.body.values)}`)
-    let expectUserState,expectedPart,collName=e_coll.USER,result
+    let expectUserState,expectedPart,collName=e_coll.USER,tmpResult
 
     //dispatcher只检测req的结构，以及req中method的格式和值，以便后续可以直接根据method进行调用
-    result=helper.dispatcherPreCheck({req:req})
-    if(result.rc>0){
-        return Promise.reject(result)
+    tmpResult=helper.dispatcherPreCheck({req:req})
+    if(tmpResult.rc>0){
+        return Promise.reject(tmpResult)
     }
 
 
@@ -127,17 +140,17 @@ async function dispatcher(req){
 
             expectedPart=[e_part.RECORD_INFO]//无需method
             //因为dispatch而已经检查过req的总体结构，所以无需再次检查，而直接检查partValueFormat+partValueCheck
-            // result=helper.CRUDPreCheck({req:req,expectUserState:expectUserState,expectedPart:expectedPart,collName:collName,method:method})
-            result=helper.CRUDPreCheck({req:req,expectedPart:expectedPart,collName:collName,method:method})
-            // console.log(`create preCheck result ${JSON.stringify(result)}`)
-            if(result.rc>0){
-                return Promise.reject(result)
+            // tmpResult=helper.CRUDPreCheck({req:req,expectUserState:expectUserState,expectedPart:expectedPart,collName:collName,method:method})
+            tmpResult=helper.CRUDPreCheck({req:req,expectedPart:expectedPart,collName:collName,method:method})
+            // console.log(`create preCheck tmpResult ${JSON.stringify(tmpResult)}`)
+            if(tmpResult.rc>0){
+                return Promise.reject(tmpResult)
             }
 
 
 
-            result=await createUser_async(req)
-            // console.log(`create  result ${JSON.stringify(result)}`)
+            tmpResult=await createUser_async(req)
+            // console.log(`create  tmpResult ${JSON.stringify(tmpResult)}`)
             break;
         case e_method.SEARCH:// search
             break;
@@ -146,10 +159,10 @@ async function dispatcher(req){
             // console.log(`req.session update is ${JSON.stringify(req.session)}`)
             expectedPart=[e_part.RECORD_INFO]//无需method
             //因为dispatch而已经检查过req的总体结构，所以无需再次检查，而直接检查sess+partValueFormat+partValueCheck
-            result=helper.CRUDPreCheck({req:req,expectUserState:expectUserState,expectedPart:expectedPart,collName:collName,method:method})
-            // console.log(`create preCheck result ${JSON.stringify(result)}`)
-            if(result.rc>0){
-                return Promise.reject(result)
+            tmpResult=helper.CRUDPreCheck({req:req,expectUserState:expectUserState,expectedPart:expectedPart,collName:collName,method:method})
+            // console.log(`create preCheck tmpResult ${JSON.stringify(tmpResult)}`)
+            if(tmpResult.rc>0){
+                return Promise.reject(tmpResult)
             }
 
             // expectUserState=e_userState.LOGIN
@@ -159,7 +172,7 @@ async function dispatcher(req){
                 return Promise.reject(controllerError.notLogin)
             }
             // console.log(`req.session indisp ${JSON.stringify(req.session)}`)
-            result=await updateUser_async(req)
+            tmpResult=await updateUser_async(req)
             break;
         case e_method.DELETE: //delete
             break;
@@ -167,16 +180,16 @@ async function dispatcher(req){
             // console.log(`req.session login is ${JSON.stringify(req.session)}`)
             expectUserState=e_userState.NO_SESS
             expectedPart=[e_part.RECORD_INFO]
-            result=helper.CRUDPreCheck({req:req,expectUserState:expectUserState,expectedPart:expectedPart,collName:collName,method:method})
-            // console.log(`match CRUDPreCheck ${JSON.stringify(result)}`)
-            if(result.rc>0){
-                return Promise.reject(result)
+            tmpResult=helper.CRUDPreCheck({req:req,expectUserState:expectUserState,expectedPart:expectedPart,collName:collName,method:method})
+            // console.log(`match CRUDPreCheck ${JSON.stringify(tmpResult)}`)
+            if(tmpResult.rc>0){
+                return Promise.reject(tmpResult)
             }
-            result=await login_async(req)
-            // console.log(`match result ${JSON.stringify(result)}`)
+            tmpResult=await login_async(req)
+            // console.log(`match tmpResult ${JSON.stringify(tmpResult)}`)
     }
     
-    return Promise.resolve(result)
+    return Promise.resolve(tmpResult)
 }
 
 //添加内部产生的值（hash password）
@@ -210,40 +223,40 @@ async  function createUser_async(req){
         }
     }
     let condition={name:docValue[e_field.USER.NAME]} //,dDate:{$exists:0}   重复性检查包含已经删除的用户
-    let docStatusResult=await common_operation.find({dbModel:dbModel.user,condition:condition})
+    let docStatusTmpResult=await common_operation_model.find({dbModel:dbModel.user,condition:condition})
 
-    if(docStatusResult.rc>0){
-        return Promise.reject(docStatusResult)
+    if(docStatusTmpResult.rc>0){
+        return Promise.reject(docStatusTmpResult)
     }
-    // console.log(`docStatusResult ${JSON.stringify(docStatusResult)}`)
-    // console.log(`docStatusResult.msg[0] ${JSON.stringify(docStatusResult.msg[0])}`)
-    // let existRecord=docStatusResult.msg[0]
+    // console.log(`docStatusTmpResult ${JSON.stringify(docStatusTmpResult)}`)
+    // console.log(`docStatusTmpResult.msg[0] ${JSON.stringify(docStatusTmpResult.msg[0])}`)
+    // let existRecord=docStatusTmpResult.msg[0]
     //因为coll有外键，所有还要进一步检查重复的记录的状态是否为done
-    if(docStatusResult.msg[0] && e_docStatus.DONE===docStatusResult.msg[0][e_field.USER.DOC_STATUS]){
+    if(docStatusTmpResult.msg[0] && e_docStatus.DONE===docStatusTmpResult.msg[0][e_field.USER.DOC_STATUS]){
         // console.log(`inini`)
         return Promise.reject(mongoError.common.uniqueFieldValue(e_coll.USER,e_field.USER.NAME,docValue[e_field.USER.NAME]))
     }
 
-    let result
+    let tmpResult
     //如果用户在db中存在，但是创建到一半，则删除用户(然后重新开始流程)
-    if(docStatusResult.msg[0] && e_docStatus.PENDING===docStatusResult.msg[0][e_field.USER.DOC_STATUS]){
-        result=await common_operation.deleteOne({dbModel:dbModel.user,condition:condition})
-        // onsole.log(`docStatusResult ${JSON.stringify(docStatusResult)}`)
-        if(result.rc>0){
-            return Promise.reject(result)
+    if(docStatusTmpResult.msg[0] && e_docStatus.PENDING===docStatusTmpResult.msg[0][e_field.USER.DOC_STATUS]){
+        tmpResult=await common_operation_model.deleteOne({dbModel:dbModel.user,condition:condition})
+        // onsole.log(`docStatusTmpResult ${JSON.stringify(docStatusTmpResult)}`)
+        if(tmpResult.rc>0){
+            return Promise.reject(tmpResult)
         }
         //删除可能的关联记录
         //sugar
-        result=await common_operation.deleteOne({dbModel:dbModel.sugar,condition:{userId:docStatusResult.msg[0][e_field.USER.ID]}})
-        // onsole.log(`docStatusResult ${JSON.stringify(docStatusResult)}`)
-        if(result.rc>0){
-            return Promise.reject(result)
+        tmpResult=await common_operation_model.deleteOne({dbModel:dbModel.sugar,condition:{userId:docStatusTmpResult.msg[0][e_field.USER.ID]}})
+        // onsole.log(`docStatusTmpResult ${JSON.stringify(docStatusTmpResult)}`)
+        if(tmpResult.rc>0){
+            return Promise.reject(tmpResult)
         }
         //user_friend_group
-        result=await common_operation.deleteOne({dbModel:dbModel.user_friend_group,condition:{userId:docStatusResult.msg[0][e_field.USER.ID]}})
-        // onsole.log(`docStatusResult ${JSON.stringify(docStatusResult)}`)
-        if(result.rc>0){
-            return Promise.reject(result)
+        tmpResult=await common_operation_model.deleteOne({dbModel:dbModel.user_friend_group,condition:{userId:docStatusTmpResult.msg[0][e_field.USER.ID]}})
+        // onsole.log(`docStatusTmpResult ${JSON.stringify(docStatusTmpResult)}`)
+        if(tmpResult.rc>0){
+            return Promise.reject(tmpResult)
         }
     }
 
@@ -253,12 +266,12 @@ async  function createUser_async(req){
     let sugarLength=5 //1~10
     let sugar=generateRandomString(sugarLength)
     // console.log(`sugar init ${sugar}`)
-    result=hash(`${docValue[e_field.USER.PASSWORD]}${sugar}`,e_hashType.SHA256)
-    // console.log(`hash   ${JSON.stringify(result)}`)
-    if(result.rc>0){
-        return Promise.reject(result)
+    tmpResult=hash(`${docValue[e_field.USER.PASSWORD]}${sugar}`,e_hashType.SHA256)
+    // console.log(`hash   ${JSON.stringify(tmpResult)}`)
+    if(tmpResult.rc>0){
+        return Promise.reject(tmpResult)
     }
-    docValue[e_field.USER.PASSWORD]=result.msg
+    docValue[e_field.USER.PASSWORD]=tmpResult.msg
     docValue[e_field.USER.DOC_STATUS]=e_docStatus.PENDING
 
     // console.log(`docValue   ${JSON.stringify(docValue)}`)
@@ -272,6 +285,7 @@ async  function createUser_async(req){
 
     docValue[e_field.USER.USED_ACCOUNT]=docValue[e_field.USER.ACCOUNT]
     docValue[e_field.USER.LAST_ACCOUNT_UPDATE_DATE]=Date.now()
+    docValue[e_field.USER.LAST_SIGN_IN_DATE]=Date.now()
     // console.log(`docValue   ${JSON.stringify(docValue)}`)
 
     /*              对内部产生的值进行检测（开发时使用，上线后为了减低负荷，无需使用）           */
@@ -279,13 +293,21 @@ async  function createUser_async(req){
         // let collInputRule=Object.assign({},user_browserInputRule,user_internalInputRule)
         // console.log(`internal check value=============> ${JSON.stringify(docValue)}`)
         // console.log(`internal check rule=============> ${JSON.stringify(internalInputRule[e_coll.USER])}`)
-        result=validateCreateRecorderValue(docValue,internalInputRule[e_coll.USER])
-        // console.log(`internal check=============> ${JSON.stringify(result)}`)
-        // result=helper.validatePartValue({req:req,exceptedPart:exceptedPart,coll:e_coll.USER,inputRule:user_internalInputRule,method:e_method.CREATE})
+        let newDocValue=dataConvert.addSubFieldKeyValue(docValue)
+        // console.log(`newDocValue =============> ${JSON.stringify(newDocValue)}`)
+        tmpResult=validateCURecordInfoFormat(newDocValue,inputRule[e_coll.USER])
+        if(tmpResult.rc>0){
+            // console.log(`internal check value=============> ${JSON.stringify(docValue)}`)
+            return Promise.reject(tmpResult)
+        }
+
+        tmpResult=validateCreateRecorderValue(newDocValue,internalInputRule[e_coll.USER])
+        // console.log(`internal check=============> ${JSON.stringify(tmpResult)}`)
+        // tmpResult=helper.validatePartValue({req:req,exceptedPart:exceptedPart,coll:e_coll.USER,inputRule:user_internalInputRule,method:e_method.CREATE})
         // console.log(`docValue   ${JSON.stringify(docValue)}`)
-        // return console.log(`internal check  ${JSON.stringify(result)}`)
-        if(result.rc>0){
-            return Promise.reject(result)
+        // return console.log(`internal check  ${JSON.stringify(tmpResult)}`)
+        if(tmpResult.rc>0){
+            return Promise.reject(tmpResult)
         }
     }
 
@@ -297,36 +319,38 @@ async  function createUser_async(req){
 
     // console.log(`docValue ${JSON.stringify(docValue)}`)
     //用户插入 db
-    let userCreateResult= await common_operation.create({dbModel:dbModel.user,value:docValue})
-    if(userCreateResult.rc>0){
-        return Promise.reject(userCreateResult)
+    let userCreateTmpResult= await common_operation_model.create({dbModel:dbModel.user,value:docValue})
+    if(userCreateTmpResult.rc>0){
+        return Promise.reject(userCreateTmpResult)
     }
 
-    // console.log(`user created  ${JSON.stringify(userCreateResult)}`)
+    // console.log(`user created  ${JSON.stringify(userCreateTmpResult)}`)
 
     //对关联表sugar进行insert操作
-    let sugarValue={userId:userCreateResult.msg._id,sugar:sugar}
+    let sugarValue={userId:userCreateTmpResult.msg._id,sugar:sugar}
     // console.log(`sugarValue ${JSON.stringify(sugarValue)}`)
-    result= await common_operation.create({dbModel:dbModel.sugar,value:sugarValue})
-    // console.log(`result is ${JSON.stringify(result)}`)
-    if(result.rc>0){
-        return Promise.reject(result)
+    tmpResult= await common_operation_model.create({dbModel:dbModel.sugar,value:sugarValue})
+    // console.log(`tmpResult is ${JSON.stringify(tmpResult)}`)
+    if(tmpResult.rc>0){
+        return Promise.reject(tmpResult)
     }
 
     //对关联表user_friend_group进行insert操作
-    let userFriendGroupValue={userId:userCreateResult.msg._id,name:'我的朋友',friendsInGroup:[]}
+    let userFriendGroupValue={userId:userCreateTmpResult.msg._id,name:'我的朋友',friendsInGroup:[]}
     // console.log(`sugarValue ${JSON.stringify(sugarValue)}`)
-    result= await common_operation.create({dbModel:dbModel.user_friend_group,value:userFriendGroupValue})
-    // console.log(`result is ${JSON.stringify(result)}`)
-    if(result.rc>0){
-        return Promise.reject(result)
-    }
+    await common_operation_model.create({dbModel:dbModel.user_friend_group,value:userFriendGroupValue})
+    // console.log(`tmpResult is ${JSON.stringify(tmpResult)}`)
+
+    //对关联表folder进行insert操作
+    let folderValue={authorId:userCreateTmpResult.msg._id,name:'我的文档'}
+    // console.log(`sugarValue ${JSON.stringify(sugarValue)}`)
+     await common_operation_model.create({dbModel:dbModel.folder,value:folderValue})
 
 // return false
-    //最终置user['docStatus']为DONE
-    result= await common_operation.findByIdAndUpdate({dbModel:dbModel.user,id:userCreateResult.msg._id,updateFieldsValue:{'docStatus':e_docStatus.DONE}})
-    if(result.rc>0){
-        return Promise.reject(result)
+    //最终置user['docStatus']为DONE，且设置lastSignInDate
+    tmpResult= await common_operation_model.findByIdAndUpdate({dbModel:dbModel.user,id:userCreateTmpResult.msg._id,updateFieldsValue:{'docStatus':e_docStatus.DONE,'lastSignInDate':Date.now()}})
+    if(tmpResult.rc>0){
+        return Promise.reject(tmpResult)
     }
 
     return Promise.resolve({rc:0})
@@ -340,7 +364,7 @@ async  function createUser_async(req){
 async function updateUser_async(req){
     // console.log(`req.session ${JSON.stringify(req.session)}`)
     /*                  要更改的记录的owner是否为发出req的用户本身                            */
-    let result
+    let tmpResult
     let userId=req.session.userId
     if(undefined===req.session.userId){
         return Promise.reject(controllerError.notLogin)
@@ -355,8 +379,8 @@ async function updateUser_async(req){
     dataConvert.convertCreateUpdateValueToServerFormat(docValue)
     dataConvert.constructUpdateCriteria(docValue,fkConfig[e_coll.USER])
 
-    // let result=await common_operation.findById({dbModel:dbModel[e_coll.USER],id:objectId})
-    // let userId=result.msg[e_field.USER.]
+    // let tmpResult=await common_operation_model.findById({dbModel:dbModel[e_coll.USER],id:objectId})
+    // let userId=tmpResult.msg[e_field.USER.]
 
 
 
@@ -364,29 +388,29 @@ async function updateUser_async(req){
     // console.log(`befreo check ${JSON.stringify(docValue)}`)
     //查找对应的记录（docStatus必须是done）
     let condition={_id:req.session.userId,docStatus:e_docStatus.DONE}
-    result=await common_operation.find({dbModel:dbModel.user,condition:condition})
-    // console.log(`result====》 ${JSON.stringify(result)}`)
+    tmpResult=await common_operation_model.find({dbModel:dbModel.user,condition:condition})
+    // console.log(`tmpResult====》 ${JSON.stringify(tmpResult)}`)
     // console.log(`condition====》 ${JSON.stringify(condition)}`)
-    // console.log(`null===result.msg====》 ${JSON.stringify(null===result.msg)}`)
-    if(0===result.msg.length){return Promise.reject(controllerError.userNotExist)}
-    let originUserInfo=result.msg[0]
+    // console.log(`null===tmpResult.msg====》 ${JSON.stringify(null===tmpResult.msg)}`)
+    if(0===tmpResult.msg.length){return Promise.reject(controllerError.userNotExist)}
+    let originUserInfo=tmpResult.msg[0]
     //如果传入了password，hash后覆盖原始值
     if(e_field.USER.PASSWORD in docValue){
-        let sugarResult=await common_operation.find({dbModel:dbModel.sugar,condition:{ userId:originUserInfo.id}})
-        if(null===sugarResult.msg){
+        let sugarTmpResult=await common_operation_model.find({dbModel:dbModel.sugar,condition:{ userId:originUserInfo.id}})
+        if(null===sugarTmpResult.msg){
             return Promise.reject(controllerError.userNoMatchSugar)
         }
-        // console.log(`sugarResult=====> ${JSON.stringify(sugarResult)}`)
-        let sugar=sugarResult.msg[0]['sugar']
+        // console.log(`sugarTmpResult=====> ${JSON.stringify(sugarTmpResult)}`)
+        let sugar=sugarTmpResult.msg[0]['sugar']
 // console.log(`sugar=====> ${JSON.stringify(sugar)}`)
 //         console.log(`password value =====> ${JSON.stringify(docValue[e_field.USER.PASSWORD])}`)
 //         console.log(`mix value =====> ${docValue[e_field.USER.PASSWORD]}${sugar}`)
-        let hashPasswordResult=hash(`${docValue[e_field.USER.PASSWORD]}${sugar}`,e_hashType.SHA256)
-        if(hashPasswordResult.rc>0){
-            return Promise.reject(hashPasswordResult)
+        let hashPasswordtmpResult=hash(`${docValue[e_field.USER.PASSWORD]}${sugar}`,e_hashType.SHA256)
+        if(hashPasswordtmpResult.rc>0){
+            return Promise.reject(hashPasswordtmpResult)
         }
         // console.log(`hash password is ====>${hashPassword}`)
-        docValue[e_field.USER.PASSWORD]=hashPasswordResult.msg
+        docValue[e_field.USER.PASSWORD]=hashPasswordtmpResult.msg
         // console.log(` after hash password====> ${JSON.stringify(docValue)}`)
 
     }
@@ -467,7 +491,7 @@ async function updateUser_async(req){
 
     }*/
 
-    result=await common_operation.update({dbModel:dbModel[e_coll.USER],id:userId,values:docValue})
+    tmpResult=await common_operation_model.update({dbModel:dbModel[e_coll.USER],id:userId,values:docValue})
     return Promise.resolve({rc:0})
 
 }
@@ -493,38 +517,38 @@ async function login_async(req){
 
 //    读取sugar，并和输入的password进行运算，得到的结果进行比较
     let condition={account:docValue[e_field.USER.ACCOUNT]}
-    let userResult = await common_operation.find({dbModel: dbModel.user,condition:condition})
-    // if(userResult.rc>0){
-    //     return Promise.reject(userResult)
+    let usertmpResult = await common_operation_model.find({dbModel: dbModel.user,condition:condition})
+    // if(usertmpResult.rc>0){
+    //     return Promise.reject(usertmpResult)
     // }
-    if(0===userResult.rc && 0===userResult.msg.length){
+    if(0===usertmpResult.rc && 0===usertmpResult.msg.length){
         return Promise.reject(controllerError.accountNotExist)
     }
-    // console.log(`userResult ${JSON.stringify(userResult)}`)
-    condition={userId:userResult.msg[0]['id']}
-    let sugarResult = await common_operation.find({dbModel: dbModel.sugar,condition:condition})
-    if(sugarResult.rc>0){
-        return Promise.reject(sugarResult)
+    // console.log(`usertmpResult ${JSON.stringify(usertmpResult)}`)
+    condition={userId:usertmpResult.msg[0]['id']}
+    let sugarTmpResult = await common_operation_model.find({dbModel: dbModel.sugar,condition:condition})
+    if(sugarTmpResult.rc>0){
+        return Promise.reject(sugarTmpResult)
     }
-    // console.log(`sugarResult ${JSON.stringify(sugarResult)}`)
+    // console.log(`sugarTmpResult ${JSON.stringify(sugarTmpResult)}`)
 
-    let encryptPassword=hash(`${docValue[e_field.USER.PASSWORD]}${sugarResult.msg[0][e_field.SUGAR.SUGAR]}`,e_hashType.SHA256)
+    let encryptPassword=hash(`${docValue[e_field.USER.PASSWORD]}${sugarTmpResult.msg[0][e_field.SUGAR.SUGAR]}`,e_hashType.SHA256)
     // console.log(`encryptPassword ${JSON.stringify(encryptPassword)}`)
     if(encryptPassword.rc>0){
         return Promise.reject(encryptPassword)
     }
 
     // console.log(`user/pwd  ${docValue[e_field.USER.ACCOUNT]}///${encryptPassword.msg}`)
-    if(userResult.msg[0][e_field.USER.PASSWORD]!==encryptPassword['msg']){
+    if(usertmpResult.msg[0][e_field.USER.PASSWORD]!==encryptPassword['msg']){
         return Promise.reject(controllerError.accountPasswordNotMatch)
     }
 
     /*
-    *  需要设置session
+    *  需要设置session，并设lastSignInDate为当前日期
     * */
-    // console.log(`userResult.msg[0]['id'] ${JSON.stringify(userResult.msg[0]['id'])}`)
-    req.session.userId=userResult.msg[0]['id']
-
+    // console.log(`usertmpResult.msg[0]['id'] ${JSON.stringify(usertmpResult.msg[0]['id'])}`)
+    req.session.userId=usertmpResult.msg[0]['id']
+    await common_operation_model.findByIdAndUpdate({dbModel:dbModel.user,id:usertmpResult.msg[0]['id'],updateFieldsValue:{'lastSignInDate':Date.now()}})
     return Promise.resolve({rc:0})
 }
 
@@ -535,15 +559,15 @@ async  function  uniqueCheck_async(req) {
     // console.log(`unique check is ${JSON.stringify(req.body.values)} `)
 
 
-    let result=helper.nonCRUDreCheck({
+    let tmpResult=helper.nonCRUDreCheck({
         req:req,
         expectUserState:e_userState.NO_SESS,
         expectPart:[e_part.SINGLE_FIELD],
         collName:e_coll.USER
     })
-    // console.log(`precheck result is ${JSON.stringify(result)}`)
-    if(result.rc>0){
-        return Promise.reject(result)
+    // console.log(`precheck tmpResult is ${JSON.stringify(tmpResult)}`)
+    if(tmpResult.rc>0){
+        return Promise.reject(tmpResult)
     }
 
 
@@ -558,7 +582,7 @@ async  function  uniqueCheck_async(req) {
     let fieldName=Object.keys(docValue)[0]
     let fieldValue=Object.values(docValue)[0]
     // let condition
-    // let uniqueCheck_asyncResult
+    // let uniqueCheck_asynctmpResult
 // console.log(`fieldName ${fieldName}`)
 //     console.log(`fieldValue ${fieldValue}`)
 //     console.log(`e_uniqueField[e_coll] ${JSON.stringify(e_uniqueField[e_coll.USER])}`)
@@ -584,18 +608,18 @@ async  function  uniqueCheck_async(req) {
 
 async function retrievePassword_async(req){
     //新产生的密码,账号对应的记录
-    let result,newPwd,userId,newPwdType=e_randomStringType.NORMAL
+    let tmpResult,newPwd,userId,newPwdType=e_randomStringType.NORMAL
 
     let condition={},condition1={}  //for account/ usedAccount
     /*          格式/值检查        */
-    result=helper.nonCRUDreCheck({
+    tmpResult=helper.nonCRUDreCheck({
         req:req,
         expectUserState:e_userState.NO_SESS,
         expectPart:[e_part.SINGLE_FIELD],
         collName:e_coll.USER
     })
-    if(result.rc>0){
-        return Promise.reject(result)
+    if(tmpResult.rc>0){
+        return Promise.reject(tmpResult)
     }
 
 
@@ -612,26 +636,26 @@ async function retrievePassword_async(req){
 
     condition[e_field.USER.ACCOUNT]=fieldValue
     condition[e_field.USER.DOC_STATUS]=e_docStatus.DONE
-    result=await common_operation.find({dbModel:dbModel.user,condition:condition})
-    // console.log(`retrieve ped: find current account=====>${JSON.stringify(result)}`)
-    if(result.msg.length>1){
+    tmpResult=await common_operation_model.find({dbModel:dbModel.user,condition:condition})
+    // console.log(`retrieve ped: find current account=====>${JSON.stringify(tmpResult)}`)
+    if(tmpResult.msg.length>1){
         return Promise.reject(controllerError.accountNotUnique)
     }
-    if(result.msg.length===1){
-        userId=result.msg[0]['id']
+    if(tmpResult.msg.length===1){
+        userId=tmpResult.msg[0]['id']
         newPwd=generateRandomString(6,newPwdType)
     }
     //继续在usedAccount中查找
-    if(result.msg.length===0){
+    if(tmpResult.msg.length===0){
         condition1[e_field.USER.USED_ACCOUNT]=fieldValue
         condition1[e_field.USER.DOC_STATUS]=e_docStatus.DONE
-        result=await common_operation.find({dbModel:dbModel.user,condition:condition1})
-        // console.log(`retrieve ped: find used account=====>${JSON.stringify(result)}`)
-        switch (result.msg.length){
+        tmpResult=await common_operation_model.find({dbModel:dbModel.user,condition:condition1})
+        // console.log(`retrieve ped: find used account=====>${JSON.stringify(tmpResult)}`)
+        switch (tmpResult.msg.length){
             case 0:
                 return {rc:0}
             case 1:
-                userId=result.msg[0]['id']
+                userId=tmpResult.msg[0]['id']
                 newPwd=generateRandomString(6,newPwdType)
                 break
             default:
@@ -641,13 +665,13 @@ async function retrievePassword_async(req){
     // console.log(`retrieve ped: ready to hash new pwd ${JSON.stringify(newPwd)}`)
     // console.log(`userId ${JSON.stringify(userId)}`)
     //hash密码，保存到db，并发送给用户，并返回通知
-    result=hash(newPwd,e_hashType.SHA256)
-    if(result.rc>0){return Promise.reject(result)}
+    tmpResult=hash(newPwd,e_hashType.SHA256)
+    if(tmpResult.rc>0){return Promise.reject(tmpResult)}
 
-    let hashedPassword=result.msg
+    let hashedPassword=tmpResult.msg
     // console.log(`hashedPassword ${JSON.stringify(hashedPassword)}`)
-    result=await common_operation.findByIdAndUpdate({dbModel:dbModel.user,id:userId,updateFieldsValue:{'password':hashedPassword}})
-    // console.log(`update pwd result ${JSON.stringify(result)}`)
+    tmpResult=await common_operation_model.findByIdAndUpdate({dbModel:dbModel.user,id:userId,updateFieldsValue:{'password':hashedPassword}})
+    // console.log(`update pwd tmpResult ${JSON.stringify(tmpResult)}`)
     if(regex.email.test(fieldValue)){
         //通过mail发送新密码
         let message={}
@@ -656,8 +680,8 @@ async function retrievePassword_async(req){
         message['subject']='iShare重置密码'
         message['text']= `iShare为您重新设置了密码：${newPwd}。\r\n此邮件为自动发送，请勿回复。`
         message['html']=`<p>iShare为您重新设置了密码：${newPwd}。</p><p>此邮件为自动发送，请勿回复。</p>`
-        result=await sendVerificationCodeByEmail_async(message)
-        return Promise.resolve(result)
+        tmpResult=await sendVerificationCodeByEmail_async(message)
+        return Promise.resolve(tmpResult)
     }
     if(regex.mobilePhone.test(fieldValue)){
         //通过手机发送新密码
@@ -669,7 +693,7 @@ async function retrievePassword_async(req){
 
 
 async function uploadPhoto_async(req){
-    /*             检查用户是否在更新自己的头像           */
+    /*             检查用户是否在更新 自己 的头像           */
     let userId=req.session.userId
     if(undefined===req.session.userId){
         return Promise.reject(controllerError.notLogin)
@@ -678,72 +702,178 @@ async function uploadPhoto_async(req){
         return Promise.reject(controllerError.cantUpdateOwnProfile)
     }
 
-    let tmpResult
+    
+    let tmpResult,uploadedFileSizeInKb
+    /*              上传文件到临时目录           */
+    tmpResult=await common_operation_model.find({dbModel:dbModel.store_path,condition:{usage:e_storePathUsage.UPLOAD_TMP}})
     let uploadOption={
         // maxFilesSize:2097152,
         maxFilesSize:userPhotoConfiguration.size,//300k   头像文件大小100k
         maxFileNumPerTrans:1,//每次只能上传一个头像文件
         // maxFields:1,
         name:'file',
-        uploadDir:userPhotoConfiguration.tmpSaveDir
+        uploadDir:tmpResult.msg[0][e_field.STORE_PATH.PATH]
     }
     //检查上传参数设置的是否正确
     tmpResult=uploadFile.checkOption(uploadOption)
     if(tmpResult.rc>0){
         return Promise.reject(tmpResult)
     }
-    //读取上传的文件，获得文件按信息
+    //读取上传的文件，获得文件信息
     tmpResult=await uploadFile.formParse_async(req,uploadOption)
+    // console.log(`formParse===${JSON.stringify(tmpResult)}`)
+
     let {originalFilename,path,size}=tmpResult.msg[0]
     // console.log(`originalFilename===${originalFilename}`)
     // console.log(`path===${path}`)
     // console.log(`size===${size}`)
+    tmpResult=convertFileSize({num:size,newUnit:e_fileSizeUnit.KB})
+    if(tmpResult.rc>0){
+        return Promise.reject(tmpResult)
+    }
+    uploadedFileSizeInKb=tmpResult.msg
+    // console.log(`uploadedFileSizeInKb===${uploadedFileSizeInKb}`)
 
-    // fs.unlinkSync(path)
-    //size(width&&height)不符合，直接返回错误（而不是试图转换）,因为在client已经确保了height和width的正确
+    //检查size(width&&height)不符合，直接返回错误（而不是试图转换）,因为在client已经确保了height和width的正确
     let inst=gmImage.initImage(path)
     // console.log(`inst ====>${JSON.stringify(inst)}`)
     tmpResult=await gmImage.getImageProperty_async(inst,e_gmGetter.SIZE)
-    // console.log(`size ====>${JSON.stringify(tmpResult)}`)
+    // console.log(`rm size ====>${JSON.stringify(tmpResult)}`)
     if(tmpResult.msg.width>userPhotoConfiguration.maxWidth || tmpResult.msg.height>userPhotoConfiguration.maxHeight){
-        fs.unlinkSync(originalFilename)
+        fs.unlinkSync(path)
         return Promise.reject(controllerError.imageSizeInvalid)
     }
 
+    /*              选择存储路径               */
+    //读取所有avaliable的存储路径，挑选usedSize最小的那个
+    let choosenStorePathRecord
+    tmpResult=await common_operation_model.find({dbModel:dbModel.store_path,condition:{usage:e_storePatUsage.USER_PHOTO},options:{sort:{usedSize:1}}})
+    if(0===tmpResult.msg.length){
+        handleSystemError({error:systemError.noDefinedStorePath})
+        return Promise.reject(systemError.noDefinedStorePath)
+    }
+    // console.log(`all store path===>${JSON.stringify(tmpResult)}`)
+
+    //选择存储路径，并判断是否达到上限
+    for(let singleRec of tmpResult.msg){
+        if(singleRec['percentage']<singleRec[e_field.STORE_PATH.HIGH_THRESHOLD]){
+            choosenStorePathRecord=singleRec
+            break;
+        }
+    }
+    // console.log(`choosenStorePathRecord===>${JSON.stringify(choosenStorePathRecord)}`)
+    if(undefined===choosenStorePathRecord){
+        handleSystemError({error:systemError.noAvailableStorePathForUerPhoto})
+        return Promise.reject(systemError.noAvailableStorePathForUerPhoto)
+    }
+
+    /*              将文件从临时目录转移（转换）到选择的路径                */
     //保存到指定位置
+    // console.log(`originalFilename ==== ${originalFilename}`)
     let md5NameWithoutSuffix=hash(originalFilename,e_hashType.MD5)
     let finalFileName=`${md5NameWithoutSuffix.msg}.${userPhotoConfiguration.imageType[0].toLowerCase()}`
-    let finalPath=userPhotoConfiguration.saveDir+finalFileName
+    // console.log(`finalFileName ==== ${finalFileName}`)
+    let finalPath=choosenStorePathRecord.path+finalFileName
     // console.log(`path ==== ${path}`)
     // console.log(`finalPath ==== ${finalPath}`)
     //格式不同，直接转换到指定位置
     tmpResult=await gmImage.getImageProperty_async(inst,e_gmGetter.FORMAT)
     // console.log(`tmpResult ==== ${JSON.stringify(tmpResult)}`)
     if(-1===userPhotoConfiguration.imageType.indexOf(tmpResult.msg)){
-        // console.log(`in ==== in}`)
+        // console.log(`path ==== ${path}`)
         await gmImage.gmCommand_async(inst,e_gmCommand.CONVERT_FILE_TYPE,finalPath)
+        let newInst=gmImage.initImage(finalPath)
+        tmpResult=await  gmImage.getImageProperty_async(newInst,e_gmGetter.FILE_SIZE)
+        let tmpSize=tmpResult.msg.sizeNum,tmpUnit=tmpResult.msg.sizeUnit
+
+        tmpResult=convertFileSize({num:tmpSize,unit:tmpUnit,newUnit:e_fileSizeUnit.KB})
+        uploadedFileSizeInKb=tmpResult.msg
+        fs.unlinkSync(path)
     }
     //格式符合，移动指定位置
     else{
         fs.renameSync(path,finalPath)
     }
+    // console.log(`final size========>${JSON.stringify(uploadedFileSizeInKb)}`)
 
-    let updateFieldsValue={photoDataUrl:{value:finalFileName}},updateFieldsValueForModel={photoDataUrl:finalFileName}
+
+
+    /*          获得原始user记录，来对比原始文件size和当前文件size，并获得原始文件地址来删除文件，         */
+    //获得2个数据：populateUserRec（原始用户数据），sizeToBeAddInDB（新文件和就文件的size差值）
+    // console.log(`userId===>${JSON.stringify(userId)}`)
+    let oldPhotoFile,originalUserInfo,originalStorePath
+    tmpResult=await common_operation_model.findById({dbModel:dbModel.user,id:userId})
+    originalUserInfo=objectDeepCopy(tmpResult.msg)
+    // console.log(`originalUserInfo=======> ${JSON.stringify(originalUserInfo)}`)
+    // mongoose 4.11.4 has issue about populate
+/*
+    // console.log(`user info===>${JSON.stringify(tmpResult)}`)
+    let populateUserRec=await populateSingleDoc_async(originalUserInfo,mongoConfiguration.populateOpt[e_coll.USER],mongoConfiguration.populatedFields[e_coll.USER])
+    oldPhotoFile=populateUserRec.msg[e_field.STORE_PATH.PATH]+populateUserRec.msg[e_field.USER.PHOTO_HASH_NAME]
+    console.log(`populated User info===>${JSON.stringify(populateUserRec)}`)
+    */
+    //有原始的头像，那么要先删除
+    if(undefined!==originalUserInfo[e_field.USER.PHOTO_PATH_ID]){
+        console.log(`photoPathId===>${JSON.stringify(originalUserInfo['photoPathId'])}`)
+        tmpResult=await common_operation_model.findById({dbModel:dbModel.store_path,id:originalUserInfo['photoPathId']})
+        originalStorePath=objectDeepCopy(tmpResult.msg)
+        console.log(`photoPathId ref record===>${JSON.stringify(tmpResult)}`)
+        oldPhotoFile=originalStorePath[e_field.STORE_PATH.PATH]+originalUserInfo[e_field.USER.PHOTO_HASH_NAME]
+        console.log(`oldPhotoFile===>${JSON.stringify(oldPhotoFile)}`)
+        fs.unlinkSync(oldPhotoFile)
+    }
+
+
+    /*                  更新db                    */
+    //如果原来的存储目录存在，且选择的存储目录和原来的存储目录不一致，那么，首先在原始存储路径的usedSize减去originalFileSize，然后在新存储路径的usedSize加上uploadFileSize
+    if(undefined!==originalUserInfo[e_field.USER.PHOTO_PATH_ID] && originalUserInfo[e_field.USER.PHOTO_PATH_ID]!==choosenStorePathRecord['_id']){
+        let updateValues={usedSize:originalStorePath[e_field.STORE_PATH.USED_SIZE]-originalUserInfo[e_field.USER.PHOTO_SIZE]}
+        await common_operation_model.findByIdAndUpdate({dbModel:dbModel.store_path,id:originalUserInfo[e_field.USER.PHOTO_PATH_ID],updateFieldsValue:updateValues})
+        updateValues={usedSize:choosenStorePathRecord[e_field.STORE_PATH.USED_SIZE]+uploadedFileSizeInKb}
+        await common_operation_model.findByIdAndUpdate({dbModel:dbModel.store_path,id:choosenStorePathRecord['_id'],updateFieldsValue:updateValues})
+    }
+    //如果原先没有存储路径或者选择的存储目录和原来的存储目录一致，那么只要更新原始存储路径的usedSize
+    if(undefined===originalUserInfo[e_field.USER.PHOTO_PATH_ID] || originalUserInfo[e_field.USER.PHOTO_PATH_ID]===choosenStorePathRecord['_id']){
+        // console.log(`update just choosen store path`)
+        let originalPhotoSize=(undefined===originalUserInfo[e_field.USER.PHOTO_SIZE])? 0:originalUserInfo[e_field.USER.PHOTO_SIZE]
+        let updateValues={usedSize:choosenStorePathRecord[e_field.STORE_PATH.USED_SIZE]-originalPhotoSize+uploadedFileSizeInKb}
+        // console.log(`updateValues===>${JSON.stringify(updateValues)}`)
+        // console.log(`id===>${JSON.stringify(choosenStorePathRecord['_id'])}`)
+        await common_operation_model.findByIdAndUpdate({dbModel:dbModel.store_path,id:choosenStorePathRecord['_id'],updateFieldsValue:updateValues})
+    }
+    //最后更新user的PHOTO_PATH_ID/PHOTO_HASH_NAME/PHOTO_SIZE
+    // console.log(`finalFileName===>${JSON.stringify(finalFileName)}`)
+    // console.log(`uploadedFileSizeInKb===>${JSON.stringify(uploadedFileSizeInKb)}`)
+    // console.log(`choosenStorePathRecord['_id']===>${JSON.stringify(choosenStorePathRecord['_id'])}`)
+    let  updateFieldsValueForModel={photoHashName:finalFileName,photoSize:uploadedFileSizeInKb,photoPathId:choosenStorePathRecord['_id']}//实际update
+// console.log(`updateFieldsValueForModel===>${JSON.stringify(updateFieldsValueForModel)}`)
     if(e_env.DEV===currentEnv){
-        tmpResult=validateUpdateRecorderValue(updateFieldsValue,internalInputRule[e_coll.USER])
-        // console.log(`internal check=============> ${JSON.stringify(result)}`)
-        // result=helper.validatePartValue({req:req,exceptedPart:exceptedPart,coll:e_coll.USER,inputRule:user_internalInputRule,method:e_method.CREATE})
+        let newDocValue=dataConvert.addSubFieldKeyValue(updateFieldsValueForModel)
+        // console.log(`newDocValue===>${JSON.stringify(newDocValue)}`)
+        tmpResult=validateCURecordInfoFormat(newDocValue,inputRule[e_coll.USER])
+        if(tmpResult.rc>0){
+            // console.log(`internal check value=============> ${JSON.stringify(docValue)}`)
+            return Promise.reject(tmpResult)
+        }
+        tmpResult=validateUpdateRecorderValue(newDocValue,internalInputRule[e_coll.USER])
+        // console.log(`internal check=============> ${JSON.stringify(tmpResult)}`)
+        // tmpResult=helper.validatePartValue({req:req,exceptedPart:exceptedPart,coll:e_coll.USER,inputRule:user_internalInputRule,method:e_method.CREATE})
         // console.log(`updateFieldsValue   ${JSON.stringify(updateFieldsValue)}`)
         // console.log(`internalInputRule   ${JSON.stringify(internalInputRule[e_coll.USER][e_field.USER.PHOTO_DATA_URL])}`)
-        // console.log(`internal check  result   ${JSON.stringify(internalInputRule[e_coll.USER][e_field.USER.PHOTO_DATA_URL]['format']['define'].test(finalFileName))}`)
+        // console.log(`internal check  tmpResult   ${JSON.stringify(internalInputRule[e_coll.USER][e_field.USER.PHOTO_DATA_URL]['format']['define'].test(finalFileName))}`)
         // console.log(`internal check  ${JSON.stringify(tmpResult)}`)
         if(tmpResult.rc>0){
-            return Promise.reject(result)
+            return Promise.reject(tmpResult)
         }
+
     }
+
     //存储到db中
-    await common_operation.findByIdAndUpdate({dbModel:dbModel.user,id:userId,updateFieldsValue:updateFieldsValueForModel})
+
+
+    await common_operation_model.findByIdAndUpdate({dbModel:dbModel.user,id:userId,updateFieldsValue:updateFieldsValueForModel})
     // console.log(`type ====>${JSON.stringify(type)}`)
+
     return Promise.resolve({rc:0})
 }
 
@@ -806,88 +936,13 @@ async function generateCaptcha_async(req){
 
 
 
-/*        通过method，判断是CRUDM中的那个操作
-*   C: register
-*   M: match(login)
-* */
-router.post('/',function(req,res,next){
 
-    dispatcher(req).then(
-        (v)=>{
-            console.log(`create   register   success, result:  ${JSON.stringify(v)}`)
-            return res.json(v)
-        },
-        (err)=>{
-            console.log(`create   register    fail: ${JSON.stringify(err)}`)
-            return res.json(genFinalReturnResult(err))
-
-        }
-    )
-})
-
-router.post('/uniqueCheck_async',function(req,res,next){
-
-    uniqueCheck_async(req).then(
-        (v)=>{
-            console.log(`unique check  success, result:  ${JSON.stringify(v)}`)
-            return res.json(v)
-        },
-        (err)=>{
-            console.log(`unique check  fail: ${JSON.stringify(err)}`)
-            return res.json(genFinalReturnResult(err))
-
-        }
-    )
-})
-
-router.post('/retrievePassword',function(req,res,next){
-
-    retrievePassword_async(req).then(
-        (v)=>{
-            console.log(`retrievePassword  success, result:  ${JSON.stringify(v)}`)
-            return res.json(v)
-        },
-        (err)=>{
-            console.log(`retrievePassword  fail: ${JSON.stringify(err)}`)
-            return res.json(genFinalReturnResult(err))
-
-        }
-    )
-})
-
-
-
-
-router.post('/uploadPhoto',function(req,res,next){
-
-    uploadPhoto_async(req).then(
-        (v)=>{
-            console.log(`uploadPhoto  success, result:  ${JSON.stringify(v)}`)
-            return res.json(v)
-        },
-        (err)=>{
-            console.log(`uploadPhoto  fail: ${JSON.stringify(err)}`)
-            return res.json(genFinalReturnResult(err))
-
-        }
-    )
-})
-
-
-
-
-router.post('/captcha',function(req,res,next){
-
-    generateCaptcha_async(req).then(
-        (v)=>{
-            console.log(`captcha  success, result:  ${JSON.stringify(v)}`)
-            return res.json(v)
-        },
-        (err)=>{
-            console.log(`captcha  fail: ${JSON.stringify(err)}`)
-            return res.json(genFinalReturnResult(err))
-
-        }
-    )
-})
-module.exports={router,controllerError}
+module.exports={
+    dispatcher_async,
+    login_async,
+    uniqueCheck_async,
+    retrievePassword_async,
+    uploadPhoto_async,
+    generateCaptcha_async,
+    controllerError
+}

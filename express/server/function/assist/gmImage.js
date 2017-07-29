@@ -22,7 +22,7 @@ const imageErrorDefine=require('../../constant/error/assistError').gmImage
 
 const e_gmGetter=require('../../constant/enum/node_runtime').GmGetter
 const e_command=require('../../constant/enum/node_runtime').GmCommand
-const e_gmSizeUnit=require('../../constant/enum/node_runtime').GmFileSizeUnit
+
 
 const uploadFileDefine=require('../../constant/config/globalConfiguration').uploadFileDefine
 // let gmist=gm('H:/ss_vue_express/plan.txt')
@@ -254,66 +254,6 @@ function gmCommand_async(gmInst, command,savePath){
 
 }
 
-/*
-* @num: 原始文件的大小（数字部分）
-* @unit：原始文件的大小（单位，byte：空，KB：ki，MB：Mi，GB:Gi）
-* @newUnit；要转换成的单位
-* */
-function convertFileSize({num,unit,newUnit}){
-    if(0===num){
-        return   {rc:0,msg:0}
-    }
-    // console.log(`unit ${unit}`)
-    if(unit===newUnit){
-        return   {rc:0,msg:num}
-    }
-
-    //首先转换成byte
-    let originFileInByte
-    if(undefined===unit){
-/*        if(undefined===newUnit){
-            copnsole.log(`all byte in`)
-            return   {rc:0,msg:num}
-        }*/
-        originFileInByte=num
-    }else{
-        switch(unit){
-            case e_gmSizeUnit.KB:
-                originFileInByte=Math.floor(num*1024)
-                break;
-            case e_gmSizeUnit.MB:
-                originFileInByte=Math.floor(num*1024*1024)
-                break;
-            case e_gmSizeUnit.GB:
-                originFileInByte=Math.floor(num*1024*1024*1024)
-                break;
-            default:
-                return imageErrorDefine.unknownUnit
-        }
-    }
-
-    //从byte转换成指定的单位
-    let convertedSize
-    if(undefined===newUnit){
-        return {rc:0,msg:originFileInByte}
-    }else{
-        switch(newUnit){
-            case e_gmSizeUnit.KB:
-                convertedSize=(originFileInByte/1024).toFixed(2)*1
-                break;
-            case e_gmSizeUnit.MB:
-                convertedSize=(originFileInByte/1024/1024).toFixed(2)*1
-                break;
-            case e_gmSizeUnit.GB:
-                convertedSize=(originFileInByte/1024/1024/1024).toFixed(2)*1
-                break;
-            default:
-                return imageErrorDefine.unknownUnit
-        }
-        return {rc:0,msg:convertedSize}
-    }
-
-}
 
 /*gm('H:\\ss_vue_express\\test_data\\userPhoto\\tmp\\QUYrORtOhinHMep1mOw9xZYp.jpg').write('H:/ss_vue_express/test_data/userPhoto/dest/1.png',function(err){
     if(err){
@@ -328,5 +268,5 @@ module.exports={
     initImage,
     getImageProperty_async,
     gmCommand_async,
-    convertFileSize,
+
 }

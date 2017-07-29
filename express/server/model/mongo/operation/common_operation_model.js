@@ -52,6 +52,21 @@ async function create({dbModel,value,returnResult=true}){
 
 }
 
+async function insertMany({dbModel,docs,returnResult=true}){
+//使用Promise方式，以便catch可能的错误
+    /*          原本使用insertMany，输入参数是数据，返回结果也是数据         */
+    let result=await dbModel.insertMany(docs).catch((err)=>{
+     console.log(`model err is ${JSON.stringify(err)}`)
+        return  Promise.reject(mongooseErrorHandler(mongooseOpEnum.insertMany,err))
+     })
+     //result.name=undefined
+     //console.log(`model result is ${JSON.stringify(modelResult)}`)
+     return Promise.resolve({rc:0,msg:result})
+
+
+
+}
+
 async function update({dbModel,updateOptions,id,values,returnResult=true}){
     values['uDate']=Date.now()
     // console.log(`id is ${id}, values is ${JSON.stringify(values)}`)
@@ -93,6 +108,25 @@ async function update({dbModel,updateOptions,id,values,returnResult=true}){
     }else{
         return Promise.resolve({rc:0})
     }
+
+}
+
+/*              直接进行update          */
+async function updateDirect({dbModel,condition,updateOptions,values,returnResult=true}){
+    values['uDate']=Date.now()
+    return new Promise(function(resolve,reject){
+        dbModel.update(condition,values,updateOptions,function(err,result){
+            if(err){
+                return reject(err)
+            }
+            if(returnResult){
+                return resolve(result)
+            }else{
+                return resolve({rc:0})
+            }
+        })
+    })
+
 
 }
 
@@ -231,9 +265,9 @@ async function findById({dbModel,id,returnResult=true,selectedFields='-cDate -uD
 }
 
 
-async function find({dbModel,condition,returnResult=true,selectedFields='-cDate -uDate -dDate'}){
+async function find({dbModel,condition,returnResult=true,selectedFields='-cDate -uDate -dDate',options={}}){
     // console.log(`find by id :${id}`)
-    let result=await dbModel.find(condition,selectedFields)
+    let result=await dbModel.find(condition,selectedFields,options)
         .catch(
             function(err){
                 console.log(`find errr is ${JSON.stringify(err)}`)
@@ -443,7 +477,8 @@ async function checkBillTypeOkForBill({dbModel,id}){
 
 module.exports= {
     create,
-    update,
+    update,//传统的方式（find/update/save）
+    updateDirect,//直接执行update操作，无需考虑middleware
     remove,
     removeAll,//测试用
     deleteOne,
@@ -462,4 +497,7 @@ module.exports= {
     getStaticBillType,
     /*      patch， 检测billType是否可以在bill中使用（billType必须有parent，且inOut不为空）*/
     checkBillTypeOkForBill,
+
+    /*          deploy          */
+    insertMany,
 }

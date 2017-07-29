@@ -43,9 +43,9 @@ const collName='public_group'
 const collFieldDefine={
     name:{type:String,unique:true},
     //account:{type:String,unique:true}, //email或者手机号
-    creatorId:{type:mongoose.Schema.Types.ObjectId,ref:"users"},
-    memberId:{type:[mongoose.Schema.Types.ObjectId],ref:"users"},
-    adminId:{type:[mongoose.Schema.Types.ObjectId],ref:"users"},//creatorId必在其中
+    creatorId:{type:mongoose.Schema.Types.ObjectId,ref:"user"},
+    memberId:{type:[mongoose.Schema.Types.ObjectId],ref:"user"},
+    adminId:{type:[mongoose.Schema.Types.ObjectId],ref:"user"},//creatorId必在其中
     joinInRule:{type:String,},//enum:enumValue.PublicGroupJoinInRule
     cDate:{type:Date,default:Date.now},
     uDate:{type:Date,default:Date.now},
@@ -122,7 +122,8 @@ billSchema.pre('findOneAndUpdate',function(next){
 })*/
 
 
-
+/*      mongoose使用新的方式设置model，没有的话会导致populate报错       */
+mongoose.model(collName,collSchema)
 const collModel=connectedDb.model(collName,collSchema)
 /*const departmentModel=dbFinance.model('departments',departmentSchema)
 const employeeModel=dbFinance.model('employees',employeeSchema)

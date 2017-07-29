@@ -3,6 +3,7 @@
 "use strict"
 const ArticleStatus=["0","1",] 
 const AdminUserType=["0","1",] 
+const UserType=["1",] 
 const AdminPriorityType=["0","1","2",] 
 const PublicGroupJoinInRule=["0","1",] 
 const PublicGroupEventType=["0","1","2","3","4","5",] 
@@ -12,9 +13,11 @@ const ImpeachType=["0","1",]
 const ImpeachStatus=["0","1","2","3","4","5","6",] 
 const DocStatus=["1","2","3",] 
 const AccountType=["1","2",] 
+const StorePathUsage=["1","2",] 
 module.exports={
     ArticleStatus,
     AdminUserType,
+    UserType,
     AdminPriorityType,
     PublicGroupJoinInRule,
     PublicGroupEventType,
@@ -24,4 +27,5 @@ module.exports={
     ImpeachStatus,
     DocStatus,
     AccountType,
+    StorePathUsage,
 }

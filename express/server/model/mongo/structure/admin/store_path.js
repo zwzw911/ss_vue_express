@@ -1,7 +1,7 @@
 /**
- * Created by wzhan039 on 2017-06-10.
+ * Created by ada on 2017-06-10.
  *
- * 定义用户信息
+ * 定义存储路径
  */
 
 'use strict'
@@ -16,9 +16,10 @@ const connectedDb=require('../../common/connection_admin').dbAdmin;
 const mongoSetting=require('../../common/configuration')
 
 const browserInputRule=require('../../../../constant/inputRule/browserInput/admin/store_path').store_path
-// const internalInputRule=require('../../../../constant/inputRule/internalInput/article/folder').folder
+const internalInputRule=require('../../../../constant/inputRule/internalInput/admin/store_path').store_path
 //根据inputRule的rule设置，对mongoose设置内建validator
-const collInputRule=browserInputRule
+// const collInputRule=browserInputRule
+const collInputRule=Object.assign({},browserInputRule,internalInputRule)
 
 const serverRuleType=require('../../../../constant/enum/inputDataRuleType').ServerRuleType
 
@@ -40,8 +41,12 @@ const collName='store_path'
 
 const collFieldDefine={
     name:{type:String,unique:true},
-    path:{type:String,validate:{validator:function(v){fs.statSync(v).isDirectory()},message:`invalid path`}},
-
+    path:{type:String,unique:true,validate:{validator:function(v){fs.statSync(v).isDirectory()},message:`invalid path`}},
+    usage:{type:String},//当前storePath的用途
+    size:{type:Number},//预定义的目录size（KB）
+    usedSize:{type:Number},//目录已经使用的size(KB)
+    lowThreshold:{type:Number},//百分比，达到后报警
+    highThreshold:{type:Number},//百分比，达到后不再使用此目录
 }
 
 console.log(`before: ${JSON.stringify(collFieldDefine)}`)
@@ -51,7 +56,7 @@ if(mongoSetting.configuration.setBuildInValidatorFlag){
 }
 
 
-console.log(`after: ${JSON.stringify(collFieldDefine)}`)
+console.log(`after: =========>${JSON.stringify(collFieldDefine)}`)
 /*
 * 根据define/validateRule/validateRule的rule设置schema的rule
 * */
@@ -74,6 +79,7 @@ const collSchema=new mongoose.Schema(
     mongoSetting.schemaOptions
 )
 
+collSchema.virtual('percentage').get(function(){return ((this.usedSize/this.size)*100).toFixed(0)})
 /*const departmentSchema=new mongoose.Schema(
     fieldDefine['department'],
     schemaOptions
@@ -114,8 +120,10 @@ billSchema.pre('findOneAndUpdate',function(next){
 })*/
 
 
-
+/*      mongoose使用新的方式设置model，没有的话会导致populate报错       */
+mongoose.model(collName,collSchema)
 const collModel=connectedDb.model(collName,collSchema)
+// const collModel=mongoose.model(collName,collSchema)
 /*const departmentModel=dbFinance.model('departments',departmentSchema)
 const employeeModel=dbFinance.model('employees',employeeSchema)
 const billTypeModel=dbFinance.model('billTypes',billTypeSchema)

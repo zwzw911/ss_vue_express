@@ -226,7 +226,7 @@ const uploadFileDefine={
         maxWidth:10000,//px
         imageType:['PNG'],
         saveDir:'H:/ss_vue_express/test_data/userPhoto/dest/',
-        tmpSaveDir:'H:/ss_vue_express/test_data/userPhoto/tmp/'
+        tmpSaveDir:'H:/ss_vue_express/test_data/tmp/'
     },
     impeach_image:{
         maxSizeInByte:2*1024*1024, //byte

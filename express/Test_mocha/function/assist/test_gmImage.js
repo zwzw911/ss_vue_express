@@ -6,7 +6,6 @@ const assert=require('assert')
 const gmImage=require('../../../server/function/assist/gmImage')
 const e_gmGetter=require('../../../server/constant/enum/node_runtime').GmGetter
 
-const e_sizeUnit=require('../../../server/constant/enum/node_runtime').GmFileSizeUnit
 
 
 describe('getImageProperty_async', function() {
@@ -71,30 +70,3 @@ describe('getImageProperty_async', function() {
 })
 
 
-describe('convertFileSize', function() {
-    const func=gmImage.convertFileSize
-    let size=1024
-    let result
-
-    it('byte to byte',  ()=>{
-        result=func({num:size})
-        // console.log(`${JSON.stringify(result)}`)
-        assert.deepStrictEqual(result.msg,1024)
-    })
-    it('byte to KB',  ()=>{
-        result=func({num:size,newUnit:e_sizeUnit.KB})
-        // console.log(`${JSON.stringify(result)}`)
-        assert.deepStrictEqual(result.msg,1)
-    })
-    it('byte to MB',  ()=>{
-        result=func({num:size,newUnit:e_sizeUnit.MB})
-        // console.log(`${JSON.stringify(result)}`)
-        assert.deepStrictEqual(result.msg,0)
-    })
-
-    it('MB to byte',  ()=>{
-        result=func({num:size,unit:e_sizeUnit.MB})
-        // console.log(`${JSON.stringify(result)}`)
-        assert.deepStrictEqual(result.msg,1073741824)
-    })
-})

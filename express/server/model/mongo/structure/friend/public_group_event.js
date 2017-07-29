@@ -41,11 +41,11 @@ const enumValue=require('../enumValue')
 const collName='public_group_event'
 
 const collFieldDefine={
-    publicGroupId:{type:mongoose.Schema.Types.ObjectId,ref:"public_groups"},
+    publicGroupId:{type:mongoose.Schema.Types.ObjectId,ref:"public_group"},
     eventType:{type:String,},//通过函数自动产生，enum:enumValue.PublicGroupEventType
     //account:{type:String,unique:true}, //email或者手机号
-    sourceId:{type:mongoose.Schema.Types.ObjectId,ref:"users"},
-    targetId:{type:[mongoose.Schema.Types.ObjectId],ref:"users"},
+    sourceId:{type:mongoose.Schema.Types.ObjectId,ref:"user"},
+    targetId:{type:[mongoose.Schema.Types.ObjectId],ref:"user"},
     status:{type:String,},//通过函数自动产生，enum:enumValue.EventStatus
 
     cDate:{type:Date,default:Date.now},
@@ -123,7 +123,8 @@ billSchema.pre('findOneAndUpdate',function(next){
 })*/
 
 
-
+/*      mongoose使用新的方式设置model，没有的话会导致populate报错       */
+mongoose.model(collName,collSchema)
 const collModel=connectedDb.model(collName,collSchema)
 /*const departmentModel=dbFinance.model('departments',departmentSchema)
 const employeeModel=dbFinance.model('employees',employeeSchema)

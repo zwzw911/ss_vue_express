@@ -40,8 +40,8 @@ const assist=require('../../common/assist')
 const collName='article_comment'
 
 const collFieldDefine={
-    authorId:{type:mongoose.Schema.Types.ObjectId,ref:"users"}, //
-    articleId:{type:mongoose.Schema.Types.ObjectId,ref:"articles"},
+    authorId:{type:mongoose.Schema.Types.ObjectId,ref:"user"}, //
+    articleId:{type:mongoose.Schema.Types.ObjectId,ref:"article"},
     content:{type:String,},
     cDate:{type:Date,default:Date.now},
     //uDate:{type:Date,default:Date.now},//评论无法更改
@@ -118,7 +118,8 @@ billSchema.pre('findOneAndUpdate',function(next){
 })*/
 
 
-
+/*      mongoose使用新的方式设置model，没有的话会导致populate报错       */
+mongoose.model(collName,collSchema)
 const collModel=connectedDb.model(collName,collSchema)
 /*const departmentModel=dbFinance.model('departments',departmentSchema)
 const employeeModel=dbFinance.model('employees',employeeSchema)

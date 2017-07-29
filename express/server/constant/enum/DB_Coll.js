@@ -6,7 +6,7 @@ const Coll={
     ADMIN_PENALIZE:'admin_penalize',
     ADMIN_SUGAR:'admin_sugar',
     ADMIN_USER:'admin_user',
-    CATAGORY:'catagory',
+    CATEGORY:'category',
     STORE_PATH:'store_path',
     /*       article           */
     ARTICLE:'article',
@@ -42,9 +42,6 @@ const Coll={
     TOPIC:'topic',
 }
 
-
-// console.log(`${JSON.stringify(Field[Coll.USER])}`)
 module.exports={
     Coll,
-    // Field,
 }

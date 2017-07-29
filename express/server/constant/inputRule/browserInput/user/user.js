@@ -9,6 +9,10 @@
 const serverDataType=require('../../../enum/inputDataRuleType').ServerDataType
 const regex=require('../../../regex/regex').regex
 
+/*        field有enum才需要require        */
+// const mongoEnum=require('../../../enum/mongo')
+const enumValue=require('../../../../model/mongo/structure/enumValue')
+
 const user= {
     name: {
         'chineseName': '用户名',
@@ -34,9 +38,15 @@ const user= {
         'require': {define: true, error: {rc: 10716}, mongoError: {rc: 20716, msg: '密码不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
 /*        'minLength': {define: 6, error: {rc: 10718}, mongoError: {rc: 20718, msg: '密码至少6个字符'}},
         'maxLength': {define: 20, error: {rc: 10720}, mongoError: {rc: 20720, msg: '密码的长度不能超过20个字符'}},*/
-        'format': {define: regex.password, error: {rc: 10722}, mongoError: {rc: 20722, msg: '密码必须由6-20个字符组成'}} //server端使用
+        'format': {define: regex.password, error: {rc: 10718}, mongoError: {rc: 20718, msg: '密码必须由6-20个字符组成'}} //server端使用
     },
 
+    userType:{
+        'chineseName': '用户类型',
+        'type': serverDataType.STRING,
+        'require': {define: true, error: {rc: 10720}, mongoError: {rc: 20720, msg: '用户类型不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        'enum':{define:enumValue.UserType,error:{rc:10722},mongoError:{rc:20722,msg:'用户类型不正确'}},//server端使用
+},
 
 
 }

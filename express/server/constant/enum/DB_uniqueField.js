@@ -4,8 +4,8 @@
 
 const UniqueField={
     admin_user:["name",],
-    catagory:["name",],
-    store_path:["name",],
+    category:["name",],
+    store_path:["name","path",],
     tag:["name",],
     public_group:["name",],
     sugar:["userId",],

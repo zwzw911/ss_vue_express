@@ -41,10 +41,10 @@ const collName='article_attachment'
 const collFieldDefine={
     name:{type:String,},
     hashName:{type:String,},
-    pathId:{type:mongoose.Schema.Types.ObjectId,ref:"paths"},
+    pathId:{type:mongoose.Schema.Types.ObjectId,ref:"path"},
     size:{type:Number}, //
-    articleId:{type:mongoose.Schema.Types.ObjectId,ref:'articles'},
-    authorId:{type:mongoose.Schema.Types.ObjectId,ref:"users"}, //
+    articleId:{type:mongoose.Schema.Types.ObjectId,ref:'article'},
+    authorId:{type:mongoose.Schema.Types.ObjectId,ref:"user"}, //
     cDate:{type:Date,default:Date.now},
     uDate:{type:Date,default:Date.now},
     dDate:{type:Date},
@@ -120,7 +120,8 @@ billSchema.pre('findOneAndUpdate',function(next){
 })*/
 
 
-
+/*      mongoose使用新的方式设置model，没有的话会导致populate报错       */
+mongoose.model(collName,collSchema)
 const collModel=connectedDb.model(collName,collSchema)
 /*const departmentModel=dbFinance.model('departments',departmentSchema)
 const employeeModel=dbFinance.model('employees',employeeSchema)

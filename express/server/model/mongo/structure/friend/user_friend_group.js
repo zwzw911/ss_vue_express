@@ -50,8 +50,8 @@ const friendsInGroup_arrayMaxLengthValidator={
 
 const collFieldDefine={
     name:{type:String,},
-    userId:{type:mongoose.Schema.Types.ObjectId,ref:"users"}, //
-    friendsInGroup:{type:[mongoose.Schema.Types.ObjectId],ref:'users',validate:[friendsInGroup_arrayMaxLengthValidator]},
+    userId:{type:mongoose.Schema.Types.ObjectId,ref:"user"}, //
+    friendsInGroup:{type:[mongoose.Schema.Types.ObjectId],ref:'user',validate:[friendsInGroup_arrayMaxLengthValidator]},
     cDate:{type:Date,default:Date.now},
     uDate:{type:Date,default:Date.now},
     dDate:{type:Date},
@@ -127,7 +127,8 @@ billSchema.pre('findOneAndUpdate',function(next){
 })*/
 
 
-
+/*      mongoose使用新的方式设置model，没有的话会导致populate报错       */
+mongoose.model(collName,collSchema)
 const collModel=connectedDb.model(collName,collSchema)
 /*const departmentModel=dbFinance.model('departments',departmentSchema)
 const employeeModel=dbFinance.model('employees',employeeSchema)

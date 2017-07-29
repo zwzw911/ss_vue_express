@@ -6,7 +6,7 @@
 const admin_penalize=require('./structure/admin/admin_penalize.js').collModel
 const admin_sugar=require('./structure/admin/admin_sugar.js').collModel
 const admin_user=require('./structure/admin/admin_user.js').collModel
-const catagory=require('./structure/admin/catagory.js').collModel
+const category=require('./structure/admin/category.js').collModel
 const store_path=require('./structure/admin/store_path.js').collModel
 /*       article           */
 const article=require('./structure/article/article.js').collModel
@@ -47,7 +47,7 @@ module.exports={
     admin_penalize,
     admin_sugar,
     admin_user,
-    catagory,
+    category,
     store_path,
     /*       article           */
     article,

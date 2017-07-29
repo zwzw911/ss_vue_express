@@ -28,6 +28,17 @@ const AdminUserType={
 
 }
 
+const UserType={
+    DB:{
+
+        NORMAL:'1',
+    },
+    SHOW:{
+
+        NORMAL:'普通用户',
+    }
+
+}
 const AdminPriorityType={
     DB:{
         IMPEACH:'0',      //可以处理 举报
@@ -165,9 +176,23 @@ const AccountType={
     },
 }
 
+/*          每个设定的storePath用途（用在那个coll）      */
+const StorePathUsage={
+    DB:{
+        UPLOAD_TMP:'1',
+        USER_PHOTO:'2',
+
+    },
+    SHOW:{
+        UPLOAD_TMP:'临时文件夹',
+        USER_PHOTO:'用户头像',
+    },
+
+}
 module.exports={
     ArticleStatus,
     AdminUserType,
+    UserType,
     AdminPriorityType,
     PublicGroupJoinInRule,
     PublicGroupEventType,
@@ -177,4 +202,5 @@ module.exports={
     ImpeachStatus,
     DocStatus,
     AccountType,
+    StorePathUsage
 }

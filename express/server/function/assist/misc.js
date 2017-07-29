@@ -30,7 +30,7 @@ let appSetting=require('../../constant/config/appSetting').currentAppSetting
 let currentEnv=require('../../constant/config/appSetting').currentEnv
 let e_env=require('../../constant/enum/node').Env
 
-
+const e_sizeUnit=require('../../constant/enum/node_runtime').FileSizeUnit
 
 const checkInterval_async=async function(req){
     //return new Promise(function(resolve,reject){
@@ -357,6 +357,67 @@ function sendVerificationCodeByEmail_async(message){
 
 }
 // sendVerificationCodeByEmail_async()
+/*
+ * @num: 原始文件的大小（数字部分）
+ * @unit：原始文件的大小（单位，byte：空，KB：ki，MB：Mi，GB:Gi）
+ * @newUnit；要转换成的单位
+ * */
+function convertFileSize({num,unit,newUnit}){
+    if(0===num){
+        return   {rc:0,msg:0}
+    }
+    // console.log(`unit ${unit}`)
+    if(unit===newUnit){
+        return   {rc:0,msg:num}
+    }
+
+    //首先转换成byte
+    let originFileInByte
+    if(undefined===unit){
+        /*        if(undefined===newUnit){
+         copnsole.log(`all byte in`)
+         return   {rc:0,msg:num}
+         }*/
+        originFileInByte=num
+    }else{
+        switch(unit){
+            case e_sizeUnit.KB:
+                originFileInByte=Math.floor(num*1024)
+                break;
+            case e_sizeUnit.MB:
+                originFileInByte=Math.floor(num*1024*1024)
+                break;
+            case e_sizeUnit.GB:
+                originFileInByte=Math.floor(num*1024*1024*1024)
+                break;
+            default:
+                return imageErrorDefine.unknownUnit
+        }
+    }
+
+    //从byte转换成指定的单位
+    let convertedSize
+    if(undefined===newUnit){
+        return {rc:0,msg:originFileInByte}
+    }else{
+        switch(newUnit){
+            case e_sizeUnit.KB:
+                convertedSize=(originFileInByte/1024).toFixed(2)*1
+                break;
+            case e_sizeUnit.MB:
+                convertedSize=(originFileInByte/1024/1024).toFixed(2)*1
+                break;
+            case e_sizeUnit.GB:
+                convertedSize=(originFileInByte/1024/1024/1024).toFixed(2)*1
+                break;
+            default:
+                return imageErrorDefine.unknownUnit
+        }
+        return {rc:0,msg:convertedSize}
+    }
+
+}
+
 
 module.exports={
     checkInterval_async,
@@ -380,4 +441,8 @@ module.exports={
 
     objectDeepCopy,
     sendVerificationCodeByEmail_async,
+
+    convertFileSize,
+
+
 }

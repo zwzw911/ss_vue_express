@@ -35,7 +35,7 @@ const GmCommand={
     CONVERT_FILE_TYPE:'convertFileType',//转换图片的格式
 }
 
-const GmFileSizeUnit={
+const FileSizeUnit={
     KB:'ki',
     MB:'Mi',
     GB:'Gi'
@@ -45,6 +45,6 @@ module.exports={
     CryptType,
     GmGetter,
     GmCommand,
-    GmFileSizeUnit,
+    FileSizeUnit,
 
 }

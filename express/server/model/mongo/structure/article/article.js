@@ -85,15 +85,15 @@ const comment_arrayMaxLengthValidator={
 const collFieldDefine={
     name:{type:String,},
     status:{type:String,}, //enum， 通过setMongooseBuildInValidator从inputRule中获得对应的enum定义
-    authorId:{type:mongoose.Schema.Types.ObjectId,ref:"users"}, //
-    folderId:{type:mongoose.Schema.Types.ObjectId,ref:"folders"},
+    authorId:{type:mongoose.Schema.Types.ObjectId,ref:"user"}, //
+    folderId:{type:mongoose.Schema.Types.ObjectId,ref:"folder"},
     pureContent:{type:String},
     htmlContent:{type:String},//一般设置成pureContent的2倍大小
-    categoryId:{type:mongoose.Schema.Types.ObjectId,ref:"categories"},
-    tagsId:{type:[mongoose.Schema.Types.ObjectId],ref:'tags',validate:[tag_arrayMinLengthValidator,tag_arrayMaxLengthValidator]},
-    articleImagesId:{type:[mongoose.Schema.Types.ObjectId],ref:'article_images',validate:[image_arrayMaxLengthValidator]},
-    articleAttachmentsId:{type:[mongoose.Schema.Types.ObjectId],ref:'article_attachments',validate:[attachment_arrayMaxLengthValidator]},
-    articleCommentsId:{type:[mongoose.Schema.Types.ObjectId],ref:'article_comments',validate:[comment_arrayMaxLengthValidator]},
+    categoryId:{type:mongoose.Schema.Types.ObjectId,ref:"category"},
+    tagsId:{type:[mongoose.Schema.Types.ObjectId],ref:'tag',validate:[tag_arrayMinLengthValidator,tag_arrayMaxLengthValidator]},
+    articleImagesId:{type:[mongoose.Schema.Types.ObjectId],ref:'article_image',validate:[image_arrayMaxLengthValidator]},
+    articleAttachmentsId:{type:[mongoose.Schema.Types.ObjectId],ref:'article_attachment',validate:[attachment_arrayMaxLengthValidator]},
+    articleCommentsId:{type:[mongoose.Schema.Types.ObjectId],ref:'article_comment',validate:[comment_arrayMaxLengthValidator]},
     readNum:{type:Number, default:0}, //记录文档被读取的次数（冗余字段，也可以从read_article中count得到）
     cDate:{type:Date,default:Date.now},
     uDate:{type:Date,default:Date.now},
@@ -171,7 +171,8 @@ billSchema.pre('findOneAndUpdate',function(next){
 })*/
 
 
-
+/*      mongoose使用新的方式设置model，没有的话会导致populate报错       */
+mongoose.model(collName,collSchema)
 const collModel=connectedDb.model(collName,collSchema)
 /*const departmentModel=dbFinance.model('departments',departmentSchema)
 const employeeModel=dbFinance.model('employees',employeeSchema)

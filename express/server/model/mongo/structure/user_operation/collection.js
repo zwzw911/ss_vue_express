@@ -58,8 +58,8 @@ const collFieldDefine={
 
     name:{type:String},
     creatorId:{type:mongoose.Schema.Types.ObjectId}, //收藏夹创建者
-    articlesId:{type:[mongoose.Schema.Types.ObjectId],ref:"articles",validate:[articlesId_arrayMaxLengthValidator]},
-    topicsId:{type:[mongoose.Schema.Types.ObjectId],ref:"topics",validate:[topicsId_arrayMaxLengthValidator]},
+    articlesId:{type:[mongoose.Schema.Types.ObjectId],ref:"article",validate:[articlesId_arrayMaxLengthValidator]},
+    topicsId:{type:[mongoose.Schema.Types.ObjectId],ref:"topic",validate:[topicsId_arrayMaxLengthValidator]},
     cDate:{type:Date,default:Date.now},
     uDate:{type:Date,default:Date.now},
     dDate:{type:Date},
@@ -135,7 +135,8 @@ billSchema.pre('findOneAndUpdate',function(next){
 })*/
 
 
-
+/*      mongoose使用新的方式设置model，没有的话会导致populate报错       */
+mongoose.model(collName,collSchema)
 const collModel=connectedDb.model(collName,collSchema)
 /*const departmentModel=dbFinance.model('departments',departmentSchema)
 const employeeModel=dbFinance.model('employees',employeeSchema)

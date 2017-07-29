@@ -42,7 +42,7 @@ const collName='like_dislike_static'
 const collFieldDefine={
 
     // authorId:{type:mongoose.Schema.Types.ObjectId,ref:"users"}, //
-    articleId:{type:mongoose.Schema.Types.ObjectId,ref:"articles"}, //
+    articleId:{type:mongoose.Schema.Types.ObjectId,ref:"article"}, //
     likeTotalNum:{type:Number}, //通过mongodb内建的inc操作，所以无需验证
     dislikeTotalNum:{type:Number},//通过mongodb内建的inc操作，所以无需验证
     cDate:{type:Date,default:Date.now},
@@ -120,7 +120,8 @@ billSchema.pre('findOneAndUpdate',function(next){
 })*/
 
 
-
+/*      mongoose使用新的方式设置model，没有的话会导致populate报错       */
+mongoose.model(collName,collSchema)
 const collModel=connectedDb.model(collName,collSchema)
 /*const departmentModel=dbFinance.model('departments',departmentSchema)
 const employeeModel=dbFinance.model('employees',employeeSchema)

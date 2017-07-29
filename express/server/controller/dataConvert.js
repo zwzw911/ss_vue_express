@@ -223,10 +223,22 @@ const convertToClient=function(document,skipFields){
     return clientDoc
 }
 
+//问了实现validateCreateRecorderValue/validateUpdateRecorderValue的验证，需要将{field:val}=====》{field:{value:val}}
+const addSubFieldKeyValue=function(obj){
+    let newValue={}
+    for(let fieldName in obj){
+        newValue[fieldName]={'value':obj[fieldName]}
+    }
+    return newValue
+}
+
 module.exports={
     genNativeSearchCondition,
     convertCreateUpdateValueToServerFormat,
     constructCreateCriteria,
     constructUpdateCriteria,
     convertToClient,
+
+    //只在dev环境下使用
+    addSubFieldKeyValue,
 }

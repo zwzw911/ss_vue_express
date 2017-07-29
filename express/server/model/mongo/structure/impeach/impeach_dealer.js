@@ -42,9 +42,9 @@ const assist=require('../../common/assist')
 const collName='impeach_dealer'
 
 const collFieldDefine={
-    impeachId:{type:mongoose.Schema.Types.ObjectId,ref:"impeaches"},
-    assignerId:{type:mongoose.Schema.Types.ObjectId,ref:"admin_users"},
-    dealerId:{type:mongoose.Schema.Types.ObjectId,ref:"admin_users"},
+    impeachId:{type:mongoose.Schema.Types.ObjectId,ref:"impeach"},
+    assignerId:{type:mongoose.Schema.Types.ObjectId,ref:"admin_user"},
+    dealerId:{type:mongoose.Schema.Types.ObjectId,ref:"admin_user"},
 
     cDate:{type:Date,default:Date.now},
     // uDate:{type:Date,default:Date.now},
@@ -121,7 +121,8 @@ billSchema.pre('findOneAndUpdate',function(next){
 })*/
 
 
-
+/*      mongoose使用新的方式设置model，没有的话会导致populate报错       */
+mongoose.model(collName,collSchema)
 const collModel=connectedDb.model(collName,collSchema)
 /*const departmentModel=dbFinance.model('departments',departmentSchema)
 const employeeModel=dbFinance.model('employees',employeeSchema)

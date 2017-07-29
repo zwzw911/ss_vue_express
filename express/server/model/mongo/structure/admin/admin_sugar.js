@@ -42,7 +42,7 @@ const assist=require('../../common/assist')
 const collName='admin_sugar'
 
 const collFieldDefine={
-    userId:{type:mongoose.Schema.Types.ObjectId,ref:"admin_users"},
+    userId:{type:mongoose.Schema.Types.ObjectId,ref:"admin_user"},
     sugar:{type:String},
     cDate:{type:Date,default:Date.now},
     uDate:{type:Date,default:Date.now},
@@ -119,7 +119,8 @@ billSchema.pre('findOneAndUpdate',function(next){
 })*/
 
 
-
+/*      mongoose使用新的方式设置model，没有的话会导致populate报错       */
+mongoose.model(collName,collSchema)
 const collModel=connectedDb.model(collName,collSchema)
 /*const departmentModel=dbFinance.model('departments',departmentSchema)
 const employeeModel=dbFinance.model('employees',employeeSchema)

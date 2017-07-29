@@ -92,9 +92,10 @@ const Method={
 }
 
 const InputFieldCheckType={
-    BASE_INPUT_RULE:0,//以inputRule为base进行检测（记录必须完整，一般用在create新纪录时）
-    BASE_INPUT:1,//以input为base进行检测（一般用在对部分字段进行检查，例如。modify几率，检查记录的unique性）
+    BASE_INPUT_RULE:'1',//以inputRule为base进行检测（记录必须完整，一般用在create新纪录时）
+    BASE_INPUT:'2',//以input为base进行检测（一般用在对部分字段进行检查，例如。modify几率，检查记录的unique性）
 }
+
 
 module.exports={
     RandomStringType,
@@ -108,4 +109,5 @@ module.exports={
     TimeUnit,
     Method,
     InputFieldCheckType,
+    // StorePathUsage,
 }

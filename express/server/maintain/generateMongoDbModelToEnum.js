@@ -73,6 +73,22 @@ function writeModelResult(toBeReadDir,resultWriteFilePath){
     fs.writeFileSync(resultWriteFilePath,`${convertedEnum}${exp}`)
 }
 
+function writeModelInArrayResult(toBeReadDir,resultWriteFilePath){
+    let description=`/*    gene by server/maintain/generateMongoDbModelToEnum     */ \r\n \r\n`
+    let indent=`\ \ \ \ `
+    let useStrict=`"use strict"\r\n`
+    let convertedEnum=``
+    convertedEnum+=`${description}${indent}${useStrict}\r\n`
+    let exp=`\r\nmodule.exports=[\r\n`
+
+    let result=requireCollDbModel(toBeReadDir)
+    convertedEnum+=result.convertedEnum
+    exp+=result.exp
+
+    // convertedEnum+=`\r\n`
+    exp+=`]\r\n`
+    fs.writeFileSync(resultWriteFilePath,`${convertedEnum}${exp}`)
+}
 /*function generateFieldEnum(structureDir,destFilePath){
     // let result={}
     let indent=`\ \ \ \ `
@@ -134,7 +150,7 @@ function writeFinalResult(toBeReadDir,resultWriteFilePath){
 // writeModelResult('../model/mongo/structure','../constant/enum/test.js')
 // generateFieldEnum()
 writeModelResult('../model/mongo/structure','../model/mongo/dbModel.js')
-
+writeModelInArrayResult('../model/mongo/structure','../model/mongo/dbModelInArray.js')
 module.exports={
     getFileName
 }

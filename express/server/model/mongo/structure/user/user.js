@@ -28,6 +28,7 @@ const assist=require('../../common/assist')
 //根据inputRule的rule设置，对mongoose设置内建validator
 const collInputRule=Object.assign({},browserInputRule,internalInputRule)
 
+// const store_path=require('../admin/store_path')
 /*
 * schema definition
 * 内置validator的定义放在ruleDefine中
@@ -43,15 +44,18 @@ const collFieldDefine={
     lastAccountUpdateDate:{type:Date},//最近一次修改account的时间
         password:{type:String}, //加密后的密码
         docStatus:{type:String},//实现 事务 的一致性
-/*        /!*  理论上浏览器只会执行一次http请求，但是如果用户数多，会对每个用户执行http，所以暂时使用dataUrl    *!/
-        photoPathId:{type:mongoose.Schema.Types.ObjectId,ref:'paths'},
-        photoHashName:{type:String},//md5*/
-        /*头像size较小，采用base64Url。 好处：减少http请求；坏处：增加前后端处理复杂度
+    userType:{type:String},//enum: 用户类型
+        /*  理论上浏览器只会执行一次http请求，但是如果用户数多，会对每个用户执行http    */
+        photoPathId:{type:mongoose.Schema.Types.ObjectId,ref:'store_path'},//
+        photoHashName:{type:String},//md5
+        photoSize:{type:Number},//kb，头像以文件格式存储
+/*        头像size较小，采用base64Url。 好处：减少http请求；坏处：增加前后端处理复杂度
         * 例如： 评论：3人各自做2次评论。
         * 如果是图片，要发起3次http请求；
         * 如果是baseUrl：需要将用户信息单独提取（而不是直接为每个评论直接读取用户信息），分成评论和用户信息，然后在client组合。只有一次http，但是处理比较复杂
         * */
-        photoDataUrl:{type:String},
+        // photoDataUrl:{type:String},
+    lastSignInDate:{type:Date},
         cDate:{type:Date,default:Date.now},
         uDate:{type:Date,default:Date.now},
         dDate:{type:Date},
@@ -64,7 +68,7 @@ if(mongoSetting.configuration.setBuildInValidatorFlag){
 }
 
 
-// console.log(`${__filename}:after: ${JSON.stringify(collFieldDefine)}`)
+console.log(`${__filename}:after: ${JSON.stringify(collFieldDefine)}`)
 /*
 * 根据define/validateRule/validateRule的rule设置schema的rule
 * */
@@ -126,9 +130,10 @@ billSchema.pre('findOneAndUpdate',function(next){
     next()
 })*/
 
-
-
+/*      mongoose使用新的方式设置model，没有的话会导致populate报错       */
+mongoose.model(collName,collSchema)
 const collModel=connectedDb.model(collName,collSchema)
+// const collModel=mongoose.model(collName,collSchema)
 /*const departmentModel=dbFinance.model('departments',departmentSchema)
 const employeeModel=dbFinance.model('employees',employeeSchema)
 const billTypeModel=dbFinance.model('billTypes',billTypeSchema)

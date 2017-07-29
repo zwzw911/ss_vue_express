@@ -2,7 +2,7 @@
  * Created by wzhan039 on 2017-06-29.
  */
 "use strict";
-const testModel=require('../../../../../server/model/mongo/structure/admin/catagory').collModel;
+const testModel=require('../../../../../server/model/mongo/structure/admin/category').collModel;
 // let testSch=require('../../../../../server/model/mongo/structure/admin/admin_user').collSchema;
 
 const browserInputRule=require('../../../../../server/constant/inputRule/browserInput/admin/category').category

@@ -98,11 +98,11 @@ const toPublicGroupId_arrayMaxLengthValidator= {
 
 
 const collFieldDefine={
-        articleId:{type:mongoose.Schema.Types.ObjectId,ref:"articles"},
-        initiatorId:{type:mongoose.Schema.Types.ObjectId,ref:"users"},
-        toUserId:{type:[mongoose.Schema.Types.ObjectId],ref:"users",validate:[toUserId_arrayMinLengthValidator,toUserId_arrayMaxLengthValidator]},
-        toGroupId:{type:[mongoose.Schema.Types.ObjectId],ref:"user_friend_groups",validate:[toGroupId_arrayMinLengthValidator,toGroupId_arrayMaxLengthValidator]},
-        toPublicGroupId:{type:[mongoose.Schema.Types.ObjectId],ref:"public_groups",validate:[toPublicGroupId_arrayMinLengthValidator,toPublicGroupId_arrayMaxLengthValidator]},
+        articleId:{type:mongoose.Schema.Types.ObjectId,ref:"article"},
+        initiatorId:{type:mongoose.Schema.Types.ObjectId,ref:"user"},
+        toUserId:{type:[mongoose.Schema.Types.ObjectId],ref:"user",validate:[toUserId_arrayMinLengthValidator,toUserId_arrayMaxLengthValidator]},
+        toGroupId:{type:[mongoose.Schema.Types.ObjectId],ref:"user_friend_group",validate:[toGroupId_arrayMinLengthValidator,toGroupId_arrayMaxLengthValidator]},
+        toPublicGroupId:{type:[mongoose.Schema.Types.ObjectId],ref:"public_group",validate:[toPublicGroupId_arrayMinLengthValidator,toPublicGroupId_arrayMaxLengthValidator]},
         cDate:{type:Date,default:Date.now},
         //uDate:{type:Date,default:Date.now},
         dDate:{type:Date},
@@ -178,7 +178,8 @@ billSchema.pre('findOneAndUpdate',function(next){
 })*/
 
 
-
+/*      mongoose使用新的方式设置model，没有的话会导致populate报错       */
+mongoose.model(collName,collSchema)
 const collModel=connectedDb.model(collName,collSchema)
 /*const departmentModel=dbFinance.model('departments',departmentSchema)
 const employeeModel=dbFinance.model('employees',employeeSchema)

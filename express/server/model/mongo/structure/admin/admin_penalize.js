@@ -64,8 +64,8 @@ const userPriority_Enum={
 }*/
 
 const collFieldDefine={
-    creatorId:{type:mongoose.Schema.Types.ObjectId,ref:"admin_users"},
-    punishedId:{type:mongoose.Schema.Types.ObjectId,ref:"users"},
+    creatorId:{type:mongoose.Schema.Types.ObjectId,ref:"admin_user"},
+    punishedId:{type:mongoose.Schema.Types.ObjectId,ref:"user"},
     reason:{type:String},
     penalizeType:{type:String,}, //enum只能支持string，不支持Number
     duration:{type:Number},
@@ -144,7 +144,8 @@ billSchema.pre('findOneAndUpdate',function(next){
 })*/
 
 
-
+/*      mongoose使用新的方式设置model，没有的话会导致populate报错       */
+mongoose.model(collName,collSchema)
 const collModel=connectedDb.model(collName,collSchema)
 /*const departmentModel=dbFinance.model('departments',departmentSchema)
 const employeeModel=dbFinance.model('employees',employeeSchema)

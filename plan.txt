@@ -37,3 +37,8 @@
 
 1. API中，一旦输入参数检查通过，立刻调用函数转换成{field:value}的形式=====>done
 2. 使用公司邮件发邮件（且为历史账号）=======>fail(不知SMTP配置)
+
+
+1. mongoose升级到4.11.6后，使用populate获得user（uploadPhoto）中的photoPathId对应的path（临时使用另外一个查询获得）
+
+1. 添加daily 查询，用来检查是否有头像文件未被记录在db中====》遍历目录下所有文件，是否在db中有对应的记录

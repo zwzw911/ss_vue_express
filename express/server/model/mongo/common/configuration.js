@@ -29,8 +29,8 @@ const schemaOptions={
     safe:true,	//设为true，如果出错，返回error到callback。设为{j:1,w:2,wtimeout:5000}，除了error返回callback，还能保证写操作被提交到日志和至少2个rep中，并且写操作超过5秒就超时
     Strict:true,//默认true，如果要保存的数据中，字段没有在schema中定义，数据将无法保存。也可以设置成throw，如此便抛出错误，而不是仅仅drop数据。
     //shardKey:{f1:1,f2:1}		//为collection设置shardKey（每个schema不同）
-    toJSON:toObjectOptions,		//类似toObject，除了还可以使用JSON.stringify(doc)
-    toObject:toObjectOptions,
+/*    toJSON:toObjectOptions,		//类似toObject，除了还可以使用JSON.stringify(doc)
+    toObject:toObjectOptions,*/
 /*    true：使用mongoose内定的validate方法(根据字段中的定义决定使用对应的validator)。false：使用自定义的validate方法。true: 自动验证，通过保存；false:可以采用自定义验证，并且可以保存不合格数据（即需要自己做数据验证来决定是否可以保存；不做自定义验证的话，任何数据都可以保存了）
     默认使用false，永远通过代码调用自定义validate方法来验证*/
     validateBeforeSave:true,
@@ -61,11 +61,30 @@ const updateOptions={
     'sort':'_id',//如果找到多个文档（应该不太可能），按照什么顺序选择第一个文档进行update。
 }
 
+
+const populatedFields={
+    user:['photoPathId'],
+
+}
+const populateOpt={
+    user: {
+        path: 'photoPathId',//需要populate的字段
+        select: 'name path',//populate后，需要显示的字段
+        model:'store_path', //和Schema中ref定义的一样
+/*        match: {},//populate后，过滤字段(不符合这显示null)。一般不用
+        options: {},//{sort:{name:-1}}*/
+    },
+
+}
 module.exports={
     schemaOptions,
     toObjectOptions,
     configuration,
     updateOptions,
+
+    populatedFields,
+    populateOpt,
+
 }
 
 

@@ -41,9 +41,9 @@ const assist=require('../../common/assist')
 const collName='member_penalize'
 
 const collFieldDefine={
-    creatorId:{type:mongoose.Schema.Types.ObjectId,ref:"users"},
-    publicGroupId:{type:mongoose.Schema.Types.ObjectId,ref:"public_groups"},
-    memberId:{type:mongoose.Schema.Types.ObjectId,ref:"users"},
+    creatorId:{type:mongoose.Schema.Types.ObjectId,ref:"user"},
+    publicGroupId:{type:mongoose.Schema.Types.ObjectId,ref:"public_group"},
+    memberId:{type:mongoose.Schema.Types.ObjectId,ref:"user"},
     penalizeType:{type:String,},//enum:enumValue.PenalizeType
     duration:{type:Number},//unit：day
 
@@ -122,7 +122,8 @@ billSchema.pre('findOneAndUpdate',function(next){
 })*/
 
 
-
+/*      mongoose使用新的方式设置model，没有的话会导致populate报错       */
+mongoose.model(collName,collSchema)
 const collModel=connectedDb.model(collName,collSchema)
 /*const departmentModel=dbFinance.model('departments',departmentSchema)
 const employeeModel=dbFinance.model('employees',employeeSchema)

@@ -28,7 +28,7 @@ const paginationSetting=require('../constant/config/globalConfiguration').pagina
 const helperError=require('../constant/error/controller/helperError').helper
 
 const e_dbModel=require('../model/mongo/dbModel')
-const common_operation=require('../model/mongo/operation/common_operation')
+const common_operation_model=require('../model/mongo/operation/common_operation_model')
 
 const checkUserState=require('../function/assist/misc').checkUserState
 
@@ -239,7 +239,7 @@ async function checkIfFkExist_async(value,collFkConfig,collName){
         let dbModel=e_dbModel[relatedColl]
 
         let value_objectId=value[singleFkField]
-        let result=await common_operation.findById({dbModel:dbModel,id:value_objectId})
+        let result=await common_operation_model.findById({dbModel:dbModel,id:value_objectId})
         if(result.rc>0){
             return Promise.reject(result)
         }
@@ -268,7 +268,7 @@ function dispatcherPreCheck({req}){
         methodPart={method:req.body.values[e_part.METHOD]}
     }
 
-    // console.log(`ready to validatePartFormat`)
+    // 此处只检查method
     result=validateFormat.validatePartFormat(methodPart,expectedPart)
     if(result.rc>0){return result}
 
@@ -278,7 +278,7 @@ function dispatcherPreCheck({req}){
 
 
 /*
-* 必须和CRUDPreCheckMethod配合使用，后者用来预先检测Method，剩下的part交由本函数处理
+* 必须和dispatcherPreCheck配合使用，后者用来预先检测Method，剩下的part交由本函数处理
 * */
 //validatePartValueFormat+validatePartValue
 function CRUDPreCheck({req,expectUserState,expectedPart,collName,method}){
@@ -301,6 +301,12 @@ function CRUDPreCheck({req,expectUserState,expectedPart,collName,method}){
 // console.log(`CRUDPreCheck： checkUserState  ${JSON.stringify(result)}`)
     //检查输入参数中part的值（格式预先检查好，某些part的值简单。例如method/currentPage，同时检测了value）
 
+    // 此处检查除了method之外的part（method已经在dispatcherPreCheck中预检）
+    delete req.body.values[e_part.METHOD]
+    // console.log(`req.body.values ====>${JSON.stringify(req.body.values)}`)
+    // console.log(`expectedPart ====>${JSON.stringify(expectedPart)}`)
+    result=validateFormat.validatePartFormat(req.body.values,expectedPart)
+    if(result.rc>0){return result}
 
     let recordInfoBaseRule
     //validateReqBody+validatePartFormat检查完，就可以使用method（如果有）
@@ -434,7 +440,7 @@ async function ifFieldValueExistInColl_async({dbModel,fieldName,fieldValue}){
     // console.log(`condition ${JSON.stringify(condition)}`)
     // {account: docValue[e_field.USER.ACCOUNT]['value']} //,dDate:{$exists:0}   重复性检查包含已经删除的用户
     // console.log(`fieldName:${fieldName}----fieldValue ${fieldValue}`)
-    let uniqueCheckResult = await common_operation.find({dbModel: dbModel, condition: condition})
+    let uniqueCheckResult = await common_operation_model.find({dbModel: dbModel, condition: condition})
 
     if (uniqueCheckResult.rc > 0) {
         return Promise.reject(uniqueCheckResult)

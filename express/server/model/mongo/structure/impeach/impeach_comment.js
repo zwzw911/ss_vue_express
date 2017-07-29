@@ -55,11 +55,11 @@ const impeachCommentAttachment_arrayMaxLengthValidator={
 
 
 const collFieldDefine={
-    authorId:{type:mongoose.Schema.Types.ObjectId,ref:"users"}, //普通用户发起举报
-    impeachId:{type:mongoose.Schema.Types.ObjectId,ref:"impeaches"},
+    authorId:{type:mongoose.Schema.Types.ObjectId,ref:"user"}, //普通用户发起举报
+    impeachId:{type:mongoose.Schema.Types.ObjectId,ref:"impeach"},
     content:{type:String,},
-    impeachImagesId:{type:[mongoose.Schema.Types.ObjectId],ref:'impeach_images',validate:[impeachCommentImage_arrayMaxLengthValidator]},
-    impeachAttachmentsId:{type:[mongoose.Schema.Types.ObjectId],ref:'impeach_attachments',validate:[impeachCommentAttachment_arrayMaxLengthValidator]},
+    impeachImagesId:{type:[mongoose.Schema.Types.ObjectId],ref:'impeach_image',validate:[impeachCommentImage_arrayMaxLengthValidator]},
+    impeachAttachmentsId:{type:[mongoose.Schema.Types.ObjectId],ref:'impeach_attachment',validate:[impeachCommentAttachment_arrayMaxLengthValidator]},
     cDate:{type:Date,default:Date.now},
     //uDate:{type:Date,default:Date.now},//评论无法更改
     // dDate:{type:Date},  //只能由admin删除
@@ -135,7 +135,8 @@ billSchema.pre('findOneAndUpdate',function(next){
 })*/
 
 
-
+/*      mongoose使用新的方式设置model，没有的话会导致populate报错       */
+mongoose.model(collName,collSchema)
 const collModel=connectedDb.model(collName,collSchema)
 /*const departmentModel=dbFinance.model('departments',departmentSchema)
 const employeeModel=dbFinance.model('employees',employeeSchema)
