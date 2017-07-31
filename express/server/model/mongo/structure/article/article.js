@@ -87,7 +87,7 @@ const collFieldDefine={
     status:{type:String,}, //enum， 通过setMongooseBuildInValidator从inputRule中获得对应的enum定义
     authorId:{type:mongoose.Schema.Types.ObjectId,ref:"user"}, //
     folderId:{type:mongoose.Schema.Types.ObjectId,ref:"folder"},
-    pureContent:{type:String},
+    // pureContent:{type:String},
     htmlContent:{type:String},//一般设置成pureContent的2倍大小
     categoryId:{type:mongoose.Schema.Types.ObjectId,ref:"category"},
     tagsId:{type:[mongoose.Schema.Types.ObjectId],ref:'tag',validate:[tag_arrayMinLengthValidator,tag_arrayMaxLengthValidator]},

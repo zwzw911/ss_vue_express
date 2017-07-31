@@ -33,6 +33,16 @@ router.post('/',function(req,res,next){
     )
 })
 
+
+
+
+
+
+
+
+
+
+
 router.post('/uniqueCheck_async',function(req,res,next){
 
     logic.uniqueCheck_async(req).then(

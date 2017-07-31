@@ -181,11 +181,26 @@ const StorePathUsage={
     DB:{
         UPLOAD_TMP:'1',
         USER_PHOTO:'2',
-
+        ARTICLE_INNER_IMAGE:'3',
+        ARTICLE_INNER_ATTACHMENT:'4',
     },
     SHOW:{
         UPLOAD_TMP:'临时文件夹',
         USER_PHOTO:'用户头像',
+        ARTICLE_INNER_IMAGE:'文档图片',
+        ARTICLE_INNER_ATTACHMENT:'文档附件',
+    },
+
+}
+const StorePathStatus={
+    DB:{
+        READ_ONLY:'1',
+        READ_WRITE:'2',
+
+    },
+    SHOW:{
+        READ_ONLY:'只读',//storePath已经满，只能读取
+        READ_WRITE:'读写',//storePath未满，读写
     },
 
 }
@@ -202,5 +217,6 @@ module.exports={
     ImpeachStatus,
     DocStatus,
     AccountType,
-    StorePathUsage
+    StorePathUsage,
+    StorePathStatus,
 }

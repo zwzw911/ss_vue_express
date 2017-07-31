@@ -73,21 +73,21 @@ const user= {
     usedAccount:{
         'chineseName': '历史账号',
         'type':[serverDataType.STRING],
-        'require': {define: true, error: {rc: 10734},mongoError:{rc:20734,msg:'历史账号不能为空'}},//注册的时候，就必须把account插入
+        'require': {define: false, error: {rc: 10734},mongoError:{rc:20734,msg:'历史账号不能为空'}},//注册的时候，就必须把account插入
         'arrayMinLength': {define: 1, error: {rc: 10735}, mongoError: {rc: 20135, msg: '至少设置1个标签'}},
         'arrayMaxLength': {define: maxNumber.user.maxUsedAccountNum, error: {rc: 10736}, mongoError: {rc: 20736, msg: `最多保存${maxNumber.user.maxUsedAccountNum}个历史账号`}},
     },
 
     lastAccountUpdateDate:{
         'chineseName': '账号更改日期',
-        'type':[serverDataType.DATE],
+        'type':serverDataType.DATE,
         'require': {define: true, error: {rc: 10737},mongoError:{rc:20737,msg:'账号更改日期不能为空'}},//注册的时候，就必须把account插入
 
     },
 
     lastSignInDate:{
         'chineseName': '上次登录时间',
-        'type':[serverDataType.DATE],
+        'type':serverDataType.DATE,
         'require': {define: true, error: {rc: 10738},mongoError:{rc:20738,msg:'上次登录时间不能为空'}},//注册的时候，就必须把account插入
     },
 

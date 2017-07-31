@@ -6,6 +6,7 @@
 
 const common_operation_model=require('../../model/mongo/operation/common_operation_model')
 const e_storePathUsage=require('../../constant/enum/mongo').StorePathUsage.DB
+const e_storePathStatus=require('../../constant/enum/mongo').StorePathStatus.DB
 const e_dbModel=require('../../model/mongo/dbModel')
 
 
@@ -17,7 +18,11 @@ const initSetting={
         tmpUploadDir:'H:/ss_vue_express/test_data/tmp/',//所有上传文件临时存储位置
         user:{
             thumb:['H:/ss_vue_express/test_data/userPhoto/dest/','H:/ss_vue_express/test_data/userPhoto/dest1/'],//头像存放最终路径
-        }
+        },
+        article:{
+            innerImage:['H:/ss_vue_express/test_data/article_image/'],
+            attachment:['H:/ss_vue_express/test_data/article_attachment/'],
+        },
     },
     category:{
         other:'未分类',
@@ -29,12 +34,22 @@ const initSetting={
 let storePathDocs=[]
 //init use photoStorePath
 for(let idx in initSetting.storePath.user.thumb){
-    storePathDocs.push({name:`头像存储路径${idx*1+1}`,path:initSetting.storePath.user.thumb[idx],usage:e_storePathUsage.USER_PHOTO,lowThreshold:70,highThreshold:90,size:500*1000,usedSize:0})
+    storePathDocs.push({name:`头像存储路径${idx*1+1}`,path:initSetting.storePath.user.thumb[idx],usage:e_storePathUsage.USER_PHOTO,lowThreshold:70,highThreshold:90,size:2*1000,usedSize:0,status:e_storePathStatus.READ_WRITE})
 }
 //init tmp path
-storePathDocs.push({name:`临时文件夹`,path:initSetting.storePath.tmpUploadDir,usage:e_storePathUsage.UPLOAD_TMP,lowThreshold:65,highThreshold:90,size:500*1000,usedSize:0})
-console.log(`${JSON.stringify(storePathDocs)}`)
+storePathDocs.push({name:`临时文件夹`,path:initSetting.storePath.tmpUploadDir,usage:e_storePathUsage.UPLOAD_TMP,lowThreshold:65,highThreshold:90,size:500*1000,usedSize:0,status:e_storePathStatus.READ_WRITE})
 
+
+
+//init article
+for(let idx in initSetting.storePath.article.innerImage){
+    storePathDocs.push({name:`文档图片存储路径${idx*1+1}`,path:initSetting.storePath.article.innerImage[idx],usage:e_storePathUsage.ARTICLE_INNER_IMAGE,lowThreshold:70,highThreshold:90,size:500*1000,usedSize:0,status:e_storePathStatus.READ_WRITE})
+}
+for(let idx in initSetting.storePath.article.attachment){
+    storePathDocs.push({name:`文档附件存储路径${idx*1+1}`,path:initSetting.storePath.article.attachment[idx],usage:e_storePathUsage.ARTICLE_INNER_ATTACHMENT,lowThreshold:70,highThreshold:90,size:500*1000,usedSize:0,status:e_storePathStatus.READ_WRITE})
+}
+
+console.log(`storePathDocs====>${JSON.stringify(storePathDocs)}`)
 common_operation_model.insertMany({dbModel:e_dbModel.store_path,docs:storePathDocs}).then(
     (v)=>{console.log(`success====>${JSON.stringify(v)}`)},
     (e)=>{console.log(`err====>${JSON.stringify(e)}`)}

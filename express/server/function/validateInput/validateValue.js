@@ -228,12 +228,15 @@ function validateSingleRecorderFieldValue(fieldValue,fieldRule){
     // let result = valueTypeCheck(fieldValue,fieldRule['type'])
 
     let valueTypeCheckResult
-    // console.log(`fieldRule['type'] is ${JSON.stringify(fieldRule['type'])}`)
+    // console.log(`fieldRule is ${JSON.stringify(fieldRule)}`)
     // console.log(`fieldRule['type'] is ${JSON.stringify(fieldRule['type'])}`)
     if(dataTypeCheck.isArray(fieldRule['type'])){
         valueTypeCheckResult= valueTypeCheck(fieldValue,fieldRule['type'][0])
     }else{
+        // console.log(`fieldRule is ===>${JSON.stringify(fieldRule)}`)
+        // console.log(`fieldValue is ===>${JSON.stringify(fieldRule)}`)
         valueTypeCheckResult= valueTypeCheck(fieldValue,fieldRule['type'])
+        // console.log(`valueTypeCheckResult is ===>${JSON.stringify(valueTypeCheckResult)}`)
     }
     // console.log(`valueTypeCheckResult is ${JSON.stringify(valueTypeCheckResult)}`)
     if(valueTypeCheckResult.rc && 0<valueTypeCheckResult.rc){

@@ -26,7 +26,7 @@ const e_articleStatus=require('../../constant/enum/mongo').ArticleStatus.DB
 
 const currentEnv=require('../../constant/config/appSetting').currentEnv
 
-const dbModel=require('../../model/mongo/dbModel')
+const e_dbModel=require('../../model/mongo/dbModel')
 const fkConfig=require('../../model/mongo/fkConfig').fkConfig
 
 const e_coll=require('../../constant/enum/DB_Coll').Coll
@@ -35,13 +35,14 @@ const e_uniqueField=require('../../constant/enum/DB_uniqueField').UniqueField
 // const e_inputFieldCheckType=require('../../constant/enum/node').InputFieldCheckType
 
 const helper=require('../helper')
-const common_operation=require('../../model/mongo/operation/common_operation_model')
+const common_operation_model=require('../../model/mongo/operation/common_operation_model')
 const hash=require('../../function/assist/crypt').hash
-const generateRandomString=require('../../function/assist/misc').generateRandomString
 
+const misc=require('../../function/assist/misc')
+/*const generateRandomString=require('../../function/assist/misc').generateRandomString
 const sendVerificationCodeByEmail_async=require('../../function/assist/misc').sendVerificationCodeByEmail_async
+const ifUserLogin=require('../../function/assist/misc').ifUserLogin*/
 
-const ifUserLogin=require('../../function/assist/misc').ifUserLogin
 const dataConvert=require('../dataConvert')
 const validateCreateRecorderValue=require('../../function/validateInput/validateValue').validateCreateRecorderValue
 const validateUpdateRecorderValue=require('../../function/validateInput/validateValue').validateUpdateRecorderValue
@@ -73,8 +74,15 @@ const captchaIntervalConfiguration=require('../../constant/config/globalConfigur
 
 
 const controllerError={
-    userNotLoginCantCreate:{rc:50200,msg:`用户尚未登录，无法新建文档`},
+    /*          common              */
+    fieldAlreadyExist(chineseFieldName,fieldInputValue){return {rc:50200,msg:{client:`${fieldInputValue}已经存在`, server:`字段${chineseFieldName}中，值${fieldInputValue}已经存在`}}},
+    /*          create new article              */
+    userNotLoginCantCreate:{rc:50201,msg:`用户尚未登录，无法新建文档`},
 
+    /*          update article              */
+    userNotLoginCantUpdate:{rc:50202,msg:`用户尚未登录，无法新建文档`},
+    notAuthorized:{rc:50202,msg:`无权更改次文档`},
+    notAuthorizedFolder:{rc:50204,msg:`无权在目录中添加文档`},
 }
 
 
@@ -101,6 +109,10 @@ async function dispatcher_async(req){
 
     switch (method){
         case e_method.CREATE: //create
+            /*      检测用户是否登录        */
+            if(undefined===req.session.userId){
+                return Promise.reject(controllerError.userNotLoginCantCreate)
+            }
             // console.log(`create in`)
             //首先检查method是否存在，且格式/值是否正确。不同的method可能对应不同的参数配置
 
@@ -118,9 +130,12 @@ async function dispatcher_async(req){
         case e_method.SEARCH:// search
             break;
         case e_method.UPDATE: //update
-
-            // console.log(`req.session update is ${JSON.stringify(req.session)}`)
-            expectedPart=[e_part.RECORD_INFO]//无需method
+            /*      检测用户是否登录        */
+            if(undefined===req.session.userId){
+                return Promise.reject(controllerError.userNotLoginCantUpdate)
+            }
+            /*      检测输入的format和value是否正确        */
+            expectedPart=[e_part.RECORD_INFO,e_part.RECORD_ID]//无需method
             //因为dispatch而已经检查过req的总体结构，所以无需再次检查，而直接检查sess+partValueFormat+partValueCheck
             result=helper.CRUDPreCheck({req:req,expectUserState:expectUserState,expectedPart:expectedPart,collName:collName,method:method})
             // console.log(`create preCheck result ${JSON.stringify(result)}`)
@@ -128,14 +143,8 @@ async function dispatcher_async(req){
                 return Promise.reject(result)
             }
 
-            // expectUserState=e_userState.LOGIN
-            //检查是否登录（以便从session中获得对应的userId）
-            if(false===ifUserLogin(req)){
-                // console.log(`user login=======`)
-                return Promise.reject(controllerError.notLogin)
-            }
-            // console.log(`req.session indisp ${JSON.stringify(req.session)}`)
-            result=await updateUser_async(req)
+            /*      执行逻辑                */
+            result=await updateArticle_async(req)
             break;
         case e_method.DELETE: //delete
             break;
@@ -161,9 +170,7 @@ async  function createArticle_async(req){
 /*                      logic                               */
     //直接产生内部数据
     let tmpResult,userId,docValue
-    if(false===ifUserLogin(req)){
-        return Promise.reject(controllerError.userNotLoginCantCreate)
-    }
+
     userId=req.session.userId
     console.log(`userId ====>${userId}`)
     /*                  添加内部产生的值（name && status && authorId && folderId）                  */
@@ -171,16 +178,18 @@ async  function createArticle_async(req){
     docValue[e_field.ARTICLE.NAME]="新建文档"
     docValue[e_field.ARTICLE.AUTHOR_ID]=req.session.userId
     docValue[e_field.ARTICLE.STATUS]=e_articleStatus.EDITING
-    tmpResult=await common_operation.find({dbModel:dbModel.folder,condition:{authorId:userId,name:'我的文档'}})
+    tmpResult=await common_operation_model.find({dbModel:e_dbModel.folder,condition:{authorId:userId,name:'我的文档'}})
     docValue[e_field.ARTICLE.FOLDER_ID]=tmpResult.msg[0]['id']
 console.log(`docValue is ====>${JSON.stringify(docValue)}`)
     /*              对内部产生的值进行检测（开发时使用，上线后为了减低负荷，无需使用）           */
     if(e_env.DEV===currentEnv){
         let newDocValue=dataConvert.addSubFieldKeyValue(docValue)
+        //检查格式
         tmpResult=validateCURecordInfoFormat(newDocValue,inputRule[e_coll.ARTICLE])
         if(tmpResult.rc>0){
             return Promise.reject(tmpResult)
         }
+        //检查数据
         tmpResult=validateCreateRecorderValue(newDocValue,internalInputRule[e_coll.ARTICLE])
         if(tmpResult.rc>0){
             return Promise.reject(tmpResult)
@@ -189,150 +198,135 @@ console.log(`docValue is ====>${JSON.stringify(docValue)}`)
 
 
     //插入db
-    tmpResult= await common_operation.create({dbModel:dbModel.article,value:docValue})
+    tmpResult= await common_operation_model.create({dbModel:e_dbModel.article,value:docValue})
     console.log(`create result is ====>${JSON.stringify(tmpResult)}`)
     return Promise.resolve({rc:0,msg:tmpResult.msg})
 }
 
 
 /*
-* 更新用户资料
-* 1. 需要对比req中的userId和session中的id是否一致
+* 更新文档
+* 1. 需要当前用户是否有权修改文档（为文档作者）
+* 2. 需要检查html中的image是否在磁盘上存在
+* 3. 检查tag(传入为字符)是否存在，不存在，在coll tag中新建记录，最终用objectId替换字符
+* 4. 检查是否选择了folder（输入为objectId），如果选择了，folder是否为当前用户所有
 * */
-async function updateUser_async(req){
+async function updateArticle_async(req){
     // console.log(`req.session ${JSON.stringify(req.session)}`)
-    /*                  要更改的记录的owner是否为发出req的用户本身                            */
-    let result
+    /*                  用户有权修改文档否                            */
+    let tmpResult
     let userId=req.session.userId
-    if(undefined===req.session.userId){
-        return Promise.reject(controllerError.notLogin)
+    let articleId=req.body.values[e_part.RECORD_ID]
+    let originalArticle
+    //查找id为文档，且作者为userid的记录，找不到说明不是作者，无权修改
+    let condition={}
+    condition['_id']=articleId
+    condition[e_field.ARTICLE.AUTHOR_ID]=userId
+    tmpResult=await  common_operation_model.find({dbModel:e_dbModel.article,condition:condition})
+    if(tmpResult.msg.length!==1){
+        return Promise.reject(controllerError.notAuthorized)
     }
-
-    if(req.session.userId!==userId){
-        return Promise.reject(controllerError.cantUpdateOwnProfile)
-    }
+    originalArticle=misc.objectDeepCopy({},tmpResult.msg[0])
 
     /*              client数据转换                  */
     let docValue=req.body.values[e_part.RECORD_INFO]
     dataConvert.convertCreateUpdateValueToServerFormat(docValue)
     dataConvert.constructUpdateCriteria(docValue,fkConfig[e_coll.USER])
 
-    // let result=await common_operation.findById({dbModel:dbModel[e_coll.USER],id:objectId})
+    // let result=await common_operation_model.findById({dbModel:dbModel[e_coll.USER],id:objectId})
     // let userId=result.msg[e_field.USER.]
 
-
-
     /*              剔除value没有变化的field            */
-    // console.log(`befreo check ${JSON.stringify(docValue)}`)
-    //查找对应的记录（docStatus必须是done）
-    let condition={_id:req.session.userId,docStatus:e_docStatus.DONE}
-    result=await common_operation.find({dbModel:dbModel.user,condition:condition})
-    // console.log(`result====》 ${JSON.stringify(result)}`)
-    // console.log(`condition====》 ${JSON.stringify(condition)}`)
-    // console.log(`null===result.msg====》 ${JSON.stringify(null===result.msg)}`)
-    if(0===result.msg.length){return Promise.reject(controllerError.userNotExist)}
-    let originUserInfo=result.msg[0]
-    //如果传入了password，hash后覆盖原始值
-    if(e_field.USER.PASSWORD in docValue){
-        let sugarResult=await common_operation.find({dbModel:dbModel.sugar,condition:{ userId:originUserInfo.id}})
-        if(null===sugarResult.msg){
-            return Promise.reject(controllerError.userNoMatchSugar)
-        }
-        // console.log(`sugarResult=====> ${JSON.stringify(sugarResult)}`)
-        let sugar=sugarResult.msg[0]['sugar']
-// console.log(`sugar=====> ${JSON.stringify(sugar)}`)
-//         console.log(`password value =====> ${JSON.stringify(docValue[e_field.USER.PASSWORD])}`)
-//         console.log(`mix value =====> ${docValue[e_field.USER.PASSWORD]}${sugar}`)
-        let hashPasswordResult=hash(`${docValue[e_field.USER.PASSWORD]}${sugar}`,e_hashType.SHA256)
-        if(hashPasswordResult.rc>0){
-            return Promise.reject(hashPasswordResult)
-        }
-        // console.log(`hash password is ====>${hashPassword}`)
-        docValue[e_field.USER.PASSWORD]=hashPasswordResult.msg
-        // console.log(` after hash password====> ${JSON.stringify(docValue)}`)
-
-    }
     // console.log(`updateUser after compare with origin value ${JSON.stringify(docValue)}`)
     // console.log(`originUserInfo value ${JSON.stringify(originUserInfo)}`)
     for(let singleFieldName in docValue){
-        if(docValue[singleFieldName]===originUserInfo[singleFieldName]){
+        if(docValue[singleFieldName]===originalArticle[singleFieldName]){
             delete docValue[singleFieldName]
         }
     }
 
-    // console.log(`updateUser after compare with origin value ${JSON.stringify(docValue)}`)
 
+    /*              检测某些字段                  */
+    //1. content中包含的图片是否已经被删除，删除的话，需要同时在磁盘上删除对应的文件，以便节省空间
+    let htmlContent=req.body.values[e_field.ARTICLE.HTML_CONTENT]
+    let innerImageInArticle=htmlContent.match(regex.hashImageName)
+    let articleImageCondition={}
+    articleImageCondition[e_field.ARTICLE_IMAGE.ARTICLE_ID]=articleId
+    //读取article的所有图片文件信息
+    tmpResult=await common_operation_model.find({dbModel:e_dbModel.article_image,condition:articleImageCondition})
+    if(innerImageInArticle.length>0){
 
-    if(0===Object.keys(docValue).length){
-        return {rc:0}
     }
-    // console.log(`after check ${JSON.stringify(docValue)}`)
-
-    /*              如果有unique字段，需要预先检查unique            */
-    for(let singleFieldName in docValue){
-        if(-1!==e_uniqueField[e_coll.USER].indexOf(singleFieldName)){
-            let ifExist=await helper.ifFieldValueExistInColl_async({dbModel:dbModel.user,fieldName:singleFieldName,fieldValue:docValue[singleFieldName]})
-// console.log(`singleFieldName: ${singleFieldName}===fieldValue: ${docValue[singleFieldName]}===ifExist ${ifExist}`)
-            if(true===ifExist.msg){
-                return Promise.reject(controllerError[singleFieldName+'AlreadyExists'])
+    //2. 如果有tag，检测是否已经在coll中存在。存在：从字符转换成objectId，不存在，coll tag中创建一个新的，并获得objectId
+    if(undefined!==docValue[e_field.ARTICLE.TAGS_ID]){
+        for(let idx in docValue[e_field.ARTICLE.TAGS_ID]){
+            let tmpCondition={}
+            tmpCondition[e_field.TAG.NAME]=docValue[e_field.ARTICLE.TAGS_ID][idx]
+            tmpResult=await common_operation_model.find({dbModel:e_dbModel.tag,condition:tmpCondition})
+            //tag已经存在，用objectId替换掉原来的字符
+            if(tmpResult.msg.length===1){
+                docValue[e_field.ARTICLE.TAGS_ID][idx]=tmpResult.msg[0]['_id']
+            }else{
+            //tag 不存在，创建一个新的tag，并保存返回的objectId
+                tmpResult=await common_operation_model.create({dbModel:e_dbModel.tag,value:{name:docValue[e_field.ARTICLE.TAGS_ID][idx]}})
+                docValue[e_field.ARTICLE.TAGS_ID][idx]=tmpResult.msg['_id']
             }
+        }
+
+    }
+    //3. 如果有folder，检测folder的owner是否为当前用户
+    if(undefined!==docValue[e_field.ARTICLE.FOLDER_ID]){
+        condition={}
+        condition[e_field.FOLDER.AUTHOR_ID]=userId
+        condition['_id']=docValue[e_field.ARTICLE.FOLDER_ID]
+        tmpResult=await common_operation_model.find({dbModel:e_dbModel.folder,condition:condition})
+        if(tmpResult.msg.length!==1){
+            return Promise.reject(controllerError.notAuthorizedFolder)
         }
     }
 
-    /*              如果是更新account，
-    1. 检测account是否存在usedAccount中，存在，不做任何操作
-    2. 如果不存在，usedAccount的长度是否达到最大，达到最大，将第一个元素删除，并将old的account push入数组
-    3.
-    */
-    if(true===e_field.USER.ACCOUNT in docValue){
-        // console.log(`USED_ACCOUNT CHECK IN`)
-        // console.log(`originUserInfo=======》${JSON.stringify(originUserInfo)}`)
-        // console.log(`docValue=======》${JSON.stringify(docValue)}`)
-        let originalUsedAccount=originUserInfo[e_field.USER.USED_ACCOUNT]
-        let toBeUpdateAccountValue=docValue[e_field.USER.ACCOUNT]
-        // console.log(`originalUsedAccount=======》${JSON.stringify(originalUsedAccount)}`)
-        // console.log(`toBeUpdateAccountValue=======》${JSON.stringify(toBeUpdateAccountValue)}`)
-        //要更新的account没有在历史记录中
-        if(-1===originalUsedAccount.indexOf(toBeUpdateAccountValue)){
-            //检测历史记录的长度
-            while (originalUsedAccount.length>=maxNumber.user.maxUsedAccountNum){
-                originalUsedAccount.shift()
-            }
-            // console.log(`=======>not used`)
-            //检查更改账号的间隔
-            if(e_env.PROD===currentEnv){
-                let duration=(Date.now()-originUserInfo[e_field.USER.LAST_ACCOUNT_UPDATE_DATE])/1000/60
-                // console.log(`duration=======>${duration}`)
-                if(duration<miscConfiguration.user.accountMinimumChangeDurationInHours){
-                    return Promise.reject(controllerError.accountCantChange)
+    /*              获得internal field，并进行检查                  */
+    let internalValue=docValue[e_field.ARTICLE.TAGS_ID]
+    if(e_env.DEV===currentEnv){
+        let tmpResult=helper.checkInternalValue({internalValue:internalValue,collInputRule:inputRule[e_coll.ARTICLE],collInternalRule:internalInputRule[e_coll.ARTICLE]})
+        // console.log(`internalValue check result====>   ${JSON.stringify(tmpResult)}`)
+        if(tmpResult.rc>0){
+            return Promise.reject(tmpResult)
+        }
+    }
+    //因为internalValue只是进行了转换，而不是新增，所以无需ObjectDeepCopy
+    // Object.assign(docValue,internalValue)
+
+
+    /*              如果有unique字段，需要预先检查unique(express级别，而不是mongoose级别)            */
+    if(undefined!==e_uniqueField[e_coll.ARTICLE]){
+        for(let singleFieldName in docValue){
+            if(-1!==e_uniqueField[e_coll.ARTICLE].indexOf(singleFieldName)){
+                let ifExist=await helper.ifFieldValueExistInColl_async({dbModel:e_dbModel.article,fieldName:singleFieldName,fieldValue:docValue[singleFieldName]})
+// console.log(`singleFieldName: ${singleFieldName}===fieldValue: ${docValue[singleFieldName]}===ifExist ${ifExist}`)
+                if(true===ifExist.msg){
+                    let chineseName=inputRule[e_coll.ARTICLE][singleFieldName]['chineseName']
+                    let fieldInputValue=docValue[singleFieldName]
+                    return Promise.reject(controllerError.fieldAlreadyExist(chineseName,fieldInputValue))
                 }
             }
-
-            originalUsedAccount.push(toBeUpdateAccountValue)
-            // console.log(`originalUsedAccount=======>${JSON.stringify(originalUsedAccount)}`)
-            docValue[e_field.USER.USED_ACCOUNT]=originalUsedAccount
-            // console.log(`docValue=======>${JSON.stringify(docValue)}`)
-            //添加最近一次更改账号的时间
-            docValue[e_field.USER.LAST_ACCOUNT_UPDATE_DATE]=Date.now()
-            // console.log(`docValue=======>not used`)
         }
-
-        // console.log(`.USER.USED_ACCOUNT======>${JSON.stringify(docValue)}`)
     }
 
 
-
-
-
-/*    /!*              如果有更改account，需要几率下来         *!/
-    if(undefined!==docValue[e_field.USER.ACCOUNT]){
-
-    }*/
-
-    result=await common_operation.update({dbModel:dbModel[e_coll.USER],id:userId,values:docValue})
+    /*              更新数据            */
+    tmpResult=await common_operation_model.update({dbModel:e_dbModel[e_coll.ARTICLE],id:articleId,values:docValue})
     return Promise.resolve({rc:0})
 
 }
+
+
+
+
+
+
+
+
 
 async function login_async(req){
     /*                              logic                                   */
@@ -355,7 +349,7 @@ async function login_async(req){
 
 //    读取sugar，并和输入的password进行运算，得到的结果进行比较
     let condition={account:docValue[e_field.USER.ACCOUNT]}
-    let userResult = await common_operation.find({dbModel: dbModel.user,condition:condition})
+    let userResult = await common_operation_model.find({dbModel: dbModel.user,condition:condition})
     // if(userResult.rc>0){
     //     return Promise.reject(userResult)
     // }
@@ -364,7 +358,7 @@ async function login_async(req){
     }
     // console.log(`userResult ${JSON.stringify(userResult)}`)
     condition={userId:userResult.msg[0]['id']}
-    let sugarResult = await common_operation.find({dbModel: dbModel.sugar,condition:condition})
+    let sugarResult = await common_operation_model.find({dbModel: dbModel.sugar,condition:condition})
     if(sugarResult.rc>0){
         return Promise.reject(sugarResult)
     }
@@ -474,7 +468,7 @@ async function retrievePassword_async(req){
 
     condition[e_field.USER.ACCOUNT]=fieldValue
     condition[e_field.USER.DOC_STATUS]=e_docStatus.DONE
-    result=await common_operation.find({dbModel:dbModel.user,condition:condition})
+    result=await common_operation_model.find({dbModel:dbModel.user,condition:condition})
     // console.log(`retrieve ped: find current account=====>${JSON.stringify(result)}`)
     if(result.msg.length>1){
         return Promise.reject(controllerError.accountNotUnique)
@@ -487,7 +481,7 @@ async function retrievePassword_async(req){
     if(result.msg.length===0){
         condition1[e_field.USER.USED_ACCOUNT]=fieldValue
         condition1[e_field.USER.DOC_STATUS]=e_docStatus.DONE
-        result=await common_operation.find({dbModel:dbModel.user,condition:condition1})
+        result=await common_operation_model.find({dbModel:dbModel.user,condition:condition1})
         // console.log(`retrieve ped: find used account=====>${JSON.stringify(result)}`)
         switch (result.msg.length){
             case 0:
@@ -508,7 +502,7 @@ async function retrievePassword_async(req){
 
     let hashedPassword=result.msg
     // console.log(`hashedPassword ${JSON.stringify(hashedPassword)}`)
-    result=await common_operation.findByIdAndUpdate({dbModel:dbModel.user,id:userId,updateFieldsValue:{'password':hashedPassword}})
+    result=await common_operation_model.findByIdAndUpdate({dbModel:dbModel.user,id:userId,updateFieldsValue:{'password':hashedPassword}})
     // console.log(`update pwd result ${JSON.stringify(result)}`)
     if(regex.email.test(fieldValue)){
         //通过mail发送新密码
@@ -604,7 +598,7 @@ async function uploadPhoto_async(req){
         }
     }
     //存储到db中
-    await common_operation.findByIdAndUpdate({dbModel:dbModel.user,id:userId,updateFieldsValue:updateFieldsValueForModel})
+    await common_operation_model.findByIdAndUpdate({dbModel:dbModel.user,id:userId,updateFieldsValue:updateFieldsValueForModel})
     // console.log(`type ====>${JSON.stringify(type)}`)
     return Promise.resolve({rc:0})
 }

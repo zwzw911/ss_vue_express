@@ -263,6 +263,7 @@ async  function createUser_async(req){
 
     /*                  添加内部产生的值（sugar && hash password && acountType）                  */
     // console.log(`before hash is ${JSON.stringify(docValue)}`)
+    let internalValue={}
     let sugarLength=5 //1~10
     let sugar=generateRandomString(sugarLength)
     // console.log(`sugar init ${sugar}`)
@@ -271,46 +272,32 @@ async  function createUser_async(req){
     if(tmpResult.rc>0){
         return Promise.reject(tmpResult)
     }
-    docValue[e_field.USER.PASSWORD]=tmpResult.msg
-    docValue[e_field.USER.DOC_STATUS]=e_docStatus.PENDING
+    internalValue[e_field.USER.PASSWORD]=tmpResult.msg
+    internalValue[e_field.USER.DOC_STATUS]=e_docStatus.PENDING
 
     // console.log(`docValue   ${JSON.stringify(docValue)}`)
     let accountValue=docValue[e_field.USER.ACCOUNT]
     if(regex.email.test(accountValue)){
-        docValue[e_field.USER.ACCOUNT_TYPE]=e_accountType.EMAIL
+        internalValue[e_field.USER.ACCOUNT_TYPE]=e_accountType.EMAIL
     }
     if(regex.mobilePhone.test(accountValue)){
-        docValue[e_field.USER.ACCOUNT_TYPE]=e_accountType.MOBILE_PHONE
+        internalValue[e_field.USER.ACCOUNT_TYPE]=e_accountType.MOBILE_PHONE
     }
 
-    docValue[e_field.USER.USED_ACCOUNT]=docValue[e_field.USER.ACCOUNT]
-    docValue[e_field.USER.LAST_ACCOUNT_UPDATE_DATE]=Date.now()
-    docValue[e_field.USER.LAST_SIGN_IN_DATE]=Date.now()
-    // console.log(`docValue   ${JSON.stringify(docValue)}`)
-
+    // docValue[e_field.USER.USED_ACCOUNT]=docValue[e_field.USER.ACCOUNT]
+    internalValue[e_field.USER.LAST_ACCOUNT_UPDATE_DATE]=Date.now()
+    internalValue[e_field.USER.LAST_SIGN_IN_DATE]=Date.now()
+    // console.log(`internalValue====>   ${JSON.stringify(internalValue)}`)
+    // console.log(`internalValue[e_field.USER.LAST_ACCOUNT_UPDATE_DATE]====>   ${JSON.stringify(internalValue[e_field.USER.LAST_ACCOUNT_UPDATE_DATE])}`)
     /*              对内部产生的值进行检测（开发时使用，上线后为了减低负荷，无需使用）           */
     if(e_env.DEV===currentEnv){
-        // let collInputRule=Object.assign({},user_browserInputRule,user_internalInputRule)
-        // console.log(`internal check value=============> ${JSON.stringify(docValue)}`)
-        // console.log(`internal check rule=============> ${JSON.stringify(internalInputRule[e_coll.USER])}`)
-        let newDocValue=dataConvert.addSubFieldKeyValue(docValue)
-        // console.log(`newDocValue =============> ${JSON.stringify(newDocValue)}`)
-        tmpResult=validateCURecordInfoFormat(newDocValue,inputRule[e_coll.USER])
-        if(tmpResult.rc>0){
-            // console.log(`internal check value=============> ${JSON.stringify(docValue)}`)
-            return Promise.reject(tmpResult)
-        }
-
-        tmpResult=validateCreateRecorderValue(newDocValue,internalInputRule[e_coll.USER])
-        // console.log(`internal check=============> ${JSON.stringify(tmpResult)}`)
-        // tmpResult=helper.validatePartValue({req:req,exceptedPart:exceptedPart,coll:e_coll.USER,inputRule:user_internalInputRule,method:e_method.CREATE})
-        // console.log(`docValue   ${JSON.stringify(docValue)}`)
-        // return console.log(`internal check  ${JSON.stringify(tmpResult)}`)
+        let tmpResult=helper.checkInternalValue({internalValue:internalValue,collInputRule:inputRule[e_coll.USER],collInternalRule:internalInputRule[e_coll.USER]})
+        // console.log(`internalValue check result====>   ${JSON.stringify(tmpResult)}`)
         if(tmpResult.rc>0){
             return Promise.reject(tmpResult)
         }
     }
-
+    Object.assign(docValue,internalValue)
     // console.log(`internal check  is ${JSON.stringify(docValue)}`)
     // let currentColl=e_coll.USER_SUGAR
     // console.log(`value to be insert is ${JSON.stringify(docValue)}`)
@@ -431,12 +418,18 @@ async function updateUser_async(req){
     // console.log(`after check ${JSON.stringify(docValue)}`)
 
     /*              如果有unique字段，需要预先检查unique            */
-    for(let singleFieldName in docValue){
-        if(-1!==e_uniqueField[e_coll.USER].indexOf(singleFieldName)){
-            let ifExist=await helper.ifFieldValueExistInColl_async({dbModel:dbModel.user,fieldName:singleFieldName,fieldValue:docValue[singleFieldName]})
+    if(undefined!==e_uniqueField[e_coll.USER]) {
+        for (let singleFieldName in docValue) {
+            if (-1 !== e_uniqueField[e_coll.USER].indexOf(singleFieldName)) {
+                let ifExist = await helper.ifFieldValueExistInColl_async({
+                    dbModel: dbModel.user,
+                    fieldName: singleFieldName,
+                    fieldValue: docValue[singleFieldName]
+                })
 // console.log(`singleFieldName: ${singleFieldName}===fieldValue: ${docValue[singleFieldName]}===ifExist ${ifExist}`)
-            if(true===ifExist.msg){
-                return Promise.reject(controllerError[singleFieldName+'AlreadyExists'])
+                if (true === ifExist.msg) {
+                    return Promise.reject(controllerError[singleFieldName + 'AlreadyExists'])
+                }
             }
         }
     }
@@ -517,15 +510,15 @@ async function login_async(req){
 
 //    读取sugar，并和输入的password进行运算，得到的结果进行比较
     let condition={account:docValue[e_field.USER.ACCOUNT]}
-    let usertmpResult = await common_operation_model.find({dbModel: dbModel.user,condition:condition})
-    // if(usertmpResult.rc>0){
-    //     return Promise.reject(usertmpResult)
+    let userTmpResult = await common_operation_model.find({dbModel: dbModel.user,condition:condition})
+    // if(userTmpResult.rc>0){
+    //     return Promise.reject(userTmpResult)
     // }
-    if(0===usertmpResult.rc && 0===usertmpResult.msg.length){
+    if(0===userTmpResult.rc && 0===userTmpResult.msg.length){
         return Promise.reject(controllerError.accountNotExist)
     }
-    // console.log(`usertmpResult ${JSON.stringify(usertmpResult)}`)
-    condition={userId:usertmpResult.msg[0]['id']}
+    // console.log(`userTmpResult ${JSON.stringify(userTmpResult)}`)
+    condition={userId:userTmpResult.msg[0]['id']}
     let sugarTmpResult = await common_operation_model.find({dbModel: dbModel.sugar,condition:condition})
     if(sugarTmpResult.rc>0){
         return Promise.reject(sugarTmpResult)
@@ -539,16 +532,16 @@ async function login_async(req){
     }
 
     // console.log(`user/pwd  ${docValue[e_field.USER.ACCOUNT]}///${encryptPassword.msg}`)
-    if(usertmpResult.msg[0][e_field.USER.PASSWORD]!==encryptPassword['msg']){
+    if(userTmpResult.msg[0][e_field.USER.PASSWORD]!==encryptPassword['msg']){
         return Promise.reject(controllerError.accountPasswordNotMatch)
     }
 
     /*
     *  需要设置session，并设lastSignInDate为当前日期
     * */
-    // console.log(`usertmpResult.msg[0]['id'] ${JSON.stringify(usertmpResult.msg[0]['id'])}`)
-    req.session.userId=usertmpResult.msg[0]['id']
-    await common_operation_model.findByIdAndUpdate({dbModel:dbModel.user,id:usertmpResult.msg[0]['id'],updateFieldsValue:{'lastSignInDate':Date.now()}})
+    // console.log(`userTmpResult.msg[0]['id'] ${JSON.stringify(userTmpResult.msg[0]['id'])}`)
+    req.session.userId=userTmpResult.msg[0]['id']
+    await common_operation_model.findByIdAndUpdate({dbModel:dbModel.user,id:userTmpResult.msg[0]['id'],updateFieldsValue:{'lastSignInDate':Date.now()}})
     return Promise.resolve({rc:0})
 }
 
@@ -747,25 +740,11 @@ async function uploadPhoto_async(req){
     /*              选择存储路径               */
     //读取所有avaliable的存储路径，挑选usedSize最小的那个
     let choosenStorePathRecord
-    tmpResult=await common_operation_model.find({dbModel:dbModel.store_path,condition:{usage:e_storePatUsage.USER_PHOTO},options:{sort:{usedSize:1}}})
-    if(0===tmpResult.msg.length){
-        handleSystemError({error:systemError.noDefinedStorePath})
-        return Promise.reject(systemError.noDefinedStorePath)
-    }
-    // console.log(`all store path===>${JSON.stringify(tmpResult)}`)
+    tmpResult=await helper.chooseStorePath_async({usage:e_storePathUsage.USER_PHOTO})
+    // console.log(`choosen tmpResult ====> ${JSON.stringify(tmpResult)}`)
+    choosenStorePathRecord=objectDeepCopy(tmpResult.msg)
+// console.log(`choosen store path recorder ====> ${JSON.stringify(choosenStorePathRecord)}`)
 
-    //选择存储路径，并判断是否达到上限
-    for(let singleRec of tmpResult.msg){
-        if(singleRec['percentage']<singleRec[e_field.STORE_PATH.HIGH_THRESHOLD]){
-            choosenStorePathRecord=singleRec
-            break;
-        }
-    }
-    // console.log(`choosenStorePathRecord===>${JSON.stringify(choosenStorePathRecord)}`)
-    if(undefined===choosenStorePathRecord){
-        handleSystemError({error:systemError.noAvailableStorePathForUerPhoto})
-        return Promise.reject(systemError.noAvailableStorePathForUerPhoto)
-    }
 
     /*              将文件从临时目录转移（转换）到选择的路径                */
     //保存到指定位置
@@ -817,7 +796,7 @@ async function uploadPhoto_async(req){
         console.log(`photoPathId===>${JSON.stringify(originalUserInfo['photoPathId'])}`)
         tmpResult=await common_operation_model.findById({dbModel:dbModel.store_path,id:originalUserInfo['photoPathId']})
         originalStorePath=objectDeepCopy(tmpResult.msg)
-        console.log(`photoPathId ref record===>${JSON.stringify(tmpResult)}`)
+        console.log(`originalStorePath===>${JSON.stringify(originalStorePath)}`)
         oldPhotoFile=originalStorePath[e_field.STORE_PATH.PATH]+originalUserInfo[e_field.USER.PHOTO_HASH_NAME]
         console.log(`oldPhotoFile===>${JSON.stringify(oldPhotoFile)}`)
         fs.unlinkSync(oldPhotoFile)
@@ -827,16 +806,26 @@ async function uploadPhoto_async(req){
     /*                  更新db                    */
     //如果原来的存储目录存在，且选择的存储目录和原来的存储目录不一致，那么，首先在原始存储路径的usedSize减去originalFileSize，然后在新存储路径的usedSize加上uploadFileSize
     if(undefined!==originalUserInfo[e_field.USER.PHOTO_PATH_ID] && originalUserInfo[e_field.USER.PHOTO_PATH_ID]!==choosenStorePathRecord['_id']){
+        // console.log(`in====>`)
         let updateValues={usedSize:originalStorePath[e_field.STORE_PATH.USED_SIZE]-originalUserInfo[e_field.USER.PHOTO_SIZE]}
+        //如果有原始storePath，那么删除后要重新计算，是否可以再次使用
+        helper.setStorePathStatus({originalStorePathRecord:originalStorePath,updateValue:updateValues})
+        // console.log(`new update Values========>${JSON.stringify(updateValues)}`)
         await common_operation_model.findByIdAndUpdate({dbModel:dbModel.store_path,id:originalUserInfo[e_field.USER.PHOTO_PATH_ID],updateFieldsValue:updateValues})
         updateValues={usedSize:choosenStorePathRecord[e_field.STORE_PATH.USED_SIZE]+uploadedFileSizeInKb}
+        //新选择的storePath，是否超出了门限
+        helper.setStorePathStatus({originalStorePathRecord:originalStorePath,updateValue:updateValues})
         await common_operation_model.findByIdAndUpdate({dbModel:dbModel.store_path,id:choosenStorePathRecord['_id'],updateFieldsValue:updateValues})
     }
     //如果原先没有存储路径或者选择的存储目录和原来的存储目录一致，那么只要更新原始存储路径的usedSize
     if(undefined===originalUserInfo[e_field.USER.PHOTO_PATH_ID] || originalUserInfo[e_field.USER.PHOTO_PATH_ID]===choosenStorePathRecord['_id']){
         // console.log(`update just choosen store path`)
+        // console.log(`in1====>`)
         let originalPhotoSize=(undefined===originalUserInfo[e_field.USER.PHOTO_SIZE])? 0:originalUserInfo[e_field.USER.PHOTO_SIZE]
         let updateValues={usedSize:choosenStorePathRecord[e_field.STORE_PATH.USED_SIZE]-originalPhotoSize+uploadedFileSizeInKb}
+        //新选择的storePath，是否超出了门限
+        helper.setStorePathStatus({originalStorePathRecord:choosenStorePathRecord,updateValue:updateValues})
+        // console.log(`new update Values========>${JSON.stringify(updateValues)}`)
         // console.log(`updateValues===>${JSON.stringify(updateValues)}`)
         // console.log(`id===>${JSON.stringify(choosenStorePathRecord['_id'])}`)
         await common_operation_model.findByIdAndUpdate({dbModel:dbModel.store_path,id:choosenStorePathRecord['_id'],updateFieldsValue:updateValues})

@@ -13,7 +13,8 @@ const ImpeachType=["0","1",]
 const ImpeachStatus=["0","1","2","3","4","5","6",] 
 const DocStatus=["1","2","3",] 
 const AccountType=["1","2",] 
-const StorePathUsage=["1","2",] 
+const StorePathUsage=["1","2","3","4",] 
+const StorePathStatus=["1","2",] 
 module.exports={
     ArticleStatus,
     AdminUserType,
@@ -28,4 +29,5 @@ module.exports={
     DocStatus,
     AccountType,
     StorePathUsage,
+    StorePathStatus,
 }

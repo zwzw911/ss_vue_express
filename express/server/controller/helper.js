@@ -14,11 +14,14 @@
 const validateHelper=require('../function/validateInput/validateHelper')
 const validateFormat=require('../function/validateInput/validateFormat')
 const validateValue=require('../function/validateInput/validateValue')
+const dataConvert=require('./dataConvert')
 
 const e_part=require('../constant/enum/node').ValidatePart
 const e_userState=require('../constant/enum/node').UserState
 const e_method=require('../constant/enum/node').Method
 const e_coll=require('../constant/enum/DB_Coll').Coll
+const e_field=require('../constant/enum/DB_field').Field
+
 const e_inputFieldCheckType=require('../constant/enum/node').InputFieldCheckType
 // var miscFunc=require('../../assist/misc')
 // var validate=validateFunc.validate
@@ -37,6 +40,16 @@ const internalInputRule=require('../constant/inputRule/internalInputRule').inter
 const inputRule=require('../constant/inputRule/inputRule').inputRule
 
 const fkConfig=require('../model/mongo/fkConfig').fkConfig
+
+const e_storePathUsage=require('../constant/enum/mongo').StorePathUsage.DB
+const e_storePathStatus=require('../constant/enum/mongo').StorePathStatus.DB
+
+const handleSystemError=require('../function/assist/system').handleSystemError
+const systemError=require('../constant/error/systemError').systemError
+
+
+
+
 //1. 对输入（inputValue）进行整体检查；对expectedPart进行检查（part是否正确，part值类型是否正确）
 function commonCheck(req,expectedPart){
     let result=validateFormat.validateReqBody(req.body)
@@ -281,7 +294,7 @@ function dispatcherPreCheck({req}){
 * 必须和dispatcherPreCheck配合使用，后者用来预先检测Method，剩下的part交由本函数处理
 * */
 //validatePartValueFormat+validatePartValue
-function CRUDPreCheck({req,expectUserState,expectedPart,collName,method}){
+function CRUDPreCheck({req,expectedPart,collName,method}){
     // console.log(`recordInfoBaseRule ${JSON.stringify(recordInfoBaseRule)}`)
     let result
     //检查参数
@@ -453,6 +466,86 @@ async function ifFieldValueExistInColl_async({dbModel,fieldName,fieldValue}){
     // }
 }
 
+/*
+* @ usage: storePath的用途
+* */
+async function chooseStorePath_async({usage}){
+    let choosenStorePathRecord,tmpResult,condition={}
+    //根据usage，查询status是read_write的记录，且以usedSize排序
+    condition[e_field.STORE_PATH.USAGE]=usage
+    condition[e_field.STORE_PATH.STATUS]=e_storePathStatus.READ_WRITE
+    tmpResult=await common_operation_model.find({dbModel:e_dbModel.store_path,condition:condition,options:{sort:{usedSize:1}}})
+    if(0===tmpResult.msg.length){
+        handleSystemError({error:systemError.noDefinedStorePath})
+        return Promise.reject(systemError.noDefinedStorePath)
+    }
+    // console.log(`all store path===>${JSON.stringify(tmpResult)}`)
+
+    //选择存储路径，并判断是否达到上限
+    for(let singleRec of tmpResult.msg){
+        if(singleRec['percentage']<singleRec[e_field.STORE_PATH.HIGH_THRESHOLD]){
+            choosenStorePathRecord=singleRec
+            break;
+        }
+    }
+    // console.log(`choosenStorePathRecord===>${JSON.stringify(choosenStorePathRecord)}`)
+    if(undefined===choosenStorePathRecord){
+        handleSystemError({error:systemError.noAvailableStorePathForUerPhoto})
+        return Promise.reject(systemError.noAvailableStorePathForUerPhoto)
+    }
+
+    return Promise.resolve({rc:0,msg:choosenStorePathRecord})
+}
+
+/*
+* @originalStorePathRecord: 原始的storePath记录
+* @updateValue:将要更新到originalStorePath对应记录的数据，一般为{usedSize:xxxxxx}
+*
+* result: 如果usedSize/size超过highThreshold，updateValue设为read only
+* */
+function setStorePathStatus({originalStorePathRecord, updateValue}){
+    // console.log(`originalStorePathRecord===>${JSON.stringify(originalStorePathRecord)}`)
+    // console.log(`updateValue===>${JSON.stringify(updateValue)}`)
+    if((updateValue[e_field.STORE_PATH.USED_SIZE]/originalStorePathRecord[e_field.STORE_PATH.SIZE])*100>originalStorePathRecord[e_field.STORE_PATH.HIGH_THRESHOLD]){
+        updateValue[e_field.STORE_PATH.STATUS]=e_storePathStatus.READ_ONLY
+    }
+}
+
+
+/*  对内部产生的值进行format和value的检测
+*
+* */
+function checkInternalValue({internalValue,collInputRule,collInternalRule}){
+    // if(e_env.DEV===currentEnv){
+        let tmpResult
+        // let collInputRule=Object.assign({},user_browserInputRule,user_internalInputRule)
+        // console.log(`internal check value=============> ${JSON.stringify(docValue)}`)
+        // console.log(`internal check rule=============> ${JSON.stringify(internalInputRule[e_coll.USER])}`)
+        let newDocValue=dataConvert.addSubFieldKeyValue(internalValue)
+        // console.log(`newDocValue =============> ${JSON.stringify(newDocValue)}`)
+        tmpResult=validateFormat.validateCURecordInfoFormat(newDocValue,collInputRule)
+        if(tmpResult.rc>0){
+            // console.log(`internal check format=============> ${JSON.stringify(tmpResult)}`)
+            return tmpResult
+        }
+
+        tmpResult=validateValue.validateCreateRecorderValue(newDocValue,collInternalRule)
+        for(let singleFieldName in tmpResult){
+            if(tmpResult[singleFieldName]['rc']>0){
+                tmpResult['rc']=99999
+                return tmpResult
+            }
+        }
+        // console.log(`internal check value=============> ${JSON.stringify(tmpResult)}`)
+        // tmpResult=helper.validatePartValue({req:req,exceptedPart:exceptedPart,coll:e_coll.USER,inputRule:user_internalInputRule,method:e_method.CREATE})
+        // console.log(`docValue   ${JSON.stringify(docValue)}`)
+        // return console.log(`internal check  ${JSON.stringify(tmpResult)}`)
+        tmpResult['rc']=0
+        return tmpResult
+    // }
+}
+
+
 module.exports= {
     commonCheck,//每个请求进来是，都要进行的操作（时间间隔检查等）
     validatePartValueFormat,
@@ -466,6 +559,11 @@ module.exports= {
 
     checkIfFkExist_async,//检测doc中外键值是否在对应的coll中存在
     ifFieldValueExistInColl_async,// 检测字段值是否已经在db中存在
+
+    chooseStorePath_async,//根据某种算法（平均法），选择合适的storePath来存储文件
+    setStorePathStatus,//根据原始storePath和新的usedSize，判断是否需要设置status为read only
+
+    checkInternalValue,//
 }
 
 

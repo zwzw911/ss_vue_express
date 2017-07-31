@@ -24,6 +24,17 @@ const store_path= {
         // 'maxLength': {define: 50, error: {rc: 10004}, mongoError: {rc: 30004, msg: '分类名的长度不能超过50个字符'}},
         // 'format': {define: regex.folderName, error: {rc: 10005}, mongoError: {rc: 30005, msg: '目录名必须由12-255个字符组成'}} //server端使用
     },
+    status: {
+        'chineseName': '存储路径状态',
+        'type': serverDataType.STRING,
+        'require': {define: true, error: {rc: 10076}, mongoError: {rc: 20076, msg: '存储路径状态不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        'enum':{define:enumValue.StorePathStatus,error:{rc:10077},mongoError:{rc:20077,msg:'存储路径状态不正确'}},//server端使用
+        // 'min': {define: 1, error: {rc: 10314}, mongoError: {rc: 20314, msg: '处罚时间最少1天'}},
+        // 'max': {define: 30, error: {rc: 10316}, mongoError: {rc: 20316, msg: '处罚时间最多30天'}},
+        // 'minLength': {define: 1, error: {rc: 10002}, mongoError: {rc: 30002, msg: '分类名至少1个字符'}},
+        // 'maxLength': {define: 50, error: {rc: 10004}, mongoError: {rc: 30004, msg: '分类名的长度不能超过50个字符'}},
+        // 'format': {define: regex.folderName, error: {rc: 10005}, mongoError: {rc: 30005, msg: '目录名必须由12-255个字符组成'}} //server端使用
+    },
 }
 
 module.exports={
