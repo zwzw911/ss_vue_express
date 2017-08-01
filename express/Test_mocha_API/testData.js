@@ -20,6 +20,12 @@ const user={
 }
 
 
+const tag={
+     tag1:{name:{value:'tag1'}},
+    tag2:{name:{value:'tag2'}}
+}
+
 module.exports={
     user,
+    tag
 }

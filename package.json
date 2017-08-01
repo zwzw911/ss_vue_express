@@ -13,6 +13,7 @@
     "express-session": "^1.15.3",
     "gm": "^1.23.0",
     "ioredis": "^3.1.1",
+    "jsdom": "^11.1.0",
     "moment": "^2.18.1",
     "mongoose": "^4.11.4",
     "morgan": "^1.8.2",

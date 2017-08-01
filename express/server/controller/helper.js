@@ -305,12 +305,6 @@ function CRUDPreCheck({req,expectedPart,collName,method}){
         return helperError.undefinedColl
     }
 
-/*    //检查用户状态
-    result = checkUserState(req, expectUserState)
-    if (result.rc > 0) {
-        // return Promise.reject(result)
-        return result
-    }*/
 // console.log(`CRUDPreCheck： checkUserState  ${JSON.stringify(result)}`)
     //检查输入参数中part的值（格式预先检查好，某些part的值简单。例如method/currentPage，同时检测了value）
 
@@ -369,21 +363,7 @@ function CRUDPreCheck({req,expectedPart,collName,method}){
             recordInfoBaseRule:recordInfoBaseRule,
             fkConfig: fkConfig
         })
-   /* }else{
-        //part非recordInfo
-        result = validatePartValue({
-            req: req,
-            expectedPart: expectPart,
-            collName: collName,
-            inputRule: browserInputRule,
-            // recordInfoBaseRule:recordInfoBaseRule,
-            fkConfig: fkConfig
-        })
-    }*/
 
-    // console.log(`value check result is ${JSON.stringify(result)}`)
-    // if (result.rc > 0) {
-        // return Promise.reject(result)
         return result
     // }
 }
@@ -401,12 +381,7 @@ function nonCRUDreCheck({req,expectUserState,expectPart,collName}){
         return helperError.undefinedColl
     }
 
-/*    //检查用户状态
-    let result = checkUserState(req, expectUserState)
-    if (result.rc > 0) {
-        // return Promise.reject(result)
-        return result
-    }*/
+
 
     //检查输入参数中part的格式和值
 
@@ -458,10 +433,7 @@ async function ifFieldValueExistInColl_async({dbModel,fieldName,fieldValue}){
     if (uniqueCheckResult.rc > 0) {
         return Promise.reject(uniqueCheckResult)
     }
-    // console.log(`uniqueCheckResult ${JSON.stringify(uniqueCheckResult)}`)
-    // if(uniqueCheckResult.msg.length>0){
-    // console.log(`uniqueCheckResult.msg.length>0 ${JSON.stringify(uniqueCheckResult.msg.length>0)}`)
-    // let ifExist=(uniqueCheckResult.msg.length>0)
+
     return Promise.resolve({rc:0,msg:uniqueCheckResult.msg.length>0})
     // }
 }
@@ -516,36 +488,40 @@ function setStorePathStatus({originalStorePathRecord, updateValue}){
 *
 * */
 function checkInternalValue({internalValue,collInputRule,collInternalRule}){
-    // if(e_env.DEV===currentEnv){
+
         let tmpResult
-        // let collInputRule=Object.assign({},user_browserInputRule,user_internalInputRule)
-        // console.log(`internal check value=============> ${JSON.stringify(docValue)}`)
-        // console.log(`internal check rule=============> ${JSON.stringify(internalInputRule[e_coll.USER])}`)
+
         let newDocValue=dataConvert.addSubFieldKeyValue(internalValue)
-        // console.log(`newDocValue =============> ${JSON.stringify(newDocValue)}`)
+        console.log(`newDocValue =============> ${JSON.stringify(newDocValue)}`)
         tmpResult=validateFormat.validateCURecordInfoFormat(newDocValue,collInputRule)
+    console.log(`internal check format=============> ${JSON.stringify(tmpResult)}`)
         if(tmpResult.rc>0){
-            // console.log(`internal check format=============> ${JSON.stringify(tmpResult)}`)
+
             return tmpResult
         }
 
-        tmpResult=validateValue.validateCreateRecorderValue(newDocValue,collInternalRule)
+        tmpResult=validateValue.validateUpdateRecorderValue(newDocValue,collInternalRule)
+    console.log(`internal check format=============> ${JSON.stringify(tmpResult)}`)
         for(let singleFieldName in tmpResult){
             if(tmpResult[singleFieldName]['rc']>0){
                 tmpResult['rc']=99999
                 return tmpResult
             }
         }
-        // console.log(`internal check value=============> ${JSON.stringify(tmpResult)}`)
-        // tmpResult=helper.validatePartValue({req:req,exceptedPart:exceptedPart,coll:e_coll.USER,inputRule:user_internalInputRule,method:e_method.CREATE})
-        // console.log(`docValue   ${JSON.stringify(docValue)}`)
-        // return console.log(`internal check  ${JSON.stringify(tmpResult)}`)
         tmpResult['rc']=0
         return tmpResult
     // }
 }
 
-
+//检查一个外键的值是否存在
+async function ifFkValueExist_async({dbModel,fkObjectId}){
+    let tmpResult=await  common_operation_model.findById({dbModel:dbModel,id:fkObjectId})
+    if(null===tmpResult.msg){
+        return Promise.resolve({rc:0,msg:false})
+    }else{
+        return Promise.resolve({rc:0,msg:true})
+    }
+}
 module.exports= {
     commonCheck,//每个请求进来是，都要进行的操作（时间间隔检查等）
     validatePartValueFormat,
@@ -564,6 +540,8 @@ module.exports= {
     setStorePathStatus,//根据原始storePath和新的usedSize，判断是否需要设置status为read only
 
     checkInternalValue,//
+
+    ifFkValueExist_async,
 }
 
 

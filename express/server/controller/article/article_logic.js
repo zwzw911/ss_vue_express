@@ -21,7 +21,7 @@ const e_hashType=require('../../constant/enum/node_runtime').HashType
 
 const e_env=require('../../constant/enum/node').Env
 const e_docStatus=require('../../constant/enum/mongo').DocStatus.DB
-const e_accountType=require('../../constant/enum/mongo').AccountType.DB
+const e_iniSettingObjectId=require('../../constant/enum/initSettingObject').iniSettingObjectId
 const e_articleStatus=require('../../constant/enum/mongo').ArticleStatus.DB
 
 const currentEnv=require('../../constant/config/appSetting').currentEnv
@@ -39,6 +39,8 @@ const common_operation_model=require('../../model/mongo/operation/common_operati
 const hash=require('../../function/assist/crypt').hash
 
 const misc=require('../../function/assist/misc')
+
+const sanityHtml=require('../../function/assist/sanityHtml').sanityHtml
 /*const generateRandomString=require('../../function/assist/misc').generateRandomString
 const sendVerificationCodeByEmail_async=require('../../function/assist/misc').sendVerificationCodeByEmail_async
 const ifUserLogin=require('../../function/assist/misc').ifUserLogin*/
@@ -76,13 +78,16 @@ const captchaIntervalConfiguration=require('../../constant/config/globalConfigur
 const controllerError={
     /*          common              */
     fieldAlreadyExist(chineseFieldName,fieldInputValue){return {rc:50200,msg:{client:`${fieldInputValue}已经存在`, server:`字段${chineseFieldName}中，值${fieldInputValue}已经存在`}}},
+    fkValueNotExist(chineseFieldName,fieldInputValue){return {rc:50201,msg:{client:`${chineseFieldName}不存在`, server:`字段${chineseFieldName}的外键值${fieldInputValue}不存在`}}},
     /*          create new article              */
-    userNotLoginCantCreate:{rc:50201,msg:`用户尚未登录，无法新建文档`},
+    userNotLoginCantCreate:{rc:50204,msg:`用户尚未登录，无法新建文档`},
+    userNoDefaultFolder:{rc:50205,msg:`没有默认目录，无法创建新文档`},
 
     /*          update article              */
-    userNotLoginCantUpdate:{rc:50202,msg:`用户尚未登录，无法新建文档`},
-    notAuthorized:{rc:50202,msg:`无权更改次文档`},
-    notAuthorizedFolder:{rc:50204,msg:`无权在目录中添加文档`},
+    userNotLoginCantUpdate:{rc:50206,msg:`用户尚未登录，无法新建文档`},
+    htmlContentSanityFailed:{rc:50207,msg:`文档内容中包含有害信息`},
+    notAuthorized:{rc:50208,msg:`无权更改文档`},
+    notAuthorizedFolder:{rc:50210,msg:`非目录创建者，无权在目录中添加文档`},
 }
 
 
@@ -137,7 +142,7 @@ async function dispatcher_async(req){
             /*      检测输入的format和value是否正确        */
             expectedPart=[e_part.RECORD_INFO,e_part.RECORD_ID]//无需method
             //因为dispatch而已经检查过req的总体结构，所以无需再次检查，而直接检查sess+partValueFormat+partValueCheck
-            result=helper.CRUDPreCheck({req:req,expectUserState:expectUserState,expectedPart:expectedPart,collName:collName,method:method})
+            result=helper.CRUDPreCheck({req:req,expectedPart:expectedPart,collName:collName,method:method})
             // console.log(`create preCheck result ${JSON.stringify(result)}`)
             if(result.rc>0){
                 return Promise.reject(result)
@@ -173,14 +178,20 @@ async  function createArticle_async(req){
 
     userId=req.session.userId
     console.log(`userId ====>${userId}`)
+
     /*                  添加内部产生的值（name && status && authorId && folderId）                  */
     docValue={}
     docValue[e_field.ARTICLE.NAME]="新建文档"
     docValue[e_field.ARTICLE.AUTHOR_ID]=req.session.userId
     docValue[e_field.ARTICLE.STATUS]=e_articleStatus.EDITING
     tmpResult=await common_operation_model.find({dbModel:e_dbModel.folder,condition:{authorId:userId,name:'我的文档'}})
+    if(tmpResult.msg.length===0){
+        return Promise.reject(controllerError.userNoDefaultFolder)
+    }
     docValue[e_field.ARTICLE.FOLDER_ID]=tmpResult.msg[0]['id']
-console.log(`docValue is ====>${JSON.stringify(docValue)}`)
+    docValue[e_field.ARTICLE.CATEGORY_ID]=e_iniSettingObjectId.category.other
+    docValue[e_field.ARTICLE.HTML_CONTENT]=`\br`
+// console.log(`docValue is ====>${JSON.stringify(docValue)}`)
     /*              对内部产生的值进行检测（开发时使用，上线后为了减低负荷，无需使用）           */
     if(e_env.DEV===currentEnv){
         let newDocValue=dataConvert.addSubFieldKeyValue(docValue)
@@ -199,7 +210,7 @@ console.log(`docValue is ====>${JSON.stringify(docValue)}`)
 
     //插入db
     tmpResult= await common_operation_model.create({dbModel:e_dbModel.article,value:docValue})
-    console.log(`create result is ====>${JSON.stringify(tmpResult)}`)
+    // console.log(`create result is ====>${JSON.stringify(tmpResult)}`)
     return Promise.resolve({rc:0,msg:tmpResult.msg})
 }
 
@@ -246,17 +257,47 @@ async function updateArticle_async(req){
     }
 
 
+    /*              检查外键字段的值是否存在                */
+    //分类和folder是直接输入objectId
+    if(undefined!==docValue[e_field.ARTICLE.CATEGORY_ID]){
+        tmpResult=await helper.ifFkValueExist_async({dbModel:e_dbModel.category,fkObjectId:docValue[e_field.ARTICLE.CATEGORY_ID]})
+        if(false===tmpResult.msg){
+            let chineseName=inputRule[e_coll.ARTICLE][e_field.ARTICLE.CATEGORY_ID]['chineseName']
+            let fieldInputValue=docValue[e_field.ARTICLE.CATEGORY_ID]
+            return Promise.reject(controllerError.fkValueNotExist(chineseName,fieldInputValue))
+        }
+    }
+    if(undefined!==docValue[e_field.ARTICLE.FOLDER_ID]){
+        tmpResult=await helper.ifFkValueExist_async({dbModel:e_dbModel.folder,fkObjectId:docValue[e_field.ARTICLE.FOLDER_ID]})
+        if(false===tmpResult.msg){
+            let chineseName=inputRule[e_coll.ARTICLE][e_field.ARTICLE.FOLDER_ID]['chineseName']
+            let fieldInputValue=docValue[e_field.ARTICLE.FOLDER_ID]
+            return Promise.reject(controllerError.fkValueNotExist(chineseName,fieldInputValue))
+        }
+    }
+// console.log(`fk exist check done====>`)
+//     console.log(`docValue====>${JSON.stringify(docValue)}`)
+    // docValue
     /*              检测某些字段                  */
-    //1. content中包含的图片是否已经被删除，删除的话，需要同时在磁盘上删除对应的文件，以便节省空间
-    let htmlContent=req.body.values[e_field.ARTICLE.HTML_CONTENT]
-    let innerImageInArticle=htmlContent.match(regex.hashImageName)
-    let articleImageCondition={}
-    articleImageCondition[e_field.ARTICLE_IMAGE.ARTICLE_ID]=articleId
-    //读取article的所有图片文件信息
-    tmpResult=await common_operation_model.find({dbModel:e_dbModel.article_image,condition:articleImageCondition})
-    if(innerImageInArticle.length>0){
+    //1. 如果content存在
+    // 1.1 content进行sanity，sanity之后的结果失败，返回错误（而不是存入db）
+    // 1.2 其中包含的图片是否已经被删除，删除的话，需要同时在磁盘上删除对应的文件，以便节省空间
+    if(undefined!==docValue[e_field.ARTICLE.HTML_CONTENT]){
+        let htmlContent=docValue[e_field.ARTICLE.HTML_CONTENT]
+        if(sanityHtml(htmlContent)!==htmlContent){
+            return Promise.reject(controllerError.htmlContentSanityFailed)
+        }
+        let innerImageInArticle=htmlContent.match(regex.hashImageName)
+        let articleImageCondition={}
+        articleImageCondition[e_field.ARTICLE_IMAGE.ARTICLE_ID]=articleId
+        //读取article的所有图片文件信息
+        tmpResult=await common_operation_model.find({dbModel:e_dbModel.article_image,condition:articleImageCondition})
+        if(innerImageInArticle.length>0){
+
+        }
 
     }
+    // console.log(`image check done====>`)
     //2. 如果有tag，检测是否已经在coll中存在。存在：从字符转换成objectId，不存在，coll tag中创建一个新的，并获得objectId
     if(undefined!==docValue[e_field.ARTICLE.TAGS_ID]){
         for(let idx in docValue[e_field.ARTICLE.TAGS_ID]){
@@ -265,31 +306,43 @@ async function updateArticle_async(req){
             tmpResult=await common_operation_model.find({dbModel:e_dbModel.tag,condition:tmpCondition})
             //tag已经存在，用objectId替换掉原来的字符
             if(tmpResult.msg.length===1){
+                console.log(`tag exiust==========`)
                 docValue[e_field.ARTICLE.TAGS_ID][idx]=tmpResult.msg[0]['_id']
             }else{
             //tag 不存在，创建一个新的tag，并保存返回的objectId
+                console.log(`tag not exist==========`)
                 tmpResult=await common_operation_model.create({dbModel:e_dbModel.tag,value:{name:docValue[e_field.ARTICLE.TAGS_ID][idx]}})
+                // console.log(`tag new create result==========${JSON.stringify(tmpResult)}`)
+                // console.log(`docValue not exit==========${JSON.stringify(docValue)}`)
                 docValue[e_field.ARTICLE.TAGS_ID][idx]=tmpResult.msg['_id']
             }
         }
 
     }
+    // console.log(`tag check result====>${JSON.stringify(docValue)}`)
+    // console.log(`tag check done====>`)
     //3. 如果有folder，检测folder的owner是否为当前用户
     if(undefined!==docValue[e_field.ARTICLE.FOLDER_ID]){
         condition={}
         condition[e_field.FOLDER.AUTHOR_ID]=userId
         condition['_id']=docValue[e_field.ARTICLE.FOLDER_ID]
+        console.log(`folder check=========>${JSON.stringify(condition)}`)
         tmpResult=await common_operation_model.find({dbModel:e_dbModel.folder,condition:condition})
+        console.log(`folder check result=========>${JSON.stringify(tmpResult)}`)
         if(tmpResult.msg.length!==1){
             return Promise.reject(controllerError.notAuthorizedFolder)
         }
     }
 
     /*              获得internal field，并进行检查                  */
-    let internalValue=docValue[e_field.ARTICLE.TAGS_ID]
+    let internalValue={}
+    internalValue[e_field.ARTICLE.TAGS_ID]=docValue[e_field.ARTICLE.TAGS_ID]
     if(e_env.DEV===currentEnv){
+        // console.log(`before newDocValue====>${JSON.stringify(internalValue)}`)
+        // let newDocValue=dataConvert.addSubFieldKeyValue(internalValue)
+        // console.log(`newDocValue====>${JSON.stringify(newDocValue)}`)
         let tmpResult=helper.checkInternalValue({internalValue:internalValue,collInputRule:inputRule[e_coll.ARTICLE],collInternalRule:internalInputRule[e_coll.ARTICLE]})
-        // console.log(`internalValue check result====>   ${JSON.stringify(tmpResult)}`)
+        console.log(`internalValue check result====>   ${JSON.stringify(tmpResult)}`)
         if(tmpResult.rc>0){
             return Promise.reject(tmpResult)
         }
