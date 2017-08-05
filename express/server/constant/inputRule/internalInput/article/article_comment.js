@@ -14,6 +14,7 @@ const regex=require('../../../regex/regex').regex
 const mongoEnum=require('../../../enum/mongo')
 
 const article_comment= {
+
     //从session中获得
     authorId: {
         'chineseName': '评论作者',

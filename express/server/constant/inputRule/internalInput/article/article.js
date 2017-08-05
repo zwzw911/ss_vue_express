@@ -22,22 +22,9 @@ const article= {
         'format': {define: regex.objectId, error: {rc: 10128}, mongoError: {rc: 20128, msg: '作者必须是objectId'}} //server端使用
     },
 
-    categoryId: {
-        'chineseName': '分类',
-        'type': serverDataType.OBJECT_ID,
-        'require': {define: true, error: {rc: 10130}, mongoError: {rc: 20130, msg: '文档分类不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
-        'format': {define: regex.objectId, error: {rc: 10132}, mongoError: {rc: 20132, msg: '文档分类必须是objectId'}} //server端使用
-    },
 
-    //输入的时候是字符（用户的输入，到server转换成objectId）
-    tagsId: {
-        'chineseName': '标签',
-        'type': [serverDataType.OBJECT_ID],
-        'require': {define: false, error: {rc: 10134}, mongoError: {rc: 20134, msg: '文档标签不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
-        'arrayMinLength': {define: 1, error: {rc: 10136}, mongoError: {rc: 20136, msg: '至少设置1个标签'}},
-        'arrayMaxLength': {define: maxNumber.article.tagNumberPerArticle, error: {rc: 10138}, mongoError: {rc: 20138, msg: `最多设置${maxNumber.article.tagNumberPerArticle}标签`}},
-        'format': {define: regex.objectId, error: {rc: 10140}, mongoError: {rc: 20140, msg: '文档标签必须是objectId'}} //server端使用
-    },
+
+
     //虽然mongodb中定义的是array+objectId，但是实际处理时，从client传递的只是objectId，所以定义的时候，只检查objectId
     articleImagesId: {
         'chineseName': '文档图片',

@@ -42,3 +42,11 @@
 1. mongoose升级到4.11.6后，使用populate获得user（uploadPhoto）中的photoPathId对应的path（临时使用另外一个查询获得）
 
 1. 添加daily 查询，用来检查是否有头像文件未被记录在db中====》遍历目录下所有文件，是否在db中有对应的记录
+
+1. 在helper中添加新函数，通过检查admin_penalize表，确定user是否有权进行CRUD的操作====>done
+2. 在helper中添加新函数，通过某种算法，判断是否为机器人在创建文档和评论（暂时通过间隔，每次发表新评论或者新文档必须间隔1分钟）
+
+1. 创建评论====》done
+
+1. unique检测函数化
+2. preCheck_async应用到user====>done

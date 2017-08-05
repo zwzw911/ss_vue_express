@@ -117,6 +117,24 @@ const PenalizeType={
 
 }
 
+const PenalizeSubType={
+    DB:{
+        CREATE: '1',
+        READ:'2',
+        UPDATE:'3',
+        DELETE:'4',
+        ALL:'9',
+    },
+    SHOW:{
+        CREATE: '禁止创建',
+        READ:'禁止读取',
+        UPDATE:'禁止更新',
+        DELETE:'禁止删除',
+        ALL:'禁止所有操作',
+    },
+
+}
+
 const ImpeachType={
     DB:{
         ARTICLE: '0',
@@ -213,6 +231,7 @@ module.exports={
     PublicGroupEventType,
     EventStatus,
     PenalizeType,
+    PenalizeSubType,
     ImpeachType,
     ImpeachStatus,
     DocStatus,

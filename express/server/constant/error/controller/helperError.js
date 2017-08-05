@@ -12,9 +12,12 @@ const helper={
     unknownPartInValueCheck:{rc:50004,msg:{client:'输入数据错误',server:'输入数据中有未知的part'}},
 
     /*              checkIfFkExist_async            */
-    fkFileNotExist(coll,field,fkValue,relatedColl){
-        return {rc:50006,msg:{client:`外键不存在`,server:`检查coll ${coll}中的字段${field}，其值${fkValue}在对应的coll ${relatedColl}没有对应的值`}}
+    fkValueNotExist(chineseFieldName,fieldInputValue){
+        return {rc:50005,msg:{client:`${chineseFieldName}不存在`, server:`字段:${chineseFieldName}  的外键值${fieldInputValue}不存在`}}
     },
+/*    fkFileNotExist(coll,field,fkValue,relatedColl){
+        return {rc:50006,msg:{client:`外键不存在`,server:`检查coll ${coll}中的字段${field}，其值${fkValue}在对应的coll ${relatedColl}没有对应的值`}}
+    },*/
 
     /*            CRUDPreCheck                        */
     undefinedUserState:{rc:50008,msg:{client:'内部错误',server:'非预定义的用户状态'}},
@@ -22,8 +25,102 @@ const helper={
 
     /*            dispatcherPreCheck                        */
     methodPartMustExistInDispatcher:{rc:50012,msg:{client:'输入值格式错误',server:'dispatcher中必须有method'}},
-}
 
+    /*          unique check            */
+    //collName和fieldName都根据constant/enum/DB_uniqueField而来
+    fieldValueUniqueCheckError({collName,fieldName,fieldChineseName}){
+        switch (collName){
+            case "admin_user":
+                switch (fieldName){
+                    case "name":
+                        return {rc:50100,msg:{client:`已经有相同的${fieldChineseName}存在`,server:`集合${collName}的字段${fieldName}是unique，其中已经有同样的值存在了`}}
+                        break;
+                    default:
+                        return {rc:50102,msg:{client:'内部错误，请联系管理员',server:`集合${collName}中出现未知unique字段`}}
+                }
+                break
+            case "category":
+                switch (fieldName){
+                    case "name":
+                        return {rc:50110,msg:{client:`已经有相同的${fieldChineseName}存在`,server:`集合${collName}的字段${fieldName}是unique，其中已经有同样的值存在了`}}
+                        break;
+                    default:
+                        return {rc:50112,msg:{client:'内部错误，请联系管理员',server:`集合${collName}中出现未知unique字段`}}
+                }
+                break
+            case "store_path":
+                switch (fieldName){
+                    case "name":
+                        return {rc:50120,msg:{client:`已经有相同的${fieldChineseName}存在`,server:`集合${collName}的字段${fieldName}是unique，其中已经有同样的值存在了`}}
+                        break;
+                    case "path":
+                        return {rc:50122,msg:{client:`已经有相同的${fieldChineseName}存在`,server:`集合${collName}的字段${fieldName}是unique，其中已经有同样的值存在了`}}
+                        break;
+                    default:
+                        return {rc:50124,msg:{client:'内部错误，请联系管理员',server:`集合${collName}中出现未知unique字段`}}
+                }
+                break;
+            case "tag":
+                switch (fieldName){
+                    case "name":
+                        return {rc:50130,msg:{client:`已经有相同的${fieldChineseName}存在`,server:`集合${collName}的字段${fieldName}是unique，其中已经有同样的值存在了`}}
+                        break;
+                    default:
+                        return {rc:50132,msg:{client:'内部错误，请联系管理员',server:`集合${collName}中出现未知unique字段`}}
+                }
+                break;
+            case "public_group":
+                switch (fieldName){
+                    case "name":
+                        return {rc:50140,msg:{client:`已经有相同的${fieldChineseName}存在`,server:`集合${collName}的字段${fieldName}是unique，其中已经有同样的值存在了`}}
+                        break;
+                    default:
+                        return {rc:50142,msg:{client:'内部错误，请联系管理员',server:`集合${collName}中出现未知unique字段`}}
+                }
+                break;
+            case "sugar":
+                switch (fieldName){
+                    case "userId":
+                        return {rc:50150,msg:{client:`已经有相同的${fieldChineseName}存在`,server:`集合${collName}的字段${fieldName}是unique，其中已经有同样的值存在了`}}
+                        break;
+                    default:
+                        return {rc:50152,msg:{client:'内部错误，请联系管理员',server:`集合${collName}中出现未知unique字段`}}
+                }
+                break;
+            case "user":
+                switch (fieldName){
+                    case "name":
+                        return {rc:50160,msg:{client:`已经有相同的${fieldChineseName}存在`,server:`集合${collName}的字段${fieldName}是unique，其中已经有同样的值存在了`}}
+                        break;
+                    case "account":
+                        return {rc:50162,msg:{client:`已经有相同的${fieldChineseName}存在`,server:`集合${collName}的字段${fieldName}是unique，其中已经有同样的值存在了`}}
+                        break;
+                    default:
+                        return {rc:50164,msg:{client:'内部错误，请联系管理员',server:`集合${collName}中出现未知unique字段`}}
+                }
+                break;
+            case "user_input_keyword":
+                switch (fieldName){
+                    case "name":
+                        return {rc:50170,msg:{client:`已经有相同的${fieldChineseName}存在`,server:`集合${collName}的字段${fieldName}是unique，其中已经有同样的值存在了`}}
+                        break;
+                    default:
+                        return {rc:50172,msg:{client:'内部错误，请联系管理员',server:`集合${collName}中出现未知unique字段`}}
+                }
+                break;
+
+        }
+        return {rc:0}
+    }
+}
+/*admin_user:["name",],
+    category:["name",],
+    store_path:["name","path",],
+    tag:["name",],
+    public_group:["name",],
+    sugar:["userId",],
+    user:["name","account",],
+    user_input_keyword:["name",],*/
 module.exports={
     helper
 }

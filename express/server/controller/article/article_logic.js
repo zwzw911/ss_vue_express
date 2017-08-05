@@ -21,6 +21,8 @@ const e_hashType=require('../../constant/enum/node_runtime').HashType
 
 const e_env=require('../../constant/enum/node').Env
 const e_docStatus=require('../../constant/enum/mongo').DocStatus.DB
+const e_penalizeType=require('../../constant/enum/mongo').PenalizeType.DB
+const e_penalizeSubType=require('../../constant/enum/mongo').PenalizeSubType.DB
 const e_iniSettingObjectId=require('../../constant/enum/initSettingObject').iniSettingObjectId
 const e_articleStatus=require('../../constant/enum/mongo').ArticleStatus.DB
 
@@ -31,6 +33,7 @@ const fkConfig=require('../../model/mongo/fkConfig').fkConfig
 
 const e_coll=require('../../constant/enum/DB_Coll').Coll
 const e_field=require('../../constant/enum/DB_field').Field
+const e_internal_field=require('../../constant/enum/DB_internal_field').Field
 const e_uniqueField=require('../../constant/enum/DB_uniqueField').UniqueField
 // const e_inputFieldCheckType=require('../../constant/enum/node').InputFieldCheckType
 
@@ -39,6 +42,8 @@ const common_operation_model=require('../../model/mongo/operation/common_operati
 const hash=require('../../function/assist/crypt').hash
 
 const misc=require('../../function/assist/misc')
+// const checkRobot_async=require('../../function/assist/checkRobot').checkRobot_async
+
 
 const sanityHtml=require('../../function/assist/sanityHtml').sanityHtml
 /*const generateRandomString=require('../../function/assist/misc').generateRandomString
@@ -52,6 +57,8 @@ const validateCURecordInfoFormat=require('../../function/validateInput/validateF
 // const browserInputRule=require('../../constant/inputRule/browserInputRule').browserInputRule
 const internalInputRule=require('../../constant/inputRule/internalInputRule').internalInputRule
 const inputRule=require('../../constant/inputRule/inputRule').inputRule
+const e_fieldChineseName=require('../../constant/enum/inputRule_field_chineseName').ChineseName
+
 
 const mongoError=require('../../constant/error/mongo/mongoError').error
 
@@ -77,112 +84,159 @@ const captchaIntervalConfiguration=require('../../constant/config/globalConfigur
 
 const controllerError={
     /*          common              */
-    fieldAlreadyExist(chineseFieldName,fieldInputValue){return {rc:50200,msg:{client:`${fieldInputValue}已经存在`, server:`字段${chineseFieldName}中，值${fieldInputValue}已经存在`}}},
-    fkValueNotExist(chineseFieldName,fieldInputValue){return {rc:50201,msg:{client:`${chineseFieldName}不存在`, server:`字段${chineseFieldName}的外键值${fieldInputValue}不存在`}}},
+/*    fieldAlreadyExist(chineseFieldName,fieldInputValue){
+        switch (fieldName){
+            case e_field.article
+        }
+        return {rc:50200,msg:{client:`${fieldInputValue}已经存在`, server:`字段${chineseFieldName}中，值${fieldInputValue}已经存在`}}},*/
+
     /*          create new article              */
     userNotLoginCantCreate:{rc:50204,msg:`用户尚未登录，无法新建文档`},
     userNoDefaultFolder:{rc:50205,msg:`没有默认目录，无法创建新文档`},
+    userInPenalizeNoArticleCreate:{rc:50206,msg:`管理员禁止创建文档`},
 
     /*          update article              */
-    userNotLoginCantUpdate:{rc:50206,msg:`用户尚未登录，无法新建文档`},
-    htmlContentSanityFailed:{rc:50207,msg:`文档内容中包含有害信息`},
-    notAuthorized:{rc:50208,msg:`无权更改文档`},
-    notAuthorizedFolder:{rc:50210,msg:`非目录创建者，无权在目录中添加文档`},
+    userNotLoginCantUpdate:{rc:50208,msg:`用户尚未登录，无法新建文档`},
+    userInPenalizeNoArticleUpdate:{rc:50209,msg:`管理员禁止创建文档`},
+    htmlContentSanityFailed:{rc:50210,msg:`文档内容中包含有害信息`},
+    notAuthorized:{rc:50212,msg:`无权更改文档`},
+    notAuthorizedFolder:{rc:50214,msg:`非目录创建者，无权在目录中添加文档`},
+
+    /*          create new comment              */
+    userNotLoginCantCreateComment:{rc:50220,msg:`用户尚未登录，无法发表评论`},
+    userInPenalizeNoCommentCreate:{rc:50222,msg:`管理员禁止发表评论`},
 }
 
 
 //对CRUD（输入参数带有method）操作调用对应的函数
-async function dispatcher_async(req){
+async function article_dispatcher_async(req){
 
     //检查格式
     // console.log(`req is ${JSON.stringify(req.cookies)}`)
     // console.log(`dispatcher in`)
     // console.log(`req.body.values ${JSON.stringify(req.body.values)}`)
-    let expectUserState,expectedPart,collName=e_coll.ARTICLE,result
+    let collName=e_coll.ARTICLE,tmpResult
 
-    //dispatcher只检测req的结构，以及req中method的格式和值，以便后续可以直接根据method进行调用
-    result=helper.dispatcherPreCheck({req:req})
-    if(result.rc>0){
-        return Promise.reject(result)
+    //checkMethod只检测req的结构，以及req中method的格式和值，以便后续可以直接根据method进行调用
+    tmpResult=helper.checkMethod({req:req})
+    if(tmpResult.rc>0){
+        return Promise.reject(tmpResult)
     }
-
-
     //因为method已经检测过，所有要从req.body.values中删除，防止重复检查
     let method=req.body.values[e_part.METHOD]
     delete req.body.values[e_part.METHOD]
 
-
+    let userLoginCheck,penalizeCheck,expectedPart
     switch (method){
         case e_method.CREATE: //create
-            /*      检测用户是否登录        */
-            if(undefined===req.session.userId){
-                return Promise.reject(controllerError.userNotLoginCantCreate)
+            userLoginCheck={
+                needCheck:true,
+                error:controllerError.userNotLoginCantCreate
             }
-            // console.log(`create in`)
-            //首先检查method是否存在，且格式/值是否正确。不同的method可能对应不同的参数配置
+            penalizeCheck={
+                penalizeType:e_penalizeType.NO_ARTICLE,
+                penalizeSubType:e_penalizeSubType.CREATE,
+                penalizeCheckError:controllerError.userInPenalizeNoArticleCreate
+            }
+            expectedPart=[]
+            tmpResult=await helper.preCheck_async({req:req,collName,method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
+            tmpResult=await createArticle_async(req)
 
-            expectedPart=[]//无需任何part
-            //因为dispatch而已经检查过req的总体结构，所以无需再次检查，而直接检查partValueFormat+partValueCheck
-            // result=helper.CRUDPreCheck({req:req,expectUserState:expectUserState,expectedPart:expectedPart,collName:collName,method:method})
-            result=helper.CRUDPreCheck({req:req,expectedPart:expectedPart,collName:collName,method:method})
-            // console.log(`create preCheck result ====》${JSON.stringify(result)}`)
-            if(result.rc>0){
-                return Promise.reject(result)
-            }
-            result=await createArticle_async(req)
+
 
             break;
         case e_method.SEARCH:// search
             break;
         case e_method.UPDATE: //update
-            /*      检测用户是否登录        */
-            if(undefined===req.session.userId){
-                return Promise.reject(controllerError.userNotLoginCantUpdate)
+            userLoginCheck={
+                needCheck:true,
+                error:controllerError.userNotLoginCantUpdate
             }
-            /*      检测输入的format和value是否正确        */
-            expectedPart=[e_part.RECORD_INFO,e_part.RECORD_ID]//无需method
-            //因为dispatch而已经检查过req的总体结构，所以无需再次检查，而直接检查sess+partValueFormat+partValueCheck
-            result=helper.CRUDPreCheck({req:req,expectedPart:expectedPart,collName:collName,method:method})
-            // console.log(`create preCheck result ${JSON.stringify(result)}`)
-            if(result.rc>0){
-                return Promise.reject(result)
+            penalizeCheck={
+                penalizeType:e_penalizeType.NO_ARTICLE,
+                penalizeSubType:e_penalizeSubType.UPDATE,
+                penalizeCheckError:controllerError.userInPenalizeNoArticleUpdate
             }
+            expectedPart=[e_part.RECORD_INFO,e_part.RECORD_ID]
+            tmpResult=await helper.preCheck_async({req:req,collName,method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
+// console.log(`article update precheck result======>${JSON.stringify(tmpResult)}`)
 
             /*      执行逻辑                */
-            result=await updateArticle_async(req)
+            tmpResult=await updateArticle_async(req)
             break;
         case e_method.DELETE: //delete
             break;
         case e_method.MATCH: //match(login_async)
-            // console.log(`req.session login is ${JSON.stringify(req.session)}`)
-            expectUserState=e_userState.NO_SESS
-            expectedPart=[e_part.RECORD_INFO]
-            result=helper.CRUDPreCheck({req:req,expectUserState:expectUserState,expectedPart:expectedPart,collName:collName,method:method})
-            // console.log(`match CRUDPreCheck ${JSON.stringify(result)}`)
-            if(result.rc>0){
-                return Promise.reject(result)
-            }
-            result=await login_async(req)
-            // console.log(`match result ${JSON.stringify(result)}`)
+
     }
     
-    return Promise.resolve(result)
+    return Promise.resolve(tmpResult)
 }
+
+
+//对CRUD（输入参数带有method）操作调用对应的函数
+async function comment_dispatcher_async(req){
+
+    //检查格式
+    // console.log(`req is ${JSON.stringify(req.cookies)}`)
+    // console.log(`dispatcher in`)
+    // console.log(`req.body.values ${JSON.stringify(req.body.values)}`)
+    let collName=e_coll.ARTICLE_COMMENT,tmpResult
+
+    //dispatcher只检测req的结构，以及req中method的格式和值，以便后续可以直接根据method进行调用
+    tmpResult=helper.checkMethod({req:req})
+    if(tmpResult.rc>0){
+        return Promise.reject(tmpResult)
+    }
+
+    //因为method已经检测过，所有要从req.body.values中删除，防止重复检查
+    let method=req.body.values[e_part.METHOD]
+    delete req.body.values[e_part.METHOD]
+
+    let userLoginCheck,penalizeCheck,expectedPart
+    switch (method){
+        case e_method.CREATE: //create
+            userLoginCheck={
+                needCheck:true,
+                error:controllerError.userNotLoginCantCreateComment
+            }
+            penalizeCheck={
+                penalizeType:e_penalizeType.NO_ARTICLE,
+                penalizeSubType:e_penalizeSubType.CREATE,
+                penalizeCheckError:controllerError.userInPenalizeNoCommentCreate
+            }
+            expectedPart=[e_part.RECORD_INFO]
+            await helper.preCheck_async({req:req,collName,method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
+
+            await createComment_async(req)
+
+            break;
+        case e_method.SEARCH:// search
+            break;
+        case e_method.UPDATE: //update
+            break;
+        case e_method.DELETE: //delete
+            break;
+        case e_method.MATCH: //match(login_async)
+            break;
+        default:
+            console.log(`======>ERR:Wont in cause method check before`)
+
+    }
+
+    return Promise.resolve(tmpResult)
+}
+
 
 /*              新article无任何输入，所有的值都是内部产生                */
 async  function createArticle_async(req){
-
-/*                      logic                               */
-    //直接产生内部数据
     let tmpResult,userId,docValue
-
     userId=req.session.userId
-    console.log(`userId ====>${userId}`)
-
-    /*                  添加内部产生的值（name && status && authorId && folderId）                  */
+    // console.log(`userId ====>${userId}`)
+    /*                  添加内部产生的client值（name && status && authorId && folderId）                  */
     docValue={}
     docValue[e_field.ARTICLE.NAME]="新建文档"
-    docValue[e_field.ARTICLE.AUTHOR_ID]=req.session.userId
+
     docValue[e_field.ARTICLE.STATUS]=e_articleStatus.EDITING
     tmpResult=await common_operation_model.find({dbModel:e_dbModel.folder,condition:{authorId:userId,name:'我的文档'}})
     if(tmpResult.msg.length===0){
@@ -191,26 +245,29 @@ async  function createArticle_async(req){
     docValue[e_field.ARTICLE.FOLDER_ID]=tmpResult.msg[0]['id']
     docValue[e_field.ARTICLE.CATEGORY_ID]=e_iniSettingObjectId.category.other
     docValue[e_field.ARTICLE.HTML_CONTENT]=`\br`
+
+
+    // console.log(`after attachment check=========>${JSON.stringify(docValue)}`)
 // console.log(`docValue is ====>${JSON.stringify(docValue)}`)
     /*              对内部产生的值进行检测（开发时使用，上线后为了减低负荷，无需使用）           */
-    if(e_env.DEV===currentEnv){
-        let newDocValue=dataConvert.addSubFieldKeyValue(docValue)
-        //检查格式
-        tmpResult=validateCURecordInfoFormat(newDocValue,inputRule[e_coll.ARTICLE])
-        if(tmpResult.rc>0){
-            return Promise.reject(tmpResult)
-        }
-        //检查数据
-        tmpResult=validateCreateRecorderValue(newDocValue,internalInputRule[e_coll.ARTICLE])
+    let internalValue={}
+    internalValue[e_field.ARTICLE.AUTHOR_ID]=req.session.userId
+    if(e_env.DEV===currentEnv && Object.keys(internalValue).length>0){
+        // console.log(`before newDocValue====>${JSON.stringify(internalValue)}`)
+        // let newDocValue=dataConvert.addSubFieldKeyValue(internalValue)
+        // console.log(`newDocValue====>${JSON.stringify(newDocValue)}`)
+        let tmpResult=helper.checkInternalValue({internalValue:internalValue,collInputRule:inputRule[e_coll.ARTICLE],collInternalRule:internalInputRule[e_coll.ARTICLE]})
+        // console.log(`internalValue check result====>   ${JSON.stringify(tmpResult)}`)
         if(tmpResult.rc>0){
             return Promise.reject(tmpResult)
         }
     }
+    Object.assign(docValue,internalValue)
 
-
-    //插入db
+    //new article插入db
     tmpResult= await common_operation_model.create({dbModel:e_dbModel.article,value:docValue})
     // console.log(`create result is ====>${JSON.stringify(tmpResult)}`)
+
     return Promise.resolve({rc:0,msg:tmpResult.msg})
 }
 
@@ -223,17 +280,19 @@ async  function createArticle_async(req){
 * 4. 检查是否选择了folder（输入为objectId），如果选择了，folder是否为当前用户所有
 * */
 async function updateArticle_async(req){
-    // console.log(`req.session ${JSON.stringify(req.session)}`)
-    /*                  用户有权修改文档否                            */
+    // console.log(`update article in========>`)
+
     let tmpResult
     let userId=req.session.userId
     let articleId=req.body.values[e_part.RECORD_ID]
     let originalArticle
-    //查找id为文档，且作者为userid的记录，找不到说明不是作者，无权修改
+    let collName=e_coll.ARTICLE
+
+    /*              查找id为文档，且作者为userid的记录，找不到说明不是作者，无权修改            */
     let condition={}
     condition['_id']=articleId
     condition[e_field.ARTICLE.AUTHOR_ID]=userId
-    tmpResult=await  common_operation_model.find({dbModel:e_dbModel.article,condition:condition})
+    tmpResult=await  common_operation_model.find({dbModel:e_dbModel[collName],condition:condition})
     if(tmpResult.msg.length!==1){
         return Promise.reject(controllerError.notAuthorized)
     }
@@ -242,7 +301,7 @@ async function updateArticle_async(req){
     /*              client数据转换                  */
     let docValue=req.body.values[e_part.RECORD_INFO]
     dataConvert.convertCreateUpdateValueToServerFormat(docValue)
-    dataConvert.constructUpdateCriteria(docValue,fkConfig[e_coll.USER])
+    dataConvert.constructUpdateCriteria(docValue,fkConfig[collName])
 
     // let result=await common_operation_model.findById({dbModel:dbModel[e_coll.USER],id:objectId})
     // let userId=result.msg[e_field.USER.]
@@ -258,26 +317,11 @@ async function updateArticle_async(req){
 
 
     /*              检查外键字段的值是否存在                */
-    //分类和folder是直接输入objectId
-    if(undefined!==docValue[e_field.ARTICLE.CATEGORY_ID]){
-        tmpResult=await helper.ifFkValueExist_async({dbModel:e_dbModel.category,fkObjectId:docValue[e_field.ARTICLE.CATEGORY_ID]})
-        if(false===tmpResult.msg){
-            let chineseName=inputRule[e_coll.ARTICLE][e_field.ARTICLE.CATEGORY_ID]['chineseName']
-            let fieldInputValue=docValue[e_field.ARTICLE.CATEGORY_ID]
-            return Promise.reject(controllerError.fkValueNotExist(chineseName,fieldInputValue))
-        }
-    }
-    if(undefined!==docValue[e_field.ARTICLE.FOLDER_ID]){
-        tmpResult=await helper.ifFkValueExist_async({dbModel:e_dbModel.folder,fkObjectId:docValue[e_field.ARTICLE.FOLDER_ID]})
-        if(false===tmpResult.msg){
-            let chineseName=inputRule[e_coll.ARTICLE][e_field.ARTICLE.FOLDER_ID]['chineseName']
-            let fieldInputValue=docValue[e_field.ARTICLE.FOLDER_ID]
-            return Promise.reject(controllerError.fkValueNotExist(chineseName,fieldInputValue))
-        }
-    }
+    await helper.ifFkValueExist_async({docValue:docValue,collFkConfig:fkConfig[collName],collFieldChineseName:e_fieldChineseName[collName]})
+
 // console.log(`fk exist check done====>`)
 //     console.log(`docValue====>${JSON.stringify(docValue)}`)
-    // docValue
+
     /*              检测某些字段                  */
     //1. 如果content存在
     // 1.1 content进行sanity，sanity之后的结果失败，返回错误（而不是存入db）
@@ -287,12 +331,14 @@ async function updateArticle_async(req){
         if(sanityHtml(htmlContent)!==htmlContent){
             return Promise.reject(controllerError.htmlContentSanityFailed)
         }
+        // console.log(`sanity html done=======>`)
         let innerImageInArticle=htmlContent.match(regex.hashImageName)
+        // console.log(`innerImageInArticle=======>${JSON.stringify(innerImageInArticle)}`)
         let articleImageCondition={}
         articleImageCondition[e_field.ARTICLE_IMAGE.ARTICLE_ID]=articleId
         //读取article的所有图片文件信息
         tmpResult=await common_operation_model.find({dbModel:e_dbModel.article_image,condition:articleImageCondition})
-        if(innerImageInArticle.length>0){
+        if(null!==innerImageInArticle && innerImageInArticle.length>0){
 
         }
 
@@ -306,11 +352,11 @@ async function updateArticle_async(req){
             tmpResult=await common_operation_model.find({dbModel:e_dbModel.tag,condition:tmpCondition})
             //tag已经存在，用objectId替换掉原来的字符
             if(tmpResult.msg.length===1){
-                console.log(`tag exiust==========`)
+                // console.log(`tag exiust==========`)
                 docValue[e_field.ARTICLE.TAGS_ID][idx]=tmpResult.msg[0]['_id']
             }else{
             //tag 不存在，创建一个新的tag，并保存返回的objectId
-                console.log(`tag not exist==========`)
+            //     console.log(`tag not exist==========`)
                 tmpResult=await common_operation_model.create({dbModel:e_dbModel.tag,value:{name:docValue[e_field.ARTICLE.TAGS_ID][idx]}})
                 // console.log(`tag new create result==========${JSON.stringify(tmpResult)}`)
                 // console.log(`docValue not exit==========${JSON.stringify(docValue)}`)
@@ -326,9 +372,9 @@ async function updateArticle_async(req){
         condition={}
         condition[e_field.FOLDER.AUTHOR_ID]=userId
         condition['_id']=docValue[e_field.ARTICLE.FOLDER_ID]
-        console.log(`folder check=========>${JSON.stringify(condition)}`)
+        // console.log(`folder check=========>${JSON.stringify(condition)}`)
         tmpResult=await common_operation_model.find({dbModel:e_dbModel.folder,condition:condition})
-        console.log(`folder check result=========>${JSON.stringify(tmpResult)}`)
+        // console.log(`folder check result=========>${JSON.stringify(tmpResult)}`)
         if(tmpResult.msg.length!==1){
             return Promise.reject(controllerError.notAuthorizedFolder)
         }
@@ -336,13 +382,11 @@ async function updateArticle_async(req){
 
     /*              获得internal field，并进行检查                  */
     let internalValue={}
-    internalValue[e_field.ARTICLE.TAGS_ID]=docValue[e_field.ARTICLE.TAGS_ID]
-    if(e_env.DEV===currentEnv){
-        // console.log(`before newDocValue====>${JSON.stringify(internalValue)}`)
-        // let newDocValue=dataConvert.addSubFieldKeyValue(internalValue)
-        // console.log(`newDocValue====>${JSON.stringify(newDocValue)}`)
-        let tmpResult=helper.checkInternalValue({internalValue:internalValue,collInputRule:inputRule[e_coll.ARTICLE],collInternalRule:internalInputRule[e_coll.ARTICLE]})
-        console.log(`internalValue check result====>   ${JSON.stringify(tmpResult)}`)
+/*    if(undefined!==docValue[e_field.ARTICLE.TAGS_ID]){
+        internalValue[e_field.ARTICLE.TAGS_ID]=docValue[e_field.ARTICLE.TAGS_ID]
+    }*/
+    if(e_env.DEV===currentEnv && Object.keys(internalValue).length>0){
+        let tmpResult=helper.checkInternalValue({internalValue:internalValue,collInputRule:inputRule[collName],collInternalRule:internalInputRule[e_coll.ARTICLE]})
         if(tmpResult.rc>0){
             return Promise.reject(tmpResult)
         }
@@ -352,29 +396,66 @@ async function updateArticle_async(req){
 
 
     /*              如果有unique字段，需要预先检查unique(express级别，而不是mongoose级别)            */
-    if(undefined!==e_uniqueField[e_coll.ARTICLE]){
-        for(let singleFieldName in docValue){
-            if(-1!==e_uniqueField[e_coll.ARTICLE].indexOf(singleFieldName)){
-                let ifExist=await helper.ifFieldValueExistInColl_async({dbModel:e_dbModel.article,fieldName:singleFieldName,fieldValue:docValue[singleFieldName]})
-// console.log(`singleFieldName: ${singleFieldName}===fieldValue: ${docValue[singleFieldName]}===ifExist ${ifExist}`)
-                if(true===ifExist.msg){
-                    let chineseName=inputRule[e_coll.ARTICLE][singleFieldName]['chineseName']
-                    let fieldInputValue=docValue[singleFieldName]
-                    return Promise.reject(controllerError.fieldAlreadyExist(chineseName,fieldInputValue))
-                }
-            }
-        }
+    if(undefined!==e_uniqueField[collName] && e_uniqueField[collName].length>0) {
+        await helper.ifFiledInDocValueUnique_async({collName: collName, docValue: docValue})
     }
 
-
     /*              更新数据            */
-    tmpResult=await common_operation_model.update({dbModel:e_dbModel[e_coll.ARTICLE],id:articleId,values:docValue})
+    tmpResult=await common_operation_model.update({dbModel:e_dbModel[collName],id:articleId,values:docValue})
     return Promise.resolve({rc:0})
 
 }
 
 
+async function createComment_async(req){
+    console.log(`create comment in =====>`)
+    let tmpResult
+    let userId=req.session.userId
+    // let articleId=req.body.values[e_part.RECORD_ID]
+    let collName=e_coll.ARTICLE_COMMENT
+    // let originalArticle
 
+
+    /*              client数据转换                  */
+    let docValue=req.body.values[e_part.RECORD_INFO]
+    dataConvert.convertCreateUpdateValueToServerFormat(docValue)
+    dataConvert.constructUpdateCriteria(docValue,fkConfig[collName])
+
+    // let result=await common_operation_model.findById({dbModel:dbModel[e_coll.USER],id:objectId})
+    // let userId=result.msg[e_field.USER.]
+
+
+    /*              检查外键字段的值是否存在                */
+    await helper.ifFkValueExist_async({docValue:docValue,collFkConfig:fkConfig[collName],collFieldChineseName:e_fieldChineseName[collName]})
+
+
+
+    /*              获得internal field，并进行检查                  */
+    let internalValue={}
+    internalValue[e_field.ARTICLE_COMMENT.AUTHOR_ID]=userId
+    if(e_env.DEV===currentEnv && Object.keys(internalValue).length>0){
+        let tmpResult=helper.checkInternalValue({internalValue:internalValue,collInputRule:inputRule[collName],collInternalRule:internalInputRule[collName]})
+        // console.log(`internalValue check result====>   ${JSON.stringify(tmpResult)}`)
+        if(tmpResult.rc>0){
+            return Promise.reject(tmpResult)
+        }
+    }
+    //internal加入docValue
+    Object.assign(docValue,internalValue)
+
+console.log(`combined docValue is ${JSON.stringify(docValue)}`)
+    /*              如果有unique字段，需要预先检查unique(express级别，而不是mongoose级别)            */
+    if(undefined!==e_uniqueField[collName] && e_uniqueField[collName].length>0) {
+        await helper.ifFiledInDocValueUnique_async({collName: collName, docValue: docValue})
+    }
+
+
+    /*              创建数据            */
+    // let articleId=docValue[e_field.ARTICLE_COMMENT.ARTICLE_ID]
+    await common_operation_model.create({dbModel:e_dbModel[collName],value:docValue})
+    // tmpResult=await common_operation_model.update({dbModel:e_dbModel[collName],id:articleId,values:docValue})
+    return Promise.resolve({rc:0})
+}
 
 
 
@@ -717,7 +798,8 @@ async function generateCaptcha_async(req){
 
 
 module.exports={
-    dispatcher_async,
+    article_dispatcher_async,
+    comment_dispatcher_async,
     login_async,
     uniqueCheck_async,
     retrievePassword_async,

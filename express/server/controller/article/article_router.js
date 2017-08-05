@@ -20,7 +20,7 @@ const logic=require('./article_logic')
 * */
 router.post('/',function(req,res,next){
 
-    logic.dispatcher_async(req).then(
+    logic.article_dispatcher_async(req).then(
         (v)=>{
             console.log(`create   register   success, result:  ${JSON.stringify(v)}`)
             return res.json(v)
@@ -33,7 +33,22 @@ router.post('/',function(req,res,next){
     )
 })
 
+/*        通过method，判断是CRUDM中的那个操作(实际comment只有CREATE)
+ *   C: register
+ * */
+router.post('/comment',function(req,res,next){
 
+    logic.comment_dispatcher_async(req).then(
+        (v)=>{
+            console.log(`comment   success, result:  ${JSON.stringify(v)}`)
+            return res.json(v)
+        },
+        (err)=>{
+            console.log(`comment  fail: ${JSON.stringify(err)}`)
+            return res.json(genFinalReturnResult(err))
+        }
+    )
+})
 
 
 

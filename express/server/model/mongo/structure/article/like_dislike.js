@@ -40,8 +40,8 @@ const collName='like_dislike'
 
 const collFieldDefine={
 
-    authorId:{type:mongoose.Schema.Types.ObjectId,ref:"user"}, //
-    articleId:{type:mongoose.Schema.Types.ObjectId,ref:"article"}, //
+    authorId:{type:mongoose.Schema.Types.ObjectId,ref:"user"}, //复合unique
+    articleId:{type:mongoose.Schema.Types.ObjectId,ref:"article"}, //复合unique
     like:{type:Boolean},
     cDate:{type:Date,default:Date.now},
     uDate:{type:Date,default:Date.now},
@@ -78,6 +78,8 @@ const collSchema=new mongoose.Schema(
     mongoSetting.schemaOptions
 )
 
+/*          复合unique index，一个用户对一个文档只能发表一次          */
+collSchema.index({authorId: 1, articleId: 1}, {unique: true});
 /*const departmentSchema=new mongoose.Schema(
     fieldDefine['department'],
     schemaOptions

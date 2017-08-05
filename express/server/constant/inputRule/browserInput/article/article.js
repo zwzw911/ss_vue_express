@@ -67,6 +67,12 @@ const article= {
         'arrayMaxLength': {define: maxNumber.article.tagNumberPerArticle, error: {rc: 10123}, mongoError: {rc: 20123, msg: `最多设置${maxNumber.article.tagNumberPerArticle}标签`}},
         'format': {define: regex.tagName, error: {rc: 10124}, mongoError: {rc: 20124, msg: '文档标签必须是objectId'}} //server端使用
     },
+    categoryId: {
+        'chineseName': '分类',
+        'type': serverDataType.OBJECT_ID,
+        'require': {define: true, error: {rc: 10130}, mongoError: {rc: 20130, msg: '文档分类不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        'format': {define: regex.objectId, error: {rc: 10132}, mongoError: {rc: 20132, msg: '文档分类必须是objectId'}} //server端使用
+    },
 }
 
 module.exports={

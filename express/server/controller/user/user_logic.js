@@ -83,6 +83,8 @@ const handleSystemError=require('../../function/assist/system').handleSystemErro
 const systemError=require('../../constant/error/systemError').systemError
 
 const controllerError={
+    /*              common                          */
+
     nameAlreadyExists:{rc:50100,msg:`用户名已经存在`}, //key名字必须固定为 field+AlreadyExists
     accountAlreadyExists:{rc:50102,msg:`账号已经存在`},
     fieldNotSupport:{rc:50104,msg:`字段名称不正确`},
@@ -117,12 +119,12 @@ const controllerError={
 async function dispatcher_async(req){
     //检查格式
     // console.log(`req is ${JSON.stringify(req.cookies)}`)
-    // console.log(`dispatcher in`)
+    console.log(`dispatcher in`)
     // console.log(`req.body.values ${JSON.stringify(req.body.values)}`)
-    let expectUserState,expectedPart,collName=e_coll.USER,tmpResult
+    let collName=e_coll.USER,tmpResult
 
     //dispatcher只检测req的结构，以及req中method的格式和值，以便后续可以直接根据method进行调用
-    tmpResult=helper.dispatcherPreCheck({req:req})
+    tmpResult=helper.checkMethod({req:req})
     if(tmpResult.rc>0){
         return Promise.reject(tmpResult)
     }
@@ -132,22 +134,24 @@ async function dispatcher_async(req){
     let method=req.body.values[e_part.METHOD]
     delete req.body.values[e_part.METHOD]
 
-
+    let userLoginCheck,penalizeCheck,expectedPart
     switch (method){
         case e_method.CREATE: //create
             // console.log(`create in`)
-            //首先检查method是否存在，且格式/值是否正确。不同的method可能对应不同的参数配置
 
-            expectedPart=[e_part.RECORD_INFO]//无需method
-            //因为dispatch而已经检查过req的总体结构，所以无需再次检查，而直接检查partValueFormat+partValueCheck
-            // tmpResult=helper.CRUDPreCheck({req:req,expectUserState:expectUserState,expectedPart:expectedPart,collName:collName,method:method})
-            tmpResult=helper.CRUDPreCheck({req:req,expectedPart:expectedPart,collName:collName,method:method})
-            // console.log(`create preCheck tmpResult ${JSON.stringify(tmpResult)}`)
-            if(tmpResult.rc>0){
-                return Promise.reject(tmpResult)
+            userLoginCheck={
+                needCheck:false,
+                // error:controllerError.userNotLoginCantCreateComment
             }
-
-
+            penalizeCheck={
+/*                penalizeType:e_penalizeType.NO_ARTICLE,
+                penalizeSubType:e_penalizeSubType.CREATE,
+                penalizeCheckError:controllerError.userInPenalizeNoCommentCreate*/
+            }
+            expectedPart=[e_part.RECORD_INFO]
+            // console.log(`before precheck done=====.`)
+            await helper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
+// console.log(`precheck done=====.`)
 
             tmpResult=await createUser_async(req)
             // console.log(`create  tmpResult ${JSON.stringify(tmpResult)}`)
@@ -155,37 +159,40 @@ async function dispatcher_async(req){
         case e_method.SEARCH:// search
             break;
         case e_method.UPDATE: //update
-
-            // console.log(`req.session update is ${JSON.stringify(req.session)}`)
-            expectedPart=[e_part.RECORD_INFO]//无需method
-            //因为dispatch而已经检查过req的总体结构，所以无需再次检查，而直接检查sess+partValueFormat+partValueCheck
-            tmpResult=helper.CRUDPreCheck({req:req,expectUserState:expectUserState,expectedPart:expectedPart,collName:collName,method:method})
-            // console.log(`create preCheck tmpResult ${JSON.stringify(tmpResult)}`)
-            if(tmpResult.rc>0){
-                return Promise.reject(tmpResult)
+            userLoginCheck={
+                needCheck:false,
+                // error:controllerError.userNotLoginCantCreateComment
             }
-
-            // expectUserState=e_userState.LOGIN
-            //检查是否登录（以便从session中获得对应的userId）
-            if(false===ifUserLogin(req)){
-                // console.log(`user login=======`)
-                return Promise.reject(controllerError.notLogin)
+            penalizeCheck={
+                /*                penalizeType:e_penalizeType.NO_ARTICLE,
+                                penalizeSubType:e_penalizeSubType.CREATE,
+                                penalizeCheckError:controllerError.userInPenalizeNoCommentCreate*/
             }
+            expectedPart=[e_part.RECORD_INFO]
+            // console.log(`before precheck done=====.`)
+            await helper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
             // console.log(`req.session indisp ${JSON.stringify(req.session)}`)
             tmpResult=await updateUser_async(req)
             break;
         case e_method.DELETE: //delete
             break;
         case e_method.MATCH: //match(login_async)
-            // console.log(`req.session login is ${JSON.stringify(req.session)}`)
-            expectUserState=e_userState.NO_SESS
-            expectedPart=[e_part.RECORD_INFO]
-            tmpResult=helper.CRUDPreCheck({req:req,expectUserState:expectUserState,expectedPart:expectedPart,collName:collName,method:method})
-            // console.log(`match CRUDPreCheck ${JSON.stringify(tmpResult)}`)
-            if(tmpResult.rc>0){
-                return Promise.reject(tmpResult)
+            userLoginCheck={
+                needCheck:false,
+                // error:controllerError.userNotLoginCantCreateComment
             }
+            penalizeCheck={
+                /*                penalizeType:e_penalizeType.NO_ARTICLE,
+                                penalizeSubType:e_penalizeSubType.CREATE,
+                                penalizeCheckError:controllerError.userInPenalizeNoCommentCreate*/
+            }
+            expectedPart=[e_part.RECORD_INFO]
+            // console.log(`before precheck done=====.`)
+            await helper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
             tmpResult=await login_async(req)
+            break;
+        default:
+            console.log(`======>ERR:Wont in cause method check before`)
             // console.log(`match tmpResult ${JSON.stringify(tmpResult)}`)
     }
     
@@ -197,48 +204,26 @@ async function dispatcher_async(req){
 //对数值逻辑进行判断（外键是否有对应的记录等）
 //执行db操作并返回结果
 async  function createUser_async(req){
+    // console.log(`create user in`)
+    let collName=e_coll.USER
 /*                      logic                               */
     let docValue=req.body.values[e_part.RECORD_INFO]
-    // console.log(`docValue ${JSON.stringify(docValue)}`)
+// console.log(`docValue===> ${JSON.stringify(docValue)}`)
 
     /*              参数转为server格式            */
     dataConvert.convertCreateUpdateValueToServerFormat(docValue)
     dataConvert.constructCreateCriteria(docValue)
-
+console.log(`docValue===> ${JSON.stringify(docValue)}`)
     /*      因为name是unique，所以要检查用户名是否存在(unique check)     */
-    // let field=e_field.USER.NAME
-    for(let singleFieldName in docValue){
-        if(-1!==e_uniqueField[e_coll.USER].indexOf(singleFieldName)){
-            // console.log(`ifExist in=============`)
-            let ifExist=await helper.ifFieldValueExistInColl_async({dbModel:dbModel[e_coll.USER],fieldName:singleFieldName,fieldValue:docValue[singleFieldName]})
-            // console.log(`ifExist ${JSON.stringify(ifExist)}`)
-            if(true===ifExist.msg){
-                switch (singleFieldName) {
-                    case e_field.USER.NAME:
-                        return Promise.reject(controllerError.nameAlreadyExists)
-                    case e_field.USER.ACCOUNT:
-                        return Promise.reject(controllerError.accountAlreadyExists)
-                }
-            }
-        }
-    }
-    let condition={name:docValue[e_field.USER.NAME]} //,dDate:{$exists:0}   重复性检查包含已经删除的用户
-    let docStatusTmpResult=await common_operation_model.find({dbModel:dbModel.user,condition:condition})
-
-    if(docStatusTmpResult.rc>0){
-        return Promise.reject(docStatusTmpResult)
-    }
-    // console.log(`docStatusTmpResult ${JSON.stringify(docStatusTmpResult)}`)
-    // console.log(`docStatusTmpResult.msg[0] ${JSON.stringify(docStatusTmpResult.msg[0])}`)
-    // let existRecord=docStatusTmpResult.msg[0]
-    //因为coll有外键，所有还要进一步检查重复的记录的状态是否为done
-    if(docStatusTmpResult.msg[0] && e_docStatus.DONE===docStatusTmpResult.msg[0][e_field.USER.DOC_STATUS]){
-        // console.log(`inini`)
-        return Promise.reject(mongoError.common.uniqueFieldValue(e_coll.USER,e_field.USER.NAME,docValue[e_field.USER.NAME]))
+    if(undefined!==e_uniqueField[collName] &&  e_uniqueField[collName].length>0) {
+        await helper.ifFiledInDocValueUnique_async({collName: collName, docValue: docValue})
     }
 
-    let tmpResult
+
     //如果用户在db中存在，但是创建到一半，则删除用户(然后重新开始流程)
+    let tmpResult
+    let condition={name:docValue[e_field.USER.NAME]}
+    let docStatusTmpResult=await common_operation_model.find({dbModel:dbModel.user,condition:condition})
     if(docStatusTmpResult.msg[0] && e_docStatus.PENDING===docStatusTmpResult.msg[0][e_field.USER.DOC_STATUS]){
         tmpResult=await common_operation_model.deleteOne({dbModel:dbModel.user,condition:condition})
         // onsole.log(`docStatusTmpResult ${JSON.stringify(docStatusTmpResult)}`)
@@ -266,7 +251,8 @@ async  function createUser_async(req){
     let internalValue={}
     let sugarLength=5 //1~10
     let sugar=generateRandomString(sugarLength)
-    // console.log(`sugar init ${sugar}`)
+// console.log(`password =======> ${docValue[e_field.USER.PASSWORD]}`)
+// console.log(`sugar =======> ${sugar}`)
     tmpResult=hash(`${docValue[e_field.USER.PASSWORD]}${sugar}`,e_hashType.SHA256)
     // console.log(`hash   ${JSON.stringify(tmpResult)}`)
     if(tmpResult.rc>0){
@@ -351,7 +337,7 @@ async  function createUser_async(req){
 async function updateUser_async(req){
     // console.log(`req.session ${JSON.stringify(req.session)}`)
     /*                  要更改的记录的owner是否为发出req的用户本身                            */
-    let tmpResult
+    let tmpResult,collName=e_coll.USER
     let userId=req.session.userId
     if(undefined===req.session.userId){
         return Promise.reject(controllerError.notLogin)
@@ -415,10 +401,13 @@ async function updateUser_async(req){
     if(0===Object.keys(docValue).length){
         return {rc:0}
     }
-    // console.log(`after check ${JSON.stringify(docValue)}`)
-
+    console.log(`after check =========>${JSON.stringify(docValue)}`)
+    console.log(`collName =========>${JSON.stringify(collName)}`)
     /*              如果有unique字段，需要预先检查unique            */
-    if(undefined!==e_uniqueField[e_coll.USER]) {
+    if(undefined!==e_uniqueField[collName] && e_uniqueField[collName].length>0) {
+        await helper.ifFiledInDocValueUnique_async({collName: collName, docValue: docValue})
+    }
+    /*if(undefined!==e_uniqueField[e_coll.USER]) {
         for (let singleFieldName in docValue) {
             if (-1 !== e_uniqueField[e_coll.USER].indexOf(singleFieldName)) {
                 let ifExist = await helper.ifFieldValueExistInColl_async({
@@ -432,7 +421,7 @@ async function updateUser_async(req){
                 }
             }
         }
-    }
+    }*/
 
     /*              如果是更新account，
     1. 检测account是否存在usedAccount中，存在，不做任何操作
@@ -523,10 +512,11 @@ async function login_async(req){
     if(sugarTmpResult.rc>0){
         return Promise.reject(sugarTmpResult)
     }
-    // console.log(`sugarTmpResult ${JSON.stringify(sugarTmpResult)}`)
+// console.log(`password ====> ${JSON.stringify(docValue[e_field.USER.PASSWORD])}`)
+// console.log(`sugar====> ${JSON.stringify(sugarTmpResult.msg[0][e_field.SUGAR.SUGAR])}`)
 
     let encryptPassword=hash(`${docValue[e_field.USER.PASSWORD]}${sugarTmpResult.msg[0][e_field.SUGAR.SUGAR]}`,e_hashType.SHA256)
-    // console.log(`encryptPassword ${JSON.stringify(encryptPassword)}`)
+// console.log(`encryptPassword======> ${JSON.stringify(encryptPassword)}`)
     if(encryptPassword.rc>0){
         return Promise.reject(encryptPassword)
     }
@@ -551,7 +541,7 @@ async function login_async(req){
 async  function  uniqueCheck_async(req) {
     // console.log(`unique check is ${JSON.stringify(req.body.values)} `)
 
-
+let collName=e_coll.USER
     let tmpResult=helper.nonCRUDreCheck({
         req:req,
         expectUserState:e_userState.NO_SESS,
@@ -571,9 +561,9 @@ async  function  uniqueCheck_async(req) {
     // dataConvert.constructCreateCriteria(docValue)
 // console.log(`docValue ${JSON.stringify(docValue)}`)
 
-    //读取字段名，进行不同的操作（userUnique或者passowrd格式）
+    //读取字段名，进行不同的操作（userUnique或者passowrd格式,只支持一个field）
     let fieldName=Object.keys(docValue)[0]
-    let fieldValue=Object.values(docValue)[0]
+    // let fieldValue=Object.values(docValue)[0]
     // let condition
     // let uniqueCheck_asynctmpResult
 // console.log(`fieldName ${fieldName}`)
@@ -583,15 +573,8 @@ async  function  uniqueCheck_async(req) {
         return Promise.reject(controllerError.fieldNotSupport)
     }
 // console.log(`indexof check done`)
-    let ifAlreadyExist=await helper.ifFieldValueExistInColl_async({dbModel:dbModel[e_coll.USER],fieldName:fieldName,fieldValue:fieldValue})
-    // console.log(`ifAlreadyExist ${ifAlreadyExist}`)
-    if(true===ifAlreadyExist.msg){
-        switch (fieldName) {
-            case e_field.USER.NAME:
-                return Promise.reject(controllerError.nameAlreadyExists)
-            case e_field.USER.ACCOUNT:
-                return Promise.reject(controllerError.accountAlreadyExists)
-        }
+    if(undefined!==e_uniqueField[collName] &&  e_uniqueField[collName].length>0) {
+        await helper.ifFiledInDocValueUnique_async({collName: collName, docValue: docValue})
     }
 
 

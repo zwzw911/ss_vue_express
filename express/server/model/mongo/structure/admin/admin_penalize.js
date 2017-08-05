@@ -68,7 +68,9 @@ const collFieldDefine={
     punishedId:{type:mongoose.Schema.Types.ObjectId,ref:"user"},
     reason:{type:String},
     penalizeType:{type:String,}, //enum只能支持string，不支持Number
-    duration:{type:Number},
+    penalizeSubType:{type:String,}, //CRUD和其它
+    duration:{type:Number}, //单位：天
+// isExpire:{type:Boolean},//处罚是否结束，通过virtual method判断
     cDate:{type:Date,default:Date.now},
     uDate:{type:Date,default:Date.now},
     dDate:{type:Date},
@@ -82,6 +84,8 @@ if(mongoSetting.configuration.setBuildInValidatorFlag){
 
 
 console.log(`after: ${JSON.stringify(collFieldDefine)}`)
+
+
 /*
 * 根据define/validateRule/validateRule的rule设置schema的rule
 * */
@@ -104,6 +108,13 @@ const collSchema=new mongoose.Schema(
     mongoSetting.schemaOptions
 )
 
+collSchema.virtual('isExpire').get(function(){
+    // console.log(`cDate=======>${this.cDate.getTime()}`)
+    // console.log(`cDate=======>${this.cDate.getTime()+this.duration*24*60*60*1000}`)
+    // console.log(`now  =======>${Date.now()}`)
+    // console.log(`result===>${(this.cDate.getTime()+this.duration*24*60*1000)<(Date.now())}`)
+    return (this.cDate.getTime()+this.duration*86400000)<Date.now()
+})
 /*const departmentSchema=new mongoose.Schema(
     fieldDefine['department'],
     schemaOptions

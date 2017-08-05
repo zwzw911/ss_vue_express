@@ -39,10 +39,15 @@ const admin_penalize= {
     penalizeType: {
         'chineseName': '受罚类型',
         'type': serverDataType.STRING,
-        'require': {define: true, error: {rc: 10090}, mongoError: {rc: 20090, msg: '受罚类型不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
-        'enum':{define:enumValue.PenalizeType,error:{rc:10092},mongoError:{rc:20092,msg:'受罚类型不正确'}},//server端使用
+        'require': {define: true, error: {rc: 10089}, mongoError: {rc: 20089, msg: '受罚类型不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        'enum':{define:enumValue.PenalizeType,error:{rc:10090},mongoError:{rc:20090,msg:'受罚类型不正确'}},//server端使用
     },
-
+    penalizeSubType: {
+        'chineseName': '受罚子类型',
+        'type': serverDataType.STRING,
+        'require': {define: true, error: {rc: 10091}, mongoError: {rc: 20091, msg: '受罚子类型不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        'enum':{define:enumValue.PenalizeSubType,error:{rc:10092},mongoError:{rc:20092,msg:'受罚子类型不正确'}},//server端使用
+    },
     //user priority
     duration: {
         'chineseName': '受罚时长',

@@ -9,6 +9,7 @@ const Field={
         PUNISHED_ID:'punishedId',
         REASON:'reason',
         PENALIZE_TYPE:'penalizeType',
+        PENALIZE_SUB_TYPE:'penalizeSubType',
         DURATION:'duration',
     },
     ADMIN_SUGAR:{

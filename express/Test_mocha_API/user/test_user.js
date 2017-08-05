@@ -10,6 +10,8 @@ const assert=require('assert')
 
 const e_part=require('../../server/constant/enum/node').ValidatePart
 const e_method=require('../../server/constant/enum/node').Method
+const e_coll=require('../../server/constant/enum/DB_Coll').Coll
+const e_field=require('../../server/constant/enum/DB_field').Field
 
 const common_operation_model=require('../../server/model/mongo/operation/common_operation_model')
 const dbModel=require('../../server/model/mongo/dbModel')
@@ -20,7 +22,7 @@ const browserInputRule=require('../../server/constant/inputRule/browserInputRule
 const validateError=require('../../server/constant/error/validateError').validateError
 const helpError=require('../../server/constant/error/controller/helperError').helper
 
-const contollerError=require('../../server/controller/user/user_logic').controllerError
+const controllerError=require('../../server/controller/user/user_logic').controllerError
 
 const objectDeepCopy=require('../../server/function/assist/misc').objectDeepCopy
 
@@ -182,7 +184,7 @@ describe('user(register) rule check', function() {
 
 
 
-describe('user(register) correct value:', function() {
+describe('user1(register) correct value:', function() {
     let data={values:{recordInfo:{},method:e_method.CREATE}},url=``,finalUrl=baseUrl+url
     before('delete exist user1', async function(){
         /*              清理已有数据              */
@@ -223,7 +225,7 @@ describe('user(register) correct value:', function() {
 
 })
 
-describe('user(register) unique check:', function() {
+describe('user1(register) unique check:', function() {
     let data = {values: {recordInfo: {}, method: e_method.CREATE}}, url = ``, finalUrl = baseUrl + url
     it('register unique name check fail', function(done) {
         data.values[e_part.RECORD_INFO]=testData.user.user1//
@@ -234,7 +236,7 @@ describe('user(register) unique check:', function() {
 
                 let parsedRes=JSON.parse(res.text)
                 console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,contollerError.nameAlreadyExists.rc)
+                assert.deepStrictEqual(parsedRes.rc, helpError.fieldValueUniqueCheckError({collName:e_coll.USER, fieldName:e_field.USER.NAME}).rc)
                 // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
                 done();
             });
@@ -251,7 +253,7 @@ describe('user(register) unique check:', function() {
 
                 let parsedRes=JSON.parse(res.text)
                 console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,contollerError.accountAlreadyExists.rc)
+                assert.deepStrictEqual(parsedRes.rc,helpError.fieldValueUniqueCheckError({collName:e_coll.USER, fieldName:e_field.USER.ACCOUNT}).rc)
                 // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
                 done();
             });
@@ -269,7 +271,7 @@ describe('POST /user/uniqueCheck_async ', function() {
 
                 let parsedRes=JSON.parse(res.text)
                 console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,contollerError.nameAlreadyExists.rc)
+                assert.deepStrictEqual(parsedRes.rc,helpError.fieldValueUniqueCheckError({collName:e_coll.USER, fieldName:e_field.USER.NAME}).rc)
                 // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
                 done();
             });
@@ -283,7 +285,7 @@ describe('POST /user/uniqueCheck_async ', function() {
 
                 let parsedRes=JSON.parse(res.text)
                 console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,contollerError.accountAlreadyExists.rc)
+                assert.deepStrictEqual(parsedRes.rc,helpError.fieldValueUniqueCheckError({collName:e_coll.USER, fieldName:e_field.USER.ACCOUNT}).rc)
                 // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
                 done();
             });
@@ -297,7 +299,7 @@ describe('POST /user/uniqueCheck_async ', function() {
 
                 let parsedRes=JSON.parse(res.text)
                 console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,contollerError.fieldNotSupport.rc)
+                assert.deepStrictEqual(parsedRes.rc,controllerError.fieldNotSupport.rc)
                 // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
                 done();
             });
@@ -336,7 +338,7 @@ describe('user1 login:', function() {
 
                 let parsedRes=JSON.parse(res.text)
                 console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,contollerError.accountNotExist.rc)
+                assert.deepStrictEqual(parsedRes.rc,controllerError.accountNotExist.rc)
                 // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
                 done();
             });
@@ -358,7 +360,7 @@ describe('user1 login:', function() {
 
                 let parsedRes=JSON.parse(res.text)
                 console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,contollerError.accountPasswordNotMatch.rc)
+                assert.deepStrictEqual(parsedRes.rc,controllerError.accountPasswordNotMatch.rc)
                 // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
                 done();
             });
@@ -374,7 +376,7 @@ describe('user1 login:', function() {
 
                 let parsedRes=JSON.parse(res.text)
                 console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,contollerError.loginFieldNumNotExpected.rc)
+                assert.deepStrictEqual(parsedRes.rc,controllerError.loginFieldNumNotExpected.rc)
                 // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
                 done();
             });
@@ -391,7 +393,7 @@ describe('user1 login:', function() {
 
                 let parsedRes=JSON.parse(res.text)
                 console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,contollerError.loginMandatoryFieldNotExist('field').rc)
+                assert.deepStrictEqual(parsedRes.rc,controllerError.loginMandatoryFieldNotExist('field').rc)
                 // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
                 done();
             });
@@ -586,7 +588,7 @@ describe('update user： ', function() {
 
 
 
-    it('testData.user.user2(register)  correct value', function(done) {
+    it('user2(register)  correct value', function(done) {
         data.values.method=e_method.CREATE
         data.values[e_part.RECORD_INFO]=testData.user.user2//
         request(app).post(finalUrl).set('Accept', 'application/json').send(data)
@@ -601,7 +603,7 @@ describe('update user： ', function() {
             });
     });
 
-    it('update testData.user.user1 name with same account as testData.user.user2', function(done) {
+    it('update user1  with same account as user2', function(done) {
         let user1UpdateTmp=objectDeepCopy(testData.user.user2)
         delete user1UpdateTmp['name']
         delete user1UpdateTmp['password']
@@ -613,7 +615,7 @@ describe('update user： ', function() {
                 // console.log(`res ${JSON.stringify(res['header']['set-cookie']['connect.sid'])}`)
                 let parsedRes=JSON.parse(res.text)
                 console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,contollerError.accountAlreadyExists.rc)
+                assert.deepStrictEqual(parsedRes.rc,helpError.fieldValueUniqueCheckError({collName:e_coll.USER,fieldName:e_field.USER.ACCOUNT}).rc)
                 // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
                 done();
             });
@@ -643,7 +645,7 @@ describe('update user： ', function() {
                 // console.log(`res ${JSON.stringify(res['header']['set-cookie']['connect.sid'])}`)
                 let parsedRes=JSON.parse(res.text)
                 console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,contollerError.accountCantChange.rc)
+                assert.deepStrictEqual(parsedRes.rc,controllerError.accountCantChange.rc)
                 // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
                 done();
             });
@@ -665,7 +667,7 @@ describe('update user： ', function() {
             });
     })
 
-    after('delete new create testData.user.user2', async function() {
+    after('delete new create user2', async function() {
         let user2ModelTmp=objectDeepCopy(testData.user.user2ForModel)
         delete user2ModelTmp['name']
         delete user2ModelTmp['password']
@@ -689,7 +691,7 @@ describe('update user： ', function() {
 describe('retrieve password: ', function() {
     let data = {values:{}}, url = '', finalUrl = baseUrl + url,sess
     // let sess
-    it('create new user3)', function(done) {
+    it('create new user3', function(done) {
         data.values.method=e_method.CREATE
         data.values[e_part.RECORD_INFO]=testData.user.user3//
         request(app).post(finalUrl).set('Accept', 'application/json').send(data)
@@ -859,7 +861,7 @@ describe('captcha: ', function() {
 
                 let parsedRes=JSON.parse(res.text)
                 console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,contollerError.intervalBetween2CaptchaTooShort.rc)
+                assert.deepStrictEqual(parsedRes.rc,controllerError.intervalBetween2CaptchaTooShort.rc)
                 // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
                 done();
             });

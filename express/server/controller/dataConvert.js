@@ -204,10 +204,10 @@ const constructUpdateCriteria=function(formattedValues,singleCollFKConfig){
             formattedValues['$unset'][key]=1
             delete formattedValues[key]
             //检查当前键是否有对应的外键设置，有的话删除对应的冗余字段
-            if(true=== key in singleCollFKConfig){
+/*            if(true=== key in singleCollFKConfig){
                 let redundancyField=singleCollFKConfig[key]['nestedPrefix']
                 formattedValues['$unset'][redundancyField]=1
-            }
+            }*/
         }
     }
     //console.log(`constructUpdateCriteria result is ${JSON.stringify(formattedValues)}`)

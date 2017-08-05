@@ -6,8 +6,8 @@ const iniSettingObjectId={
 
 },
 "category":{
-"other":"598074ef938c7a1a40c91106",
-"LTE_A":"598074ef938c7a1a40c91107"}
+"other":"5984286775f3cf01f0767440",
+"LTE_A":"5984286775f3cf01f0767441"}
 }
 module.exports={
     iniSettingObjectId,

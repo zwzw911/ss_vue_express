@@ -11,6 +11,9 @@ const assert=require('assert')
 const e_part=require('../../server/constant/enum/node').ValidatePart
 const e_method=require('../../server/constant/enum/node').Method
 const e_field=require('../../server/constant/enum/DB_field').Field
+const e_coll=require('../../server/constant/enum/DB_Coll').Coll
+const e_penalizeType=require('../../server/constant/enum/mongo').PenalizeType.DB
+const e_penalizeSubType=require('../../server/constant/enum/mongo').PenalizeSubType.DB
 
 const common_operation_model=require('../../server/model/mongo/operation/common_operation_model')
 const e_dbModel=require('../../server/model/mongo/dbModel')
@@ -38,8 +41,13 @@ describe('prepare:', function() {
 
 
     it('remove all record', async function(){
+        let skipColl=[e_coll.STORE_PATH,e_coll.CATEGORY]
         for(let singleDbModel of dbModelInArray){
-            await common_operation_model.removeAll({dbModel:singleDbModel})
+            if(-1===skipColl.indexOf(singleDbModel.modelName)){
+                console.log(`model name======>${singleDbModel.modelName}`)
+                await common_operation_model.removeAll({dbModel:singleDbModel})
+            }
+
         }
     });
 
@@ -78,7 +86,7 @@ describe('prepare:', function() {
 
 
 
-describe('create new article and update: ', async function() {
+describe('create new article and update, then create new comment: ', async function() {
     let url = '', finalUrl = baseUrl + url
 
     let newArticleId,folder2
@@ -95,7 +103,7 @@ describe('create new article and update: ', async function() {
         request.agent(app).post('/user/').set('Accept', 'application/json').send(data)
             .end(function(err, res) {
                 // if (err) return done(err);
-                // console.log(`res ${JSON.stringify(res['header']['set-cookie'][0])}`)
+                console.log(`sess ======> ${JSON.stringify(res['header']['set-cookie'][0])}`)
                 sess1=res['header']['set-cookie'][0].split(';')[0]
                 let parsedRes=JSON.parse(res.text)
                 console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
@@ -125,6 +133,35 @@ describe('create new article and update: ', async function() {
                 // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
                 done();
             });
+    })
+    before('insert user2 penalize for both article and comment',async  function() {
+        // console.log(`testData.user.user1 ${JSON.stringify(testData.user.user1)}`)
+        let user1Tmp={}
+        user1Tmp[e_field.USER.ACCOUNT]=testData.user.user2[e_field.USER.ACCOUNT]
+        user1Tmp[e_field.USER.PASSWORD]=testData.user.user2[e_field.USER.PASSWORD]
+
+        let condition={}
+        condition[e_field.USER.ACCOUNT]=testData.user.user2[e_field.USER.ACCOUNT]['value']
+        let tmpResult=await common_operation_model.find({dbModel:e_dbModel.user,condition:condition})
+
+        let value={}
+        value[e_field.ADMIN_PENALIZE.PUNISHED_ID]=tmpResult.msg[0]['_id']
+        value[e_field.ADMIN_PENALIZE.CREATOR_ID]=tmpResult.msg[0]['_id']
+        value[e_field.ADMIN_PENALIZE.REASON]=`test user2 penalize`
+        value[e_field.ADMIN_PENALIZE.DURATION]=1
+
+        //use2 penalize create article
+        value[e_field.ADMIN_PENALIZE.PENALIZE_TYPE]=e_penalizeType.NO_ARTICLE
+        value[e_field.ADMIN_PENALIZE.PENALIZE_SUB_TYPE]=e_penalizeSubType.CREATE
+        await common_operation_model.create({dbModel:e_dbModel.admin_penalize,value:value})
+
+        //use2 penalize create article
+        value[e_field.ADMIN_PENALIZE.PENALIZE_TYPE]=e_penalizeType.NO_COMMENT
+        value[e_field.ADMIN_PENALIZE.PENALIZE_SUB_TYPE]=e_penalizeSubType.CREATE
+        await common_operation_model.create({dbModel:e_dbModel.admin_penalize,value:value})
+
+        // done()
+        // return Promise.resolve({rc:0})
     })
     before('get user2 folder',async  function() {
         // console.log(`testData.user.user1 ${JSON.stringify(testData.user.user1)}`)
@@ -239,6 +276,26 @@ describe('create new article and update: ', async function() {
                 done();
             });
     });
+    it('update article with not exist field', function(done) {
+        data.values={}
+        data.values[e_part.RECORD_ID]=newArticleId
+        data.values[e_part.METHOD]=e_method.UPDATE
+        data.values[e_part.RECORD_INFO]={}
+        data.values[e_part.RECORD_INFO]['notExist']={}
+        data.values[e_part.RECORD_INFO]['notExist']['value']=''
+        console.log(`docvalues====>${JSON.stringify(data.values)}`)
+        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[sess1]).send(data)
+            .end(function(err, res) {
+                // if (err) return done(err);
+                // console.log(`res ios ${JSON.stringify(res)}`)
+                let parsedRes=JSON.parse(res.text)
+                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
+                assert.deepStrictEqual(parsedRes.rc,validateError.validateFormat.recordInfoFiledRuleNotDefine.rc)
+                // assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.require.error.rc)
+                done();
+            });
+    });
+
 
     it('update article not user owner', function(done) {
         data.values={}
@@ -311,7 +368,25 @@ describe('create new article and update: ', async function() {
                 // console.log(`res ios ${JSON.stringify(res)}`)
                 let parsedRes=JSON.parse(res.text)
                 console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes['rc'],contollerError.fkValueNotExist().rc)
+                // assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.require.error.rc)
+                done();
+            });
+    });
+    it('update article with non exist category id', function(done) {
+        data.values={}
+        data.values[e_part.RECORD_ID]=newArticleId
+        data.values[e_part.METHOD]=e_method.UPDATE
+        data.values[e_part.RECORD_INFO]={}
+        data.values[e_part.RECORD_INFO][e_field.ARTICLE.CATEGORY_ID]={}
+        data.values[e_part.RECORD_INFO][e_field.ARTICLE.CATEGORY_ID]['value']=newArticleId
+        console.log(`docvalues====>${JSON.stringify(data.values)}`)
+        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[sess1]).send(data)
+            .end(function(err, res) {
+                // if (err) return done(err);
+                // console.log(`res ios ${JSON.stringify(res)}`)
+                let parsedRes=JSON.parse(res.text)
+                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
+                assert.deepStrictEqual(parsedRes['rc'],helpError.fkValueNotExist().rc)
                 // assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.require.error.rc)
                 done();
             });
@@ -331,6 +406,132 @@ describe('create new article and update: ', async function() {
                 let parsedRes=JSON.parse(res.text)
                 console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
                 assert.deepStrictEqual(parsedRes['rc'],contollerError.notAuthorizedFolder.rc)
+                // assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.require.error.rc)
+                done();
+            });
+    });
+
+    it('update article with attachment exist while server delete attachment due to it is internal field', function(done) {
+        data.values={}
+        data.values[e_part.RECORD_ID]=newArticleId
+        data.values[e_part.METHOD]=e_method.UPDATE
+        data.values[e_part.RECORD_INFO]={}
+        data.values[e_part.RECORD_INFO][e_field.ARTICLE.HTML_CONTENT]={}
+        data.values[e_part.RECORD_INFO][e_field.ARTICLE.HTML_CONTENT]['value']='update article with attachment exist'
+        data.values[e_part.RECORD_INFO][e_field.ARTICLE.ARTICLE_ATTACHMENTS_ID]={}
+        data.values[e_part.RECORD_INFO][e_field.ARTICLE.ARTICLE_ATTACHMENTS_ID]['value']=['59817e549a1a3a4bac3a55f7']
+        data.values[e_part.RECORD_INFO][e_field.ARTICLE.ARTICLE_IMAGES_ID]={}
+        data.values[e_part.RECORD_INFO][e_field.ARTICLE.ARTICLE_IMAGES_ID]['value']=['59817e549a1a3a4bac3a55f7']
+        data.values[e_part.RECORD_INFO][e_field.ARTICLE.ARTICLE_COMMENTS_ID]={}
+        data.values[e_part.RECORD_INFO][e_field.ARTICLE.ARTICLE_COMMENTS_ID]['value']=['59817e549a1a3a4bac3a55f7']
+        console.log(`docvalues====>${JSON.stringify(data.values)}`)
+        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[sess1]).send(data)
+            .end(function(err, res) {
+                // if (err) return done(err);
+                // console.log(`res ios ${JSON.stringify(res)}`)
+                let parsedRes=JSON.parse(res.text)
+                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
+                assert.deepStrictEqual(parsedRes['rc'],0)
+                // assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.require.error.rc)
+                done();
+            });
+    });
+
+
+    /***********************************************************************/
+    /***********************************************************************/
+    /***********************************************************************/
+    /*                              comment                                 */
+    it('create comment without login', function(done) {
+        url = 'comment'
+        finalUrl=baseUrl+url
+        data.values={}
+        data.values[e_part.METHOD]=e_method.CREATE
+        // data.values[e_part.RECORD_ID]=newArticleId
+
+        request(app).post(finalUrl).set('Accept', 'application/json').send(data)
+            .end(function(err, res) {
+                // if (err) return done(err);
+                // console.log(`res ios ${JSON.stringify(res)}`)
+                let parsedRes=JSON.parse(res.text)
+                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
+                assert.deepStrictEqual(parsedRes['rc'],contollerError.userNotLoginCantCreateComment.rc)
+                // assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.require.error.rc)
+                done();
+            });
+    });
+    it('create comment with articleId not exist', function(done) {
+        url = 'comment'
+        finalUrl=baseUrl+url
+        data.values={}
+        // data.values[e_part.RECORD_ID]=newArticleId
+        data.values[e_part.METHOD]=e_method.CREATE
+        data.values[e_part.RECORD_INFO]={}
+        data.values[e_part.RECORD_INFO][e_field.ARTICLE_COMMENT.CONTENT]={}
+        data.values[e_part.RECORD_INFO][e_field.ARTICLE_COMMENT.CONTENT]['value']='correct comment for newArticle'
+        data.values[e_part.RECORD_INFO][e_field.ARTICLE_COMMENT.ARTICLE_ID]={}
+        data.values[e_part.RECORD_INFO][e_field.ARTICLE_COMMENT.ARTICLE_ID]['value']='59817e549a1a3a4bac3a55f7'
+
+        console.log(`docvalues====>${JSON.stringify(data.values)}`)
+        console.log(`finalUrl====>${JSON.stringify(finalUrl)}`)
+        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[sess1]).send(data)
+            .end(function(err, res) {
+                // if (err) return done(err);
+                // console.log(`res ios ${JSON.stringify(res)}`)
+                let parsedRes=JSON.parse(res.text)
+                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
+                assert.deepStrictEqual(parsedRes['rc'],helpError.fkValueNotExist().rc)
+                // assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.require.error.rc)
+                done();
+            });
+    });
+
+    it('user1 correct comment for newArticle', function(done) {
+        url = 'comment'
+        finalUrl=baseUrl+url
+        data.values={}
+        // data.values[e_part.RECORD_ID]=newArticleId
+        data.values[e_part.METHOD]=e_method.CREATE
+        data.values[e_part.RECORD_INFO]={}
+        data.values[e_part.RECORD_INFO][e_field.ARTICLE_COMMENT.CONTENT]={}
+        data.values[e_part.RECORD_INFO][e_field.ARTICLE_COMMENT.CONTENT]['value']='correct comment for newArticle'
+        data.values[e_part.RECORD_INFO][e_field.ARTICLE_COMMENT.ARTICLE_ID]={}
+        data.values[e_part.RECORD_INFO][e_field.ARTICLE_COMMENT.ARTICLE_ID]['value']=newArticleId
+
+        console.log(`docvalues====>${JSON.stringify(data.values)}`)
+        console.log(`finalUrl====>${JSON.stringify(finalUrl)}`)
+        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[sess1]).send(data)
+            .end(function(err, res) {
+                // if (err) return done(err);
+                // console.log(`res ios ${JSON.stringify(res)}`)
+                let parsedRes=JSON.parse(res.text)
+                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
+                assert.deepStrictEqual(parsedRes['rc'],0)
+                // assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.require.error.rc)
+                done();
+            });
+    });
+
+    it('user2 correct comment with penalize', function(done) {
+        url = 'comment'
+        finalUrl=baseUrl+url
+        data.values={}
+        // data.values[e_part.RECORD_ID]=newArticleId
+        data.values[e_part.METHOD]=e_method.CREATE
+        data.values[e_part.RECORD_INFO]={}
+        data.values[e_part.RECORD_INFO][e_field.ARTICLE_COMMENT.CONTENT]={}
+        data.values[e_part.RECORD_INFO][e_field.ARTICLE_COMMENT.CONTENT]['value']='correct comment for newArticle'
+        data.values[e_part.RECORD_INFO][e_field.ARTICLE_COMMENT.ARTICLE_ID]={}
+        data.values[e_part.RECORD_INFO][e_field.ARTICLE_COMMENT.ARTICLE_ID]['value']=newArticleId
+
+
+        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[sess2]).send(data)
+            .end(function(err, res) {
+                // if (err) return done(err);
+                // console.log(`res ios ${JSON.stringify(res)}`)
+                let parsedRes=JSON.parse(res.text)
+                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
+                assert.deepStrictEqual(parsedRes['rc'],contollerError.userInPenalizeNoCommentCreate.rc)
                 // assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.require.error.rc)
                 done();
             });

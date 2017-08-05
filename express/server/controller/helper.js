@@ -21,8 +21,13 @@ const e_userState=require('../constant/enum/node').UserState
 const e_method=require('../constant/enum/node').Method
 const e_coll=require('../constant/enum/DB_Coll').Coll
 const e_field=require('../constant/enum/DB_field').Field
-
+const e_internal_field=require('../constant/enum/DB_internal_field').Field
+const e_uniqueField=require('../constant/enum/DB_uniqueField').UniqueField
+const e_chineseName=require('../constant/enum/inputRule_field_chineseName').ChineseName
 const e_inputFieldCheckType=require('../constant/enum/node').InputFieldCheckType
+
+const e_penalizeSubType=require('../constant/enum/mongo').PenalizeSubType.DB
+const e_docStatus=require('../constant/enum/mongo').DocStatus.DB
 // var miscFunc=require('../../assist/misc')
 // var validate=validateFunc.validate
 // var checkInterval=require('../../assist/misc').checkInterval
@@ -34,6 +39,7 @@ const e_dbModel=require('../model/mongo/dbModel')
 const common_operation_model=require('../model/mongo/operation/common_operation_model')
 
 const checkUserState=require('../function/assist/misc').checkUserState
+const checkRobot_async=require('../function/assist/checkRobot').checkRobot_async
 
 const browserInputRule=require('../constant/inputRule/browserInputRule').browserInputRule
 const internalInputRule=require('../constant/inputRule/internalInputRule').internalInputRule
@@ -240,12 +246,12 @@ function validatePartValue({req,expectedPart,collName,inputRule,recordInfoBaseRu
 }
 
 
-/* 检测doc中的外键字段（objectId）是否存在
+/*/!* 检测doc中的外键字段（objectId）是否存在
  * @doc：要保存（sreate/update）到db中的doc
  * @collFkConfig: doc对应的fkConfig，用来确定doc中那些字段是外键，且对应的配置是什么
  *
  * return：字段对应的外键不存在
- * */
+ * *!/
 async function checkIfFkExist_async(value,collFkConfig,collName){
     for(let singleFkField in collFkConfig){
         let relatedColl=collFkConfig[singleFkField]['relatedColl']
@@ -261,11 +267,11 @@ async function checkIfFkExist_async(value,collFkConfig,collName){
         }
     }
     return Promise.resolve({rc:0})
-}
+}*/
 
 
 /*          预检method是否正确，以便后续能使用正确的method调用不同的CRUD方法            */
-function dispatcherPreCheck({req}){
+function checkMethod({req}){
     // console.log(`CRUDPreCheckFormat in`)
     let result=validateFormat.validateReqBody(req.body)
     if(result.rc>0){return result}
@@ -291,10 +297,11 @@ function dispatcherPreCheck({req}){
 
 
 /*
-* 必须和dispatcherPreCheck配合使用，后者用来预先检测Method，剩下的part交由本函数处理
+* 必须和checkMethod配合使用，后者用来预先检测Method，剩下的part交由本函数处理
 * */
 //validatePartValueFormat+validatePartValue
 function CRUDPreCheck({req,expectedPart,collName,method}){
+    // console.log(`expectedPart in====>${JSON.stringify(expectedPart)}`)
     // console.log(`recordInfoBaseRule ${JSON.stringify(recordInfoBaseRule)}`)
     let result
     //检查参数
@@ -308,11 +315,12 @@ function CRUDPreCheck({req,expectedPart,collName,method}){
 // console.log(`CRUDPreCheck： checkUserState  ${JSON.stringify(result)}`)
     //检查输入参数中part的值（格式预先检查好，某些part的值简单。例如method/currentPage，同时检测了value）
 
-    // 此处检查除了method之外的part（method已经在dispatcherPreCheck中预检）
+    // 此处检查除了method之外的part（method已经在checkMethod中预检）
     delete req.body.values[e_part.METHOD]
     // console.log(`req.body.values ====>${JSON.stringify(req.body.values)}`)
     // console.log(`expectedPart ====>${JSON.stringify(expectedPart)}`)
     result=validateFormat.validatePartFormat(req.body.values,expectedPart)
+    // console.log(`validatePartFormat result ====>${JSON.stringify(result)}`)
     if(result.rc>0){return result}
 
     let recordInfoBaseRule
@@ -345,7 +353,7 @@ function CRUDPreCheck({req,expectedPart,collName,method}){
         inputRule: inputRule,
         fkConfig: fkConfig
     })
-    // console.log(`format check result is ${JSON.stringify(result)}`)
+    // console.log(`format check result =======》 ${JSON.stringify(result)}`)
     if (result.rc > 0) {
         // return Promise.reject(result)
         return result
@@ -363,7 +371,10 @@ function CRUDPreCheck({req,expectedPart,collName,method}){
             recordInfoBaseRule:recordInfoBaseRule,
             fkConfig: fkConfig
         })
-
+    // console.log(`req.body.values====>${JSON.stringify(req.body.values[e_part.RECORD_INFO])}`)
+    // console.log(`collName====>${JSON.stringify(collName)}`)
+    // console.log(`browserInputRule====>${JSON.stringify(browserInputRule[collName])}`)
+    // console.log(`validatePartValue result =======》 ${JSON.stringify(result)}`)
         return result
     // }
 }
@@ -438,6 +449,32 @@ async function ifFieldValueExistInColl_async({dbModel,fieldName,fieldValue}){
     // }
 }
 
+async function ifFiledInDocValueUnique_async({collName,docValue}){
+    // if(undefined!==e_uniqueField[collName] &&  e_uniqueField[collName].length>0){
+        // console.log(`ifFiledInDocValueUnique_async in=========>}`)
+        // console.log(`ifFiledInDocValueUnique_async docValue=========>${JSON.stringify(docValue)}`)
+        for(let singleFieldName in docValue){
+            // console.log(`singleFieldName=========>${JSON.stringify(singleFieldName)}`)
+            if(-1!==e_uniqueField[collName].indexOf(singleFieldName)){
+                // console.log(`singleFieldName is uhnqieu=========>${JSON.stringify(singleFieldName)}`)
+                let condition = {}
+                condition[singleFieldName]=docValue[singleFieldName]
+                //patch(user中，还有额外的字段docStatus用来判断是否unique)
+                if(collName===e_coll.USER){
+                    condition[e_field.USER.DOC_STATUS]=e_docStatus.DONE
+                }
+                let uniqueCheckResult = await common_operation_model.find({dbModel: e_dbModel[collName], condition: condition})
+// console.log(`ifFiledInDocValueUnique_asyn uniqueCheckResultc=========>: ${JSON.stringify(uniqueCheckResult)}`)
+                if(uniqueCheckResult.msg.length>0){
+                    let chineseName=e_chineseName[collName][singleFieldName]
+                    // let fieldInputValue=docValue[singleFieldName]
+                    return Promise.reject(helperError.fieldValueUniqueCheckError({collName:collName,fieldName:singleFieldName,chineseName:chineseName}))
+                }
+            }
+        }
+    // }
+    return Promise.resolve({rc:0})
+}
 /*
 * @ usage: storePath的用途
 * */
@@ -469,7 +506,7 @@ async function chooseStorePath_async({usage}){
     return Promise.resolve({rc:0,msg:choosenStorePathRecord})
 }
 
-/*
+/*  不用virtual method，因为如果使用virtual，需要引用mongo enum文件
 * @originalStorePathRecord: 原始的storePath记录
 * @updateValue:将要更新到originalStorePath对应记录的数据，一般为{usedSize:xxxxxx}
 *
@@ -492,16 +529,16 @@ function checkInternalValue({internalValue,collInputRule,collInternalRule}){
         let tmpResult
 
         let newDocValue=dataConvert.addSubFieldKeyValue(internalValue)
-        console.log(`newDocValue =============> ${JSON.stringify(newDocValue)}`)
+        // console.log(`newDocValue =============> ${JSON.stringify(newDocValue)}`)
         tmpResult=validateFormat.validateCURecordInfoFormat(newDocValue,collInputRule)
-    console.log(`internal check format=============> ${JSON.stringify(tmpResult)}`)
+    // console.log(`internal check format=============> ${JSON.stringify(tmpResult)}`)
         if(tmpResult.rc>0){
 
             return tmpResult
         }
 
         tmpResult=validateValue.validateUpdateRecorderValue(newDocValue,collInternalRule)
-    console.log(`internal check format=============> ${JSON.stringify(tmpResult)}`)
+    // console.log(`internal check format=============> ${JSON.stringify(tmpResult)}`)
         for(let singleFieldName in tmpResult){
             if(tmpResult[singleFieldName]['rc']>0){
                 tmpResult['rc']=99999
@@ -513,35 +550,202 @@ function checkInternalValue({internalValue,collInputRule,collInternalRule}){
     // }
 }
 
-//检查一个外键的值是否存在
-async function ifFkValueExist_async({dbModel,fkObjectId}){
+/*//检查一个外键的值是否存在
+async function ifFkValueExist_async_old({dbModel,fkObjectId}){
     let tmpResult=await  common_operation_model.findById({dbModel:dbModel,id:fkObjectId})
     if(null===tmpResult.msg){
         return Promise.resolve({rc:0,msg:false})
     }else{
         return Promise.resolve({rc:0,msg:true})
     }
+
+
+}*/
+
+
+/*
+* @docValue；待检测的记录
+* @collFkConfig:当前coll对应的fk配置，用来查找field的fk关系（对应到哪个coll）
+* @collFieldChineseName:如果外键不存在，报错是需要指明的字段的chineseName
+*
+* return：存在: {rc:0}   不存在：helperError.fkValueNotExist
+* */
+async function ifFkValueExist_async({docValue,collFkConfig,collFieldChineseName}){
+    // let fkFieldValueToBeCheckExists=[e_field.ARTICLE.CATEGORY_ID,e_field.ARTICLE.FOLDER_ID]
+    for(let singleFkFieldName in collFkConfig){
+        if(undefined!==docValue[singleFkFieldName]){
+            let fkFieldValueInObjectId=docValue[singleFkFieldName]
+            let fkFieldRelatedColl=collFkConfig[singleFkFieldName]['relatedColl']
+            let tmpResult=await  common_operation_model.findById({dbModel:e_dbModel[fkFieldRelatedColl],id:fkFieldValueInObjectId})
+            if(null===tmpResult.msg){
+                let chineseName=collFieldChineseName[singleFkFieldName]
+                let fieldInputValue=docValue[singleFkFieldName]
+                return Promise.reject(helperError.fkValueNotExist(chineseName,fieldInputValue))
+                // return Promise.resolve({rc:0,msg:false})
+            }else{
+                return Promise.resolve({rc:0,msg:true})
+            }
+
+        }
+    }
+}
+
+
+/*用户(userId)是否被禁止做某事（penalizeType）
+* 查找admin_penalize中最后一条penalize记录，体重的ifExpire是否为true
+*
+* */
+async function ifPenalizeOngoing_async({userId, penalizeType,penalizeSubType}){
+    let condition={}
+    /*                  首先检查 penalizeSubType=all的记录，因为all具有最高优先级             */
+    condition[e_field.ADMIN_PENALIZE.PUNISHED_ID]=userId
+    condition[e_field.ADMIN_PENALIZE.PENALIZE_TYPE]=penalizeType
+    condition[e_field.ADMIN_PENALIZE.PENALIZE_SUB_TYPE]=e_penalizeSubType.ALL
+    let option={}
+    option['limit']=1
+    option['sort']={cDate:-1} //选取最近一个penalize记录
+    // condition['ifExpire']=true //这是virtual 方法
+    // console.log(`penalize condition====>${JSON.stringify(condition)}`)
+    let tmpResult=await common_operation_model.find({dbModel:e_dbModel.admin_penalize,condition:condition,options:option,selectedFields:'-uDate'})
+    // console.log(`penalize sub type all's result====>${JSON.stringify(tmpResult)}`)
+    //all的处罚记录有效
+    if(tmpResult.msg.length>0 && false===tmpResult.msg[0]['isExpire']){
+        return Promise.resolve(true)
+    }
+
+    /*         继续检查penalizeSubType!==ALL的记录              */
+    if(penalizeSubType!==e_penalizeSubType.ALL){
+        condition[e_field.ADMIN_PENALIZE.PENALIZE_SUB_TYPE]=penalizeSubType
+        // console.log(`penalize condition for not ALL====>${JSON.stringify(condition)}`)
+        let tmpResult=await common_operation_model.find({dbModel:e_dbModel.admin_penalize,condition:condition,options:option,selectedFields:'-uDate'})
+        // console.log(`penalize sub type not ALL result====>${JSON.stringify(tmpResult)}`)
+        //CRUD（非ALL）的处罚记录有效
+        if(tmpResult.msg.length>0 && false===tmpResult.msg[0]['isExpire']){
+            return Promise.resolve(true)
+        }
+    }
+
+
+    return Promise.resolve(false)
+}
+
+/*
+* @docValue: client的输入（recordInfo）
+* @collInternalFieldEnum: array. coll中那些字段是内部字段
+* @collBrowserInputRule: 判断字段是否也位于client（某些字段，例如user的password，即可以位于client输入，也位于internal，所以不能删除）
+* */
+function deleteInternalField({docValue,collInternalFieldEnum,collBrowserInputRule}){
+    if(collInternalFieldEnum.length>0){
+        for(let singleFieldName of collInternalFieldEnum){
+            if(false===singleFieldName in collBrowserInputRule){
+                if(undefined!==docValue[singleFieldName]){
+                    delete docValue[singleFieldName]
+                }
+            }
+
+        }
+    }
+}
+
+
+/*
+* 0. check user login(optional)
+* 1. check robot(mandatory but not archive)
+* 2. penalize(mandatory)
+* 3. delete internal field(mandatory)
+* 4. CRUDPreCheck
+* @userLoginCheck: 对象。包含2个字段：needCheck，是否检测用户登录；error：检测到未登录时返回的错误
+* @penalizeCheck:对象，默认是需要检查的。包含3个字段： penalizeType,penalizeSubType,penalizeCheckError
+* @expectedPart: 期望的part
+* */
+async function preCheck_async({req,collName,method,userLoginCheck={needCheck:false},penalizeCheck, expectedPart}){
+    let tmpResult
+// console.log(`preCheck in====>`)
+    /*              检查用户是否登录            */
+    let {needCheck,error}=userLoginCheck
+    if(true===needCheck){
+        if(undefined===error){
+            console.log(`error============================>need to check **user login**, but not supply related error`)
+        }
+        if(undefined===req.session.userId){
+            return Promise.reject(error)
+        }
+        // console.log(`====user login check done====`)
+    }
+// console.log(`userLoginCheck done====>`)
+    /*      检测用户是否为robot，是robot，直接Promise.reject        */
+    // console.log(`checkRobot_async======>${JSON.stringify(checkRobot_async)}`)
+    // console.log(`type ======>${JSON.stringify(typeof checkRobot_async[e_coll.ARTICLE][method]({userId:req.session.userId}))}`)
+    if(undefined!==checkRobot_async[collName] && undefined!==checkRobot_async[collName][method]){
+        await checkRobot_async[collName][method]({userId:req.session.userId})
+        // console.log(`====robot check done====`)
+    }
+// console.log(`robot done====>`)
+    /*        检查用户是否被处罚                                 */
+    // console.log(`create in with robot check result =======> ${result}`)
+    let {penalizeType,penalizeSubType,penalizeCheckError}=penalizeCheck
+    if(undefined!==req.session.userId){
+        if(undefined!==penalizeType && undefined!==penalizeSubType){
+            if(undefined===penalizeCheckError){
+                console.log(`error============================>need to check **penalize**, but not supply related error`)
+            }
+            tmpResult=await ifPenalizeOngoing_async({userId:req.session.userId, penalizeType:penalizeType,penalizeSubType:penalizeSubType})
+            // console.log(`preCheck_async penalize ongoing check result====>${JSON.stringify(tmpResult)}`)
+            // return false
+            if(true===tmpResult){
+                return Promise.reject(penalizeCheckError)
+            }
+            // console.log(`====penalize check done====`)
+        }
+    }
+// console.log(`penalize done====>`)
+    // if(expectedPart.length>0){
+    /*              检查RECORD_IFO的格式和value*/
+    //因为dispatch而已经检查过req的总体结构，所以无需再次检查，而直接检查partValueFormat+partValueCheck
+
+    tmpResult=CRUDPreCheck({req:req,expectedPart:expectedPart,collName:collName,method:method})
+// console.log(`CRUDPreCheck result ====》${JSON.stringify(tmpResult)}`)
+    if(tmpResult.rc>0){
+        return Promise.reject(tmpResult)
+    }
+
+    /*              删除内部字段值                     */
+    // 删除内部字段（RECORD_INFO）
+    if(expectedPart.length>0 && -1!==expectedPart.indexOf(e_part.RECORD_INFO)){
+        let docValue=req.body.values[e_part.RECORD_INFO]
+        // console.log(`before delete internal field for RECORD_INFO=========>${JSON.stringify(docValue)}`)
+        deleteInternalField({docValue:docValue,collInternalFieldEnum:e_internal_field[collName],collBrowserInputRule:browserInputRule[collName]})
+        // console.log(`after delete internal field for RECORD_INFO=========>${JSON.stringify(docValue)}`)
+    }
+
+    return Promise.resolve({rc:0})
 }
 module.exports= {
     commonCheck,//每个请求进来是，都要进行的操作（时间间隔检查等）
     validatePartValueFormat,
     validatePartValue,//对每个part的值进行检查
 
-    dispatcherPreCheck,
+    checkMethod,
     CRUDPreCheck,
     nonCRUDreCheck,//commonCheck+validatePartValueFormat+validatePartValue
 
     // covertToServerFormat,//将req中诸如RECORD_INFO/SINGLE_FIELD的值转换成server的格式，并去除不合格字段值（create：控制
 
-    checkIfFkExist_async,//检测doc中外键值是否在对应的coll中存在
+    // checkIfFkExist_async,//检测doc中外键值是否在对应的coll中存在
     ifFieldValueExistInColl_async,// 检测字段值是否已经在db中存在
+    ifFiledInDocValueUnique_async,//未使用ifFieldValueExistInColl_async，直接使用find方法对整个输入的字段进行unique检测
 
     chooseStorePath_async,//根据某种算法（平均法），选择合适的storePath来存储文件
     setStorePathStatus,//根据原始storePath和新的usedSize，判断是否需要设置status为read only
 
     checkInternalValue,//
 
+    // ifFkValueExist_async_old,
     ifFkValueExist_async,
+    ifPenalizeOngoing_async,
+
+    deleteInternalField,//检查client端输入的值（recordInfo），如果其中包含了internalField，直接删除
+    preCheck_async,//user login+robot+penalize+delete internal+ CRUD
 }
 
 
