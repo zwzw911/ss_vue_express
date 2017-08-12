@@ -53,8 +53,8 @@ const admin_penalize= {
         'chineseName': '受罚时长',
         'type':serverDataType.INT,
         'require': {define: true, error: {rc: 10093}, mongoError: {rc: 20093, msg: '受罚时长不能为空'}},//用户权限初始可以为空，以后ROOT用户进行分配
-        'min': {define: 1, error: {rc: 10094}, mongoError: {rc: 20094, msg: '受罚时长至少1天'}},
-        'max': {define: 7, error: {rc: 10095}, mongoError: {rc: 20095, msg: '受罚时长最长7天'}},
+        'min': {define: 0, error: {rc: 10094}, mongoError: {rc: 20094, msg: '受罚时长至少1天'}},
+        'max': {define: 30, error: {rc: 10095}, mongoError: {rc: 20095, msg: '受罚时长最长30天'}},
     },
 }
 

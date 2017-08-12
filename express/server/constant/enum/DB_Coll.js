@@ -7,6 +7,7 @@ const Coll={
     ADMIN_SUGAR:'admin_sugar',
     ADMIN_USER:'admin_user',
     CATEGORY:'category',
+    RESOURCE_PROFILE:'resource_profile',
     STORE_PATH:'store_path',
     /*       article           */
     ARTICLE:'article',
@@ -15,7 +16,6 @@ const Coll={
     ARTICLE_IMAGE:'article_image',
     FOLDER:'folder',
     LIKE_DISLIKE:'like_dislike',
-    LIKE_DISLIKE_STATIC:'like_dislike_static',
     TAG:'tag',
     /*       friend           */
     MEMBER_PENALIZE:'member_penalize',
@@ -30,9 +30,13 @@ const Coll={
     IMPEACH_COMMENT:'impeach_comment',
     IMPEACH_DEALER:'impeach_dealer',
     IMPEACH_IMAGE:'impeach_image',
+    /*       static           */
+    LIKE_DISLIKE_STATIC:'like_dislike_static',
+    RESOURCE_PROFILE_STATIC:'resource_profile_static',
     /*       user           */
     SUGAR:'sugar',
     USER:'user',
+    USER_RESOURCE_PROFILE:'user_resource_profile',
     /*       user_behavior           */
     READ_ARTICLE:'read_article',
     USER_INPUT_KEYWORD:'user_input_keyword',

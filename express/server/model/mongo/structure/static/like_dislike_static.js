@@ -16,7 +16,7 @@ const connectedDb=require('../../common/connection').dbSS;
 const mongoSetting=require('../../common/configuration')
 
 // const browserInputRule=require('../../../../constant/inputRule/browserInput/article/like_dislike').like_dislike
-const internalInputRule=require('../../../../constant/inputRule/internalInput/article/like_dislike_static').like_dislike_static
+const internalInputRule=require('../../../../constant/inputRule/internalInput/static/like_dislike_static').like_dislike_static
 //根据inputRule的rule设置，对mongoose设置内建validator
 // const collInputRule=Object.assign({},browserInputRule,internalInputRule)
 const collInputRule=internalInputRule

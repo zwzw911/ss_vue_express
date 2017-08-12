@@ -65,7 +65,7 @@ function  validatePartFormat (inputValue,expectedParts){
         // console.log(`inputValueKeyNum is ${inputValueKeyNum}`)
         // console.log(`expectedPartsNum is ${expectedPartsNum}`)
         if(inputValueKeyNum!==expectedPartsNum){
-            return validateFormatError.inputValuePartNumExceed
+            return validateFormatError.inputValuePartNumNotExpected
         }
     // }
 

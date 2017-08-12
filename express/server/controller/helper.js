@@ -17,7 +17,7 @@ const validateValue=require('../function/validateInput/validateValue')
 const dataConvert=require('./dataConvert')
 
 const e_part=require('../constant/enum/node').ValidatePart
-const e_userState=require('../constant/enum/node').UserState
+
 const e_method=require('../constant/enum/node').Method
 const e_coll=require('../constant/enum/DB_Coll').Coll
 const e_field=require('../constant/enum/DB_field').Field
@@ -26,8 +26,11 @@ const e_uniqueField=require('../constant/enum/DB_uniqueField').UniqueField
 const e_chineseName=require('../constant/enum/inputRule_field_chineseName').ChineseName
 const e_inputFieldCheckType=require('../constant/enum/node').InputFieldCheckType
 
+const e_fileSizeUnit=require('../constant/enum/node_runtime').FileSizeUnit
+
 const e_penalizeSubType=require('../constant/enum/mongo').PenalizeSubType.DB
 const e_docStatus=require('../constant/enum/mongo').DocStatus.DB
+const e_resourceRange=require('../constant/enum/mongo').ResourceRange
 // var miscFunc=require('../../assist/misc')
 // var validate=validateFunc.validate
 // var checkInterval=require('../../assist/misc').checkInterval
@@ -53,11 +56,17 @@ const e_storePathStatus=require('../constant/enum/mongo').StorePathStatus.DB
 const handleSystemError=require('../function/assist/system').handleSystemError
 const systemError=require('../constant/error/systemError').systemError
 
+const e_iniSettingObject=require('../constant/enum/initSettingObject').iniSettingObject
+const uploadFile=require('../function/assist/upload')
+const convertFileSize=require('../function/assist/misc').convertFileSize
+const sanityHtml=require('../function/assist/sanityHtml').sanityHtml
+
 
 
 
 //1. 对输入（inputValue）进行整体检查；对expectedPart进行检查（part是否正确，part值类型是否正确）
-function commonCheck(req,expectedPart){
+// 只用于nonCRUDCheck。CRUDCHeck中，验证步骤被拆散
+function inputCommonCheck(req,expectedPart){
     let result=validateFormat.validateReqBody(req.body)
     if(result.rc>0){return result}
 
@@ -149,7 +158,7 @@ function validatePartValueFormat({req,expectedPart,collName,fkConfig,inputRule})
 }
 
 
-/*  在commonCheck后执行，确保所有part都存在，且值的数据类型正确
+/*  在inputCommonCheck后执行，确保所有part都存在，且值的数据类型正确
 * @req:需要检查的part的值
 * @expectedPart:需要检查的part
 * @inputRule:如果需要检查的part中有RECORD_INFO/FILTER_VALUE/SEARCH_PARAMS，需要inputRule，可能只有一个coll，也有可能多个个coll（如果有外键，需要把外键对应的Rule加入）
@@ -272,8 +281,10 @@ async function checkIfFkExist_async(value,collFkConfig,collName){
 
 /*          预检method是否正确，以便后续能使用正确的method调用不同的CRUD方法            */
 function checkMethod({req}){
-    // console.log(`CRUDPreCheckFormat in`)
+    // console.log(`CRUDPreCheckFormat in=========>`)
+    // console.log(`req.body in=========>${JSON.stringify(req.body)}`)
     let result=validateFormat.validateReqBody(req.body)
+    // console.log(`req.body result=========>${JSON.stringify(result)}`)
     if(result.rc>0){return result}
     // console.log(`validateReqBody result ${JSON.stringify(result)}`)
     // let validateAllExpectedPart=true  //只对expectedPart中定义的part进行检查
@@ -342,7 +353,7 @@ function CRUDPreCheck({req,expectedPart,collName,method}){
             case e_method.MATCH:
                 recordInfoBaseRule=e_inputFieldCheckType.BASE_INPUT
                 break;
-                //没有default，因为在commonCheck->validatePartFormat中，已经过滤了非预定义的method
+                //没有default，因为在inputCommonCheck->validatePartFormat中，已经过滤了非预定义的method
         }
     // }
 //检查输入参数格式是否正确
@@ -381,7 +392,7 @@ function CRUDPreCheck({req,expectedPart,collName,method}){
 
 
 //没有method
-function nonCRUDreCheck({req,expectUserState,expectPart,collName}){
+function nonCRUDPreCheck({req,expectPart,collName}){
     let result
     // console.log(`recordInfoBaseRule ${JSON.stringify(recordInfoBaseRule)}`)
     //检查参数
@@ -396,7 +407,7 @@ function nonCRUDreCheck({req,expectUserState,expectPart,collName}){
 
     //检查输入参数中part的格式和值
 
-    result = commonCheck(req, expectPart)
+    result = inputCommonCheck(req, expectPart)
     // console.log(`common check result is ${JSON.stringify(result)}`)
     if (result.rc > 0) {
         // return Promise.reject(result)
@@ -506,6 +517,69 @@ async function chooseStorePath_async({usage}){
     return Promise.resolve({rc:0,msg:choosenStorePathRecord})
 }
 
+
+/*
+ * @ resourceRange: perArticle/perPerson
+ *
+ * return: 返回合适的记录
+ * */
+async function chooseLastValidResourceProfile_async({resourceRange,userId}){
+    // console.log(`chooseLastValidResourceProfile_async in ===========>`)
+    let resourceProfileIdInUse,tmpResult,condition={},options={}
+    //根据resourceRange，查找对应的resource_profile的objectID
+    condition[e_field.RESOURCE_PROFILE.RANGE]=resourceRange
+    tmpResult=await common_operation_model.find({dbModel:e_dbModel.resource_profile,condition:condition})
+    console.log(`resourceRange result ===========>${JSON.stringify(tmpResult)}`)
+    if(0===tmpResult.msg.length){
+        handleSystemError({error:systemError.noDefinedResourceProfile})
+        return Promise.reject(systemError.noDefinedResourceProfile)
+    }
+let resourceProfileIfMatchRange=[]
+    for(let singleRecord of tmpResult.msg){
+        // console.log(`singleRecord result ===========>${JSON.stringify(singleRecord)}`)
+        resourceProfileIfMatchRange.push(singleRecord[e_field.RESOURCE_PROFILE.ID])
+    }
+    // console.log(`resourceProfileIfMatchRange result ===========>${JSON.stringify(resourceProfileIfMatchRange)}`)
+    //根据resource_profile_id和userId，在user_resource_profile中查找
+    //1. duration>0的最近一条记录（是否active）
+    condition={}
+    condition[e_field.USER_RESOURCE_PROFILE.DURATION]={$gt:0}
+    condition[e_field.USER_RESOURCE_PROFILE.USER_ID]=userId
+    condition[e_field.USER_RESOURCE_PROFILE.RESOURCE_PROFILE_ID]={$in:resourceProfileIfMatchRange}
+    options['sort']={'cDate':-1}
+    options['limit']=1
+    // console.log(`condition result ===========>${JSON.stringify(condition)}`)
+    // console.log(`options result ===========>${JSON.stringify(options)}`)
+    //selectedFields必须包含cDate，否则无法执行virtual方法
+    let selectedFields=`${e_field.USER_RESOURCE_PROFILE.RESOURCE_PROFILE_ID} ${e_field.USER_RESOURCE_PROFILE.DURATION} cDate`
+    tmpResult=await common_operation_model.find({dbModel:e_dbModel.user_resource_profile,condition:condition,options:options,selectedFields:selectedFields})
+// console.log(`duration>0 result ===========>${JSON.stringify(tmpResult)}`)
+    if(tmpResult.msg.length>0){
+        if(true===tmpResult.msg[0]['isActive']){
+            resourceProfileIdInUse=tmpResult.msg[0][e_field.USER_RESOURCE_PROFILE.RESOURCE_PROFILE_ID]
+        }
+    }
+    //如果duration》0的记录没有找到，或者找到但是已经超期
+    if(undefined===resourceProfileIdInUse){
+        //如果duration>0的resource_profile没有找到，那么查找duration=0（无时间限制）的记录
+        condition[e_field.USER_RESOURCE_PROFILE.DURATION]={$eq:0}
+        tmpResult=await common_operation_model.find({dbModel:e_dbModel.user_resource_profile,condition:condition,selectedFields:selectedFields})
+        // console.log(`duration===0 result ===========>${JSON.stringify(tmpResult)}`)
+        if(tmpResult.msg.length===0){
+            handleSystemError({error:systemError.userNoDefaultResourceProfile})
+            return Promise.reject(systemError.userNoDefaultResourceProfile)
+        }
+
+        resourceProfileIdInUse=tmpResult.msg[0][e_field.USER_RESOURCE_PROFILE.RESOURCE_PROFILE_ID]
+    }
+
+    // console.log(`choose resourceProfileIdInUse===========>${JSON.stringify(resourceProfileIdInUse)}`)
+    // 将resource_profile_id转换成resource_profile
+    tmpResult=await common_operation_model.findById({dbModel:e_dbModel.resource_profile,id:resourceProfileIdInUse})
+    // console.log(`active resource_profile===========>${JSON.stringify(tmpResult.msg)}`)
+    return Promise.resolve({rc:0,msg:tmpResult.msg})
+}
+
 /*  不用virtual method，因为如果使用virtual，需要引用mongo enum文件
 * @originalStorePathRecord: 原始的storePath记录
 * @updateValue:将要更新到originalStorePath对应记录的数据，一般为{usedSize:xxxxxx}
@@ -572,22 +646,29 @@ async function ifFkValueExist_async_old({dbModel,fkObjectId}){
 * */
 async function ifFkValueExist_async({docValue,collFkConfig,collFieldChineseName}){
     // let fkFieldValueToBeCheckExists=[e_field.ARTICLE.CATEGORY_ID,e_field.ARTICLE.FOLDER_ID]
+// console.log(`collFkConfig fields========>${JSON.stringify(Object.keys(collFkConfig))}`)
+//     console.log(`docValue ========>${JSON.stringify(docValue)}`)
     for(let singleFkFieldName in collFkConfig){
+    // console.log(`singleFkFieldName=======>${singleFkFieldName}`)
+    // console.log(`docValue[singleFkFieldName]===============>${JSON.stringify(docValue[singleFkFieldName])}`)
         if(undefined!==docValue[singleFkFieldName]){
             let fkFieldValueInObjectId=docValue[singleFkFieldName]
             let fkFieldRelatedColl=collFkConfig[singleFkFieldName]['relatedColl']
+// console.log(`ifFkValueExist_async===>fkFieldRelatedColl===>${fkFieldRelatedColl}, id=====>${fkFieldValueInObjectId}`)
             let tmpResult=await  common_operation_model.findById({dbModel:e_dbModel[fkFieldRelatedColl],id:fkFieldValueInObjectId})
             if(null===tmpResult.msg){
                 let chineseName=collFieldChineseName[singleFkFieldName]
                 let fieldInputValue=docValue[singleFkFieldName]
                 return Promise.reject(helperError.fkValueNotExist(chineseName,fieldInputValue))
                 // return Promise.resolve({rc:0,msg:false})
-            }else{
-                return Promise.resolve({rc:0,msg:true})
             }
+/*            else{
+                return Promise.resolve({rc:0,msg:true})
+            }*/
 
         }
     }
+    return Promise.resolve({rc:0,msg:true})
 }
 
 
@@ -700,11 +781,24 @@ async function preCheck_async({req,collName,method,userLoginCheck={needCheck:fal
     }
 // console.log(`penalize done====>`)
     // if(expectedPart.length>0){
-    /*              检查RECORD_IFO的格式和value*/
-    //因为dispatch而已经检查过req的总体结构，所以无需再次检查，而直接检查partValueFormat+partValueCheck
-
-    tmpResult=CRUDPreCheck({req:req,expectedPart:expectedPart,collName:collName,method:method})
-// console.log(`CRUDPreCheck result ====》${JSON.stringify(tmpResult)}`)
+    /*              如果带method，根据method的不同，选择不同的inputRule（Create还是update）
+                    不带，直接检查expectPart
+     */
+    //因为dispatch而已经检查过req的总体结构(method必定存在)，所以无需再次检查，而直接检查partValueFormat+partValueCheck
+    console.log(`pmethod====>${method}`)
+    console.log(`expectedPart====>${JSON.stringify(expectedPart)}`)
+    console.log(`req.body.values====>${JSON.stringify(req.body.values)}`)
+    if(undefined!==method){
+        tmpResult=CRUDPreCheck({req:req,expectedPart:expectedPart,collName:collName,method:method})
+    }
+    else
+    {
+        tmpResult=nonCRUDPreCheck({req:req,expectPart:expectedPart,collName:collName})
+        // return Promise.reject(`method not define in preCheck_async`)
+        // tmpResult=nonCRUDPreCheck({req:req,expectedPart:expectedPart,collName:collName})
+    }
+    
+console.log(`CRUDPreCheck result ====》${JSON.stringify(tmpResult)}`)
     if(tmpResult.rc>0){
         return Promise.reject(tmpResult)
     }
@@ -720,14 +814,61 @@ async function preCheck_async({req,collName,method,userLoginCheck={needCheck:fal
 
     return Promise.resolve({rc:0})
 }
+
+
+/*      使用multiPart获得并保存上传的文件
+* return： 返回文件原始名称和size
+* */
+async function uploadFileToTmpDir_async({req,uploadTmpDir,maxFileSizeInByte,fileSizeUnit=e_fileSizeUnit.MB}){
+    let tmpResult,uploadedFileSizeInKb
+    /*              设置multiPart参数           */
+    // tmpResult=await common_operation_model.find({dbModel:dbModel.store_path,condition:{usage:e_storePathUsage.UPLOAD_TMP}})
+    let uploadOption={
+        // maxFilesSize:2097152,
+        maxFilesSize:maxFileSizeInByte,//300k   头像文件大小100k
+        maxFileNumPerTrans:1,//每次只能上传一个头像文件
+        // maxFields:1,
+        name:'file',
+        uploadDir:uploadTmpDir
+    }
+    // console.log(`uploadOption============> ${JSON.stringify(uploadOption)}`)
+    //检查上传参数设置的是否正确
+    tmpResult=uploadFile.checkOption(uploadOption)
+    if(tmpResult.rc>0){
+        return Promise.reject(tmpResult)
+    }
+    //读取上传的文件，获得文件信息
+    tmpResult=await uploadFile.formParse_async(req,uploadOption)
+    // console.log(`formParse===${JSON.stringify(tmpResult)}`)
+
+    let {originalFilename,path,size}=tmpResult.msg[0]
+    // console.log(`originalFilename===${originalFilename}`)  //原始文件名
+    // console.log(`path===${path}`)  //包括路径已经upload之后的文件名
+    // console.log(`size===${size}`) //byte
+
+    //检测原始文件名
+    if(sanityHtml(originalFilename)!==originalFilename){
+        return Promise.reject(helperError.uploadFileNameSanityFail)
+    }
+    //转换size
+    tmpResult=convertFileSize({num:size,newUnit:fileSizeUnit})
+    if(tmpResult.rc>0){
+        return Promise.reject(tmpResult)
+    }
+    console.log(`convert size===${tmpResult}`) //byte
+    return Promise.resolve({rc:0,msg:{originalFilename:originalFilename,path:path,size:tmpResult.msg}})
+    // uploadedFileSizeInKb=tmpResult.msg
+}
+
+
 module.exports= {
-    commonCheck,//每个请求进来是，都要进行的操作（时间间隔检查等）
+    inputCommonCheck,//每个请求进来是，都要进行的操作（时间间隔检查等）
     validatePartValueFormat,
     validatePartValue,//对每个part的值进行检查
 
     checkMethod,
     CRUDPreCheck,
-    nonCRUDreCheck,//commonCheck+validatePartValueFormat+validatePartValue
+    nonCRUDPreCheck,//inputCommonCheck+validatePartValueFormat+validatePartValue
 
     // covertToServerFormat,//将req中诸如RECORD_INFO/SINGLE_FIELD的值转换成server的格式，并去除不合格字段值（create：控制
 
@@ -736,6 +877,7 @@ module.exports= {
     ifFiledInDocValueUnique_async,//未使用ifFieldValueExistInColl_async，直接使用find方法对整个输入的字段进行unique检测
 
     chooseStorePath_async,//根据某种算法（平均法），选择合适的storePath来存储文件
+    chooseLastValidResourceProfile_async,//查找最近可用的resourceProfile
     setStorePathStatus,//根据原始storePath和新的usedSize，判断是否需要设置status为read only
 
     checkInternalValue,//
@@ -746,6 +888,9 @@ module.exports= {
 
     deleteInternalField,//检查client端输入的值（recordInfo），如果其中包含了internalField，直接删除
     preCheck_async,//user login+robot+penalize+delete internal+ CRUD
+
+    uploadFileToTmpDir_async,
 }
 
 
+// chooseLastValidResourceProfile_async({resourceRange:e_resourceRange.DB.PER_ARTICLE, userId:'598a60bcdf548d0b3c2a7cd6'})

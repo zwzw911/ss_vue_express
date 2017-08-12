@@ -17,13 +17,15 @@ const e_method=require('../../constant/enum/node').Method
 const e_randomStringType=require('../../constant/enum/node').RandomStringType
 // const e_method=require('../../constant/enum/node').Method
 
+const e_iniSettingObject=require('../../constant/enum/initSettingObject').iniSettingObject
+
 const e_hashType=require('../../constant/enum/node_runtime').HashType
 
 const e_env=require('../../constant/enum/node').Env
 const e_docStatus=require('../../constant/enum/mongo').DocStatus.DB
 const e_accountType=require('../../constant/enum/mongo').AccountType.DB
 const e_storePathUsage=require('../../constant/enum/mongo').StorePathUsage.DB
-
+const e_resourceType=require('../../constant/enum/mongo').ResourceRange
 const currentEnv=require('../../constant/config/appSetting').currentEnv
 
 const dbModel=require('../../model/mongo/dbModel')
@@ -34,6 +36,7 @@ const e_field=require('../../constant/enum/DB_field').Field
 const e_uniqueField=require('../../constant/enum/DB_uniqueField').UniqueField
 const e_fileSizeUnit=require('../../constant/enum/node_runtime').FileSizeUnit
 // const e_inputFieldCheckType=require('../../constant/enum/node').InputFieldCheckType
+
 
 const e_storePatUsage=require('../../constant/enum/mongo').StorePathUsage.DB
 
@@ -48,7 +51,7 @@ const sendVerificationCodeByEmail_async=require('../../function/assist/misc').se
 
 const populateSingleDoc_async=require('../../model/mongo/operation/helper').populateSingleDoc_async
 
-const ifUserLogin=require('../../function/assist/misc').ifUserLogin
+// const ifUserLogin=require('../../function/assist/misc').ifUserLogin
 const dataConvert=require('../dataConvert')
 const validateCreateRecorderValue=require('../../function/validateInput/validateValue').validateCreateRecorderValue
 const validateUpdateRecorderValue=require('../../function/validateInput/validateValue').validateUpdateRecorderValue
@@ -149,9 +152,9 @@ async function dispatcher_async(req){
                 penalizeCheckError:controllerError.userInPenalizeNoCommentCreate*/
             }
             expectedPart=[e_part.RECORD_INFO]
-            // console.log(`before precheck done=====.`)
+            console.log(`before precheck done=====.`)
             await helper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
-// console.log(`precheck done=====.`)
+console.log(`precheck done=====.`)
 
             tmpResult=await createUser_async(req)
             // console.log(`create  tmpResult ${JSON.stringify(tmpResult)}`)
@@ -213,7 +216,7 @@ async  function createUser_async(req){
     /*              参数转为server格式            */
     dataConvert.convertCreateUpdateValueToServerFormat(docValue)
     dataConvert.constructCreateCriteria(docValue)
-console.log(`docValue===> ${JSON.stringify(docValue)}`)
+// console.log(`createUser_async docValue===> ${JSON.stringify(docValue)}`)
     /*      因为name是unique，所以要检查用户名是否存在(unique check)     */
     if(undefined!==e_uniqueField[collName] &&  e_uniqueField[collName].length>0) {
         await helper.ifFiledInDocValueUnique_async({collName: collName, docValue: docValue})
@@ -318,6 +321,35 @@ console.log(`docValue===> ${JSON.stringify(docValue)}`)
     let folderValue={authorId:userCreateTmpResult.msg._id,name:'我的文档'}
     // console.log(`sugarValue ${JSON.stringify(sugarValue)}`)
      await common_operation_model.create({dbModel:dbModel.folder,value:folderValue})
+
+    let userResourceProfile=[]
+    // console.log(`e_iniSettingObject.resource_profile.DEFAULT==========>${JSON.stringify(e_iniSettingObject.resource_profile.DEFAULT)}`)
+    for(let defaultResourceProfile of Object.values(e_iniSettingObject.resource_profile.DEFAULT)){
+        // for(let resourceProfileId)
+        // console.log(`defaultResourceProfile==========>${JSON.stringify(defaultResourceProfile)}`)
+        let tmp={}
+        tmp[e_field.USER_RESOURCE_PROFILE.USER_ID]=userCreateTmpResult.msg._id
+// console.log(`defaultResourceProfile==========>${JSON.stringify(defaultResourceProfile)}`)
+        tmp[e_field.USER_RESOURCE_PROFILE.RESOURCE_PROFILE_ID]=defaultResourceProfile
+        tmp[e_field.USER_RESOURCE_PROFILE.DURATION]=0
+        userResourceProfile.push(tmp)
+    }
+/*    /!*                  以下是测试数据                         *!/
+    for(let defaultResourceProfile of Object.values(e_iniSettingObject.resource_profile.ADVANCED)){
+        // for(let resourceProfileId)
+        // console.log(`defaultResourceProfile==========>${JSON.stringify(defaultResourceProfile)}`)
+        let tmp={}
+        tmp[e_field.USER_RESOURCE_PROFILE.USER_ID]=userCreateTmpResult.msg._id
+// console.log(`defaultResourceProfile==========>${JSON.stringify(defaultResourceProfile)}`)
+        tmp[e_field.USER_RESOURCE_PROFILE.RESOURCE_PROFILE_ID]=defaultResourceProfile
+        tmp[e_field.USER_RESOURCE_PROFILE.DURATION]=30
+        userResourceProfile.push(tmp)
+    }*/
+
+
+    // console.log(`userResourceProfile ${JSON.stringify(userResourceProfile)}`)
+    await common_operation_model.insertMany({dbModel:dbModel.user_resource_profile,docs:userResourceProfile})
+
 
 // return false
     //最终置user['docStatus']为DONE，且设置lastSignInDate
@@ -539,19 +571,35 @@ async function login_async(req){
 
 /*                      检查用户名/账号的唯一性                           */
 async  function  uniqueCheck_async(req) {
-    // console.log(`unique check is ${JSON.stringify(req.body.values)} `)
+    console.log(`unique check values =========> ${JSON.stringify(req.body.values)} `)
 
 let collName=e_coll.USER
-    let tmpResult=helper.nonCRUDreCheck({
+
+    let userLoginCheck={
+        needCheck:false,
+        // error:controllerError.userNotLoginCantCreateComment
+    }
+    let penalizeCheck={
+        /*                penalizeType:e_penalizeType.NO_ARTICLE,
+         penalizeSubType:e_penalizeSubType.CREATE,
+         penalizeCheckError:controllerError.userInPenalizeNoCommentCreate*/
+    }
+    let expectedPart=[e_part.SINGLE_FIELD]
+    // console.log(`before precheck =====.`)
+    await helper.preCheck_async({req:req,collName:collName,method:undefined,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
+// console.log(`precheck done=====.`)
+
+
+/*    let tmpResult=helper.nonCRUDreCheck({
         req:req,
         expectUserState:e_userState.NO_SESS,
         expectPart:[e_part.SINGLE_FIELD],
         collName:e_coll.USER
-    })
+    })*/
     // console.log(`precheck tmpResult is ${JSON.stringify(tmpResult)}`)
-    if(tmpResult.rc>0){
+/*    if(tmpResult.rc>0){
         return Promise.reject(tmpResult)
-    }
+    }*/
 
 
     /*                  logic               */
@@ -674,47 +722,24 @@ async function uploadPhoto_async(req){
     if(undefined===req.session.userId){
         return Promise.reject(controllerError.notLogin)
     }
-    if(req.session.userId!==userId){
+/*    if(req.session.userId!==userId){
         return Promise.reject(controllerError.cantUpdateOwnProfile)
-    }
+    }*/
 
-    
-    let tmpResult,uploadedFileSizeInKb
-    /*              上传文件到临时目录           */
-    tmpResult=await common_operation_model.find({dbModel:dbModel.store_path,condition:{usage:e_storePathUsage.UPLOAD_TMP}})
-    let uploadOption={
-        // maxFilesSize:2097152,
-        maxFilesSize:userPhotoConfiguration.size,//300k   头像文件大小100k
-        maxFileNumPerTrans:1,//每次只能上传一个头像文件
-        // maxFields:1,
-        name:'file',
-        uploadDir:tmpResult.msg[0][e_field.STORE_PATH.PATH]
-    }
-    //检查上传参数设置的是否正确
-    tmpResult=uploadFile.checkOption(uploadOption)
-    if(tmpResult.rc>0){
-        return Promise.reject(tmpResult)
-    }
-    //读取上传的文件，获得文件信息
-    tmpResult=await uploadFile.formParse_async(req,uploadOption)
-    // console.log(`formParse===${JSON.stringify(tmpResult)}`)
-
-    let {originalFilename,path,size}=tmpResult.msg[0]
-    // console.log(`originalFilename===${originalFilename}`)
-    // console.log(`path===${path}`)
-    // console.log(`size===${size}`)
-    tmpResult=convertFileSize({num:size,newUnit:e_fileSizeUnit.KB})
-    if(tmpResult.rc>0){
-        return Promise.reject(tmpResult)
-    }
-    uploadedFileSizeInKb=tmpResult.msg
-    // console.log(`uploadedFileSizeInKb===${uploadedFileSizeInKb}`)
+    // console.log(`before upload photo result ========> `)
+    let tmpResult
+    tmpResult=await helper.uploadFileToTmpDir_async({req:req,uploadTmpDir:e_iniSettingObject.store_path.UPLOAD_TMP.upload_tmp_dir.path,maxFileSizeInByte:userPhotoConfiguration.maxSizeInByte,fileSizeUnit:e_fileSizeUnit.KB})
+    // console.log(`after upload photo result ========> ${JSON.stringify(tmpResult)}`)
+    // let path=tmpResult.msg['filePath']
+    let {originalFilename,path,size}=tmpResult.msg
+    // console.log(`file path ========> ${JSON.stringify(path)}`)
+        console.log(`multipart size===${size}`)
 
     //检查size(width&&height)不符合，直接返回错误（而不是试图转换）,因为在client已经确保了height和width的正确
     let inst=gmImage.initImage(path)
     // console.log(`inst ====>${JSON.stringify(inst)}`)
     tmpResult=await gmImage.getImageProperty_async(inst,e_gmGetter.SIZE)
-    // console.log(`rm size ====>${JSON.stringify(tmpResult)}`)
+    // console.log(`gm size ====>${JSON.stringify(tmpResult)}`)
     if(tmpResult.msg.width>userPhotoConfiguration.maxWidth || tmpResult.msg.height>userPhotoConfiguration.maxHeight){
         fs.unlinkSync(path)
         return Promise.reject(controllerError.imageSizeInvalid)
@@ -726,16 +751,17 @@ async function uploadPhoto_async(req){
     tmpResult=await helper.chooseStorePath_async({usage:e_storePathUsage.USER_PHOTO})
     // console.log(`choosen tmpResult ====> ${JSON.stringify(tmpResult)}`)
     choosenStorePathRecord=objectDeepCopy(tmpResult.msg)
-// console.log(`choosen store path recorder ====> ${JSON.stringify(choosenStorePathRecord)}`)
+console.log(`choosen store path recorder ====> ${JSON.stringify(choosenStorePathRecord)}`)
 
 
     /*              将文件从临时目录转移（转换）到选择的路径                */
     //保存到指定位置
     // console.log(`originalFilename ==== ${originalFilename}`)
-    let md5NameWithoutSuffix=hash(originalFilename,e_hashType.MD5)
+    let md5NameWithoutSuffix=hash(`${originalFilename}${Date.now()}`,e_hashType.MD5)
     let finalFileName=`${md5NameWithoutSuffix.msg}.${userPhotoConfiguration.imageType[0].toLowerCase()}`
-    // console.log(`finalFileName ==== ${finalFileName}`)
+
     let finalPath=choosenStorePathRecord.path+finalFileName
+
     // console.log(`path ==== ${path}`)
     // console.log(`finalPath ==== ${finalPath}`)
     //格式不同，直接转换到指定位置
@@ -745,18 +771,20 @@ async function uploadPhoto_async(req){
         // console.log(`path ==== ${path}`)
         await gmImage.gmCommand_async(inst,e_gmCommand.CONVERT_FILE_TYPE,finalPath)
         let newInst=gmImage.initImage(finalPath)
+        // console.log(`finalPath ====》 ${finalPath}`)
         tmpResult=await  gmImage.getImageProperty_async(newInst,e_gmGetter.FILE_SIZE)
         let tmpSize=tmpResult.msg.sizeNum,tmpUnit=tmpResult.msg.sizeUnit
 
         tmpResult=convertFileSize({num:tmpSize,unit:tmpUnit,newUnit:e_fileSizeUnit.KB})
-        uploadedFileSizeInKb=tmpResult.msg
+        size=tmpResult.msg
+        console.log(`conveter size ====》 ${size}`)
         fs.unlinkSync(path)
     }
     //格式符合，移动指定位置
     else{
         fs.renameSync(path,finalPath)
     }
-    // console.log(`final size========>${JSON.stringify(uploadedFileSizeInKb)}`)
+    console.log(`final size========>${JSON.stringify(size)}`)
 
 
 
@@ -795,7 +823,7 @@ async function uploadPhoto_async(req){
         helper.setStorePathStatus({originalStorePathRecord:originalStorePath,updateValue:updateValues})
         // console.log(`new update Values========>${JSON.stringify(updateValues)}`)
         await common_operation_model.findByIdAndUpdate({dbModel:dbModel.store_path,id:originalUserInfo[e_field.USER.PHOTO_PATH_ID],updateFieldsValue:updateValues})
-        updateValues={usedSize:choosenStorePathRecord[e_field.STORE_PATH.USED_SIZE]+uploadedFileSizeInKb}
+        updateValues={usedSize:choosenStorePathRecord[e_field.STORE_PATH.USED_SIZE]+size}
         //新选择的storePath，是否超出了门限
         helper.setStorePathStatus({originalStorePathRecord:originalStorePath,updateValue:updateValues})
         await common_operation_model.findByIdAndUpdate({dbModel:dbModel.store_path,id:choosenStorePathRecord['_id'],updateFieldsValue:updateValues})
@@ -805,7 +833,7 @@ async function uploadPhoto_async(req){
         // console.log(`update just choosen store path`)
         // console.log(`in1====>`)
         let originalPhotoSize=(undefined===originalUserInfo[e_field.USER.PHOTO_SIZE])? 0:originalUserInfo[e_field.USER.PHOTO_SIZE]
-        let updateValues={usedSize:choosenStorePathRecord[e_field.STORE_PATH.USED_SIZE]-originalPhotoSize+uploadedFileSizeInKb}
+        let updateValues={usedSize:choosenStorePathRecord[e_field.STORE_PATH.USED_SIZE]-originalPhotoSize+size}
         //新选择的storePath，是否超出了门限
         helper.setStorePathStatus({originalStorePathRecord:choosenStorePathRecord,updateValue:updateValues})
         // console.log(`new update Values========>${JSON.stringify(updateValues)}`)
@@ -815,9 +843,11 @@ async function uploadPhoto_async(req){
     }
     //最后更新user的PHOTO_PATH_ID/PHOTO_HASH_NAME/PHOTO_SIZE
     // console.log(`finalFileName===>${JSON.stringify(finalFileName)}`)
-    // console.log(`uploadedFileSizeInKb===>${JSON.stringify(uploadedFileSizeInKb)}`)
+    // console.log(`size===>${JSON.stringify(size)}`)
     // console.log(`choosenStorePathRecord['_id']===>${JSON.stringify(choosenStorePathRecord['_id'])}`)
-    let  updateFieldsValueForModel={photoHashName:finalFileName,photoSize:uploadedFileSizeInKb,photoPathId:choosenStorePathRecord['_id']}//实际update
+
+    let  updateFieldsValueForModel={photoHashName:finalFileName,photoSize:size,photoPathId:choosenStorePathRecord['_id']}//实际update
+    // console.log(`updateFieldsValueForModel===>${JSON.stringify(updateFieldsValueForModel)}`)
 // console.log(`updateFieldsValueForModel===>${JSON.stringify(updateFieldsValueForModel)}`)
     if(e_env.DEV===currentEnv){
         let newDocValue=dataConvert.addSubFieldKeyValue(updateFieldsValueForModel)

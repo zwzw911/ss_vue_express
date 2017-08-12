@@ -6,6 +6,7 @@
 
 // const dbModel=require('../../structure/admin/admin_user').collModel
 
+
 const mongooseErrorHandler=require('../../../constant/error/mongo/mongoError').mongooseErrorHandler
 
 //var pageSetting=require('../../config/global/globalSettingRule').pageSetting
@@ -303,18 +304,29 @@ async function findByIdAndUpdate({dbModel,id,updateFieldsValue,returnResult=true
         return Promise.resolve({rc:0})
     }
 }
+
+
 //统计数量
 //condition: {field:value, field2:value2}
 //count返回一个query，所以不能采用await，而是在callback返回promise
 async function countRec({dbModel,condition}){
-      let result=await dbModel.count(condition).catch(
+/*      let result=await dbModel.count(condition).catch(
         (err)=>{
             return Promise.reject(mongooseErrorHandler(err))
         }
     )
-
-    return Promise.resolve({rc:0,msg:result})
-
+    return Promise.resolve({rc:0,msg:result})*/
+// console.log(`condition======>${JSON.stringify(condition)}`)
+    return new Promise(function(resolve,reject){
+        dbModel.count(condition,function(err,count){
+            console.log(`err======>${JSON.stringify(err)}`)
+            console.log(`count======>${JSON.stringify(count)}`)
+            if(err){
+                return reject(mongooseErrorHandler(err))
+            }
+            return resolve({rc:0,msg:count})
+        })
+    })
 
 }
 
@@ -326,9 +338,21 @@ async function deleteOne({dbModel,condition}){
     )
 
     return Promise.resolve({rc:0,msg:result})
-
-
 }
+
+
+async function deleteMany({dbModel,condition}){
+    return new Promise(function(resolve,reject){
+        dbModel.deleteMany(condition,function(err){
+            if(err){
+                return reject(mongooseErrorHandler(err))
+            }
+           return resolve({rc:0})
+        })
+    })
+}
+
+
 /*
 * readRecorderNum:在当前页上读取的记录数
 * skipRecorderNumInPage：在当前页上跳过的记录数
@@ -473,6 +497,39 @@ async function checkBillTypeOkForBill({dbModel,id}){
 
 }
 
+async function group_async({dbModel,match,project,group,sort}){
+
+    let params=[]
+    if(undefined!==match){
+        params.push({$match:match})
+    }
+    if(undefined!==project){
+        params.push({$project:match})
+    }
+    if(undefined!==group){
+        params.push({$group:group})
+    }
+    if(undefined!==sort){
+        params.push({$sort:sort})
+    }
+    console.log(`params======>${JSON.stringify(params)}`)
+/*    let result=await dbModel.aggregate([
+        {
+            $match:{authorId:mongoose.Types.ObjectId("598ae782e21ca91e8c71a9d2")},
+            // $match:{name:/image/},
+        },
+        {
+        $group:
+            {_id:null,totalSizeInMb:{$sum:"$sizeInMb"}}
+        }
+        ])*/
+
+    let result=await dbModel.aggregate(params)
+    console.log(`group result is ${JSON.stringify(result)}`)
+    return Promise.resolve({rc:0,msg:result})
+}
+
+
 
 
 module.exports= {
@@ -482,6 +539,7 @@ module.exports= {
     remove,
     removeAll,//测试用
     deleteOne,
+    deleteMany,
     //readAll,
     readName,
     findById,
@@ -500,4 +558,9 @@ module.exports= {
 
     /*          deploy          */
     insertMany,
+
+    group_async,
+
 }
+
+

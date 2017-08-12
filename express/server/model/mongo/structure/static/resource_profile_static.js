@@ -1,24 +1,25 @@
 /**
- * Created by wzhan039 on 2017-06-22.
+ * Created by wzhan039 on 2017-06-10.
  *
  * 定义用户信息
  */
 
 'use strict'
 const mongoose=require('mongoose');
-// const fs=require('fs')
+const fs=require('fs')
 const regex=require('../../../../constant/regex/regex').regex
-const connectedDb=require('../../common/connection_admin').dbAdmin;
+const connectedDb=require('../../common/connection').dbSS;
 
 //使用ES6的promise
 //mongoose.Promise=Promise
 //mongoose.Promise = Promise
 const mongoSetting=require('../../common/configuration')
 
-const browserInputRule=require('../../../../constant/inputRule/browserInput/admin/admin_penalize').admin_penalize
-const internalInputRule=require('../../../../constant/inputRule/internalInput/admin/admin_penalize').admin_penalize
+// const browserInputRule=require('../../../../constant/inputRule/browserInput/article/like_dislike').like_dislike
+const internalInputRule=require('../../../../constant/inputRule/internalInput/static/resource_profile_static').resource_profile_static
 //根据inputRule的rule设置，对mongoose设置内建validator
-const collInputRule=Object.assign({},browserInputRule,internalInputRule)
+// const collInputRule=Object.assign({},browserInputRule,internalInputRule)
+const collInputRule=internalInputRule
 
 const serverRuleType=require('../../../../constant/enum/inputDataRuleType').ServerRuleType
 
@@ -28,8 +29,6 @@ const serverRuleType=require('../../../../constant/enum/inputDataRuleType').Serv
 const assist=require('../../common/assist')
 
 
-//gene by server/maintain/generateMongoEnum
-const enumValue=require('../enumValue')
 
 /*
 * schema definition
@@ -38,39 +37,15 @@ const enumValue=require('../enumValue')
 * */
 
 /*                           department                        */
-const collName='admin_penalize'
-
-/*const serPriority_arrayMaxLength={
-    validator(v){
-        return v.length<collInputRule['userPriority'][serverRuleType.ARRAY_MAX_LENGTH]['define']
-
-        // return v.length<=collInputRule['articleCommentsId'][serverRuleType.ARRAY_MAX_LENGTH]['define']
-    },
-    message:`错误代码${collInputRule['userPriority'][serverRuleType.ARRAY_MAX_LENGTH]['mongoError']['rc']}:${collInputRule['userPriority'][serverRuleType.ARRAY_MAX_LENGTH]['mongoError']['msg']}`
-}
-const userPriority_Enum={
-    validator(v){
-        let enumDefine=collInputRule['userPriority'][serverRuleType.ENUM]['define']
-        for(let singleValue of v){
-            if(-1===enumDefine.indexOf(singleValue)){
-                return false
-            }
-        }
-        return true
-
-        // return v.length<=collInputRule['articleCommentsId'][serverRuleType.ARRAY_MAX_LENGTH]['define']
-    },
-    message:`错误代码${collInputRule['userPriority'][serverRuleType.ENUM]['mongoError']['rc']}:${collInputRule['userPriority'][serverRuleType.ENUM]['mongoError']['msg']}`
-}*/
+const collName='resource_profile_static'
 
 const collFieldDefine={
-    creatorId:{type:mongoose.Schema.Types.ObjectId,ref:"admin_user"},
-    punishedId:{type:mongoose.Schema.Types.ObjectId,ref:"user"},
-    reason:{type:String},
-    penalizeType:{type:String,}, //enum只能支持string，不支持Number
-    penalizeSubType:{type:String,}, //CRUD和其它
-    duration:{type:Number}, //单位：天
-// isExpire:{type:Boolean},//处罚是否结束，通过virtual method判断
+
+    // authorId:{type:mongoose.Schema.Types.ObjectId,ref:"users"}, //
+    userId:{type:mongoose.Schema.Types.ObjectId,ref:"user"}, //
+    resourceProfileId:{type:mongoose.Schema.Types.ObjectId,ref:"resource_profile"},
+    usedFileNum:{type:Number}, //
+    usedFileSize:{type:Number},//
     cDate:{type:Date,default:Date.now},
     uDate:{type:Date,default:Date.now},
     dDate:{type:Date},
@@ -84,8 +59,6 @@ if(mongoSetting.configuration.setBuildInValidatorFlag){
 
 
 console.log(`after: ${JSON.stringify(collFieldDefine)}`)
-
-
 /*
 * 根据define/validateRule/validateRule的rule设置schema的rule
 * */
@@ -108,19 +81,6 @@ const collSchema=new mongoose.Schema(
     mongoSetting.schemaOptions
 )
 
-collSchema.virtual('isExpire').get(function(){
-    // console.log(`cDate=======>${this.cDate.getTime()}`)
-    // console.log(`cDate=======>${this.cDate.getTime()+this.duration*24*60*60*1000}`)
-    // console.log(`now  =======>${Date.now()}`)
-    // console.log(`result===>${(this.cDate.getTime()+this.duration*24*60*1000)<(Date.now())}`)
-    //永久封号
-    if(0===this.duration){
-        return false
-    }else{
-        return (this.cDate.getTime()+this.duration*86400000)<Date.now()
-    }
-
-})
 /*const departmentSchema=new mongoose.Schema(
     fieldDefine['department'],
     schemaOptions

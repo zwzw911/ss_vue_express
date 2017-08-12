@@ -39,7 +39,7 @@ const validateError={
         valuesUndefined:{rc:40100,msg:{client:'输入值格式错误',server:'输入值不能为空(未定义)'}},
         valueMustBeObject:{rc:40102,msg:{client:`输入值格式错误`,server:`输入值必须是对象`}},
 
-        inputValuePartNumExceed:{rc:40104,msg:{client:`输入值格式错误`,server:`输入参数中，输入值中字段数量超出定义`}},
+        inputValuePartNumNotExpected:{rc:40104,msg:{client:`输入值格式错误`,server:`输入参数中，输入值中字段数量和定义的不一致`}},
         inputValueExceptedPartNotValid:{rc:40106,msg:{client:`输入值格式错误`,server:`期望进行检查的参数不存在`}},
         inputValuePartNotMatch:{rc:40108,msg:{client:`输入值格式错误`,server:`输入参数中，某个参数并非期望的参数`}},
         inputValuePartSearchParamsValueFormatWrong:{rc:40110,msg:{client:`输入值格式错误`,server:`输入参数中，searchParams的值必须为object`}},

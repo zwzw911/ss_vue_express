@@ -12,15 +12,19 @@ const express = require('express');
 //var app=express()
 const router = express.Router();
 const genFinalReturnResult=require('../../function/assist/misc').genFinalReturnResult
-const logic=require('./article_logic')
+const article_logic=require('./article_logic')
+const article_comment_logic=require('./article_comment_logic')
+const article_upload_file_logic=require('./article_upload_file_logic')
+const likeDislike_logic=require('./liekDislike_logic')
 
+const e_uploadFileType=require('../../constant/enum/node').UploadFileType
 /*        通过method，判断是CRUDM中的那个操作
 *   C: register
 *   M: match(login)
 * */
 router.post('/',function(req,res,next){
 
-    logic.article_dispatcher_async(req).then(
+    article_logic.article_dispatcher_async(req).then(
         (v)=>{
             console.log(`create   register   success, result:  ${JSON.stringify(v)}`)
             return res.json(v)
@@ -38,7 +42,7 @@ router.post('/',function(req,res,next){
  * */
 router.post('/comment',function(req,res,next){
 
-    logic.comment_dispatcher_async(req).then(
+    article_comment_logic.comment_dispatcher_async(req).then(
         (v)=>{
             console.log(`comment   success, result:  ${JSON.stringify(v)}`)
             return res.json(v)
@@ -50,38 +54,31 @@ router.post('/comment',function(req,res,next){
     )
 })
 
+/*              上传文件                */
+router.post('/articleImage',function(req,res,next){
 
-
-
-
-
-
-
-
-router.post('/uniqueCheck_async',function(req,res,next){
-
-    logic.uniqueCheck_async(req).then(
+    article_upload_file_logic.articleUploadFile_dispatch_async({req:req,type:e_uploadFileType.IMAGE}).then(
         (v)=>{
-            console.log(`unique check  success, result:  ${JSON.stringify(v)}`)
+            console.log(`articleImage upload  success, result:  ${JSON.stringify(v)}`)
             return res.json(v)
         },
         (err)=>{
-            console.log(`unique check  fail: ${JSON.stringify(err)}`)
+            console.log(`articleImage upload fail: ${JSON.stringify(err)}`)
             return res.json(genFinalReturnResult(err))
 
         }
     )
 })
 
-router.post('/retrievePassword',function(req,res,next){
+router.post('/articleAttachment',function(req,res,next){
 
-    logic.retrievePassword_async(req).then(
+    article_upload_file_logic.articleUploadFile_dispatch_async({req:req,type:e_uploadFileType.ATTACHMENT}).then(
         (v)=>{
-            console.log(`retrievePassword  success, result:  ${JSON.stringify(v)}`)
+            console.log(`articleAttachment upload success, result:  ${JSON.stringify(v)}`)
             return res.json(v)
         },
         (err)=>{
-            console.log(`retrievePassword  fail: ${JSON.stringify(err)}`)
+            console.log(`articleAttachment upload fail: ${JSON.stringify(err)}`)
             return res.json(genFinalReturnResult(err))
 
         }
@@ -89,17 +86,16 @@ router.post('/retrievePassword',function(req,res,next){
 })
 
 
+/*                  article like_dislike    */
+router.post('/likeDislike',function(req,res,next){
 
-
-router.post('/uploadPhoto',function(req,res,next){
-
-    logic.uploadPhoto_async(req).then(
+    likeDislike_logic.article_likeDislike_dispatcher_async({req:req}).then(
         (v)=>{
-            console.log(`uploadPhoto  success, result:  ${JSON.stringify(v)}`)
+            console.log(`likeDislike success, result:  ${JSON.stringify(v)}`)
             return res.json(v)
         },
         (err)=>{
-            console.log(`uploadPhoto  fail: ${JSON.stringify(err)}`)
+            console.log(`likeDislike fail: ${JSON.stringify(err)}`)
             return res.json(genFinalReturnResult(err))
 
         }
@@ -109,19 +105,8 @@ router.post('/uploadPhoto',function(req,res,next){
 
 
 
-router.post('/captcha',function(req,res,next){
 
-    logic.generateCaptcha_async(req).then(
-        (v)=>{
-            console.log(`captcha  success, result:  ${JSON.stringify(v)}`)
-            return res.json(v)
-        },
-        (err)=>{
-            console.log(`captcha  fail: ${JSON.stringify(err)}`)
-            return res.json(genFinalReturnResult(err))
 
-        }
-    )
-})
+
 
 module.exports={router}

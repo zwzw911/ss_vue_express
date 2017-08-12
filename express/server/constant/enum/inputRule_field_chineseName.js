@@ -25,6 +25,13 @@ const ChineseName={
         'name':'分类名称',
         'parentCategoryId':'上级分类',
 },
+    resource_profile:{
+        'name':'资源配置名称',
+        'range':'资源配置范围',
+        'type':'资源配置类型',
+        'maxFileNum':'最大文件数量',
+        'totalFileSizeInMb':'最大存储空间',
+},
     store_path:{
         'name':'存储路径名称',
         'path':'存储路径',
@@ -51,7 +58,7 @@ const ChineseName={
         'name':'文档附件名称',
         'hashName':'文档附件名称',
         'pathId':'存储路径',
-        'size':'附件大小',
+        'sizeInMb':'附件大小',
         'authorId':'附件上传者',
         'articleId':'附件文档',
 },
@@ -64,7 +71,7 @@ const ChineseName={
         'name':'文档图片名称',
         'hashName':'文档图片名称',
         'pathId':'存储路径',
-        'size':'图片大小',
+        'sizeInMb':'图片大小',
         'authorId':'图片上传者',
         'articleId':'文档',
 },
@@ -77,9 +84,6 @@ const ChineseName={
         'articleId':'文档',
         'like':'喜欢',
         'authorId':'提交者',
-},
-    like_dislike_static:{
-        'articleId':'文档',
 },
     tag:{
         'name':'标签名称',
@@ -159,6 +163,15 @@ const ChineseName={
         'size':'图片大小',
         'authorId':'图片上传者',
 },
+    like_dislike_static:{
+        'articleId':'文档',
+},
+    resource_profile_static:{
+        'userId':'用户',
+        'resourceProfileId':'资源设定',
+        'usedFileNum':'已创建文件数量',
+        'usedFileSize':'已使用磁盘空间',
+},
     sugar:{
 },
     user:{
@@ -174,6 +187,11 @@ const ChineseName={
         'lastAccountUpdateDate':'账号更改日期',
         'lastSignInDate':'上次登录时间',
         'photoSize':'头像大小',
+},
+    user_resource_profile:{
+        'userId':'用户',
+        'resource_profile_id':'资源配置',
+        'duration':'资源配置有效期',
 },
     read_article:{
 },

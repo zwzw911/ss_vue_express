@@ -210,6 +210,11 @@ const suggestLimit={
 }
 
 const uploadFileDefine={
+    common:{
+        imageType:['PNG','JPEG','JPG'],
+        attachmentType:['7z','txt','log'],
+
+    },
     article_image:{
         maxSizeInByte:2*1024*1024, //byte
         maxSizeInMB:2, //byte
@@ -221,12 +226,12 @@ const uploadFileDefine={
         maxSizeInMB:10, //byte
     },
     user_thumb:{
-        size:400*1024,// in byte
+        maxSizeInByte:400*1024,// in byte
         maxHeight:10000,//px
         maxWidth:10000,//px
         imageType:['PNG'],
-        saveDir:'H:/ss_vue_express/test_data/userPhoto/dest/',
-        tmpSaveDir:'H:/ss_vue_express/test_data/tmp/'
+        // saveDir:'H:/ss_vue_express/test_data/userPhoto/dest/',
+        // tmpSaveDir:'H:/ss_vue_express/test_data/tmp/'
     },
     impeach_image:{
         maxSizeInByte:2*1024*1024, //byte

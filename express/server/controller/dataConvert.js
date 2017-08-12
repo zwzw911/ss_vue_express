@@ -6,6 +6,8 @@
  * 2. constructCreateCriteria:对传入的create的参数，删除其中value为null的字段
  * 3. constructUpdateCriteria：对传入的update的参数，将其中value为null的字段，转换成mongodb中unset
  */
+"use strict";
+const  mongoose = require('mongoose') //用于将objectId转换
 
 const dataTypeCheck=require('../function/validateInput/validateHelper').dataTypeCheck
 const dataType=require('../constant/enum/inputDataRuleType').ServerDataType
@@ -170,7 +172,8 @@ const convertCreateUpdateValueToServerFormat=function(values){
      }
      return result*/
     for(let key in values){
-        if(values[key]['value'] || null===values[key]['value'] ){
+        //value值存在（包含null)
+        if(undefined!==values[key]['value'] || null===values[key]['value'] ){
             values[key]=values[key]['value']
         }
     }
@@ -232,6 +235,9 @@ const addSubFieldKeyValue=function(obj){
     return newValue
 }
 
+function convertToObjectId(str){
+    return mongoose.Types.ObjectId(str)
+}
 module.exports={
     genNativeSearchCondition,
     convertCreateUpdateValueToServerFormat,
@@ -241,4 +247,6 @@ module.exports={
 
     //只在dev环境下使用
     addSubFieldKeyValue,
+
+    convertToObjectId,
 }

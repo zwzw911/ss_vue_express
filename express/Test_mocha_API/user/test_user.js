@@ -26,6 +26,8 @@ const controllerError=require('../../server/controller/user/user_logic').control
 
 const objectDeepCopy=require('../../server/function/assist/misc').objectDeepCopy
 
+const test_helper=require("../test_helper")
+
 const testData=require('../testData')
 
 let baseUrl="/user/"
@@ -190,7 +192,8 @@ describe('user1(register) correct value:', function() {
         /*              清理已有数据              */
         // console.log(`######   delete exist record   ######`)
         // console.log(`correctValueForModel ${JSON.stringify(correctValueForModel)}`)
-        let condition=objectDeepCopy(testData.user.user1ForModel)
+        await test_helper.deleteUserAndRelatedInfo_async({account:testData.user.user1ForModel.account})
+        /*let condition=objectDeepCopy(testData.user.user1ForModel)
         delete condition['name']
         delete condition['password']
         // console.log(`condition ${JSON.stringify(condition)}`)
@@ -204,7 +207,7 @@ describe('user1(register) correct value:', function() {
             result=await common_operation_model.deleteOne({dbModel:dbModel.user_friend_group,condition:{userId:userId}})
             result=await common_operation_model.deleteOne({dbModel:dbModel.folder,condition:{authorId:userId}})
             // console.log(`delete result is ${JSON.stringify(result)}`)
-        }
+        }*/
         // done()
     });
 
@@ -263,7 +266,7 @@ describe('user1(register) unique check:', function() {
 describe('POST /user/uniqueCheck_async ', function() {
     let data={values:{}},url='uniqueCheck_async',finalUrl=baseUrl+url
 
-    it('unique name check', function(done) {
+    it('single field unique name check', function(done) {
         data.values[e_part.SINGLE_FIELD]={name:{value:testData.user.user1.name.value}}//,notExist:{value:123}
         request(app).post(finalUrl).set('Accept', 'application/json').send(data)
             .end(function(err, res) {
@@ -668,7 +671,8 @@ describe('update user： ', function() {
     })
 
     after('delete new create user2', async function() {
-        let user2ModelTmp=objectDeepCopy(testData.user.user2ForModel)
+        await test_helper.deleteUserAndRelatedInfo_async({account:testData.user.user2ForModel.account})
+        /*let user2ModelTmp=objectDeepCopy(testData.user.user2ForModel)
         delete user2ModelTmp['name']
         delete user2ModelTmp['password']
         // let condition={name:{value:'test'},account:{value:'12341234123'}}
@@ -683,7 +687,7 @@ describe('update user： ', function() {
             result=await common_operation_model.deleteOne({dbModel:dbModel.user_friend_group,condition:{userId:userId}})
             result=await common_operation_model.deleteOne({dbModel:dbModel.folder,condition:{authorId:userId}})
             // console.log(`delete result is ${JSON.stringify(result)}`)
-        }
+        }*/
     })
 })
 
@@ -815,7 +819,8 @@ describe('retrieve password: ', function() {
 
 
     after('delete new create testData.user.user3', async function() {
-        let user3ModelTmp=objectDeepCopy(testData.user.user3ForModel)
+        await test_helper.deleteUserAndRelatedInfo_async({account:testData.user.user3ForModel.account})
+        /*let user3ModelTmp=objectDeepCopy(testData.user.user3ForModel)
         delete user3ModelTmp['name']
         delete user3ModelTmp['password']
         // let condition={name:{value:'test'},account:{value:'12341234123'}}
@@ -830,7 +835,7 @@ describe('retrieve password: ', function() {
             result=await common_operation_model.deleteOne({dbModel:dbModel.user_friend_group,condition:{userId:userId}})
             result=await common_operation_model.deleteOne({dbModel:dbModel.folder,condition:{authorId:userId}})
             // console.log(`delete result is ${JSON.stringify(result)}`)
-        }
+        }*/
     })
 })
 

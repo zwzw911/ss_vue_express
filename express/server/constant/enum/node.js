@@ -96,7 +96,10 @@ const InputFieldCheckType={
     BASE_INPUT:'2',//以input为base进行检测（一般用在对部分字段进行检查，例如。modify几率，检查记录的unique性）
 }
 
-
+const UploadFileType={
+    IMAGE:'1',
+    ATTACHMENT:'2'
+}
 module.exports={
     RandomStringType,
     UserState,
@@ -109,5 +112,6 @@ module.exports={
     TimeUnit,
     Method,
     InputFieldCheckType,
+    UploadFileType,
     // StorePathUsage,
 }

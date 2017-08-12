@@ -61,7 +61,7 @@ const collFieldDefine={
         dDate:{type:Date},
 }
 
-// console.log(`${__filename}:before: ${JSON.stringify(collFieldDefine)}`)
+console.log(`${__filename}:before: ${JSON.stringify(collFieldDefine)}`)
 
 if(mongoSetting.configuration.setBuildInValidatorFlag){
     assist.setMongooseBuildInValidator(collFieldDefine,collInputRule)

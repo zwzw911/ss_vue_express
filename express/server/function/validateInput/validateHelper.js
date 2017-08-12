@@ -204,6 +204,9 @@ const dataTypeCheck= {
     isFile(file) {
         return fs.statSync(file).isFile()
     },
+    isBoolean(value){
+        return (typeof value === 'boolean')
+    }
 }
 
 //对dataTypeCheck进行封装
@@ -220,8 +223,9 @@ function valueTypeCheck(value, type){
         case serverDataType.ARRAY:
             return dataTypeCheck.isArray(value)
         case serverDataType.OBJECT:
+            return dataTypeCheck.isObject(value)
             return true
-        case serverDataType.OBJECT_ID:
+        case serverDataType.OBJECT_ID://在validateValue中通过format进行判断
             return true
         case serverDataType.FILE:
             return (valueMatchRuleDefineCheck.isFileFolderExist(value) && dataTypeCheck.isFile(value));
@@ -229,6 +233,8 @@ function valueTypeCheck(value, type){
             return (valueMatchRuleDefineCheck.isFileFolderExist(value) && dataTypeCheck.isFolder(value))
         case serverDataType.NUMBER:
             return dataTypeCheck.isNumber(value)
+        case serverDataType.BOOLEAN:
+            return dataTypeCheck.isBoolean(value)
         default:
             return validateHelperError.unknownDataType
     }

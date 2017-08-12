@@ -12,6 +12,7 @@ const regex={
     sha1Hash:/^[0-9a-f]{40}$/,
     sha256:/^[0-9a-f]{64}$/,
     sha512:/^[0-9a-f]{128}$/,
+    md5Image:/^[0-9a-f]{32}\.(jpg|jpeg|png)$/, //md5，非重要数据，节省空间
 
     objectId:/^[0-9a-f]{24}$/,//mongodb objectid
     
@@ -28,7 +29,7 @@ const regex={
     // account:/[(\w+\.)*\w+@(\w+\.)+[A-Za-z]+|^1\d{10}$]/,
     imageName:/^[\u4E00-\u9FFF\w]{1,250}\.(jpg|png|jpeg)$/,
     hashImageName:/[0-9a-f]{40}\.(jpg|png|jpeg)/,
-    hashAttachmentName:/[0-9a-f]{40}\.(txt|7z|log)/,
+    md5AttachmentName:/[0-9a-f]{40}\.(txt|7z|log)/,
     folderName:/^[\u4E00-\u9FFF\w]{1,255}$/,
     fileName:/^[\u4E00-\u9FFF\w]{1,250}\.[a-z]{3,4}$/,
     tagName:/^[\u4E00-\u9FFF\w]{2,20}$/,//查询关键字，中文，英文

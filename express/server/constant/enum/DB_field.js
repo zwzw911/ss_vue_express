@@ -29,6 +29,14 @@ const Field={
         NAME:'name',
         PARENT_CATEGORY_ID:'parentCategoryId',
     },
+    RESOURCE_PROFILE:{
+        ID:'id',
+        NAME:'name',
+        RANGE:'range',
+        TYPE:'type',
+        MAX_FILE_NUM:'maxFileNum',
+        TOTAL_FILE_SIZE_IN_MB:'totalFileSizeInMb',
+    },
     STORE_PATH:{
         ID:'id',
         NAME:'name',
@@ -59,7 +67,7 @@ const Field={
         NAME:'name',
         HASH_NAME:'hashName',
         PATH_ID:'pathId',
-        SIZE:'size',
+        SIZE_IN_MB:'sizeInMb',
         ARTICLE_ID:'articleId',
         AUTHOR_ID:'authorId',
     },
@@ -74,7 +82,7 @@ const Field={
         NAME:'name',
         HASH_NAME:'hashName',
         PATH_ID:'pathId',
-        SIZE:'size',
+        SIZE_IN_MB:'sizeInMb',
         ARTICLE_ID:'articleId',
         AUTHOR_ID:'authorId',
     },
@@ -89,12 +97,6 @@ const Field={
         AUTHOR_ID:'authorId',
         ARTICLE_ID:'articleId',
         LIKE:'like',
-    },
-    LIKE_DISLIKE_STATIC:{
-        ID:'id',
-        ARTICLE_ID:'articleId',
-        LIKE_TOTAL_NUM:'likeTotalNum',
-        DISLIKE_TOTAL_NUM:'dislikeTotalNum',
     },
     TAG:{
         ID:'id',
@@ -186,6 +188,19 @@ const Field={
         SIZE:'size',
         AUTHOR_ID:'authorId',
     },
+    LIKE_DISLIKE_STATIC:{
+        ID:'id',
+        ARTICLE_ID:'articleId',
+        LIKE_TOTAL_NUM:'likeTotalNum',
+        DISLIKE_TOTAL_NUM:'dislikeTotalNum',
+    },
+    RESOURCE_PROFILE_STATIC:{
+        ID:'id',
+        USER_ID:'userId',
+        RESOURCE_PROFILE_ID:'resourceProfileId',
+        USED_FILE_NUM:'usedFileNum',
+        USED_FILE_SIZE:'usedFileSize',
+    },
     SUGAR:{
         ID:'id',
         USER_ID:'userId',
@@ -205,6 +220,12 @@ const Field={
         PHOTO_HASH_NAME:'photoHashName',
         PHOTO_SIZE:'photoSize',
         LAST_SIGN_IN_DATE:'lastSignInDate',
+    },
+    USER_RESOURCE_PROFILE:{
+        ID:'id',
+        USER_ID:'userId',
+        RESOURCE_PROFILE_ID:'resource_profile_id',
+        DURATION:'duration',
     },
     READ_ARTICLE:{
         ID:'id',

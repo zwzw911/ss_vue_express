@@ -26,6 +26,10 @@ const helper={
     /*            dispatcherPreCheck                        */
     methodPartMustExistInDispatcher:{rc:50012,msg:{client:'输入值格式错误',server:'dispatcher中必须有method'}},
 
+    /*            uploadFileToTmpDir                        */
+    uploadFileNameSanityFail:{rc:50014,msg:{client:'文件名称不正确',server:'uploadFileToTmpDir_async函数中，上传的文件名称没有通过sanity测试，可能包含有害内容'}},
+
+
     /*          unique check            */
     //collName和fieldName都根据constant/enum/DB_uniqueField而来
     fieldValueUniqueCheckError({collName,fieldName,fieldChineseName}){

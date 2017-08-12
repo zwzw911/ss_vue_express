@@ -27,7 +27,16 @@ const fkConfig={
         [e_field.ARTICLE_COMMENT.ARTICLE_ID]: {
             relatedColl: e_coll.ARTICLE, forSelect: `${e_field.ARTICLE.NAME}`, forSetValue: [e_field.ARTICLE.NAME]
         },
-    }
+    },
+    /*          article likeDislike         */
+    [e_coll.LIKE_DISLIKE]: {
+        [e_field.LIKE_DISLIKE.ARTICLE_ID]: {
+            relatedColl: e_coll.ARTICLE, forSelect: `${e_field.ARTICLE.NAME}`, forSetValue: [e_field.ARTICLE.NAME]
+        },
+        [e_field.LIKE_DISLIKE.AUTHOR_ID]:{
+            relatedColl:e_coll.USER,forSelect:`${e_field.USER.NAME}`,forSetValue:[e_field.USER.NAME]
+        },
+    },
 }
 
 console.log(`${JSON.stringify(fkConfig)}`)

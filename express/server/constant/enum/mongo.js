@@ -107,12 +107,13 @@ const PenalizeType={
         NO_ARTICLE: '0',
         NO_COMMENT:'1',
         NO_TOPIC:'2',
-
+        NO_LIKE_DISLIKE:'3',
     },
     SHOW:{
         NO_ARTICLE: '禁止写文档',
         NO_COMMENT:'禁止评论',
         NO_TOPIC:'禁止创建系列',
+        NO_LIKE_DISLIKE:'禁止踩赞',
     },
 
 }
@@ -222,6 +223,29 @@ const StorePathStatus={
     },
 
 }
+
+const ResourceRange={
+    DB:{
+        PER_ARTICLE:'1',
+        PER_PERSON:'2',
+
+    },
+    SHOW:{
+        PER_ARTICLE:'文档',//对文档起作用
+        PER_PERSON:'用户',//对用户起作用
+    },
+}
+const ResourceType={
+    DB:{
+        DEFAULT:'1',
+        ADVANCED:'2',
+
+    },
+    SHOW:{
+        DEFAULT:'默认资源配置',//对文档起作用
+        ADVANCED:'高级资源配置',//对用户起作用
+    },
+}
 module.exports={
     ArticleStatus,
     AdminUserType,
@@ -238,4 +262,6 @@ module.exports={
     AccountType,
     StorePathUsage,
     StorePathStatus,
+    ResourceRange,
+    ResourceType,
 }

@@ -121,7 +121,7 @@ const validatePartFormat=function(test){
     exceptPart=[validatePart.CURRENT_PAGE]
     result=func(inputValue,exceptPart)
     // console.log(`result is ${JSON.stringify(result)}`)
-    test.equal(result.rc,validateFormatError.inputValuePartNumExceed.rc,'part number exceed exceptPart')
+    test.equal(result.rc,validateFormatError.inputValuePartNumNotExpected.rc,'part number exceed exceptPart')
 
     //2 undefined part
     inputValue={'currentColl':''}

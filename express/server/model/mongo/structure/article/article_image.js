@@ -42,9 +42,9 @@ const collFieldDefine={
     name:{type:String,},
     hashName:{type:String,},
     pathId:{type:mongoose.Schema.Types.ObjectId,ref:"path"},
-    size:{type:Number}, //
+    sizeInMb:{type:Number}, //in Mb
     articleId:{type:mongoose.Schema.Types.ObjectId,ref:'article'},
-    authorId:{type:mongoose.Schema.Types.ObjectId,ref:"user"}, //
+    authorId:{type:mongoose.Schema.Types.ObjectId,ref:"user"}, //冗余字段，用于统计用户的image（数量和总size）
     cDate:{type:Date,default:Date.now},
     uDate:{type:Date,default:Date.now},
     dDate:{type:Date},

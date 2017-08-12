@@ -7,6 +7,7 @@ const admin_penalize=require('./structure/admin/admin_penalize.js').collModel
 const admin_sugar=require('./structure/admin/admin_sugar.js').collModel
 const admin_user=require('./structure/admin/admin_user.js').collModel
 const category=require('./structure/admin/category.js').collModel
+const resource_profile=require('./structure/admin/resource_profile.js').collModel
 const store_path=require('./structure/admin/store_path.js').collModel
 /*       article           */
 const article=require('./structure/article/article.js').collModel
@@ -15,7 +16,6 @@ const article_comment=require('./structure/article/article_comment.js').collMode
 const article_image=require('./structure/article/article_image.js').collModel
 const folder=require('./structure/article/folder.js').collModel
 const like_dislike=require('./structure/article/like_dislike.js').collModel
-const like_dislike_static=require('./structure/article/like_dislike_static.js').collModel
 const tag=require('./structure/article/tag.js').collModel
 /*       friend           */
 const member_penalize=require('./structure/friend/member_penalize.js').collModel
@@ -30,9 +30,13 @@ const impeach_attachment=require('./structure/impeach/impeach_attachment.js').co
 const impeach_comment=require('./structure/impeach/impeach_comment.js').collModel
 const impeach_dealer=require('./structure/impeach/impeach_dealer.js').collModel
 const impeach_image=require('./structure/impeach/impeach_image.js').collModel
+/*       static           */
+const like_dislike_static=require('./structure/static/like_dislike_static.js').collModel
+const resource_profile_static=require('./structure/static/resource_profile_static.js').collModel
 /*       user           */
 const sugar=require('./structure/user/sugar.js').collModel
 const user=require('./structure/user/user.js').collModel
+const user_resource_profile=require('./structure/user/user_resource_profile.js').collModel
 /*       user_behavior           */
 const read_article=require('./structure/user_behavior/read_article.js').collModel
 const user_input_keyword=require('./structure/user_behavior/user_input_keyword.js').collModel
@@ -48,6 +52,7 @@ module.exports={
     admin_sugar,
     admin_user,
     category,
+    resource_profile,
     store_path,
     /*       article           */
     article,
@@ -56,7 +61,6 @@ module.exports={
     article_image,
     folder,
     like_dislike,
-    like_dislike_static,
     tag,
     /*       friend           */
     member_penalize,
@@ -71,9 +75,13 @@ module.exports={
     impeach_comment,
     impeach_dealer,
     impeach_image,
+    /*       static           */
+    like_dislike_static,
+    resource_profile_static,
     /*       user           */
     sugar,
     user,
+    user_resource_profile,
     /*       user_behavior           */
     read_article,
     user_input_keyword,
