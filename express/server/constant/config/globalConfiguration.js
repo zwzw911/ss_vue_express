@@ -15,6 +15,7 @@
 const e_serverDataType=require('../enum/inputDataRuleType').ServerDataType
 const regex=require('../regex/regex').regex
 
+const currentAppSetting=require('../config/appSetting').currentAppSetting
 //maxAge:ms;  负数（-1）：临时cookie，关闭网页就删除cookie；0：立刻删除；正整数：多少毫秒后失效
  // secure:false, cookie是否只能在https上传输。false，可在http上传
  //path: URL必须符合才能使用cookie。例如，如果设置path为/test/,则URL必须为/test才能使用。设为/，所有URL均可使用。
@@ -22,7 +23,7 @@ const regex=require('../regex/regex').regex
 
 const generalCookieSetting={
     path:'/', //域名下所有URL都可以使用session
-    domain:'127.0.0.1', //可以使用session的域名（可以是IP)
+    domain:currentAppSetting['hostDomain'], //可以使用session的域名（可以是IP,127.0.0.1)
     //maxAge:900000, // 整数，ms。默认15分钟
     secure:false, //只用https
     httpOnly:true, //通过http传递cookie

@@ -61,8 +61,8 @@ const uploadFile=require('../function/assist/upload')
 const convertFileSize=require('../function/assist/misc').convertFileSize
 const sanityHtml=require('../function/assist/sanityHtml').sanityHtml
 
-
-
+const regex=require('../constant/regex/regex').regex
+const currentAppSetting=require('../constant/config/appSetting').currentAppSetting
 
 //1. 对输入（inputValue）进行整体检查；对expectedPart进行检查（part是否正确，part值类型是否正确）
 // 只用于nonCRUDCheck。CRUDCHeck中，验证步骤被拆散
@@ -861,6 +861,91 @@ async function uploadFileToTmpDir_async({req,uploadTmpDir,maxFileSizeInByte,file
 }
 
 
+/*如果client输入的字段包含用户输入，需要进行XSS检查
+* @content;要进行检查的content
+* @error；如果检查失败，要返回的错误
+* */
+async function contentXSSCheck_async({content,error}){
+    if(sanityHtml(content)!==content){
+        return Promise.reject(error)
+    }
+}
+
+/*/!* content中不能有dataUrl，防止用户传入外部图片*!/
+function removeImageDataUrl({content}){
+    return content.replace(regex.imageDataUrl,'')
+}*/
+
+
+/*如果用户在client删除了图片，不会直接通知server，而是要在server端，通过比较content中image和db（自己和关联，例如article和article_image）中，决定是否要删除（磁盘文件）和db内容
+*@content：输入的内容
+* @recordId：要更新的记录，例如articleId
+* @collConfig: 对象，content所在的coll。{name:article, fkField:e_field.ARTICLE.innerAttachmentId}
+* @collImageName：对象content中，image存储在那个coll，格式同collConfig。 {name:e_coll.INNER_IMAGE, fkField:e_field.INNER_IMAGE.articleId}
+* @fkFieldName: collImageName中，对应到collName的外键字段，例如articleId/impeachId
+* */
+async function contentDbDeleteNotExistImage_async({content,collConfig,collImageConfig,fkFieldName,error}){
+    let tmpResult,validMd5ImageNameInContent={}
+    //获得所有<img/>DOM
+    let innerImageInContent=content.match(regex.imageDOM)
+
+
+
+    //IMG DOM中，scr的domain必须是本站地址，且文件名为md5
+    //转换成正则格式（.=====>\.）
+    let convertedHostDomain=currentAppSetting['hostDomain'].replace('.',`\.`)
+    let srcReg=new RegExp(`src="https*://${convertedHostDomain}.*?/([0-9a-f]{32}\.(jpg|jpeg|png))"`)
+    for(let singleImageDOM of innerImageInContent){
+        //如果DOM中，src不是本站地址，且文件图片不是md5，删除
+        let tmpMatchResult=singleImageDOM.match(srcReg)
+        if(null===tmpMatchResult){
+            content.replace(singleImageDOM,'')
+            continue
+        }
+
+        //获得md5图片名称：对象   md5：DOM   方便直接删除content
+        validMd5ImageNameInContent[tmpMatchResult[1]]=singleImageDOM
+
+    }
+
+    /*          检查md5是否在collImage中存在            */
+    //获得当前article/impeach的所有image记录
+    let imageSearchCondition={}
+    imageSearchCondition[fkFieldName]=collImageConfig.fkField
+    tmpResult=await common_operation_model.find({dbModel:e_dbModel[collConfig.name],condition:imageSearchCondition})
+
+    //对比db和content中的image
+    //db中没有任何image信息，则把content中所有image DOM删除
+    if(tmpResult.length===0){
+        content.replace(regex.imageDOM,'')
+        return Promise.resolve(content)
+    }
+    //以db为基准,db中有image，进行比较。如果db中的记录，在content中不存在，说明image已经被删除，那么清理db
+    let deletedImageId=[],deletedImageMd5Name=[],notDeletedMd5Name=[]
+    for(let singleRecord of tmpResult){
+        let md5Name=singleRecord['hashName']
+
+        if(-1===Object.keys(validMd5ImageNameInContent).indexOf(md5Name)){
+            deletedImageId.push(singleRecord['_id'])
+            deletedImageMd5Name.push(md5Name)
+            continue
+        }
+
+        notDeletedMd5Name.push(md5Name)
+    }
+    let condition={'_id':{$in:deletedImageId}}
+    await  common_operation_model.deleteMany({dbModel:e_dbModel[collImageConfig.name],condition:condition})
+    await  common_operation_model.deleteArrayFieldValue({dbModel:e_dbModel[collConfig.name],condition:condition,arrayFieldName:collConfig.fkField})
+    //以content的image为基准，如果db中没有，直接从content中删除
+    for(let singleMd5InContent in validMd5ImageNameInContent){
+        if(-1===notDeletedMd5Name.indexOf(singleMd5InContent)){
+            content.replace(validMd5ImageNameInContent[singleMd5InContent],'')
+        }
+    }
+
+    return Promise.resolve(content)
+}
+
 module.exports= {
     inputCommonCheck,//每个请求进来是，都要进行的操作（时间间隔检查等）
     validatePartValueFormat,
@@ -890,6 +975,10 @@ module.exports= {
     preCheck_async,//user login+robot+penalize+delete internal+ CRUD
 
     uploadFileToTmpDir_async,
+
+    contentXSSCheck_async,//如果输入的html，要进行XSS检查
+    // removeImageDataUrl,//删除content中的dataUrl图片，防止未经授权的图片
+    contentDbDeleteNotExistImage_async,
 }
 
 

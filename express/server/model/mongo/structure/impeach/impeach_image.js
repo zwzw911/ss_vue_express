@@ -43,7 +43,7 @@ const collFieldDefine={
     hashName:{type:String,},
     pathId:{type:mongoose.Schema.Types.ObjectId,ref:"path"},
     size:{type:Number}, //
-    // articleId:{type:mongoose.Schema.Types.ObjectId,ref:'articles'},
+    impeachId:{type:mongoose.Schema.Types.ObjectId,ref:'impeach'},//冗余字段，用来进行统计
     authorId:{type:mongoose.Schema.Types.ObjectId,ref:"user"}, //
     cDate:{type:Date,default:Date.now},
     uDate:{type:Date,default:Date.now},

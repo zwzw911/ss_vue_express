@@ -6,6 +6,7 @@
 const mongoose=require('mongoose');
 mongoose.Promise=Promise
 
+const currentAppSetting=require('../../../constant/config/appSetting').currentAppSetting
 //var url='mongodb://localhost/ss';
 /*const url='mongodb://127.0.0.1:27017/ss';
 const options={db: { native_parser: true }};
@@ -17,8 +18,8 @@ dbSS.on('connected',function(){
 })*/
 
 const url={
-    'default':'mongodb://127.0.0.1:27017/ss',
-    'sugar':'mongodb://127.0.0.1:27017/sugar', //sugar分开存储，保证安全
+    'default':`mongodb://${currentAppSetting['mongo_switch']}/ss`,
+    'sugar':`mongodb://${currentAppSetting['mongo_switch']}/sugar`, //sugar分开存储，保证安全
     // 'admin':'mongodb://127.0.0.1:27017/admin', //admin分开存储，保证admin信息不会泄露
 }
 const options={db: { native_parser: true }};

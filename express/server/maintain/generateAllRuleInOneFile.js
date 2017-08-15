@@ -98,7 +98,7 @@ function  combineRuleIntoOneFile(structure,result,ruleType){
                     }*/
                     collRule=Object.assign(collRule,browserRequire,internalRequire)
                     for(let singleFieldName in collRule){
-                        // console.log(`${collFileName}-${singleFieldName}`)
+                        // console.log(`=======>${collFileName}-${singleFieldName}`)
                         if(true==='format'in collRule[singleFieldName]){
                             // console.log(`${singleFieldName} has rule format ${JSON.stringify(internalRequire[singleFieldName]['format']['define'])}`)
                             collRule[singleFieldName]['format']['define']=collRule[singleFieldName]['format']['define'].toString()

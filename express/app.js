@@ -90,9 +90,11 @@ app.use(function(req,res,next){
 /*              require file                */
 const user=require('./server/controller/user/user_router').router
 const article=require('./server/controller/article/article_router').router
+const impeach=require('./server/controller/impeach/impeach_router').router
 
 app.use('/user', user);
 app.use('/article', article);
+app.use('/impeach', impeach);
 // app.use('/register/uniqueCheck', register);
 // app.use('/users', users);
 

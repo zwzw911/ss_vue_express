@@ -6,6 +6,7 @@
 const mongoose=require('mongoose');
 mongoose.Promise=Promise
 
+const currentAppSetting=require('../../../constant/config/appSetting').currentAppSetting
 //var url='mongodb://localhost/ss';
 /*const url='mongodb://127.0.0.1:27017/ss';
 const options={db: { native_parser: true }};
@@ -17,7 +18,7 @@ dbSS.on('connected',function(){
 })*/
 
 const url={
-    'admin':'mongodb://127.0.0.1:27017/administrator', //admin分开存储，保证admin信息不会泄露。同时不要使用admin作为db名字，防止和mongodb的admin冲突
+    'admin':`mongodb://${currentAppSetting['mongo_switch']}/administrator`, //admin分开存储，保证admin信息不会泄露。同时不要使用admin作为db名字，防止和mongodb的admin冲突
 }
 const options={db: { native_parser: true }};
 const dbAdmin=mongoose.createConnection(url.admin,options)

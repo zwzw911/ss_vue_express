@@ -5,6 +5,7 @@
 // var redis=require('redis');
 let ioredis=require('ioredis')
 
+const currentAppSetting=require('../../../constant/config/appSetting').currentAppSetting
 /*let redisOptions={
  host:'127.0.0.1',
  port:6379,
@@ -16,8 +17,8 @@ let ioredis=require('ioredis')
  }*/
 
 let ioredisOption={
-    host:'127.0.0.1',
-    port:6379,
+    host:currentAppSetting['redisIP'],
+    port:currentAppSetting['redisPort'],
     family:'4',//IPv4
     db:0,
     //password:'',

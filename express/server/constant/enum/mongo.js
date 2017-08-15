@@ -7,10 +7,12 @@
 /*              注意，enum必须有2个值，否则mongoose在验证enum会出错（只有一个enum值，即使传入的值不符合，也会验证通过）                                    */
 const ArticleStatus={
     DB:{
-    'EDITING':'0', //用在2处：1. inputRule 2.通过 maintain/generateMongoEnum产生enumValue，用于将enum值加入到model中
-    'FINISHED':'1',
+        'NEW':'0', //必须新建一个文档，获得id后，image或者attachment才能有对应record进行处理
+        'EDITING':'1', //用在2处：1. inputRule 2.通过 maintain/generateMongoEnum产生enumValue，用于将enum值加入到model中
+        'FINISHED':'2',
     },
     SHOW:{
+        'NEW':'新建文档',
         'EDITING':'编辑中',
         'FINISHED':'编辑完成',
     }
@@ -108,12 +110,14 @@ const PenalizeType={
         NO_COMMENT:'1',
         NO_TOPIC:'2',
         NO_LIKE_DISLIKE:'3',
+        NO_IMPEACH:'4',
     },
     SHOW:{
         NO_ARTICLE: '禁止写文档',
         NO_COMMENT:'禁止评论',
         NO_TOPIC:'禁止创建系列',
         NO_LIKE_DISLIKE:'禁止踩赞',
+        NO_IMPEACH:'禁止举报',
     },
 
 }

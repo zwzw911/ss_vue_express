@@ -28,7 +28,7 @@ const article_image= {
         'require': {define: true, error: {rc: 10268}, mongoError: {rc: 20268, msg: '文档图片名称不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         // 'minLength': {define: 4, error: {rc: 10002}, mongoError: {rc: 30002, msg: '文档图片名称至少4个字符'}},
         // 'maxLength': {define: 255, error: {rc: 10004}, mongoError: {rc: 30004, msg: '文档名的长度不能超过255个字符'}},
-        'format': {define: regex.md5Image, error: {rc: 10270}, mongoError: {rc: 20270, msg: 'hash文档名必须由44个字符组成'}} //server端使用
+        'format': {define: regex.md5Image, error: {rc: 10270}, mongoError: {rc: 20270, msg: 'hash文档名必须由35~36个字符组成'}} //server端使用
     },
     pathId: {
         'chineseName': '存储路径',

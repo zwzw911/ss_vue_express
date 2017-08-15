@@ -30,7 +30,7 @@ const impeach= {
         'chineseName': '举报内容',
         'type': serverDataType.STRING,
         'require': {define: true, error: {rc: 10506}, mongoError: {rc: 20506, msg: '举报内容不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
-        'minLength': {define: 1, error: {rc: 10508}, mongoError: {rc: 20508, msg: '举报内容至少1个字符'}},
+        'minLength': {define: 5, error: {rc: 10508}, mongoError: {rc: 20508, msg: '举报内容至少5个字符'}},
         'maxLength': {define: 1999, error: {rc: 10510}, mongoError: {rc: 20510, msg: '举报内容的长度不能超过1999个字符'}},
         // 'format': {define: regex.folderFileName, error: {rc: 10005}, mongoError: {rc: 30005, msg: '文档名必须由1-255个字符组成'}} //server端使用
     },

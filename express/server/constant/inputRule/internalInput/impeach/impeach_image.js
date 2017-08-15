@@ -28,7 +28,7 @@ const impeach_image= {
         'require': {define: true, error: {rc: 10618}, mongoError: {rc: 20618, msg: '举报图片名称不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         // 'minLength': {define: 4, error: {rc: 10002}, mongoError: {rc: 30002, msg: '文档图片名称至少4个字符'}},
         // 'maxLength': {define: 255, error: {rc: 10004}, mongoError: {rc: 30004, msg: '文档名的长度不能超过255个字符'}},
-        'format': {define: regex.hashImageName, error: {rc: 10620}, mongoError: {rc: 20620, msg: 'hash名必须由44~45个字符组成'}} //server端使用
+        'format': {define: regex.md5Image, error: {rc: 10620}, mongoError: {rc: 20620, msg: 'hash名必须由35~36个字符组成'}} //server端使用
     },
     pathId: {
         'chineseName': '存储路径',
@@ -55,14 +55,14 @@ const impeach_image= {
         // 'maxLength': {define: 20, error: {rc: 10004}, mongoError: {rc: 20004, msg: '密码的长度不能超过20个字符'}},
         'format': {define: regex.objectId, error: {rc: 10632}, mongoError: {rc: 20632, msg: '图片上传者必须是objectId'}} //server端使用
     },
-    /*articleId: {
+    impeachId: {
         'chineseName': '举报',
         'type': serverDataType.OBJECT_ID,
-        'require': {define: true, error: {rc: 10000}, mongoError: {rc: 20000, msg: '文档不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        'require': {define: true, error: {rc: 10634}, mongoError: {rc: 20634, msg: '举报不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         // 'minLength': {define: 6, error: {rc: 10002}, mongoError: {rc: 20002, msg: '密码至少6个字符'}},
         // 'maxLength': {define: 20, error: {rc: 10004}, mongoError: {rc: 20004, msg: '密码的长度不能超过20个字符'}},
-        'format': {define: regex.objectId, error: {rc: 10005}, mongoError: {rc: 20005, msg: '文档必须是objectId'}} //server端使用
-    },*/
+        'format': {define: regex.objectId, error: {rc: 10636}, mongoError: {rc: 20636, msg: '举报必须是objectId'}} //server端使用
+    },
 
 
 }

@@ -13,7 +13,9 @@ const regex={
     sha256:/^[0-9a-f]{64}$/,
     sha512:/^[0-9a-f]{128}$/,
     md5Image:/^[0-9a-f]{32}\.(jpg|jpeg|png)$/, //md5，非重要数据，节省空间
-
+    imageDataUrl:/\<img.*?src="data:image\/.*?base64,.*?\>/g,
+    imageDOM:/\<img.*?\>/g,
+    // imageSrc:/src="(.*?)"/, //对单个imageDOM，获得src内容
     objectId:/^[0-9a-f]{24}$/,//mongodb objectid
     
     userName:/^[\u4E00-\u9FFF\w]{2,20}$/,//2-20个汉字/英文/数字

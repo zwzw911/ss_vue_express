@@ -28,7 +28,7 @@ const article_attachment= {
         'require': {define: true, error: {rc: 10238}, mongoError: {rc: 20238, msg: '文档附件名称不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         // 'minLength': {define: 4, error: {rc: 10002}, mongoError: {rc: 30002, msg: '文档图片名称至少4个字符'}},
         // 'maxLength': {define: 255, error: {rc: 10004}, mongoError: {rc: 30004, msg: '文档名的长度不能超过255个字符'}},
-        'format': {define: regex.md5AttachmentName, error: {rc: 10240}, mongoError: {rc: 20240, msg: 'hash文档名必须由43~44个字符组成'}} //server端使用
+        'format': {define: regex.md5AttachmentName, error: {rc: 10240}, mongoError: {rc: 20240, msg: 'hash文档名必须由35~36个字符组成'}} //server端使用
     },
     pathId: {
         'chineseName': '存储路径',

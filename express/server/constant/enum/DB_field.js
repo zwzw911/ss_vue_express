@@ -186,6 +186,7 @@ const Field={
         HASH_NAME:'hashName',
         PATH_ID:'pathId',
         SIZE:'size',
+        IMPEACH_ID:'impeachId',
         AUTHOR_ID:'authorId',
     },
     LIKE_DISLIKE_STATIC:{

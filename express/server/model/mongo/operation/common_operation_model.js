@@ -347,11 +347,25 @@ async function deleteMany({dbModel,condition}){
             if(err){
                 return reject(mongooseErrorHandler(err))
             }
-           return resolve({rc:0})
+           // return resolve({rc:0})
         })
     })
 }
 
+/*          删除数组字段中的某个（多个值）
+* @arrayFieldName： 数组字段
+* @arrayFieldValue：要删除的 数组 值
+* */
+async function deleteArrayFieldValue({dbModel,condition,arrayFieldName,arrayFieldValue}){
+    return new Promise(function(resolve,reject){
+        dbModel.update(condition,{$pull:{[arrayFieldName]:arrayFieldValue}},function(err){
+            if(err){
+                return reject(mongooseErrorHandler(err))
+            }
+            // return resolve({rc:0})
+        })
+    })
+}
 
 /*
 * readRecorderNum:在当前页上读取的记录数
@@ -540,6 +554,7 @@ module.exports= {
     removeAll,//测试用
     deleteOne,
     deleteMany,
+    deleteArrayFieldValue,//直接删除数组字段中一个或者多个值
     //readAll,
     readName,
     findById,
