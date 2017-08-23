@@ -26,8 +26,8 @@ const e_penalizeType=require('../../constant/enum/mongo').PenalizeType.DB
 const e_penalizeSubType=require('../../constant/enum/mongo').PenalizeSubType.DB
 const e_iniSettingObject=require('../../constant/enum/initSettingObject').iniSettingObject
 const e_articleStatus=require('../../constant/enum/mongo').ArticleStatus.DB
-const e_resourceRange=require('../../constant/enum/mongo').ResourceRange.DB
-const e_resourceType=require('../../constant/enum/mongo').ResourceType.DB
+const e_resourceProfileRange=require('../../constant/enum/mongo').ResourceProfileRange.DB
+const e_resourceProfileType=require('../../constant/enum/mongo').ResourceProfileType.DB
 const e_storePathUsage=require('../../constant/enum/mongo').StorePathUsage.DB
 
 const e_fileSizeUnit=require('../../constant/enum/node_runtime').FileSizeUnit

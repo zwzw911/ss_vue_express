@@ -37,6 +37,69 @@ const fkConfig={
             relatedColl:e_coll.USER,forSelect:`${e_field.USER.NAME}`,forSetValue:[e_field.USER.NAME]
         },
     },
+    /*          impeach                     */
+    [e_coll.IMPEACH]:{
+        [e_field.IMPEACH.CREATOR_ID]:{
+            relatedColl:e_coll.USER,forSelect:`${e_field.USER.NAME}`,forSetValue:[e_field.USER.NAME]
+        },
+        [e_field.IMPEACH.IMPEACHED_USER_ID]:{
+            relatedColl:e_coll.USER,forSelect:`${e_field.USER.NAME}`,forSetValue:[e_field.USER.NAME]
+        },
+
+/*        [e_field.IMPEACH.IMPEACH_ATTACHMENTS_ID]:{
+            relatedColl:e_coll.IMPEACH_ATTACHMENT,forSelect:`${e_field.IMPEACH_ATTACHMENT.NAME}`,forSetValue:[e_field.IMPEACH_ATTACHMENT.NAME]
+        },*/
+        [e_field.IMPEACH.IMPEACH_IMAGES_ID]:{
+            relatedColl:e_coll.IMPEACH_IMAGE,forSelect:`${e_field.IMPEACH_IMAGE.NAME}`,forSetValue:[e_field.IMPEACH_IMAGE.NAME]
+        },
+        [e_field.IMPEACH.IMPEACH_COMMENTS_ID]:{
+            relatedColl:e_coll.IMPEACH_COMMENT,forSelect:`${e_field.IMPEACH_COMMENT.CONTENT}`,forSetValue:[e_field.IMPEACH_COMMENT.CONTENT]
+        },
+
+        [e_field.IMPEACH.IMPEACHED_ARTICLE_ID]:{
+            relatedColl:e_coll.ARTICLE,forSelect:`${e_field.ARTICLE.NAME}`,forSetValue:[e_field.ARTICLE.NAME]
+        },
+        [e_field.IMPEACH.IMPEACHED_COMMENT_ID]:{
+            relatedColl:e_coll.ARTICLE_COMMENT,forSelect:`${e_field.ARTICLE_COMMENT.CONTENT}`,forSetValue:[e_field.ARTICLE_COMMENT.CONTENT]
+        },
+    },
+
+    [e_coll.IMPEACH_IMAGE]:{
+        [e_field.IMPEACH_IMAGE.AUTHOR_ID]:{
+            relatedColl:e_coll.USER,forSelect:`${e_field.USER.NAME}`,forSetValue:[e_field.USER.NAME]
+        },
+        [e_field.IMPEACH_IMAGE.PATH_ID]:{
+            relatedColl:e_coll.STORE_PATH,forSelect:`${e_field.STORE_PATH.NAME}`,forSetValue:[e_field.STORE_PATH.NAME]
+        },
+        //referenceId无法确定关联到哪个coll，而是需要和referenceType并在一起才能确定，因此无法直接卸载fkConfig，然后通过函数直接判断
+/*        [e_field.IMPEACH_IMAGE.IMPEACH_ID]:{
+            relatedColl:e_coll.IMPEACH,forSelect:`${e_field.IMPEACH.TITLE}`,forSetValue:[e_field.IMPEACH.TITLE]
+        },*/
+    },
+    [e_coll.IMPEACH_COMMENT]:{
+        [e_field.IMPEACH_COMMENT.AUTHOR_ID]:{
+            relatedColl:e_coll.USER,forSelect:`${e_field.USER.NAME}`,forSetValue:[e_field.USER.NAME]
+        },
+        [e_field.IMPEACH_COMMENT.IMPEACH_ID]:{
+            relatedColl:e_coll.IMPEACH,forSelect:`${e_field.IMPEACH.TITLE}`,forSetValue:[e_field.IMPEACH.TITLE]
+        },
+        [e_field.IMPEACH_COMMENT.IMPEACH_IMAGES_ID]:{
+            relatedColl:e_coll.IMPEACH_IMAGE,forSelect:`${e_field.IMPEACH_IMAGE.NAME}`,forSetValue:[e_field.IMPEACH_IMAGE.NAME]
+        },
+        /*          没有attachment        */
+    },
+    /*[e_coll.IMPEACH_ATTACHMENT]:{},*/
+    [e_coll.IMPEACH_DEALER]:{
+        [e_field.IMPEACH_DEALER.DEALER_ID]:{
+            relatedColl:e_coll.ADMIN_USER,forSelect:`${e_field.ADMIN_USER.NAME}`,forSetValue:[e_field.ADMIN_USER.NAME]
+        },
+        [e_field.IMPEACH_DEALER.ASSIGNER_ID]:{
+            relatedColl:e_coll.ADMIN_USER,forSelect:`${e_field.ADMIN_USER.NAME}`,forSetValue:[e_field.ADMIN_USER.NAME]
+        },
+        [e_field.IMPEACH_DEALER.IMPEACH_ID]:{
+            relatedColl:e_coll.IMPEACH,forSelect:`${e_field.IMPEACH.TITLE}`,forSetValue:[e_field.IMPEACH.TITLE]
+        },
+    },
 }
 
 console.log(`${JSON.stringify(fkConfig)}`)

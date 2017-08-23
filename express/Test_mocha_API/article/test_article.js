@@ -29,7 +29,7 @@ const contollerError=require('../../server/controller/article/article_logic').co
 
 const objectDeepCopy=require('../../server/function/assist/misc').objectDeepCopy
 
-const test_helper=require("../test_helper")
+const test_helper=require("../test_helper_db_operate")
 const testData=require('../testData')
 
 let baseUrl="/article/"

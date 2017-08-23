@@ -26,13 +26,13 @@ const resource_profile= {
         'chineseName': '资源配置范围',
         'type': serverDataType.STRING,
         'require': {define: true, error: {rc: 11106}, mongoError: {rc: 21106, msg: '资源配置范围不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
-        'enum':{define:enumValue.ResourceRange,error:{rc:11107},mongoError:{rc:21107,msg:'资源配置范围的类型不正确'}},//server端使用
+        'enum':{define:enumValue.ResourceProfileRange,error:{rc:11107},mongoError:{rc:21107,msg:'资源配置范围的类型不正确'}},//server端使用
     },
     type: {
         'chineseName': '资源配置类型',
         'type': serverDataType.STRING,
         'require': {define: true, error: {rc: 11108}, mongoError: {rc: 21108, msg: '资源配置类型不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
-        'enum':{define:enumValue.ResourceType,error:{rc:11109},mongoError:{rc:21109,msg:'资源配置类型的值类型不正确'}},//server端使用
+        'enum':{define:enumValue.ResourceProfileType,error:{rc:11109},mongoError:{rc:21109,msg:'资源配置类型的值类型不正确'}},//server端使用
     },
     maxFileNum: {
         'chineseName': '最大文件数量',

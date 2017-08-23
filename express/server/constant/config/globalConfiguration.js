@@ -12,7 +12,10 @@
 * 不能把object的value当成另外一个object的key（ruleType.require:value是不允许的）
 * */
 //var ruleType=require('../../define/enum/validEnum').enum.ruleType
+const e_coll=require('../enum/DB_Coll').Coll
 const e_serverDataType=require('../enum/inputDataRuleType').ServerDataType
+const e_uploadFileType=require('../enum/node').UploadFileType
+
 const regex=require('../regex/regex').regex
 
 const currentAppSetting=require('../config/appSetting').currentAppSetting
@@ -152,11 +155,13 @@ const maxNumber={
     },
     impeach:{
         maxImageNumber:10,//最多插入的图片
+        maxImageSizeInMb:2,//每个图片最大2M
         maxAttachmentNumber:10,//最多插入附件
         maxCommentNumber:200,//每篇最多200评论
     },
     impeachAttachment:{
         maxImageNumber:10,//最多插入的图片
+        maxImageSizeInMb:2,//每个图片最大2M
         maxAttachmentNumber:10,//最多插入附件
     },
     user_operation:{
@@ -210,6 +215,7 @@ const suggestLimit={
     },
 }
 
+//用于 rule define和处理上传文件的函数
 const uploadFileDefine={
     common:{
         imageType:['PNG','JPEG','JPG'],
@@ -234,17 +240,31 @@ const uploadFileDefine={
         // saveDir:'H:/ss_vue_express/test_data/userPhoto/dest/',
         // tmpSaveDir:'H:/ss_vue_express/test_data/tmp/'
     },
-    impeach_image:{
-        maxSizeInByte:2*1024*1024, //byte
-        maxSizeInMB:2, //byte
+    [e_coll.IMPEACH]:{
+        [e_uploadFileType.IMAGE]:{
+            maxSizeInByte:2*1024*1024, //byte
+            maxSizeInMB:2, //byte
+        },
+        [e_uploadFileType.ATTACHMENT]:{
+            maxSizeInByte:10*1024*1024, //byte
+            maxSizeInMB:10, //byte
+        }
     },
-    impeach_attachment:{
-        maxSizeInByte:10*1024*1024, //byte
-        maxSizeInMB:10, //byte
+
+    [e_coll.IMPEACH_COMMENT]:{
+        [e_uploadFileType.IMAGE]:{
+            maxSizeInByte:2*1024*1024, //byte
+            maxSizeInMB:2, //byte
+        },
+        [e_uploadFileType.ATTACHMENT]:{
+            maxSizeInByte:10*1024*1024, //byte
+            maxSizeInMB:10, //byte
+        },
     },
+
 }
 
-
+// console.log(`uploadFileDefine====>${JSON.stringify(uploadFileDefine.impeach.attachment.maxSizeInMB)}`)
 const gm={
 /*    inner_image:{
         maxWidth:750,//最宽750px，超过自动缩减

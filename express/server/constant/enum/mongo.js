@@ -175,7 +175,16 @@ const ImpeachStatus={
 
 }
 
-/*      为了实现原子性（若干表同时操作，回滚）
+//impeach和impeach_commnet共用一个coll记录image，为了区分，需要使用额外字段进行区分
+const ImpeachImageReferenceColl={
+    DB:{
+        IMPEACH:'1',    //image属于impeach
+        IMPEACH_COMMENT:'2',//image属于impeach_comment
+    },
+
+}
+/*      mongodb中document的状态
+        为了实现原子性（若干表同时操作，回滚）
 *   内部使用，所以无需SHOW
 * */
 const DocStatus={
@@ -206,12 +215,14 @@ const StorePathUsage={
         USER_PHOTO:'2',
         ARTICLE_INNER_IMAGE:'3',
         ARTICLE_INNER_ATTACHMENT:'4',
+        IMPEACH_IMAGE:'5',
     },
     SHOW:{
         UPLOAD_TMP:'临时文件夹',
         USER_PHOTO:'用户头像',
         ARTICLE_INNER_IMAGE:'文档图片',
         ARTICLE_INNER_ATTACHMENT:'文档附件',
+        IMPEACH_IMAGE:'举报图片',
     },
 
 }
@@ -228,18 +239,21 @@ const StorePathStatus={
 
 }
 
-const ResourceRange={
+const ResourceProfileRange={
     DB:{
         PER_ARTICLE:'1',
         PER_PERSON:'2',
-
+        PER_IMPEACH_OR_COMMENT:'3',
+        PER_PERSON_IN_IMPEACH:'4',
     },
     SHOW:{
         PER_ARTICLE:'文档',//对文档起作用
         PER_PERSON:'用户',//对用户起作用
+        PER_IMPEACH_OR_COMMENT:'3', //举报或者举报出路
+        PER_PERSON_IN_IMPEACH:'4',  //整个举报中
     },
 }
-const ResourceType={
+const ResourceProfileType={
     DB:{
         DEFAULT:'1',
         ADVANCED:'2',
@@ -262,10 +276,11 @@ module.exports={
     PenalizeSubType,
     ImpeachType,
     ImpeachStatus,
+    ImpeachImageReferenceColl,
     DocStatus,
     AccountType,
     StorePathUsage,
     StorePathStatus,
-    ResourceRange,
-    ResourceType,
+    ResourceProfileRange,
+    ResourceProfileType,
 }

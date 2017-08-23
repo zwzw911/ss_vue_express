@@ -39,12 +39,12 @@ const impeach_image= {
         'format': {define: regex.objectId, error: {rc: 10624}, mongoError: {rc: 20624, msg: '存储路径必须是objectId'}} //server端使用
     },
     // in byte
-    size:{
+    sizeInMb:{
         'chineseName': '图片大小',
         'type': serverDataType.INT,
         'require': {define: true, error: {rc: 10626}, mongoError: {rc: 20626, msg: '图片大小不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         // 'min': {define: 1, error: {rc: 10002}, mongoError: {rc: 20002, msg: '图片大小至少6个字符'}},
-        'max': {define: uploadFileDefine.impeach_image.maxSizeInByte, error: {rc: 10628}, mongoError: {rc: 20628, msg: `图片大小不能超过${uploadFileDefine.impeach_image.maxSizeInMB}MB`}},
+        'max': {define: uploadFileDefine.impeach.image.maxSizeInMB, error: {rc: 10628}, mongoError: {rc: 20628, msg: `图片大小不能超过${uploadFileDefine.impeach.image.maxSizeInMB}MB`}},
         // 'format': {define: regex.objectId, error: {rc: 10005}, mongoError: {rc: 20005, msg: '存储路径必须是objectId'}} //server端使用
     },
     authorId: {
@@ -55,14 +55,7 @@ const impeach_image= {
         // 'maxLength': {define: 20, error: {rc: 10004}, mongoError: {rc: 20004, msg: '密码的长度不能超过20个字符'}},
         'format': {define: regex.objectId, error: {rc: 10632}, mongoError: {rc: 20632, msg: '图片上传者必须是objectId'}} //server端使用
     },
-    impeachId: {
-        'chineseName': '举报',
-        'type': serverDataType.OBJECT_ID,
-        'require': {define: true, error: {rc: 10634}, mongoError: {rc: 20634, msg: '举报不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
-        // 'minLength': {define: 6, error: {rc: 10002}, mongoError: {rc: 20002, msg: '密码至少6个字符'}},
-        // 'maxLength': {define: 20, error: {rc: 10004}, mongoError: {rc: 20004, msg: '密码的长度不能超过20个字符'}},
-        'format': {define: regex.objectId, error: {rc: 10636}, mongoError: {rc: 20636, msg: '举报必须是objectId'}} //server端使用
-    },
+
 
 
 }

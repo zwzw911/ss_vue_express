@@ -15,6 +15,7 @@ const validateHelper=require('../function/validateInput/validateHelper')
 const validateFormat=require('../function/validateInput/validateFormat')
 const validateValue=require('../function/validateInput/validateValue')
 const dataConvert=require('./dataConvert')
+const misc=require('../function/assist/misc')
 
 const e_part=require('../constant/enum/node').ValidatePart
 
@@ -30,7 +31,7 @@ const e_fileSizeUnit=require('../constant/enum/node_runtime').FileSizeUnit
 
 const e_penalizeSubType=require('../constant/enum/mongo').PenalizeSubType.DB
 const e_docStatus=require('../constant/enum/mongo').DocStatus.DB
-const e_resourceRange=require('../constant/enum/mongo').ResourceRange
+const e_resourceProfileRange=require('../constant/enum/mongo').ResourceProfileRange
 // var miscFunc=require('../../assist/misc')
 // var validate=validateFunc.validate
 // var checkInterval=require('../../assist/misc').checkInterval
@@ -519,17 +520,17 @@ async function chooseStorePath_async({usage}){
 
 
 /*
- * @ resourceRange: perArticle/perPerson
+ * @ resourceProfileRange: perArticle/perPerson
  *
  * return: 返回合适的记录
  * */
-async function chooseLastValidResourceProfile_async({resourceRange,userId}){
+async function chooseLastValidResourceProfile_async({resourceProfileRange,userId}){
     // console.log(`chooseLastValidResourceProfile_async in ===========>`)
     let resourceProfileIdInUse,tmpResult,condition={},options={}
-    //根据resourceRange，查找对应的resource_profile的objectID
-    condition[e_field.RESOURCE_PROFILE.RANGE]=resourceRange
+    //根据resourceProfileRange，查找对应的resource_profile的objectID
+    condition[e_field.RESOURCE_PROFILE.RANGE]=resourceProfileRange
     tmpResult=await common_operation_model.find({dbModel:e_dbModel.resource_profile,condition:condition})
-    console.log(`resourceRange result ===========>${JSON.stringify(tmpResult)}`)
+    console.log(`resourceProfileRange result ===========>${JSON.stringify(tmpResult)}`)
     if(0===tmpResult.msg.length){
         handleSystemError({error:systemError.noDefinedResourceProfile})
         return Promise.reject(systemError.noDefinedResourceProfile)
@@ -649,12 +650,12 @@ async function ifFkValueExist_async({docValue,collFkConfig,collFieldChineseName}
 // console.log(`collFkConfig fields========>${JSON.stringify(Object.keys(collFkConfig))}`)
 //     console.log(`docValue ========>${JSON.stringify(docValue)}`)
     for(let singleFkFieldName in collFkConfig){
-    // console.log(`singleFkFieldName=======>${singleFkFieldName}`)
+    console.log(`singleFkFieldName=======>${singleFkFieldName}`)
     // console.log(`docValue[singleFkFieldName]===============>${JSON.stringify(docValue[singleFkFieldName])}`)
         if(undefined!==docValue[singleFkFieldName]){
             let fkFieldValueInObjectId=docValue[singleFkFieldName]
             let fkFieldRelatedColl=collFkConfig[singleFkFieldName]['relatedColl']
-// console.log(`ifFkValueExist_async===>fkFieldRelatedColl===>${fkFieldRelatedColl}, id=====>${fkFieldValueInObjectId}`)
+console.log(`ifFkValueExist_async===>fkFieldRelatedColl===>${fkFieldRelatedColl}, id=====>${fkFieldValueInObjectId}`)
             let tmpResult=await  common_operation_model.findById({dbModel:e_dbModel[fkFieldRelatedColl],id:fkFieldValueInObjectId})
             if(null===tmpResult.msg){
                 let chineseName=collFieldChineseName[singleFkFieldName]
@@ -671,6 +672,27 @@ async function ifFkValueExist_async({docValue,collFkConfig,collFieldChineseName}
     return Promise.resolve({rc:0,msg:true})
 }
 
+/*          对单个字段进行外键值是否存
+*   某些情况下，外键字段需要和其他字段的值组合，才能决定外键对应到哪个coll（而不是使用fkConfig），所以才有此函数
+*
+* */
+async function ifSingleFieldFkValueExist_async({fkFieldValue,relatedCollName,fkFieldChineseName}){
+    if(undefined!==fkFieldValue && null!==fkFieldValue){
+        let tmpResult=await  common_operation_model.findById({dbModel:e_dbModel[relatedCollName],id:fkFieldValue})
+        if(null===tmpResult.msg){
+            // let chineseName=collFieldChineseName[singleFkFieldName]
+            // let fieldInputValue=docValue[singleFkFieldName]
+            return Promise.reject(helperError.fkValueNotExist(fkFieldChineseName,fkFieldValue))
+            // return Promise.resolve({rc:0,msg:false})
+        }
+    }
+            // let fkFieldValueInObjectId=docValue[singleFkFieldName]
+            // let fkFieldRelatedColl=collFkConfig[singleFkFieldName]['relatedColl']
+// console.log(`ifFkValueExist_async===>fkFieldRelatedColl===>${fkFieldRelatedColl}, id=====>${fkFieldValueInObjectId}`)
+
+
+    return Promise.resolve({rc:0,msg:true})
+}
 
 /*用户(userId)是否被禁止做某事（penalizeType）
 * 查找admin_penalize中最后一条penalize记录，体重的ifExpire是否为true
@@ -877,14 +899,19 @@ function removeImageDataUrl({content}){
 }*/
 
 
-/*如果用户在client删除了图片，不会直接通知server，而是要在server端，通过比较content中image和db（自己和关联，例如article和article_image）中，决定是否要删除（磁盘文件）和db内容
+/*      只能用在update中，因为函数需要使用recordId获得imageRecord，然后和content中img DOM进行比较
+        如果用户在client删除了图片，不会直接通知server，而是要在server端，通过比较content中image和db（自己和关联，例如article和article_image）中，决定是否要删除（磁盘文件）和db内容
 *@content：输入的内容
-* @recordId：要更新的记录，例如articleId
-* @collConfig: 对象，content所在的coll。{name:article, fkField:e_field.ARTICLE.innerAttachmentId}
-* @collImageName：对象content中，image存储在那个coll，格式同collConfig。 {name:e_coll.INNER_IMAGE, fkField:e_field.INNER_IMAGE.articleId}
-* @fkFieldName: collImageName中，对应到collName的外键字段，例如articleId/impeachId
+* @recordId：要更新的记录，例如articleId/impeachId
+* @collConfig: 对象，content所在的coll。fkFieldName:存储image的field
+ *              {collName:article, fkFieldName:e_field.ARTICLE.innerAttachmentId}
+* @collImageName：对象content中，image存储在那个coll，格式同collConfig。 fkFieldName：字段名，此image存储在哪个article/image中
+*               {collName:e_coll.INNER_IMAGE, fkFieldName:e_field.INNER_IMAGE.articleId}
+*
+*
+* return: 处理过的content，删除了dataUrl，和content中存在，但是db中没有的IMG DOM
 * */
-async function contentDbDeleteNotExistImage_async({content,collConfig,collImageConfig,fkFieldName,error}){
+async function contentDbDeleteNotExistImage_async({content,recordId,collConfig,collImageConfig}){
     let tmpResult,validMd5ImageNameInContent={}
     //获得所有<img/>DOM
     let innerImageInContent=content.match(regex.imageDOM)
@@ -894,7 +921,7 @@ async function contentDbDeleteNotExistImage_async({content,collConfig,collImageC
     //IMG DOM中，scr的domain必须是本站地址，且文件名为md5
     //转换成正则格式（.=====>\.）
     let convertedHostDomain=currentAppSetting['hostDomain'].replace('.',`\.`)
-    let srcReg=new RegExp(`src="https*://${convertedHostDomain}.*?/([0-9a-f]{32}\.(jpg|jpeg|png))"`)
+    let srcReg=new RegExp(`src="https*://${convertedHostDomain}/.*/([0-9a-f]{32}\.(jpg|jpeg|png))"`)
     for(let singleImageDOM of innerImageInContent){
         //如果DOM中，src不是本站地址，且文件图片不是md5，删除
         let tmpMatchResult=singleImageDOM.match(srcReg)
@@ -911,8 +938,8 @@ async function contentDbDeleteNotExistImage_async({content,collConfig,collImageC
     /*          检查md5是否在collImage中存在            */
     //获得当前article/impeach的所有image记录
     let imageSearchCondition={}
-    imageSearchCondition[fkFieldName]=collImageConfig.fkField
-    tmpResult=await common_operation_model.find({dbModel:e_dbModel[collConfig.name],condition:imageSearchCondition})
+    imageSearchCondition[collImageConfig.fkFieldName]=recordId
+    tmpResult=await common_operation_model.find({dbModel:e_dbModel[collConfig.collName],condition:imageSearchCondition})
 
     //对比db和content中的image
     //db中没有任何image信息，则把content中所有image DOM删除
@@ -923,7 +950,7 @@ async function contentDbDeleteNotExistImage_async({content,collConfig,collImageC
     //以db为基准,db中有image，进行比较。如果db中的记录，在content中不存在，说明image已经被删除，那么清理db
     let deletedImageId=[],deletedImageMd5Name=[],notDeletedMd5Name=[]
     for(let singleRecord of tmpResult){
-        let md5Name=singleRecord['hashName']
+        let md5Name=singleRecord[collImageConfig.imageHashFieldName]
 
         if(-1===Object.keys(validMd5ImageNameInContent).indexOf(md5Name)){
             deletedImageId.push(singleRecord['_id'])
@@ -933,9 +960,13 @@ async function contentDbDeleteNotExistImage_async({content,collConfig,collImageC
 
         notDeletedMd5Name.push(md5Name)
     }
-    let condition={'_id':{$in:deletedImageId}}
-    await  common_operation_model.deleteMany({dbModel:e_dbModel[collImageConfig.name],condition:condition})
-    await  common_operation_model.deleteArrayFieldValue({dbModel:e_dbModel[collConfig.name],condition:condition,arrayFieldName:collConfig.fkField})
+    //如果比较结果，content中无，而db中有（用户在client删除了image），则对db进行删除操作
+    if(deletedImageId.length>0){
+        let condition={'_id':{$in:deletedImageId}}
+        await  common_operation_model.deleteMany({dbModel:e_dbModel[collImageConfig.collName],condition:condition})
+        await  common_operation_model.deleteArrayFieldValue({dbModel:e_dbModel[collConfig.collName],condition:condition,arrayFieldName:collConfig.fkFieldName,arrayFieldValue:deletedImageId})
+    }
+
     //以content的image为基准，如果db中没有，直接从content中删除
     for(let singleMd5InContent in validMd5ImageNameInContent){
         if(-1===notDeletedMd5Name.indexOf(singleMd5InContent)){
@@ -946,6 +977,90 @@ async function contentDbDeleteNotExistImage_async({content,collConfig,collImageC
     return Promise.resolve(content)
 }
 
+
+/*          根据resourceProfileRange，resourceType，从预定义的对象中获得对应的fieldName和grougby的设置，统计使用的资源数
+* @resourceProfileRange: PER_PERSON/PER_ARTICLE/PER_IMPEACH，此函数只是作为key，从resourceFieldsFilterGroup获得对应的groupby字段设置
+* @resourceType: IMAGE/ATTACHMENT
+* @resourceFieldName: IMAGE/ATTACHMENT所对应的字段名定义
+* @resourceFieldsFilterGroup： IMAGE/ATTACHMENT+PER_PERSON/PER_ARTICLE/PER_IMPEACH所有组合，设定的group过滤字段+参数
+*
+* return：对象，当前resourceType下资源的统计（size，type）
+* */
+async function calcExistResource_async({resourceProfileRange,resourceType,resourceFieldName,resourceFieldsFilterGroup}){
+    /*              计算当前（每个）资源总数               */
+    //设置分组条件
+    let fileCollName = resourceFieldName[resourceType]['fileCollName']
+    let sizeFieldName = resourceFieldName[resourceType]['sizeFieldName']
+    let fkFileOwnerFieldName = resourceFieldName[resourceType]['fkFileOwnerFieldName']
+
+    let fieldsFilterGroupReallyUse=resourceFieldsFilterGroup[resourceProfileRange][resourceType]
+    //resourceFieldsFilterGroup中的objetid需要转换成真正的ObjectId
+    let match=misc.objectDeepCopy(fieldsFilterGroupReallyUse)
+    for(let singleFilterKey in match){
+        match[singleFilterKey]=dataConvert.convertToObjectId(match[singleFilterKey])
+    }
+    match['dDate']={$exists:0}  //file未被删除
+
+
+    //从fieldsFilterGroupReallyUse抽取出groupby的字段
+    let groupByFields={"_id":{}}
+    for(let singleFieldName in fieldsFilterGroupReallyUse){
+        groupByFields['_id'][singleFieldName]=`$${singleFieldName}`
+    }
+    let group = {
+        _id: groupByFields,
+        totalSizeInMb: {$sum: `$${sizeFieldName}`},
+        totalFileNum: {$sum: 1}
+    }
+    let tmpResult = await common_operation_model.group_async({
+        dbModel: e_dbModel[fileCollName],
+        match: match,
+        group: group
+    })
+
+    let result={
+        totalSizeInMb:tmpResult.msg.totalSizeInMb,
+        totalFileNum:tmpResult.msg.totalFileNum,
+    }
+    return Promise.resolve({rc:0,msg:result})
+
+
+}
+
+/*          根据计算得到的现存资源信息+上传文件的信息，判断是否resource还有剩余（可用）
+* @currentResourceUsage: 获得当前resourceProfileRange（PER_PERSON/IMPEACH/ARTICLE）已经使用的资源信息，size和path
+*               {totalFileSizeInMb:xxxx, totalFileNum: yyyyy}
+* @resourceProfileRange：资源范围
+* @userId： 用户id，用于选择资源配置记录
+* @fileInfo；新上传的文件信息，包括size和path
+*               {size:计算是否超出资源配置, path；如果超出，删除所使用的路径}
+* @error;   如果size或者number超出，对应的error
+*               {sizeExceed: size超出对应的error,numberExceed：数量超出的error }
+* */
+async function ifResourceValid_async({currentResourceUsage,resourceProfileRange,userId,fileInfo,error}){
+    let currentResourceProfile //根据resourceProfileRange和userId，选中的资源配置记录
+    //查找resource配置文件
+    let tmpResult = await chooseLastValidResourceProfile_async({resourceProfileRange: resourceProfileRange, userId: userId})
+    console.log(`chosed profile========>${JSON.stringify(tmpResult)}`)
+    //有资源配置文件，才进行检查
+    if(tmpResult.msg.length>0){
+        currentResourceProfile=misc.objectDeepCopy(tmpResult.msg)
+    }
+    console.log(`group by person result =====>${JSON.stringify(tmpResult)}`)
+    currentResourceUsage.totalFileSizeInMb += tmpResult['totalImageSizeInMb']
+    currentResourceUsage.totalFileNum += tmpResult['totalFileNum']
+
+
+    //进行比较
+    if (fileInfo.size + currentResourceUsage.totalFileSizeInMb > currentResourceProfile[e_field.RESOURCE_PROFILE.TOTAL_FILE_SIZE_IN_MB]) {
+        fs.unlink(fileInfo.path)
+        return Promise.reject(error.sizeExceed)
+    }
+    if (1 + currentResourceUsage.totalFileNum > currentResourceProfile[e_field.RESOURCE_PROFILE.MAX_FILE_NUM]) {
+        fs.unlink(fileInfo.path)
+        return Promise.reject(error.numberExceed)
+    }
+}
 module.exports= {
     inputCommonCheck,//每个请求进来是，都要进行的操作（时间间隔检查等）
     validatePartValueFormat,
@@ -968,6 +1083,7 @@ module.exports= {
     checkInternalValue,//
 
     // ifFkValueExist_async_old,
+    ifSingleFieldFkValueExist_async,
     ifFkValueExist_async,
     ifPenalizeOngoing_async,
 
@@ -979,7 +1095,10 @@ module.exports= {
     contentXSSCheck_async,//如果输入的html，要进行XSS检查
     // removeImageDataUrl,//删除content中的dataUrl图片，防止未经授权的图片
     contentDbDeleteNotExistImage_async,
+
+    calcExistResource_async,//根据resourceProfileRange，resourceProfileType，从预定义的对象中获得对应的fieldName和grougby的设置
+    ifResourceValid_async,
 }
 
 
-// chooseLastValidResourceProfile_async({resourceRange:e_resourceRange.DB.PER_ARTICLE, userId:'598a60bcdf548d0b3c2a7cd6'})
+// chooseLastValidResourceProfile_async({resourceProfileRange:e_resourceProfileRange.DB.PER_ARTICLE, userId:'598a60bcdf548d0b3c2a7cd6'})

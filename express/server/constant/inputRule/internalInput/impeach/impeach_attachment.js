@@ -39,12 +39,12 @@ const impeach_attachment= {
         'format': {define: regex.objectId, error: {rc: 10005}, mongoError: {rc: 20005, msg: '附件上传者必须是objectId'}} //server端使用
     },
     // in byte
-    size:{
+    sizeInMb:{
         'chineseName': '附件大小',
         'type': serverDataType.INT,
         'require': {define: true, error: {rc: 10000}, mongoError: {rc: 20000, msg: '附件大小不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         // 'min': {define: 1, error: {rc: 10002}, mongoError: {rc: 20002, msg: '图片大小至少6个字符'}},
-        'max': {define: uploadFileDefine.impeach_attachment.maxSizeInByte, error: {rc: 10004}, mongoError: {rc: 20004, msg: `附件大小不能超过${uploadFileDefine.impeach_attachment.maxSizeInMB}MB`}},
+        'max': {define: uploadFileDefine.impeach.attachment.maxSizeInMB, error: {rc: 10004}, mongoError: {rc: 20004, msg: `附件大小不能超过${uploadFileDefine.impeach.attachment.maxSizeInMB}MB`}},
         // 'format': {define: regex.objectId, error: {rc: 10005}, mongoError: {rc: 20005, msg: '存储路径必须是objectId'}} //server端使用
     },
     pathId: {

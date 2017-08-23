@@ -39,7 +39,7 @@ const store_path= {
         // 'maxLength': {define: 50, error: {rc: 10004}, mongoError: {rc: 30004, msg: '分类名的长度不能超过50个字符'}},
         // 'format': {define: regex.folderName, error: {rc: 10005}, mongoError: {rc: 30005, msg: '目录名必须由12-255个字符组成'}} //server端使用
     },
-    size: {
+    sizeInKb: {
         'chineseName': '容量',
         'type': serverDataType.NUMBER,
         'require': {define: true, error: {rc: 10070}, mongoError: {rc: 20070, msg: '容量不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息

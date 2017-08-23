@@ -8,7 +8,7 @@ const common_operation_model=require('../../model/mongo/operation/common_operati
 
 const e_storePathUsage=require('../../constant/enum/mongo').StorePathUsage
 const e_storePathStatus=require('../../constant/enum/mongo').StorePathStatus
-const e_resourceRange=require('../../constant/enum/mongo').ResourceRange
+const e_resourceProfileRange=require('../../constant/enum/mongo').ResourceProfileRange
 
 const e_dbModel=require('../../model/mongo/dbModel')
 const e_coll=require('../../constant/enum/DB_Coll').Coll
@@ -48,7 +48,7 @@ async function generateInitSettingEnum_async(){
             result[e_coll.STORE_PATH][mongoEnumKVExchange['StorePathUsage'][usage]][name]={id:id,path:path}
         }
     }
-console.log(`store path extract result =========> ${JSON.stringify(result)}`)
+// console.log(`store path extract result =========> ${JSON.stringify(result)}`)
 
 
     result[e_coll.CATEGORY]={}
@@ -58,6 +58,7 @@ console.log(`store path extract result =========> ${JSON.stringify(result)}`)
         let objectId=singleRecord['id']
         result[e_coll.CATEGORY][name]=objectId
     }
+// console.log(`CATEGORY extract result =========> ${JSON.stringify(result[e_coll.CATEGORY])}`)
 
     result[e_coll.RESOURCE_PROFILE]={}
     tmpResult=await common_operation_model.find({dbModel:e_dbModel.resource_profile,condition:{}})
@@ -67,7 +68,7 @@ console.log(`store path extract result =========> ${JSON.stringify(result)}`)
 
         let typeInNumber=singleRecord[e_field.RESOURCE_PROFILE.TYPE]
         // console.log(`typeInNumber ====>${JSON.stringify(typeInNumber)}`)
-        let typeInKey=mongoEnumKVExchange['ResourceType'][typeInNumber]
+        let typeInKey=mongoEnumKVExchange.ResourceProfileType[typeInNumber]
         // console.log(`typeInKey ====>${JSON.stringify(typeInKey)}`)
         if(undefined===result[e_coll.RESOURCE_PROFILE][typeInKey]){
             result[e_coll.RESOURCE_PROFILE][typeInKey]={}
@@ -76,8 +77,9 @@ console.log(`store path extract result =========> ${JSON.stringify(result)}`)
         let objectId=singleRecord['id']
         result[e_coll.RESOURCE_PROFILE][typeInKey][name]=objectId
     }
+// console.log(`e_coll.RESOURCE_PROFILE extract result =========> ${JSON.stringify(result[e_coll.RESOURCE_PROFILE])}`)
     // console.log(`result is -====>${JSON.stringify(result)}`)
-    return result
+    return Promise.resolve(result)
 }
 
 async function writeInitSettingEnum_async(destFilePath){
@@ -101,6 +103,10 @@ async function writeInitSettingEnum_async(destFilePath){
 
     console.log(`convertedEnum====>${JSON.stringify(convertedEnum)}`)
     fs.writeFileSync(destFilePath,convertedEnum)
-
+return Promise.resolve({rc:0})
 }
-writeInitSettingEnum_async('../../constant/enum/initSettingObject.js')
+
+writeInitSettingEnum_async('../../constant/enum/initSettingObject.js').then(
+    (result)=>{console.log(`result is ${JSON.stringify(result)}`)},
+    (err)=>{console.log(`err is ${JSON.stringify(err)}`)},
+)

@@ -44,7 +44,7 @@ const collFieldDefine={
     path:{type:String,unique:true,validate:{validator:function(v){fs.statSync(v).isDirectory()},message:`invalid path`}},
     usage:{type:String},//当前storePath的用途
     status:{type:String},//当前storePath是否提供读写功能（达到highThreshold，只读）
-    size:{type:Number},//预定义的目录size（KB）
+    sizeInKb:{type:Number},//预定义的目录size（KB）
     usedSize:{type:Number},//目录已经使用的size(KB)
     lowThreshold:{type:Number},//百分比，达到后报警
     highThreshold:{type:Number},//百分比，达到后不再使用此目录

@@ -42,7 +42,7 @@ const collFieldDefine={
     name:{type:String,},
     hashName:{type:String,},
     pathId:{type:mongoose.Schema.Types.ObjectId,ref:"path"},
-    size:{type:Number}, //
+    sizeInMb:{type:Number}, //
     // articleId:{type:mongoose.Schema.Types.ObjectId,ref:'articles'},
     authorId:{type:mongoose.Schema.Types.ObjectId,ref:"user"}, //
     cDate:{type:Date,default:Date.now},

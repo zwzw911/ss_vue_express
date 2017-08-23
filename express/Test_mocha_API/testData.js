@@ -4,6 +4,9 @@
 'use strict'
 
 const e_userType=require('../server/constant/enum/mongo').UserType.DB
+const e_accountType=require('../server/constant/enum/mongo').AccountType.DB
+const e_field=require('../server/constant/enum/DB_field').Field
+
 
 const user={
      user1:{name:{value:'123456789'},account:{value:'15921776540'},password:{value:'123456'},userType:{value:e_userType.NORMAL}},
@@ -19,6 +22,15 @@ const user={
      useNotExistForModel:{name:'test',account:'13912341234',password:'123456',userType:e_userType.NORMAL},
 }
 
+
+const impeach_image={
+
+    image2:{},
+    image3:{},
+    image4:{},
+    image5:{},
+    image6:{},
+}
 
 const tag={
      tag1:{name:{value:'tag1'}},

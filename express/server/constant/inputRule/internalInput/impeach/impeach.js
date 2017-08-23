@@ -25,7 +25,15 @@ const impeach= {
         //'arrayMaxLength': {define: maxNumber.article.imagesNumberPerArticle, error: {rc: 10004}, mongoError: {rc: 20004, msg: `最多插入${maxNumber.article.imagesNumberPerArticle}个图片`}},
         'format': {define: regex.objectId, error: {rc: 10552}, mongoError: {rc: 20552, msg: '举报人必须是objectId'}} //server端使用
     },
-
+    //被举报人，创建时通过article/comment查询获得（冗余字段，skip通过impeachedArticleId或者impeachedCommentId推导的过程）
+    impeachedUserId:{
+        'chineseName': '被举报人',
+        'type': serverDataType.OBJECT_ID,
+        'require': {define: true, error: {rc: 10542}, mongoError: {rc: 20542, msg: '被举报人不能为空'}},//默认为空对象
+        // 'arrayMinLength': {define: 0, error: {rc: 10002}, mongoError: {rc: 20002, msg: '至少设置1个标签'}},
+        //'arrayMaxLength': {define: maxNumber.article.imagesNumberPerArticle, error: {rc: 10004}, mongoError: {rc: 20004, msg: `最多插入${maxNumber.article.imagesNumberPerArticle}个图片`}},
+        'format': {define: regex.objectId, error: {rc: 10544}, mongoError: {rc: 20544, msg: '被举报人必须是objectId'}} //server端使用
+    },
 }
 
 module.exports={

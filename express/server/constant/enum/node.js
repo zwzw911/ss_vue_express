@@ -97,8 +97,14 @@ const InputFieldCheckType={
 }
 
 const UploadFileType={
-    IMAGE:'1',
-    ATTACHMENT:'2'
+    IMAGE:'image',
+    ATTACHMENT:'attachment'
+}
+
+//和uploadFileType一样，但是为了在计算resource不产生confuse，使用新名称
+const ResourceType={
+    IMAGE:'image',
+    ATTACHMENT:'attachment'
 }
 module.exports={
     RandomStringType,
@@ -113,5 +119,6 @@ module.exports={
     Method,
     InputFieldCheckType,
     UploadFileType,
+    ResourceType,
     // StorePathUsage,
 }

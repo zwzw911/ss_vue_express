@@ -1,8 +1,6 @@
 /**
- * Created by Ada on 2017/7/9.
+ * Created by Ada on 2017/08/17.
  * url：
- *  1. /user，根据method的不同，调用不同的函数进行对应的处理
- *  2. /user/unique: 用户注册的时候，对应用户名/账号进行唯一性检查
  */
 'use strict'
 
@@ -16,6 +14,7 @@ const e_part=require('../../constant/enum/node').ValidatePart
 const e_method=require('../../constant/enum/node').Method
 const e_randomStringType=require('../../constant/enum/node').RandomStringType
 const e_uploadFileType=require('../../constant/enum/node').UploadFileType
+// const e_resourceType=require('../../constant/enum/node').ResourceType
 // const e_method=require('../../constant/enum/node').Method
 
 const e_hashType=require('../../constant/enum/node_runtime').HashType
@@ -27,7 +26,7 @@ const e_penalizeSubType=require('../../constant/enum/mongo').PenalizeSubType.DB
 const e_iniSettingObject=require('../../constant/enum/initSettingObject').iniSettingObject
 const e_articleStatus=require('../../constant/enum/mongo').ArticleStatus.DB
 const e_resourceProfileRange=require('../../constant/enum/mongo').ResourceProfileRange.DB
-const e_resourceProfileType=require('../../constant/enum/mongo').ResourceProfileType.DB
+const e_resourceType=require('../../constant/enum/node').ResourceType.DB //和uploadFileType一样，但是为了在计算resource不产生confuse，使用新名称
 const e_storePathUsage=require('../../constant/enum/mongo').StorePathUsage.DB
 
 const e_fileSizeUnit=require('../../constant/enum/node_runtime').FileSizeUnit
@@ -99,10 +98,12 @@ const controllerError={
 
 
 
-    /*          upload article image                */
-    userNotLoginCantCreateArticleImage:{rc:50400,msg:`用户尚未登录，无法插入图片`},
-    undefinedRangeType:{rc:50402,msg:{client:`内部参数错误，请联系管理员`,server:`未定义的rangeType`}},
-    userInPenalizeNoArticleUpdate:{rc:50403,msg:`管理员禁止更新文档`},
+    /*          upload impeach(comment)   image                */
+    userNotLoginCantCreateImpeachImage:{rc:50800,msg:`用户尚未登录，无法插入图片`},
+    // undefinedRangeType:{rc:50402,msg:{client:`内部参数错误，请联系管理员`,server:`未定义的rangeType`}},
+    userInPenalizeNoImpeachUpdate:{rc:50803,msg:`管理员禁止更新文档`},
+    undefinedColl:{rc:50804,msg:{client:`内部参数错误，请联系管理员`,server:`未定义图片要插入到哪里`}},
+    notOwner:{rc:50804,msg:{client:`输入参数错误`,server:`不能更新他人的举报/后续处理`}},
 
     //image 超出 resource_profile
     articleImageSizeExceed:{rc:50404,msg:{client:`文档图片总容量达到最大值，无法继续添加图片`,server:`文档图片容量达到最大`}},
@@ -123,8 +124,12 @@ const controllerError={
 
 
 //对article image的不同method（其实只有create），进行预检，然后调用逻辑
-async function articleUploadFile_dispatch_async({req,type}){
-    let collName=e_coll.ARTICLE,tmpResult
+/*
+* @uploadFileType: 上传的是image还是attachment
+* @forColl： 上传的文件是for impeach还是impeachComment（因为这2者共用处理代码以及同一个coll）
+* */
+async function impeachUploadFile_dispatch_async({req,uploadFileType,forColl}){
+    let collName=forColl,tmpResult
     //检查格式
     // console.log(`req is ${JSON.stringify(req.cookies)}`)
     // console.log(`dispatcher in`)
@@ -151,16 +156,22 @@ async function articleUploadFile_dispatch_async({req,type}){
         case e_method.CREATE: //create
             userLoginCheck={
                 needCheck:true,
-                error:controllerError.userNotLoginCantCreateArticleImage
+                error:controllerError.userNotLoginCantCreateImpeachImage
             }
             penalizeCheck={
-                penalizeType:e_penalizeType.NO_ARTICLE, //用户是否可以对ARTICLE进行更新（因为插入image实际上是对article进行update操作
+                penalizeType:e_penalizeType.NO_IMPEACH,  //用户是否可以在新建的IMPEACH/IMPEACH_COMMENT插入图片（虽然是update，但对于用户，实际是新建）
                 penalizeSubType:e_penalizeSubType.UPDATE, //只有在update中才能插入图片，
-                penalizeCheckError:controllerError.userInPenalizeNoArticleUpdate
+                penalizeCheckError:controllerError.userInPenalizeNoImpeachUpdate
             }
-            expectedPart=[e_part.RECORD_ID]
+            expectedPart=[e_part.RECORD_ID]  //对哪个impeach/impeachComment进行更新（实际上是新建）
             tmpResult=await helper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
-            tmpResult=await uploadArticleFile_async({req:req,type:type})
+
+            let validCollName=[e_coll.IMPEACH,e_coll.IMPEACH_COMMENT]
+            /*              检查collName是否合格              */
+            if(-1===validCollName.indexOf(collName)){
+                return Promise.reject(controllerError.undefinedColl)
+            }
+            tmpResult=await uploadImpeachFile_async({req:req,uploadFileType:uploadFileType,forColl:forColl})
 
 
 
@@ -181,128 +192,121 @@ async function articleUploadFile_dispatch_async({req,type}){
 
 
 /*
-* type: image还是attachment
+ * @uploadFileType: 上传的是image还是attachment
+ * @forColl： 上传的文件是for impeach还是impeachComment（因为这2者共用处理代码以及同一个coll）
 * */
-async function uploadArticleFile_async({req,type}){
+async function uploadImpeachFile_async({req,uploadFileType,forColl}) {
     let tmpResult
-    let userId=req.session.userId
-    let articleId=req.body.values[e_part.RECORD_ID]
+    let userId = req.session.userId
+    let referenceId = req.body.values[e_part.RECORD_ID] //根据refreenceColl决定recordId关联到哪个coll
     // let originalArticle
-    let collName=e_coll.ARTICLE
-    let fileCollName
+    let collName = forColl
+    let fileCollName        //存储file的coll
+    let ownerFieldName      //impeach/impeach_comment中，用户的id（用来在fileCollName中统计资源）
+    let sizeFieldName       //fileCollName中，记录size的字段名
+    // let fileStoreCollName
+    let fkFileOwnerFieldName       //fileCollName中，记录用户的字段名
+    //上传image只对如下coll生效
+
+    /*                设置userId对应的字段名            */
+    switch (collName) {
+        case e_coll.IMPEACH:
+            ownerFieldName = e_field.IMPEACH.CREATOR_ID
+            break
+        case e_coll.IMPEACH_COMMENT:
+            ownerFieldName = e_field.IMPEACH_COMMENT.AUTHOR_ID
+            break
+    }
 
     /*              查找id为文档，且作者为userid的记录，找不到说明不是作者，无权修改            */
-    let condition={}
-    condition['_id']=articleId
-    condition[e_field.ARTICLE.AUTHOR_ID]=userId
+    let condition = {}
+    condition['_id'] = articleId
+    condition[ownerFieldName] = userId
 console.log(`condition to check user =====>${JSON.stringify(condition)}`)
-    tmpResult=await  common_operation_model.find({dbModel:e_dbModel[collName],condition:condition})
-    if(tmpResult.msg.length!==1){
-        return Promise.reject(controllerError.notAuthorized)
+    tmpResult = await  common_operation_model.find({dbModel: e_dbModel[collName], condition: condition})
+    if (tmpResult.msg.length !== 1) {
+        return Promise.reject(controllerError.notOwner)
     }
     // originalArticle=misc.objectDeepCopy({},tmpResult.msg[0])
 
     /*              上传文件存储到临时目录                         */
-    let maxFileSize
-    if(e_uploadFileType.IMAGE===type){
-        maxFileSize=uploadFileDefine.article_image.maxSizeInByte
-    }
-    if(e_uploadFileType.ATTACHMENT===type){
-        maxFileSize=uploadFileDefine.article_attachment.maxSizeInByte
-    }
-    let uploadResult=await helper.uploadFileToTmpDir_async({req:req, uploadTmpDir:e_iniSettingObject.store_path.UPLOAD_TMP.upload_tmp_dir.path, maxFileSize:maxFileSize,fileSizeUnit:e_fileSizeUnit.MB})
-    let {originalFilename,path,size}=uploadResult.msg
+    let maxFileSize = uploadFileDefine[collName][uploadFileType].maxSizeInByte
+    /*    if(e_uploadFileType.IMAGE===uploadFileType){
+     maxFileSize=uploadFileDefine[collName][uploadFileType].maxSizeInByte
+     }
+     if(e_uploadFileType.ATTACHMENT===uploadFileType){
+     maxFileSize=uploadFileDefine.article_attachment.maxSizeInByte
+     }*/
+    let uploadResult = await helper.uploadFileToTmpDir_async({
+        req: req,
+        uploadTmpDir: e_iniSettingObject.store_path.UPLOAD_TMP.upload_tmp_dir.path,
+        maxFileSize: maxFileSize,
+        fileSizeUnit: e_fileSizeUnit.MB
+    })
+    let {originalFilename, path, size} = uploadResult.msg
 
     // console.log(`group start========>`)
     /*              获得用户当前的所有资源配置，并检查当前占用的资源（磁盘空间）+文件的资源（sizeInMB）后，还小于==>所有<==的资源配置（）                         */
-    let resourceProfileRangeToBeCheck=[e_resourceProfileRange.PER_PERSON,e_resourceProfileRange.PER_ARTICLE]
-    //首先检查个人的（范围最大），然后检查article（范围小点的）
-    for(let singleResourceProfileRange of resourceProfileRangeToBeCheck){
-        tmpResult=await helper.chooseLastValidResourceProfile_async({resourceProfileRange:singleResourceProfileRange,userId:userId})
-console.log(`chosed profile========>${JSON.stringify(tmpResult)}`)
-        //只有一条记录，要么是default，要么是VIP
-        let currentResourceProfile=misc.objectDeepCopy(tmpResult.msg)
-        /*              计算当前（每个）资源配置是否还够用               */
-        let currentResourceUsage={totalFileNum:0,totalFileSizeInMb:0}
-        //设置分组条件
-        let match={},group={}
 
-        switch (singleResourceProfileRange){
-            case e_resourceRange.PER_PERSON:
-                //根据用户进行分组，获得所有image/attachment的size总和（Mb）
-                match[e_field.ARTICLE_IMAGE.AUTHOR_ID]=dataConvert.convertToObjectId(userId)
-                group={
-                    _id:`$${[e_field.ARTICLE_IMAGE.AUTHOR_ID]}`,
-                    totalImageSizeInMb:{$sum:`$${e_field.ARTICLE_IMAGE.SIZE_IN_MB}`},
-                    totalFileNum:{$sum:1}
-                }
-                tmpResult=await common_operation_model.group_async({dbModel:e_dbModel.article_image,match:match,group:group})
-console.log(`group by person result =====>${JSON.stringify(tmpResult)}`)
-                currentResourceUsage.totalFileSizeInMb+=tmpResult['totalImageSizeInMb']
-                currentResourceUsage.totalFileNum+=tmpResult['totalFileNum']
+    //不同类型资源计算需要的字段定义
+    //1. 根据资源类型设置资源信息所在的coll以及其中的field
+    let resourceFieldName = {
+        [e_resourceType.IMAGE]: {
+            fileCollName: e_coll.IMPEACH_IMAGE,   //实际文件记录所在的coll
+            sizeFieldName: e_field.IMPEACH_IMAGE.SIZE_IN_MB,      //记录文件size的字段名（用于group）
+            fkFileOwnerFieldName: e_field.IMPEACH_IMAGE.AUTHOR_ID,  //记录文件是哪个用户创建的字段名
+        },
+        [e_resourceType.ATTACHMENT]: {
+            fileCollName: e_coll.IMPEACH_ATTACHMENT,   //实际文件记录所在的coll
+            sizeFieldName: e_field.IMPEACH_ATTACHMENT.SIZE_IN_MB,      //记录文件size的字段名（用于group）
+            fkFileOwnerFieldName: e_field.IMPEACH_ATTACHMENT.AUTHOR_ID,  //记录文件是哪个用户创建的字段名
+        },
+    }
+    //2. 根据resourceType+resourceRange，设置group时候使用的过滤参数
+    let fieldsFilterGroup = {
+        [e_resourceType.IMAGE]: {
+            [e_resourceProfileRange.PER_PERSON_IN_IMPEACH]: {
+                [e_field.IMPEACH_IMAGE.AUTHOR_ID]: userId
+            },
+            [e_resourceProfileRange.PER_IMPEACH_OR_COMMENT]: {
+                [e_field.IMPEACH_IMAGE.AUTHOR_ID]: userId,
+                [e_field.IMPEACH_IMAGE.REFERENCE_ID]: referenceId
+            },
+        },
+        [e_resourceType.ATTACHMENT]: {
+            [e_resourceProfileRange.PER_PERSON_IN_IMPEACH]:{
+                [e_field.IMPEACH_ATTACHMENT.AUTHOR_ID]: userId
+            },
+            [e_resourceProfileRange.PER_IMPEACH_OR_COMMENT]:{
+                [e_field.IMPEACH_ATTACHMENT.AUTHOR_ID]: userId,
+                [e_field.IMPEACH_ATTACHMENT.REFERENCE_ID]: referenceId
+            },
+        },
 
-                group={
-                    _id:`$${[e_field.ARTICLE_ATTACHMENT.AUTHOR_ID]}`,
-                    totalImageSizeInMb:{$sum:`$${e_field.ARTICLE_ATTACHMENT.SIZE_IN_MB}`},
-                    totalFileNum:{$sum:1}
-                }
-                tmpResult=await common_operation_model.group_async({dbModel:e_dbModel.article_attachment,match:match,group:group})
-console.log(`group by person result =====>${JSON.stringify(tmpResult)}`)
-                currentResourceUsage.totalFileSizeInMb+=tmpResult['totalImageSizeInMb']
-                currentResourceUsage.totalFileNum+=tmpResult['totalFileNum']
+    }
 
-                //进行比较
-                if(size+currentResourceUsage.totalFileSizeInMb>currentResourceProfile[e_field.RESOURCE_PROFILE.TOTAL_FILE_SIZE_IN_MB]){
-                    fs.unlink(path)
-                    return Promise.reject(controllerError.personalSizeExceed)
-                }
-                if(1+currentResourceUsage.totalFileNum>currentResourceProfile[e_field.RESOURCE_PROFILE.MAX_FILE_NUM]){
-                    fs.unlink(path)
-                    return Promise.reject(controllerError.personalFileNumExceed)
-                }
-                break
-            case e_resourceRange.PER_ARTICLE:
-                //根据articleId进行分组，获得当前article中image/attachment的数量，以及size总和（byte）
-                match[e_field.ARTICLE_IMAGE.AUTHOR_ID]=dataConvert.convertToObjectId(userId)
-                match[e_field.ARTICLE_IMAGE.ARTICLE_ID]=dataConvert.convertToObjectId(articleId)
-                group={
-                    _id:`$${[e_field.ARTICLE_IMAGE.ARTICLE_ID]}`,
-                    totalImageSizeInMb:{$sum:`$${e_field.ARTICLE_IMAGE.SIZE_IN_MB}`},
-                    totalNum:{$sum:1}
-                }
-                tmpResult=await common_operation_model.group_async({dbModel:e_dbModel.article_image,match:match,group:group})
-console.log(`group by article result =====>${JSON.stringify(tmpResult)}`)
-                currentResourceUsage.totalFileSizeInMb+=tmpResult['totalImageSizeInMb']
-                currentResourceUsage.totalFileNum+=tmpResult['totalFileNum']
-
-                group={
-                    _id:`$${[e_field.ARTICLE_ATTACHMENT.ARTICLE_ID]}`,
-                    totalImageSizeInMb:{$sum:`$${e_field.ARTICLE_ATTACHMENT.SIZE_IN_MB}`},
-                    totalNum:{$sum:1}
-                }
-                tmpResult=await common_operation_model.group_async({dbModel:e_dbModel.article_attachment,match:match,group:group})
-console.log(`group by article result =====>${JSON.stringify(tmpResult)}`)
-                currentResourceUsage.totalFileSizeInMb+=tmpResult['totalImageSizeInMb']
-                currentResourceUsage.totalFileNum+=tmpResult['totalFileNum']
-
-
-                //进行比较
-                if(size+currentResourceUsage.totalFileSizeInMb>currentResourceProfile[e_field.RESOURCE_PROFILE.TOTAL_FILE_SIZE_IN_MB]){
-                    fs.unlink(path)
-                    return Promise.reject(controllerError.articleImageSizeExceed)
-                }
-                if(1+currentResourceUsage.totalFileNum>currentResourceProfile[e_field.RESOURCE_PROFILE.MAX_FILE_NUM]){
-                    fs.unlink(path)
-                    return Promise.reject(controllerError.articleImageNumExceed)
-                }
-                break
-            default:
-                return Promise.reject(controllerError.undefinedRangeType)
+    let currentResourceUsage = {totalFileNum: 0, totalFileSizeInMb: 0}
+    //定义需要检查的类型（按用户进行计算，按单个举报/举报处理计算）
+    let resourceRangeToBeCheck = [e_resourceProfileRange.PER_PERSON_IN_IMPEACH, e_resourceProfileRange.PER_IMPEACH_OR_COMMENT]
+    //对每个range进行计算时，要统计的资源（coll）
+    let expectResourceTypeForResourceRange = [e_resourceType.IMAGE, e_resourceType.ATTACHMENT]
+    for(let singleResourceRange of resourceRangeToBeCheck){
+        for(let singleResourceType of expectResourceTypeForResourceRange){
+            let result=await helper.calcExistResource_async({
+                resourceProfileRange:singleResourceRange,
+                resourceType:singleResourceType,
+                resourceFieldName:resourceFieldName,
+                resourceFieldsFilterGroup:fieldsFilterGroup,
+            })
+console.log(`resourceRange====>${singleResourceRange},resourceType=====>${singleResourceType}, result========>${JSON.stringify(result)}`)
         }
     }
 
 
-    /*              文件move到永久存储目录                           */
+
+
+
+   /* /!*              文件move到永久存储目录                           *!/
     let finalFileName,suffix
     //格式检查
     if(e_uploadFileType.IMAGE===type){
@@ -340,7 +344,7 @@ console.log(`group by article result =====>${JSON.stringify(tmpResult)}`)
     let pathId=tmpResult.msg._id
     fs.renameSync(path,finalPath)
 
-    /*              内部field value检测                            */
+    /!*              内部field value检测                            *!/
     let internalValue={},fieldToBeChanged
     if(e_uploadFileType.IMAGE===type){
         internalValue[e_field.ARTICLE_IMAGE.NAME]=originalFilename
@@ -372,11 +376,11 @@ console.log(`group by article result =====>${JSON.stringify(tmpResult)}`)
     }
 
     //因为都是internal field，直接插入到coll
-    /*              插入记录到article_image            */
+    /!*              插入记录到article_image            *!/
     tmpResult=await common_operation_model.create({dbModel:e_dbModel[fileCollName],value:internalValue})
     let fileId=tmpResult.msg._id
-    /*              更新记录到article                  */
-    tmpResult=await e_dbModel.article.update({_id:articleId},{$push:{[fieldToBeChanged]:fileId}})
+    /!*              更新记录到article                  *!/
+    tmpResult=await e_dbModel.article.update({_id:articleId},{$push:{[fieldToBeChanged]:fileId}})*/
     return Promise.resolve({rc:0})
 }
 
@@ -391,11 +395,11 @@ console.log(`group by article result =====>${JSON.stringify(tmpResult)}`)
 module.exports={
     // article_dispatcher_async,
     // comment_dispatcher_async,
-    articleUploadFile_dispatch_async,
+    impeachUploadFile_dispatch_async,
     
     
     // uploadArticleImage_async,
-    // uploadArticleFile_async,
+    // uploadImpeachFile_async,
 
     controllerError
 }

@@ -152,9 +152,9 @@ async function dispatcher_async(req){
                 penalizeCheckError:controllerError.userInPenalizeNoCommentCreate*/
             }
             expectedPart=[e_part.RECORD_INFO]
-            console.log(`before precheck done=====.`)
+            // console.log(`before precheck done=====.`)
             await helper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
-console.log(`precheck done=====.`)
+// console.log(`precheck done=====.`)
 
             tmpResult=await createUser_async(req)
             // console.log(`create  tmpResult ${JSON.stringify(tmpResult)}`)
@@ -410,12 +410,12 @@ async function updateUser_async(req){
 // console.log(`sugar=====> ${JSON.stringify(sugar)}`)
 //         console.log(`password value =====> ${JSON.stringify(docValue[e_field.USER.PASSWORD])}`)
 //         console.log(`mix value =====> ${docValue[e_field.USER.PASSWORD]}${sugar}`)
-        let hashPasswordtmpResult=hash(`${docValue[e_field.USER.PASSWORD]}${sugar}`,e_hashType.SHA256)
-        if(hashPasswordtmpResult.rc>0){
-            return Promise.reject(hashPasswordtmpResult)
+        let hashPasswordTmpResult=hash(`${docValue[e_field.USER.PASSWORD]}${sugar}`,e_hashType.SHA256)
+        if(hashPasswordTmpResult.rc>0){
+            return Promise.reject(hashPasswordTmpResult)
         }
         // console.log(`hash password is ====>${hashPassword}`)
-        docValue[e_field.USER.PASSWORD]=hashPasswordtmpResult.msg
+        docValue[e_field.USER.PASSWORD]=hashPasswordTmpResult.msg
         // console.log(` after hash password====> ${JSON.stringify(docValue)}`)
 
     }

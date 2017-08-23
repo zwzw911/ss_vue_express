@@ -37,7 +37,7 @@ const impeach= {
     impeachImagesId: {
         'chineseName': '举报图片',
         'type': [serverDataType.OBJECT_ID],
-        'require': {define: true, error: {rc: 10512}, mongoError: {rc: 20512, msg: '举报图片不能为空'}},//默认为空对象
+        'require': {define: false, error: {rc: 10512}, mongoError: {rc: 20512, msg: '举报图片不能为空'}},//默认为空对象
         // 'arrayMinLength': {define: 0, error: {rc: 10002}, mongoError: {rc: 20002, msg: '至少设置1个标签'}},
         'arrayMaxLength': {define: maxNumber.impeach.maxImageNumber, error: {rc: 10514}, mongoError: {rc: 20514, msg: `最多插入${maxNumber.impeach.maxImageNumber}个图片`}},
         'format': {define: regex.objectId, error: {rc: 10516}, mongoError: {rc: 20516, msg: '举报图片必须是objectId'}} //server端使用
@@ -46,7 +46,7 @@ const impeach= {
     impeachAttachmentsId: {
         'chineseName': '举报附件',
         'type': [serverDataType.OBJECT_ID],
-        'require': {define: true, error: {rc: 10518}, mongoError: {rc: 20518, msg: '举报附件不能为空'}},//默认为空对象
+        'require': {define: false, error: {rc: 10518}, mongoError: {rc: 20518, msg: '举报附件不能为空'}},//默认为空对象
         // 'arrayMinLength': {define: 1, error: {rc: 10002}, mongoError: {rc: 20002, msg: '至少设置1个标签'}},
         'arrayMaxLength': {define: maxNumber.impeach.maxAttachmentNumber, error: {rc: 10520}, mongoError: {rc: 20520, msg: `最多添加${maxNumber.impeach.maxAttachmentNumber}个附件`}},
         'format': {define: regex.objectId, error: {rc: 10522}, mongoError: {rc: 20522, msg: '举报附件片必须是objectId'}} //server端使用
@@ -55,7 +55,7 @@ const impeach= {
     impeachCommentsId: {
         'chineseName': '留言',
         'type': [serverDataType.OBJECT_ID],
-        'require': {define: true, error: {rc: 10524}, mongoError: {rc: 20524, msg: '举报留言不能为空'}},//默认为空对象
+        'require': {define: false, error: {rc: 10524}, mongoError: {rc: 20524, msg: '举报留言不能为空'}},//默认为空对象
         // 'minLength': {define: 6, error: {rc: 10002}, mongoError: {rc: 20002, msg: '密码至少6个字符'}},
         'arrayMaxLength': {define: maxNumber.impeach.maxCommentNumber, error: {rc: 10526}, mongoError: {rc: 20526, msg: `最多添加${maxNumber.impeach.maxCommentNumber}个举报`}},
         'format': {define: regex.objectId, error: {rc: 10528}, mongoError: {rc: 20528, msg: '举报留言片必须是objectId'}} //server端使用
@@ -87,15 +87,7 @@ const impeach= {
         'format': {define: regex.objectId, error: {rc: 10540}, mongoError: {rc: 20540, msg: '举报的评论必须是objectId'}} //server端使用
     },
 
-    //被举报人（冗余字段，skip通过impeachedArticleId或者impeachedCommentId推导的过程）
-    impeachedUserId:{
-        'chineseName': '被举报人',
-        'type': serverDataType.OBJECT_ID,
-        'require': {define: true, error: {rc: 10542}, mongoError: {rc: 20542, msg: '被举报人不能为空'}},//默认为空对象
-        // 'arrayMinLength': {define: 0, error: {rc: 10002}, mongoError: {rc: 20002, msg: '至少设置1个标签'}},
-        //'arrayMaxLength': {define: maxNumber.article.imagesNumberPerArticle, error: {rc: 10004}, mongoError: {rc: 20004, msg: `最多插入${maxNumber.article.imagesNumberPerArticle}个图片`}},
-        'format': {define: regex.objectId, error: {rc: 10544}, mongoError: {rc: 20544, msg: '被举报人必须是objectId'}} //server端使用
-    },
+
 
 
 

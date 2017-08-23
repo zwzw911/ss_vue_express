@@ -25,7 +25,7 @@ const e_iniSettingObject=require('../../constant/enum/initSettingObject').iniSet
 const e_articleStatus=require('../../constant/enum/mongo').ArticleStatus.DB
 const e_impeachStatus=require('../../constant/enum/mongo').ImpeachStatus.DB
 const e_impeachType=require('../../constant/enum/mongo').ImpeachType.DB
-const e_storePathUsage=require('../../constant/enum/mongo').StorePathUsage.DB
+const e_referenceColl=require('../../constant/enum/mongo').ImpeachImageReferenceColl.DB
 
 const e_fileSizeUnit=require('../../constant/enum/node_runtime').FileSizeUnit
 
@@ -95,11 +95,11 @@ const controllerError={
         return {rc:50200,msg:{client:`${fieldInputValue}已经存在`, server:`字段${chineseFieldName}中，值${fieldInputValue}已经存在`}}},*/
 
     /*          create new impeach              */
-    userNotLoginCantCreate:{rc:50204,msg:`尚未登录，无法举报`},
+    userNotLoginCantCreate:{rc:50602,msg:`尚未登录，无法举报`},
     // userNoDefaultFolder:{rc:50205,msg:`没有默认目录，无法创建新文档`},
-    userInPenalizeNoImpeachCreate:{rc:50204,msg:`管理员禁止举报`},
-    contentSanityFailed:{rc:50206,msg:`举报内容包含有害内容，无法提交`},
-    unknownImpeachType:{rc:50208,msg:`未知举报类型，无法创建`},
+    userInPenalizeNoImpeachCreate:{rc:50604,msg:`管理员禁止举报`},
+    contentSanityFailed:{rc:50606,msg:`举报内容包含有害内容，无法提交`},
+    unknownImpeachType:{rc:50608,msg:`未知举报类型，无法创建`},
 
 
     // /*          update impeach              */
@@ -144,18 +144,32 @@ async function impeach_dispatcher_async(req){
                 penalizeSubType:e_penalizeSubType.CREATE,
                 penalizeCheckError:controllerError.userInPenalizeNoImpeachCreate
             }
-            //此处RECORD_INFO只包含了部分字段：impeachType/impeachedUserId,需要和其他默认之合并之后，才能进行preCheck_async（否则validate value会fail）
+            //此处RECORD_INFO只包含了部分字段：impeachType/impeachArticle(comment)Id,需要和其他默认之合并之后，才能进行preCheck_async（否则validate value会fail）
             expectedPart=[e_part.RECORD_INFO]
             //默认值模拟client端格式，以便直接进行validate value的测试
             let defaultDocValue={}
             defaultDocValue[e_field.IMPEACH.TITLE]={'value':'新举报'}
             defaultDocValue[e_field.IMPEACH.CONTENT]={'value':'对文档/评论的内容进行举报'}
+            defaultDocValue[e_field.IMPEACH.IMPEACH_STATUS]={'value':e_impeachStatus.NEW}
             //合并defaultDoCValue和client端输入，模拟新建举报的client输入
-            Object.assign(req.body.values[e_part.RECORD_INFO],defaultDocValue)
+            if(undefined!==req.body.values[e_part.RECORD_INFO]){
+                Object.assign(req.body.values[e_part.RECORD_INFO],defaultDocValue)
+            }
+
             tmpResult=await helper.preCheck_async({req:req,collName,method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
 
-            let collConfig={name:e_coll.IMPEACH,fkField:e_field.IMPEACH.IMPEACH_IMAGES_ID,contentFieldName:e_field.IMPEACH.CONTENT},collImageConfig={name:e_coll.IMPEACH_IMAGE,fkField:e_field.IMPEACH_IMAGE.IMPEACH_ID}
-            tmpResult=await createContent_async({req:req,collConfig:collConfig,collImageConfig:collImageConfig})
+            let collConfig={
+                collName:e_coll.IMPEACH,  //存储内容（包含图片DOM）的coll名字
+                fkFieldName:e_field.IMPEACH.IMPEACH_IMAGES_ID,//coll中，存储图片objectId的字段名
+                contentFieldName:e_field.IMPEACH.CONTENT, //coll中，存储内容的字段名
+            }
+            let collImageConfig={
+                collName:e_coll.IMPEACH_IMAGE,//实际存储图片的coll名
+                fkFieldName:e_field.IMPEACH_IMAGE.IMPEACH_ID, //字段名，记录图片存储在那个coll中
+                imageHashFieldName:e_field.IMPEACH_IMAGE.HASH_NAME //记录图片hash名字的字段名
+            }
+            // tmpResult=await createContent_async({req:req,collConfig:collConfig,collImageConfig:collImageConfig})
+            tmpResult=await createContent_async({req:req,collConfig:collConfig})
 
 
 
@@ -191,14 +205,16 @@ async function impeach_dispatcher_async(req){
 
 
 
-/*              新content无任何输入，所有的值都是内部产生
+/*          必须新产生一个默认document，以便提供objectId，这样用户插入图片的时候，就可以使用此objectId作为外键了
+            新content无任何输入，所有的值都是内部产生
 * @defaultDocValue: 在后台创建一个默认记录，以便image或者content得到对应的id，进行操作
 * @collName：对哪个记录进行操作（article/impeach/comment?）
 * @collImageName: 如果content要插入图片，图片存储的coll
 * */
-async  function createContent_async({req,collConfig,collImageConfig}){
-    let tmpResult,userId,docValue
+async  function createContent_async({req,collConfig}){
+    let tmpResult,userId,docValue,collName
     userId=req.session.userId
+    collName=collConfig.collName
 // console.log(`userId ====>${userId}`)
     /*              检查是否有权（authorize）创建            */
 
@@ -216,49 +232,91 @@ async  function createContent_async({req,collConfig,collImageConfig}){
         //XSS检查
         await helper.contentXSSCheck_async({content:content,error:controllerError.contentSanityFailed})
         //content中图片和db中的图片比较，决定是否要删除content中DOM，以及是否要删除db中的记录
-        docValue[contentFieldName]=await helper.contentDbDeleteNotExistImage_async({content:content,collConfig:collConfig,collImageConfig:collImageConfig})
+        /*
+        create中因为没有recordId，所以无法执行contentDbDeleteNotExistImage_async
+        同时，create中content为初始化内容，无image，也不必要执行contentDbDeleteNotExistImage_async
+        docValue[contentFieldName]=await helper.contentDbDeleteNotExistImage_async({content:content,recordId:recordId,collConfig:collConfig,collImageConfig:collImageConfig})
+        */
     }
-
+console.log(`contentXSSCheck_async done`)
 
 
 
 
     /*              对内部产生的值进行检测（开发时使用，上线后为了减低负荷，无需使用）           */
     let internalValue={}
-    internalValue[e_field.IMPEACH.CREATOR_ID]=req.session.userId
-    internalValue[e_field.IMPEACH.IMPEACH_STATUS]=e_impeachStatus.NEW
-    //根据articleId/comment获得其作者ID
-    let id,tmpCollName
+    internalValue[e_field.IMPEACH.CREATOR_ID]=userId
+    internalValue[e_field.IMPEACH.IMPEACH_STATUS]=e_impeachStatus.NEW //覆盖client端输入，确保字段值是new（防止恶意设置成其他值）
+    //根据获得其作者ID
+    let impeachedThingId //articleId/comment的id
+    let impeachedThingFieldName //impeach中，id位于（article/comment）的那个coll
+
+    let impeachedThingRelatedColl //id对应哪个coll，以便从中获得userId
+    let impeachedThingRelatedCollFieldName //id对应哪个coll，其中哪个字段代表userId
     switch (docValue[e_field.IMPEACH.IMPEACH_TYPE]){
         case e_impeachType.ARTICLE:
-            tmpCollName=e_coll.ARTICLE
+            impeachedThingRelatedColl=e_coll.ARTICLE
+            impeachedThingRelatedCollFieldName=e_field.ARTICLE.AUTHOR_ID
 
+            impeachedThingFieldName=e_field.IMPEACH.IMPEACHED_ARTICLE_ID
             break;
         case e_impeachType.COMMENT:
-            tmpCollName=e_coll.COLLECTION
+            impeachedThingRelatedColl=e_coll.ARTICLE_COMMENT
+            impeachedThingRelatedCollFieldName=e_field.ARTICLE_COMMENT.AUTHOR_ID
+
+            impeachedThingFieldName=e_field.IMPEACH.IMPEACHED_COMMENT_ID
             break;
         default:
             return Promise.reject(controllerError.unknownImpeachType)
 
     }
-    id=docValue[tmpCollName]
-    tmpResult=await  common_operation_model.findById({dbModel:e_dbModel[tmpCollName],id:id})
-    internalValue[e_field.IMPEACH.IMPEACHED_USER_ID]=tmpResult.msg._id
+    impeachedThingId=docValue[impeachedThingFieldName]
+    tmpResult=await  common_operation_model.findById({dbModel:e_dbModel[impeachedThingRelatedColl],id:impeachedThingId})
+    internalValue[e_field.IMPEACH.IMPEACHED_USER_ID]=tmpResult.msg[impeachedThingRelatedCollFieldName]
+// console.log(`impeached user id=======>${JSON.stringify(internalValue[e_field.IMPEACH.IMPEACHED_USER_ID])}`)
+
     if(e_env.DEV===currentEnv && Object.keys(internalValue).length>0){
         // console.log(`before newDocValue====>${JSON.stringify(internalValue)}`)
         // let newDocValue=dataConvert.addSubFieldKeyValue(internalValue)
         // console.log(`newDocValue====>${JSON.stringify(newDocValue)}`)
-        let tmpResult=helper.checkInternalValue({internalValue:internalValue,collInputRule:inputRule[collConfig.name],collInternalRule:internalInputRule[collConfig.name]})
+        let tmpResult=helper.checkInternalValue({internalValue:internalValue,collInputRule:inputRule[collName],collInternalRule:internalInputRule[collName]})
 // console.log(`internalValue check result====>   ${JSON.stringify(tmpResult)}`)
         if(tmpResult.rc>0){
             return Promise.reject(tmpResult)
         }
     }
     Object.assign(docValue,internalValue)
+console.log(`after internal check =======>${JSON.stringify(docValue)}`)
+
+    /*              检查外键字段的值是否存在(fkConfig中存在的)                */
+    await helper.ifFkValueExist_async({docValue:docValue,collFkConfig:fkConfig[collName],collFieldChineseName:e_fieldChineseName[collName]})
+
+    /*              upload image才会有                     */
+    /*/!*              检查外键字段的值是否存在(因为referenceId需要和referenceType并在一起才能判断属于哪个coll，因此要手动写code)                *!/
+    let fkFieldValue=docValue[e_field.IMPEACH_IMAGE.REFERENCE_ID]
+    let relatedCollName,fkFieldChineseName=e_fieldChineseName[e_coll.IMPEACH_IMAGE]
+    switch (docValue[e_field.IMPEACH_IMAGE.REFERENCE_COLL]){
+        case e_referenceColl.IMPEACH:
+            await helper.ifSingleFieldFkValueExist_async({fkFieldValue,relatedCollName,fkFieldChineseName,})
+            break;
+        case e_referenceColl.IMPEACH_COMMENT:
+            await helper.ifSingleFieldFkValueExist_async({fkFieldValue,relatedCollName,fkFieldChineseName,})
+            break;
+        default:
+
+    }*/
+
+
+
+
+    /*              如果有unique字段，需要预先检查unique(express级别，而不是mongoose级别)            */
+    if(undefined!==e_uniqueField[collName] && e_uniqueField[collName].length>0) {
+        await helper.ifFiledInDocValueUnique_async({collName: collName, docValue: docValue})
+    }
 
     //new article插入db
-    tmpResult= await common_operation_model.create({dbModel:e_dbModel[collConfig.name],value:docValue})
-    console.log(`create result is ====>${JSON.stringify(tmpResult)}`)
+    tmpResult= await common_operation_model.create({dbModel:e_dbModel[collName],value:docValue})
+// console.log(`create result is ====>${JSON.stringify(tmpResult)}`)
 
     return Promise.resolve({rc:0,msg:tmpResult.msg})
 }
