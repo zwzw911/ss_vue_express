@@ -38,7 +38,7 @@ describe('prepare:', function() {
 
     it('remove all record', async function(){
         for(let singleDbModel of dbModelInArray){
-            await common_operation_model.removeAll({dbModel:singleDbModel})
+            await common_operation_model.removeAll_async({dbModel:singleDbModel})
         }
     });
 

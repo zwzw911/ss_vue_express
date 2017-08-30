@@ -193,11 +193,11 @@ async  function createArticle_async(req){
     docValue[e_field.ARTICLE.NAME]="新建文档"
 
     docValue[e_field.ARTICLE.STATUS]=e_articleStatus.EDITING
-    tmpResult=await common_operation_model.find({dbModel:e_dbModel.folder,condition:{authorId:userId,name:'我的文档'}})
-    if(tmpResult.msg.length===0){
+    tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.folder,condition:{authorId:userId,name:'我的文档'}})
+    if(tmpResult.length===0){
         return Promise.reject(controllerError.userNoDefaultFolder)
     }
-    docValue[e_field.ARTICLE.FOLDER_ID]=tmpResult.msg[0]['id']
+    docValue[e_field.ARTICLE.FOLDER_ID]=tmpResult[0]['id']
     docValue[e_field.ARTICLE.CATEGORY_ID]=e_iniSettingObject.category.other
     docValue[e_field.ARTICLE.HTML_CONTENT]=`\br`
 
@@ -220,10 +220,10 @@ async  function createArticle_async(req){
     Object.assign(docValue,internalValue)
 
     //new article插入db
-    tmpResult= await common_operation_model.create({dbModel:e_dbModel.article,value:docValue})
+    tmpResult= await common_operation_model.create_returnRecord_async({dbModel:e_dbModel.article,value:docValue})
     console.log(`create result is ====>${JSON.stringify(tmpResult)}`)
 
-    return Promise.resolve({rc:0,msg:tmpResult.msg})
+    return Promise.resolve({rc:0,msg:tmpResult})
 }
 
 
@@ -247,11 +247,11 @@ async function updateArticle_async(req){
     let condition={}
     condition['_id']=articleId
     condition[e_field.ARTICLE.AUTHOR_ID]=userId
-    tmpResult=await  common_operation_model.find({dbModel:e_dbModel[collName],condition:condition})
-    if(tmpResult.msg.length!==1){
+    tmpResult=await  common_operation_model.find_returnRecords_async({dbModel:e_dbModel[collName],condition:condition})
+    if(tmpResult.length!==1){
         return Promise.reject(controllerError.notAuthorized)
     }
-    originalArticle=misc.objectDeepCopy({},tmpResult.msg[0])
+    originalArticle=misc.objectDeepCopy({},tmpResult[0])
 
     /*              client数据转换                  */
     let docValue=req.body.values[e_part.RECORD_INFO]
@@ -286,37 +286,37 @@ async function updateArticle_async(req){
         if(sanityHtml(htmlContent)!==htmlContent){
             return Promise.reject(controllerError.htmlContentSanityFailed)
         }
-        // console.log(`sanity html done=======>`)
-        let innerImageInArticle=htmlContent.match(regex.hashImageName)
-        // console.log(`innerImageInArticle=======>${JSON.stringify(innerImageInArticle)}`)
-        let articleImageCondition={}
-        articleImageCondition[e_field.ARTICLE_IMAGE.ARTICLE_ID]=articleId
-        //读取article的所有图片文件信息
-        tmpResult=await common_operation_model.find({dbModel:e_dbModel.article_image,condition:articleImageCondition})
-        if(null!==innerImageInArticle && innerImageInArticle.length>0){
-
+// console.log(`afet xss ==============>`)
+        //检测content中的image的信息
+        let collConfig={
+            collName:e_coll.ARTICLE,  //存储内容（包含图片DOM）的coll名字
+            fkFieldName:e_field.ARTICLE.ARTICLE_IMAGES_ID,//coll中，存储图片objectId的字段名
+            contentFieldName:e_field.ARTICLE.HTML_CONTENT, //coll中，存储内容的字段名
+            ownerFieldName:e_field.ARTICLE.AUTHOR_ID,// coll中，作者的字段名
         }
-
+        let collImageConfig={
+            collName:e_coll.ARTICLE_IMAGE,//实际存储图片的coll名
+            fkFieldName:e_field.ARTICLE_IMAGE.ARTICLE_ID, //字段名，记录图片存储在那个coll中
+            imageHashFieldName:e_field.ARTICLE_IMAGE.HASH_NAME //记录图片hash名字的字段名
+        }
+        docValue[e_field.ARTICLE.HTML_CONTENT]=await helper.contentDbDeleteNotExistImage_async({
+            content:docValue[e_field.ARTICLE.HTML_CONTENT],
+            recordId:articleId,
+            collConfig:collConfig,
+            collImageConfig:collImageConfig,
+        })
+// console.log(`afet image check ==============>${JSON.stringify(docValue[e_field.ARTICLE.HTML_CONTENT])}`)
     }
     // console.log(`image check done====>`)
-    //2. 如果有tag，检测是否已经在coll中存在。存在：从字符转换成objectId，不存在，coll tag中创建一个新的，并获得objectId
-    if(undefined!==docValue[e_field.ARTICLE.TAGS_ID]){
-        for(let idx in docValue[e_field.ARTICLE.TAGS_ID]){
-            let tmpCondition={}
-            tmpCondition[e_field.TAG.NAME]=docValue[e_field.ARTICLE.TAGS_ID][idx]
-            tmpResult=await common_operation_model.find({dbModel:e_dbModel.tag,condition:tmpCondition})
-            //tag已经存在，用objectId替换掉原来的字符
-            if(tmpResult.msg.length===1){
-                // console.log(`tag exiust==========`)
-                docValue[e_field.ARTICLE.TAGS_ID][idx]=tmpResult.msg[0]['_id']
-            }else{
-            //tag 不存在，创建一个新的tag，并保存返回的objectId
-            //     console.log(`tag not exist==========`)
-                tmpResult=await common_operation_model.create({dbModel:e_dbModel.tag,value:{name:docValue[e_field.ARTICLE.TAGS_ID][idx]}})
-                // console.log(`tag new create result==========${JSON.stringify(tmpResult)}`)
-                // console.log(`docValue not exit==========${JSON.stringify(docValue)}`)
-                docValue[e_field.ARTICLE.TAGS_ID][idx]=tmpResult.msg['_id']
-            }
+    //2. 如果有tag，对其中的每个tag，在对应的coll（tag）中，执行“如果不存在，就插入”的操作。coll（tag）的功能是为搜索提供AutoComplete的功能
+    if(undefined!==docValue[e_field.ARTICLE.TAGS]){
+        for(let singleTag of docValue[e_field.ARTICLE.TAGS]){
+            await common_operation_model.findOneAndUpdate_returnRecord_async({
+                dbModel:e_dbModel[e_coll.TAG],
+                condition:{[e_field.TAG.NAME]:singleTag},
+                updateFieldsValue:{[e_field.TAG.NAME]:singleTag},//采用和condition一致的数据，防止存在的字段被改变
+                updateOption:{upsert:true},//实现如果没有查找到doc，则新加入一个doc
+            })
         }
 
     }
@@ -328,9 +328,9 @@ async function updateArticle_async(req){
         condition[e_field.FOLDER.AUTHOR_ID]=userId
         condition['_id']=docValue[e_field.ARTICLE.FOLDER_ID]
         // console.log(`folder check=========>${JSON.stringify(condition)}`)
-        tmpResult=await common_operation_model.find({dbModel:e_dbModel.folder,condition:condition})
+        tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.folder,condition:condition})
         // console.log(`folder check result=========>${JSON.stringify(tmpResult)}`)
-        if(tmpResult.msg.length!==1){
+        if(tmpResult.length!==1){
             return Promise.reject(controllerError.notAuthorizedFolder)
         }
     }
@@ -349,14 +349,14 @@ async function updateArticle_async(req){
     //因为internalValue只是进行了转换，而不是新增，所以无需ObjectDeepCopy
     // Object.assign(docValue,internalValue)
 
-
+console.log(`to be update =============>`)
     /*              如果有unique字段，需要预先检查unique(express级别，而不是mongoose级别)            */
     if(undefined!==e_uniqueField[collName] && e_uniqueField[collName].length>0) {
         await helper.ifFiledInDocValueUnique_async({collName: collName, docValue: docValue})
     }
 
     /*              更新数据            */
-    tmpResult=await common_operation_model.update({dbModel:e_dbModel[collName],id:articleId,values:docValue})
+    await common_operation_model.update_returnRecord_async({dbModel:e_dbModel[collName],id:articleId,values:docValue})
     return Promise.resolve({rc:0})
 
 }

@@ -55,3 +55,5 @@
 2. user注册后，自动为user_resource_profile添加新纪录（per art/per person)====>done
 3. 每当用户上传新图片，或者更新文档，需要重新计算 resource-pforile_static的内容
 4. 添加mongodb group操作的函数：参数：1. dbModel，2 match 3 聚合操作类型（sum/min/max/avg)
+
+1. 如何在impeach中区分是对article还是comment进行的？

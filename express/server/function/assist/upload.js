@@ -43,7 +43,7 @@ function checkOption({ maxFilesSize=2097152 ,maxFileNumPerTrans=1 ,uploadDir }){
 }
 
 
-function formParse_async(req,option){
+async function formParse_async(req,option){
     // console.log(`formParse_async in ============`)
     let form=new multiparty.Form(option)
     // console.log(`formParse_async new ============`)

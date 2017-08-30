@@ -21,7 +21,7 @@ function setMongooseBuildInValidator(collFieldDefine,collInputRule){
             for(let singleFiled in collFieldDefine){//读取每个collection下的字段（path）
                 // console.log(`singleFiled ${JSON.stringify(singleFiled)}`)
                 for(let singleRuleName in collInputRule[singleFiled]){//读取每个字段下对应在inputRule下的每个rule
-                    if(serverRuleTypeMatchMongooseRuleType[singleRuleName]){//rule是否在mongo中有对应的内建validator
+                    if(undefined!==serverRuleTypeMatchMongooseRuleType[singleRuleName]){//rule是否在mongo中有对应的内建validator
                         let singleRuleValue=collInputRule[singleFiled][singleRuleName]
 // console.log(`singleRuleValue ${JSON.stringify(singleRuleValue)}`)
                         //如果define是format，且value为ObjectID，则无需在mongo上设置对应的内建validator（因为type为objectId的字段会优先尝试将输入值转化成objectId,而不是尝试使用已有的内建validator，如match等）

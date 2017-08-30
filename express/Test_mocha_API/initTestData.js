@@ -23,9 +23,9 @@ async  function createPenalizeForExistUser_async(){
     let condition={}
     condition[e_field.USER.DOC_STATUS]=e_docStatus.DONE
     condition[e_field.USER.USER_TYPE]=e_userType.NORMAL
-    let tmpResult=await common_operation_model.find({dbModel:e_dbModel.user,condition:condition})
-    if(tmpResult.msg.length>0){
-        for(let singleUser of tmpResult.msg){
+    let tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.user,condition:condition})
+    if(tmpResult.length>0){
+        for(let singleUser of tmpResult){
             let value={}
             value[e_field.ADMIN_PENALIZE.PUNISHED_ID]=singleUser['_id']
             value[e_field.ADMIN_PENALIZE.CREATOR_ID]=singleUser['_id']

@@ -195,9 +195,9 @@ async function uploadArticleFile_async({req,type}){
     let condition={}
     condition['_id']=articleId
     condition[e_field.ARTICLE.AUTHOR_ID]=userId
-console.log(`condition to check user =====>${JSON.stringify(condition)}`)
-    tmpResult=await  common_operation_model.find({dbModel:e_dbModel[collName],condition:condition})
-    if(tmpResult.msg.length!==1){
+// console.log(`condition to check user =====>${JSON.stringify(condition)}`)
+    tmpResult=await  common_operation_model.find_returnRecords_async({dbModel:e_dbModel[collName],condition:condition})
+    if(tmpResult.length!==1){
         return Promise.reject(controllerError.notAuthorized)
     }
     // originalArticle=misc.objectDeepCopy({},tmpResult.msg[0])
@@ -373,8 +373,8 @@ console.log(`group by article result =====>${JSON.stringify(tmpResult)}`)
 
     //因为都是internal field，直接插入到coll
     /*              插入记录到article_image            */
-    tmpResult=await common_operation_model.create({dbModel:e_dbModel[fileCollName],value:internalValue})
-    let fileId=tmpResult.msg._id
+    tmpResult=await common_operation_model.create_returnRecord_async({dbModel:e_dbModel[fileCollName],value:internalValue})
+    let fileId=tmpResult._id
     /*              更新记录到article                  */
     tmpResult=await e_dbModel.article.update({_id:articleId},{$push:{[fieldToBeChanged]:fileId}})
     return Promise.resolve({rc:0})

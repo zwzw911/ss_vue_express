@@ -18,7 +18,7 @@ const updateOptions=require('../common/configuration').updateOptions
 
 
 //无需返回任何paginationInfo，因为search已经返回，并存储在client端了
-async function create({dbModel,value,returnResult=true}){
+async function create_returnRecord_async({dbModel,value}){
 //使用Promise方式，以便catch可能的错误
     /*          原本使用insertMany，输入参数是数据，返回结果也是数据         */
 /*    let result=await dbModel.insertMany(values).catch((err)=>{
@@ -45,15 +45,16 @@ async function create({dbModel,value,returnResult=true}){
     //result.name=undefined
     //console.log(`model result is ${JSON.stringify(modelResult)}`)
     //必须返回document，以便mongoose后续操作（而不是toObject）
-    if(returnResult){
+    return Promise.resolve(result)
+/*    if(returnResult){
         return Promise.resolve({rc:0,msg:result})
     }else{
         return Promise.resolve({rc:0})
-    }
+    }*/
 
 }
 
-async function insertMany({dbModel,docs,returnResult=true}){
+async function insertMany_returnRecord_async({dbModel,docs}){
 //使用Promise方式，以便catch可能的错误
     /*          原本使用insertMany，输入参数是数据，返回结果也是数据         */
     let result=await dbModel.insertMany(docs).catch((err)=>{
@@ -62,13 +63,10 @@ async function insertMany({dbModel,docs,returnResult=true}){
      })
      //result.name=undefined
      //console.log(`model result is ${JSON.stringify(modelResult)}`)
-     return Promise.resolve({rc:0,msg:result})
-
-
-
+     return Promise.resolve(result)
 }
 
-async function update({dbModel,updateOptions,id,values,returnResult=true}){
+async function update_returnRecord_async({dbModel,updateOptions,id,values,returnResult=true}){
     values['uDate']=Date.now()
     // console.log(`id is ${id}, values is ${JSON.stringify(values)}`)
     //无需执行exec返回一个promise就可以使用了？？？
@@ -104,57 +102,57 @@ async function update({dbModel,updateOptions,id,values,returnResult=true}){
         }
     )
     //update成功，返回的是原始记录，需要转换成可辨认格式
-    if(returnResult){
+/*    if(returnResult){
         return Promise.resolve({rc:0,msg:result})
     }else{
         return Promise.resolve({rc:0})
-    }
-
+    }*/
+    return Promise.resolve(result)
 }
 
 /*              直接进行update          */
-async function updateDirect({dbModel,condition,updateOptions,values,returnResult=true}){
+async function updateDirect_returnRecord_async({dbModel,condition,updateOptions,values}){
     values['uDate']=Date.now()
     return new Promise(function(resolve,reject){
         dbModel.update(condition,values,updateOptions,function(err,result){
             if(err){
                 return reject(err)
             }
-            if(returnResult){
+            return resolve(result)
+/*            if(returnResult){
                 return resolve(result)
             }else{
                 return resolve({rc:0})
-            }
+            }*/
         })
     })
-
-
 }
 
 //根据Id删除文档（其实只是设置dData）
-async function remove({dbModel,updateOptions,id}){
+//无需返回update后的数据
+async function removeBaseIdArray_async({dbModel,updateOptions,idArray}){
     //return new Promise(function(resolve,reject){
         let values={}
         values['dDate']=Date.now()
 /*    console.log(`delete value is ${JSON.stringify(values)}`)
     console.log(`id is ${JSON.stringify(id)}`)
     console.log(`dbModel is ${JSON.stringify(dbModel.modelName)}`)*/
-	if(id.length===1){
-        let result= await dbModel.findByIdAndUpdate(id[0],values,updateOptions).catch(
+	if(idArray.length===1){
+        await dbModel.findByIdAndUpdate(idArray[0],values,updateOptions).catch(
             (err)=>{
                 return Promise.reject(mongooseErrorHandler(err))
             }
         )
 	}
-	if(id.length>1){
-		let result= await dbModel.updateMany({_id:{$in:id}},values,updateOptions).catch(
+	if(idArray.length>1){
+		await dbModel.updateMany({_id:{$in:idArray}},values,updateOptions).catch(
             (err)=>{
                 return Promise.reject(mongooseErrorHandler(err))
             }
         )
 	}
     //只需返回是否执行成功，而无需返回update后的doc
-        return Promise.resolve({rc:0})
+    //     return Promise.resolve({rc:0})
 /*        dbModel.findByIdAndUpdate(id,values,updateOptions,function(err,result){
             if(err){
                 // console.log(`db err is ${err}`)
@@ -171,7 +169,7 @@ async function remove({dbModel,updateOptions,id}){
 }
 
 //只做测试用
-async  function removeAll({dbModel}){
+async  function removeAll_async({dbModel}){
     //console.log(`remove all in `)
     //return new Promise(function(resolve,reject){
         //remove放回一个promise
@@ -180,7 +178,7 @@ async  function removeAll({dbModel}){
                 return Promise.reject(mongooseErrorHandler(err))
             }
         )
-        return Promise.resolve({rc:0})
+        // return Promise.resolve({rc:0})
         /*dbModel.remove({},function(err,result){
             //reject( "manually raise remove all err")
             if(err){
@@ -194,7 +192,15 @@ async  function removeAll({dbModel}){
     //})
 }
 
+async function deleteOne_returnRecord_async({dbModel,condition}){
+    let result=await dbModel.deleteOne(condition).catch(
+        (err)=>{
+            return Promise.reject(mongooseErrorHandler(err))
+        }
+    )
 
+    return Promise.resolve(result)
+}
 
 //readName主要是为suggestList提供选项，所以无需过滤被删除的记录（因为这些记录可能作为其他记录的外键存在）
 //currentDb:在bill中选择billType时候，最上级的billType不能出现（因为这些billType只是用作统计用的）。因此需要添加这个参数，判断当前是否为bill
@@ -246,7 +252,7 @@ async function readName({dbModel,readNameField,nameToBeSearched,recorderLimit=10
 
 //作为外键时，是否存在(存在放回doc，否则返回null)
 //selectedFields:'-cDate -uDate -dDate'
-async function findById({dbModel,id,returnResult=true,selectedFields='-cDate -uDate -dDate'}){
+async function findById_returnRecord_async({dbModel,id,selectedFields='-cDate -uDate -dDate'}){
     // console.log(`find by id :${id}`)
     let result=await dbModel.findById(id,selectedFields)
         .catch(
@@ -258,36 +264,38 @@ async function findById({dbModel,id,returnResult=true,selectedFields='-cDate -uD
     // let finalResult=result.toObject()
     // delete finalResult.__v
     // console.log(`findbyid result is ${JSON.stringify(result)}`)
-    if(returnResult){
+/*    if(returnResult){
         return Promise.resolve({rc:0,msg:result})
     }else{
         return Promise.resolve({rc:0})
-    }
+    }*/
+    return Promise.resolve(result)
 }
 
 
-async function find({dbModel,condition,returnResult=true,selectedFields='-cDate -uDate -dDate',options={}}){
+async function find_returnRecords_async({dbModel,condition,returnResult=true,selectedFields='-cDate -uDate -dDate',options={}}){
     // console.log(`find by id :${id}`)
     let result=await dbModel.find(condition,selectedFields,options)
         .catch(
             function(err){
-                console.log(`find errr is ${JSON.stringify(err)}`)
+                // console.log(`find errr is ${JSON.stringify(err)}`)
                 // console.log(`converted err is ${JSON.stringify(mongooseErrorHandler(mongooseOpEnum.findById,err))}`)
                 return Promise.reject(mongooseErrorHandler(err))
             })
     // let finalResult=result.toObject()
     // delete finalResult.__v
     // console.log(`findbyid result is ${JSON.stringify(result)}`)
-    if(returnResult){
+/*    if(returnResult){
         return Promise.resolve({rc:0,msg:result})
     }else{
         return Promise.resolve({rc:0})
-    }
+    }*/
+    return Promise.resolve(result)
 }
 
-async function findByIdAndUpdate({dbModel,id,updateFieldsValue,returnResult=true}){
+async function findByIdAndUpdate_returnRecord_async({dbModel,id,updateFieldsValue,updateOption}){
     // console.log(`find by id :${id}`)
-    let result=await dbModel.findByIdAndUpdate(id,updateFieldsValue)
+    let result=await dbModel.findByIdAndUpdate(id,updateFieldsValue,updateOption)
         .catch(
             function(err){
                 // console.log(`findbyid errr is ${JSON.stringify(err)}`)
@@ -297,19 +305,38 @@ async function findByIdAndUpdate({dbModel,id,updateFieldsValue,returnResult=true
     // let finalResult=result.toObject()
     // delete finalResult.__v
     // console.log(`findbyid result is ${JSON.stringify(result)}`)
-
-    if(returnResult){
+    return Promise.resolve(result)
+/*    if(returnResult){
         return Promise.resolve({rc:0,msg:result})
     }else{
         return Promise.resolve({rc:0})
-    }
+    }*/
 }
 
+async function findOneAndUpdate_returnRecord_async({dbModel,condition,updateFieldsValue,updateOption}){
+    // console.log(`find by id :${id}`)
+    let result=await dbModel.findOneAndUpdate(condition,updateFieldsValue,updateOption)
+        .catch(
+            function(err){
+                // console.log(`findbyid errr is ${JSON.stringify(err)}`)
+                // console.log(`converted err is ${JSON.stringify(mongooseErrorHandler(mongooseOpEnum.findById,err))}`)
+                return Promise.reject(mongooseErrorHandler(err))
+            })
+    // let finalResult=result.toObject()
+    // delete finalResult.__v
+    // console.log(`findbyid result is ${JSON.stringify(result)}`)
+    return Promise.resolve(result)
+    /*    if(returnResult){
+     return Promise.resolve({rc:0,msg:result})
+     }else{
+     return Promise.resolve({rc:0})
+     }*/
+}
 
 //统计数量
 //condition: {field:value, field2:value2}
 //count返回一个query，所以不能采用await，而是在callback返回promise
-async function countRec({dbModel,condition}){
+async function countRec_returnNumber_async({dbModel,condition}){
 /*      let result=await dbModel.count(condition).catch(
         (err)=>{
             return Promise.reject(mongooseErrorHandler(err))
@@ -319,50 +346,46 @@ async function countRec({dbModel,condition}){
 // console.log(`condition======>${JSON.stringify(condition)}`)
     return new Promise(function(resolve,reject){
         dbModel.count(condition,function(err,count){
-            console.log(`err======>${JSON.stringify(err)}`)
-            console.log(`count======>${JSON.stringify(count)}`)
+            console.log(`countRec_returnNumber_async err======>${JSON.stringify(err)}`)
+            console.log(`countRec_returnNumber_async count======>${JSON.stringify(count)}`)
             if(err){
                 return reject(mongooseErrorHandler(err))
             }
-            return resolve({rc:0,msg:count})
+            return resolve(count)
         })
     })
 
 }
 
-async function deleteOne({dbModel,condition}){
-    let result=await dbModel.deleteOne(condition).catch(
-        (err)=>{
-            return Promise.reject(mongooseErrorHandler(err))
-        }
-    )
-
-    return Promise.resolve({rc:0,msg:result})
-}
 
 
-async function deleteMany({dbModel,condition}){
+
+async function deleteMany_async({dbModel,condition}){
     return new Promise(function(resolve,reject){
         dbModel.deleteMany(condition,function(err){
             if(err){
                 return reject(mongooseErrorHandler(err))
             }
-           // return resolve({rc:0})
+           return resolve(true)
         })
     })
 }
 
 /*          删除数组字段中的某个（多个值）
 * @arrayFieldName： 数组字段
-* @arrayFieldValue：要删除的 数组 值
+* @arrayFieldValue：array。要删除的 数组 值
 * */
-async function deleteArrayFieldValue({dbModel,condition,arrayFieldName,arrayFieldValue}){
+async function deleteArrayFieldValue_async({dbModel,condition,arrayFieldName,arrayFieldValue}){
+// console.log(`condition ============>${JSON.stringify(condition)}`)
+//     console.log(`arrayFieldName ============>${JSON.stringify(arrayFieldName)}`)
+//     console.log(`arrayFieldValue ============>${JSON.stringify(arrayFieldValue)}`)
     return new Promise(function(resolve,reject){
-        dbModel.update(condition,{$pull:{[arrayFieldName]:arrayFieldValue}},function(err){
+        dbModel.update(condition,{$pull:{[arrayFieldName]:{$in:arrayFieldValue}}},function(err){
             if(err){
+// console.log(`deleteArrayFieldValue_async err========>${JSON.stringify(err)}`)
                 return reject(mongooseErrorHandler(err))
             }
-            // return resolve({rc:0})
+            return resolve(true)
         })
     })
 }
@@ -372,7 +395,7 @@ async function deleteArrayFieldValue({dbModel,condition,arrayFieldName,arrayFiel
 * skipRecorderNumInPage：在当前页上跳过的记录数
 * 以上2个参数可以为空，则读取指定页上的所有记录；设置的话，可以灵活的读取指定页的某些记录（主要是为了应用在remove操作中）
 * */
-async function search ({dbModel,populateOpt,searchParams,paginationInfo,readRecorderNum,skipRecorderNumInPage}) {
+async function search_returnRecords_async ({dbModel,populateOpt,searchParams,paginationInfo,readRecorderNum,skipRecorderNumInPage}) {
     //return new Promise(function(resolve,reject){
     //     console.log(`search in with params ${JSON.stringify(searchParams)}`)
     // searchParams['dDate']={'$exists':1}
@@ -410,7 +433,7 @@ async function search ({dbModel,populateOpt,searchParams,paginationInfo,readReco
         }
     )
     //console.log(`find result is ${JSON.stringify(result)}`)
-    return Promise.resolve({rc:0,msg:result})
+    return Promise.resolve(result)
 
 /*        dbModel.find(searchParams,function(err,result){
             if(err){
@@ -452,7 +475,7 @@ async function getCurrentCapital({eColl}){
 }
 
 async function getGroupCapital({dbModel,match}){
-    console.log(`match in model is ${JSON.stringify(match)}`)
+    // console.log(`match in model is ${JSON.stringify(match)}`)
     let restMount=await dbModel.aggregate([
         {$match:match},//过滤出和条件的document
         // {$lookup:{localField:"billType",from:"billTypes",foreignField:"_id","as":"billTypeInfo"}},
@@ -526,7 +549,7 @@ async function group_async({dbModel,match,project,group,sort}){
     if(undefined!==sort){
         params.push({$sort:sort})
     }
-    console.log(`params======>${JSON.stringify(params)}`)
+    // console.log(`params======>${JSON.stringify(params)}`)
 /*    let result=await dbModel.aggregate([
         {
             $match:{authorId:mongoose.Types.ObjectId("598ae782e21ca91e8c71a9d2")},
@@ -539,7 +562,7 @@ async function group_async({dbModel,match,project,group,sort}){
         ])*/
 
     let result=await dbModel.aggregate(params)
-    console.log(`group result is ${JSON.stringify(result)}`)
+    // console.log(`group result is ${JSON.stringify(result)}`)
     return Promise.resolve({rc:0,msg:result})
 }
 
@@ -547,22 +570,23 @@ async function group_async({dbModel,match,project,group,sort}){
 
 
 module.exports= {
-    create,
-    update,//传统的方式（find/update/save）
-    updateDirect,//直接执行update操作，无需考虑middleware
-    remove,
-    removeAll,//测试用
-    deleteOne,
-    deleteMany,
-    deleteArrayFieldValue,//直接删除数组字段中一个或者多个值
+    create_returnRecord_async,
+    update_returnRecord_async,//传统的方式（find/update/save）
+    updateDirect_returnRecord_async,//直接执行update操作，无需考虑middleware
+    removeBaseIdArray_async,  //只是根据idArray设置dData字段
+    removeAll_async,//测试用
+    deleteOne_returnRecord_async,
+    deleteMany_async,
+    deleteArrayFieldValue_async,//直接删除数组字段中一个或者多个值
     //readAll,
     readName,
-    findById,
-    find,
-    findByIdAndUpdate,
-    countRec,
+    findById_returnRecord_async,
+    find_returnRecords_async,
+    findByIdAndUpdate_returnRecord_async,
+    findOneAndUpdate_returnRecord_async,
+    countRec_returnNumber_async,
     // count,
-    search,
+    search_returnRecords_async,
     calcPagination,//将pagination的功能从search中单独分离出来，以便给search的create复用
     /*      static      */
     getCurrentCapital,
@@ -572,7 +596,7 @@ module.exports= {
     checkBillTypeOkForBill,
 
     /*          deploy          */
-    insertMany,
+    insertMany_returnRecord_async,
 
     group_async,
 

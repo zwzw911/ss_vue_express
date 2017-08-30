@@ -28,12 +28,12 @@ const fs=require('fs')
 /*             store path 还需要路径         */
 async function generateInitSettingEnum_async(){
     let mongoEnumKVExchange=generateMongoEnumKeyValueExchange()
-    let tmpResult=await common_operation_model.find({dbModel:e_dbModel.store_path,condition:{}})
-    console.log(`all store path===>${tmpResult.msg}`)
+    let tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.store_path,condition:{}})
+    console.log(`all store path===>${tmpResult}`)
     let result={}
     result[e_coll.STORE_PATH]={}
 
-    for(let singleRecord of tmpResult.msg){
+    for(let singleRecord of tmpResult){
         let usage=singleRecord[e_field.STORE_PATH.USAGE]
         let name=singleRecord[e_field.STORE_PATH.NAME]
         let id=singleRecord['_id']
@@ -52,8 +52,8 @@ async function generateInitSettingEnum_async(){
 
 
     result[e_coll.CATEGORY]={}
-    tmpResult=await common_operation_model.find({dbModel:e_dbModel.category,condition:{}})
-    for(let singleRecord of tmpResult.msg){
+    tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.category,condition:{}})
+    for(let singleRecord of tmpResult){
         let name=singleRecord[e_field.CATEGORY.NAME]
         let objectId=singleRecord['id']
         result[e_coll.CATEGORY][name]=objectId
@@ -61,8 +61,8 @@ async function generateInitSettingEnum_async(){
 // console.log(`CATEGORY extract result =========> ${JSON.stringify(result[e_coll.CATEGORY])}`)
 
     result[e_coll.RESOURCE_PROFILE]={}
-    tmpResult=await common_operation_model.find({dbModel:e_dbModel.resource_profile,condition:{}})
-    for(let singleRecord of tmpResult.msg){
+    tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.resource_profile,condition:{}})
+    for(let singleRecord of tmpResult){
         // console.log(`single record ====>${JSON.stringify(singleRecord)}`)
         // console.log(`mongoEnumKVExchange['ResourceType'] ====>${JSON.stringify(mongoEnumKVExchange['ResourceType'])}`)
 

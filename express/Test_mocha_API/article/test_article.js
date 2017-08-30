@@ -29,7 +29,7 @@ const contollerError=require('../../server/controller/article/article_logic').co
 
 const objectDeepCopy=require('../../server/function/assist/misc').objectDeepCopy
 
-const test_helper=require("../test_helper_db_operate")
+const test_helper=require("../API_helper/db_operation_helper")
 const testData=require('../testData')
 
 let baseUrl="/article/"
@@ -37,53 +37,23 @@ let userId  //create后存储对应的id，以便后续的update操作
 
 let sess1,sess2,data={values:{}}
 
+const API_helper=require('../API_helper/API_helper')
+
 describe('create new article and update, then create new comment: ', async function() {
     let url = '', finalUrl = baseUrl + url
-
+    let user1Sess,user2Sess,user1Id,user2Id,articleId,impeachId,data={values:{}}
     let newArticleId, folder2
-    before('user1 login correct', function (done) {
-        // console.log(`testData.user.user1 ${JSON.stringify(testData.user.user1)}`)
-        let user1Tmp = {}
-        user1Tmp[e_field.USER.ACCOUNT] = testData.user.user1[e_field.USER.ACCOUNT]
-        user1Tmp[e_field.USER.PASSWORD] = testData.user.user1[e_field.USER.PASSWORD]
-        // console.log(`user1Tmp ===>${JSON.stringify(user1Tmp)}`)
-        data.values[e_part.RECORD_INFO] = user1Tmp//,notExist:{value:123}
-        data.values[e_part.METHOD] = e_method.MATCH
-        // console.log(`data.values ${JSON.stringify(data.values)}`)
-
-        request.agent(app).post('/user/').set('Accept', 'application/json').send(data)
-            .end(function (err, res) {
-                // if (err) return done(err);
-                console.log(`user1 login sess ======> ${JSON.stringify(res['header']['set-cookie'][0].split(';')[0])}`)
-                sess1 = res['header']['set-cookie'][0].split(';')[0]
-                let parsedRes = JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc, 0)
-                // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
-                done();
-            });
+    before('remove exists record', async function(){
+        await API_helper.removeExistsRecord_async()
     })
-    before('user2 login correct', function (done) {
-        // console.log(`testData.user.user1 ${JSON.stringify(testData.user.user1)}`)
-        let user1Tmp = {}
-        user1Tmp[e_field.USER.ACCOUNT] = testData.user.user2[e_field.USER.ACCOUNT]
-        user1Tmp[e_field.USER.PASSWORD] = testData.user.user2[e_field.USER.PASSWORD]
-        // console.log(`user1Tmp ===>${JSON.stringify(user1Tmp)}`)
-        data.values[e_part.RECORD_INFO] = user1Tmp//,notExist:{value:123}
-        data.values[e_part.METHOD] = e_method.MATCH
-        // console.log(`data.values ${JSON.stringify(data.values)}`)
 
-        request.agent(app).post('/user/').set('Accept', 'application/json').send(data)
-            .end(function (err, res) {
-                // if (err) return done(err);
-                // console.log(`res ${JSON.stringify(res['header']['set-cookie'][0])}`)
-                sess2 = res['header']['set-cookie'][0].split(';')[0]
-                let parsedRes = JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc, 0)
-                // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
-                done();
-            });
+    before('user1 create and login', async function () {
+        await API_helper.createUser_async({userData:testData.user.user1})
+        user1Sess=await  API_helper.userLogin_returnSess_async({userData:testData.user.user1})
+    })
+    before('user2 create and login', async function () {
+        await API_helper.createUser_async({userData:testData.user.user2})
+        user2Sess=await  API_helper.userLogin_returnSess_async({userData:testData.user.user2})
     })
     before('insert user2 penalize for both article and comment', async function () {
         // console.log(`testData.user.user1 ${JSON.stringify(testData.user.user1)}`)
@@ -93,23 +63,23 @@ describe('create new article and update, then create new comment: ', async funct
 
         let condition = {}
         condition[e_field.USER.ACCOUNT] = testData.user.user2[e_field.USER.ACCOUNT]['value']
-        let tmpResult = await common_operation_model.find({dbModel: e_dbModel.user, condition: condition})
+        let tmpResult = await common_operation_model.find_returnRecords_async({dbModel: e_dbModel.user, condition: condition})
 
         let value = {}
-        value[e_field.ADMIN_PENALIZE.PUNISHED_ID] = tmpResult.msg[0]['_id']
-        value[e_field.ADMIN_PENALIZE.CREATOR_ID] = tmpResult.msg[0]['_id']
+        value[e_field.ADMIN_PENALIZE.PUNISHED_ID] = tmpResult[0]['_id']
+        value[e_field.ADMIN_PENALIZE.CREATOR_ID] = tmpResult[0]['_id']
         value[e_field.ADMIN_PENALIZE.REASON] = `test user2 penalize`
         value[e_field.ADMIN_PENALIZE.DURATION] = 1
 
         //use2 penalize create article
         value[e_field.ADMIN_PENALIZE.PENALIZE_TYPE] = e_penalizeType.NO_ARTICLE
         value[e_field.ADMIN_PENALIZE.PENALIZE_SUB_TYPE] = e_penalizeSubType.CREATE
-        await common_operation_model.create({dbModel: e_dbModel.admin_penalize, value: value})
+        await common_operation_model.create_returnRecord_async({dbModel: e_dbModel.admin_penalize, value: value})
 
         //use2 penalize create article
         value[e_field.ADMIN_PENALIZE.PENALIZE_TYPE] = e_penalizeType.NO_COMMENT
         value[e_field.ADMIN_PENALIZE.PENALIZE_SUB_TYPE] = e_penalizeSubType.CREATE
-        await common_operation_model.create({dbModel: e_dbModel.admin_penalize, value: value})
+        await common_operation_model.create_returnRecord_async({dbModel: e_dbModel.admin_penalize, value: value})
 
         // done()
         // return Promise.resolve({rc:0})
@@ -122,17 +92,17 @@ describe('create new article and update, then create new comment: ', async funct
 
         let condition = {}
         condition[e_field.USER.ACCOUNT] = testData.user.user2[e_field.USER.ACCOUNT]['value']
-        let tmpResult = await common_operation_model.find({dbModel: e_dbModel.user, condition: condition})
+        let tmpResult = await common_operation_model.find_returnRecords_async({dbModel: e_dbModel.user, condition: condition})
 
         condition = {}
-        condition[e_field.FOLDER.AUTHOR_ID] = tmpResult.msg[0]['_id']
+        condition[e_field.FOLDER.AUTHOR_ID] = tmpResult[0]['_id']
         let options = {$sort: {cDate: 1}}
-        tmpResult = await common_operation_model.find({
+        tmpResult = await common_operation_model.find_returnRecords_async({
             dbModel: e_dbModel.folder,
             condition: condition,
             options: options
         })
-        folder2 = tmpResult.msg[0]['_id']
+        folder2 = tmpResult[0]['_id']
 
         console.log(`folder2======>${JSON.stringify(folder2)}`)
         // done()
@@ -164,7 +134,7 @@ describe('create new article and update, then create new comment: ', async funct
     it('new article with additional part', function (done) {
         data.values[e_part.RECORD_INFO] = {name: {value: 'my article'}}
         data.values[e_part.METHOD] = e_method.CREATE
-        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie', [sess1]).send(data)
+        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie', [user1Sess]).send(data)
             .end(function (err, res) {
                 // if (err) return done(err);
                 // console.log(`res ios ${JSON.stringify(res)}`)
@@ -182,7 +152,7 @@ describe('create new article and update, then create new comment: ', async funct
         console.log(`data.values ===>${JSON.stringify(data.values)}`)
         data.values[e_part.METHOD] = e_method.CREATE
         console.log(`data.values ===>${JSON.stringify(data.values)}`)
-        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie', [sess1]).send(data)
+        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie', [user1Sess]).send(data)
             .end(function (err, res) {
                 // if (err) return done(err);
                 // console.log(`res ios ${JSON.stringify(res)}`)
@@ -221,7 +191,7 @@ describe('create new article and update, then create new comment: ', async funct
         data.values[e_part.RECORD_INFO][e_field.ARTICLE.HTML_CONTENT] = {}
         data.values[e_part.RECORD_INFO][e_field.ARTICLE.HTML_CONTENT]['value'] = ''
         console.log(`docvalues====>${JSON.stringify(data.values)}`)
-        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie', [sess1]).send(data)
+        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie', [user1Sess]).send(data)
             .end(function (err, res) {
                 // if (err) return done(err);
                 // console.log(`res ios ${JSON.stringify(res)}`)
@@ -240,7 +210,7 @@ describe('create new article and update, then create new comment: ', async funct
         data.values[e_part.RECORD_INFO]['notExist'] = {}
         data.values[e_part.RECORD_INFO]['notExist']['value'] = ''
         console.log(`docvalues====>${JSON.stringify(data.values)}`)
-        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie', [sess1]).send(data)
+        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie', [user1Sess]).send(data)
             .end(function (err, res) {
                 // if (err) return done(err);
                 // console.log(`res ios ${JSON.stringify(res)}`)
@@ -261,7 +231,7 @@ describe('create new article and update, then create new comment: ', async funct
         data.values[e_part.RECORD_INFO][e_field.ARTICLE.HTML_CONTENT] = {}
         data.values[e_part.RECORD_INFO][e_field.ARTICLE.HTML_CONTENT]['value'] = 'test'
         console.log(`docvalues====>${JSON.stringify(data.values)}`)
-        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie', [sess2]).send(data)
+        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie', [user2Sess]).send(data)
             .end(function (err, res) {
                 // if (err) return done(err);
                 // console.log(`res ios ${JSON.stringify(res)}`)
@@ -280,7 +250,7 @@ describe('create new article and update, then create new comment: ', async funct
         data.values[e_part.RECORD_INFO][e_field.ARTICLE.HTML_CONTENT] = {}
         data.values[e_part.RECORD_INFO][e_field.ARTICLE.HTML_CONTENT]['value'] = `<script></script>`
         console.log(`docvalues====>${JSON.stringify(data.values)}`)
-        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie', [sess1]).send(data)
+        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie', [user1Sess]).send(data)
             .end(function (err, res) {
                 // if (err) return done(err);
                 // console.log(`res ios ${JSON.stringify(res)}`)
@@ -296,10 +266,10 @@ describe('create new article and update, then create new comment: ', async funct
         data.values[e_part.RECORD_ID] = newArticleId
         data.values[e_part.METHOD] = e_method.UPDATE
         data.values[e_part.RECORD_INFO] = {}
-        data.values[e_part.RECORD_INFO][e_field.ARTICLE.TAGS_ID] = {}
-        data.values[e_part.RECORD_INFO][e_field.ARTICLE.TAGS_ID]['value'] = [testData.tag.tag1.name.value]
+        data.values[e_part.RECORD_INFO][e_field.ARTICLE.TAGS] = {}
+        data.values[e_part.RECORD_INFO][e_field.ARTICLE.TAGS]['value'] = [testData.tag.tag1.name.value]
         console.log(`docvalues====>${JSON.stringify(data.values)}`)
-        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie', [sess1]).send(data)
+        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie', [user1Sess]).send(data)
             .end(function (err, res) {
                 // if (err) return done(err);
                 // console.log(`res ios ${JSON.stringify(res)}`)
@@ -318,7 +288,7 @@ describe('create new article and update, then create new comment: ', async funct
         data.values[e_part.RECORD_INFO][e_field.ARTICLE.FOLDER_ID] = {}
         data.values[e_part.RECORD_INFO][e_field.ARTICLE.FOLDER_ID]['value'] = newArticleId
         console.log(`docvalues====>${JSON.stringify(data.values)}`)
-        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie', [sess1]).send(data)
+        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie', [user1Sess]).send(data)
             .end(function (err, res) {
                 // if (err) return done(err);
                 // console.log(`res ios ${JSON.stringify(res)}`)
@@ -336,7 +306,7 @@ describe('create new article and update, then create new comment: ', async funct
         data.values[e_part.RECORD_INFO][e_field.ARTICLE.CATEGORY_ID] = {}
         data.values[e_part.RECORD_INFO][e_field.ARTICLE.CATEGORY_ID]['value'] = newArticleId
         console.log(`docvalues====>${JSON.stringify(data.values)}`)
-        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie', [sess1]).send(data)
+        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie', [user1Sess]).send(data)
             .end(function (err, res) {
                 // if (err) return done(err);
                 // console.log(`res ios ${JSON.stringify(res)}`)
@@ -355,7 +325,7 @@ describe('create new article and update, then create new comment: ', async funct
         data.values[e_part.RECORD_INFO][e_field.ARTICLE.FOLDER_ID] = {}
         data.values[e_part.RECORD_INFO][e_field.ARTICLE.FOLDER_ID]['value'] = folder2
         console.log(`docvalues====>${JSON.stringify(data.values)}`)
-        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie', [sess1]).send(data)
+        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie', [user1Sess]).send(data)
             .end(function (err, res) {
                 // if (err) return done(err);
                 // console.log(`res ios ${JSON.stringify(res)}`)
@@ -367,21 +337,21 @@ describe('create new article and update, then create new comment: ', async funct
             });
     });
 
-    it('update article with attachment exist while server delete attachment due to it is internal field', function (done) {
+    it('update article content normally', function (done) {
         data.values = {}
         data.values[e_part.RECORD_ID] = newArticleId
         data.values[e_part.METHOD] = e_method.UPDATE
         data.values[e_part.RECORD_INFO] = {}
         data.values[e_part.RECORD_INFO][e_field.ARTICLE.HTML_CONTENT] = {}
         data.values[e_part.RECORD_INFO][e_field.ARTICLE.HTML_CONTENT]['value'] = 'update article with attachment exist'
-        data.values[e_part.RECORD_INFO][e_field.ARTICLE.ARTICLE_ATTACHMENTS_ID] = {}
-        data.values[e_part.RECORD_INFO][e_field.ARTICLE.ARTICLE_ATTACHMENTS_ID]['value'] = ['59817e549a1a3a4bac3a55f7']
-        data.values[e_part.RECORD_INFO][e_field.ARTICLE.ARTICLE_IMAGES_ID] = {}
-        data.values[e_part.RECORD_INFO][e_field.ARTICLE.ARTICLE_IMAGES_ID]['value'] = ['59817e549a1a3a4bac3a55f7']
-        data.values[e_part.RECORD_INFO][e_field.ARTICLE.ARTICLE_COMMENTS_ID] = {}
-        data.values[e_part.RECORD_INFO][e_field.ARTICLE.ARTICLE_COMMENTS_ID]['value'] = ['59817e549a1a3a4bac3a55f7']
+        // data.values[e_part.RECORD_INFO][e_field.ARTICLE.ARTICLE_ATTACHMENTS_ID] = {}
+        // data.values[e_part.RECORD_INFO][e_field.ARTICLE.ARTICLE_ATTACHMENTS_ID]['value'] = ['59817e549a1a3a4bac3a55f7']
+        // data.values[e_part.RECORD_INFO][e_field.ARTICLE.ARTICLE_IMAGES_ID] = {}
+        // data.values[e_part.RECORD_INFO][e_field.ARTICLE.ARTICLE_IMAGES_ID]['value'] = ['59817e549a1a3a4bac3a55f7']
+        // data.values[e_part.RECORD_INFO][e_field.ARTICLE.ARTICLE_COMMENTS_ID] = {}
+        // data.values[e_part.RECORD_INFO][e_field.ARTICLE.ARTICLE_COMMENTS_ID]['value'] = ['59817e549a1a3a4bac3a55f7']
         console.log(`docvalues====>${JSON.stringify(data.values)}`)
-        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie', [sess1]).send(data)
+        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie', [user1Sess]).send(data)
             .end(function (err, res) {
                 // if (err) return done(err);
                 // console.log(`res ios ${JSON.stringify(res)}`)

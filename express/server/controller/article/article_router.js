@@ -26,11 +26,11 @@ router.post('/',function(req,res,next){
 
     article_logic.article_dispatcher_async(req).then(
         (v)=>{
-            console.log(`create   register   success, result:  ${JSON.stringify(v)}`)
+            console.log(`create   article   success, result:  ${JSON.stringify(v)}`)
             return res.json(v)
         },
         (err)=>{
-            console.log(`create   register    fail: ${JSON.stringify(err)}`)
+            console.log(`create   article    fail: ${JSON.stringify(err)}`)
             return res.json(genFinalReturnResult(err))
 
         }

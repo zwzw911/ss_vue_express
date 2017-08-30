@@ -26,7 +26,7 @@ const controllerError=require('../../server/controller/user/user_logic').control
 
 const objectDeepCopy=require('../../server/function/assist/misc').objectDeepCopy
 
-const test_helper=require("../test_helper_db_operate")
+const test_helper=require("../API_helper/db_operation_helper")
 
 const testData=require('../testData')
 
@@ -193,21 +193,6 @@ describe('user1(register) correct value:', function() {
         // console.log(`######   delete exist record   ######`)
         // console.log(`correctValueForModel ${JSON.stringify(correctValueForModel)}`)
         await test_helper.deleteUserAndRelatedInfo_async({account:testData.user.user1ForModel.account})
-        /*let condition=objectDeepCopy(testData.user.user1ForModel)
-        delete condition['name']
-        delete condition['password']
-        // console.log(`condition ${JSON.stringify(condition)}`)
-        let result=await common_operation_model.find({dbModel:dbModel.user,condition:condition})
-        console.log(`find result =======>${JSON.stringify(result)}`)
-        if(0===result.rc && result.msg[0]){
-            let userId=result.msg[0]['id']
-            // console.log(`find id ${JSON.stringify(userId)}`)
-            result=await common_operation_model.deleteOne({dbModel:dbModel.user,condition:condition})
-            result=await common_operation_model.deleteOne({dbModel:dbModel.sugar,condition:{userId:userId}})
-            result=await common_operation_model.deleteOne({dbModel:dbModel.user_friend_group,condition:{userId:userId}})
-            result=await common_operation_model.deleteOne({dbModel:dbModel.folder,condition:{authorId:userId}})
-            // console.log(`delete result is ${JSON.stringify(result)}`)
-        }*/
         // done()
     });
 
@@ -672,22 +657,7 @@ describe('update user： ', function() {
 
     after('delete new create user2', async function() {
         await test_helper.deleteUserAndRelatedInfo_async({account:testData.user.user2ForModel.account})
-        /*let user2ModelTmp=objectDeepCopy(testData.user.user2ForModel)
-        delete user2ModelTmp['name']
-        delete user2ModelTmp['password']
-        // let condition={name:{value:'test'},account:{value:'12341234123'}}
-        // delete condition['password']
-        let result=await common_operation_model.find({dbModel:dbModel.user,condition:user2ModelTmp})
-        // console.log(`find result ${JSON.stringify(result)}`)
-        if(0===result.rc && result.msg[0]){
-            let userId=result.msg[0]['id']
-            // console.log(`find id ${JSON.stringify(userId)}`)
-            result=await common_operation_model.deleteOne({dbModel:dbModel.user,condition:user2ModelTmp})
-            result=await common_operation_model.deleteOne({dbModel:dbModel.sugar,condition:{userId:userId}})
-            result=await common_operation_model.deleteOne({dbModel:dbModel.user_friend_group,condition:{userId:userId}})
-            result=await common_operation_model.deleteOne({dbModel:dbModel.folder,condition:{authorId:userId}})
-            // console.log(`delete result is ${JSON.stringify(result)}`)
-        }*/
+
     })
 })
 
@@ -820,22 +790,7 @@ describe('retrieve password: ', function() {
 
     after('delete new create testData.user.user3', async function() {
         await test_helper.deleteUserAndRelatedInfo_async({account:testData.user.user3ForModel.account})
-        /*let user3ModelTmp=objectDeepCopy(testData.user.user3ForModel)
-        delete user3ModelTmp['name']
-        delete user3ModelTmp['password']
-        // let condition={name:{value:'test'},account:{value:'12341234123'}}
-        // delete condition['password']
-        let result=await common_operation_model.find({dbModel:dbModel.user,condition:user3ModelTmp})
-        // console.log(`find result ${JSON.stringify(result)}`)
-        if(0===result.rc && result.msg[0]){
-            let userId=result.msg[0]['id']
-            // console.log(`find id ${JSON.stringify(userId)}`)
-            result=await common_operation_model.deleteOne({dbModel:dbModel.user,condition:user3ModelTmp})
-            result=await common_operation_model.deleteOne({dbModel:dbModel.sugar,condition:{userId:userId}})
-            result=await common_operation_model.deleteOne({dbModel:dbModel.user_friend_group,condition:{userId:userId}})
-            result=await common_operation_model.deleteOne({dbModel:dbModel.folder,condition:{authorId:userId}})
-            // console.log(`delete result is ${JSON.stringify(result)}`)
-        }*/
+
     })
 })
 

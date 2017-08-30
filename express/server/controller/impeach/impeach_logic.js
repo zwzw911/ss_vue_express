@@ -102,15 +102,18 @@ const controllerError={
     unknownImpeachType:{rc:50608,msg:`未知举报类型，无法创建`},
 
 
-    // /*          update impeach              */
-    // userNotLoginCantUpdate:{rc:50208,msg:`用户尚未登录，无法更改文档`},
+    /*          update impeach              */
+    userNotLoginCantUpdate:{rc:50610,msg:`用户尚未登录，无法更改`},
+    userInPenalizeNoImpeachUpdate:{rc:50612,msg:`管理员禁止更新举报`},
+    notAuthorized:{rc:50614,msg:`非举报创建者，无权修改举报`},
+    inputSanityFailed:{rc:50616,msg:`输入内容中包含有害信息`},
     // userInPenalizeNoArticleUpdate:{rc:50209,msg:`管理员禁止更新文档`},
-    // htmlContentSanityFailed:{rc:50210,msg:`文档内容中包含有害信息`},
+    // inputSanityFailed:{rc:50210,msg:`文档内容中包含有害信息`},
     // notAuthorized:{rc:50212,msg:`无权更改文档`},
-    // notAuthorizedFolder:{rc:50214,msg:`非目录创建者，无权在目录中添加文档`},
 
 
-    // userInPenalizeNoArticleUpdate:{rc:50232,msg:`管理员禁止更新文档`},
+
+
 }
 
 
@@ -121,7 +124,7 @@ async function impeach_dispatcher_async(req){
     // console.log(`req is ${JSON.stringify(req.cookies)}`)
     // console.log(`dispatcher in`)
     // console.log(`req.body.values ${JSON.stringify(req.body.values)}`)
-    let collName=e_coll.IMPEACH,tmpResult
+    let tmpResult,collConfig={},collImageConfig={}
 
     //checkMethod只检测req的结构，以及req中method的格式和值，以便后续可以直接根据method进行调用
     tmpResult=helper.checkMethod({req:req})
@@ -155,43 +158,49 @@ async function impeach_dispatcher_async(req){
             if(undefined!==req.body.values[e_part.RECORD_INFO]){
                 Object.assign(req.body.values[e_part.RECORD_INFO],defaultDocValue)
             }
-
-            tmpResult=await helper.preCheck_async({req:req,collName,method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
-
-            let collConfig={
+            collConfig={
                 collName:e_coll.IMPEACH,  //存储内容（包含图片DOM）的coll名字
                 fkFieldName:e_field.IMPEACH.IMPEACH_IMAGES_ID,//coll中，存储图片objectId的字段名
                 contentFieldName:e_field.IMPEACH.CONTENT, //coll中，存储内容的字段名
             }
-            let collImageConfig={
-                collName:e_coll.IMPEACH_IMAGE,//实际存储图片的coll名
-                fkFieldName:e_field.IMPEACH_IMAGE.IMPEACH_ID, //字段名，记录图片存储在那个coll中
-                imageHashFieldName:e_field.IMPEACH_IMAGE.HASH_NAME //记录图片hash名字的字段名
-            }
+            tmpResult=await helper.preCheck_async({req:req,collName:collConfig.collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
             // tmpResult=await createContent_async({req:req,collConfig:collConfig,collImageConfig:collImageConfig})
             tmpResult=await createContent_async({req:req,collConfig:collConfig})
-
-
-
             break;
         case e_method.SEARCH:// search
             break;
         case e_method.UPDATE: //update
-            /*userLoginCheck={
+// console.log(`update in========================>`)
+            userLoginCheck={
                 needCheck:true,
                 error:controllerError.userNotLoginCantUpdate
             }
             penalizeCheck={
-                penalizeType:e_penalizeType.NO_ARTICLE,
+                penalizeType:e_penalizeType.NO_IMPEACH,
                 penalizeSubType:e_penalizeSubType.UPDATE,
-                penalizeCheckError:controllerError.userInPenalizeNoArticleUpdate
+                penalizeCheckError:controllerError.userInPenalizeNoImpeachUpdate
+            }
+            /*          collConfig和collImageConfig主要用于image检查，也提供collName       */
+            collConfig={
+                collName:e_coll.IMPEACH,  //存储内容（包含图片DOM）的coll名字
+                fkFieldName:e_field.IMPEACH.IMPEACH_IMAGES_ID,//coll中，存储图片objectId的字段名
+                contentFieldName:e_field.IMPEACH.CONTENT, //coll中，存储内容的字段名
+                ownerFieldName:e_field.IMPEACH.CREATOR_ID,// coll中，作者的字段名
+            }
+            collImageConfig={
+                collName:e_coll.IMPEACH_IMAGE,//实际存储图片的coll名
+                fkFieldName:e_field.IMPEACH_IMAGE.REFERENCE_ID, //字段名，记录图片存储在那个coll中
+                imageHashFieldName:e_field.IMPEACH_IMAGE.HASH_NAME //记录图片hash名字的字段名
             }
             expectedPart=[e_part.RECORD_INFO,e_part.RECORD_ID]
-            tmpResult=await helper.preCheck_async({req:req,collName,method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
-// console.log(`article update precheck result======>${JSON.stringify(tmpResult)}`)
 
-            /!*      执行逻辑                *!/
-            tmpResult=await updateArticle_async(req)*/
+            tmpResult=await helper.preCheck_async({req:req,collName:collConfig.collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
+// console.log(`collImageConfig======>${JSON.stringify(collImageConfig)}`)
+
+
+
+            /*      执行逻辑                */
+            tmpResult=await updateContent_async({req:req,collConfig:collConfig,collImageConfig:collImageConfig})
             break;
         case e_method.DELETE: //delete
             break;
@@ -238,7 +247,7 @@ async  function createContent_async({req,collConfig}){
         docValue[contentFieldName]=await helper.contentDbDeleteNotExistImage_async({content:content,recordId:recordId,collConfig:collConfig,collImageConfig:collImageConfig})
         */
     }
-console.log(`contentXSSCheck_async done`)
+// console.log(`contentXSSCheck_async done`)
 
 
 
@@ -271,8 +280,8 @@ console.log(`contentXSSCheck_async done`)
 
     }
     impeachedThingId=docValue[impeachedThingFieldName]
-    tmpResult=await  common_operation_model.findById({dbModel:e_dbModel[impeachedThingRelatedColl],id:impeachedThingId})
-    internalValue[e_field.IMPEACH.IMPEACHED_USER_ID]=tmpResult.msg[impeachedThingRelatedCollFieldName]
+    tmpResult=await  common_operation_model.findById_returnRecord_async({dbModel:e_dbModel[impeachedThingRelatedColl],id:impeachedThingId})
+    internalValue[e_field.IMPEACH.IMPEACHED_USER_ID]=tmpResult[impeachedThingRelatedCollFieldName]
 // console.log(`impeached user id=======>${JSON.stringify(internalValue[e_field.IMPEACH.IMPEACHED_USER_ID])}`)
 
     if(e_env.DEV===currentEnv && Object.keys(internalValue).length>0){
@@ -286,7 +295,7 @@ console.log(`contentXSSCheck_async done`)
         }
     }
     Object.assign(docValue,internalValue)
-console.log(`after internal check =======>${JSON.stringify(docValue)}`)
+// console.log(`after internal check =======>${JSON.stringify(docValue)}`)
 
     /*              检查外键字段的值是否存在(fkConfig中存在的)                */
     await helper.ifFkValueExist_async({docValue:docValue,collFkConfig:fkConfig[collName],collFieldChineseName:e_fieldChineseName[collName]})
@@ -315,38 +324,38 @@ console.log(`after internal check =======>${JSON.stringify(docValue)}`)
     }
 
     //new article插入db
-    tmpResult= await common_operation_model.create({dbModel:e_dbModel[collName],value:docValue})
+    tmpResult= await common_operation_model.create_returnRecord_async({dbModel:e_dbModel[collName],value:docValue})
 // console.log(`create result is ====>${JSON.stringify(tmpResult)}`)
 
-    return Promise.resolve({rc:0,msg:tmpResult.msg})
+    return Promise.resolve({rc:0,msg:tmpResult})
 }
 
 
 /*
-* 更新文档
+* 更新文档(不包含图片和附件)
 * 1. 需要当前用户是否有权修改文档（为文档作者）
 * 2. 需要检查html中的image是否在磁盘上存在
 * 3. 检查tag(传入为字符)是否存在，不存在，在coll tag中新建记录，最终用objectId替换字符
 * 4. 检查是否选择了folder（输入为objectId），如果选择了，folder是否为当前用户所有
 * */
-async function updateArticle_async(req){
+async function updateContent_async({req,collConfig,collImageConfig}){
     // console.log(`update article in========>`)
 
     let tmpResult
     let userId=req.session.userId
-    let articleId=req.body.values[e_part.RECORD_ID]
-    let originalArticle
-    let collName=e_coll.ARTICLE
+    let impeachId=req.body.values[e_part.RECORD_ID]
+    let originalDoc
+    let collName=collConfig.collName
 
-    /*              查找id为文档，且作者为userid的记录，找不到说明不是作者，无权修改            */
+    /*              查找id为举报，且作者为userid的记录，找不到说明不是作者，无权修改            */
     let condition={}
-    condition['_id']=articleId
-    condition[e_field.ARTICLE.AUTHOR_ID]=userId
-    tmpResult=await  common_operation_model.find({dbModel:e_dbModel[collName],condition:condition})
-    if(tmpResult.msg.length!==1){
+    condition['_id']=impeachId
+    condition[collConfig.ownerFieldName]=userId
+    tmpResult=await  common_operation_model.find_returnRecords_async({dbModel:e_dbModel[collName],condition:condition})
+    if(tmpResult.length!==1){
         return Promise.reject(controllerError.notAuthorized)
     }
-    originalArticle=misc.objectDeepCopy({},tmpResult.msg[0])
+    originalDoc=misc.objectDeepCopy({},tmpResult[0])
 
     /*              client数据转换                  */
     let docValue=req.body.values[e_part.RECORD_INFO]
@@ -360,7 +369,7 @@ async function updateArticle_async(req){
     // console.log(`updateUser after compare with origin value ${JSON.stringify(docValue)}`)
     // console.log(`originUserInfo value ${JSON.stringify(originUserInfo)}`)
     for(let singleFieldName in docValue){
-        if(docValue[singleFieldName]===originalArticle[singleFieldName]){
+        if(docValue[singleFieldName]===originalDoc[singleFieldName]){
             delete docValue[singleFieldName]
         }
     }
@@ -369,66 +378,29 @@ async function updateArticle_async(req){
     /*              检查外键字段的值是否存在                */
     await helper.ifFkValueExist_async({docValue:docValue,collFkConfig:fkConfig[collName],collFieldChineseName:e_fieldChineseName[collName]})
 
-// console.log(`fk exist check done====>`)
-//     console.log(`docValue====>${JSON.stringify(docValue)}`)
+    /*              XSS检测                                 */
+    let xssFields=[e_field.IMPEACH.TITLE,e_field.IMPEACH.CONTENT]
+    for(let singleXSSField of xssFields){
+        if(undefined!==docValue[singleXSSField]) {
+            let htmlContent = docValue[singleXSSField]
+            if (sanityHtml(htmlContent) !== htmlContent) {
+                return Promise.reject(controllerError.inputSanityFailed)
+            }
+        }
+    }
 
     /*              检测某些字段                  */
     //1. 如果content存在
-    // 1.1 content进行sanity，sanity之后的结果失败，返回错误（而不是存入db）
     // 1.2 其中包含的图片是否已经被删除，删除的话，需要同时在磁盘上删除对应的文件，以便节省空间
-    if(undefined!==docValue[e_field.ARTICLE.HTML_CONTENT]){
-        let htmlContent=docValue[e_field.ARTICLE.HTML_CONTENT]
-        if(sanityHtml(htmlContent)!==htmlContent){
-            return Promise.reject(controllerError.htmlContentSanityFailed)
-        }
-        // console.log(`sanity html done=======>`)
-        let innerImageInArticle=htmlContent.match(regex.hashImageName)
-        // console.log(`innerImageInArticle=======>${JSON.stringify(innerImageInArticle)}`)
-        let articleImageCondition={}
-        articleImageCondition[e_field.ARTICLE_IMAGE.ARTICLE_ID]=articleId
-        //读取article的所有图片文件信息
-        tmpResult=await common_operation_model.find({dbModel:e_dbModel.article_image,condition:articleImageCondition})
-        if(null!==innerImageInArticle && innerImageInArticle.length>0){
-
-        }
-
+    if(undefined!==docValue[e_field.IMPEACH.CONTENT]){
+        docValue[e_field.IMPEACH.CONTENT]=await helper.contentDbDeleteNotExistImage_async({
+            content:docValue[e_field.ARTICLE.HTML_CONTENT],
+            recordId:impeachId,
+            collConfig:collConfig,
+            collImageConfig:collImageConfig,
+        })
     }
-    // console.log(`image check done====>`)
-    //2. 如果有tag，检测是否已经在coll中存在。存在：从字符转换成objectId，不存在，coll tag中创建一个新的，并获得objectId
-    if(undefined!==docValue[e_field.ARTICLE.TAGS_ID]){
-        for(let idx in docValue[e_field.ARTICLE.TAGS_ID]){
-            let tmpCondition={}
-            tmpCondition[e_field.TAG.NAME]=docValue[e_field.ARTICLE.TAGS_ID][idx]
-            tmpResult=await common_operation_model.find({dbModel:e_dbModel.tag,condition:tmpCondition})
-            //tag已经存在，用objectId替换掉原来的字符
-            if(tmpResult.msg.length===1){
-                // console.log(`tag exiust==========`)
-                docValue[e_field.ARTICLE.TAGS_ID][idx]=tmpResult.msg[0]['_id']
-            }else{
-            //tag 不存在，创建一个新的tag，并保存返回的objectId
-            //     console.log(`tag not exist==========`)
-                tmpResult=await common_operation_model.create({dbModel:e_dbModel.tag,value:{name:docValue[e_field.ARTICLE.TAGS_ID][idx]}})
-                // console.log(`tag new create result==========${JSON.stringify(tmpResult)}`)
-                // console.log(`docValue not exit==========${JSON.stringify(docValue)}`)
-                docValue[e_field.ARTICLE.TAGS_ID][idx]=tmpResult.msg['_id']
-            }
-        }
 
-    }
-    // console.log(`tag check result====>${JSON.stringify(docValue)}`)
-    // console.log(`tag check done====>`)
-    //3. 如果有folder，检测folder的owner是否为当前用户
-    if(undefined!==docValue[e_field.ARTICLE.FOLDER_ID]){
-        condition={}
-        condition[e_field.FOLDER.AUTHOR_ID]=userId
-        condition['_id']=docValue[e_field.ARTICLE.FOLDER_ID]
-        // console.log(`folder check=========>${JSON.stringify(condition)}`)
-        tmpResult=await common_operation_model.find({dbModel:e_dbModel.folder,condition:condition})
-        // console.log(`folder check result=========>${JSON.stringify(tmpResult)}`)
-        if(tmpResult.msg.length!==1){
-            return Promise.reject(controllerError.notAuthorizedFolder)
-        }
-    }
 
     /*              获得internal field，并进行检查                  */
     let internalValue={}
@@ -451,7 +423,7 @@ async function updateArticle_async(req){
     }
 
     /*              更新数据            */
-    tmpResult=await common_operation_model.update({dbModel:e_dbModel[collName],id:articleId,values:docValue})
+    await common_operation_model.update_returnRecord_async({dbModel:e_dbModel[collName],id:impeachId,values:docValue})
     return Promise.resolve({rc:0})
 
 }

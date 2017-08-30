@@ -218,14 +218,14 @@ async  function createLikeDislike_async(req) {
     let condition={}
     condition[e_field.LIKE_DISLIKE.AUTHOR_ID]=docValue[e_field.LIKE_DISLIKE.AUTHOR_ID]
     condition[e_field.LIKE_DISLIKE.ARTICLE_ID]=docValue[e_field.LIKE_DISLIKE.ARTICLE_ID]
-    tmpResult=await common_operation_model.find({dbModel:e_dbModel[collName],condition:condition})
-    if(tmpResult.msg.length>0){
+    tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel[collName],condition:condition})
+    if(tmpResult.length>0){
         return Promise.reject(controllerError.alreadyLikeDislike)
     }
 
     /*              插入db          */
-    tmpResult = await common_operation_model.create({dbModel: e_dbModel[collName], value: docValue})
-    console.log(`create result is ====>${JSON.stringify(tmpResult)}`)
+    await common_operation_model.create_returnRecord_async({dbModel: e_dbModel[collName], value: docValue})
+    // console.log(`create result is ====>${JSON.stringify(tmpResult)}`)
     /*          对关联db进行操作               */
     let fieldToBePlus1
     if(docValue[e_field.LIKE_DISLIKE.LIKE]){
@@ -234,9 +234,9 @@ async  function createLikeDislike_async(req) {
         fieldToBePlus1=e_field.LIKE_DISLIKE_STATIC.DISLIKE_TOTAL_NUM
     }
     let articleId=docValue[e_field.LIKE_DISLIKE.ARTICLE_ID]
-    tmpResult= await common_operation_model.findByIdAndUpdate({dbModel:e_dbModel[collNameStatic],id:articleId,updateFieldsValue:{$inc:{[fieldToBePlus1]:1}}})
+    tmpResult= await common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel[collNameStatic],id:articleId,updateFieldsValue:{$inc:{[fieldToBePlus1]:1}}})
 
-    return Promise.resolve({rc: 0, msg: tmpResult.msg})
+    return Promise.resolve({rc: 0, msg: tmpResult})
 }
 
 module.exports={

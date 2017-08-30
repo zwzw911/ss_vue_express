@@ -1,10 +1,11 @@
-var Canvas = require('canvas');
+'use strict'
+const Canvas = require('canvas');
 //var captchaImgPath=require('../assist/general').general.captchaImg_path;
 //var captchaImgPath='H:/gj/' //直接以dataURL的格式返回，而不再保存在磁盘上了
 const assistError=require('../../constant/error/assistError').awesomeCaptcha
 const fs=require('fs');
 
-var defaultParams={
+let defaultParams={
     expireDuration:1, // minute
     resultMode:0,   //0:DataURL; 1:filepath; 2: buffer
     saveDir:__dirname,
@@ -28,23 +29,23 @@ var defaultParams={
 };
 
 /*  pre defined setting */
-var validString='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';//these character has the same width and height, while abcdefghijklmnopqrstuvwxyz are hard to calc widht/height
-var validFontType=['normal','italic'];
-var validFontWeight=['100','200','300','400','500','600','700','800','900','normal','bold','bolder','lighter'];
+const validString='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';//these character has the same width and height, while abcdefghijklmnopqrstuvwxyz are hard to calc widht/height
+const validFontType=['normal','italic'];
+const validFontWeight=['100','200','300','400','500','600','700','800','900','normal','bold','bolder','lighter'];
 //var validFontSize=[11,12,13,14,15,16,17]			// in px
-var validFontFamily=['serif','sans-serif','monospace','cursive','fantasy'];
+const validFontFamily=['serif','sans-serif','monospace','cursive','fantasy'];
 
 
 /*  get random element from pre defined font array  */
-var genRandomEle=function(array){
-    var length=array.length;
-    var randomIdx=Math.round(Math.random()*(length-1));
+function genRandomEle(array){
+    let length=array.length;
+    let randomIdx=Math.round(Math.random()*(length-1));
     //console.log(randomIdx)
     return array[randomIdx];
 };
 
 /*  gen random character font setting*/
-var genRandomFontSetting=function(params){
+function genRandomFontSetting(params){
     params.fontType=genRandomEle(validFontType);
     params.fontWeight=genRandomEle(validFontWeight);
     //params.fontSize=genRandomEle(validFontSize);	//font should be constant to define the width
@@ -52,17 +53,17 @@ var genRandomFontSetting=function(params){
     //return params.fontType+' '+params.fontWeight+' '+params.fontSize+'px '+params.fontFamily
 };
 
-var convertToInt=function(number){
+function convertToInt(number){
     return (isNaN(parseInt(number))) ? false:parseInt(number)
 }
 
-var convertToFloat=function(number){
+function convertToFloat(number){
     return (isNaN(parseFloat(number))) ? false:parseFloat(number)
 }
 
 /*generate mandatory params(if not set or param not correct, use default; otherwise use user set param)*/
-var generateMandatoryParams=function(params){
-    var tmpInt,tmpFloat;
+function generateMandatoryParams(params){
+    let tmpInt,tmpFloat;
     if(undefined===params || undefined===params.resultMode){
         params.resultMode=defaultParams.resultMode
     }else{
@@ -84,7 +85,7 @@ var generateMandatoryParams=function(params){
         }
     }*/
 
-    if (undefined===params.fontRandom || typeof(params.fontRandom)!='boolean') {params.fontRandom=defaultParams.fontRandom}
+    if (undefined===params.fontRandom || typeof(params.fontRandom)!=='boolean') {params.fontRandom=defaultParams.fontRandom}
     if (undefined===params.fontType || validFontType.indexOf(params.fontType)===-1) {params.fontType=defaultParams.fontType;}
     if (undefined===params.fontWeight || validFontWeight.indexOf(params.fontWeight)===-1){params.fontWeight=defaultParams.fontWeight;}
     if (undefined===params.fontFamily || validFontFamily.indexOf(params.fontFamily)===-1) { params.fontFamily=defaultParams.fontFamily;}
@@ -97,7 +98,7 @@ var generateMandatoryParams=function(params){
         }
     }
 
-    if (undefined===params.shadow || typeof(params.shadow)!='boolean'){params.shadow=defaultParams.shadow;}
+    if (undefined===params.shadow || typeof(params.shadow)!=='boolean'){params.shadow=defaultParams.shadow;}
 
 
     if (undefined===params.size  ){
@@ -113,7 +114,7 @@ var generateMandatoryParams=function(params){
         params.inclineFactor =defaultParams.inclineFactor;
     }else{
         tmpFloat=convertToFloat(params.inclineFactor);
-        if(false==tmpFloat || tmpFloat<0 || tmpFloat>1 ) {
+        if(false===tmpFloat || tmpFloat<0 || tmpFloat>1 ) {
             params.inclineFactor = defaultParams.inclineFactor;
         }
     }
@@ -121,23 +122,23 @@ var generateMandatoryParams=function(params){
 }
 
 
-var captcha=async function(params,callback){
+async function captcha_async(params,callback){
     generateMandatoryParams(params)
     //根据必须参数计算其他参数
-    var realCharacterWidth=Math.ceil(params.fontSize*0.5*(1+params.inclineFactor));
-    var realCharacterHeight=Math.ceil(params.fontSize*0.7*(1+params.inclineFactor));
+    let realCharacterWidth=Math.ceil(params.fontSize*0.5*(1+params.inclineFactor));
+    let realCharacterHeight=Math.ceil(params.fontSize*0.7*(1+params.inclineFactor));
     
-    var horizontalPadding=realCharacterWidth; //px, captcha padding in horizontal, may change later
-    var verticalPadding=Math.round(realCharacterHeight/4);  //px, captcha padding in vertical, may change later
-    
-    var characterSpacing=0//Math.round(realCharacterWidth/4); //ps, the spacing between current char and next char, this is a constant
-    
-    var color=["rgb(255,165,0)","rgb(16,78,139)","rgb(0,139,0)","rgb(255,0,0)"];
-    var bgColor='rgb(255,255,255)';
-    var borderColor='rgb(153, 102, 102)';
+    let horizontalPadding=realCharacterWidth; //px, captcha padding in horizontal, may change later
+    let verticalPadding=Math.round(realCharacterHeight/4);  //px, captcha padding in vertical, may change later
 
-    var tmpInt
-    var neededWidth=(2*horizontalPadding)+(params.size*realCharacterWidth)+(params.size-1)*characterSpacing;
+    let characterSpacing=0//Math.round(realCharacterWidth/4); //ps, the spacing between current char and next char, this is a constant
+
+    let color=["rgb(255,165,0)","rgb(16,78,139)","rgb(0,139,0)","rgb(255,0,0)"];
+    let bgColor='rgb(255,255,255)';
+    let borderColor='rgb(153, 102, 102)';
+
+    let tmpInt
+    let neededWidth=(2*horizontalPadding)+(params.size*realCharacterWidth)+(params.size-1)*characterSpacing;
    tmpInt=convertToInt(params.width);
     if (!params.hasOwnProperty('width')  ){
         params.width=80;
@@ -151,7 +152,7 @@ var captcha=async function(params,callback){
     horizontalPadding=Math.round((params.width-params.size*realCharacterWidth-(params.size-1)*characterSpacing)/2);
 
 
-    var neededHeight=2*verticalPadding+realCharacterHeight;
+    let neededHeight=2*verticalPadding+realCharacterHeight;
     tmpInt=convertToInt(params.height);
     if (!params.hasOwnProperty('height')){
         params.height=32;
@@ -168,8 +169,8 @@ var captcha=async function(params,callback){
     /*************************************************************/
     /**************   start to generate captcha  ****************/
     /*************************************************************/
-    var canvas = new Canvas(params.width, params.height);
-    var ctx = canvas.getContext('2d');
+    let canvas = new Canvas(params.width, params.height);
+    let ctx = canvas.getContext('2d');
 
     /*  fill pic background color*/
     ctx.fillStyle =bgColor;
@@ -181,28 +182,28 @@ var captcha=async function(params,callback){
 
     /*  check shadow flag*/
     if(params.shadow){
-        var shadowIdx=Math.round(Math.random()*(color.length-1));
+        let shadowIdx=Math.round(Math.random()*(color.length-1));
         ctx.shadowColor=color[shadowIdx];
         ctx.shadowOffsetX=1;
         ctx.shadowOffsetY=1;
         ctx.shadowBlur=3;
     }
     /*  start gen captcha   */
-    var genText='';
+    let genText='';
 
     //gen curve which cross all character
     ctx.lineWidth=1;
     ctx.moveTo(horizontalPadding,verticalPadding+Math.random()*realCharacterHeight);
-    var randomControlX1=horizontalPadding+Math.random()*(params.width-2*horizontalPadding);
-    var randomControlY2=verticalPadding+Math.random()*(realCharacterHeight/2);
-    var randomControlX2=horizontalPadding+Math.random()*(params.width-2*horizontalPadding);
-    var randomControlY1=verticalPadding+realCharacterHeight/2+Math.random()*(realCharacterHeight/2);
-    var randomControlY3=verticalPadding+parseInt(realCharacterHeight*Math.random())
+    let randomControlX1=horizontalPadding+Math.random()*(params.width-2*horizontalPadding);
+    let randomControlY2=verticalPadding+Math.random()*(realCharacterHeight/2);
+    let randomControlX2=horizontalPadding+Math.random()*(params.width-2*horizontalPadding);
+    let randomControlY1=verticalPadding+realCharacterHeight/2+Math.random()*(realCharacterHeight/2);
+    let randomControlY3=verticalPadding+parseInt(realCharacterHeight*Math.random())
     ctx.bezierCurveTo(randomControlX1,randomControlY1,randomControlX2,randomControlY2,params.width-horizontalPadding, randomControlY3);
     ctx.stroke();
 
-
-    for (var i=1;i<=params.size;i++)
+    let singleChar=''
+    for (let i=1;i<=params.size;i++)
     {
         singleChar= validString.substr(parseInt(Math.random()*36,10),1);
 
@@ -218,9 +219,9 @@ var captcha=async function(params,callback){
         ctx.font=params.fontType+' '+params.fontSize.toString()+'px '+params.fontFamily;
         //console.log(ctx.font)
 
-        var charIdx=parseInt(Math.random()*color.length);
+        let charIdx=parseInt(Math.random()*color.length);
         ctx.fillStyle = color[charIdx];
-        var textStroke=(Math.random() > 0.5);
+        let textStroke=(Math.random() > 0.5);
         if(textStroke){
             //ctx.strokeText(singleChar,horizontalPadding+(i-1)*characterSpacing+(i-1)*params.fontSize,params.height-verticalPadding)
             ctx.strokeText(singleChar,0,0);
@@ -232,7 +233,7 @@ var captcha=async function(params,callback){
         genText+=singleChar;
     }
 
-     if (2 == params.resultMode) {
+     if (2 === params.resultMode) {
          return new Promise(function(resolve,reject){
              canvas.toBuffer(function(err, buf) {
                  return callback(genText, buf);
@@ -241,7 +242,7 @@ var captcha=async function(params,callback){
      }
 
 
-    if (0 == params.resultMode) {
+    if (0 === params.resultMode) {
         return new Promise(function(resolve,reject){
             canvas.toDataURL('image/png', function(err, data){
                 if(err){
@@ -257,6 +258,6 @@ var captcha=async function(params,callback){
 
 
 exports.captcha={
-    captcha
+    captcha_async,
     //removeExpireFile:removeExpireFile
 }

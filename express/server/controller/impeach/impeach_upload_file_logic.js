@@ -75,6 +75,8 @@ const miscConfiguration=require('../../constant/config/globalConfiguration').mis
 
 const mailAccount=require('../../constant/config/globalConfiguration').mailAccount
 
+
+const calcResourceConfig=require('../../constant/config/calcResourceConfig')
 /*          create article              */
 // const checkUserState=require('../')
 /*         upload user photo         */
@@ -105,6 +107,15 @@ const controllerError={
     undefinedColl:{rc:50804,msg:{client:`内部参数错误，请联系管理员`,server:`未定义图片要插入到哪里`}},
     notOwner:{rc:50804,msg:{client:`输入参数错误`,server:`不能更新他人的举报/后续处理`}},
 
+    //资源已经使用完毕
+    resourceSizeAlreadyExceed:{rc:50806,msg:{client:`总容量已经达到最大值，无法继续添加文件`,server:`容量达到最大`}},
+    resourceNumAlreadyExceed:{rc:50808,msg:{client:`总数量达到最大值，无法继续添加文件`,server:`数量达到最大`}},
+
+    //新文件会导致资源使用完毕
+    resourceSizeWillExceed:{rc:50806,msg:{client:`剩余总容量不足，无法继续添加文件`,server:`新文件会导致容量达到最大`}},
+    resourceNumWillExceed:{rc:50808,msg:{client:`剩余数量不足，无法继续添加文件`,server:`新文件会导致数量达到最大`}},
+    
+    
     //image 超出 resource_profile
     articleImageSizeExceed:{rc:50404,msg:{client:`文档图片总容量达到最大值，无法继续添加图片`,server:`文档图片容量达到最大`}},
     articleImageNumExceed:{rc:50406,msg:{client:`文档图片数量达到最大值，无法继续添加图片`,server:`文档图片数量达到最大`}},
@@ -153,6 +164,7 @@ async function impeachUploadFile_dispatch_async({req,uploadFileType,forColl}){
 
     let userLoginCheck,penalizeCheck,expectedPart
     switch (method){
+        //对于图片来说，是create（虽然此create是在impeach的update中进行操作的）
         case e_method.CREATE: //create
             userLoginCheck={
                 needCheck:true,
@@ -160,7 +172,7 @@ async function impeachUploadFile_dispatch_async({req,uploadFileType,forColl}){
             }
             penalizeCheck={
                 penalizeType:e_penalizeType.NO_IMPEACH,  //用户是否可以在新建的IMPEACH/IMPEACH_COMMENT插入图片（虽然是update，但对于用户，实际是新建）
-                penalizeSubType:e_penalizeSubType.UPDATE, //只有在update中才能插入图片，
+                penalizeSubType:e_penalizeSubType.UPDATE, //create文件，是在impeach/impeachComment的update中进行操作的，
                 penalizeCheckError:controllerError.userInPenalizeNoImpeachUpdate
             }
             expectedPart=[e_part.RECORD_ID]  //对哪个impeach/impeachComment进行更新（实际上是新建）
@@ -196,6 +208,7 @@ async function impeachUploadFile_dispatch_async({req,uploadFileType,forColl}){
  * @forColl： 上传的文件是for impeach还是impeachComment（因为这2者共用处理代码以及同一个coll）
 * */
 async function uploadImpeachFile_async({req,uploadFileType,forColl}) {
+    console.log(   `uploadImpeachFile_async in`)
     let tmpResult
     let userId = req.session.userId
     let referenceId = req.body.values[e_part.RECORD_ID] //根据refreenceColl决定recordId关联到哪个coll
@@ -208,7 +221,7 @@ async function uploadImpeachFile_async({req,uploadFileType,forColl}) {
     let fkFileOwnerFieldName       //fileCollName中，记录用户的字段名
     //上传image只对如下coll生效
 
-    /*                设置userId对应的字段名            */
+    /*                根据图片要插入到impeach还是impeachComment，设置userId对应的字段名            */
     switch (collName) {
         case e_coll.IMPEACH:
             ownerFieldName = e_field.IMPEACH.CREATOR_ID
@@ -218,25 +231,48 @@ async function uploadImpeachFile_async({req,uploadFileType,forColl}) {
             break
     }
 
-    /*              查找id为文档，且作者为userid的记录，找不到说明不是作者，无权修改            */
+    /*              在对应的coll（impeach/impeachComment）中，查找id为文档，且作者为userid的记录，找不到说明不是作者，无权修改            */
     let condition = {}
-    condition['_id'] = articleId
+    condition['_id'] = referenceId
     condition[ownerFieldName] = userId
-console.log(`condition to check user =====>${JSON.stringify(condition)}`)
-    tmpResult = await  common_operation_model.find({dbModel: e_dbModel[collName], condition: condition})
-    if (tmpResult.msg.length !== 1) {
+// console.log(`condition to check user =====>${JSON.stringify(condition)}`)
+    tmpResult = await  common_operation_model.find_returnRecords_async({dbModel: e_dbModel[collName], condition: condition})
+    if (tmpResult.length !== 1) {
         return Promise.reject(controllerError.notOwner)
     }
     // originalArticle=misc.objectDeepCopy({},tmpResult.msg[0])
 
+
+
+    /*                              预先计算已经占用的资源数量，并比较是否超出                           */
+    //不同的resourceRange，需要计算不同的resourceUsage和profile
+    let currentResourceUsage={}
+    let resourceProfile={}
+    //定义需要检查的类型（按用户进行计算，按单个举报/举报处理计算）
+    let resourceProfileRangeToBeCheck = [e_resourceProfileRange.PER_PERSON_IN_IMPEACH, e_resourceProfileRange.PER_IMPEACH_OR_COMMENT]
+    //对每个range进行计算时，要统计的资源所在的coll
+    let resourceCollToBeCheck = [e_coll.IMPEACH_ATTACHMENT, e_coll.IMPEACH_IMAGE]
+    for(let singleResourceRange of resourceProfileRangeToBeCheck){
+        //不同的resourceRange，需要计算不同的resource
+        currentResourceUsage[singleResourceRange]= {totalFileNum: 0, totalSizeInMb: 0}
+        for(let singleResourceColl of resourceCollToBeCheck){
+            let result=await helper.calcExistResource_async({
+                resourceProfileRange:singleResourceRange,
+                resourceFileFieldName:calcResourceConfig.resourceFileFieldName[singleResourceColl],
+                fieldsValueToFilterGroup:calcResourceConfig.fieldsValueToFilterGroup({impeach:{userId:userId,referenceId:referenceId}})[singleResourceColl],
+            })
+            currentResourceUsage[singleResourceRange]['totalFileNum']+=result['totalFileNum']
+            currentResourceUsage[singleResourceRange]['totalSizeInMb']+=result['totalSizeInMb']
+            console.log(`resourceRange====>${singleResourceRange},resourceType=====>${singleResourceType}, result========>${JSON.stringify(result)}`)
+        }
+        //选择profile，并将currentResourceUsage[singleResourceRange]传入比较
+        resourceProfile[singleResourceRange]=await helper.chooseLastValidResourceProfile_async({resourceProfileRange:singleResourceRange,userId:userId})
+
+        await helper.ifResourceStillValid_async({currentResourceUsage:currentResourceUsage[singleResourceRange],currentResourceProfile:resourceProfile[singleResourceRange],error:{sizeExceed:controllerError.resourceSizeAlreadyExceed,numberExceed:controllerError.resourceNumAlreadyExceed}})
+    }
+
     /*              上传文件存储到临时目录                         */
     let maxFileSize = uploadFileDefine[collName][uploadFileType].maxSizeInByte
-    /*    if(e_uploadFileType.IMAGE===uploadFileType){
-     maxFileSize=uploadFileDefine[collName][uploadFileType].maxSizeInByte
-     }
-     if(e_uploadFileType.ATTACHMENT===uploadFileType){
-     maxFileSize=uploadFileDefine.article_attachment.maxSizeInByte
-     }*/
     let uploadResult = await helper.uploadFileToTmpDir_async({
         req: req,
         uploadTmpDir: e_iniSettingObject.store_path.UPLOAD_TMP.upload_tmp_dir.path,
@@ -245,71 +281,16 @@ console.log(`condition to check user =====>${JSON.stringify(condition)}`)
     })
     let {originalFilename, path, size} = uploadResult.msg
 
-    // console.log(`group start========>`)
-    /*              获得用户当前的所有资源配置，并检查当前占用的资源（磁盘空间）+文件的资源（sizeInMB）后，还小于==>所有<==的资源配置（）                         */
 
-    //不同类型资源计算需要的字段定义
-    //1. 根据资源类型设置资源信息所在的coll以及其中的field
-    let resourceFieldName = {
-        [e_resourceType.IMAGE]: {
-            fileCollName: e_coll.IMPEACH_IMAGE,   //实际文件记录所在的coll
-            sizeFieldName: e_field.IMPEACH_IMAGE.SIZE_IN_MB,      //记录文件size的字段名（用于group）
-            fkFileOwnerFieldName: e_field.IMPEACH_IMAGE.AUTHOR_ID,  //记录文件是哪个用户创建的字段名
-        },
-        [e_resourceType.ATTACHMENT]: {
-            fileCollName: e_coll.IMPEACH_ATTACHMENT,   //实际文件记录所在的coll
-            sizeFieldName: e_field.IMPEACH_ATTACHMENT.SIZE_IN_MB,      //记录文件size的字段名（用于group）
-            fkFileOwnerFieldName: e_field.IMPEACH_ATTACHMENT.AUTHOR_ID,  //记录文件是哪个用户创建的字段名
-        },
+    let fileInfo={size:size,path:path}
+    for(let singleResourceRange of resourceProfileRangeToBeCheck){
+        await helper.ifNewFileLeadExceed_async({currentResourceUsage:currentResourceUsage[singleResourceRange],currentResourceProfile:resourceProfile[singleResourceRange],fileInfo:fileInfo,error:{sizeExceed:controllerError.resourceSizeWillExceed,numberExceed:controllerError.resourceNumWillExceed}})
     }
-    //2. 根据resourceType+resourceRange，设置group时候使用的过滤参数
-    let fieldsFilterGroup = {
-        [e_resourceType.IMAGE]: {
-            [e_resourceProfileRange.PER_PERSON_IN_IMPEACH]: {
-                [e_field.IMPEACH_IMAGE.AUTHOR_ID]: userId
-            },
-            [e_resourceProfileRange.PER_IMPEACH_OR_COMMENT]: {
-                [e_field.IMPEACH_IMAGE.AUTHOR_ID]: userId,
-                [e_field.IMPEACH_IMAGE.REFERENCE_ID]: referenceId
-            },
-        },
-        [e_resourceType.ATTACHMENT]: {
-            [e_resourceProfileRange.PER_PERSON_IN_IMPEACH]:{
-                [e_field.IMPEACH_ATTACHMENT.AUTHOR_ID]: userId
-            },
-            [e_resourceProfileRange.PER_IMPEACH_OR_COMMENT]:{
-                [e_field.IMPEACH_ATTACHMENT.AUTHOR_ID]: userId,
-                [e_field.IMPEACH_ATTACHMENT.REFERENCE_ID]: referenceId
-            },
-        },
-
-    }
-
-    let currentResourceUsage = {totalFileNum: 0, totalFileSizeInMb: 0}
-    //定义需要检查的类型（按用户进行计算，按单个举报/举报处理计算）
-    let resourceRangeToBeCheck = [e_resourceProfileRange.PER_PERSON_IN_IMPEACH, e_resourceProfileRange.PER_IMPEACH_OR_COMMENT]
-    //对每个range进行计算时，要统计的资源（coll）
-    let expectResourceTypeForResourceRange = [e_resourceType.IMAGE, e_resourceType.ATTACHMENT]
-    for(let singleResourceRange of resourceRangeToBeCheck){
-        for(let singleResourceType of expectResourceTypeForResourceRange){
-            let result=await helper.calcExistResource_async({
-                resourceProfileRange:singleResourceRange,
-                resourceType:singleResourceType,
-                resourceFieldName:resourceFieldName,
-                resourceFieldsFilterGroup:fieldsFilterGroup,
-            })
-console.log(`resourceRange====>${singleResourceRange},resourceType=====>${singleResourceType}, result========>${JSON.stringify(result)}`)
-        }
-    }
-
-
-
-
-
-   /* /!*              文件move到永久存储目录                           *!/
+  
+    /*              文件move到永久存储目录                           */
     let finalFileName,suffix
     //格式检查
-    if(e_uploadFileType.IMAGE===type){
+    if(e_uploadFileType.IMAGE===uploadFileType){
         //通过gm获得格式
         let gmInst=gmImage.initImage({originalFilename})
         tmpResult=await gmImage.getImageProperty_async(gmInst,e_gmGetter.FORMAT)
@@ -320,7 +301,7 @@ console.log(`resourceRange====>${singleResourceRange},resourceType=====>${single
             return Promise.reject(controllerError.notSupportImageFormat)
         }
     }
-    if(e_uploadFileType.ATTACHMENT===type){
+    if(e_uploadFileType.ATTACHMENT===uploadFileType){
         let tmp=originalFilename.split('.')
         suffix=tmp[tmp.length-1]
         //判断格式是否valid，否，报错=》删除=》推出
@@ -334,38 +315,44 @@ console.log(`resourceRange====>${singleResourceRange},resourceType=====>${single
     finalFileName=`${md5NameWithoutSuffix.msg}.${suffix.toLowerCase()}`
 
     //获得合适的存储路径，并move文件
-    if(e_uploadFileType.IMAGE===type){
+    if(e_uploadFileType.IMAGE===uploadFileType){
         tmpResult=await helper.chooseStorePath_async({usage:e_storePathUsage.ARTICLE_INNER_IMAGE})
     }
-    if(e_uploadFileType.ATTACHMENT===type){
+    if(e_uploadFileType.ATTACHMENT===uploadFileType){
         tmpResult=await helper.chooseStorePath_async({usage:e_storePathUsage.ARTICLE_INNER_ATTACHMENT})
     }
     let finalPath=tmpResult.msg.path+finalFileName
     let pathId=tmpResult.msg._id
     fs.renameSync(path,finalPath)
 
-    /!*              内部field value检测                            *!/
+    /*              内部field value检测                            */
     let internalValue={},fieldToBeChanged
-    if(e_uploadFileType.IMAGE===type){
-        internalValue[e_field.ARTICLE_IMAGE.NAME]=originalFilename
-        internalValue[e_field.ARTICLE_IMAGE.HASH_NAME]=finalFileName
-        internalValue[e_field.ARTICLE_IMAGE.PATH_ID]=pathId
-        internalValue[e_field.ARTICLE_IMAGE.SIZE_IN_MB]=size
-        internalValue[e_field.ARTICLE_IMAGE.AUTHOR_ID]=userId
-        internalValue[e_field.ARTICLE_IMAGE.ARTICLE_ID]=articleId
-        fileCollName=e_coll.ARTICLE_IMAGE
-        fieldToBeChanged=e_field.ARTICLE.ARTICLE_IMAGES_ID
+    if(e_uploadFileType.IMAGE===uploadFileType){
+        internalValue[e_field.IMPEACH_IMAGE.NAME]=originalFilename
+        internalValue[e_field.IMPEACH_IMAGE.HASH_NAME]=finalFileName
+        internalValue[e_field.IMPEACH_IMAGE.PATH_ID]=pathId
+        internalValue[e_field.IMPEACH_IMAGE.SIZE_IN_MB]=size
+        internalValue[e_field.IMPEACH_IMAGE.AUTHOR_ID]=userId
+        internalValue[e_field.IMPEACH_IMAGE.REFERENCE_ID]=referenceId
+        internalValue[e_field.IMPEACH_IMAGE.REFERENCE_COLL]=collName
+        fileCollName=e_coll.IMPEACH_IMAGE
+        if(collName===e_coll.IMPEACH){
+            fieldToBeChanged=e_field.IMPEACH.IMPEACH_IMAGES_ID
+        }
+        if(collName===e_coll.IMPEACH_COMMENT){
+            fieldToBeChanged=e_field.IMPEACH_COMMENT.IMPEACH_IMAGES_ID
+        }        
     }
-    if(e_uploadFileType.ATTACHMENT===type){
-        internalValue[e_field.ARTICLE_ATTACHMENT.NAME]=originalFilename
-        internalValue[e_field.ARTICLE_ATTACHMENT.HASH_NAME]=finalFileName
-        internalValue[e_field.ARTICLE_ATTACHMENT.PATH_ID]=pathId
-        internalValue[e_field.ARTICLE_ATTACHMENT.SIZE_IN_MB]=size
-        internalValue[e_field.ARTICLE_ATTACHMENT.AUTHOR_ID]=userId
-        internalValue[e_field.ARTICLE_ATTACHMENT.ARTICLE_ID]=articleId
-        fileCollName=e_coll.ARTICLE_ATTACHMENT
-        fieldToBeChanged=e_field.ARTICLE.ARTICLE_ATTACHMENTS_ID
-    }
+    /*if(e_uploadFileType.ATTACHMENT===uploadFileType){
+        internalValue[e_field.IMPEACH_ATTACHMENT.NAME]=originalFilename
+        internalValue[e_field.IMPEACH_ATTACHMENT.HASH_NAME]=finalFileName
+        internalValue[e_field.IMPEACH_ATTACHMENT.PATH_ID]=pathId
+        internalValue[e_field.IMPEACH_ATTACHMENT.SIZE_IN_MB]=size
+        internalValue[e_field.IMPEACH_ATTACHMENT.AUTHOR_ID]=userId
+        internalValue[e_field.IMPEACH_ATTACHMENT.ARTICLE_ID]=articleId
+        fileCollName=e_coll.IMPEACH_ATTACHMENT
+        fieldToBeChanged=e_field.ARTICLE.IMPEACH_ATTACHMENTS_ID
+    }*/
 
     if(e_env.DEV===currentEnv){
         let tmpResult=helper.checkInternalValue({internalValue:internalValue,collInputRule:inputRule[fileCollName],collInternalRule:internalInputRule[fileCollName]})
@@ -375,12 +362,18 @@ console.log(`resourceRange====>${singleResourceRange},resourceType=====>${single
         }
     }
 
+    /*                  外键检查                        */
+    //上传文件的所有字段都是内部字段，无client输入的docValue
+    await helper.ifFkValueExist_async({docValue:internalValue,collFkConfig:fkConfig[fileCollName],collFieldChineseName:e_fieldChineseName[fileCollName]})
+
+
+
     //因为都是internal field，直接插入到coll
-    /!*              插入记录到article_image            *!/
-    tmpResult=await common_operation_model.create({dbModel:e_dbModel[fileCollName],value:internalValue})
-    let fileId=tmpResult.msg._id
-    /!*              更新记录到article                  *!/
-    tmpResult=await e_dbModel.article.update({_id:articleId},{$push:{[fieldToBeChanged]:fileId}})*/
+    /*              插入记录到impeach_image            */
+    tmpResult=await common_operation_model.create_returnRecord_async({dbModel:e_dbModel[fileCollName],value:internalValue})
+    let fileId=tmpResult._id
+    /*              更新记录到impeach/impeach_Comment                 */
+    tmpResult=await e_dbModel[collName].update({_id:referenceId},{$push:{[fieldToBeChanged]:fileId}})
     return Promise.resolve({rc:0})
 }
 

@@ -22,7 +22,7 @@ const Field={
     public_group_interaction:['creatorId','deleteById',],
     user_friend_group:[],
     user_public_group:['userId','currentJoinGroup',],
-    impeach:['creatorId','impeachedUserId',],
+    impeach:['creatorId','impeachType','impeachedUserId','impeachImagesId','impeachAttachmentsId','impeachCommentsId',],
     impeach_attachment:['name','hashName','authorId','sizeInMb','pathId',],
     impeach_comment:['authorId','impeachImagesId','impeachAttachmentsId',],
     impeach_dealer:[],

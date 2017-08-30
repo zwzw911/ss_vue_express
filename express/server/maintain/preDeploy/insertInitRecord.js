@@ -171,7 +171,7 @@ for(let firstLevel in initSetting.storePath){
 }
 
 console.log(`storePathDocs==============>${JSON.stringify(storePathDocs)}`)
-common_operation_model.insertMany({dbModel:e_dbModel.store_path,docs:storePathDocs}).then(
+common_operation_model.insertMany_returnRecord_async({dbModel:e_dbModel.store_path,docs:storePathDocs}).then(
     (v)=>{console.log(`success====>${JSON.stringify(v)}`)},
     (e)=>{console.log(`err====>${JSON.stringify(e)}`)}
 )
@@ -184,7 +184,7 @@ for(let singleCategory of Object.values(initSetting.category)){
     categoryDocs.push({name:`${singleCategory}`})
 }
 console.log(`${JSON.stringify(categoryDocs)}`)
-common_operation_model.insertMany({dbModel:e_dbModel.category,docs:categoryDocs}).then(
+common_operation_model.insertMany_returnRecord_async({dbModel:e_dbModel.category,docs:categoryDocs}).then(
     (v)=>{console.log(`success====>${JSON.stringify(v)}`)},
     (e)=>{console.log(`err====>${JSON.stringify(e)}`)}
 )
@@ -200,7 +200,7 @@ for(let singleItem of initSetting.resource_profile){
     resourceProfileDocs.push(singleItem)
 }
 console.log(`resourceProfileDocs====》${JSON.stringify(resourceProfileDocs)}`)
-common_operation_model.insertMany({dbModel:e_dbModel.resource_profile,docs:resourceProfileDocs}).then(
+common_operation_model.insertMany_returnRecord_async({dbModel:e_dbModel.resource_profile,docs:resourceProfileDocs}).then(
     (v)=>{console.log(`success====>${JSON.stringify(v)}`)},
     (e)=>{console.log(`err====>${JSON.stringify(e)}`)}
 )

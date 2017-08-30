@@ -58,7 +58,9 @@ const e_eventStatus=require('../../constant/enum/mongo').EventStatus
  * */
 function _validateRecorderValue(inputValue,collRules,baseType){
     let rc={}
-
+    // console.log(`inputValue ==================>${JSON.stringify(inputValue)} `)
+    // console.log(`collRules ==================>${JSON.stringify(collRules)} `)
+    // console.log(`baseType ==================>${JSON.stringify(baseType)} `)
     //itemName: 字段名称
     for (let fieldName in collRules ){
         if(e_inputFieldCheckType.BASE_INPUT_RULE===baseType){
@@ -144,6 +146,7 @@ function validateCreateRecorderValue(inputValue,collRules){
 }
 /*      update纪录的时候，对输入的值进行检查          */
 function validateUpdateRecorderValue(inputValue,collRules){
+    // console.log(`validateUpdateRecorderValue in ======================>`)
     return _validateRecorderValue(inputValue,collRules,e_inputFieldCheckType.BASE_INPUT)
 }
 

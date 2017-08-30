@@ -29,7 +29,7 @@ const contollerError=require('../../server/controller/article/liekDislike_logic'
 
 const objectDeepCopy=require('../../server/function/assist/misc').objectDeepCopy
 
-const test_helper=require("../test_helper_db_operate")
+const test_helper=require("../API_helper/db_operation_helper")
 const testData=require('../testData')
 
 let baseUrl="/article/"
@@ -70,9 +70,9 @@ describe('create new likeDislike for article ', async function() {
     })
 
     before('get user1 id', async function(){
-        let tmpResult=await common_operation_model.find({dbModel:e_dbModel.user,condition:{[e_field.USER.ACCOUNT]:testData.user.user1ForModel[e_field.USER.ACCOUNT]}})
+        let tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.user,condition:{[e_field.USER.ACCOUNT]:testData.user.user1ForModel[e_field.USER.ACCOUNT]}})
         // console.log(`tmpResult=====> ${JSON.stringify(tmpResult)}`)
-        userId=tmpResult.msg[0]['_id']
+        userId=tmpResult[0]['_id']
         /*        tmpResult=await common_operation_model.find({dbModel:e_dbModel.article,condition:{[e_field.ARTICLE.AUTHOR_ID]:userId}})
          // console.log(`tmpResult=====> ${JSON.stringify(tmpResult)}`)
          articleId=tmpResult.msg[0]['_id']

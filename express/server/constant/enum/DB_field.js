@@ -56,7 +56,7 @@ const Field={
         FOLDER_ID:'folderId',
         HTML_CONTENT:'htmlContent',
         CATEGORY_ID:'categoryId',
-        TAGS_ID:'tagsId',
+        TAGS:'tags',
         ARTICLE_IMAGES_ID:'articleImagesId',
         ARTICLE_ATTACHMENTS_ID:'articleAttachmentsId',
         ARTICLE_COMMENTS_ID:'articleCommentsId',

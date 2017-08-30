@@ -29,7 +29,7 @@ const contollerError=require('../../server/controller/article/article_upload_fil
 
 const objectDeepCopy=require('../../server/function/assist/misc').objectDeepCopy
 
-const test_helper=require("../test_helper_db_operate")
+const test_helper=require("../API_helper/db_operation_helper")
 const testData=require('../testData')
 
 let baseUrl="/article/"
@@ -100,23 +100,23 @@ describe('create new comment: ', async function() {
 
         let condition={}
         condition[e_field.USER.ACCOUNT]=testData.user.user2[e_field.USER.ACCOUNT]['value']
-        let tmpResult=await common_operation_model.find({dbModel:e_dbModel.user,condition:condition})
+        let tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.user,condition:condition})
 
         let value={}
-        value[e_field.ADMIN_PENALIZE.PUNISHED_ID]=tmpResult.msg[0]['_id']
-        value[e_field.ADMIN_PENALIZE.CREATOR_ID]=tmpResult.msg[0]['_id']
+        value[e_field.ADMIN_PENALIZE.PUNISHED_ID]=tmpResult[0]['_id']
+        value[e_field.ADMIN_PENALIZE.CREATOR_ID]=tmpResult[0]['_id']
         value[e_field.ADMIN_PENALIZE.REASON]=`test user2 penalize`
         value[e_field.ADMIN_PENALIZE.DURATION]=1
 
         //use2 penalize create article
         value[e_field.ADMIN_PENALIZE.PENALIZE_TYPE]=e_penalizeType.NO_ARTICLE
         value[e_field.ADMIN_PENALIZE.PENALIZE_SUB_TYPE]=e_penalizeSubType.CREATE
-        await common_operation_model.create({dbModel:e_dbModel.admin_penalize,value:value})
+        await common_operation_model.create_returnRecord_async({dbModel:e_dbModel.admin_penalize,value:value})
 
         //use2 penalize create article
         value[e_field.ADMIN_PENALIZE.PENALIZE_TYPE]=e_penalizeType.NO_COMMENT
         value[e_field.ADMIN_PENALIZE.PENALIZE_SUB_TYPE]=e_penalizeSubType.CREATE
-        await common_operation_model.create({dbModel:e_dbModel.admin_penalize,value:value})
+        await common_operation_model.create_returnRecord_async({dbModel:e_dbModel.admin_penalize,value:value})
 
         // done()
         // return Promise.resolve({rc:0})

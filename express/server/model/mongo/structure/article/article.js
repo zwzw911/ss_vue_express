@@ -45,20 +45,20 @@ const tag_arrayMinLengthValidator={
     validator(v){
 /*        console.log(`tag is ${JSON.stringify(v)}`)
         console.log(`tag length is ${JSON.stringify(v.length)}`)*/
-        if(false===collInputRule['tagsId'][serverRuleType.REQUIRE]['define']){
+        if(false===collInputRule['tags'][serverRuleType.REQUIRE]['define']){
             if(0===v.length){
                 return true
             }
         }
-        return v.length>=collInputRule['tagsId'][serverRuleType.ARRAY_MIN_LENGTH]['define']
+        return v.length>=collInputRule['tags'][serverRuleType.ARRAY_MIN_LENGTH]['define']
     },
-    message:`错误代码${collInputRule['tagsId'][serverRuleType.ARRAY_MIN_LENGTH]['mongoError']['rc']}:${collInputRule['tagsId'][serverRuleType.ARRAY_MIN_LENGTH]['mongoError']['msg']}`
+    message:`错误代码${collInputRule['tags'][serverRuleType.ARRAY_MIN_LENGTH]['mongoError']['rc']}:${collInputRule['tags'][serverRuleType.ARRAY_MIN_LENGTH]['mongoError']['msg']}`
 }
 const tag_arrayMaxLengthValidator={
     validator(v){
-        return v.length<=collInputRule['tagsId'][serverRuleType.ARRAY_MAX_LENGTH]['define']
+        return v.length<=collInputRule['tags'][serverRuleType.ARRAY_MAX_LENGTH]['define']
     },
-    message:`错误代码${collInputRule['tagsId'][serverRuleType.ARRAY_MAX_LENGTH]['mongoError']['rc']}:${collInputRule['tagsId'][serverRuleType.ARRAY_MAX_LENGTH]['mongoError']['msg']}`
+    message:`错误代码${collInputRule['tags'][serverRuleType.ARRAY_MAX_LENGTH]['mongoError']['rc']}:${collInputRule['tags'][serverRuleType.ARRAY_MAX_LENGTH]['mongoError']['msg']}`
 }
 
 const image_arrayMaxLengthValidator={
@@ -90,7 +90,7 @@ const collFieldDefine={
     // pureContent:{type:String},
     htmlContent:{type:String},//一般设置成pureContent的2倍大小
     categoryId:{type:mongoose.Schema.Types.ObjectId,ref:"category"},
-    tagsId:{type:[mongoose.Schema.Types.ObjectId],ref:'tag',validate:[tag_arrayMinLengthValidator,tag_arrayMaxLengthValidator]},
+    tags:{type:[String],validate:[tag_arrayMinLengthValidator,tag_arrayMaxLengthValidator]},
     articleImagesId:{type:[mongoose.Schema.Types.ObjectId],ref:'article_image',validate:[image_arrayMaxLengthValidator]},
     articleAttachmentsId:{type:[mongoose.Schema.Types.ObjectId],ref:'article_attachment',validate:[attachment_arrayMaxLengthValidator]},
     articleCommentsId:{type:[mongoose.Schema.Types.ObjectId],ref:'article_comment',validate:[comment_arrayMaxLengthValidator]},

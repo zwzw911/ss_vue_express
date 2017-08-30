@@ -34,13 +34,18 @@ const contollerError=require('../../server/controller/article/article_logic').co
 
 const objectDeepCopy=require('../../server/function/assist/misc').objectDeepCopy
 
-const test_helper=require("../test_helper_db_operate")
+const test_helper=require("../API_helper/db_operation_helper")
 const testData=require('../testData')
 const helper=require('../../server/controller/helper')
 
-const test_helper_db_operate=require('../test_helper_db_operate')
+const db_operation_helper=require('../API_helper/db_operation_helper')
 
 const initSettingObject=require('../../server/constant/enum/initSettingObject').iniSettingObject
+
+const API_helper=require('../API_helper/API_helper')
+
+const calcResourceConfig=require('../../server/constant/config/calcResourceConfig')
+
 let tmpResult
 
 
@@ -66,114 +71,38 @@ describe('help=>calcExistResource_async ', async function() {
     let user1Sess,user2Sess,user1Id,user2Id,articleId,impeachId,data={values:{}}
 
     before('remove exists record', async function(){
-        await test_helper_db_operate.deleteAllModelRecord_async({})
+        await API_helper.removeExistsRecord_async()
     })
 
-    before('user1 && user2 register', function(done) {
-        data.values[e_part.RECORD_INFO]=testData.user.user1//
-        data.values.method=e_method.CREATE
-        request(app).post('/user/').set('Accept', 'application/json').send(data)
-            .end(function(err, res) {
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,0)
-
-            });
-        data.values[e_part.RECORD_INFO]=testData.user.user2//
-        request(app).post('/user/').set('Accept', 'application/json').send(data)
-            .end(function(err, res) {
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,0)
-                done();
-            });
+    before('user1 && user2 register', async function() {
+        await API_helper.createUser_async({userData:testData.user.user1})
+        await API_helper.createUser_async({userData:testData.user.user2})
     });
 
-    before('user1 && user2 login correct', function(done) {
-        data.values.method=e_method.MATCH
-        let userTmp=objectDeepCopy(testData.user.user1)
-        delete userTmp['name']
-        delete userTmp['userType']
-        data.values[e_part.RECORD_INFO]=userTmp//,notExist:{value:123}
-        request.agent(app).post('/user/').set('Accept', 'application/json').send(data)
-            .end(function(err, res) {
-                user1Sess=res['header']['set-cookie'][0].split(';')[0]
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,0)
-                // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
-                // done();
-            });
-
-        userTmp=objectDeepCopy(testData.user.user2)
-        delete userTmp['name']
-        delete userTmp['userType']
-        data.values[e_part.RECORD_INFO]=userTmp//,notExist:{value:123}
-        request.agent(app).post('/user/').set('Accept', 'application/json').send(data)
-            .end(function(err, res) {
-                user2Sess=res['header']['set-cookie'][0].split(';')[0]
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,0)
-                // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
-                done();
-            });
+    //异步返回promise，无需done
+    before('user1 && user2 login correct', async function() {
+        user1Sess=await  API_helper.userLogin_returnSess_async({userData:testData.user.user1})
+        user2Sess=await  API_helper.userLogin_returnSess_async({userData:testData.user.user2})
     })
-    before('user1 create article', function (done) {
-        data.values={}
-        data.values[e_part.METHOD] = e_method.CREATE
-        console.log(`data.values ===>${JSON.stringify(data.values)}`)
-        request(app).post('/article/').set('Accept', 'application/json').set('Cookie', [user1Sess]).send(data)
-            .end(function (err, res) {
-                // if (err) return done(err);
-                // console.log(`res ios ${JSON.stringify(res)}`)
-                let parsedRes = JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                articleId = parsedRes['msg']['_id']
-                assert.deepStrictEqual(parsedRes.rc, 0)
-                // assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.require.error.rc)
-                done();
-            });
+
+    before('user1 create article', async function () {
+        articleId=await API_helper.userCreateArticle_returnArticleId_async({userSess:user1Sess})
+
     });
 
     before('get user1 && user2 id', async function(){
-        tmpResult=await common_operation_model.find({dbModel:e_dbModel.user,condition:{account:testData.user.user1ForModel.account}})
-        // console.log(`user1Id result===================================>${JSON.stringify(tmpResult)}`)
-        user1Id=tmpResult.msg[0]['_id']
-        tmpResult=await common_operation_model.find({dbModel:e_dbModel.user,condition:{account:testData.user.user2ForModel.account}})
-        user2Id=tmpResult.msg[0]['_id']
+        user1Id=await db_operation_helper.getUserId_async({userAccount:testData.user.user1ForModel.account})
+        // tmpResult=await common_operation_model.find({dbModel:e_dbModel.user,condition:{account:testData.user.user2ForModel.account}})
+        user2Id=await db_operation_helper.getUserId_async({userAccount:testData.user.user2ForModel.account})
     })
 
 
-    before('user2 create impeach', function (done) {
-        data.values={}
-        data.values[e_part.RECORD_INFO]={
-            // [e_field.IMPEACH.IMPEACHED_USER_ID]:{value:user1Id},
-            [e_field.IMPEACH.IMPEACH_TYPE]:{value:e_impeachType.ARTICLE},
-            [e_field.IMPEACH.IMPEACHED_ARTICLE_ID]:{value:articleId},
-        }
-        data.values[e_part.METHOD] = e_method.CREATE
-        console.log(`data.values ===>${JSON.stringify(data.values)}`)
-        request(app).post('/impeach/').set('Accept', 'application/json').set('Cookie', [user2Sess]).send(data)
-            .end(function (err, res) {
-                // if (err) return done(err);
-                // console.log(`res ios ${JSON.stringify(res)}`)
-                let parsedRes = JSON.parse(res.text)
-                console.log(`parsedRes of impeach: ${JSON.stringify(parsedRes)}`)
-                impeachId = parsedRes['msg']['_id']
-                assert.deepStrictEqual(parsedRes.rc, 0)
-                // assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.require.error.rc)
-                done();
-            });
+    before('user2 create impeach', async function () {
+        impeachId=await API_helper.createImpeach_returnImpeachId_async({impeachType:e_impeachType.ARTICLE,articleId:articleId,userSess:user2Sess})
     });
-    before(`get user2's impeach id`, async function(){
-        tmpResult=await common_operation_model.find({dbModel:e_dbModel.impeach,condition:{
-            [e_field.IMPEACH.CREATOR_ID]:user2Id}})
-        // console.log(`user1Id result===================================>${JSON.stringify(tmpResult)}`)
-        impeachId=tmpResult.msg[0]['_id']
-    })
 
-    before(`user2 insert image for impeach`, async function(){
+    //2个函数紧密相关
+    it('calcExistResource_async && ifResourceValid_async', async function () {
         let commonPart= {
             [e_field.IMPEACH_IMAGE.AUTHOR_ID]: user2Id,
             [e_field.IMPEACH_IMAGE.REFERENCE_ID]: impeachId,
@@ -185,25 +114,177 @@ describe('help=>calcExistResource_async ', async function() {
             {sizeInMb:1.7,name:'test2.png',hashName:'9ea7925c965967e978aecbb5fcb0ec3e.png'},
             {sizeInMb:1.9,name:'test3.png',hashName:'9ea7925c965967e978aecbb5fcb0ec3f.png'},
         ]
+        let expectedSize=0,expectedNum=0
+        for(let singleEle of images){
+            expectedSize+=singleEle['sizeInMb']
+            expectedNum+=1
+        }
         for(let singleImage of images){
             Object.assign(singleImage,commonPart)
         }
         console.log(`images===================================>${JSON.stringify(images)}`)
-        tmpResult=await test_helper_db_operate.create_image_for_impeach_async({imagesInfo:images})
-        // console.log(`user1Id result===================================>${JSON.stringify(tmpResult)}`)
-        impeachId=tmpResult.msg[0]['_id']
-    })
-    it('test a XSS', async function () {
-        // console.log(`testData.user.user1 ${JSON.stringify(testData.user.user1)}`)
-        let content='<script>'
-        let error={rc:1}
-        helper.contentXSSCheck_async({content:content,error:error}).then(
-            (res)=>{},
-            (err)=>{
-                // console.log(`xss====>${JSON.stringify(err)}`)
-                assert.deepStrictEqual(err.rc, error.rc)
-            }
-        )
+        tmpResult=await db_operation_helper.createImageForImpeach_ReturnAllRecord_async({imagesInfo:images})
 
+        let resourceFieldName = {
+            [e_resourceType.IMAGE]: {
+                fileCollName: e_coll.IMPEACH_IMAGE,   //实际文件记录所在的coll
+                sizeFieldName: e_field.IMPEACH_IMAGE.SIZE_IN_MB,      //记录文件size的字段名（用于group）
+                fkFileOwnerFieldName: e_field.IMPEACH_IMAGE.AUTHOR_ID,  //记录文件是哪个用户创建的字段名
+            },
+            [e_resourceType.ATTACHMENT]: {
+                fileCollName: e_coll.IMPEACH_ATTACHMENT,   //实际文件记录所在的coll
+                sizeFieldName: e_field.IMPEACH_ATTACHMENT.SIZE_IN_MB,      //记录文件size的字段名（用于group）
+                fkFileOwnerFieldName: e_field.IMPEACH_ATTACHMENT.AUTHOR_ID,  //记录文件是哪个用户创建的字段名
+            },
+        }
+        //2. 根据resourceType+resourceRange，设置group时候使用的过滤参数
+        let fieldsFilterGroup = {
+            [e_resourceType.IMAGE]: {
+                [e_resourceProfileRange.PER_PERSON_IN_IMPEACH]: {
+                    [e_field.IMPEACH_IMAGE.AUTHOR_ID]: user2Id
+                },
+                [e_resourceProfileRange.PER_IMPEACH_OR_COMMENT]: {
+                    [e_field.IMPEACH_IMAGE.AUTHOR_ID]: user2Id,
+                    [e_field.IMPEACH_IMAGE.REFERENCE_ID]: impeachId
+                },
+            },
+            [e_resourceType.ATTACHMENT]: {
+                [e_resourceProfileRange.PER_PERSON_IN_IMPEACH]:{
+                    [e_field.IMPEACH_ATTACHMENT.AUTHOR_ID]: user2Id
+                },
+                [e_resourceProfileRange.PER_IMPEACH_OR_COMMENT]:{
+                    [e_field.IMPEACH_ATTACHMENT.AUTHOR_ID]: user2Id,
+                    [e_field.IMPEACH_ATTACHMENT.REFERENCE_ID]: impeachId
+                },
+            },
+        }
+
+// console.log(`resourceFieldName =================> ${JSON.stringify(calcResourceConfig.resourceFileFieldName[e_coll.IMPEACH_IMAGE])}`)
+
+        let currentResourceResult=await helper.calcExistResource_async({
+            resourceProfileRange:e_resourceProfileRange.PER_IMPEACH_OR_COMMENT,
+            resourceFileFieldName:calcResourceConfig.resourceFileFieldName[e_coll.IMPEACH_IMAGE],
+            fieldsValueToFilterGroup:calcResourceConfig.fieldsValueToFilterGroup({impeach:{userId:user2Id,referenceId:impeachId}})[e_coll.IMPEACH_IMAGE],
+        })
+
+        assert.deepStrictEqual(currentResourceResult["totalSizeInMb"], expectedSize)
+        assert.deepStrictEqual(currentResourceResult["totalFileNum"], expectedNum)
+
+        // console.log(`currentResourceResult =================> ${JSON.stringify(currentResourceResult)}`)
+        //需要检查的资源范围
+        let resourceProfile={}
+
+        let validResourceProfileRange=[e_resourceProfileRange.PER_PERSON_IN_IMPEACH]
+        for(let singleResourceProfileRange of validResourceProfileRange){
+            resourceProfile[singleResourceProfileRange]=await helper.chooseLastValidResourceProfile_async({resourceProfileRange:singleResourceProfileRange,userId:user2Id})
+
+// console.log(`tester chosee last range===========>${JSON.stringify(resourceProfile[singleResourceProfileRange])}`)
+            let result=await helper.ifNewFileLeadExceed_async({
+                currentResourceUsage:currentResourceResult,
+                currentResourceProfile:resourceProfile[singleResourceProfileRange],
+                fileInfo:{size:1177, path:"h:/test/txt"},
+                error:{sizeExceed:{rc:1,msg:`size exceed`},numberExceed:{rc:2,msg:`number exceed`}}
+            })
+            console.log(`result===========>${JSON.stringify(result)}`)
+        }
+
+    })
+})
+
+
+describe('help=>contentDbDeleteNotExistImage_async ', async function() {
+    let user1Sess, user2Sess, user1Id, user2Id, articleId, impeachId, data = {values: {}}
+
+    let collConfig={
+        collName:e_coll.IMPEACH,  //存储内容（包含图片DOM）的coll名字
+        fkFieldName:e_field.IMPEACH.IMPEACH_IMAGES_ID,//coll中，存储图片objectId的字段名
+        contentFieldName:e_field.IMPEACH.CONTENT, //coll中，存储内容的字段名
+        ownerFieldName:e_field.IMPEACH.CREATOR_ID,// coll中，作者的字段名
+    }
+    let collImageConfig={
+        collName:e_coll.IMPEACH_IMAGE,//实际存储图片的coll名
+        fkFieldName:e_field.IMPEACH_IMAGE.REFERENCE_ID, //字段名，记录图片存储在那个coll中
+        imageHashFieldName:e_field.IMPEACH_IMAGE.HASH_NAME //记录图片hash名字的字段名
+    }
+
+    before('remove exists record', async function () {
+        await API_helper.removeExistsRecord_async()
+    })
+
+    before('user1 && user2 register', async function () {
+        await API_helper.createUser_async({userData: testData.user.user1})
+        await API_helper.createUser_async({userData: testData.user.user2})
+    });
+
+    //异步返回promise，无需done
+    before('user1 && user2 login correct', async function () {
+        user1Sess = await  API_helper.userLogin_returnSess_async({userData: testData.user.user1})
+        user2Sess = await  API_helper.userLogin_returnSess_async({userData: testData.user.user2})
+    })
+
+    before('user1 create article', async function () {
+        articleId = await API_helper.userCreateArticle_returnArticleId_async({userSess: user1Sess})
+
+    });
+
+    before('get user1 && user2 id', async function () {
+        user1Id = await db_operation_helper.getUserId_async({userAccount: testData.user.user1ForModel.account})
+        // tmpResult=await common_operation_model.find({dbModel:e_dbModel.user,condition:{account:testData.user.user2ForModel.account}})
+        user2Id = await db_operation_helper.getUserId_async({userAccount: testData.user.user2ForModel.account})
+    })
+
+
+    before('user2 create impeach', async function () {
+        impeachId = await API_helper.createImpeach_returnImpeachId_async({
+            impeachType: e_impeachType.ARTICLE,
+            articleId: articleId,
+            userSess: user2Sess
+        })
+    });
+
+    it('contentDbDeleteNotExistImage_async==>image in content not in db', async function () {
+        let inputContent='test <img src="http://127.0.0.1/912ec803b2ce49e4a541068d495ab570.png">'
+        let convertContent=await helper.contentDbDeleteNotExistImage_async({
+            content:inputContent,
+            recordId:impeachId,
+            collConfig:collConfig,
+            collImageConfig:collImageConfig,
+        })
+        assert.deepStrictEqual(convertContent, 'test ')
+    })
+    it('contentDbDeleteNotExistImage_async==>image in content not own site', async function () {
+        let inputContent='test <img src="http://xss.org/912ec803b2ce49e4a541068d495ab570.png">'
+        let convertContent=await helper.contentDbDeleteNotExistImage_async({
+            content:inputContent,
+            recordId:impeachId,
+            collConfig:collConfig,
+            collImageConfig:collImageConfig,
+        })
+        assert.deepStrictEqual(convertContent, 'test ')
+    })
+    it('contentDbDeleteNotExistImage_async==>image in db but not in content(user already delete image)', async function () {
+        let inputContent='test <img src="http://xss.org/912ec803b2ce49e4a541068d495ab570.png">'
+        //插入image
+        let imagesInfoForModel=[{sizeInMb:1.5,authorId:user2Id,referenceId:impeachId,referenceColl:e_coll.IMPEACH,pathId:initSettingObject.store_path.IMPEACH_IMAGE.impeachImage1.id,name:'test1.png',hashName:'9ea7925c965967e978aecbb5fcb0ec3d.png'}]
+        let imagesRecord=await db_operation_helper.createImageForImpeach_ReturnAllRecord_async({imagesInfo:imagesInfoForModel})
+        //image id加入impeach
+        for(let singleImageRecord of imagesRecord){
+            await e_dbModel[e_coll.IMPEACH].update({_id:impeachId},{$push:{[e_field.IMPEACH.IMPEACH_IMAGES_ID]:singleImageRecord['_id']}})
+        }
+        //确保db中已经正确插入image
+        let impeachWithImageInsert=await common_operation_model.findById_returnRecord_async({dbModel:e_dbModel[e_coll.IMPEACH],id:impeachId})
+        assert.deepStrictEqual(impeachWithImageInsert[e_field.IMPEACH.IMPEACH_IMAGES_ID].length, 1)
+
+        //db中的
+        let convertContent=await helper.contentDbDeleteNotExistImage_async({
+            content:inputContent,
+            recordId:impeachId,
+            collConfig:collConfig,
+            collImageConfig:collImageConfig,
+        })
+        let impeachWithImageDelete=await common_operation_model.findById_returnRecord_async({dbModel:e_dbModel[e_coll.IMPEACH],id:impeachId})
+
+        assert.deepStrictEqual(convertContent, 'test ')
+        assert.deepStrictEqual(impeachWithImageDelete[e_field.IMPEACH.IMPEACH_IMAGES_ID].length, 0)
     })
 })

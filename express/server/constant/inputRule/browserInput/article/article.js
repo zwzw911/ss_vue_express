@@ -59,13 +59,15 @@ const article= {
         // 'format': {define: regex.folderFileName, error: {rc: 10005}, mongoError: {rc: 30005, msg: '文档名必须由1-255个字符组成'}} //server端使用
     },
     //输入的时候是字符（用户的输入，到server转换成objectId）
-    tagsId: {
-        'chineseName': '标签',
+    tags: {
+        'chineseName': '文档标签',
         'type': [serverDataType.STRING],
         'require': {define: false, error: {rc: 10120}, mongoError: {rc: 20120, msg: '文档标签不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         'arrayMinLength': {define: 1, error: {rc: 10122}, mongoError: {rc: 20122, msg: '至少设置1个标签'}},
         'arrayMaxLength': {define: maxNumber.article.tagNumberPerArticle, error: {rc: 10123}, mongoError: {rc: 20123, msg: `最多设置${maxNumber.article.tagNumberPerArticle}标签`}},
-        'format': {define: regex.tagName, error: {rc: 10124}, mongoError: {rc: 20124, msg: '文档标签必须是objectId'}} //server端使用
+        'minLength': {define: 2, error: {rc: 10123}, mongoError: {rc: 20123, msg: '文档标签至少2个字符'}},
+        'maxLength': {define: 20, error: {rc: 10124}, mongoError: {rc: 20124, msg: '文档标签的长度不能超过20个字符'}},
+        // 'format': {define: regex.tagName, error: {rc: 10124}, mongoError: {rc: 20124, msg: '文档标签必须是objectId'}} //server端使用
     },
     categoryId: {
         'chineseName': '分类',

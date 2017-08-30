@@ -213,7 +213,7 @@ async function createComment_async(req){
 
     /*              创建数据            */
     // let articleId=docValue[e_field.ARTICLE_COMMENT.ARTICLE_ID]
-    await common_operation_model.create({dbModel:e_dbModel[collName],value:docValue})
+    await common_operation_model.create_returnRecord_async({dbModel:e_dbModel[collName],value:docValue})
     // tmpResult=await common_operation_model.update({dbModel:e_dbModel[collName],id:articleId,values:docValue})
     return Promise.resolve({rc:0})
 }

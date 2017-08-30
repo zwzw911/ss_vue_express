@@ -24,213 +24,150 @@ const inputRule=require('../../server/constant/inputRule/inputRule').inputRule
 const browserInputRule=require('../../server/constant/inputRule/browserInputRule').browserInputRule
 
 const validateError=require('../../server/constant/error/validateError').validateError
-const helpError=require('../../server/constant/error/controller/helperError').helper
+const helperError=require('../../server/constant/error/controller/helperError').helper
 
-const contollerError=require('../../server/controller/article/article_logic').controllerError
+const contollerError=require('../../server/controller/impeach/impeach_logic').controllerError
 
 const objectDeepCopy=require('../../server/function/assist/misc').objectDeepCopy
 
-const test_helper=require("../test_helper_db_operate")
+const test_helper=require("../API_helper/db_operation_helper")
 const testData=require('../testData')
 
-let baseUrl
-let userId  //create后存储对应的id，以便后续的update操作
+const API_helper=require('../API_helper/API_helper')
 
-let sess1,sess2,data={values:{}},user1Id,user2Id,articleId1,articleId2
+const calcResourceConfig=require('../../server/constant/config/calcResourceConfig')
 
-describe('create new article and update, then create new comment: ', async function() {
-    let url , finalUrl
+describe('impeach: ', async function() {
+    let user1Sess,user2Sess,user1Id,user2Id,articleId,impeachId,data={values:{}}
 
-    let newArticleId, folder2
-    before('user1 login correct', function (done) {
-        // console.log(`testData.user.user1 ${JSON.stringify(testData.user.user1)}`)
-        let user1Tmp = {}
-        user1Tmp[e_field.USER.ACCOUNT] = testData.user.user1[e_field.USER.ACCOUNT]
-        user1Tmp[e_field.USER.PASSWORD] = testData.user.user1[e_field.USER.PASSWORD]
-        // console.log(`user1Tmp ===>${JSON.stringify(user1Tmp)}`)
-        data.values[e_part.RECORD_INFO] = user1Tmp//,notExist:{value:123}
-        data.values[e_part.METHOD] = e_method.MATCH
-        // console.log(`data.values ${JSON.stringify(data.values)}`)
-
-        request.agent(app).post('/user/').set('Accept', 'application/json').send(data)
-            .end(function (err, res) {
-                // if (err) return done(err);
-                // console.log(`user1 login result====>${JSON.stringify(res)}`)
-                sess1 = res['header']['set-cookie'][0].split(';')[0]
-                let parsedRes = JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc, 0)
-                // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
-                done();
-            });
+    before('remove exists record', async function(){
+        await API_helper.removeExistsRecord_async()
     })
-    before('user2 login correct', function (done) {
-        // console.log(`testData.user.user1 ${JSON.stringify(testData.user.user1)}`)
-        let user1Tmp = {}
-        user1Tmp[e_field.USER.ACCOUNT] = testData.user.user2[e_field.USER.ACCOUNT]
-        user1Tmp[e_field.USER.PASSWORD] = testData.user.user2[e_field.USER.PASSWORD]
-        // console.log(`user1Tmp ===>${JSON.stringify(user1Tmp)}`)
-        data.values[e_part.RECORD_INFO] = user1Tmp//,notExist:{value:123}
-        data.values[e_part.METHOD] = e_method.MATCH
-        // console.log(`data.values ${JSON.stringify(data.values)}`)
 
-        request.agent(app).post('/user/').set('Accept', 'application/json').send(data)
-            .end(function (err, res) {
-                // if (err) return done(err);
-                // console.log(`res ${JSON.stringify(res['header']['set-cookie'][0])}`)
-                sess2 = res['header']['set-cookie'][0].split(';')[0]
-                let parsedRes = JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc, 0)
-                // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
-                done();
-            });
+    before('user1 create and login', async function () {
+        await API_helper.createUser_async({userData:testData.user.user1})
+        user1Sess=await  API_helper.userLogin_returnSess_async({userData:testData.user.user1})
     })
-    before('insert user2 penalize for impeach', async function () {
-        // console.log(`testData.user.user1 ${JSON.stringify(testData.user.user1)}`)
-        let user1Tmp = {}
-        user1Tmp[e_field.USER.ACCOUNT] = testData.user.user2[e_field.USER.ACCOUNT]
-        user1Tmp[e_field.USER.PASSWORD] = testData.user.user2[e_field.USER.PASSWORD]
-
-        let condition = {}
-        condition[e_field.USER.ACCOUNT] = testData.user.user2[e_field.USER.ACCOUNT]['value']
-        let tmpResult = await common_operation_model.find({dbModel: e_dbModel.user, condition: condition})
-
-        let value = {}
-        value[e_field.ADMIN_PENALIZE.PUNISHED_ID] = tmpResult.msg[0]['_id']
-        value[e_field.ADMIN_PENALIZE.CREATOR_ID] = tmpResult.msg[0]['_id']
-        value[e_field.ADMIN_PENALIZE.REASON] = `test user2 penalize`
-        value[e_field.ADMIN_PENALIZE.DURATION] = 1
-
-        //use2 penalize create article
-        value[e_field.ADMIN_PENALIZE.PENALIZE_TYPE] = e_penalizeType.NO_IMPEACH
-        value[e_field.ADMIN_PENALIZE.PENALIZE_SUB_TYPE] = e_penalizeSubType.CREATE
-        await common_operation_model.create({dbModel: e_dbModel.admin_penalize, value: value})
-
-        //use2 penalize create article
-        value[e_field.ADMIN_PENALIZE.PENALIZE_TYPE] = e_penalizeType.NO_COMMENT
-        value[e_field.ADMIN_PENALIZE.PENALIZE_SUB_TYPE] = e_penalizeSubType.CREATE
-        await common_operation_model.create({dbModel: e_dbModel.admin_penalize, value: value})
-
-        // done()
-        // return Promise.resolve({rc:0})
+    before('user2 create and login', async function () {
+        await API_helper.createUser_async({userData:testData.user.user2})
+        user2Sess=await  API_helper.userLogin_returnSess_async({userData:testData.user.user2})
     })
-    before('get user1 and user2 id', async function () {
-        // console.log(`testData.user.user1 ${JSON.stringify(testData.user.user1)}`)
 
-
-        let conditionOfUser1 = {}
-        conditionOfUser1[e_field.USER.ACCOUNT] = testData.user.user1.account.value
-        let tmpResult = await common_operation_model.find({dbModel: e_dbModel.user, condition: conditionOfUser1})
-        user1Id=tmpResult.msg[0]['_id']
-
-        let conditionOfUser2 = {}
-        conditionOfUser2[e_field.USER.ACCOUNT] = testData.user.user1.account.value
-        tmpResult = await common_operation_model.find({dbModel: e_dbModel.user, condition: conditionOfUser2})
-        user2Id=tmpResult.msg[0]['_id']
-
-            // done()
-        // return Promise.resolve({rc:0})
-    })
-    before('user1 create new article1', function (done) {
-        delete data.values[e_part.RECORD_INFO]
-        // data.values[e_part.RECORD_INFO] = {}
-        // data.values[e_part.RECORD_INFO][e_field.IMPEACH.IMPEACH_TYPE]=e_impeachType.ARTICLE
-        // data.values[e_part.RECORD_INFO][e_field.IMPEACH.CREATOR_ID]=e_impeachType.ARTICLE
-        data.values[e_part.METHOD] = e_method.CREATE
-        request(app).post('/article/').set('Accept', 'application/json').set('Cookie', [sess1]).send(data)
-            .end(function (err, res) {
-                // if (err) return done(err);
-                // console.log(`res ios ${JSON.stringify(res)}`)
-                let parsedRes = JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                articleId1=parsedRes.msg['id']
-                assert.deepStrictEqual(parsedRes.rc, 0)
-                // assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.require.error.rc)
-                done();
-            });
+    before('user1 create new article1', async function () {
+        articleId=await API_helper.userCreateArticle_returnArticleId_async({userSess:user1Sess})
     });
-    before('user2 create new article2', function (done) {
-        delete data.values[e_part.RECORD_INFO]
-        // data.values[e_part.RECORD_INFO] = {}
-        // data.values[e_part.RECORD_INFO][e_field.IMPEACH.IMPEACH_TYPE]=e_impeachType.ARTICLE
-        // data.values[e_part.RECORD_INFO][e_field.IMPEACH.CREATOR_ID]=e_impeachType.ARTICLE
-        data.values[e_part.METHOD] = e_method.CREATE
-        request(app).post('/article/').set('Accept', 'application/json').set('Cookie', [sess1]).send(data)
-            .end(function (err, res) {
-                // if (err) return done(err);
-                // console.log(`res ios ${JSON.stringify(res)}`)
-                let parsedRes = JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                articleId1=parsedRes.msg['id']
-                assert.deepStrictEqual(parsedRes.rc, 0)
-                // assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.require.error.rc)
-                done();
-            });
-    });
+
 
     /*********************************************************************/
     /*********************    format      *******************************/
     /*********************************************************************/
-    it('no record_info and method', function (done) {
-        delete data.values[e_part.RECORD_INFO]
-        delete data.values[e_part.METHOD]
-        // data.values[e_part.METHOD] = e_method.CREATE
-        // console.log(`sess1 ===>${JSON.stringify(sess1)}`)
-        // console.log(`data.values ===>${JSON.stringify(data.values)}`)
-
-        // console.log(`data.values ===>${JSON.stringify(data.values)}`)
-        request(app).post('/impeach/').set('Accept', 'application/json').set('Cookie', [sess1]).send(data)
+    it('user2; no record_info and method', function (done) {
+        data.values={}
+        request(app).post('/impeach/').set('Accept', 'application/json').set('Cookie', [user2Sess]).send(data)
             .end(function (err, res) {
-                // if (err) return done(err);
-                // console.log(`res ios ${JSON.stringify(res)}`)
                 let parsedRes = JSON.parse(res.text)
                 console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                newArticleId = parsedRes['msg']['_id']
-                assert.deepStrictEqual(parsedRes.rc, helpError.methodPartMustExistInDispatcher.rc)
+                assert.deepStrictEqual(parsedRes.rc, helperError.methodPartMustExistInDispatcher.rc)
                 // assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.require.error.rc)
                 done();
             });
     });
-    it('no record_info ', function (done) {
-        delete data.values[e_part.RECORD_INFO]
-        // delete data.values[e_part.METHOD]
+    it('user2; no record_info ', function (done) {
+        data.values={}
         data.values[e_part.METHOD] = e_method.CREATE
-        // console.log(`sess1 ===>${JSON.stringify(sess1)}`)
-        // console.log(`data.values ===>${JSON.stringify(data.values)}`)
 
-        // console.log(`data.values ===>${JSON.stringify(data.values)}`)
-        request(app).post('/impeach/').set('Accept', 'application/json').set('Cookie', [sess1]).send(data)
+        request(app).post('/impeach/').set('Accept', 'application/json').set('Cookie', [user2Sess]).send(data)
             .end(function (err, res) {
                 // if (err) return done(err);
                 // console.log(`res ios ${JSON.stringify(res)}`)
                 let parsedRes = JSON.parse(res.text)
                 console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                newArticleId = parsedRes['msg']['_id']
-                assert.deepStrictEqual(parsedRes.rc, helpError.inputValuePartNumNotExpected.rc)
+
+                assert.deepStrictEqual(parsedRes.rc, validateError.validateFormat.inputValuePartNumNotExpected.rc)
                 // assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.require.error.rc)
                 done();
             });
     });
-    it('no method ', function (done) {
-        // delete data.values[e_part.RECORD_INFO]
-        delete data.values[e_part.METHOD]
+    it('user2; no method ', function (done) {
+        data.values={}
         data.values[e_part.RECORD_INFO]={}
-        // data.values[e_part.METHOD] = e_method.CREATE
-        // console.log(`sess1 ===>${JSON.stringify(sess1)}`)
-        // console.log(`data.values ===>${JSON.stringify(data.values)}`)
-
-        // console.log(`data.values ===>${JSON.stringify(data.values)}`)
-        request(app).post('/impeach/').set('Accept', 'application/json').set('Cookie', [sess1]).send(data)
+        request(app).post('/impeach/').set('Accept', 'application/json').set('Cookie', [user2Sess]).send(data)
             .end(function (err, res) {
-                // if (err) return done(err);
-                // console.log(`res ios ${JSON.stringify(res)}`)
                 let parsedRes = JSON.parse(res.text)
                 console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                newArticleId = parsedRes['msg']['_id']
-                assert.deepStrictEqual(parsedRes.rc, helpError.methodPartMustExistInDispatcher.rc)
-                // assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.require.error.rc)
+                assert.deepStrictEqual(parsedRes.rc, helperError.methodPartMustExistInDispatcher.rc)
                 done();
             });
+    });
+
+    /*********************************************************************/
+    /*****   create(因为都是internal field，所以没什么好检查的)      *****/
+    /*********************************************************************/
+    it('user2 create impeach', async function () {
+        impeachId=await API_helper.createImpeach_returnImpeachId_async({impeachType:e_impeachType.ARTICLE,articleId:articleId,userSess:user2Sess})
+        // console.log(`impeach id is ========================>${impeachId}`)
+    });
+
+    /*********************************************************************/
+    /********************************   update    ***********************/
+    /*********************************************************************/
+    it('user2 update impeach with internal field', function (done) {
+        data.values={}
+        data.values[e_part.RECORD_INFO]={
+            [e_field.IMPEACH.IMPEACH_IMAGES_ID]:{value:[impeachId]}
+        }
+        data.values[e_part.RECORD_ID]=impeachId
+        data.values[e_part.METHOD]=e_method.UPDATE
+         API_helper.updateImpeach({
+             data:data,
+             userSess:user2Sess,
+             expectRc:validateError.validateFormat.recordInfoFiledRuleNotDefine.rc,
+             done:done,
+         })
+    });
+
+    it('user2 update impeach with field value not match rule', function (done) {
+        data.values={}
+        data.values[e_part.RECORD_INFO]={
+            [e_field.IMPEACH.TITLE]:{value:''}
+        }
+        data.values[e_part.RECORD_ID]=impeachId
+        data.values[e_part.METHOD]=e_method.UPDATE
+        API_helper.updateImpeach({
+            data:data,
+            userSess:user2Sess,
+            expectRc:99999,
+            done:done,
+        })
+    });
+
+    it('user2 update impeach with fkField value not exist', function (done) {
+        data.values={}
+        data.values[e_part.RECORD_INFO]={
+            [e_field.IMPEACH.IMPEACHED_ARTICLE_ID]:{value:'59a4f9fc429a1005747c9695'}
+        }
+        data.values[e_part.RECORD_ID]=impeachId
+        data.values[e_part.METHOD]=e_method.UPDATE
+        API_helper.updateImpeach({
+            data:data,
+            userSess:user2Sess,
+            expectRc:helperError.fkValueNotExist().rc,
+            done:done,
+        })
+    });
+
+    it('user2 update impeach with field value contain xss', function (done) {
+        data.values={}
+        data.values[e_part.RECORD_INFO]={
+            [e_field.IMPEACH.TITLE]:{value:'<alert>'}
+        }
+        data.values[e_part.RECORD_ID]=impeachId
+        data.values[e_part.METHOD]=e_method.UPDATE
+        API_helper.updateImpeach({
+            data:data,
+            userSess:user2Sess,
+            expectRc:contollerError.inputSanityFailed.rc,
+            done:done,
+        })
     });
 })
