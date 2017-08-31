@@ -56,4 +56,6 @@
 3. 每当用户上传新图片，或者更新文档，需要重新计算 resource-pforile_static的内容
 4. 添加mongodb group操作的函数：参数：1. dbModel，2 match 3 聚合操作类型（sum/min/max/avg)
 
-1. 如何在impeach中区分是对article还是comment进行的？
+1. 如何在impeach中区分是对article还是comment进行的？============》 使用URL进行区分
+
+1. 更新举报状态的时候，需要根据用户检测上传的状态是否允许（例如，只有管理员能结束举报；只有普通用户能new一个举报等）

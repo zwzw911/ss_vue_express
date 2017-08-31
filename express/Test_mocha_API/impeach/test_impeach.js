@@ -38,7 +38,7 @@ const API_helper=require('../API_helper/API_helper')
 const calcResourceConfig=require('../../server/constant/config/calcResourceConfig')
 
 describe('impeach: ', async function() {
-    let user1Sess,user2Sess,user1Id,user2Id,articleId,impeachId,data={values:{}}
+    let user1Sess,user2Sess,user1Id,user2Id,articleId,articleId2,impeachId,data={values:{}}
 
     before('remove exists record', async function(){
         await API_helper.removeExistsRecord_async()
@@ -57,13 +57,15 @@ describe('impeach: ', async function() {
         articleId=await API_helper.userCreateArticle_returnArticleId_async({userSess:user1Sess})
     });
 
-
+    before('user1 create new article2', async function () {
+        articleId2=await API_helper.userCreateArticle_returnArticleId_async({userSess:user1Sess})
+    });
     /*********************************************************************/
     /*********************    format      *******************************/
     /*********************************************************************/
     it('user2; no record_info and method', function (done) {
         data.values={}
-        request(app).post('/impeach/').set('Accept', 'application/json').set('Cookie', [user2Sess]).send(data)
+        request(app).post('/impeach/article').set('Accept', 'application/json').set('Cookie', [user2Sess]).send(data)
             .end(function (err, res) {
                 let parsedRes = JSON.parse(res.text)
                 console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
@@ -76,7 +78,7 @@ describe('impeach: ', async function() {
         data.values={}
         data.values[e_part.METHOD] = e_method.CREATE
 
-        request(app).post('/impeach/').set('Accept', 'application/json').set('Cookie', [user2Sess]).send(data)
+        request(app).post('/impeach/article').set('Accept', 'application/json').set('Cookie', [user2Sess]).send(data)
             .end(function (err, res) {
                 // if (err) return done(err);
                 // console.log(`res ios ${JSON.stringify(res)}`)
@@ -91,7 +93,7 @@ describe('impeach: ', async function() {
     it('user2; no method ', function (done) {
         data.values={}
         data.values[e_part.RECORD_INFO]={}
-        request(app).post('/impeach/').set('Accept', 'application/json').set('Cookie', [user2Sess]).send(data)
+        request(app).post('/impeach/article').set('Accept', 'application/json').set('Cookie', [user2Sess]).send(data)
             .end(function (err, res) {
                 let parsedRes = JSON.parse(res.text)
                 console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
@@ -103,14 +105,55 @@ describe('impeach: ', async function() {
     /*********************************************************************/
     /*****   create(因为都是internal field，所以没什么好检查的)      *****/
     /*********************************************************************/
-    it('user2 create impeach', async function () {
-        impeachId=await API_helper.createImpeach_returnImpeachId_async({impeachType:e_impeachType.ARTICLE,articleId:articleId,userSess:user2Sess})
-        // console.log(`impeach id is ========================>${impeachId}`)
+    it('user2 create impeach for article, but use comment URL', function (done) {
+        data.values={}
+        data.values[e_part.METHOD]=e_method.CREATE
+        data.values[e_part.RECORD_INFO]={
+            [e_field.IMPEACH.IMPEACHED_ARTICLE_ID]:{value:articleId},
+        }
+        request(app).post('/impeach/comment').set('Accept', 'application/json').set('Cookie', [user2Sess]).send(data)
+            .end(function (err, res) {
+                let parsedRes = JSON.parse(res.text)
+                console.log(`createImpeach_returnImpeachId_async result=========> ${JSON.stringify(parsedRes)}`)
+                assert.deepStrictEqual(parsedRes.rc, contollerError.impeachObjectNotExist.rc)
+                done();
+            });
     });
-
+    it('user2 create impeach for article, but use wrong URL', function (done) {
+        data.values={}
+        data.values[e_part.METHOD]=e_method.CREATE
+        data.values[e_part.RECORD_INFO]={
+            [e_field.IMPEACH.IMPEACHED_ARTICLE_ID]:{value:articleId},
+        }
+        request(app).post('/impeach').set('Accept', 'application/json').set('Cookie', [user2Sess]).send(data)
+            .end(function (err, res) {
+                let parsedRes = JSON.parse(res.text)
+                console.log(`createImpeach_returnImpeachId_async result=========> ${JSON.stringify(parsedRes)}`)
+                assert.deepStrictEqual(parsedRes.rc, contollerError.notDefineImpeachType.rc)
+                done();
+            });
+    });
+    it('user2 create impeach for article normally', async function () {
+        impeachId=await API_helper.createImpeachForArticle_returnImpeachId_async({articleId:articleId,userSess:user2Sess})
+    });
     /*********************************************************************/
     /********************************   update    ***********************/
     /*********************************************************************/
+    it('user2 update impeach, but wrong URL', function (done) {
+        data.values={}
+        data.values[e_part.METHOD]=e_method.UPDATE
+        data.values[e_part.RECORD_ID]=articleId
+        data.values[e_part.RECORD_INFO]={
+            [e_field.IMPEACH.IMPEACHED_ARTICLE_ID]:{value:articleId},
+        }
+        request(app).post('/impeach/article').set('Accept', 'application/json').set('Cookie', [user2Sess]).send(data)
+            .end(function (err, res) {
+                let parsedRes = JSON.parse(res.text)
+                console.log(`createImpeach_returnImpeachId_async result=========> ${JSON.stringify(parsedRes)}`)
+                assert.deepStrictEqual(parsedRes.rc, contollerError.impeachTypeNotAllow.rc)
+                done();
+            });
+    });
     it('user2 update impeach with internal field', function (done) {
         data.values={}
         data.values[e_part.RECORD_INFO]={
@@ -125,7 +168,20 @@ describe('impeach: ', async function() {
              done:done,
          })
     });
-
+    it('user2 update impeach with internal field impeachedArticleId', function (done) {
+        data.values={}
+        data.values[e_part.RECORD_INFO]={
+            [e_field.IMPEACH.IMPEACHED_ARTICLE_ID]:{value:articleId2}
+        }
+        data.values[e_part.RECORD_ID]=impeachId
+        data.values[e_part.METHOD]=e_method.UPDATE
+        API_helper.updateImpeach({
+            data:data,
+            userSess:user2Sess,
+            expectRc:0,
+            done:done,
+        })
+    });
     it('user2 update impeach with field value not match rule', function (done) {
         data.values={}
         data.values[e_part.RECORD_INFO]={
@@ -137,21 +193,6 @@ describe('impeach: ', async function() {
             data:data,
             userSess:user2Sess,
             expectRc:99999,
-            done:done,
-        })
-    });
-
-    it('user2 update impeach with fkField value not exist', function (done) {
-        data.values={}
-        data.values[e_part.RECORD_INFO]={
-            [e_field.IMPEACH.IMPEACHED_ARTICLE_ID]:{value:'59a4f9fc429a1005747c9695'}
-        }
-        data.values[e_part.RECORD_ID]=impeachId
-        data.values[e_part.METHOD]=e_method.UPDATE
-        API_helper.updateImpeach({
-            data:data,
-            userSess:user2Sess,
-            expectRc:helperError.fkValueNotExist().rc,
             done:done,
         })
     });

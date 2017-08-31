@@ -102,26 +102,21 @@ async function userCreateArticle_returnArticleId_async({userSess}){
 /*
 * @impeachType: article/comment
 * */
-async function createImpeach_returnImpeachId_async({impeachType,articleId,commentId,userSess}) {
+async function createImpeachForArticle_returnImpeachId_async({articleId,userSess}) {
     let data={}
     data.values={}
 
 
     data.values[e_part.RECORD_INFO]={
-        [e_field.IMPEACH.IMPEACH_TYPE]:{value:impeachType},
-        // [e_field.IMPEACH.IMPEACHED_ARTICLE_ID]:{value:articleId},
+        // [e_field.IMPEACH.IMPEACH_TYPE]:{value:impeachType},
+        [e_field.IMPEACH.IMPEACHED_ARTICLE_ID]:{value:articleId},
     }
 
-    if(undefined!==articleId){
-        data.values[e_part.RECORD_INFO][e_field.IMPEACH.IMPEACHED_ARTICLE_ID]={value:articleId}
-    }else if(undefined!==commentId){
-        data.values[e_part.RECORD_INFO][e_field.IMPEACH.IMPEACHED_COMMENT_ID]={value:commentId}
-    }
 
     data.values[e_part.METHOD] = e_method.CREATE
     // console.log(`createImpeach_async===>data.values ===>${JSON.stringify(data.values)}`)
     return new Promise(function(resolve,reject){
-        request(app).post('/impeach/').set('Accept', 'application/json').set('Cookie', [userSess]).send(data)
+        request(app).post('/impeach/article').set('Accept', 'application/json').set('Cookie', [userSess]).send(data)
             .end(function (err, res) {
                 // if (err) return done(err);
                 // console.log(`res ios ${JSON.stringify(res)}`)
@@ -135,7 +130,34 @@ async function createImpeach_returnImpeachId_async({impeachType,articleId,commen
     })
 
 }
+async function createImpeachForComment_returnImpeachId_async({commentId,userSess}) {
+    let data={}
+    data.values={}
 
+
+    data.values[e_part.RECORD_INFO]={
+        // [e_field.IMPEACH.IMPEACH_TYPE]:{value:impeachType},
+        [e_field.IMPEACH.IMPEACHED_COMMENT_ID]:{value:commentId},
+    }
+
+
+    data.values[e_part.METHOD] = e_method.CREATE
+    // console.log(`createImpeach_async===>data.values ===>${JSON.stringify(data.values)}`)
+    return new Promise(function(resolve,reject){
+        request(app).post('/impeach/comment').set('Accept', 'application/json').set('Cookie', [userSess]).send(data)
+            .end(function (err, res) {
+                // if (err) return done(err);
+                // console.log(`res ios ${JSON.stringify(res)}`)
+                let parsedRes = JSON.parse(res.text)
+                console.log(`createImpeach_returnImpeachId_async result=========> ${JSON.stringify(parsedRes)}`)
+                assert.deepStrictEqual(parsedRes.rc, 0)
+                return resolve(parsedRes['msg']['_id'])
+                // assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.require.error.rc)
+                // done();
+            });
+    })
+
+}
 
 function updateImpeach({data,userSess,expectRc,done}) {
 
@@ -162,6 +184,7 @@ module.exports={
     createUser_async,
     userLogin_returnSess_async,
     userCreateArticle_returnArticleId_async,
-    createImpeach_returnImpeachId_async,
+    createImpeachForArticle_returnImpeachId_async,
+    createImpeachForComment_returnImpeachId_async,
     updateImpeach,
 }

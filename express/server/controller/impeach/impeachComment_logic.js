@@ -95,10 +95,10 @@ const controllerError={
         return {rc:50200,msg:{client:`${fieldInputValue}已经存在`, server:`字段${chineseFieldName}中，值${fieldInputValue}已经存在`}}},*/
 
     /*          create new impeach              */
-    notDefineImpeachType:{rc:50601,msg:`举报类型未设置`},
-    userNotLoginCantCreate:{rc:50602,msg:`尚未登录，无法举报`},
+    // notDefineImpeachType:{rc:50701,msg:`举报类型未设置`},
+    userNotLoginCantCreate:{rc:50702,msg:`尚未登录，无法评论举报`},
     // userNoDefaultFolder:{rc:50205,msg:`没有默认目录，无法创建新文档`},
-    userInPenalizeNoImpeachCreate:{rc:50604,msg:`管理员禁止举报`},
+    userInPenalizeNoImpeachCommentCreate:{rc:50604,msg:`管理员禁止评论举报`},
     contentSanityFailed:{rc:50606,msg:`举报内容包含有害内容，无法提交`},
     unknownImpeachType:{rc:50608,msg:`未知举报类型，无法创建`},
     impeachObjectNotExist:{rc:50609,msg:`举报对象不存在`},
@@ -120,14 +120,9 @@ const controllerError={
 
 
 //对CRUD（输入参数带有method）操作调用对应的函数
-async function impeach_dispatcher_async(req,impeachType){
-
+async function impeachComment_dispatcher_async(req){
     //检查格式
-    // console.log(`req is ${JSON.stringify(req.cookies)}`)
-    // console.log(`dispatcher in`)
-    // console.log(`req.body.values ${JSON.stringify(req.body.values)}`)
     let tmpResult,collConfig={},collImageConfig={}
-
     //checkMethod只检测req的结构，以及req中method的格式和值，以便后续可以直接根据method进行调用
     tmpResult=helper.checkMethod({req:req})
     if(tmpResult.rc>0){
@@ -140,33 +135,18 @@ async function impeach_dispatcher_async(req,impeachType){
     let userLoginCheck,penalizeCheck,expectedPart
     switch (method){
         case e_method.CREATE: //create
-            /*          create 必须有impeachType（impeach_route中，根据URL设置）           */
-            if(undefined===impeachType){
-                return Promise.reject(controllerError.notDefineImpeachType)
-            }
-
-
             userLoginCheck={
                 needCheck:true,
                 error:controllerError.userNotLoginCantCreate
             }
             penalizeCheck={
-                penalizeType:e_penalizeType.NO_IMPEACH,
+                penalizeType:e_penalizeType.NO_IMPEACH_COMMENT,
                 penalizeSubType:e_penalizeSubType.CREATE,
-                penalizeCheckError:controllerError.userInPenalizeNoImpeachCreate
+                penalizeCheckError:controllerError.userInPenalizeNoImpeachCommentCreate
             }
             //此处RECORD_INFO只包含了一个字段：impeachArticle或者(comment)Id。
             // impeachType是由URL决定（是internal的field），需要和其他默认之合并之后，才能进行preCheck_async（否则validate value会fail）
             expectedPart=[e_part.RECORD_INFO]
-            //默认值模拟client端格式，以便直接进行validate value的测试
-            let defaultDocValue={}
-            defaultDocValue[e_field.IMPEACH.TITLE]={'value':'新举报'}
-            defaultDocValue[e_field.IMPEACH.CONTENT]={'value':'对文档/评论的内容进行举报'}
-            defaultDocValue[e_field.IMPEACH.IMPEACH_STATUS]={'value':e_impeachStatus.NEW}
-            //合并defaultDoCValue和client端输入，模拟新建举报的client输入
-            if(undefined!==req.body.values[e_part.RECORD_INFO]){
-                Object.assign(req.body.values[e_part.RECORD_INFO],defaultDocValue)
-            }
             collConfig={
                 collName:e_coll.IMPEACH,  //存储内容（包含图片DOM）的coll名字
                 fkFieldName:e_field.IMPEACH.IMPEACH_IMAGES_ID,//coll中，存储图片objectId的字段名
@@ -174,7 +154,7 @@ async function impeach_dispatcher_async(req,impeachType){
             }
             tmpResult=await helper.preCheck_async({req:req,collName:collConfig.collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
             // tmpResult=await createContent_async({req:req,collConfig:collConfig,collImageConfig:collImageConfig})
-            tmpResult=await createContent_async({req:req,collConfig:collConfig,impeachType:impeachType})
+            tmpResult=await createContent_async({req:req,collConfig:collConfig})
             break;
         case e_method.SEARCH:// search
             break;
@@ -233,13 +213,11 @@ async function impeach_dispatcher_async(req,impeachType){
             新content无任何输入，所有的值都是内部产生
 * @defaultDocValue: 在后台创建一个默认记录，以便image或者content得到对应的id，进行操作
 * @collConfig:主要用在update，create中只是用了其中的collName
-* @impeachType: 根据URL指明被举报的是article还是comment，需要加入到internal Field中
 * */
-async  function createContent_async({req,collConfig,impeachType}){
+async  function createContent_async({req,collConfig}){
     let tmpResult,userId,docValue,collName
     userId=req.session.userId
     collName=collConfig.collName
-// console.log(`impeachType ====>${impeachType}`)
     /*              检查是否有权（authorize）创建            */
 
 
@@ -368,16 +346,11 @@ async function updateContent_async({req,collConfig,collImageConfig}){
     dataConvert.convertCreateUpdateValueToServerFormat(docValue)
     dataConvert.constructUpdateCriteria(docValue,fkConfig[collName])
 
-    /*              update中，字段impeachedArticleId和impeachedCommentId是client输入，但是在update是不能被修改，需要删除
-    *               impeachStatus通过一个独立的RESTAPI进行修改（逻辑更加清晰），所以此处也要删除
-    */
-    let notAllowUpdateFields=[e_field.IMPEACH.IMPEACHED_ARTICLE_ID,e_field.IMPEACH.IMPEACHED_COMMENT_ID,e_field.IMPEACH.IMPEACH_STATUS]
+    /*              update中，字段impeachedArticleId和impeachedCommentId是client输入，但是在update是不能被修改，需要删除        */
+    let notAllowUpdateFields=[e_field.IMPEACH.IMPEACHED_ARTICLE_ID,e_field.IMPEACH.IMPEACHED_COMMENT_ID]
     for(let singleNotAllowUpdateField of notAllowUpdateFields){
         delete docValue[singleNotAllowUpdateField]
     }
-/*    /!*              update中，对于不同的用户，字段impeachStatus只能设置部分，而不是所有             *!/
-    let normalUserAllowStatus=[e_impeachStatus.COMMIT]
-    let adminUserAllowStatus=[e_impeachStatus.COMMIT]*/
     // let result=await common_operation_model.findById({dbModel:dbModel[e_coll.USER],id:objectId})
     // let userId=result.msg[e_field.USER.]
 
@@ -447,6 +420,6 @@ async function updateContent_async({req,collConfig,collImageConfig}){
 
 
 module.exports={
-    impeach_dispatcher_async,
+    impeachComment_dispatcher_async,
     controllerError,
 }

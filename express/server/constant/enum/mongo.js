@@ -111,6 +111,7 @@ const PenalizeType={
         NO_TOPIC:'2',
         NO_LIKE_DISLIKE:'3',
         NO_IMPEACH:'4',
+        NO_IMPEACH_COMMENT:'5',
     },
     SHOW:{
         NO_ARTICLE: '禁止写文档',
@@ -118,6 +119,7 @@ const PenalizeType={
         NO_TOPIC:'禁止创建系列',
         NO_LIKE_DISLIKE:'禁止踩赞',
         NO_IMPEACH:'禁止举报',
+        NO_IMPEACH_COMMENT:'禁止评论举报',
     },
 
 }
