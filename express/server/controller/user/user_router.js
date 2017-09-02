@@ -12,15 +12,15 @@ const express = require('express');
 //var app=express()
 const router = express.Router();
 const genFinalReturnResult=require('../../function/assist/misc').genFinalReturnResult
-const logic=require('./user_logic')
-
+const userDispatcher_async=require('./user_dispatcher').dispatcher_async
+const userMiscFunc=require('./user_logic/user_misc_func')
 /*        通过method，判断是CRUDM中的那个操作
 *   C: register
 *   M: match(login)
 * */
 router.post('/',function(req,res,next){
 
-    logic.dispatcher_async(req).then(
+    userDispatcher_async(req).then(
         (v)=>{
             console.log(`create   register   success, result:  ${JSON.stringify(v)}`)
             return res.json(v)
@@ -35,7 +35,7 @@ router.post('/',function(req,res,next){
 
 router.post('/uniqueCheck_async',function(req,res,next){
 
-    logic.uniqueCheck_async(req).then(
+    userMiscFunc.uniqueCheck_async(req).then(
         (v)=>{
             console.log(`unique check  success, result:  ${JSON.stringify(v)}`)
             return res.json(v)
@@ -50,7 +50,7 @@ router.post('/uniqueCheck_async',function(req,res,next){
 
 router.post('/retrievePassword',function(req,res,next){
 
-    logic.retrievePassword_async(req).then(
+    userMiscFunc.retrievePassword_async(req).then(
         (v)=>{
             console.log(`retrievePassword  success, result:  ${JSON.stringify(v)}`)
             return res.json(v)
@@ -68,7 +68,7 @@ router.post('/retrievePassword',function(req,res,next){
 
 router.post('/uploadPhoto',function(req,res,next){
 
-    logic.uploadPhoto_async(req).then(
+    userDispatcher_async.uploadPhoto_async(req).then(
         (v)=>{
             console.log(`uploadPhoto  success, result:  ${JSON.stringify(v)}`)
             return res.json(v)
@@ -86,7 +86,7 @@ router.post('/uploadPhoto',function(req,res,next){
 
 router.post('/captcha',function(req,res,next){
 
-    logic.generateCaptcha_async(req).then(
+    userMiscFunc.generateCaptcha_async(req).then(
         (v)=>{
             console.log(`captcha  success, result:  ${JSON.stringify(v)}`)
             return res.json(v)

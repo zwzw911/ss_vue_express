@@ -22,7 +22,7 @@ const browserInputRule=require('../../server/constant/inputRule/browserInputRule
 const validateError=require('../../server/constant/error/validateError').validateError
 const helpError=require('../../server/constant/error/controller/helperError').helper
 
-const controllerError=require('../../server/controller/user/user_logic').controllerError
+const controllerError=require('../../server/controller/user/user_dispatcher').controllerError
 
 const objectDeepCopy=require('../../server/function/assist/misc').objectDeepCopy
 
