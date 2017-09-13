@@ -8,86 +8,87 @@
 
 
 const fs=require('fs')
+const server_common_file_require=require('../../../server_common_file_require')
 
-const e_userState=require('../../constant/enum/node').UserState
-const e_part=require('../../constant/enum/node').ValidatePart
-const e_method=require('../../constant/enum/node').Method
-const e_randomStringType=require('../../constant/enum/node').RandomStringType
-const e_uploadFileType=require('../../constant/enum/node').UploadFileType
-// const e_resourceType=require('../../constant/enum/node').ResourceType
-// const e_method=require('../../constant/enum/node').Method
+const nodeEnum=server_common_file_require.nodeEnum
+const nodeRuntimeEnum=server_common_file_require.nodeRuntimeEnum
+const mongoEnum=server_common_file_require.mongoEnum
 
-const e_hashType=require('../../constant/enum/node_runtime').HashType
 
-const e_env=require('../../constant/enum/node').Env
-const e_docStatus=require('../../constant/enum/mongo').DocStatus.DB
-const e_penalizeType=require('../../constant/enum/mongo').PenalizeType.DB
-const e_penalizeSubType=require('../../constant/enum/mongo').PenalizeSubType.DB
-const e_iniSettingObject=require('../../constant/enum/initSettingObject').iniSettingObject
-const e_articleStatus=require('../../constant/enum/mongo').ArticleStatus.DB
-const e_resourceProfileRange=require('../../constant/enum/mongo').ResourceProfileRange.DB
-const e_resourceType=require('../../constant/enum/node').ResourceType.DB //和uploadFileType一样，但是为了在计算resource不产生confuse，使用新名称
-const e_storePathUsage=require('../../constant/enum/mongo').StorePathUsage.DB
+const e_part=nodeEnum.ValidatePart
+const e_method=nodeEnum.Method
 
-const e_fileSizeUnit=require('../../constant/enum/node_runtime').FileSizeUnit
+const e_uploadFileType=nodeEnum.UploadFileType
 
-const currentEnv=require('../../constant/config/appSetting').currentEnv
-const uploadFileDefine=require('../../constant/config/globalConfiguration').uploadFileDefine
 
-const e_dbModel=require('../../model/mongo/dbModel')
-const fkConfig=require('../../model/mongo/fkConfig').fkConfig
+const e_hashType=nodeRuntimeEnum.HashType
 
-const e_coll=require('../../constant/enum/DB_Coll').Coll
-const e_field=require('../../constant/enum/DB_field').Field
-const e_internal_field=require('../../constant/enum/DB_internal_field').Field
-const e_uniqueField=require('../../constant/enum/DB_uniqueField').UniqueField
-// const e_inputFieldCheckType=require('../../constant/enum/node').InputFieldCheckType
+const e_env=nodeEnum.Env
 
-const helper=require('../helper')
-const common_operation_model=require('../../model/mongo/operation/common_operation_model')
-const hash=require('../../function/assist/crypt').hash
+const e_penalizeType=mongoEnum.PenalizeType.DB
+const e_penalizeSubType=mongoEnum.PenalizeSubType.DB
+const e_iniSettingObject=require('../../constant/genEnum/initSettingObject').iniSettingObject
 
-const misc=require('../../function/assist/misc')
+const e_resourceProfileRange=mongoEnum.ResourceProfileRange.DB
+const e_storePathUsage=mongoEnum.StorePathUsage.DB
+
+const e_fileSizeUnit=nodeRuntimeEnum.FileSizeUnit
+
+const currentEnv=server_common_file_require.appSetting.currentEnv
+const uploadFileDefine=server_common_file_require.globalConfiguration.uploadFileDefine
+
+const e_dbModel=require('../../constant/genEnum/dbModel')
+const fkConfig=server_common_file_require.fkConfig.fkConfig
+
+const e_coll=require('../../constant/genEnum/DB_Coll').Coll
+const e_field=require('../../constant/genEnum/DB_field').Field
+
+
+const controllerHelper=server_common_file_require.controllerHelper
+const common_operation_model=server_common_file_require.common_operation_model
+const hash=server_common_file_require.crypt.hash
+
+const misc=server_common_file_require.misc
 // const checkRobot_async=require('../../function/assist/checkRobot').checkRobot_async
 
 
-const sanityHtml=require('../../function/assist/sanityHtml').sanityHtml
+// const sanityHtml=server_common_file_require.sanityHtml
 /*const generateRandomString=require('../../function/assist/misc').generateRandomString
 const sendVerificationCodeByEmail_async=require('../../function/assist/misc').sendVerificationCodeByEmail_async
 const ifUserLogin=require('../../function/assist/misc').ifUserLogin*/
 
-const dataConvert=require('../dataConvert')
-const validateCreateRecorderValue=require('../../function/validateInput/validateValue').validateCreateRecorderValue
-const validateUpdateRecorderValue=require('../../function/validateInput/validateValue').validateUpdateRecorderValue
-const validateCURecordInfoFormat=require('../../function/validateInput/validateFormat').validateCURecordInfoFormat
+// const dataConvert=server_common_file_require.dataConvert
+// const validateCreateRecorderValue=require('../../function/validateInput/validateValue').validateCreateRecorderValue
+// const validateUpdateRecorderValue=require('../../function/validateInput/validateValue').validateUpdateRecorderValue
+// const validateCURecordInfoFormat=require('../../function/validateInput/validateFormat').validateCURecordInfoFormat
 // const browserInputRule=require('../../constant/inputRule/browserInputRule').browserInputRule
 const internalInputRule=require('../../constant/inputRule/internalInputRule').internalInputRule
 const inputRule=require('../../constant/inputRule/inputRule').inputRule
-const e_fieldChineseName=require('../../constant/enum/inputRule_field_chineseName').ChineseName
+const e_fieldChineseName=require('../../constant/genEnum/inputRule_field_chineseName').ChineseName
 
 
-const mongoError=require('../../constant/error/mongo/mongoError').error
+// const mongoError=require('../../constant/error/mongo/mongoError').error
 
-const regex=require('../../constant/regex/regex').regex
+// const regex=require('../../constant/regex/regex').regex
 
-const maxNumber=require('../../constant/config/globalConfiguration').maxNumber
-const miscConfiguration=require('../../constant/config/globalConfiguration').miscConfiguration
-
-const mailAccount=require('../../constant/config/globalConfiguration').mailAccount
+// const maxNumber=require('../../constant/config/globalConfiguration').maxNumber
+// const miscConfiguration=require('../../constant/config/globalConfiguration').miscConfiguration
+//
+// const mailAccount=require('../../constant/config/globalConfiguration').mailAccount
 
 
 const calcResourceConfig=require('../../constant/config/calcResourceConfig')
 /*          create article              */
 // const checkUserState=require('../')
 /*         upload user photo         */
-const gmImage=require('../../function/assist/gmImage')
+const gmImage=server_common_file_require.gmImage
 // const userPhotoConfiguration=require('../../constant/config/globalConfiguration').uploadFileDefine.user_thumb
-const e_gmGetter=require('../../constant/enum/node_runtime').GmGetter
-const e_gmCommand=require('../../constant/enum/node_runtime').GmCommand
-const uploadFile=require('../../function/assist/upload')
+const e_gmGetter=nodeRuntimeEnum.GmGetter
+// const e_gmCommand=require('../../constant/enum/node_runtime').GmCommand
+// const uploadFile=require('../../function/assist/upload')
 
 /*         generate captcha         */
-const captchaIntervalConfiguration=require('../../constant/config/globalConfiguration').intervalCheckConfiguration.captcha
+// const captchaIntervalConfiguration=require('../../constant/config/globalConfiguration').intervalCheckConfiguration.captcha
 
 
 const controllerError={
@@ -154,7 +155,7 @@ async function impeachUploadFile_dispatch_async({req,uploadFileType,forColl}){
 
 
     //checkMethod只检测req的结构，以及req中method的格式和值，以便后续可以直接根据method进行调用
-    tmpResult=helper.checkMethod({req:req})
+    tmpResult=controllerHelper.checkMethod({req:req})
     if(tmpResult.rc>0){
         return Promise.reject(tmpResult)
     }
@@ -176,7 +177,8 @@ async function impeachUploadFile_dispatch_async({req,uploadFileType,forColl}){
                 penalizeCheckError:controllerError.userInPenalizeNoImpeachUpdate
             }
             expectedPart=[e_part.RECORD_ID]  //对哪个impeach/impeachComment进行更新（实际上是新建）
-            tmpResult=await helper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
+            tmpResult=await controllerHelper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
+	    //tmpResult=await controllerHelper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart,e_field:e_field,e_coll:e_coll,e_internal_field:e_internal_field,maxSearchKeyNum:maxSearchKeyNum,maxSearchPageNum:maxSearchPageNum})
 
             let validCollName=[e_coll.IMPEACH,e_coll.IMPEACH_COMMENT]
             /*              检查collName是否合格              */
@@ -256,7 +258,7 @@ async function uploadImpeachFile_async({req,uploadFileType,forColl}) {
         //不同的resourceRange，需要计算不同的resource
         currentResourceUsage[singleResourceRange]= {totalFileNum: 0, totalSizeInMb: 0}
         for(let singleResourceColl of resourceCollToBeCheck){
-            let result=await helper.calcExistResource_async({
+            let result=await controllerHelper.calcExistResource_async({
                 resourceProfileRange:singleResourceRange,
                 resourceFileFieldName:calcResourceConfig.resourceFileFieldName[singleResourceColl],
                 fieldsValueToFilterGroup:calcResourceConfig.fieldsValueToFilterGroup({impeach:{userId:userId,referenceId:referenceId}})[singleResourceColl],
@@ -266,14 +268,15 @@ async function uploadImpeachFile_async({req,uploadFileType,forColl}) {
             console.log(`resourceRange====>${singleResourceRange},resourceType=====>${singleResourceType}, result========>${JSON.stringify(result)}`)
         }
         //选择profile，并将currentResourceUsage[singleResourceRange]传入比较
-        resourceProfile[singleResourceRange]=await helper.chooseLastValidResourceProfile_async({resourceProfileRange:singleResourceRange,userId:userId})
+        resourceProfile[singleResourceRange]=await controllerHelper.chooseLastValidResourceProfile_async({resourceProfileRange:singleResourceRange,userId:userId})
+	//resourceProfile[singleResourceRange]=await controllerHelper.chooseLastValidResourceProfile_async({resourceProfileRange:singleResourceRange,userId:userId,e_field:e_field})
 
-        await helper.ifResourceStillValid_async({currentResourceUsage:currentResourceUsage[singleResourceRange],currentResourceProfile:resourceProfile[singleResourceRange],error:{sizeExceed:controllerError.resourceSizeAlreadyExceed,numberExceed:controllerError.resourceNumAlreadyExceed}})
+        await controllerHelper.ifResourceStillValid_async({currentResourceUsage:currentResourceUsage[singleResourceRange],currentResourceProfile:resourceProfile[singleResourceRange],error:{sizeExceed:controllerError.resourceSizeAlreadyExceed,numberExceed:controllerError.resourceNumAlreadyExceed}})
     }
 
     /*              上传文件存储到临时目录                         */
     let maxFileSize = uploadFileDefine[collName][uploadFileType].maxSizeInByte
-    let uploadResult = await helper.uploadFileToTmpDir_async({
+    let uploadResult = await controllerHelper.uploadFileToTmpDir_async({
         req: req,
         uploadTmpDir: e_iniSettingObject.store_path.UPLOAD_TMP.upload_tmp_dir.path,
         maxFileSize: maxFileSize,
@@ -284,7 +287,7 @@ async function uploadImpeachFile_async({req,uploadFileType,forColl}) {
 
     let fileInfo={size:size,path:path}
     for(let singleResourceRange of resourceProfileRangeToBeCheck){
-        await helper.ifNewFileLeadExceed_async({currentResourceUsage:currentResourceUsage[singleResourceRange],currentResourceProfile:resourceProfile[singleResourceRange],fileInfo:fileInfo,error:{sizeExceed:controllerError.resourceSizeWillExceed,numberExceed:controllerError.resourceNumWillExceed}})
+        await controllerHelper.ifNewFileLeadExceed_async({currentResourceUsage:currentResourceUsage[singleResourceRange],currentResourceProfile:resourceProfile[singleResourceRange],fileInfo:fileInfo,error:{sizeExceed:controllerError.resourceSizeWillExceed,numberExceed:controllerError.resourceNumWillExceed}})
     }
   
     /*              文件move到永久存储目录                           */
@@ -316,13 +319,15 @@ async function uploadImpeachFile_async({req,uploadFileType,forColl}) {
 
     //获得合适的存储路径，并move文件
     if(e_uploadFileType.IMAGE===uploadFileType){
-        tmpResult=await helper.chooseStorePath_async({usage:e_storePathUsage.ARTICLE_INNER_IMAGE})
+        tmpResult=await controllerHelper.chooseStorePath_async({usage:e_storePathUsage.ARTICLE_INNER_IMAGE})
+	//tmpResult=await controllerHelper.chooseStorePath_async({usage:e_storePathUsage.ARTICLE_INNER_IMAGE,e_field:e_field})
     }
     if(e_uploadFileType.ATTACHMENT===uploadFileType){
-        tmpResult=await helper.chooseStorePath_async({usage:e_storePathUsage.ARTICLE_INNER_ATTACHMENT})
+        tmpResult=await controllerHelper.chooseStorePath_async({usage:e_storePathUsage.ARTICLE_INNER_ATTACHMENT})
+	//tmpResult=await controllerHelper.chooseStorePath_async({usage:e_storePathUsage.ARTICLE_INNER_ATTACHMENT,e_field:e_field})
     }
-    let finalPath=tmpResult.msg.path+finalFileName
-    let pathId=tmpResult.msg._id
+    let finalPath=tmpResult.path+finalFileName
+    let pathId=tmpResult._id
     fs.renameSync(path,finalPath)
 
     /*              内部field value检测                            */
@@ -355,7 +360,7 @@ async function uploadImpeachFile_async({req,uploadFileType,forColl}) {
     }*/
 
     if(e_env.DEV===currentEnv){
-        let tmpResult=helper.checkInternalValue({internalValue:internalValue,collInputRule:inputRule[fileCollName],collInternalRule:internalInputRule[fileCollName]})
+        let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInputRule:inputRule[fileCollName],collInternalRule:internalInputRule[fileCollName]})
 // console.log(`internalValue check result====>   ${JSON.stringify(tmpResult)}`)
         if(tmpResult.rc>0){
             return Promise.reject(tmpResult)
@@ -364,7 +369,7 @@ async function uploadImpeachFile_async({req,uploadFileType,forColl}) {
 
     /*                  外键检查                        */
     //上传文件的所有字段都是内部字段，无client输入的docValue
-    await helper.ifFkValueExist_async({docValue:internalValue,collFkConfig:fkConfig[fileCollName],collFieldChineseName:e_fieldChineseName[fileCollName]})
+    await controllerHelper.ifFkValueExist_async({docValue:internalValue,collFkConfig:fkConfig[fileCollName],collFieldChineseName:e_fieldChineseName[fileCollName]})
 
 
 

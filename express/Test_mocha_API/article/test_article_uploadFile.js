@@ -8,28 +8,34 @@ const request=require('supertest')
 const app=require('../../app')
 const assert=require('assert')
 
-const e_part=require('../../server/constant/enum/node').ValidatePart
-const e_method=require('../../server/constant/enum/node').Method
-const e_field=require('../../server/constant/enum/DB_field').Field
-const e_coll=require('../../server/constant/enum/DB_Coll').Coll
-const e_penalizeType=require('../../server/constant/enum/mongo').PenalizeType.DB
-const e_penalizeSubType=require('../../server/constant/enum/mongo').PenalizeSubType.DB
+const server_common_file_require=require('../../server_common_file_require')
+const nodeEnum=server_common_file_require.nodeEnum
+const nodeRuntimeEnum=server_common_file_require.nodeRuntimeEnum
+const mongoEnum=server_common_file_require.mongoEnum
 
-const common_operation_model=require('../../server/model/mongo/operation/common_operation_model')
-const e_dbModel=require('../../server/model/mongo/dbModel')
-const dbModelInArray=require('../../server/model/mongo/dbModelInArray')
+
+const e_part=nodeEnum.ValidatePart
+const e_method=nodeEnum.Method
+const e_field=require('../../server/constant/genEnum/DB_field').Field
+const e_coll=require('../../server/constant/genEnum/DB_Coll').Coll
+const e_penalizeType=mongoEnum.PenalizeType.DB
+const e_penalizeSubType=mongoEnum.PenalizeSubType.DB
+
+const common_operation_model=server_common_file_require.common_operation_model
+const e_dbModel=require('../../server/constant/genEnum/dbModel')
+const dbModelInArray=require('../../server/constant/genEnum/dbModelInArray')
 
 const inputRule=require('../../server/constant/inputRule/inputRule').inputRule
 const browserInputRule=require('../../server/constant/inputRule/browserInputRule').browserInputRule
 
-const validateError=require('../../server/constant/error/validateError').validateError
-const helpError=require('../../server/constant/error/controller/helperError').helper
+const validateError=server_common_file_require.validateError//require('../../server/constant/error/va').validateError
+const helpError=server_common_file_require.helperError.helper//require('../../server/constant/error/controller/helperError').helper
 
-const contollerError=require('../../server/controller/article/article_upload_file_logic').controllerError
+const controllerError=require('../../server/controller/article/article_upload_file_logic').controllerError
 
-const objectDeepCopy=require('../../server/function/assist/misc').objectDeepCopy
+// const objectDeepCopy=server_common_file_require.misc.objectDeepCopy
 
-const test_helper=require("../API_helper/db_operation_helper")
+// const test_helper=require("../API_helper/db_operation_helper")
 const testData=require('../testData')
 
 let baseUrl="/article/"
@@ -175,7 +181,7 @@ describe('create new comment: ', async function() {
                 console.log(`res ios ${JSON.stringify(res)}`)
                 let parsedRes=JSON.parse(res.text)
                 console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes['rc'],contollerError.userNotLoginCantCreateArticleImage.rc)
+                assert.deepStrictEqual(parsedRes['rc'],controllerError.userNotLoginCantCreateArticleImage.rc)
                 // assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.require.error.rc)
                 done();
             });

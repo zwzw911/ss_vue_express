@@ -34,7 +34,7 @@
 }*/
     //用来获得chineseName，以便返回错误给client
 // var inputRule=require('../validateRule/inputRule').inputRule
-const mongooseOpEnum=require('../../enum/node').MongooseOp
+const mongooseOpEnum=require('../../enum/nodeEnum').MongooseOp
 
 /*
 * mongoose操作错误（不包含validator的错误？？）

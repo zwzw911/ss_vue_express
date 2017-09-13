@@ -21,7 +21,7 @@ const fs=require('fs')
 const serverRuleType=require('../../constant/enum/inputDataRuleType').ServerRuleType
 const serverDataType=require('../../constant/enum/inputDataRuleType').ServerDataType
 const regex=require('../../constant/regex/regex').regex
-const validateHelperError=require('../../constant/error/validateError').validateError.validateRule
+const validateHelperError=require('../../constant/error/validateError').validateRule
 
 const rightResult={rc:0,msg:null}
 

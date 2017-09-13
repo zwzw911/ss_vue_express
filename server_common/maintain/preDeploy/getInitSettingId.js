@@ -6,14 +6,14 @@
 
 const common_operation_model=require('../../model/mongo/operation/common_operation_model')
 
-const e_storePathUsage=require('../../constant/enum/mongo').StorePathUsage
-const e_storePathStatus=require('../../constant/enum/mongo').StorePathStatus
-const e_resourceProfileRange=require('../../constant/enum/mongo').ResourceProfileRange
+const e_storePathUsage=require('../../constant/enum/mongoEnum').StorePathUsage
+const e_storePathStatus=require('../../constant/enum/mongoEnum').StorePathStatus
+const e_resourceProfileRange=require('../../constant/enum/mongoEnum').ResourceProfileRange
 
-const e_dbModel=require('../../model/mongo/dbModel')
-const e_coll=require('../../constant/enum/DB_Coll').Coll
-const e_field=require('../../constant/enum/DB_field').Field
-const generateMongoEnumKeyValueExchange=require('../../maintain/generateMongoEnumKeyValueExchange').genMongoEnumKVExchange
+const e_dbModel=require('../../constant/genEnum/dbModel')
+const e_coll=require('../../constant/genEnum/DB_Coll').Coll
+const e_field=require('../../constant/genEnum/DB_field').Field
+const generateMongoEnumKeyValueExchange=require('../generateFunction/generateMongoEnumKeyValueExchange').genMongoEnumKVExchange
 
 
 const fs=require('fs')
@@ -29,7 +29,7 @@ const fs=require('fs')
 async function generateInitSettingEnum_async(){
     let mongoEnumKVExchange=generateMongoEnumKeyValueExchange()
     let tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.store_path,condition:{}})
-    console.log(`all store path===>${tmpResult}`)
+    // console.log(`all store path===>${tmpResult}`)
     let result={}
     result[e_coll.STORE_PATH]={}
 
@@ -43,7 +43,7 @@ async function generateInitSettingEnum_async(){
                 result[e_coll.STORE_PATH][mongoEnumKVExchange['StorePathUsage'][usage]]={}
             }
 
-            console.log(`store path path=========.${JSON.stringify(path)}`)
+            // console.log(`store path path=========.${JSON.stringify(path)}`)
             result[e_coll.STORE_PATH][mongoEnumKVExchange['StorePathUsage'][usage]][name]=id
             result[e_coll.STORE_PATH][mongoEnumKVExchange['StorePathUsage'][usage]][name]={id:id,path:path}
         }
@@ -82,7 +82,7 @@ async function generateInitSettingEnum_async(){
     return Promise.resolve(result)
 }
 
-async function writeInitSettingEnum_async(destFilePath){
+async function writeInitSettingEnum_async(destFileDir){
     let description=`/*    gene by server/maintain/generateMongoEnum     */ \r\n \r\n`
     let indent=`\ \ \ \ `
     let useStrict=`"use strict"\r\n`
@@ -101,12 +101,16 @@ async function writeInitSettingEnum_async(destFilePath){
     exp+=`,\r\n}`
     convertedEnum+=exp
 
-    console.log(`convertedEnum====>${JSON.stringify(convertedEnum)}`)
-    fs.writeFileSync(destFilePath,convertedEnum)
-return Promise.resolve({rc:0})
+    // console.log(`convertedEnum====>${JSON.stringify(convertedEnum)}`)
+    fs.writeFileSync(destFileDir+'initSettingObject.js',convertedEnum)
+    return Promise.resolve({rc:0})
 }
 
-writeInitSettingEnum_async('../../constant/enum/initSettingObject.js').then(
+/*writeInitSettingEnum_async('../../constant/enum/initSettingObject.js').then(
     (result)=>{console.log(`result is ${JSON.stringify(result)}`)},
     (err)=>{console.log(`err is ${JSON.stringify(err)}`)},
-)
+)*/
+
+module.exports={
+    writeInitSettingEnum_async,
+}

@@ -8,27 +8,34 @@ const request=require('supertest')
 const app=require('../../app')
 const assert=require('assert')
 
-const e_part=require('../../server/constant/enum/node').ValidatePart
-const e_method=require('../../server/constant/enum/node').Method
-const e_coll=require('../../server/constant/enum/DB_Coll').Coll
-const e_field=require('../../server/constant/enum/DB_field').Field
+const server_common_file_require=require('../../server_common_file_require')
+const nodeEnum=server_common_file_require.nodeEnum
+const nodeRuntimeEnum=server_common_file_require.nodeRuntimeEnum
+const mongoEnum=server_common_file_require.mongoEnum
 
-const common_operation_model=require('../../server/model/mongo/operation/common_operation_model')
-const dbModel=require('../../server/model/mongo/dbModel')
+const e_part=nodeEnum.ValidatePart
+const e_method=nodeEnum.Method
+const e_coll=require('../../server/constant/genEnum/DB_Coll').Coll
+const e_field=require('../../server/constant/genEnum/DB_field').Field
 
-const inputRule=require('../../server/constant/inputRule/inputRule').inputRule
+// const common_operation_model=server_common_file_require.common_operation_model
+// const dbModel=require('../../server/constant/genEnum/dbModel')
+
+// const inputRule=require('../../server/constant/inputRule/inputRule').inputRule
 const browserInputRule=require('../../server/constant/inputRule/browserInputRule').browserInputRule
 
-const validateError=require('../../server/constant/error/validateError').validateError
-const helpError=require('../../server/constant/error/controller/helperError').helper
+const validateError=server_common_file_require.validateError//require('../../server/constant/error/validateError').validateError
+const controllerHelperError=server_common_file_require.helperError.helper//require('../../server/constant/error/controller/helperError').helper
 
-const controllerError=require('../../server/controller/user/user_dispatcher').controllerError
+const controllerError=require('../../server/controller/user/user_logic/user_controllerError').controllerError
 
-const objectDeepCopy=require('../../server/function/assist/misc').objectDeepCopy
+const objectDeepCopy=server_common_file_require.misc.objectDeepCopy
 
 const test_helper=require("../API_helper/db_operation_helper")
 
 const testData=require('../testData')
+
+const API_helper=require('../API_helper/API_helper')
 
 let baseUrl="/user/"
 let userId  //create后存储对应的id，以便后续的update操作
@@ -46,8 +53,10 @@ describe('user format check:', function() {
                 // console.log(`res ios ${JSON.stringify(res)}`)
                 let parsedRes=JSON.parse(res.text)
                 console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
+                // console.log(`${controllerHelperError.methodPartMustExistInDispatcher}`)
                 // assert.deepStrictEqual(parsedRes.rc,99999)
-                assert.deepStrictEqual(parsedRes.rc,helpError.methodPartMustExistInDispatcher.rc)
+                // controllerHelperError.methodPartMustExistInDispatcher.rc
+                assert.deepStrictEqual(parsedRes.rc,controllerHelperError.methodPartMustExistInDispatcher.rc)
                 done();
             });
     });
@@ -59,8 +68,9 @@ describe('user format check:', function() {
                 // if (err) return done(err);
                 // console.log(`res ios ${JSON.stringify(res)}`)
                 let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
+                console.log(`parsedRes is ${JSON.stringify(parsedRes)}`)
                 // assert.deepStrictEqual(parsedRes.rc,99999)
+                // console.log(`${JSON.stringify(validateError)}`)
                 assert.deepStrictEqual(parsedRes.rc,validateError.validateFormat.inputValuePartMethodValueFormatWrong.rc)
                 done();
             });
@@ -69,9 +79,9 @@ describe('user format check:', function() {
 
 
 
-describe('user(register) rule check', function() {
+describe('user register rule check', function() {
     let data={values:{recordInfo:{},method:e_method.CREATE}},url=``,finalUrl=baseUrl+url
-
+// console.log(`url ${JSON.stringify(finalUrl)}`)
     it('miss require field name', function(done) {
         data.values[e_part.RECORD_INFO]={account:{value:'1'}}
         request(app).post(finalUrl).set('Accept', 'application/json').send(data)
@@ -79,7 +89,7 @@ describe('user(register) rule check', function() {
                 // if (err) return done(err);
                 // console.log(`res ios ${JSON.stringify(res)}`)
                 let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
+                // console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
                 assert.deepStrictEqual(parsedRes.rc,99999)
                 assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.require.error.rc)
                 done();
@@ -186,7 +196,7 @@ describe('user(register) rule check', function() {
 
 
 
-describe('user1(register) correct value:', function() {
+describe('user1 register correct value:', function() {
     let data={values:{recordInfo:{},method:e_method.CREATE}},url=``,finalUrl=baseUrl+url
     before('delete exist user1', async function(){
         /*              清理已有数据              */
@@ -213,7 +223,7 @@ describe('user1(register) correct value:', function() {
 
 })
 
-describe('user1(register) unique check:', function() {
+describe('user1 register unique check:', function() {
     let data = {values: {recordInfo: {}, method: e_method.CREATE}}, url = ``, finalUrl = baseUrl + url
     it('register unique name check fail', function(done) {
         data.values[e_part.RECORD_INFO]=testData.user.user1//
@@ -224,7 +234,7 @@ describe('user1(register) unique check:', function() {
 
                 let parsedRes=JSON.parse(res.text)
                 console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc, helpError.fieldValueUniqueCheckError({collName:e_coll.USER, fieldName:e_field.USER.NAME}).rc)
+                assert.deepStrictEqual(parsedRes.rc, controllerHelperError.fieldValueUniqueCheckError({collName:e_coll.USER, fieldName:e_field.USER.NAME}).rc)
                 // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
                 done();
             });
@@ -241,7 +251,7 @@ describe('user1(register) unique check:', function() {
 
                 let parsedRes=JSON.parse(res.text)
                 console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,helpError.fieldValueUniqueCheckError({collName:e_coll.USER, fieldName:e_field.USER.ACCOUNT}).rc)
+                assert.deepStrictEqual(parsedRes.rc,controllerHelperError.fieldValueUniqueCheckError({collName:e_coll.USER, fieldName:e_field.USER.ACCOUNT}).rc)
                 // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
                 done();
             });
@@ -259,7 +269,7 @@ describe('POST /user/uniqueCheck_async ', function() {
 
                 let parsedRes=JSON.parse(res.text)
                 console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,helpError.fieldValueUniqueCheckError({collName:e_coll.USER, fieldName:e_field.USER.NAME}).rc)
+                assert.deepStrictEqual(parsedRes.rc,controllerHelperError.fieldValueUniqueCheckError({collName:e_coll.USER, fieldName:e_field.USER.NAME}).rc)
                 // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
                 done();
             });
@@ -273,7 +283,7 @@ describe('POST /user/uniqueCheck_async ', function() {
 
                 let parsedRes=JSON.parse(res.text)
                 console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,helpError.fieldValueUniqueCheckError({collName:e_coll.USER, fieldName:e_field.USER.ACCOUNT}).rc)
+                assert.deepStrictEqual(parsedRes.rc,controllerHelperError.fieldValueUniqueCheckError({collName:e_coll.USER, fieldName:e_field.USER.ACCOUNT}).rc)
                 // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
                 done();
             });
@@ -416,25 +426,9 @@ describe('update user： ', function() {
     let data = {values:{method:e_method.MATCH}}, url = '', finalUrl = baseUrl + url
 
     let sess
-    before('user login first before update', function(done) {
-        data.values.method=e_method.MATCH
-        let user1Tmp=objectDeepCopy(testData.user.user1)
-        delete user1Tmp['name']
-        delete user1Tmp['userType']
-        // delete testData.user.user1Tmp['password']
-        data.values[e_part.RECORD_INFO]=user1Tmp//,notExist:{value:123}
-        request(app).post(finalUrl).set('Accept', 'application/json').send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-                // console.log(`res ${JSON.stringify(res['header']['set-cookie'][0].split(';')[0])}`)
-                sess=res['header']['set-cookie'][0].split(';')[0]
-                let parsedRes=JSON.parse(res.text)
-                // console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                // console.log(`sess==============> ${JSON.stringify(sess)}`)
-                assert.deepStrictEqual(parsedRes.rc,0)
-                // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
-                done();
-            });
+    before('user login first before update', async function() {
+        sess=await  API_helper.userLogin_returnSess_async({userData:testData.user.user1})
+        // console.log(`sess ======>${JSON.stringify(sess)}`)
     })
 /*    after('delete exist create testData.user.user2', async function() {
         let testData.user.user2ModelTmp=objectDeepCopy(testData.user.user2ForModel)
@@ -603,7 +597,7 @@ describe('update user： ', function() {
                 // console.log(`res ${JSON.stringify(res['header']['set-cookie']['connect.sid'])}`)
                 let parsedRes=JSON.parse(res.text)
                 console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,helpError.fieldValueUniqueCheckError({collName:e_coll.USER,fieldName:e_field.USER.ACCOUNT}).rc)
+                assert.deepStrictEqual(parsedRes.rc,controllerHelperError.fieldValueUniqueCheckError({collName:e_coll.USER,fieldName:e_field.USER.ACCOUNT}).rc)
                 // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
                 done();
             });
@@ -664,8 +658,18 @@ describe('update user： ', function() {
 
 describe('retrieve password: ', function() {
     let data = {values:{}}, url = '', finalUrl = baseUrl + url,sess
-    // let sess
-    it('create new user3', function(done) {
+    before('delete exist user3', async function(){
+        /*              清理已有数据              */
+        // console.log(`######   delete exist record   ######`)
+        // console.log(`correctValueForModel ${JSON.stringify(correctValueForModel)}`)
+        await test_helper.deleteUserAndRelatedInfo_async({account:testData.user.user3ForModel.account})
+        // done()
+    });
+    before('user3 create and login', async function () {
+        await API_helper.createUser_async({userData:testData.user.user3})
+        sess=await  API_helper.userLogin_returnSess_async({userData:testData.user.user3})
+    })
+    /*it('create new user3', function(done) {
         data.values.method=e_method.CREATE
         data.values[e_part.RECORD_INFO]=testData.user.user3//
         request(app).post(finalUrl).set('Accept', 'application/json').send(data)
@@ -699,7 +703,7 @@ describe('retrieve password: ', function() {
                 // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
                 done();
             });
-    })
+    })*/
 
 /*    it('testData.user.user3 login correct', function(done) {
         // console.log(`testData.user.user3 ${JSON.stringify(testData.user.user1)}`)

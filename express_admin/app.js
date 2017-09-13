@@ -24,7 +24,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-
+const server_common=require()
 const e_env=require('./server/constant/enum/node').Env
 const currentEnv=require('./server/constant/config/appSetting').currentEnv
 

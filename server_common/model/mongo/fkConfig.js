@@ -3,8 +3,8 @@
  * 记录所有coll之间的关联
  */
 
-const e_coll=require('../../constant/enum/DB_Coll').Coll
-const e_field=require('../../constant/enum/DB_field').Field
+const e_coll=require('../../constant/genEnum/DB_Coll').Coll
+const e_field=require('../../constant/genEnum/DB_field').Field
 const fkConfig={
     /*          user            */
     [e_coll.SUGAR]:{
@@ -102,7 +102,7 @@ const fkConfig={
     },
 }
 
-console.log(`${JSON.stringify(fkConfig)}`)
+// console.log(`${JSON.stringify(fkConfig)}`)
 module.exports={
     fkConfig,
 }

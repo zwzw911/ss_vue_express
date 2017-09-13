@@ -11,13 +11,17 @@
 const express = require('express');
 //var app=express()
 const router = express.Router();
-const genFinalReturnResult=require('../../function/assist/misc').genFinalReturnResult
+
+const server_common_file_require=require('../../../server_common_file_require')
+const nodeEnum=server_common_file_require.nodeEnum
+const genFinalReturnResult=server_common_file_require.misc.genFinalReturnResult
+//require('../../../../server_common/function/assist/misc').genFinalReturnResult
 const article_logic=require('./article_logic')
 const article_comment_logic=require('./article_comment_logic')
 const article_upload_file_logic=require('./article_upload_file_logic')
 const likeDislike_logic=require('./liekDislike_logic')
 
-const e_uploadFileType=require('../../constant/enum/node').UploadFileType
+const e_uploadFileType=nodeEnum.UploadFileType
 /*        通过method，判断是CRUDM中的那个操作
 *   C: register
 *   M: match(login)

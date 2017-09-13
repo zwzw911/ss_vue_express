@@ -11,79 +11,86 @@
 
 const fs=require('fs')
 
-const e_userState=require('../../constant/enum/node').UserState
-const e_part=require('../../constant/enum/node').ValidatePart
-const e_method=require('../../constant/enum/node').Method
-const e_randomStringType=require('../../constant/enum/node').RandomStringType
-const e_uploadFileType=require('../../constant/enum/node').UploadFileType
+const server_common_file_require=require('../../../server_common_file_require')
+
+const nodeEnum=server_common_file_require.nodeEnum
+const nodeRuntimeEnum=server_common_file_require.nodeRuntimeEnum
+const mongoEnum=server_common_file_require.mongoEnum
+
+
+// const e_userState=require('../../constant/enum/node').UserState
+const e_part=nodeEnum.ValidatePart//require('../../constant/enum/node').ValidatePart
+const e_method=nodeEnum.Method//require('../../constant/enum/node').Method
+// const e_randomStringType=require('../../constant/enum/node').RandomStringType
+// const e_uploadFileType=require('../../constant/enum/node').UploadFileType
 // const e_method=require('../../constant/enum/node').Method
 
-const e_hashType=require('../../constant/enum/node_runtime').HashType
+// const e_hashType=require('../../constant/enum/node_runtime').HashType
 
-const e_env=require('../../constant/enum/node').Env
-const e_docStatus=require('../../constant/enum/mongo').DocStatus.DB
-const e_penalizeType=require('../../constant/enum/mongo').PenalizeType.DB
-const e_penalizeSubType=require('../../constant/enum/mongo').PenalizeSubType.DB
-const e_iniSettingObject=require('../../constant/enum/initSettingObject').iniSettingObject
-const e_articleStatus=require('../../constant/enum/mongo').ArticleStatus.DB
+const e_env=nodeEnum.Env//require('../../constant/enum/node').Env
+// const e_docStatus=require('../../constant/enum/mongo').DocStatus.DB
+const e_penalizeType=server_common_file_require.mongoEnum.PenalizeType.DB
+const e_penalizeSubType=server_common_file_require.mongoEnum.PenalizeSubType.DB
+// const e_iniSettingObject=require('../../constant/enum/initSettingObject').iniSettingObject
+// const e_articleStatus=require('../../constant/enum/mongo').ArticleStatus.DB
 // const e_resourceRange=require('../../constant/enum/mongo').ResourceRange.DB
 // const e_resourceType=require('../../constant/enum/mongo').ResourceType.DB
-const e_storePathUsage=require('../../constant/enum/mongo').StorePathUsage.DB
+// const e_storePathUsage=require('../../constant/enum/mongo').StorePathUsage.DB
+//
+// const e_fileSizeUnit=require('../../constant/enum/node_runtime').FileSizeUnit
 
-const e_fileSizeUnit=require('../../constant/enum/node_runtime').FileSizeUnit
+const currentEnv=server_common_file_require.appSetting.currentEnv
+// const uploadFileDefine=require('../../constant/config/globalConfiguration').uploadFileDefine
 
-const currentEnv=require('../../constant/config/appSetting').currentEnv
-const uploadFileDefine=require('../../constant/config/globalConfiguration').uploadFileDefine
+const e_dbModel=require('../../constant/genEnum/dbModel')
+const fkConfig=server_common_file_require.fkConfig.fkConfig//require('../../model/mongo/fkConfig').fkConfig
 
-const e_dbModel=require('../../model/mongo/dbModel')
-const fkConfig=require('../../model/mongo/fkConfig').fkConfig
-
-const e_coll=require('../../constant/enum/DB_Coll').Coll
-const e_field=require('../../constant/enum/DB_field').Field
-const e_internal_field=require('../../constant/enum/DB_internal_field').Field
-const e_uniqueField=require('../../constant/enum/DB_uniqueField').UniqueField
+const e_coll=require('../../constant/genEnum/DB_Coll').Coll
+const e_field=require('../../constant/genEnum/DB_field').Field
+// const e_internal_field=require('../../constant/genEnum/DB_internal_field').Field
+// const e_uniqueField=require('../../constant/enum/DB_uniqueField').UniqueField
 // const e_inputFieldCheckType=require('../../constant/enum/node').InputFieldCheckType
 
-const helper=require('../helper')
-const common_operation_model=require('../../model/mongo/operation/common_operation_model')
-const hash=require('../../function/assist/crypt').hash
+const controllerHelper=server_common_file_require.controllerHelper
+const common_operation_model=server_common_file_require.common_operation_model
+// const hash=require('../../function/assist/crypt').hash
 
-const misc=require('../../function/assist/misc')
+// const misc=server_common_file_require.misc
 // const checkRobot_async=require('../../function/assist/checkRobot').checkRobot_async
 
 
-const sanityHtml=require('../../function/assist/sanityHtml').sanityHtml
+// const sanityHtml=require('../../function/assist/sanityHtml').sanityHtml
 /*const generateRandomString=require('../../function/assist/misc').generateRandomString
 const sendVerificationCodeByEmail_async=require('../../function/assist/misc').sendVerificationCodeByEmail_async
 const ifUserLogin=require('../../function/assist/misc').ifUserLogin*/
 
-const dataConvert=require('../dataConvert')
-const validateCreateRecorderValue=require('../../function/validateInput/validateValue').validateCreateRecorderValue
-const validateUpdateRecorderValue=require('../../function/validateInput/validateValue').validateUpdateRecorderValue
-const validateCURecordInfoFormat=require('../../function/validateInput/validateFormat').validateCURecordInfoFormat
+const dataConvert=server_common_file_require.dataConvert
+// const validateCreateRecorderValue=require('../../function/validateInput/validateValue').validateCreateRecorderValue
+// const validateUpdateRecorderValue=require('../../function/validateInput/validateValue').validateUpdateRecorderValue
+// const validateCURecordInfoFormat=require('../../function/validateInput/validateFormat').validateCURecordInfoFormat
 // const browserInputRule=require('../../constant/inputRule/browserInputRule').browserInputRule
 const internalInputRule=require('../../constant/inputRule/internalInputRule').internalInputRule
 const inputRule=require('../../constant/inputRule/inputRule').inputRule
-const e_fieldChineseName=require('../../constant/enum/inputRule_field_chineseName').ChineseName
+const e_fieldChineseName=require('../../constant/genEnum/inputRule_field_chineseName').ChineseName
 
 
-const mongoError=require('../../constant/error/mongo/mongoError').error
+/*const mongoError=require('../../constant/error/mongo/mongoError').error
 
 const regex=require('../../constant/regex/regex').regex
 
 const maxNumber=require('../../constant/config/globalConfiguration').maxNumber
 const miscConfiguration=require('../../constant/config/globalConfiguration').miscConfiguration
 
-const mailAccount=require('../../constant/config/globalConfiguration').mailAccount
+const mailAccount=require('../../constant/config/globalConfiguration').mailAccount*/
 
 /*          create article              */
 // const checkUserState=require('../')
 /*         upload user photo         */
-const gmImage=require('../../function/assist/gmImage')
+/*const gmImage=require('../../function/assist/gmImage')
 // const userPhotoConfiguration=require('../../constant/config/globalConfiguration').uploadFileDefine.user_thumb
 const e_gmGetter=require('../../constant/enum/node_runtime').GmGetter
 const e_gmCommand=require('../../constant/enum/node_runtime').GmCommand
-const uploadFile=require('../../function/assist/upload')
+const uploadFile=require('../../function/assist/upload')*/
 
 /*         generate captcha         */
 // const captchaIntervalConfiguration=require('../../constant/config/globalConfiguration').intervalCheckConfiguration.captcha
@@ -117,7 +124,7 @@ async function article_likeDislike_dispatcher_async({req}){
     let collName=e_coll.LIKE_DISLIKE,tmpResult
 
     //checkMethod只检测req的结构，以及req中method的格式和值，以便后续可以直接根据method进行调用
-    tmpResult=helper.checkMethod({req:req})
+    tmpResult=controllerHelper.checkMethod({req:req})
     if(tmpResult.rc>0){
         return Promise.reject(tmpResult)
     }
@@ -138,7 +145,8 @@ async function article_likeDislike_dispatcher_async({req}){
                 penalizeCheckError:controllerError.userInPenalizeNoLikeDisLikeCreate
             }
             expectedPart=[e_part.RECORD_INFO]
-            tmpResult=await helper.preCheck_async({req:req,collName,method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
+            tmpResult=await controllerHelper.preCheck_async({req:req,collName,method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
+	    //tmpResult=await controllerHelper.preCheck_async({req:req,collName,method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart,e_field:e_field,e_coll:e_coll,e_internal_field:e_internal_field,maxSearchKeyNum:maxSearchKeyNum,maxSearchPageNum:maxSearchPageNum})
 
             tmpResult=await createLikeDislike_async(req)
 
@@ -158,7 +166,7 @@ async function article_likeDislike_dispatcher_async({req}){
                 penalizeCheckError:controllerError.userInPenalizeNoArticleUpdate
             }
             expectedPart=[e_part.RECORD_INFO,e_part.RECORD_ID]
-            tmpResult=await helper.preCheck_async({req:req,collName,method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
+            tmpResult=await controllerHelper.preCheck_async({req:req,collName,method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
 // console.log(`article update precheck result======>${JSON.stringify(tmpResult)}`)
 
             /!*      执行逻辑                *!/
@@ -199,7 +207,7 @@ async  function createLikeDislike_async(req) {
         // console.log(`before newDocValue====>${JSON.stringify(internalValue)}`)
         // let newDocValue=dataConvert.addSubFieldKeyValue(internalValue)
         // console.log(`newDocValue====>${JSON.stringify(newDocValue)}`)
-        let tmpResult = helper.checkInternalValue({
+        let tmpResult = controllerHelper.checkInternalValue({
             internalValue: internalValue,
             collInputRule: inputRule[collName],
             collInternalRule: internalInputRule[collName]
@@ -212,7 +220,7 @@ async  function createLikeDislike_async(req) {
     Object.assign(docValue, internalValue)
 // console.log(`docValue after internal=========>${JSON.stringify(docValue)}`)
     /*              外键（article/authorId）是否存在                 */
-    await helper.ifFkValueExist_async({docValue:docValue,collFkConfig:fkConfig[collName],collFieldChineseName:e_fieldChineseName[collName]})
+    await controllerHelper.ifFkValueExist_async({docValue:docValue,collFkConfig:fkConfig[collName],collFieldChineseName:e_fieldChineseName[collName]})
 
     /*                  复合unique index检查(用户是否对此文档进行过踩赞)                    */
     let condition={}

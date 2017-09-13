@@ -12,16 +12,16 @@
 // require("babel-core/register")
 
 const dataTypeCheck=require('./validateHelper').dataTypeCheck
-const searchSetting=require('../../constant/config/globalConfiguration').searchSetting
-const validateFormatError=require('../../constant/error/validateError').validateError.validateFormat
-const e_compOp=require('../../constant/enum/node').CompOp
+// const searchSetting=require('../../constant/config/globalConfiguration').searchSetting
+const validateFormatError=require('../../constant/error/validateError').validateFormat
+const e_compOp=require('../../constant/enum/nodeEnum').CompOp
 const dataType=require('../../constant/enum/inputDataRuleType').ServerDataType
 const rightResult={rc:0}
-const e_validatePart=require('../../constant/enum/node').ValidatePart
-const e_keyForSearchParams=require('../../constant/enum/node').KeyForSearchParams
-const e_method=require('../../constant/enum/node').Method
-const arr_editSubField=require('../../constant/define/node').SUB_FIELD
-const arr_eventField=require('../../constant/define/node').EVENT_FIELD
+const e_validatePart=require('../../constant/enum/nodeEnum').ValidatePart
+const e_keyForSearchParams=require('../../constant/enum/nodeEnum').KeyForSearchParams
+const e_method=require('../../constant/enum/nodeEnum').Method
+const arr_editSubField=require('../../constant/define/nodeDefine').SUB_FIELD
+const arr_eventField=require('../../constant/define/nodeDefine').EVENT_FIELD
 
 //检测req.body.values是否存在且为object
 function validateReqBody(reqBody){
@@ -813,9 +813,9 @@ function validateEventFormat(ev){
 }
 
 
-function validateMethodFormat(){
+/*function validateMethodFormat(){
 
-}
+}*/
 
 module.exports={
     validateReqBody,//检查req.body.values是否存在

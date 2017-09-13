@@ -17,14 +17,14 @@ const currentAppSetting=require('../../../constant/config/appSetting').currentAp
  }*/
 
 let ioredisOption={
-    host:currentAppSetting['redisIP'],
-    port:currentAppSetting['redisPort'],
+    host:currentAppSetting['redisIPForNormal'],
+    port:currentAppSetting['redisPortForNormal'],
     family:'4',//IPv4
     db:0,
     //password:'',
 
 }
-
+// console.log(`ioredisOption===========>${JSON.stringify(ioredisOption)}`)
 module.exports={
     /*redisClient:function(){
         redisOptions['db']=1

@@ -11,7 +11,11 @@
 const express = require('express');
 //var app=express()
 const router = express.Router();
-const genFinalReturnResult=require('../../function/assist/misc').genFinalReturnResult
+
+const server_common_file_require=require('../../../server_common_file_require')
+
+
+const genFinalReturnResult=server_common_file_require.misc.genFinalReturnResult//require('../../function/assist/misc').genFinalReturnResult
 const userDispatcher_async=require('./user_dispatcher').dispatcher_async
 const userMiscFunc=require('./user_logic/user_misc_func')
 /*        通过method，判断是CRUDM中的那个操作
@@ -19,7 +23,8 @@ const userMiscFunc=require('./user_logic/user_misc_func')
 *   M: match(login)
 * */
 router.post('/',function(req,res,next){
-
+//     console.log(`req in`)
+// console.log(`req is ${JSON.stringify(req.body)}`)
     userDispatcher_async(req).then(
         (v)=>{
             console.log(`create   register   success, result:  ${JSON.stringify(v)}`)
@@ -67,8 +72,8 @@ router.post('/retrievePassword',function(req,res,next){
 
 
 router.post('/uploadPhoto',function(req,res,next){
-
-    userDispatcher_async.uploadPhoto_async(req).then(
+// console.log(`uploadPhoto in`)
+    userMiscFunc.uploadPhoto_async(req).then(
         (v)=>{
             console.log(`uploadPhoto  success, result:  ${JSON.stringify(v)}`)
             return res.json(v)

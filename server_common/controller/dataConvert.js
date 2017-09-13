@@ -11,7 +11,7 @@ const  mongoose = require('mongoose') //用于将objectId转换
 
 const dataTypeCheck=require('../function/validateInput/validateHelper').dataTypeCheck
 const dataType=require('../constant/enum/inputDataRuleType').ServerDataType
-const compOp=require('../constant/enum/node').CompOp
+const compOp=require('../constant/enum/nodeEnum').CompOp
 // const inputRules=require('../constant/validateRule/inputRule').inputRule //genNativeSearchCondition
 /*将前端传入的search value转换成mongodb对应的select condition（如此方便在mongodb中直接使用，来进行调试）。
  *  返回一个object {field；{condition}}

@@ -8,28 +8,33 @@ const request=require('supertest')
 const app=require('../../app')
 const assert=require('assert')
 
-const e_part=require('../../server/constant/enum/node').ValidatePart
-const e_method=require('../../server/constant/enum/node').Method
-const e_field=require('../../server/constant/enum/DB_field').Field
-const e_coll=require('../../server/constant/enum/DB_Coll').Coll
-const e_penalizeType=require('../../server/constant/enum/mongo').PenalizeType.DB
-const e_penalizeSubType=require('../../server/constant/enum/mongo').PenalizeSubType.DB
+const server_common_file_require=require('../../server_common_file_require')
+const nodeEnum=server_common_file_require.nodeEnum
+const nodeRuntimeEnum=server_common_file_require.nodeRuntimeEnum
+const mongoEnum=server_common_file_require.mongoEnum
 
-const common_operation_model=require('../../server/model/mongo/operation/common_operation_model')
-const e_dbModel=require('../../server/model/mongo/dbModel')
-const dbModelInArray=require('../../server/model/mongo/dbModelInArray')
+const e_part=nodeEnum.ValidatePart
+const e_method=nodeEnum.Method
+const e_field=require('../../server/constant/genEnum/DB_field').Field
+const e_coll=require('../../server/constant/genEnum/DB_Coll').Coll
+const e_penalizeType=mongoEnum.PenalizeType.DB
+const e_penalizeSubType=mongoEnum.PenalizeSubType.DB
 
-const inputRule=require('../../server/constant/inputRule/inputRule').inputRule
+const common_operation_model=server_common_file_require.common_operation_model
+const e_dbModel=require('../../server/constant/genEnum/dbModel')
+// const dbModelInArray=require('../../server/model/mongo/dbModelInArray')
+
+// const inputRule=require('../../server/constant/inputRule/inputRule').inputRule
 const browserInputRule=require('../../server/constant/inputRule/browserInputRule').browserInputRule
 
-const validateError=require('../../server/constant/error/validateError').validateError
-const helpError=require('../../server/constant/error/controller/helperError').helper
+const validateError=server_common_file_require.validateError//require('../../server/constant/error/validateError').validateError
+const controllerHelpError=server_common_file_require.helperError.helper//require('../../server/constant/error/controller/helperError').helper
 
-const contollerError=require('../../server/controller/article/article_logic').controllerError
+const controllerError=require('../../server/controller/article/article_logic').controllerError
 
-const objectDeepCopy=require('../../server/function/assist/misc').objectDeepCopy
+// const objectDeepCopy=require('../../server/function/assist/misc').objectDeepCopy
 
-const test_helper=require("../API_helper/db_operation_helper")
+// const test_helper=require("../API_helper/db_operation_helper")
 const testData=require('../testData')
 
 let baseUrl="/article/"
@@ -125,7 +130,7 @@ describe('create new article and update, then create new comment: ', async funct
                 // console.log(`res ios ${JSON.stringify(res)}`)
                 let parsedRes = JSON.parse(res.text)
                 console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc, contollerError.userNotLoginCantCreate.rc)
+                assert.deepStrictEqual(parsedRes.rc, controllerError.userNotLoginCantCreate.rc)
                 // assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.require.error.rc)
                 done();
             });
@@ -177,7 +182,7 @@ describe('create new article and update, then create new comment: ', async funct
                 // console.log(`res ios ${JSON.stringify(res)}`)
                 let parsedRes = JSON.parse(res.text)
                 console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc, contollerError.userNotLoginCantUpdate.rc)
+                assert.deepStrictEqual(parsedRes.rc, controllerError.userNotLoginCantUpdate.rc)
                 // assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.require.error.rc)
                 done();
             });
@@ -237,7 +242,7 @@ describe('create new article and update, then create new comment: ', async funct
                 // console.log(`res ios ${JSON.stringify(res)}`)
                 let parsedRes = JSON.parse(res.text)
                 console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes['rc'], contollerError.notAuthorized.rc)
+                assert.deepStrictEqual(parsedRes['rc'], controllerError.notAuthorized.rc)
                 // assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.require.error.rc)
                 done();
             });
@@ -248,7 +253,7 @@ describe('create new article and update, then create new comment: ', async funct
         data.values[e_part.METHOD] = e_method.UPDATE
         data.values[e_part.RECORD_INFO] = {}
         data.values[e_part.RECORD_INFO][e_field.ARTICLE.HTML_CONTENT] = {}
-        data.values[e_part.RECORD_INFO][e_field.ARTICLE.HTML_CONTENT]['value'] = `<script></script>`
+        data.values[e_part.RECORD_INFO][e_field.ARTICLE.HTML_CONTENT]['value'] = `<script></script>asdf`
         console.log(`docvalues====>${JSON.stringify(data.values)}`)
         request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie', [user1Sess]).send(data)
             .end(function (err, res) {
@@ -256,7 +261,7 @@ describe('create new article and update, then create new comment: ', async funct
                 // console.log(`res ios ${JSON.stringify(res)}`)
                 let parsedRes = JSON.parse(res.text)
                 console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes['rc'], contollerError.htmlContentSanityFailed.rc)
+                assert.deepStrictEqual(parsedRes['rc'], controllerError.htmlContentSanityFailed.rc)
                 // assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.require.error.rc)
                 done();
             });
@@ -312,7 +317,7 @@ describe('create new article and update, then create new comment: ', async funct
                 // console.log(`res ios ${JSON.stringify(res)}`)
                 let parsedRes = JSON.parse(res.text)
                 console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes['rc'], helpError.fkValueNotExist().rc)
+                assert.deepStrictEqual(parsedRes['rc'], controllerHelpError.fkValueNotExist().rc)
                 // assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.require.error.rc)
                 done();
             });
@@ -331,7 +336,7 @@ describe('create new article and update, then create new comment: ', async funct
                 // console.log(`res ios ${JSON.stringify(res)}`)
                 let parsedRes = JSON.parse(res.text)
                 console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes['rc'], contollerError.notAuthorizedFolder.rc)
+                assert.deepStrictEqual(parsedRes['rc'], controllerError.notAuthorizedFolder.rc)
                 // assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.require.error.rc)
                 done();
             });

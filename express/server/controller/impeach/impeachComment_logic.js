@@ -7,83 +7,80 @@
 
 
 const fs=require('fs')
+const server_common_file_require=require('../../../server_common_file_require')
 
-const e_userState=require('../../constant/enum/node').UserState
-const e_part=require('../../constant/enum/node').ValidatePart
-const e_method=require('../../constant/enum/node').Method
-const e_randomStringType=require('../../constant/enum/node').RandomStringType
-const e_uploadFileType=require('../../constant/enum/node').UploadFileType
+const nodeEnum=server_common_file_require.nodeEnum
+const nodeRuntimeEnum=server_common_file_require.nodeRuntimeEnum
+const mongoEnum=server_common_file_require.mongoEnum
+
+/*
+const maxSearchKeyNum=require('../../../constant/config/globalConfiguration').searchSetting.maxKeyNum
+const maxSearchPageNum=require('../../../constant/config/globalConfiguration').searchMaxPage.readName
+*/
+
+// const e_userState=require('../../constant/enum/node').UserState
+const e_part=nodeEnum.ValidatePart
+const e_method=nodeEnum.Method
+// const e_randomStringType=require('../../constant/enum/node').RandomStringType
+// const e_uploadFileType=require('../../constant/enum/node').UploadFileType
 // const e_method=require('../../constant/enum/node').Method
 
-const e_hashType=require('../../constant/enum/node_runtime').HashType
+// const e_hashType=require('../../constant/enum/node_runtime').HashType
 
-const e_env=require('../../constant/enum/node').Env
-const e_docStatus=require('../../constant/enum/mongo').DocStatus.DB
-const e_penalizeType=require('../../constant/enum/mongo').PenalizeType.DB
-const e_penalizeSubType=require('../../constant/enum/mongo').PenalizeSubType.DB
-const e_iniSettingObject=require('../../constant/enum/initSettingObject').iniSettingObject
-const e_articleStatus=require('../../constant/enum/mongo').ArticleStatus.DB
-const e_impeachStatus=require('../../constant/enum/mongo').ImpeachStatus.DB
-const e_impeachType=require('../../constant/enum/mongo').ImpeachType.DB
-const e_referenceColl=require('../../constant/enum/mongo').ImpeachImageReferenceColl.DB
+const e_env=nodeEnum.Env
+// const e_docStatus=mongoEnum.DocStatus.DB
+const e_penalizeType=mongoEnum.PenalizeType.DB
+const e_penalizeSubType=mongoEnum.PenalizeSubType.DB
+// const e_iniSettingObject=require('../../constant/enum/initSettingObject').iniSettingObject
+// const e_articleStatus=mongoEnum.ArticleStatus.DB
+const e_impeachStatus=mongoEnum.ImpeachStatus.DB
+const e_impeachType=mongoEnum.ImpeachType.DB
+// const e_referenceColl=mongoEnum.ImpeachImageReferenceColl.DB
 
-const e_fileSizeUnit=require('../../constant/enum/node_runtime').FileSizeUnit
+// const e_fileSizeUnit=require('../../constant/enum/node_runtime').FileSizeUnit
 
-const currentEnv=require('../../constant/config/appSetting').currentEnv
-const uploadFileDefine=require('../../constant/config/globalConfiguration').uploadFileDefine
+const currentEnv=server_common_file_require.appSetting.currentEnv
+// const uploadFileDefine=require('../../constant/config/globalConfiguration').uploadFileDefine
 
-const e_dbModel=require('../../model/mongo/dbModel')
-const fkConfig=require('../../model/mongo/fkConfig').fkConfig
+const e_dbModel=require('../../constant/genEnum/dbModel')
+const fkConfig=server_common_file_require.fkConfig
 
-const e_coll=require('../../constant/enum/DB_Coll').Coll
-const e_field=require('../../constant/enum/DB_field').Field
-const e_internal_field=require('../../constant/enum/DB_internal_field').Field
-const e_uniqueField=require('../../constant/enum/DB_uniqueField').UniqueField
+const e_coll=require('../../constant/genEnum/DB_Coll').Coll
+const e_field=require('../../constant/genEnum/DB_field').Field
+// const e_internal_field=require('../../constant/enum/DB_internal_field').Field
+const e_uniqueField=require('../../constant/genEnum/DB_uniqueField').UniqueField
+// const e_chineseName=require('../../constant/genEnum/inputRule_field_chineseName').ChineseName
 // const e_inputFieldCheckType=require('../../constant/enum/node').InputFieldCheckType
 
-const helper=require('../helper')
-const common_operation_model=require('../../model/mongo/operation/common_operation_model')
-const hash=require('../../function/assist/crypt').hash
+const controllerHelper=server_common_file_require.controllerHelper
+const common_operation_model=server_common_file_require.common_operation_model
+// const hash=require('../../function/assist/crypt').hash
 
-const misc=require('../../function/assist/misc')
+const misc=server_common_file_require.misc
 // const checkRobot_async=require('../../function/assist/checkRobot').checkRobot_async
 
 
-const sanityHtml=require('../../function/assist/sanityHtml').sanityHtml
+const sanityHtml=server_common_file_require.sanityHtml
 /*const generateRandomString=require('../../function/assist/misc').generateRandomString
 const sendVerificationCodeByEmail_async=require('../../function/assist/misc').sendVerificationCodeByEmail_async
 const ifUserLogin=require('../../function/assist/misc').ifUserLogin*/
 
-const dataConvert=require('../dataConvert')
-const validateCreateRecorderValue=require('../../function/validateInput/validateValue').validateCreateRecorderValue
+const dataConvert=server_common_file_require.dataConvert
+/*const validateCreateRecorderValue=require('../../function/validateInput/validateValue').validateCreateRecorderValue
 const validateUpdateRecorderValue=require('../../function/validateInput/validateValue').validateUpdateRecorderValue
-const validateCURecordInfoFormat=require('../../function/validateInput/validateFormat').validateCURecordInfoFormat
+const validateCURecordInfoFormat=require('../../function/validateInput/validateFormat').validateCURecordInfoFormat*/
 // const browserInputRule=require('../../constant/inputRule/browserInputRule').browserInputRule
 const internalInputRule=require('../../constant/inputRule/internalInputRule').internalInputRule
 const inputRule=require('../../constant/inputRule/inputRule').inputRule
-const e_fieldChineseName=require('../../constant/enum/inputRule_field_chineseName').ChineseName
+const e_fieldChineseName=require('../../constant/genEnum/inputRule_field_chineseName').ChineseName
 
 
-const mongoError=require('../../constant/error/mongo/mongoError').error
+// const mongoError=server_common_file_require.mongoError.error
 
-const regex=require('../../constant/regex/regex').regex
+// const regex=server_common_file_require.regex
 
-const maxNumber=require('../../constant/config/globalConfiguration').maxNumber
-const miscConfiguration=require('../../constant/config/globalConfiguration').miscConfiguration
 
-const mailAccount=require('../../constant/config/globalConfiguration').mailAccount
 
-/*          create article              */
-// const checkUserState=require('../')
-/*         upload user photo         */
-const gmImage=require('../../function/assist/gmImage')
-// const userPhotoConfiguration=require('../../constant/config/globalConfiguration').uploadFileDefine.user_thumb
-const e_gmGetter=require('../../constant/enum/node_runtime').GmGetter
-const e_gmCommand=require('../../constant/enum/node_runtime').GmCommand
-const uploadFile=require('../../function/assist/upload')
-
-/*         generate captcha         */
-const captchaIntervalConfiguration=require('../../constant/config/globalConfiguration').intervalCheckConfiguration.captcha
 
 
 const controllerError={
@@ -124,7 +121,7 @@ async function impeachComment_dispatcher_async(req){
     //检查格式
     let tmpResult,collConfig={},collImageConfig={}
     //checkMethod只检测req的结构，以及req中method的格式和值，以便后续可以直接根据method进行调用
-    tmpResult=helper.checkMethod({req:req})
+    tmpResult=controllerHelper.checkMethod({req:req})
     if(tmpResult.rc>0){
         return Promise.reject(tmpResult)
     }
@@ -152,7 +149,8 @@ async function impeachComment_dispatcher_async(req){
                 fkFieldName:e_field.IMPEACH.IMPEACH_IMAGES_ID,//coll中，存储图片objectId的字段名
                 contentFieldName:e_field.IMPEACH.CONTENT, //coll中，存储内容的字段名
             }
-            tmpResult=await helper.preCheck_async({req:req,collName:collConfig.collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
+            tmpResult=await controllerHelper.preCheck_async({req:req,collName:collConfig.collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
+	    //tmpResult=await controllerHelper.preCheck_async({req:req,collName:collConfig.collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart,e_field:e_field,e_coll:e_coll,e_internal_field:e_internal_field,maxSearchKeyNum:maxSearchKeyNum,maxSearchPageNum:maxSearchPageNum})
             // tmpResult=await createContent_async({req:req,collConfig:collConfig,collImageConfig:collImageConfig})
             tmpResult=await createContent_async({req:req,collConfig:collConfig})
             break;
@@ -189,7 +187,8 @@ async function impeachComment_dispatcher_async(req){
             }
             expectedPart=[e_part.RECORD_INFO,e_part.RECORD_ID]
 
-            tmpResult=await helper.preCheck_async({req:req,collName:collConfig.collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
+            tmpResult=await controllerHelper.preCheck_async({req:req,collName:collConfig.collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
+	    //tmpResult=await controllerHelper.preCheck_async({req:req,collName:collConfig.collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart,e_field:e_field,e_coll:e_coll,e_internal_field:e_internal_field,maxSearchKeyNum:maxSearchKeyNum,maxSearchPageNum:maxSearchPageNum})
 // console.log(`collImageConfig======>${JSON.stringify(collImageConfig)}`)
 
 
@@ -232,12 +231,12 @@ async  function createContent_async({req,collConfig}){
     if(undefined!==docValue[contentFieldName]){
         let content=docValue[contentFieldName]
         //XSS检查
-        await helper.contentXSSCheck_async({content:content,error:controllerError.contentSanityFailed})
+        await controllerHelper.contentXSSCheck_async({content:content,error:controllerError.contentSanityFailed})
         //content中图片和db中的图片比较，决定是否要删除content中DOM，以及是否要删除db中的记录
         /*
         create中因为没有recordId，所以无法执行contentDbDeleteNotExistImage_async
         同时，create中content为初始化内容，无image，也不必要执行contentDbDeleteNotExistImage_async
-        docValue[contentFieldName]=await helper.contentDbDeleteNotExistImage_async({content:content,recordId:recordId,collConfig:collConfig,collImageConfig:collImageConfig})
+        docValue[contentFieldName]=await controllerHelper.contentDbDeleteNotExistImage_async({content:content,recordId:recordId,collConfig:collConfig,collImageConfig:collImageConfig})
         */
     }
 // console.log(`contentXSSCheck_async done`)
@@ -288,7 +287,7 @@ async  function createContent_async({req,collConfig}){
 // console.log(`impeached user id=======>${JSON.stringify(internalValue[e_field.IMPEACH.IMPEACHED_USER_ID])}`)
 
     if(e_env.DEV===currentEnv && Object.keys(internalValue).length>0){
-        let tmpResult=helper.checkInternalValue({internalValue:internalValue,collInputRule:inputRule[collName],collInternalRule:internalInputRule[collName]})
+        let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInputRule:inputRule[collName],collInternalRule:internalInputRule[collName]})
 // console.log(`internalValue check result====>   ${JSON.stringify(tmpResult)}`)
         if(tmpResult.rc>0){
             return Promise.reject(tmpResult)
@@ -298,11 +297,12 @@ async  function createContent_async({req,collConfig}){
 // console.log(`after internal check =======>${JSON.stringify(docValue)}`)
 
     /*              检查外键字段的值是否存在(fkConfig中存在的)                */
-    await helper.ifFkValueExist_async({docValue:docValue,collFkConfig:fkConfig[collName],collFieldChineseName:e_fieldChineseName[collName]})
+    await controllerHelper.ifFkValueExist_async({docValue:docValue,collFkConfig:fkConfig[collName],collFieldChineseName:e_fieldChineseName[collName]})
 
      /*              如果有unique字段，需要预先检查unique(express级别，而不是mongoose级别)            */
     if(undefined!==e_uniqueField[collName] && e_uniqueField[collName].length>0) {
-        await helper.ifFiledInDocValueUnique_async({collName: collName, docValue: docValue})
+        await controllerHelper.ifFiledInDocValueUnique_async({collName: collName, docValue: docValue})
+	//await controllerHelper.ifFiledInDocValueUnique_async({collName: collName, docValue: docValue,e_uniqueField:e_uniqueField,e_chineseName:e_chineseName})
     }
 
     //new article插入db
@@ -365,7 +365,7 @@ async function updateContent_async({req,collConfig,collImageConfig}){
 
 
     /*              检查外键字段的值是否存在                */
-    await helper.ifFkValueExist_async({docValue:docValue,collFkConfig:fkConfig[collName],collFieldChineseName:e_fieldChineseName[collName]})
+    await controllerHelper.ifFkValueExist_async({docValue:docValue,collFkConfig:fkConfig[collName],collFieldChineseName:e_fieldChineseName[collName]})
 
     /*              XSS检测                                 */
     let xssFields=[e_field.IMPEACH.TITLE,e_field.IMPEACH.CONTENT]
@@ -382,7 +382,7 @@ async function updateContent_async({req,collConfig,collImageConfig}){
     //1. 如果content存在
     // 1.2 其中包含的图片是否已经被删除，删除的话，需要同时在磁盘上删除对应的文件，以便节省空间
     if(undefined!==docValue[e_field.IMPEACH.CONTENT]){
-        docValue[e_field.IMPEACH.CONTENT]=await helper.contentDbDeleteNotExistImage_async({
+        docValue[e_field.IMPEACH.CONTENT]=await controllerHelper.contentDbDeleteNotExistImage_async({
             content:docValue[e_field.ARTICLE.HTML_CONTENT],
             recordId:impeachId,
             collConfig:collConfig,
@@ -397,7 +397,7 @@ async function updateContent_async({req,collConfig,collImageConfig}){
         internalValue[e_field.ARTICLE.TAGS_ID]=docValue[e_field.ARTICLE.TAGS_ID]
     }*/
     if(e_env.DEV===currentEnv && Object.keys(internalValue).length>0){
-        let tmpResult=helper.checkInternalValue({internalValue:internalValue,collInputRule:inputRule[collName],collInternalRule:internalInputRule[e_coll.ARTICLE]})
+        let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInputRule:inputRule[collName],collInternalRule:internalInputRule[e_coll.ARTICLE]})
         if(tmpResult.rc>0){
             return Promise.reject(tmpResult)
         }
@@ -408,7 +408,7 @@ async function updateContent_async({req,collConfig,collImageConfig}){
 
     /*              如果有unique字段，需要预先检查unique(express级别，而不是mongoose级别)            */
     if(undefined!==e_uniqueField[collName] && e_uniqueField[collName].length>0) {
-        await helper.ifFiledInDocValueUnique_async({collName: collName, docValue: docValue})
+        await controllerHelper.ifFiledInDocValueUnique_async({collName: collName, docValue: docValue})
     }
 
     /*              更新数据            */

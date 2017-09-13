@@ -11,7 +11,7 @@ const regex=require('../../../regex/regex').regex
 
 
 /*        field有enum才需要require        */
-const mongoEnum=require('../../../enum/mongo')
+const mongoEnum=require('../../../enum/mongoEnum')
 /*              获得 某些设置值            */
 const maxNumber=require('../../../config/globalConfiguration').maxNumber
 

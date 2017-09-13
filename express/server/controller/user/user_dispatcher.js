@@ -9,15 +9,24 @@
 
 
 
-const fs=require('fs')
+// const fs=require('fs')
+//const maxSearchKeyNum=require('../../constant/config/globalConfiguration').searchSetting.maxKeyNum
+//const maxSearchPageNum=require('../../constant/config/globalConfiguration').searchMaxPage.readName
 
-const e_userState=require('../../constant/enum/node').UserState
-const e_part=require('../../constant/enum/node').ValidatePart
-const e_method=require('../../constant/enum/node').Method
-const e_randomStringType=require('../../constant/enum/node').RandomStringType
+// const e_dbModel=require('../../constant/genEnum/dbModel')
+
+
+const server_common_file_include=require('../../../server_common_file_require')
+
+const nodeEnum=server_common_file_include.nodeEnum
+const controllerHelper=server_common_file_include.controllerHelper
+// const e_userState=require('../../constant/enum/node').UserState
+const e_part=nodeEnum.ValidatePart
+const e_method=nodeEnum.Method//require('../../constant/enum/node').Method
+// const e_randomStringType=require('../../constant/enum/node').RandomStringType
 // const e_method=require('../../constant/enum/node').Method
 
-const e_iniSettingObject=require('../../constant/enum/initSettingObject').iniSettingObject
+/*const e_iniSettingObject=require('../../constant/enum/initSettingObject').iniSettingObject
 
 const e_hashType=require('../../constant/enum/node_runtime').HashType
 
@@ -26,22 +35,23 @@ const e_docStatus=require('../../constant/enum/mongo').DocStatus.DB
 const e_accountType=require('../../constant/enum/mongo').AccountType.DB
 const e_storePathUsage=require('../../constant/enum/mongo').StorePathUsage.DB
 const e_resourceType=require('../../constant/enum/mongo').ResourceRange
-const currentEnv=require('../../constant/config/appSetting').currentEnv
+const currentEnv=require('../../constant/config/appSetting').currentEnv*/
 
-const dbModel=require('../../model/mongo/dbModel')
-const fkConfig=require('../../model/mongo/fkConfig').fkConfig
 
-const e_coll=require('../../constant/enum/DB_Coll').Coll
-const e_field=require('../../constant/enum/DB_field').Field
+// const fkConfig=require('../../model/mongo/fkConfig').fkConfig
+const e_coll=require('../../constant/genEnum/DB_Coll').Coll
+/*const e_coll=require('../../constant/genEnum/DB_Coll').Coll
+const e_field=require('../../constant/genEnum/DB_field').Field
+const e_internal_field=require('../../constant/genEnum/DB_internal_field').Field
 const e_uniqueField=require('../../constant/enum/DB_uniqueField').UniqueField
-const e_fileSizeUnit=require('../../constant/enum/node_runtime').FileSizeUnit
+const e_fileSizeUnit=require('../../constant/enum/node_runtime').FileSizeUnit*/
 // const e_inputFieldCheckType=require('../../constant/enum/node').InputFieldCheckType
 
 
-const e_storePatUsage=require('../../constant/enum/mongo').StorePathUsage.DB
+// const e_storePatUsage=require('../../constant/enum/mongo').StorePathUsage.DB
 
-const helper=require('../helper')
-const common_operation_model=require('../../model/mongo/operation/common_operation_model')
+// const controllerHelper=server_common_file_include.controllerHelper
+/*const common_operation_model=require('../../model/mongo/operation/common_operation_model')
 const common_operation_document=require('../../model/mongo/operation/common_operation_document')
 const hash=require('../../function/assist/crypt').hash
 const generateRandomString=require('../../function/assist/misc').generateRandomString
@@ -71,19 +81,19 @@ const mailAccount=require('../../constant/config/globalConfiguration').mailAccou
 
 
 const mongoConfiguration=require('../../model/mongo/common/configuration')
-/*         upload user photo         */
+/!*         upload user photo         *!/
 const gmImage=require('../../function/assist/gmImage')
 const userPhotoConfiguration=require('../../constant/config/globalConfiguration').uploadFileDefine.user_thumb
 const e_gmGetter=require('../../constant/enum/node_runtime').GmGetter
 const e_gmCommand=require('../../constant/enum/node_runtime').GmCommand
 const uploadFile=require('../../function/assist/upload')
 
-/*         generate captcha         */
+/!*         generate captcha         *!/
 const captchaIntervalConfiguration=require('../../constant/config/globalConfiguration').intervalCheckConfiguration.captcha
 
 
-const handleSystemError=require('../../function/assist/system').handleSystemError
-const systemError=require('../../constant/error/systemError').systemError
+const handleSystemError=require('../../function/assist/system').handleSystemError*/
+// const systemError=require('../../constant/error/systemError').systemError
 
 const createUser_async=require('./user_logic/create_user').createUser_async
 const updateUser_async=require('./user_logic/update_user').updateUser_async
@@ -91,13 +101,13 @@ const userLogin_async=require('./user_logic/user_login').login_async
 //对CRUD（输入参数带有method）操作调用对应的函数
 async function dispatcher_async(req){
     //检查格式
-    // console.log(`req is ${JSON.stringify(req.cookies)}`)
-    console.log(`dispatcher in`)
+    // console.log(`req is ${JSON.stringify(req.body)}`)
+    // console.log(`dispatcher in`)
     // console.log(`req.body.values ${JSON.stringify(req.body.values)}`)
     let collName=e_coll.USER,tmpResult
 
     //dispatcher只检测req的结构，以及req中method的格式和值，以便后续可以直接根据method进行调用
-    tmpResult=helper.checkMethod({req:req})
+    tmpResult=controllerHelper.checkMethod({req:req})
     if(tmpResult.rc>0){
         return Promise.reject(tmpResult)
     }
@@ -123,7 +133,8 @@ async function dispatcher_async(req){
             }
             expectedPart=[e_part.RECORD_INFO]
             // console.log(`before precheck done=====.`)
-            await helper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
+            await controllerHelper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
+	    //await helper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart,e_field:e_field,e_coll:e_coll,e_internal_field:e_internal_field,maxSearchKeyNum:maxSearchKeyNum,maxSearchPageNum:maxSearchPageNum})
 // console.log(`precheck done=====.`)
 
             tmpResult=await createUser_async(req)
@@ -143,8 +154,9 @@ async function dispatcher_async(req){
             }
             expectedPart=[e_part.RECORD_INFO]
             // console.log(`before precheck done=====.`)
-            await helper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
-            // console.log(`req.session indisp ${JSON.stringify(req.session)}`)
+            await controllerHelper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
+	    //await helper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart,e_field:e_field,e_coll:e_coll,e_internal_field:e_internal_field,maxSearchKeyNum:maxSearchKeyNum,maxSearchPageNum:maxSearchPageNum})
+         //    console.log(`req.session indisp ${JSON.stringify(req.session)}`)
             tmpResult=await updateUser_async(req)
             break;
         case e_method.DELETE: //delete
@@ -161,7 +173,8 @@ async function dispatcher_async(req){
             }
             expectedPart=[e_part.RECORD_INFO]
             // console.log(`before precheck done=====.`)
-            await helper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
+            await controllerHelper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
+	    //await helper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart,e_field:e_field,e_coll:e_coll,e_internal_field:e_internal_field,maxSearchKeyNum:maxSearchKeyNum,maxSearchPageNum:maxSearchPageNum})
             tmpResult=await userLogin_async(req)
             break;
         default:

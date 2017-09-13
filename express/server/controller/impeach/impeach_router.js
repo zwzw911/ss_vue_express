@@ -9,16 +9,22 @@
 const express = require('express');
 //var app=express()
 const router = express.Router();
-const genFinalReturnResult=require('../../function/assist/misc').genFinalReturnResult
+
+const server_common_file_require=require('../../../server_common_file_require')
+const nodeEnum=server_common_file_require.nodeEnum
+const mongoEnum=server_common_file_require.mongoEnum
+
+const genFinalReturnResult=server_common_file_require.misc.genFinalReturnResult
+
 const impeach_logic=require('./impeach_logic')
 const impeachComment_logic=require('./impeachComment_logic')
 // const article_comment_logic=require('./article_comment_logic')
 const impeach_upload_file_logic=require('./impeach_upload_file_logic')
 // const likeDislike_logic=require('./liekDislike_logic')
-const e_uploadFileType=require('../../constant/enum/node').UploadFileType
-const e_coll=require('../../constant/enum/DB_Coll').Coll
+const e_uploadFileType=nodeEnum.UploadFileType
+const e_coll=require('../../constant/genEnum/DB_Coll').Coll
 
-const e_impeachType=require('../../constant/enum/mongo').ImpeachType.DB
+const e_impeachType=mongoEnum.ImpeachType.DB
 /*        通过method，判断是CRUDM中的那个操作
 *   C: register
 *

@@ -3,33 +3,38 @@
  */
 'use strict'
 
-const common_operation_model=require('../../server/model/mongo/operation/common_operation_model')
-const e_dbModel=require('../../server/model/mongo/dbModel')
+const server_common_file_require=require('../../server_common_file_require')
+const nodeEnum=server_common_file_require.nodeEnum
+const mongoEnum=server_common_file_require.mongoEnum
+const nodeRuntimeEnum=server_common_file_require.nodeRuntimeEnum
 
-const e_part=require('../../server/constant/enum/node').ValidatePart
-const e_method=require('../../server/constant/enum/node').Method
-const e_coll=require('../../server/constant/enum/DB_Coll').Coll
-const e_field=require('../../server/constant/enum/DB_field').Field
-const dbModelInArray=require('../../server/model/mongo/dbModelInArray')
+const common_operation_model=server_common_file_require.common_operation_model
+const e_dbModel=require('../../server/constant/genEnum/dbModel')
 
-const e_hashType=require('../../server/constant/enum/node_runtime').HashType
-const hash=require('../../server/function/assist/crypt').hash
+// const e_part=require('../../server/constant/enum/node').ValidatePart
+// const e_method=require('../../server/constant/enum/node').Method
+const e_coll=require('../../server/constant/genEnum/DB_Coll').Coll
+const e_field=require('../../server/constant/genEnum/DB_field').Field
+const dbModelInArray=require('../../server/constant/genEnum/dbModelInArray')
 
-const e_accountType=require('../../server/constant/enum/mongo').AccountType.DB
-const e_docStatus=require('../../server/constant/enum/mongo').DocStatus.DB
-const e_articleStatus=require('../../server/constant/enum/mongo').ArticleStatus.DB
-const e_impeachType=require('../../server/constant/enum/mongo').ImpeachType.DB
-const e_impeachStatus=require('../../server/constant/enum/mongo').ImpeachStatus.DB
+const e_hashType=nodeRuntimeEnum.HashType
+const hash=server_common_file_require.crypt.hash//require('../../server/function/assist/crypt').hash
 
-const initSettingObject=require('../../server/constant/enum/initSettingObject').iniSettingObject
+const e_accountType=mongoEnum.AccountType.DB
+const e_docStatus=mongoEnum.DocStatus.DB
+const e_articleStatus=mongoEnum.ArticleStatus.DB
+const e_impeachType=mongoEnum.ImpeachType.DB
+const e_impeachStatus=mongoEnum.ImpeachStatus.DB
 
-const regex=require('../../server/constant/regex/regex').regex
+const initSettingObject=require('../../server/constant/genEnum/initSettingObject').iniSettingObject
+
+const regex=server_common_file_require.regex.regex
 
 let tmpResult
 async function deleteUserAndRelatedInfo_async({account}){
     let result=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.user,condition:{account:account}})
     // console.log(`find user result =======>${JSON.stringify(result)}`)
-    if(0===result.rc && result[0]){
+    if(0<result.length){
         let userId=result[0]['id']
         await common_operation_model.deleteOne_returnRecord_async({dbModel:e_dbModel.user,condition:{account:account}})
         await common_operation_model.deleteOne_returnRecord_async({dbModel:e_dbModel.sugar,condition:{userId:userId}})

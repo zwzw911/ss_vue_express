@@ -4,7 +4,7 @@
 const crypto=require('crypto');
 const fs=require('fs');
 
-const error=require('../../../server/constant/error/assistError').crypt
+const error=require('../../constant/error/assistError').crypt
 
 //var async=require=('async');
 

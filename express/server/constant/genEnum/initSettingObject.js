@@ -1,0 +1,52 @@
+/*    gene by server/maintain/generateMongoEnum     */ 
+ 
+    "use strict"
+const iniSettingObject={
+"store_path":{
+"UPLOAD_TMP":{
+"upload_tmp_dir":{
+"id":"599d7fe0cbf0851af8adbc41",
+"path":"H:/ss_vue_express/test_data/tmp/"}
+},
+"USER_PHOTO":{
+"userPhotoStorePath1":{
+"id":"599d7fe0cbf0851af8adbc42",
+"path":"H:/ss_vue_express/test_data/userPhoto/dest/"
+},
+"userPhotoStorePath2":{
+"id":"599d7fe0cbf0851af8adbc43",
+"path":"H:/ss_vue_express/test_data/userPhoto/dest1/"}
+},
+"ARTICLE_INNER_IMAGE":{
+"articleImage1":{
+"id":"599d7fe0cbf0851af8adbc44",
+"path":"H:/ss_vue_express/test_data/article_image/"}
+},
+"ARTICLE_INNER_ATTACHMENT":{
+"articleAttachment1":{
+"id":"599d7fe0cbf0851af8adbc45",
+"path":"H:/ss_vue_express/test_data/article_attachment/"}
+},
+"IMPEACH_IMAGE":{
+"impeachImage1":{
+"id":"599d7fe0cbf0851af8adbc46",
+"path":"H:/ss_vue_express/test_data/impeach_image/"}
+}
+},
+"category":{
+"other":"599d7fe0cbf0851af8adbc47",
+"LTE_A":"599d7fe0cbf0851af8adbc48"
+},
+"resource_profile":{
+"DEFAULT":{
+"普通用户文档资源设定":"599d7fe0cbf0851af8adbc49",
+"普通用户总体资源设定":"599d7fe0cbf0851af8adbc4a",
+"用户举报资源设定":"599d7fe0cbf0851af8adbc4d",
+"用户举报总体资源设定":"599d7fe0cbf0851af8adbc4e"
+},
+"ADVANCED":{
+"升级用户文档资源设定":"599d7fe0cbf0851af8adbc4b",
+"升级用户总体资源设定":"599d7fe0cbf0851af8adbc4c"}}}
+module.exports={
+    iniSettingObject,
+}

@@ -5,8 +5,9 @@
 'use strict'
 /*require("babel-polyfill");
  require("babel-core/register")*/
-const testModule=require('../../../server/function/validateInput/validateFormat');
-const validateFormatError=require('../../../server/constant/error/validateError').validateError.validateFormat
+const server_common_file_require=require('../../../server_common_file_require')
+const testModule=server_common_file_require.validateFormat//require('../../../server/function/validateInput/validateFormat');
+const validateFormatError=server_common_file_require.validateError.validateFormat//require('../../../server/constant/error/validateError').va
 /*          for generateRandomString test       */
 const regex=require('../../../server/constant/regex/regex').regex
 const serverDataType=require('../../../server/constant/enum/inputDataRuleType').ServerDataType
@@ -553,12 +554,12 @@ const validateSearchParamsFormat=function(test){
 
     // let searchSetting=require('../../server/config/global/globalSettingRule').searchSetting
     //let preFunc=testModule.validate._private.checkRuleBaseOnRuleDefine
-    let value, result, tmp
+    let value, result, tmp,maxSearchKeyNum=5
 
 
     //1, no any search fields
     value={}
-    result=func(value,fkAdditionalFieldsConfig,'billType',rules)
+    result=func(value,fkAdditionalFieldsConfig,'billType',rules,maxSearchKeyNum)
     // console.log(`result is ${JSON.stringify(result)}`)
     test.equal(result.rc,0,'search input field zero')
 

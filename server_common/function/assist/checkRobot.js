@@ -5,8 +5,8 @@
  */
 'use strict'
 
-const e_coll=require('../../constant/enum/DB_Coll').Coll
-const e_method=require('../../constant/enum/node').Method
+const e_coll=require('../../constant/genEnum/DB_Coll').Coll
+const e_method=require('../../constant/enum/nodeEnum').Method
 
 /*          检查create article的请求是否为robot发起的
 * return: boolean

@@ -3,20 +3,24 @@
  * 非validate相关的函数
  */
 'use strict'
+
+const fs=require('fs')
+const path=require('path')
+
 const nodeMailer=require('nodemailer')
-const mailOption=require('../../constant/config/globalConfiguration').mailOption
+// const mailOption=require('../../constant/config/globalConfiguration').mailOption
 
 let miscError=require('../../constant/error/assistError').misc
 
 // let gmError=require('../define/error/nodeError').nodeError.assistError.gmImage
 let regex=require('../../constant/regex/regex').regex
 
-let e_randomStringType=require('../../constant/enum/node').RandomStringType
-let e_timeUnit=require('../../constant/enum/node').TimeUnit
+let e_randomStringType=require('../../constant/enum/nodeEnum').RandomStringType
+let e_timeUnit=require('../../constant/enum/nodeEnum').TimeUnit
 let intervalCheck=require('../../constant/config/globalConfiguration').intervalCheck
-let LuaSHA=require('../../constant/define/LuaSHA').LuaSHA
+let LuaSHA=require('../../constant/genEnum/LuaSHA').LuaSHA
 
-let e_userStateEnum=require('../../constant/enum/node').UserState
+let e_userStateEnum=require('../../constant/enum/nodeEnum').UserState
 
 // let redisError=require('../define/error/redisError').redisError
 // let ioredisClient=require('../model/redis/connection/redis_connection').ioredisClient
@@ -28,9 +32,9 @@ let execSHALua=require("../../model/redis/operation/redis_common_operation").exe
 
 let appSetting=require('../../constant/config/appSetting').currentAppSetting
 let currentEnv=require('../../constant/config/appSetting').currentEnv
-let e_env=require('../../constant/enum/node').Env
+let e_env=require('../../constant/enum/nodeEnum').Env
 
-const e_sizeUnit=require('../../constant/enum/node_runtime').FileSizeUnit
+const e_sizeUnit=require('../../constant/enum/nodeRuntimeEnum').FileSizeUnit
 
 const checkInterval_async=async function(req){
     //return new Promise(function(resolve,reject){
@@ -327,7 +331,7 @@ function ifCaptchaValid(captchaValue,captchaValueType){
     return p.test(captchaValue)
 }
 
-function sendVerificationCodeByEmail_async(message){
+function sendVerificationCodeByEmail_async(message,mailOption){
     // console.log(`======in=============`)
     // console.log(`message ${JSON.stringify(message)}`)
     let transporter = nodeMailer.createTransport(mailOption.qq)
@@ -418,6 +422,68 @@ function convertFileSize({num,unit,newUnit}){
 
 }
 
+/*
+ * @absoluteRequireDir: 需要require文件的目录
+ * @skipFileArray: requireDir需要被排除的文件
+ * @absoluteDestFilePath: 最终文件要被写入的文件（路径+文件名）
+ *
+ * return: 返回一个数组，元素是absoluteRequireDir下所有的文件（绝对路径）
+ * */
+
+function recursiveReadFileIntoArray(absoluteRequireDir,resultArray,skipFilesArray){
+    // let baseDir=requireDir
+    let isDir=fs.lstatSync(absoluteRequireDir).isDirectory()
+    if(isDir) {
+        let dirContent = fs.readdirSync(absoluteRequireDir)
+        for(let singleFileDir of dirContent){
+            // console.log(`singleFileDir ${singleFileDir}`)
+            let tmpFileDir=`${absoluteRequireDir}${singleFileDir}`
+            // console.log(`tmpFileDir ${tmpFileDir}`)
+            let isDir=fs.lstatSync(tmpFileDir).isDirectory()
+            let isFile=fs.lstatSync(tmpFileDir).isFile()
+            // console.log(`isDir ${isDir}`)
+            // console.log(`isFile ${isFile}`)
+            if(isDir){
+                // let tmpFileDir=`${absoluteRequireDir}/${singleFileDir}/`
+                // console.log(`isdir ${tmpFileDir}`)
+                recursiveReadFileIntoArray(tmpFileDir+'/',resultArray,skipFilesArray)
+            }
+            //读取到文件名称
+            if(isFile){
+                // console.log(`isfiel ${singleFileDir}`)
+                if(-1===skipFilesArray.indexOf(path.basename(singleFileDir))){
+                    resultArray.push(tmpFileDir)
+                    //判断文件是否在browserInput/internalInput中存在
+                }
+
+            }
+        }
+    }
+}
+
+function recursiveRequireAllFileInDir(filesArray,absoluteDestFilePath) {
+/*    let filesArray=[]
+    recursiveReadFileIntoArray(absoluteRequireDir,filesArray,skipFilesArray)*/
+
+    let description=`/*    gene by ${__filename}     */ \r\n \r\n`
+    let indent=`\ \ \ \ `
+    let useStrict=`"use strict"\r\n`
+    let convertedEnum=`${description}${useStrict}\r\n`
+    let exp=`\r\nmodule.exports={\r\n`
+    if(filesArray.length>0){
+        for(let singleFilePath of filesArray){
+            // console.log(   `singleFilePath:${singleFilePath}`)
+            let baseName=path.basename(singleFilePath).split('.')[0] //不包含扩展名的文件名
+            // console.log(   `baseName:${baseName}`)
+            convertedEnum+=`const ${baseName}=require('${singleFilePath}')\r\n`
+            exp+=`${indent}${baseName},\r\n`
+        }
+    }
+    exp+=`}`
+    let finalContent=`${convertedEnum}${exp}`
+    fs.writeFileSync(absoluteDestFilePath,`${finalContent}`)
+
+}
 
 module.exports={
     checkInterval_async,
@@ -444,5 +510,6 @@ module.exports={
 
     convertFileSize,
 
-
+    recursiveReadFileIntoArray,//递归读取一个目录下所有文件的路径
+    recursiveRequireAllFileInDir,//将数组中所有文件名require到指定文件中
 }

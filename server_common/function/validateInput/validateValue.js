@@ -19,26 +19,26 @@ const genInputError=validateHelper.genInputError
 const valueMatchRuleDefineCheck=validateHelper.valueMatchRuleDefineCheck
 const valueTypeCheck=validateHelper.valueTypeCheck
 
-const validateError=require('../../constant/error/validateError').validateError
+const validateError=require('../../constant/error/validateError')
 const validateValueError=validateError.validateValue
-const validateFormatError=validateError.validateFormat
+// const validateFormatError=validateError.validateFormat
 
 const validEnum=require('../../constant/enum/inputDataRuleType')
 const e_serverDataType=validEnum.ServerDataType
 const e_serverRuleType=validEnum.ServerRuleType
-const  e_validatePart=require('../../constant/enum/node').ValidatePart
-const e_inputFieldCheckType=require('../../constant/enum/node').InputFieldCheckType
-const e_method=require('../../constant/enum/node').Method
+// const  e_validatePart=require('../../constant/enum/nodeEnum').ValidatePart
+const e_inputFieldCheckType=require('../../constant/enum/nodeEnum').InputFieldCheckType
+const e_method=require('../../constant/enum/nodeEnum').Method
 
 const regex=require('../../constant/regex/regex').regex
 
-const e_coll=require('../../constant/enum/DB_Coll').Coll
+const e_coll=require('../../constant/genEnum/DB_Coll').Coll
 
 const searchMaxPage=require('../../constant/config/globalConfiguration').searchMaxPage
 
 const rightResult={rc:0}
 
-const e_eventStatus=require('../../constant/enum/mongo').EventStatus
+const e_eventStatus=require('../../constant/enum/mongoEnum').EventStatus
 // const arr_eventField=require('../../constant/define/node').EVENT_FIELD
 
 /*********************************************/
@@ -146,7 +146,7 @@ function validateCreateRecorderValue(inputValue,collRules){
 }
 /*      update纪录的时候，对输入的值进行检查          */
 function validateUpdateRecorderValue(inputValue,collRules){
-    // console.log(`validateUpdateRecorderValue in ======================>`)
+    //console.log(`validateUpdateRecorderValue in ======================>`)
     return _validateRecorderValue(inputValue,collRules,e_inputFieldCheckType.BASE_INPUT)
 }
 

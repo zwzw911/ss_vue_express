@@ -11,7 +11,7 @@ const mongooseErrorHandler=require('../../../../constant/error/mongo/mongoError'
 //var pageSetting=require('../../config/global/globalSettingRule').pageSetting
 const pagination=require('../../../../function/assist/pagination').pagination
 
-const mongooseOpEnum=require('../../../../constant/enum/node').MongooseOp
+const mongooseOpEnum=require('../../../../constant/enum/nodeEnum').MongooseOp
 
 const updateOptions=require('../../common/configuration').updateOptions
 

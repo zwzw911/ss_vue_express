@@ -12,9 +12,9 @@
 * 不能把object的value当成另外一个object的key（ruleType.require:value是不允许的）
 * */
 //var ruleType=require('../../define/enum/validEnum').enum.ruleType
-const e_coll=require('../enum/DB_Coll').Coll
+const e_coll=require('../genEnum/DB_Coll').Coll
 const e_serverDataType=require('../enum/inputDataRuleType').ServerDataType
-const e_uploadFileType=require('../enum/node').UploadFileType
+const e_uploadFileType=require('../enum/nodeEnum').UploadFileType
 
 const regex=require('../regex/regex').regex
 

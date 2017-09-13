@@ -3,9 +3,8 @@
  */
 'use strict'
 
-const e_coll=require('../../constant/enum/DB_Coll').Coll
-const e_field=require('../../constant/enum/DB_field').Field
-const e_method=require('../../constant/enum/node').Method
+
+const e_method=require('../enum/nodeEnum').Method
 
 const crypt={
     unknownHashType:{rc:40400,msg:`未知hash类型`},
@@ -115,11 +114,7 @@ const awesomeCaptcha={
     unknownCryptType:{rc:40402,msg:`未知加密类型`},
 }
 
-//41000~41100
-let checkRobot={}
-checkRobot[e_coll.ARTICLE]={}
-checkRobot[e_coll.ARTICLE][e_method.CREATE]={rc:41000,msg:{client:`禁止创建新文档`,server:`机器人行为，禁止创建新文档`}}
-checkRobot[e_coll.ARTICLE][e_method.UPDATE]={rc:41002,msg:{client:`禁止修改新文档`,server:`机器人行为，禁止修改新文档`}}
+
 
 
 module.exports={
@@ -129,5 +124,5 @@ module.exports={
     upload,
     shaLua,
     misc,
-    checkRobot,
+
 }

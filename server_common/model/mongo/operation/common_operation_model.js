@@ -12,7 +12,7 @@ const mongooseErrorHandler=require('../../../constant/error/mongo/mongoError').m
 //var pageSetting=require('../../config/global/globalSettingRule').pageSetting
 const pagination=require('../../../function/assist/pagination').pagination
 
-const mongooseOpEnum=require('../../../constant/enum/node').MongooseOp
+const mongooseOpEnum=require('../../../constant/enum/nodeEnum').MongooseOp
 
 const updateOptions=require('../common/configuration').updateOptions
 
@@ -193,12 +193,13 @@ async  function removeAll_async({dbModel}){
 }
 
 async function deleteOne_returnRecord_async({dbModel,condition}){
+    // console.log(`deleteOne_returnRecord_async result in`)
     let result=await dbModel.deleteOne(condition).catch(
         (err)=>{
             return Promise.reject(mongooseErrorHandler(err))
         }
     )
-
+// console.log(`deleteOne_returnRecord_async result ${result}`)
     return Promise.resolve(result)
 }
 

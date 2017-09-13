@@ -6,10 +6,10 @@
 
 const common_operation_model=require('../../model/mongo/operation/common_operation_model')
 
-const e_storePathUsage=require('../../constant/enum/mongo').StorePathUsage.DB
-const e_storePathStatus=require('../../constant/enum/mongo').StorePathStatus.DB
-const e_resourceProfileRange=require('../../constant/enum/mongo').ResourceProfileRange
-const e_resourceProfileType=require('../../constant/enum/mongo').ResourceProfileType
+const e_storePathUsage=require('../../constant/enum/mongoEnum').StorePathUsage.DB
+const e_storePathStatus=require('../../constant/enum/mongoEnum').StorePathStatus.DB
+const e_resourceProfileRange=require('../../constant/enum/mongoEnum').ResourceProfileRange
+const e_resourceProfileType=require('../../constant/enum/mongoEnum').ResourceProfileType
 
 const e_dbModel=require('../../model/mongo/dbModel')
 const e_coll=require('../../constant/enum/DB_Coll').Coll

@@ -3,9 +3,14 @@
  */
 'use strict'
 
-const e_userType=require('../server/constant/enum/mongo').UserType.DB
-const e_accountType=require('../server/constant/enum/mongo').AccountType.DB
-const e_field=require('../server/constant/enum/DB_field').Field
+const server_common_file_require=require('../server_common_file_require')
+// const nodeEnum=server_common_file_require.nodeEnum
+// const nodeRuntimeEnum=server_common_file_require.nodeRuntimeEnum
+const mongoEnum=server_common_file_require.mongoEnum
+
+const e_userType=mongoEnum.UserType.DB
+// const e_accountType=require('../server/constant/enum/mongo').AccountType.DB
+// const e_field=require('../server/constant/enum/DB_field').Field
 
 
 const user={

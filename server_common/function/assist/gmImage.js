@@ -20,8 +20,8 @@ const gm=require('gm')
 /*              错误定义            */
 const imageErrorDefine=require('../../constant/error/assistError').gmImage
 
-const e_gmGetter=require('../../constant/enum/node_runtime').GmGetter
-const e_command=require('../../constant/enum/node_runtime').GmCommand
+const e_gmGetter=require('../../constant/enum/nodeRuntimeEnum').GmGetter
+const e_command=require('../../constant/enum/nodeRuntimeEnum').GmCommand
 
 
 const uploadFileDefine=require('../../constant/config/globalConfiguration').uploadFileDefine

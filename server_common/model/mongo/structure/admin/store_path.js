@@ -80,7 +80,13 @@ const collSchema=new mongoose.Schema(
     mongoSetting.schemaOptions
 )
 
-collSchema.virtual('percentage').get(function(){return ((this.usedSize/this.size)*100).toFixed(0)})
+collSchema.virtual('percentage').get(function(){
+    // console.log(`this.usedSize====${this.usedSize}`)
+    // console.log(`this.size====${this.sizeInKb}`)
+    // console.log(`(this.usedSize/this.size)====${(this.usedSize/this.sizeInKb)}`)
+    // console.log(`(this.usedSize/this.size)*100====${(this.usedSize/this.sizeInKb)*100}`)
+    return ((this.usedSize/this.sizeInKb)*100).toFixed(0)
+})
 /*const departmentSchema=new mongoose.Schema(
     fieldDefine['department'],
     schemaOptions

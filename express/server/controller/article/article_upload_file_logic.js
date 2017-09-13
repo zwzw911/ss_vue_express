@@ -6,87 +6,85 @@
  */
 'use strict'
 
-
-
-
 const fs=require('fs')
 
-const e_userState=require('../../constant/enum/node').UserState
-const e_part=require('../../constant/enum/node').ValidatePart
-const e_method=require('../../constant/enum/node').Method
-const e_randomStringType=require('../../constant/enum/node').RandomStringType
-const e_uploadFileType=require('../../constant/enum/node').UploadFileType
+const server_common_file_include=require('../../../server_common_file_require')
+
+const nodeEnum=server_common_file_include.nodeEnum
+const nodeRuntimeEnum=server_common_file_include.nodeRuntimeEnum
+const mongoEnum=server_common_file_include.mongoEnum
+
+const e_part=nodeEnum.ValidatePart
+const e_method=nodeEnum.Method
+const e_uploadFileType=nodeEnum.UploadFileType
 // const e_method=require('../../constant/enum/node').Method
 
-const e_hashType=require('../../constant/enum/node_runtime').HashType
+const e_hashType=nodeRuntimeEnum.HashType
 
-const e_env=require('../../constant/enum/node').Env
-const e_docStatus=require('../../constant/enum/mongo').DocStatus.DB
-const e_penalizeType=require('../../constant/enum/mongo').PenalizeType.DB
-const e_penalizeSubType=require('../../constant/enum/mongo').PenalizeSubType.DB
-const e_iniSettingObject=require('../../constant/enum/initSettingObject').iniSettingObject
-const e_articleStatus=require('../../constant/enum/mongo').ArticleStatus.DB
-const e_resourceProfileRange=require('../../constant/enum/mongo').ResourceProfileRange.DB
-const e_resourceProfileType=require('../../constant/enum/mongo').ResourceProfileType.DB
-const e_storePathUsage=require('../../constant/enum/mongo').StorePathUsage.DB
+const e_env=nodeEnum.Env
 
-const e_fileSizeUnit=require('../../constant/enum/node_runtime').FileSizeUnit
+const e_penalizeType=mongoEnum.PenalizeType.DB
+const e_penalizeSubType=mongoEnum.PenalizeSubType.DB
+const e_iniSettingObject=require('../../constant/genEnum/initSettingObject').iniSettingObject
+const e_resourceProfileRange=mongoEnum.ResourceProfileRange.DB
+const e_storePathUsage=mongoEnum.StorePathUsage.DB
 
-const currentEnv=require('../../constant/config/appSetting').currentEnv
-const uploadFileDefine=require('../../constant/config/globalConfiguration').uploadFileDefine
+const e_fileSizeUnit=nodeRuntimeEnum.FileSizeUnit
 
-const e_dbModel=require('../../model/mongo/dbModel')
-const fkConfig=require('../../model/mongo/fkConfig').fkConfig
+const currentEnv=server_common_file_include.appSetting.currentEnv
+const uploadFileDefine=server_common_file_include.globalConfiguration.uploadFileDefine
 
-const e_coll=require('../../constant/enum/DB_Coll').Coll
-const e_field=require('../../constant/enum/DB_field').Field
-const e_internal_field=require('../../constant/enum/DB_internal_field').Field
-const e_uniqueField=require('../../constant/enum/DB_uniqueField').UniqueField
+const e_dbModel=require('../../constant/genEnum/dbModel')
+// const fkConfig=server_common_file_include.fkConfig
+
+const e_coll=require('../../constant/genEnum/DB_Coll').Coll
+const e_field=require('../../constant/genEnum/DB_field').Field
+
 // const e_inputFieldCheckType=require('../../constant/enum/node').InputFieldCheckType
 
-const helper=require('../helper')
-const common_operation_model=require('../../model/mongo/operation/common_operation_model')
-const hash=require('../../function/assist/crypt').hash
+const controllerHelper=server_common_file_include.controllerHelper
+const common_operation_model=server_common_file_include.common_operation_model
+const hash=server_common_file_include.crypt.hash//require('../../function/assist/crypt').hash
 
-const misc=require('../../function/assist/misc')
+const misc=server_common_file_include.misc//require('../../function/assist/misc')
 // const checkRobot_async=require('../../function/assist/checkRobot').checkRobot_async
 
 
-const sanityHtml=require('../../function/assist/sanityHtml').sanityHtml
+// const sanityHtml=server_common_file_include.sanityHtml//require('../../function/assist/sanityHtml').sanityHtml
 /*const generateRandomString=require('../../function/assist/misc').generateRandomString
 const sendVerificationCodeByEmail_async=require('../../function/assist/misc').sendVerificationCodeByEmail_async
 const ifUserLogin=require('../../function/assist/misc').ifUserLogin*/
 
-const dataConvert=require('../dataConvert')
-const validateCreateRecorderValue=require('../../function/validateInput/validateValue').validateCreateRecorderValue
-const validateUpdateRecorderValue=require('../../function/validateInput/validateValue').validateUpdateRecorderValue
-const validateCURecordInfoFormat=require('../../function/validateInput/validateFormat').validateCURecordInfoFormat
+const dataConvert=server_common_file_include.dataConvert
+// const validateCreateRecorderValue=require('../../function/validateInput/validateValue').validateCreateRecorderValue
+// const validateUpdateRecorderValue=require('../../function/validateInput/validateValue').validateUpdateRecorderValue
+// const validateCURecordInfoFormat=require('../../function/validateInput/validateFormat').validateCURecordInfoFormat
 // const browserInputRule=require('../../constant/inputRule/browserInputRule').browserInputRule
 const internalInputRule=require('../../constant/inputRule/internalInputRule').internalInputRule
 const inputRule=require('../../constant/inputRule/inputRule').inputRule
-const e_fieldChineseName=require('../../constant/enum/inputRule_field_chineseName').ChineseName
+// const e_fieldChineseName=require('../../constant/enum/inputRule_field_chineseName').ChineseName
 
 
-const mongoError=require('../../constant/error/mongo/mongoError').error
+// const mongoError=server_common_file_include.mongoError//require('../../constant/error/mongo/mongoError').error
 
-const regex=require('../../constant/regex/regex').regex
+// const regex=server_common_file_include.regex//require('../../constant/regex/regex').regex
 
-const maxNumber=require('../../constant/config/globalConfiguration').maxNumber
+/*const maxNumber=require('../../constant/config/globalConfiguration').maxNumber
 const miscConfiguration=require('../../constant/config/globalConfiguration').miscConfiguration
 
-const mailAccount=require('../../constant/config/globalConfiguration').mailAccount
+const mailAccount=require('../../constant/config/globalConfiguration').mailAccount*/
 
 /*          create article              */
 // const checkUserState=require('../')
 /*         upload user photo         */
-const gmImage=require('../../function/assist/gmImage')
+const gmImage=server_common_file_include.gmImage//require('../../function/assist/gmImage')
 // const userPhotoConfiguration=require('../../constant/config/globalConfiguration').uploadFileDefine.user_thumb
-const e_gmGetter=require('../../constant/enum/node_runtime').GmGetter
-const e_gmCommand=require('../../constant/enum/node_runtime').GmCommand
-const uploadFile=require('../../function/assist/upload')
+const e_gmGetter=nodeRuntimeEnum.GmGetter
+/*const e_gmCommand=nodeRuntimeEnum.GmCommand
+const uploadFile=require('../../function/assist/upload')*/
 
 /*         generate captcha         */
-const captchaIntervalConfiguration=require('../../constant/config/globalConfiguration').intervalCheckConfiguration.captcha
+//const captchaIntervalConfiguration=require('../../constant/config/globalConfiguration').intervalCheckConfiguration.captcha
 
 
 const controllerError={
@@ -138,7 +136,7 @@ async function articleUploadFile_dispatch_async({req,type}){
 
 
     //checkMethod只检测req的结构，以及req中method的格式和值，以便后续可以直接根据method进行调用
-    tmpResult=helper.checkMethod({req:req})
+    tmpResult=controllerHelper.checkMethod({req:req})
     if(tmpResult.rc>0){
         return Promise.reject(tmpResult)
     }
@@ -159,7 +157,7 @@ async function articleUploadFile_dispatch_async({req,type}){
                 penalizeCheckError:controllerError.userInPenalizeNoArticleUpdate
             }
             expectedPart=[e_part.RECORD_ID]
-            tmpResult=await helper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
+            tmpResult=await controllerHelper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
             tmpResult=await uploadArticleFile_async({req:req,type:type})
 
 
@@ -210,7 +208,7 @@ async function uploadArticleFile_async({req,type}){
     if(e_uploadFileType.ATTACHMENT===type){
         maxFileSize=uploadFileDefine.article_attachment.maxSizeInByte
     }
-    let uploadResult=await helper.uploadFileToTmpDir_async({req:req, uploadTmpDir:e_iniSettingObject.store_path.UPLOAD_TMP.upload_tmp_dir.path, maxFileSize:maxFileSize,fileSizeUnit:e_fileSizeUnit.MB})
+    let uploadResult=await controllerHelper.uploadFileToTmpDir_async({req:req, uploadTmpDir:e_iniSettingObject.store_path.UPLOAD_TMP.upload_tmp_dir.path, maxFileSize:maxFileSize,fileSizeUnit:e_fileSizeUnit.MB})
     let {originalFilename,path,size}=uploadResult.msg
 
     // console.log(`group start========>`)
@@ -218,8 +216,9 @@ async function uploadArticleFile_async({req,type}){
     let resourceProfileRangeToBeCheck=[e_resourceProfileRange.PER_PERSON,e_resourceProfileRange.PER_ARTICLE]
     //首先检查个人的（范围最大），然后检查article（范围小点的）
     for(let singleResourceProfileRange of resourceProfileRangeToBeCheck){
-        tmpResult=await helper.chooseLastValidResourceProfile_async({resourceProfileRange:singleResourceProfileRange,userId:userId})
-console.log(`chosed profile========>${JSON.stringify(tmpResult)}`)
+	tmpResult=await controllerHelper.chooseLastValidResourceProfile_async({resourceProfileRange:singleResourceProfileRange,userId:userId})
+        //tmpResult=await controllerHelper.chooseLastValidResourceProfile_async({resourceProfileRange:singleResourceProfileRange,userId:userId,e_field:e_field})
+//console.log(`chosed profile========>${JSON.stringify(tmpResult)}`)
         //只有一条记录，要么是default，要么是VIP
         let currentResourceProfile=misc.objectDeepCopy(tmpResult.msg)
         /*              计算当前（每个）资源配置是否还够用               */
@@ -331,13 +330,15 @@ console.log(`group by article result =====>${JSON.stringify(tmpResult)}`)
 
     //获得合适的存储路径，并move文件
     if(e_uploadFileType.IMAGE===type){
-        tmpResult=await helper.chooseStorePath_async({usage:e_storePathUsage.ARTICLE_INNER_IMAGE})
+        tmpResult=await controllerHelper.chooseStorePath_async({usage:e_storePathUsage.ARTICLE_INNER_IMAGE})
+	//tmpResult=await controllerHelper.chooseStorePath_async({usage:e_storePathUsage.ARTICLE_INNER_IMAGE,e_field:e_field})
     }
     if(e_uploadFileType.ATTACHMENT===type){
-        tmpResult=await helper.chooseStorePath_async({usage:e_storePathUsage.ARTICLE_INNER_ATTACHMENT})
+    	tmpResult=await controllerHelper.chooseStorePath_async({usage:e_storePathUsage.ARTICLE_INNER_ATTACHMENT})
+	//tmpResult=await controllerHelper.chooseStorePath_async({usage:e_storePathUsage.ARTICLE_INNER_ATTACHMENT,e_field:e_field})
     }
-    let finalPath=tmpResult.msg.path+finalFileName
-    let pathId=tmpResult.msg._id
+    let finalPath=tmpResult.path+finalFileName
+    let pathId=tmpResult._id
     fs.renameSync(path,finalPath)
 
     /*              内部field value检测                            */
@@ -364,7 +365,7 @@ console.log(`group by article result =====>${JSON.stringify(tmpResult)}`)
     }
 
     if(e_env.DEV===currentEnv){
-        let tmpResult=helper.checkInternalValue({internalValue:internalValue,collInputRule:inputRule[fileCollName],collInternalRule:internalInputRule[fileCollName]})
+        let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInputRule:inputRule[fileCollName],collInternalRule:internalInputRule[fileCollName]})
 // console.log(`internalValue check result====>   ${JSON.stringify(tmpResult)}`)
         if(tmpResult.rc>0){
             return Promise.reject(tmpResult)

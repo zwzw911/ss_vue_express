@@ -1,9 +1,9 @@
 /**
- * Created by wzhan039 on 2017-06-09.
+ * Created by ada on 2017-06-09.
  * 各种类型
  */
 
-    'use strict'
+'use strict'
 
 //input对应的rule(server)
 //ruleType 不能使用 Symbol，因为会在rule定义中将value作为key使用，而Symbol值是不能作为key的。{userName:{require:false}}，此处require必须是字符，而不是Symbol。在checkInput，会使用ruleType[require]作为key，从rule中取得对应的rule定义
@@ -50,8 +50,8 @@ const OtherORuleFiledName={
 
 //input对应的rule(client)，根据server获得，排除（exactLength/Format/eauqlTo): 不在client使用format（正则）
 /*
-* client使用iview的Form进行验证（async-validator），所以无需自定cilentRule了
-* */
+ * client使用iview的Form进行验证（async-validator），所以无需自定cilentRule了
+ * */
 const clientRuleType={
     require:'require',
     maxLength:'maxLength',
@@ -60,8 +60,8 @@ const clientRuleType={
     min:'min',
     max:'max',
     'enum':'enum',
-/*    format:'format',
-    equalTo:'equalTo',*/
+    /*    format:'format',
+     equalTo:'equalTo',*/
 }
 
 //async-validator使用的数据类型
@@ -128,5 +128,3 @@ module.exports={
     serverRuleTypeMatchMongooseRule,
     // validatePart,
 }
-
-

@@ -10,12 +10,15 @@ const request=require('supertest')
 const app=require('../../app')
 const assert=require('assert')
 
-const e_part=require('../../server/constant/enum/node').ValidatePart
-const e_method=require('../../server/constant/enum/node').Method
-const e_field=require('../../server/constant/enum/DB_field').Field
-const e_coll=require('../../server/constant/enum/DB_Coll').Coll
+const server_common_file_require=require('../../server_common_file_require')
+const nodeEnum=server_common_file_require.nodeEnum
 
-const objectDeepCopy=require('../../server/function/assist/misc').objectDeepCopy
+const e_part=nodeEnum.ValidatePart
+const e_method=nodeEnum.Method
+const e_field=require('../../server/constant/genEnum/DB_field').Field
+// const e_coll=require('../../server/constant/genEnum/DB_Coll').Coll
+
+const objectDeepCopy=server_common_file_require.misc.objectDeepCopy
 
 const test_helper_db_operate=require('./db_operation_helper')
 
@@ -66,7 +69,7 @@ async function userLogin_returnSess_async({userData}){
                 let parsedRes=JSON.parse(res.text)
                 // console.log(`returnSess ################### ${JSON.stringify(returnSess)}`)
                 assert.deepStrictEqual(parsedRes.rc,0)
-                console.log(`user login result ==================> ${JSON.stringify(parsedRes)}`)
+                // console.log(`user login result ==================> ${JSON.stringify(parsedRes)}`)
                 // done();
                 return resolve(returnSess)
                 // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
