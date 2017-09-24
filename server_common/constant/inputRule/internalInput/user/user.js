@@ -7,7 +7,7 @@
 
 const serverDataType=require('../../../enum/inputDataRuleType').ServerDataType
 const regex=require('../../../regex/regex').regex
-const enumValue=require('../../../../model/mongo/structure/enumValue')
+const enumValue=require('../../../../constant/genEnum//enumValue')
 /*              获得 某些设置值            */
 const maxNumber=require('../../../config/globalConfiguration').maxNumber
 

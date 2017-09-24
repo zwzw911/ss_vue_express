@@ -29,7 +29,7 @@ const assist=require('../../common/assist')
 const collInputRule=Object.assign({},browserInputRule,internalInputRule)
 
 //gene by server/maintain/generateMongoEnum
-const enumValue=require('../enumValue')
+//const enumValue=require('../enumValue')
 /*
 * schema definition
 * 内置validator的定义放在ruleDefine中

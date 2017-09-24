@@ -43,14 +43,26 @@ const UserType={
 }
 const AdminPriorityType={
     DB:{
-        IMPEACH:'0',      //可以处理 举报
-        ASSIGN_IMPEACH:'1',
-        PENALIZE:'2',//处罚普通用户
+        IMPEACH_REVIEW:'1',      //可以处理 举报
+        IMPEACH_ASSIGN:'2',
+        IMPEACH_DEAL:'3',
+
+        CREATE_ADMIN_USER:'10',
+        DELETE_ADMIN_USER:'11',
+
+        PENALIZE_USER:'20',//处罚普通用户
+        REVOKE_PENALIZE:'21',//撤销处罚
     },
     SHOW:{
-        IMPEACH:'举报',
-        ASSIGN_IMPEACH:'分配举报',
-        PENALIZE:'处罚用户',//处罚普通用户
+        IMPEACH_REVIEW:'浏览举报',      //可以浏览所有举报
+        IMPEACH_ASSIGN:'2',             //可以分配 举报 给其他（管理员）处理
+        IMPEACH_DEAL:'3',               //可以处理 季报
+
+        CREATE_ADMIN_USER:'10',         //可以创建新（管理员）
+        DELETE_ADMIN_USER:'11',         //可以删除新（管理员）
+
+        PENALIZE_USER:'20',             //可以处罚普通用户
+        REVOKE_PENALIZE:'21',           //可以撤销处罚
     },
     
 
@@ -155,26 +167,59 @@ const ImpeachType={
 
 }
 
-const ImpeachStatus={
+const ImpeachState={
     DB:{
-        NEW: '0',
-        COMMIT:'1',
-        ACCEPT:'2',
-        ASSIGN:'3',
-        ONGOING:'4',
-        REJECT:'5',
-        DONE:'6',
+        NEW: '1',
+        SUBMIT:'2',
+        ACCEPT:'3',
+        ASSIGN:'4',
+        ONGOING:'5',
+        REJECT:'6',
+        DONE:'7',
+        RECALL:'8',
     },
     SHOW:{
         NEW: '新建',
-        COMMIT:'提交',
+        SUBMIT:'提交',
+        ACCEPT:'接受',
+        ASSIGN:'分配',
+        ONGOING:'处理中',
+        REJECT:'驳回',
+        DONE:'处理完',
+        RECALL:'撤回',
+    },
+}
+
+//发起人和处理人能转换的状态不一致
+const InitiatorImpeachState={
+    DB:{
+        NEW: '1',
+        SUBMIT:'2',
+        RECALL:'8',
+    },
+    SHOW:{
+        NEW: '新建',
+        SUBMIT:'提交',
+        RECALL:'撤回',
+    },
+}
+
+//处理人能选择的状态
+const HandlerImpeachState={
+    DB:{
+        ACCEPT:'3',
+        ASSIGN:'4',
+        ONGOING:'5',
+        REJECT:'6',
+        DONE:'7',
+    },
+    SHOW:{
         ACCEPT:'接受',
         ASSIGN:'分配',
         ONGOING:'处理中',
         REJECT:'驳回',
         DONE:'处理完',
     },
-
 }
 
 //impeach和impeach_commnet共用一个coll记录image，为了区分，需要使用额外字段进行区分
@@ -266,6 +311,8 @@ const ResourceProfileType={
         ADVANCED:'高级资源配置',//对用户起作用
     },
 }
+
+
 module.exports={
     ArticleStatus,
     AdminUserType,
@@ -277,7 +324,9 @@ module.exports={
     PenalizeType,
     PenalizeSubType,
     ImpeachType,
-    ImpeachStatus,
+    ImpeachState,
+    InitiatorImpeachState,
+    HandlerImpeachState,
     ImpeachImageReferenceColl,
     DocStatus,
     AccountType,

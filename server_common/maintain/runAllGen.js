@@ -32,7 +32,11 @@ function _ifParamsDirExist(dirToBeCheckInObject){
 
     return true
 }
-function _genForGeneral_part1(absoluteDestDirForInputRule,absoluteDestDirForEnum,absoluteDestDirForMongoEnumValue,modelCollRootDir,inputRuleBaseDir,mongoEnumDir,skipObject){
+
+/*
+* skipGenMongoEnum:防止express/express_admin生成enumValue（enumValue只有server_common才需要）
+* */
+function _genForGeneral_part1(absoluteDestDirForInputRule,absoluteDestDirForEnum,absoluteDestDirForMongoEnumValue,modelCollRootDir,inputRuleBaseDir,mongoEnumDir,skipObject,skipGenMongoEnum=false){
     // const generateMongoInternalFieldToEnum=require('./generateFunction/generateMongoInternalFieldToEnum').writeFinalResult
 
     let {skipFilesArray,skipCollNameArray}=skipObject
@@ -62,11 +66,14 @@ function _genForGeneral_part1(absoluteDestDirForInputRule,absoluteDestDirForEnum
     const generateMongoUniqueFieldToEnum=require('./generateFunction/generateMongoUniqueFieldToEnum').writeFinalResult
     generateMongoUniqueFieldToEnum(modelCollRootDir,`${absoluteDestDirForEnum}DB_uniqueField.js`,skipFilesArray)
 
-    console.log(`start generateMongoEnum`)
-    // console.log(`mongoEnumDir: ${mongoEnumDir}`)
-    // console.log(`absoluteDestDirForMongoEnumValue: ${absoluteDestDirForMongoEnumValue}`)
-    const generateMongoEnum=require('./generateFunction/generateMongoEnum').writeResult
-    generateMongoEnum(mongoEnumDir,`${absoluteDestDirForMongoEnumValue}enumValue.js`)
+    if(false===skipGenMongoEnum){
+        console.log(`start generateMongoEnum`)
+        // console.log(`mongoEnumDir: ${mongoEnumDir}`)
+        // console.log(`absoluteDestDirForMongoEnumValue: ${absoluteDestDirForMongoEnumValue}`)
+        const generateMongoEnum=require('./generateFunction/generateMongoEnum').writeResult
+        generateMongoEnum(mongoEnumDir,`${absoluteDestDirForMongoEnumValue}enumValue.js`)
+    }
+
 
     console.log(`part1 done`)
 }
@@ -121,7 +128,9 @@ genFroNormal(absoluteDestDirForInputRule,absoluteDestDirForEnum,modelCollRootDir
 
 
 
-
+/*
+ * skipGenMongoEnum:防止express/express_admin生成enumValue（enumValue只有server_common才需要）
+ * */
 function genAllForCommon(absoluteDestDirForInputRule,absoluteDestDirForEnum,absoluteDestDirForMongoEnumValue,modelCollRootDir,inputRuleBaseDir,mongoEnumDir){
     let result=_ifParamsDirExist({
         absoluteDestDirForInputRule:absoluteDestDirForInputRule,
@@ -139,7 +148,8 @@ function genAllForCommon(absoluteDestDirForInputRule,absoluteDestDirForEnum,abso
         skipCollNameArray:[],
     }
 
-    _genForGeneral_part1(absoluteDestDirForInputRule,absoluteDestDirForEnum,absoluteDestDirForMongoEnumValue,modelCollRootDir,inputRuleBaseDir,mongoEnumDir,skipObject)
+    let skipGenMongoEnum=false
+    _genForGeneral_part1(absoluteDestDirForInputRule,absoluteDestDirForEnum,absoluteDestDirForMongoEnumValue,modelCollRootDir,inputRuleBaseDir,mongoEnumDir,skipObject,skipGenMongoEnum)
     _genForGeneral_part2(absoluteDestDirForInputRule,absoluteDestDirForEnum,absoluteDestDirForMongoEnumValue,modelCollRootDir,inputRuleBaseDir,mongoEnumDir,skipObject)
 
 
@@ -162,7 +172,9 @@ function genAllForAdmin(absoluteDestDirForInputRule,absoluteDestDirForEnum,absol
         skipFilesArray:['readme.txt','enumValue.js','sugar.js','user.js'],
         skipCollNameArray:['sugar','user'],
     }
-    _genForGeneral_part1(absoluteDestDirForInputRule,absoluteDestDirForEnum,absoluteDestDirForMongoEnumValue,modelCollRootDir,inputRuleBaseDir,mongoEnumDir,skipObject)
+
+    let skipGenMongoEnum=false
+    _genForGeneral_part1(absoluteDestDirForInputRule,absoluteDestDirForEnum,absoluteDestDirForMongoEnumValue,modelCollRootDir,inputRuleBaseDir,mongoEnumDir,skipObject,skipGenMongoEnum)
     _genForGeneral_part2(absoluteDestDirForInputRule,absoluteDestDirForEnum,absoluteDestDirForMongoEnumValue,modelCollRootDir,inputRuleBaseDir,mongoEnumDir,skipObject)
 }
 
@@ -182,6 +194,8 @@ function genAllForNormal(absoluteDestDirForInputRule,absoluteDestDirForEnum,abso
         skipFilesArray:['readme.txt','enumValue.js','admin_sugar.js','admin_user.js'],
         skipCollNameArray:['admin_sugar','admin_user'],
     }
+
+    let skipGenMongoEnum=false
     _genForGeneral_part1(absoluteDestDirForInputRule,absoluteDestDirForEnum,absoluteDestDirForMongoEnumValue,modelCollRootDir,inputRuleBaseDir,mongoEnumDir,skipObject)
     _genForGeneral_part2(absoluteDestDirForInputRule,absoluteDestDirForEnum,absoluteDestDirForMongoEnumValue,modelCollRootDir,inputRuleBaseDir,mongoEnumDir,skipObject)
 }

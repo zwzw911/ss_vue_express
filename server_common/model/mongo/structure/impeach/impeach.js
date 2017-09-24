@@ -30,7 +30,7 @@ const collInputRule=Object.assign({},browserInputRule,internalInputRule)
 
 
 //gene by server/maintain/generateMongoEnum
-const enumValue=require('../enumValue')
+//const enumValue=require('../enumValue')
 /*
 * schema definition
 * 内置validator的定义放在ruleDefine中
@@ -71,7 +71,7 @@ const collFieldDefine={
     impeachedCommentId:{type:mongoose.Schema.Types.ObjectId,ref:"article_comment"}, //举报的文档评论
     impeachedUserId:{type:mongoose.Schema.Types.ObjectId,ref:"user"}, //
     creatorId:{type:mongoose.Schema.Types.ObjectId,ref:"user"}, //
-    impeachStatus:{type:String,}, //enum:enumValue.ImpeachStatus       enum， 通过setMongooseBuildInValidator从inputRule中获得对应的enum定义
+    // impeachStatus:{type:String,}, //enum:enumValue.ImpeachStatus       enum， 通过setMongooseBuildInValidator从inputRule中获得对应的enum定义
     cDate:{type:Date,default:Date.now},
     // uDate:{type:Date,default:Date.now},
     // dDate:{type:Date},

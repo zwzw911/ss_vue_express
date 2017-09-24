@@ -12,7 +12,8 @@ const regex=require('../../../regex/regex').regex
 
 /*        field有enum才需要require        */
 // const mongoEnum=require('../../../enum/mongo')
-const enumValue=require('../../../../model/mongo/structure/enumValue')
+//const enumValue=require('../../../../model/mongo/structure/enumValue')
+const enumValue=require('../../../../constant/genEnum/enumValue')
 
 /*              获得 某些设置值            */
 const maxNumber=require('../../../config/globalConfiguration').maxNumber
@@ -70,13 +71,13 @@ const impeach= {
         'format': {define: regex.objectId, error: {rc: 10005}, mongoError: {rc: 20005, msg: '处理人必须是objectId'}} //server端使用
     },*/
 
-    impeachStatus: {
+/*    impeachStatus: {
         'chineseName': '文档状态',
         'type': serverDataType.STRING,
         'require': {define: true, error: {rc: 10546}, mongoError: {rc: 20546, msg: '文档状态不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         // 'enum':{define:Object.values(mongoEnum.ImpeachStatus.DB),error:{rc:10548},mongoError:{rc:20548,msg:'文档状态不正确'}},//server端使用
         'enum':{define:enumValue.ImpeachStatus,error:{rc:10548},mongoError:{rc:20548,msg:'文档状态不正确'}},//server端使用
-    },
+    },*/
 
 
 

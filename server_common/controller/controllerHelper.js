@@ -48,6 +48,7 @@ const helperError=require('../constant/error/controller/helperError').helper
 const common_operation_model=require('../model/mongo/operation/common_operation_model')
 
 const checkUserState=require('../function/assist/misc').checkUserState
+const hash=require('../function/assist/crypt').hash
 const checkRobot_async=require('../function/assist/checkRobot').checkRobot_async
 
 const browserInputRule=require('../constant/inputRule/browserInputRule').browserInputRule
@@ -58,6 +59,8 @@ const fkConfig=require('../model/mongo/fkConfig').fkConfig
 
 const e_storePathUsage=require('../constant/enum/mongoEnum').StorePathUsage.DB
 const e_storePathStatus=require('../constant/enum/mongoEnum').StorePathStatus.DB
+
+const e_hashType=require('../constant/enum/nodeRuntimeEnum').HashType
 
 const handleSystemError=require('../function/assist/system').handleSystemError
 const systemError=require('../constant/error/systemError').systemError
@@ -1152,6 +1155,28 @@ async function ifNewFileLeadExceed_async({currentResourceUsage,currentResourcePr
     return Promise.resolve(true)
 }
 
+/*                  根据用户的类型（普通用户，还是管理员用户），生成sugar，并hash输入的密码                        */
+function generateSugarAndhashPassword({ifAdminUser,ifUser,password}){
+    let randomStringLength,hashType
+    //根据用户类型确定参数
+    if(true===ifAdminUser && false===ifUser){
+        randomStringLength=10
+        hashType=e_hashType.SHA512
+    }
+    if(false===ifAdminUser && true===ifUser){
+        randomStringLength=5
+        hashType=e_hashType.SHA1
+    }
+    if(undefined===randomStringLength || undefined===hashType){
+        return helperError.userTypeNotCorrect
+    }
+
+    let sugar=misc.generateRandomString(randomStringLength)
+    let hashedPassword=hash(`${password}${sugar}`,hashType)
+    if(hashedPassword.rc>0){return hashedPassword}
+    return {rc:0,msg:{sugar:sugar,hashedPassword:hashedPassword.msg}}
+}
+
 module.exports= {
     inputCommonCheck,//每个请求进来是，都要进行的操作（时间间隔检查等）
     validatePartValueFormat,
@@ -1190,6 +1215,8 @@ module.exports= {
     calcExistResource_async,//根据resourceProfileRange，resourceProfileType，从预定义的对象中获得对应的fieldName和grougby的设置
     ifResourceStillValid_async, //直接计算（db）中已有的resource是否超出profile的定义
     ifNewFileLeadExceed_async,  //db中已有resource+上传文件，是否超出profile定义
+
+    generateSugarAndhashPassword,//根据用户类型，生成sugar和hash过得密码
 }
 
 

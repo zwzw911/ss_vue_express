@@ -77,7 +77,7 @@ async  function createUser_async(req){
     /*                  添加内部产生的值（sugar && hash password && acountType）                  */
     // console.log(`before hash is ${JSON.stringify(docValue)}`)
     let internalValue={}
-    let sugarLength=5 //1~10
+/*    let sugarLength=5 //1~10
     let sugar=misc.generateRandomString(sugarLength)
 // console.log(`password =======> ${docValue[e_field.USER.PASSWORD]}`)
 // console.log(`sugar =======> ${sugar}`)
@@ -85,8 +85,11 @@ async  function createUser_async(req){
     // console.log(`hash   ${JSON.stringify(tmpResult)}`)
     if(tmpResult.rc>0){
         return Promise.reject(tmpResult)
-    }
-    internalValue[e_field.USER.PASSWORD]=tmpResult.msg
+    }*/
+    let hashResult=controllerHelper.generateSugarAndhashPassword({ifAdminUser:false,ifUser:true,password:docValue[e_field.USER.PASSWORD]})
+    if(hashResult.rc>0){return Promise.reject(hashResult)}
+    let sugar=hashResult.msg['sugar']
+    internalValue[e_field.USER.PASSWORD]=hashResult.msg['hashedPassword']
     internalValue[e_field.USER.DOC_STATUS]=e_docStatus.PENDING
 
 // console.log(`docValue   ${JSON.stringify(docValue)}`)

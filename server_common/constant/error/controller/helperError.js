@@ -29,6 +29,8 @@ const helper={
     /*            uploadFileToTmpDir                        */
     uploadFileNameSanityFail:{rc:50014,msg:{client:'文件名称不正确',server:'uploadFileToTmpDir_async函数中，上传的文件名称没有通过sanity测试，可能包含有害内容'}},
 
+    /*                  generateSugarAndhashPassword                */
+    userTypeNotCorrect:{rc:50016,msg:{client:'用户类型不正确',server:'用户类型不正确，用户只能是管理员或者普通用户类型'}},
 
     /*          unique check            */
     //collName和fieldName都根据constant/enum/DB_uniqueField而来
@@ -115,7 +117,10 @@ const helper={
 
         }
         return {rc:0}
-    }
+    },
+
+
+
 }
 /*admin_user:["name",],
     category:["name",],

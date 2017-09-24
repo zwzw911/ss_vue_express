@@ -6,7 +6,7 @@
 
 //relateBaseDir：最终产生的require文件相对server_common的路径
 let  serverCommonRelateBaseDir='../../server_common/'  //执行脚本相对server_common的路径
-let finalRequireFileRelateDir='../server_common/  //'  //生成的require文件相对xerver_common的路径
+let finalRequireFileRelateDir='../server_common/'  //生成的require文件相对xerver_common的路径
 const requireServerCommon=require(`${serverCommonRelateBaseDir}maintain/requireServerCommon`).requireServerCommon
 
 

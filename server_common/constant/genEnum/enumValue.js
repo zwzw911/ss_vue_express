@@ -4,14 +4,16 @@
 const ArticleStatus=["0","1","2",] 
 const AdminUserType=["0","1",] 
 const UserType=["1",] 
-const AdminPriorityType=["0","1","2",] 
+const AdminPriorityType=["1","2","3","10","11","20","21",] 
 const PublicGroupJoinInRule=["0","1",] 
 const PublicGroupEventType=["0","1","2","3","4","5",] 
 const EventStatus=["0","1","2",] 
 const PenalizeType=["0","1","2","3","4","5",] 
 const PenalizeSubType=["1","2","3","4","9",] 
 const ImpeachType=["0","1",] 
-const ImpeachStatus=["0","1","2","3","4","5","6",] 
+const ImpeachState=["1","2","3","4","5","6","7","8",] 
+const InitiatorImpeachState=["1","2","8",] 
+const HandlerImpeachState=["3","4","5","6","7",] 
 const ImpeachImageReferenceColl=["1","2",] 
 const DocStatus=["1","2","3",] 
 const AccountType=["1","2",] 
@@ -30,7 +32,9 @@ module.exports={
     PenalizeType,
     PenalizeSubType,
     ImpeachType,
-    ImpeachStatus,
+    ImpeachState,
+    InitiatorImpeachState,
+    HandlerImpeachState,
     ImpeachImageReferenceColl,
     DocStatus,
     AccountType,

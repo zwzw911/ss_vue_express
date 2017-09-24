@@ -24,12 +24,12 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-const server_common=require()
-const e_env=require('./server/constant/enum/node').Env
-const currentEnv=require('./server/constant/config/appSetting').currentEnv
+const server_common_file_require=require('./server_common_file_require')
+/*const e_env=require('./server/constant/enum/node').Env
+const currentEnv=require('./server/constant/config/appSetting').currentEnv*/
 
 // console.log(`=============app in=======`)
-const session=require('./server/function/assist/cookieSession')
+const session=server_common_file_require.cookieSession
 session.setSessionDurationInMinute(480) //session duration is 8hours
 // let op=
 app.use(session.getSession())
@@ -88,13 +88,13 @@ app.use(function(req,res,next){
 
 
 /*              require file                */
-const user=require('./server/controller/user/user_router').router
-const article=require('./server/controller/article/article_router').router
-const impeach=require('./server/controller/impeach/impeach_router').router
+const user=require('./server/controller/admin/admin_router').router
+/*const article=require('./server/controller/article/article_router').router
+const impeach=require('./server/controller/impeach/impeach_router').router*/
 
-app.use('/user', user);
-app.use('/article', article);
-app.use('/impeach', impeach);
+app.use('/admin_user', user);
+/*app.use('/article', article);
+app.use('/impeach', impeach);*/
 // app.use('/register/uniqueCheck', register);
 // app.use('/users', users);
 

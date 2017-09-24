@@ -4,6 +4,8 @@
 
 const Field={
     admin_penalize:['creatorId',],
+],
+],
     category:[],
     resource_profile:[],
     store_path:['usedSize','status',],
@@ -23,8 +25,8 @@ const Field={
     impeach:['creatorId','impeachType','impeachedUserId','impeachImagesId','impeachAttachmentsId','impeachCommentsId',],
     impeach_attachment:['name','hashName','authorId','sizeInMb','pathId',],
     impeach_comment:['authorId','impeachImagesId','impeachAttachmentsId',],
-    impeach_dealer:[],
     impeach_image:['name','hashName','pathId','sizeInMb','authorId',],
+    impeach_state:['dealerId','dealerColl',],
     like_dislike_static:['articleId',],
     resource_profile_static:['userId','resourceProfileId','usedFileNum','usedFileSize',],
     sugar:[],

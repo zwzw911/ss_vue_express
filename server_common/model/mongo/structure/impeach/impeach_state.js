@@ -15,11 +15,11 @@ const connectedDb=require('../../common/connection').dbSS;
 //mongoose.Promise = Promise
 const mongoSetting=require('../../common/configuration')
 
-const browserInputRule=require('../../../../constant/inputRule/browserInput/impeach/impeach_dealer').impeach_dealer
-// const internalInputRule=require('../../../../constant/inputRule/internalInput/impeach/im').member_penalize
+const browserInputRule=require('../../../../constant/inputRule/browserInput/impeach/impeach_state').impeach_state
+const internalInputRule=require('../../../../constant/inputRule/internalInput/impeach/impeach_state').impeach_state
 //根据inputRule的rule设置，对mongoose设置内建validator
-// const collInputRule=Object.assign({},browserInputRule,internalInputRule)
-const collInputRule=browserInputRule
+const collInputRule=Object.assign({},browserInputRule,internalInputRule)
+// const collInputRule=browserInputRule
 
 const serverRuleType=require('../../../../constant/enum/inputDataRuleType').ServerRuleType
 
@@ -39,13 +39,15 @@ const assist=require('../../common/assist')
 * */
 
 /*                           department                        */
-const collName='impeach_dealer'
+const collName='impeach_state'
 
 const collFieldDefine={
     impeachId:{type:mongoose.Schema.Types.ObjectId,ref:"impeach"},
-    assignerId:{type:mongoose.Schema.Types.ObjectId,ref:"admin_user"},
-    dealerId:{type:mongoose.Schema.Types.ObjectId,ref:"admin_user"},
-
+    dealerId:{type:mongoose.Schema.Types.ObjectId},     //谁对impeach做出了修改
+    dealerColl:{type:String},   //做出修改的人位于哪个coll（可能是普通用户，也可能是admin）
+    state:{type:String},        //enum
+    ownerId:{type:mongoose.Schema.Types.ObjectId},            //当前impeach需要被谁处理(球在谁的脚下)
+    ownerColl:{type:String},    //处理人是普通还是admin
     cDate:{type:Date,default:Date.now},
     // uDate:{type:Date,default:Date.now},
     // dDate:{type:Date},

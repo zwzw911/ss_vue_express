@@ -156,7 +156,6 @@ const Field={
         IMPEACHED_COMMENT_ID:'impeachedCommentId',
         IMPEACHED_USER_ID:'impeachedUserId',
         CREATOR_ID:'creatorId',
-        IMPEACH_STATUS:'impeachStatus',
     },
     IMPEACH_ATTACHMENT:{
         ID:'id',
@@ -174,12 +173,6 @@ const Field={
         IMPEACH_IMAGES_ID:'impeachImagesId',
         IMPEACH_ATTACHMENTS_ID:'impeachAttachmentsId',
     },
-    IMPEACH_DEALER:{
-        ID:'id',
-        IMPEACH_ID:'impeachId',
-        ASSIGNER_ID:'assignerId',
-        DEALER_ID:'dealerId',
-    },
     IMPEACH_IMAGE:{
         ID:'id',
         NAME:'name',
@@ -189,6 +182,15 @@ const Field={
         REFERENCE_ID:'referenceId',
         REFERENCE_COLL:'referenceColl',
         AUTHOR_ID:'authorId',
+    },
+    IMPEACH_STATE:{
+        ID:'id',
+        IMPEACH_ID:'impeachId',
+        DEALER_ID:'dealerId',
+        DEALER_COLL:'dealerColl',
+        STATE:'state',
+        OWNER_ID:'ownerId',
+        OWNER_COLL:'ownerColl',
     },
     LIKE_DISLIKE_STATIC:{
         ID:'id',

@@ -119,7 +119,6 @@ const ChineseName={
         'content':'举报内容',
         'impeachedArticleId':'举报的文档',
         'impeachedCommentId':'举报的评论',
-        'impeachStatus':'文档状态',
         'creatorId':'举报人',
         'impeachType':'举报的对象',
         'impeachedUserId':'被举报人',
@@ -141,11 +140,6 @@ const ChineseName={
         'impeachImagesId':'评论图片',
         'impeachAttachmentsId':'评论附件',
     },
-    impeach_dealer:{
-        'impeachId':'举报',
-        'assignerId':'分配人',
-        'dealerId':'处理人',
-    },
     impeach_image:{
         'referenceId':'举报对象',
         'referenceColl':'举报对象类型',
@@ -154,6 +148,14 @@ const ChineseName={
         'pathId':'存储路径',
         'sizeInMb':'图片大小',
         'authorId':'图片上传者',
+    },
+    impeach_state:{
+        'impeachId':'举报',
+        'ownerId':'处理人',
+        'ownerColl':'处理人表',
+        'state':'状态',
+        'dealerId':'状态改变人',
+        'dealerColl':'状态改变人表',
     },
     like_dislike_static:{
         'articleId':'文档',

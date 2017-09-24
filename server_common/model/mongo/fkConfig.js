@@ -89,14 +89,14 @@ const fkConfig={
         /*          没有attachment        */
     },
     /*[e_coll.IMPEACH_ATTACHMENT]:{},*/
-    [e_coll.IMPEACH_DEALER]:{
-        [e_field.IMPEACH_DEALER.DEALER_ID]:{
+    [e_coll.IMPEACH_STATE]:{
+/*        [e_field.IMPEACH_STATE.DEALER_ID]:{
             relatedColl:e_coll.ADMIN_USER,forSelect:`${e_field.ADMIN_USER.NAME}`,forSetValue:[e_field.ADMIN_USER.NAME]
         },
-        [e_field.IMPEACH_DEALER.ASSIGNER_ID]:{
+        [e_field.IMPEACH_STATE.OWNER_ID]:{
             relatedColl:e_coll.ADMIN_USER,forSelect:`${e_field.ADMIN_USER.NAME}`,forSetValue:[e_field.ADMIN_USER.NAME]
-        },
-        [e_field.IMPEACH_DEALER.IMPEACH_ID]:{
+        },*/
+        [e_field.IMPEACH_STATE.IMPEACH_ID]:{
             relatedColl:e_coll.IMPEACH,forSelect:`${e_field.IMPEACH.TITLE}`,forSetValue:[e_field.IMPEACH.TITLE]
         },
     },

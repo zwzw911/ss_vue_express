@@ -10,7 +10,7 @@ const error=require('../../constant/error/assistError').crypt
 
 const validHashType=['md5','sha1','sha256','sha512','ripemd160'];
 
-const pemKeyPath=`../../../server/key/key.pem`
+const pemKeyPath=`../../constant/key/key.pem`
 
 const validCryptType=['blowfish','aes192'];
 //hashType放在string后（因为string是必填，而hashTye是可选）

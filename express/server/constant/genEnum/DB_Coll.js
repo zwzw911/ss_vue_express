@@ -26,8 +26,8 @@ const Coll={
     IMPEACH:'impeach',
     IMPEACH_ATTACHMENT:'impeach_attachment',
     IMPEACH_COMMENT:'impeach_comment',
-    IMPEACH_DEALER:'impeach_dealer',
     IMPEACH_IMAGE:'impeach_image',
+    IMPEACH_STATE:'impeach_state',
     /*       static           */
     LIKE_DISLIKE_STATIC:'like_dislike_static',
     RESOURCE_PROFILE_STATIC:'resource_profile_static',

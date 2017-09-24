@@ -11,7 +11,7 @@ const internalInputRule=require('../../../../../server/constant/inputRule/intern
 const collInputRule=Object.assign({},browserInputRule,internalInputRule)
 
 
-const enumValue=require('../../../../../server/constant/enum/mongo')
+const enumValue=require('../../../../../server/constant/genEnum/mongoEnum')
 
 const serverRuleType=require('../../../../../server/constant/enum/inputDataRuleType').ServerRuleType
 

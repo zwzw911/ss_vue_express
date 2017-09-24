@@ -17,7 +17,11 @@ function requireServerCommon(serverCommonRelateBaseDir,absoluteDestFilePath,fina
     let filesArray=[]
 
     let dirArray=[
-        `${serverCommonRelateBaseDir}constant/config/`,`${serverCommonRelateBaseDir}constant/define/`,`${serverCommonRelateBaseDir}constant/enum/`,`${serverCommonRelateBaseDir}constant/error/`,`${serverCommonRelateBaseDir}constant/regex/`,
+        `${serverCommonRelateBaseDir}constant/config/`,
+        `${serverCommonRelateBaseDir}constant/define/`,
+        `${serverCommonRelateBaseDir}constant/enum/`,
+        `${serverCommonRelateBaseDir}constant/error/`,
+        `${serverCommonRelateBaseDir}constant/regex/`,
         `${serverCommonRelateBaseDir}controller/`,
         `${serverCommonRelateBaseDir}function/`,
     ]
@@ -28,11 +32,15 @@ function requireServerCommon(serverCommonRelateBaseDir,absoluteDestFilePath,fina
         recursiveReadFileIntoArray(singleDir,filesArray,skipArray)
     }
 
-    /*              patch; 2个model文件的加入,2个配置文件                 */
+    /*              patch; 2个model+1个配置文件+1个maintain文件                 */
     filesArray.push(`${serverCommonRelateBaseDir}model/mongo/operation/common_operation_model.js`)
     filesArray.push(`${serverCommonRelateBaseDir}model/mongo/operation/common_operation_document.js`)
-    filesArray.push(`${serverCommonRelateBaseDir}model/mongo/enumValue.js`)
+
     filesArray.push(`${serverCommonRelateBaseDir}model/mongo/fkConfig.js`)
+
+    filesArray.push(`${serverCommonRelateBaseDir}maintain/generateFunction/generateMongoEnumKeyValueExchange.js`)
+
+
     //把基于执行脚本的相对路径改成基于最终require文件的相对路径
     let filesArrayToStr=filesArray.join(',')
     // console.log(`filesArrayToStr ${filesArrayToStr}`)

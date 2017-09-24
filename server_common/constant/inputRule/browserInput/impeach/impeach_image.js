@@ -14,7 +14,7 @@ const regex=require('../../../regex/regex').regex
 // const uploadFileDefine=require('../../../config/globalConfiguration').uploadFileDefine
 /*        field有enum才需要require        */
 // const mongoEnum=require('../../../enum/mongo')
-const enumValue=require('../../../../model/mongo/structure/enumValue')
+const enumValue=require('../../../../constant/genEnum//enumValue')
 
 const impeach_image= {
     referenceId: {

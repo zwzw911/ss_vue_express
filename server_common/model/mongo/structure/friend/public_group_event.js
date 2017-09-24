@@ -29,7 +29,7 @@ const assist=require('../../common/assist')
 
 
 //gene by server/maintain/generateMongoEnum
-const enumValue=require('../enumValue')
+// const enumValue=require('../enumValue')
 // console.log(`${JSON.stringify(enumValue)}`)
 /*
 * schema definition

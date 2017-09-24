@@ -4,7 +4,7 @@
 'use strict'
 
 
-const genCollFieldEnum=require('../../server_common/maintain/runAllGen').genAllForNormal()
+const genCollFieldEnum=require('../../server_common/maintain/runAllGen').genAllForNormal
 
 let absoluteDestDirForInputRule=`h:/ss_vue_express/express/server/constant/inputRule/`
 let absoluteDestDirForEnum=`h:/ss_vue_express/express/server/constant/genEnum/`

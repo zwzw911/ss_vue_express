@@ -3,17 +3,18 @@
  * 在正式部署之前，需要预先设定一些值（例如，user_thumb存放路径，文档分类信息等）
  */
 'use strict'
+const server_common_file_require=require('../../server_common_file_require')
+const common_operation_model=server_common_file_require.common_operation_model
 
-const common_operation_model=require('../../model/mongo/operation/common_operation_model')
-
-const e_storePathUsage=require('../../constant/enum/mongoEnum').StorePathUsage
-const e_storePathStatus=require('../../constant/enum/mongoEnum').StorePathStatus
-const e_resourceProfileRange=require('../../constant/enum/mongoEnum').ResourceProfileRange
+const mongoEnum=server_common_file_require.mongoEnum
+const e_storePathUsage=mongoEnum.StorePathUsage
+const e_storePathStatus=mongoEnum.StorePathStatus
+const e_resourceProfileRange=mongoEnum.ResourceProfileRange
 
 const e_dbModel=require('../../constant/genEnum/dbModel')
 const e_coll=require('../../constant/genEnum/DB_Coll').Coll
 const e_field=require('../../constant/genEnum/DB_field').Field
-const generateMongoEnumKeyValueExchange=require('../generateFunction/generateMongoEnumKeyValueExchange').genMongoEnumKVExchange
+const generateMongoEnumKeyValueExchange=server_common_file_require.generateMongoEnumKeyValueExchange
 
 
 const fs=require('fs')

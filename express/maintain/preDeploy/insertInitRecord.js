@@ -4,17 +4,18 @@
  */
 'use strict'
 
-const common_operation_model=require('../../model/mongo/operation/common_operation_model')
+const server_common_file_require=require('../../server_common_file_require')
+const common_operation_model=server_common_file_require.common_operation_model
+const mongoEnum=server_common_file_require.mongoEnum
+const e_storePathUsage=mongoEnum.StorePathUsage.DB
+const e_storePathStatus=mongoEnum.StorePathStatus.DB
+const e_resourceProfileRange=mongoEnum.ResourceProfileRange
+const e_resourceProfileType=mongoEnum.ResourceProfileType
 
-const e_storePathUsage=require('../../constant/enum/mongoEnum').StorePathUsage.DB
-const e_storePathStatus=require('../../constant/enum/mongoEnum').StorePathStatus.DB
-const e_resourceProfileRange=require('../../constant/enum/mongoEnum').ResourceProfileRange
-const e_resourceProfileType=require('../../constant/enum/mongoEnum').ResourceProfileType
-
-const e_dbModel=require('../../model/mongo/dbModel')
-const e_coll=require('../../constant/enum/DB_Coll').Coll
-const e_field=require('../../constant/enum/DB_field').Field
-const generateMongoEnumKeyValueExchange=require('../../maintain/generateMongoEnumKeyValueExchange').genMongoEnumKVExchange
+const e_dbModel=require('../../server/constant/genEnum/dbModel')
+const e_coll=require('../../server/constant/genEnum/DB_Coll').Coll
+const e_field=require('../../server/constant/genEnum/DB_field').Field
+const generateMongoEnumKeyValueExchange=server_common_file_require.generateMongoEnumKeyValueExchange
 
 
 const fs=require('fs')
