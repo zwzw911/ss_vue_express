@@ -40,11 +40,18 @@ const FileSizeUnit={
     MB:'Mi',
     GB:'Gi'
 }
+
+//保存用户信息到session时，那些字段是必须的
+const userInfoMandatoryField={
+    USER_ID:`userId`,
+    COLL_NAME:`collName`,
+    USER_TYPE:`userType`,
+}
 module.exports={
     HashType,
     CryptType,
     GmGetter,
     GmCommand,
     FileSizeUnit,
-
+    userInfoMandatoryField,
 }

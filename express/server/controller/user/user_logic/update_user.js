@@ -17,6 +17,7 @@ const server_common_file_require=require('../../../../server_common_file_require
 const nodeEnum=server_common_file_require.nodeEnum
 const dataConvert=server_common_file_require.dataConvert
 const controllerHelper=server_common_file_require.controllerHelper
+const controllerChecker=server_common_file_require.controllerChecker
 const common_operation_model=server_common_file_require.common_operation_model
 const misc=server_common_file_require.misc
 const miscConfiguration=server_common_file_require.globalConfiguration.misc
@@ -42,14 +43,9 @@ async function updateUser_async(req){
     /*                  要更改的记录的owner是否为发出req的用户本身                            */
     let tmpResult,collName=e_coll.USER
 // console.log()
-    if(undefined===req.session.userId){
-        return Promise.reject(controllerError.notLogin)
-    }
+    let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
+    let userId=userInfo.userId
 
-/*    if(req.session.userId!==userId){
-        return Promise.reject(controllerError.cantUpdateOwnProfile)
-    }*/
-    let userId=req.session.userId
     /*              client数据转换                  */
     let docValue=req.body.values[e_part.RECORD_INFO]
     // console.log(`befreo dataConvert`)
@@ -64,8 +60,8 @@ async function updateUser_async(req){
 
     /*              剔除value没有变化的field            */
 // console.log(`befreo check ${JSON.stringify(docValue)}`)
-    //查找对应的记录（docStatus必须是done）
-    let condition={_id:req.session.userId,docStatus:e_docStatus.DONE}
+    //查找对应的记录（docStatus必须是done且未被删除）
+    let condition={_id:userId,docStatus:e_docStatus.DONE,dDate:{$exists:false}}
     tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.user,condition:condition})
     // console.log(`tmpResult====》 ${JSON.stringify(tmpResult)}`)
     // console.log(`condition====》 ${JSON.stringify(condition)}`)
@@ -111,7 +107,7 @@ async function updateUser_async(req){
     /*              如果有unique字段，需要预先检查unique            */
     if(undefined!==e_uniqueField[collName] && e_uniqueField[collName].length>0) {
 	    let additionalCheckCondition={[e_field.USER.DOC_STATUS]:e_docStatus.DONE}
-        await controllerHelper.ifFiledInDocValueUnique_async({collName: collName, docValue: docValue,additionalCheckCondition:additionalCheckCondition})
+        await controllerChecker.ifFieldInDocValueUnique_async({collName: collName, docValue: docValue,additionalCheckCondition:additionalCheckCondition})
     }
     /*if(undefined!==e_uniqueField[e_coll.USER]) {
      for (let singleFieldName in docValue) {

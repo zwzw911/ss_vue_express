@@ -31,7 +31,7 @@ const correctValue={
     impeachedCommentId:'123456879012345687901234',
     impeachedUserId:'123456879012345687901234',
     creatorId:'123456879012345687901234',
-    impeachStatus:enumValue.ImpeachStatus.DB.ACCEPT,
+    // impeachStatus:enumValue.ImpeachStatus.DB.ACCEPT,
 }
 
 let newDoc=new testModel(correctValue)
@@ -47,7 +47,7 @@ newDoc.save(function(err){
 
 // async function validatePathValue(test){
 const  validatePathValue=function(test){
-    test.expect(28)
+    test.expect(26)
 
     //1 correct value
     generateTestCase({fieldName:undefined,singleRuleName:serverRuleType.REQUIRE,correctValue:correctValue,collInputRule:collInputRule,testModel:testModel,test:test})
@@ -134,12 +134,12 @@ const  validatePathValue=function(test){
     //26 objectId format test
     generateTestCase({fieldName:fieldName,singleRuleName:serverRuleType.FORMAT,correctValue:correctValue,collInputRule:collInputRule,testModel:testModel,test:test})
 
-    /*               impeachStatus                    */
-    fieldName='impeachStatus'
-    //27 require test
-    generateTestCase({fieldName:fieldName,singleRuleName:serverRuleType.REQUIRE,correctValue:correctValue,collInputRule:collInputRule,testModel:testModel,test:test})
-    //28 objectId format test
-    generateTestCase({fieldName:fieldName,singleRuleName:serverRuleType.ENUM,correctValue:correctValue,collInputRule:collInputRule,testModel:testModel,test:test})
+    // /*               impeachStatus                    */
+    // fieldName='impeachStatus'
+    // //27 require test
+    // generateTestCase({fieldName:fieldName,singleRuleName:serverRuleType.REQUIRE,correctValue:correctValue,collInputRule:collInputRule,testModel:testModel,test:test})
+    // //28 objectId format test
+    // generateTestCase({fieldName:fieldName,singleRuleName:serverRuleType.ENUM,correctValue:correctValue,collInputRule:collInputRule,testModel:testModel,test:test})
 
 
 

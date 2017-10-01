@@ -49,20 +49,22 @@ const AdminPriorityType={
 
         CREATE_ADMIN_USER:'10',
         DELETE_ADMIN_USER:'11',
+        UPDATE_ADMIN_USER:'12',
 
         PENALIZE_USER:'20',//处罚普通用户
         REVOKE_PENALIZE:'21',//撤销处罚
     },
     SHOW:{
         IMPEACH_REVIEW:'浏览举报',      //可以浏览所有举报
-        IMPEACH_ASSIGN:'2',             //可以分配 举报 给其他（管理员）处理
-        IMPEACH_DEAL:'3',               //可以处理 季报
+        IMPEACH_ASSIGN:'分配举报',             //可以分配 举报 给其他（管理员）处理
+        IMPEACH_DEAL:'处理举报',               //可以处理 季报
 
-        CREATE_ADMIN_USER:'10',         //可以创建新（管理员）
-        DELETE_ADMIN_USER:'11',         //可以删除新（管理员）
+        CREATE_ADMIN_USER:'创建管理员',         //可以创建新（管理员）
+        DELETE_ADMIN_USER:'删除管理员',         //可以删除新（管理员）
+        UPDATE_ADMIN_USER:'更新管理员',
 
-        PENALIZE_USER:'20',             //可以处罚普通用户
-        REVOKE_PENALIZE:'21',           //可以撤销处罚
+        PENALIZE_USER:'处罚用户',             //可以处罚普通用户
+        REVOKE_PENALIZE:'撤销处罚',           //可以撤销处罚
     },
     
 

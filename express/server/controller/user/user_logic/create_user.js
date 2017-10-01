@@ -22,6 +22,7 @@ const nodeEnum=server_common_file_include.nodeEnum
 /*                      server common：function                                       */
 const dataConvert=server_common_file_include.dataConvert
 const controllerHelper=server_common_file_include.controllerHelper
+const controllerChecker=server_common_file_include.controllerChecker
 const common_operation_model=server_common_file_include.common_operation_model
 const misc=server_common_file_include.misc
 const hash=server_common_file_include.crypt.hash
@@ -54,7 +55,7 @@ async  function createUser_async(req){
     /*      因为name是unique，所以要检查用户名是否存在(unique check)     */
     if(undefined!==e_uniqueField[collName] &&  e_uniqueField[collName].length>0) {
         let additionalCheckCondition={[e_field.USER.DOC_STATUS]:e_docStatus.DONE}
-        await controllerHelper.ifFiledInDocValueUnique_async({collName: collName, docValue: docValue,additionalCheckCondition:additionalCheckCondition})
+        await controllerChecker.ifFieldInDocValueUnique_async({collName: collName, docValue: docValue,additionalCheckCondition:additionalCheckCondition})
     }
 // console.log(`ifFiledInDocValueUnique_async done===>`)
 
@@ -66,7 +67,7 @@ async  function createUser_async(req){
         await common_operation_model.deleteOne_returnRecord_async({dbModel:e_dbModel.user,condition:condition})
         // onsole.log(`docStatusTmpResult ${JSON.stringify(docStatusTmpResult)}`)
         //删除可能的关联记录
-        //sugar
+        //sugarI
         await common_operation_model.deleteOne_returnRecord_async({dbModel:e_dbModel.sugar,condition:{userId:docStatusTmpResult[0][e_field.USER.ID]}})
         // onsole.log(`docStatusTmpResult ${JSON.stringify(docStatusTmpResult)}`)
         //user_friend_group
@@ -86,8 +87,10 @@ async  function createUser_async(req){
     if(tmpResult.rc>0){
         return Promise.reject(tmpResult)
     }*/
-    let hashResult=controllerHelper.generateSugarAndhashPassword({ifAdminUser:false,ifUser:true,password:docValue[e_field.USER.PASSWORD]})
+    // console.log(`password ======> ${JSON.stringify(docValue[e_field.USER.PASSWORD])}`)
+    let hashResult=controllerHelper.generateSugarAndHashPassword({ifAdminUser:false,ifUser:true,password:docValue[e_field.USER.PASSWORD]})
     if(hashResult.rc>0){return Promise.reject(hashResult)}
+    // console.log(`hashresult ======> ${JSON.stringify(hashResult)}`)
     let sugar=hashResult.msg['sugar']
     internalValue[e_field.USER.PASSWORD]=hashResult.msg['hashedPassword']
     internalValue[e_field.USER.DOC_STATUS]=e_docStatus.PENDING

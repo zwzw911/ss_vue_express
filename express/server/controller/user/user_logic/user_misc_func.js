@@ -12,6 +12,8 @@ const browserInputRule=require('../../../constant/inputRule/browserInputRule').b
 
 const server_common_file_require=require('../../../../server_common_file_require')
 const controllerHelper=server_common_file_require.controllerHelper
+const controllerChecker=server_common_file_require.controllerChecker
+
 const dataConvert=server_common_file_require.dataConvert
 
 const nodeEnum=server_common_file_require.nodeEnum
@@ -99,7 +101,7 @@ async  function  uniqueCheck_async(req) {
          condition[e_field.USER.DOC_STATUS]=e_docStatus.DONE
          }*/
         let additionalCheckCondition={[e_field.USER.DOC_STATUS]:e_docStatus.DONE}
-        await controllerHelper.ifFiledInDocValueUnique_async({collName: collName, docValue: docValue,additionalCheckCondition:additionalCheckCondition})
+        await controllerChecker.ifFieldInDocValueUnique_async({collName: collName, docValue: docValue,additionalCheckCondition:additionalCheckCondition})
     }
 
 
@@ -197,11 +199,8 @@ async function retrievePassword_async(req){
 async function uploadPhoto_async(req){
     /*             检查用户是否在更新 自己 的头像           */
     // console.log(`uploadPhoto_async in`)
-    if(undefined===req.session.userId){
-        return Promise.reject(controllerError.notLogin)
-    }
-// console.log(`req.session ====>${JSON.stringify(req.session)}`)
-    let userId=req.session.userId
+    let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
+    let userId=userInfo.userId
     /*    if(req.session.userId!==userId){
      return Promise.reject(controllerError.cantUpdateOwnProfile)
      }*/

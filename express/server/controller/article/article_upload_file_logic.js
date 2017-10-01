@@ -183,7 +183,10 @@ async function articleUploadFile_dispatch_async({req,type}){
 * */
 async function uploadArticleFile_async({req,type}){
     let tmpResult
-    let userId=req.session.userId
+
+    let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
+    let userId=userInfo.userId
+	
     let articleId=req.body.values[e_part.RECORD_ID]
     // let originalArticle
     let collName=e_coll.ARTICLE

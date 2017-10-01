@@ -23,6 +23,9 @@ const Field={
         PASSWORD:'password',
         USER_TYPE:'userType',
         USER_PRIORITY:'userPriority',
+        DOC_STATUS:'docStatus',
+        LAST_SIGN_IN_DATE:'lastSignInDate',
+        LAST_ACCOUNT_UPDATE_DATE:'lastAccountUpdateDate',
     },
     CATEGORY:{
         ID:'id',

@@ -153,14 +153,14 @@ describe('create new article and update, then create new comment: ', async funct
 
     it('correct article', function (done) {
         delete data.values[e_part.RECORD_INFO]
-        console.log(`sess1 ===>${JSON.stringify(sess1)}`)
+        console.log(`user1Sess ===>${JSON.stringify(user1Sess)}`)
         console.log(`data.values ===>${JSON.stringify(data.values)}`)
         data.values[e_part.METHOD] = e_method.CREATE
         console.log(`data.values ===>${JSON.stringify(data.values)}`)
         request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie', [user1Sess]).send(data)
             .end(function (err, res) {
                 // if (err) return done(err);
-                // console.log(`res ios ${JSON.stringify(res)}`)
+                console.log(`res ios ${JSON.stringify(res)}`)
                 let parsedRes = JSON.parse(res.text)
                 console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
                 newArticleId = parsedRes['msg']['_id']

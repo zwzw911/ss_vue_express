@@ -17,7 +17,7 @@ const controllerError={
     accountPasswordNotMatch:{rc:50110,msg:`用户或者密码不正确`},
 
     /*              updateUser_async            */
-    notLogin:{rc:50112,msg:`尚未登录，无法执行用户信息更改`},
+    // notLogin:{rc:50112,msg:`尚未登录，无法执行用户信息更改`},
     cantUpdateOwnProfile:{rc:50114,msg:`只能更改自己的信息`},
     userNotExist:{rc:50116,msg:`用户信息不存在`},//update的时候，无法根据req.session.userId找到对应的记录
     userNoMatchSugar:{rc:50118,msg:`用户信息不完整，请联系管理员`},

@@ -31,8 +31,9 @@ function generateFieldEnum(internalInputRuleFilePath,skipCollNameArray){
                     // console.log(`${singleField.toUpperCase()}:${singleField}`)
                     convertedEnum+=`'${singleField}',`
             }
+            convertedEnum+=`],\r\n`
         }
-        convertedEnum+=`],\r\n`
+
     }
     // fs.unlinkSync(fieldDefinePath)
     return convertedEnum

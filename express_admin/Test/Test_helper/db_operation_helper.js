@@ -45,12 +45,12 @@ async function deleteUserAndRelatedInfo_async({account}){
 
 }
 
-async function deleteAdminUserAndRelatedInfo_async({account}){
-    let result=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.user,condition:{account:account}})
+async function deleteAdminUserAndRelatedInfo_async(userName){
+    let result=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.admin_user,condition:{name:userName}})
     // console.log(`find user result =======>${JSON.stringify(result)}`)
     if(0<result.length){
         let userId=result[0]['id']
-        await common_operation_model.deleteOne_returnRecord_async({dbModel:e_dbModel.admin_user,condition:{account:account}})
+        await common_operation_model.deleteOne_returnRecord_async({dbModel:e_dbModel.admin_user,condition:{name:userName}})
         await common_operation_model.deleteOne_returnRecord_async({dbModel:e_dbModel.admin_sugar,condition:{userId:userId}})
         // await common_operation_model.deleteOne_returnRecord_async({dbModel:e_dbModel.user_friend_group,condition:{userId:userId}})
         // await common_operation_model.deleteOne_returnRecord_async({dbModel:e_dbModel.folder,condition:{authorId:userId}})
@@ -139,6 +139,12 @@ async function getUserId_async({userAccount}) {
     return Promise.resolve(tmpResult[0]['_id'])
 }
 
+async function getAdminUserId_async({userName}) {
+    // console.log(`userName===================================>${JSON.stringify(userName)}`)
+    tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.admin_user,condition:{[e_field.ADMIN_USER.NAME]:userName}})
+    // console.log(`user1Id result===================================>${JSON.stringify(tmpResult)}`)
+    return Promise.resolve(tmpResult[0]['_id'])
+}
 
 module.exports={
     deleteUserAndRelatedInfo_async,
@@ -151,5 +157,5 @@ module.exports={
     // createImageForImpeach_ReturnImageId_async,
     createImageForImpeach_ReturnAllRecord_async,
     getUserId_async,
-
+    getAdminUserId_async,
 }

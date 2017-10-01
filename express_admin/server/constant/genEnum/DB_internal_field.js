@@ -5,7 +5,7 @@
 const Field={
     admin_penalize:['creatorId',],
     admin_sugar:['userId','sugar',],
-    admin_user:['password',],
+    admin_user:['password','docStatus','lastAccountUpdateDate','lastSignInDate',],
     category:[],
     resource_profile:[],
     store_path:['usedSize','status',],
@@ -29,8 +29,6 @@ const Field={
     impeach_state:['dealerId','dealerColl',],
     like_dislike_static:['articleId',],
     resource_profile_static:['userId','resourceProfileId','usedFileNum','usedFileSize',],
-],
-],
     user_resource_profile:[],
     read_article:[],
     user_input_keyword:[],

@@ -64,6 +64,7 @@ const currentEnv=server_common_file_require.appSetting.currentEnv
 // const e_inputFieldCheckType=require('../../constant/enum/node').InputFieldCheckType
 
 const controllerHelper=server_common_file_require.controllerHelper
+const controllerChecker=server_common_file_require.controllerChecker
 const common_operation_model=server_common_file_require.common_operation_model//require('../../model/mongo/operation/common_operation_model')
 // const hash=require('../../function/assist/crypt').hash
 
@@ -193,7 +194,10 @@ async function comment_dispatcher_async(req){
 async function createComment_async(req){
     // console.log(`create comment in =====>`)
     let tmpResult
-    let userId=req.session.userId
+
+    let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
+    let userId=userInfo.userId
+
     // let articleId=req.body.values[e_part.RECORD_ID]
     let collName=e_coll.ARTICLE_COMMENT
     // let originalArticle
@@ -209,7 +213,7 @@ async function createComment_async(req){
 
 
     /*              检查外键字段的值是否存在                */
-    await controllerHelper.ifFkValueExist_async({docValue:docValue,collFkConfig:fkConfig[collName],collFieldChineseName:e_fieldChineseName[collName]})
+    await controllerChecker.ifFkValueExist_async({docValue:docValue,collFkConfig:fkConfig[collName],collFieldChineseName:e_fieldChineseName[collName]})
 
 
 
@@ -229,7 +233,7 @@ async function createComment_async(req){
 // console.log(`combined docValue is ${JSON.stringify(docValue)}`)
     /*              如果有unique字段，需要预先检查unique(express级别，而不是mongoose级别)            */
     if(undefined!==e_uniqueField[collName] && e_uniqueField[collName].length>0) {
-        await controllerHelper.ifFiledInDocValueUnique_async({collName: collName, docValue: docValue})
+        await controllerChecker.ifFieldInDocValueUnique_async({collName: collName, docValue: docValue})
 	//await controllerHelper.ifFiledInDocValueUnique_async({collName: collName, docValue: docValue,e_uniqueField:e_uniqueField,e_chineseName:e_chineseName})
     }
 

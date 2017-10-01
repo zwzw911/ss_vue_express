@@ -29,7 +29,7 @@ const e_penalizeType=mongoEnum.PenalizeType.DB
 const e_penalizeSubType=mongoEnum.PenalizeSubType.DB
 // const e_iniSettingObject=require('../../constant/enum/initSettingObject').iniSettingObject
 // const e_articleStatus=mongoEnum.ArticleStatus.DB
-const e_impeachStatus=mongoEnum.ImpeachStatus.DB
+const e_impeachState=mongoEnum.ImpeachState.DB
 const e_impeachType=mongoEnum.ImpeachType.DB
 // const e_referenceColl=mongoEnum.ImpeachImageReferenceColl.DB
 
@@ -50,6 +50,7 @@ const e_uniqueField=require('../../constant/genEnum/DB_uniqueField').UniqueField
 const e_fieldChineseName=require('../../constant/genEnum/inputRule_field_chineseName').ChineseName
 
 const controllerHelper=server_common_file_require.controllerHelper
+const controllerChecker=server_common_file_require.controllerChecker
 const common_operation_model=server_common_file_require.common_operation_model
 // const hash=require('../../function/assist/crypt').hash
 
@@ -170,7 +171,7 @@ async function impeach_dispatcher_async(req,impeachType){
             let defaultDocValue={}
             defaultDocValue[e_field.IMPEACH.TITLE]={'value':'新举报'}
             defaultDocValue[e_field.IMPEACH.CONTENT]={'value':'对文档/评论的内容进行举报'}
-            defaultDocValue[e_field.IMPEACH.IMPEACH_STATUS]={'value':e_impeachStatus.NEW}
+            // defaultDocValue[e_field.IMPEACH.IMPEACH_STATUS]={'value':e_impeachStatus.NEW}
             //合并defaultDoCValue和client端输入，模拟新建举报的client输入
             if(undefined!==req.body.values[e_part.RECORD_INFO]){
                 Object.assign(req.body.values[e_part.RECORD_INFO],defaultDocValue)
@@ -180,6 +181,8 @@ async function impeach_dispatcher_async(req,impeachType){
                 fkFieldName:e_field.IMPEACH.IMPEACH_IMAGES_ID,//coll中，存储图片objectId的字段名
                 contentFieldName:e_field.IMPEACH.CONTENT, //coll中，存储内容的字段名
             }
+            // console.log(`req.body.values===========>${JSON.stringify(req.body.values)}`)
+            // console.log(`expectedPart===========>${JSON.stringify(expectedPart)}`)
             tmpResult=await controllerHelper.preCheck_async({req:req,collName:collConfig.collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
 	    //tmpResult=await controllerHelper.preCheck_async({req:req,collName:collConfig.collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart,e_field:e_field,e_coll:e_coll,e_internal_field:e_internal_field,maxSearchKeyNum:maxSearchKeyNum,maxSearchPageNum:maxSearchPageNum})
             // tmpResult=await createContent_async({req:req,collConfig:collConfig,collImageConfig:collImageConfig})
@@ -246,10 +249,12 @@ async function impeach_dispatcher_async(req,impeachType){
 * @impeachType: 根据URL指明被举报的是article还是comment，需要加入到internal Field中
 * */
 async  function createContent_async({req,collConfig,impeachType}){
-    let tmpResult,userId,docValue,collName
-    userId=req.session.userId
+    let tmpResult,docValue,collName
+    let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
+    let userId=userInfo.userId
+
     collName=collConfig.collName
-console.log(`createContent_async in with  impeachType====>${impeachType}`)
+// console.log(`createContent_async in with  impeachType====>${impeachType}`)
     /*              检查是否有权（authorize）创建            */
 
 
@@ -287,7 +292,7 @@ console.log(`createContent_async in with  impeachType====>${impeachType}`)
     internalValue[e_field.IMPEACH.IMPEACH_TYPE]=impeachType
 
     internalValue[e_field.IMPEACH.CREATOR_ID]=userId
-    internalValue[e_field.IMPEACH.IMPEACH_STATUS]=e_impeachStatus.NEW //覆盖client端输入，确保字段值是new（防止恶意设置成其他值）
+    // internalValue[e_field.IMPEACH.IMPEACH_STATUS]=e_impeachStatus.NEW //覆盖client端输入，确保字段值是new（防止恶意设置成其他值）
     //根据获得其作者ID
     let impeachedThingId //articleId/comment的id
     let impeachedThingFieldName //impeach中，id位于（article/comment）的那个coll
@@ -333,18 +338,26 @@ console.log(`createContent_async in with  impeachType====>${impeachType}`)
 // console.log(`after internal check =======>${JSON.stringify(docValue)}`)
 
     /*              检查外键字段的值是否存在(fkConfig中存在的)                */
-    await controllerHelper.ifFkValueExist_async({docValue:docValue,collFkConfig:fkConfig[collName],collFieldChineseName:e_fieldChineseName[collName]})
+    await controllerChecker.ifFkValueExist_async({docValue:docValue,collFkConfig:fkConfig[collName],collFieldChineseName:e_fieldChineseName[collName]})
 
      /*              如果有unique字段，需要预先检查unique(express级别，而不是mongoose级别)            */
     if(undefined!==e_uniqueField[collName] && e_uniqueField[collName].length>0) {
-        await controllerHelper.ifFiledInDocValueUnique_async({collName: collName, docValue: docValue})
+        await controllerChecker.ifFieldInDocValueUnique_async({collName: collName, docValue: docValue})
 	//await controllerHelper.ifFiledInDocValueUnique_async({collName: collName, docValue: docValue,e_uniqueField:e_uniqueField,e_chineseName:e_chineseName})
     }
 
-    //new article插入db
+    //new impeach插入db
     tmpResult= await common_operation_model.create_returnRecord_async({dbModel:e_dbModel[collName],value:docValue})
 // console.log(`create result is ====>${JSON.stringify(tmpResult)}`)
 
+    //插入关联数据（impeachState=new）
+    let impeachStateValue={
+        [e_field.IMPEACH_STATE.IMPEACH_ID]:tmpResult['_id'],
+        [e_field.IMPEACH_STATE.OWNER_ID]:userId,
+        [e_field.IMPEACH_STATE.OWNER_COLL]:e_coll.USER,
+        [e_field.IMPEACH_STATE.STATE]:e_impeachState.NEW,
+    }
+    await common_operation_model.create_returnRecord_async({dbModel:e_dbModel.impeach_state,value:impeachStateValue})
     return Promise.resolve({rc:0,msg:tmpResult})
 }
 
@@ -360,17 +373,21 @@ async function updateContent_async({req,collConfig,collImageConfig}){
     // console.log(`update article in========>`)
 
     let tmpResult
-    let userId=req.session.userId
+
+    let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
+    let userId=userInfo.userId
+
     let impeachId=req.body.values[e_part.RECORD_ID]
     let originalDoc
     let collName=collConfig.collName
 
 
 
-    /*              查找id为举报，且作者为userid的记录，找不到说明不是作者，无权修改            */
+    /*              查找id为举报，且作者为userId，且未被标记为删除的举报记录，找不到说明不是作者，无权修改            */
     let condition={}
     condition['_id']=impeachId
     condition[collConfig.ownerFieldName]=userId
+    condition['dDate']={$exists:false}
     tmpResult=await  common_operation_model.find_returnRecords_async({dbModel:e_dbModel[collName],condition:condition})
     if(tmpResult.length!==1){
         return Promise.reject(controllerError.notAuthorized)
@@ -406,7 +423,7 @@ async function updateContent_async({req,collConfig,collImageConfig}){
 
 
     /*              检查外键字段的值是否存在                */
-    await controllerHelper.ifFkValueExist_async({docValue:docValue,collFkConfig:fkConfig[collName],collFieldChineseName:e_fieldChineseName[collName]})
+    await controllerChecker.ifFkValueExist_async({docValue:docValue,collFkConfig:fkConfig[collName],collFieldChineseName:e_fieldChineseName[collName]})
 
     /*              XSS检测                                 */
     let xssFields=[e_field.IMPEACH.TITLE,e_field.IMPEACH.CONTENT]
@@ -449,7 +466,7 @@ async function updateContent_async({req,collConfig,collImageConfig}){
 
     /*              如果有unique字段，需要预先检查unique(express级别，而不是mongoose级别)            */
     if(undefined!==e_uniqueField[collName] && e_uniqueField[collName].length>0) {
-        await controllerHelper.ifFiledInDocValueUnique_async({collName: collName, docValue: docValue})
+        await controllerChecker.ifFieldInDocValueUnique_async({collName: collName, docValue: docValue})
 	//await controllerHelper.ifFiledInDocValueUnique_async({collName: collName, docValue: docValue,e_uniqueField:e_uniqueField,e_chineseName:e_chineseName})
     }
 

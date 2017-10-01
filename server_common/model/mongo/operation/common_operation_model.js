@@ -258,7 +258,7 @@ async function findById_returnRecord_async({dbModel,id,selectedFields='-cDate -u
     let result=await dbModel.findById(id,selectedFields)
         .catch(
         function(err){
-            // console.log(`findbyid errr is ${JSON.stringify(err)}`)
+            console.log(`findbyid errr is ${JSON.stringify(err)}`)
             // console.log(`converted err is ${JSON.stringify(mongooseErrorHandler(mongooseOpEnum.findById,err))}`)
             return Promise.reject(mongooseErrorHandler(err))
         })

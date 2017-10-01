@@ -45,6 +45,7 @@ const e_field=require('../../constant/genEnum/DB_field').Field
 
 
 const controllerHelper=server_common_file_require.controllerHelper
+const controllerChecker=server_common_file_require.controllerChecker
 const common_operation_model=server_common_file_require.common_operation_model
 const hash=server_common_file_require.crypt.hash
 
@@ -210,9 +211,11 @@ async function impeachUploadFile_dispatch_async({req,uploadFileType,forColl}){
  * @forColl： 上传的文件是for impeach还是impeachComment（因为这2者共用处理代码以及同一个coll）
 * */
 async function uploadImpeachFile_async({req,uploadFileType,forColl}) {
-    console.log(   `uploadImpeachFile_async in`)
+    // console.log(   `uploadImpeachFile_async in`)
     let tmpResult
-    let userId = req.session.userId
+    let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
+    let userId=userInfo.userId
+
     let referenceId = req.body.values[e_part.RECORD_ID] //根据refreenceColl决定recordId关联到哪个coll
     // let originalArticle
     let collName = forColl
@@ -271,7 +274,7 @@ async function uploadImpeachFile_async({req,uploadFileType,forColl}) {
         resourceProfile[singleResourceRange]=await controllerHelper.chooseLastValidResourceProfile_async({resourceProfileRange:singleResourceRange,userId:userId})
 	//resourceProfile[singleResourceRange]=await controllerHelper.chooseLastValidResourceProfile_async({resourceProfileRange:singleResourceRange,userId:userId,e_field:e_field})
 
-        await controllerHelper.ifResourceStillValid_async({currentResourceUsage:currentResourceUsage[singleResourceRange],currentResourceProfile:resourceProfile[singleResourceRange],error:{sizeExceed:controllerError.resourceSizeAlreadyExceed,numberExceed:controllerError.resourceNumAlreadyExceed}})
+        await controllerChecker.ifResourceStillValid_async({currentResourceUsage:currentResourceUsage[singleResourceRange],currentResourceProfile:resourceProfile[singleResourceRange],error:{sizeExceed:controllerError.resourceSizeAlreadyExceed,numberExceed:controllerError.resourceNumAlreadyExceed}})
     }
 
     /*              上传文件存储到临时目录                         */
@@ -287,7 +290,7 @@ async function uploadImpeachFile_async({req,uploadFileType,forColl}) {
 
     let fileInfo={size:size,path:path}
     for(let singleResourceRange of resourceProfileRangeToBeCheck){
-        await controllerHelper.ifNewFileLeadExceed_async({currentResourceUsage:currentResourceUsage[singleResourceRange],currentResourceProfile:resourceProfile[singleResourceRange],fileInfo:fileInfo,error:{sizeExceed:controllerError.resourceSizeWillExceed,numberExceed:controllerError.resourceNumWillExceed}})
+        await controllerChecker.ifNewFileLeadExceed_async({currentResourceUsage:currentResourceUsage[singleResourceRange],currentResourceProfile:resourceProfile[singleResourceRange],fileInfo:fileInfo,error:{sizeExceed:controllerError.resourceSizeWillExceed,numberExceed:controllerError.resourceNumWillExceed}})
     }
   
     /*              文件move到永久存储目录                           */
@@ -369,7 +372,7 @@ async function uploadImpeachFile_async({req,uploadFileType,forColl}) {
 
     /*                  外键检查                        */
     //上传文件的所有字段都是内部字段，无client输入的docValue
-    await controllerHelper.ifFkValueExist_async({docValue:internalValue,collFkConfig:fkConfig[fileCollName],collFieldChineseName:e_fieldChineseName[fileCollName]})
+    await controllerChecker.ifFkValueExist_async({docValue:internalValue,collFkConfig:fkConfig[fileCollName],collFieldChineseName:e_fieldChineseName[fileCollName]})
 
 
 

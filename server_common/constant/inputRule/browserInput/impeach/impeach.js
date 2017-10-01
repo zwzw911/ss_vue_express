@@ -37,26 +37,26 @@ const impeach= {
     },
 
 
-
-
-    impeachedArticleId:{
+    impeachedArticleId: {
         'chineseName': '举报的文档',
         'type': serverDataType.OBJECT_ID,
-        'require': {define: false, error: {rc: 10534}, mongoError: {rc: 20534, msg: '举报的文档不能为空'}},//默认为空对象
+        'require': {define: false, error: {rc: 10512}, mongoError: {rc: 20512, msg: '举报的文档不能为空'}},//默认为空对象
         // 'arrayMinLength': {define: 0, error: {rc: 10002}, mongoError: {rc: 20002, msg: '至少设置1个标签'}},
         //'arrayMaxLength': {define: maxNumber.article.imagesNumberPerArticle, error: {rc: 10004}, mongoError: {rc: 20004, msg: `最多插入${maxNumber.article.imagesNumberPerArticle}个图片`}},
-        'format': {define: regex.objectId, error: {rc: 10536}, mongoError: {rc: 20536, msg: '举报的文档必须是objectId'}} //server端使用
+        'format': {define: regex.objectId, error: {rc: 10514}, mongoError: {rc: 20514, msg: '举报的文档必须是objectId'}} //server端使用
     },
 
-    impeachedCommentId:{
+    impeachedCommentId: {
         'chineseName': '举报的评论',
         'type': serverDataType.OBJECT_ID,
-        'require': {define: false, error: {rc: 10538}, mongoError: {rc: 20538, msg: '举报的评论不能为空'}},//默认为空对象
-        // 'arrayMinLength': {define: 0, error: {rc: 10002}, mongoError: {rc: 20002, msg: '至少设置1个标签'}},
-        //'arrayMaxLength': {define: maxNumber.article.imagesNumberPerArticle, error: {rc: 10004}, mongoError: {rc: 20004, msg: `最多插入${maxNumber.article.imagesNumberPerArticle}个图片`}},
-        'format': {define: regex.objectId, error: {rc: 10540}, mongoError: {rc: 20540, msg: '举报的评论必须是objectId'}} //server端使用
-    },
-
+        'require': {
+            define: false, error: {rc: 10516, mongoError: {rc: 20516, msg: '举报的评论不能为空'}},//默认为空对象
+            // 'arrayMinLength': {define: 0, error: {rc: 10002}, mongoError: {rc: 20002, msg: '至少设置1个标签'}},
+            //'arrayMaxLength': {define: maxNumber.article.imagesNumberPerArticle, error: {rc: 10004}, mongoError: {rc: 20004, msg: `最多插入${maxNumber.article.imagesNumberPerArticle}个图片`}},
+            'format': {define: regex.objectId, error: {rc: 10518}, mongoError: {rc: 20518, msg: '举报的评论必须是objectId'}} //server端使用
+        },
+    }
+}
 
 
 
@@ -81,7 +81,7 @@ const impeach= {
 
 
 
-}
+
 
 module.exports={
     impeach

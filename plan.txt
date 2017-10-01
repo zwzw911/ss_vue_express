@@ -59,3 +59,8 @@
 1. 如何在impeach中区分是对article还是comment进行的？============》 使用URL进行区分
 
 1. 更新举报状态的时候，需要根据用户检测上传的状态是否允许（例如，只有管理员能结束举报；只有普通用户能new一个举报等）
+1. 添加API, 记录impeach状态的改变
+2. 添加func，判断enum是否重复=======>done in checker
+3. admin_user: create/update；添加检测priority是否有重复=========》 done
+3. admin_user: create/update；添加检测当前用户是否拥有对应的C/U权限=========》done
+4. 添加func，检测指定adminUser是否拥有指定的权限=====>done in checker

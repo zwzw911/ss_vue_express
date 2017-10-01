@@ -12,6 +12,7 @@ const browserInputRule=require('../../../constant/inputRule/browserInputRule').b
 
 const server_common_file_require=require('../../../../server_common_file_require')
 const controllerHelper=server_common_file_require.controllerHelper
+const controllerChecker=server_common_file_require.controllerChecker
 const dataConvert=server_common_file_require.dataConvert
 
 const nodeEnum=server_common_file_require.nodeEnum
@@ -25,7 +26,7 @@ const validateFormat=server_common_file_require.validateFormat
 const validateValue=server_common_file_require.validateValue
 
 const e_part=nodeEnum.ValidatePart
-const e_randomStringType=nodeEnum.RandomStringType
+// const e_randomStringType=nodeEnum.RandomStringType
 const e_userState=nodeEnum.UserState
 const e_fileSizeUnit=nodeRuntimeEnum.FileSizeUnit
 const e_storePathUsage=mongoEnum.StorePathUsage
@@ -33,7 +34,7 @@ const e_gmCommand=nodeRuntimeEnum.GmCommand
 const e_gmGetter=nodeRuntimeEnum.GmGetter
 const e_env=nodeEnum.Env
 
-const e_hashType=server_common_file_require.nodeRuntimeEnum.HashType
+// const e_hashType=server_common_file_require.nodeRuntimeEnum.HashType
 const e_docStatus=mongoEnum.DocStatus.DB
 
 const e_coll=require('../../../constant/genEnum/DB_Coll').Coll
@@ -53,10 +54,10 @@ const e_iniSettingObject=require('../../../constant/genEnum/initSettingObject').
 
 const controllerError=require('../admin_setting/admin_user_controllerError').controllerError
 
-const hash=server_common_file_require.crypt.hash
+// const hash=server_common_file_require.crypt.hash
 /*                      检查用户名/账号的唯一性                           */
 async  function  uniqueCheck_async(req) {
-    console.log(`admin user unique check values =========> ${JSON.stringify(req.body.values)} `)
+    // console.log(`admin user unique check values =========> ${JSON.stringify(req.body.values)} `)
 
     let collName=e_coll.ADMIN_USER
 
@@ -95,11 +96,8 @@ async  function  uniqueCheck_async(req) {
 // console.log(`indexof check done`)
     if(undefined!==e_uniqueField[collName] &&  e_uniqueField[collName].length>0) {
         //unique check，还要考虑到DOC_STATUS为done（不为done的可以重复）
-        /*                if(collName===e_coll.USER){
-         condition[e_field.USER.DOC_STATUS]=e_docStatus.DONE
-         }*/
         let additionalCheckCondition={[e_field.USER.DOC_STATUS]:e_docStatus.DONE}
-        await controllerHelper.ifFiledInDocValueUnique_async({collName: collName, docValue: docValue,additionalCheckCondition:additionalCheckCondition})
+        await controllerChecker.ifFieldInDocValueUnique_async({collName: collName, docValue: docValue,additionalCheckCondition:additionalCheckCondition})
     }
 
 

@@ -33,7 +33,7 @@ const e_penalizeType=mongoEnum.PenalizeType.DB
 const e_penalizeSubType=mongoEnum.PenalizeSubType.DB
 // const e_iniSettingObject=require('../../constant/enum/initSettingObject').iniSettingObject
 // const e_articleStatus=mongoEnum.ArticleStatus.DB
-const e_impeachStatus=mongoEnum.ImpeachStatus.DB
+const e_impeachStatus=mongoEnum.ImpeachState.DB
 const e_impeachType=mongoEnum.ImpeachType.DB
 // const e_referenceColl=mongoEnum.ImpeachImageReferenceColl.DB
 
@@ -53,6 +53,7 @@ const e_uniqueField=require('../../constant/genEnum/DB_uniqueField').UniqueField
 // const e_inputFieldCheckType=require('../../constant/enum/node').InputFieldCheckType
 
 const controllerHelper=server_common_file_require.controllerHelper
+const controllerChecker=server_common_file_require.controllerChecker
 const common_operation_model=server_common_file_require.common_operation_model
 // const hash=require('../../function/assist/crypt').hash
 
@@ -214,8 +215,10 @@ async function impeachComment_dispatcher_async(req){
 * @collConfig:主要用在update，create中只是用了其中的collName
 * */
 async  function createContent_async({req,collConfig}){
-    let tmpResult,userId,docValue,collName
-    userId=req.session.userId
+    let tmpResult,docValue,collName
+    let userInfo=controllerHelper.getUserInfo({req:req})
+    if(userInfo.rc>0){return Promise.reject(userInfo)}
+    let userId=userInfo.msg.userId
     collName=collConfig.collName
     /*              检查是否有权（authorize）创建            */
 
@@ -297,11 +300,11 @@ async  function createContent_async({req,collConfig}){
 // console.log(`after internal check =======>${JSON.stringify(docValue)}`)
 
     /*              检查外键字段的值是否存在(fkConfig中存在的)                */
-    await controllerHelper.ifFkValueExist_async({docValue:docValue,collFkConfig:fkConfig[collName],collFieldChineseName:e_fieldChineseName[collName]})
+    await controllerChecker.ifFkValueExist_async({docValue:docValue,collFkConfig:fkConfig[collName],collFieldChineseName:e_fieldChineseName[collName]})
 
      /*              如果有unique字段，需要预先检查unique(express级别，而不是mongoose级别)            */
     if(undefined!==e_uniqueField[collName] && e_uniqueField[collName].length>0) {
-        await controllerHelper.ifFiledInDocValueUnique_async({collName: collName, docValue: docValue})
+        await controllerChecker.ifFieldInDocValueUnique_async({collName: collName, docValue: docValue})
 	//await controllerHelper.ifFiledInDocValueUnique_async({collName: collName, docValue: docValue,e_uniqueField:e_uniqueField,e_chineseName:e_chineseName})
     }
 
@@ -324,7 +327,9 @@ async function updateContent_async({req,collConfig,collImageConfig}){
     // console.log(`update article in========>`)
 
     let tmpResult
-    let userId=req.session.userId
+    let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
+    let userId=userInfo.userId
+
     let impeachId=req.body.values[e_part.RECORD_ID]
     let originalDoc
     let collName=collConfig.collName
@@ -365,7 +370,7 @@ async function updateContent_async({req,collConfig,collImageConfig}){
 
 
     /*              检查外键字段的值是否存在                */
-    await controllerHelper.ifFkValueExist_async({docValue:docValue,collFkConfig:fkConfig[collName],collFieldChineseName:e_fieldChineseName[collName]})
+    await controllerChecker.ifFkValueExist_async({docValue:docValue,collFkConfig:fkConfig[collName],collFieldChineseName:e_fieldChineseName[collName]})
 
     /*              XSS检测                                 */
     let xssFields=[e_field.IMPEACH.TITLE,e_field.IMPEACH.CONTENT]
@@ -408,7 +413,7 @@ async function updateContent_async({req,collConfig,collImageConfig}){
 
     /*              如果有unique字段，需要预先检查unique(express级别，而不是mongoose级别)            */
     if(undefined!==e_uniqueField[collName] && e_uniqueField[collName].length>0) {
-        await controllerHelper.ifFiledInDocValueUnique_async({collName: collName, docValue: docValue})
+        await controllerChecker.ifFieldInDocValueUnique_async({collName: collName, docValue: docValue})
     }
 
     /*              更新数据            */

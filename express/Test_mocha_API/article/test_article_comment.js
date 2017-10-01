@@ -40,62 +40,24 @@ const testData=require('../testData')
 let baseUrl="/article/"
 let userId  //create后存储对应的id，以便后续的update操作
 
-let sess1,sess2,data={values:{}}
+let data={values:{}}
 
-
+const API_helper=require('../API_helper/API_helper')
 
 
 
 
 
 describe('create new comment: ', async function() {
-    let url,finalUrl
+    let url,finalUrl,user1Sess,user2Sess
 
 
     let articleId,userId
-    before('user1 login correct', function (done) {
-        // console.log(`testData.user.user1 ${JSON.stringify(testData.user.user1)}`)
-        let user1Tmp = {}
-        user1Tmp[e_field.USER.ACCOUNT] = testData.user.user1[e_field.USER.ACCOUNT]
-        user1Tmp[e_field.USER.PASSWORD] = testData.user.user1[e_field.USER.PASSWORD]
-        // console.log(`user1Tmp ===>${JSON.stringify(user1Tmp)}`)
-        data.values[e_part.RECORD_INFO] = user1Tmp//,notExist:{value:123}
-        data.values[e_part.METHOD] = e_method.MATCH
-        // console.log(`data.values ${JSON.stringify(data.values)}`)
-
-        request.agent(app).post('/user/').set('Accept', 'application/json').send(data)
-            .end(function (err, res) {
-                // if (err) return done(err);
-                console.log(`user1 login sess ======> ${JSON.stringify(res['header']['set-cookie'][0].split(';')[0])}`)
-                sess1 = res['header']['set-cookie'][0].split(';')[0]
-                let parsedRes = JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc, 0)
-                // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
-                done();
-            });
+    before('user1 login correct', async function () {
+        user1Sess=await  API_helper.userLogin_returnSess_async({userData:testData.user.user1})
     })
-    before('user2 login correct', function(done) {
-        // console.log(`testData.user.user1 ${JSON.stringify(testData.user.user1)}`)
-        let user1Tmp={}
-        user1Tmp[e_field.USER.ACCOUNT]=testData.user.user2[e_field.USER.ACCOUNT]
-        user1Tmp[e_field.USER.PASSWORD]=testData.user.user2[e_field.USER.PASSWORD]
-        // console.log(`user1Tmp ===>${JSON.stringify(user1Tmp)}`)
-        data.values[e_part.RECORD_INFO]=user1Tmp//,notExist:{value:123}
-        data.values[e_part.METHOD]=e_method.MATCH
-        // console.log(`data.values ${JSON.stringify(data.values)}`)
-
-        request.agent(app).post('/user/').set('Accept', 'application/json').send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-                // console.log(`res ${JSON.stringify(res['header']['set-cookie'][0])}`)
-                sess2=res['header']['set-cookie'][0].split(';')[0]
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,0)
-                // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
-                done();
-            });
+    before('user2 login correct', async function() {
+        user2Sess=await  API_helper.userLogin_returnSess_async({userData:testData.user.user2})
     })
     before('insert user2 penalize for both article and comment',async  function() {
         // console.log(`testData.user.user1 ${JSON.stringify(testData.user.user1)}`)
@@ -136,7 +98,7 @@ describe('create new comment: ', async function() {
         // console.log(`data.values ===>${JSON.stringify(data.values)}`)
         data.values[e_part.METHOD]=e_method.CREATE
         // console.log(`data.values ===>${JSON.stringify(data.values)}`)
-        request(app).post('/article/').set('Accept', 'application/json').set('Cookie',[sess1]).send(data)
+        request(app).post('/article/').set('Accept', 'application/json').set('Cookie',[user1Sess]).send(data)
             .end(function(err, res) {
                 // if (err) return done(err);
                 // console.log(`res ios ${JSON.stringify(res)}`)
@@ -184,7 +146,7 @@ describe('create new comment: ', async function() {
 
         console.log(`docvalues====>${JSON.stringify(data.values)}`)
         console.log(`finalUrl====>${JSON.stringify(finalUrl)}`)
-        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[sess1]).send(data)
+        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[user1Sess]).send(data)
             .end(function(err, res) {
                 // if (err) return done(err);
                 // console.log(`res ios ${JSON.stringify(res)}`)
@@ -210,7 +172,7 @@ describe('create new comment: ', async function() {
 
         console.log(`docvalues====>${JSON.stringify(data.values)}`)
         console.log(`finalUrl====>${JSON.stringify(finalUrl)}`)
-        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[sess1]).send(data)
+        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[user1Sess]).send(data)
             .end(function(err, res) {
                 // if (err) return done(err);
                 // console.log(`res ios ${JSON.stringify(res)}`)
@@ -235,7 +197,7 @@ describe('create new comment: ', async function() {
         data.values[e_part.RECORD_INFO][e_field.ARTICLE_COMMENT.ARTICLE_ID]['value']=articleId
 
 
-        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[sess2]).send(data)
+        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[user2Sess]).send(data)
             .end(function(err, res) {
                 // if (err) return done(err);
                 // console.log(`res ios ${JSON.stringify(res)}`)

@@ -100,13 +100,14 @@ const handleSystemError=require('../../function/assist/system').handleSystemErro
 
 const createUser_async=require('./admin_logic/create_admin_user').createUser_async
 const updateUser_async=require('./admin_logic/update_admin_user').updateUser_async
+const deleteUser_async=require('./admin_logic/delete_admin_user').deleteUser_async
 const userLogin_async=require('./admin_logic/admin_user_login').login_async
 //对CRUD（输入参数带有method）操作调用对应的函数
 async function dispatcher_async(req){
     //检查格式
     // console.log(`req is ${JSON.stringify(req.body)}`)
     // console.log(`dispatcher in`)
-    // console.log(`req.body.values ${JSON.stringify(req.body.values)}`)
+    //  console.log(`req.body.values ${JSON.stringify(req.body.values)}`)
     let collName=e_coll.ADMIN_USER,tmpResult
 
     //dispatcher只检测req的结构，以及req中method的格式和值，以便后续可以直接根据method进行调用
@@ -124,7 +125,6 @@ async function dispatcher_async(req){
     switch (method){
         case e_method.CREATE: //create
             // console.log(`create in`)
-
             userLoginCheck={
                 needCheck:true,
                 error:controllerError.notLoginCantCreateUser
@@ -139,7 +139,6 @@ async function dispatcher_async(req){
             await controllerHelper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
 	    //await helper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart,e_field:e_field,e_coll:e_coll,e_internal_field:e_internal_field,maxSearchKeyNum:maxSearchKeyNum,maxSearchPageNum:maxSearchPageNum})
 // console.log(`precheck done=====.`)
-
             tmpResult=await createUser_async(req)
             // console.log(`create  tmpResult ${JSON.stringify(tmpResult)}`)
             break;
@@ -147,15 +146,15 @@ async function dispatcher_async(req){
             break;
         case e_method.UPDATE: //update
             userLoginCheck={
-                needCheck:false,
-                // error:controllerError.userNotLoginCantCreateComment
+                needCheck:true,
+                error:controllerError.notLoginCantUpdateUser
             }
             penalizeCheck={
                 /*                penalizeType:e_penalizeType.NO_ARTICLE,
                                 penalizeSubType:e_penalizeSubType.CREATE,
                                 penalizeCheckError:controllerError.userInPenalizeNoCommentCreate*/
             }
-            expectedPart=[e_part.RECORD_INFO]
+            expectedPart=[e_part.RECORD_INFO,e_part.RECORD_ID]
             // console.log(`before precheck done=====.`)
             await controllerHelper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
 	    //await helper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart,e_field:e_field,e_coll:e_coll,e_internal_field:e_internal_field,maxSearchKeyNum:maxSearchKeyNum,maxSearchPageNum:maxSearchPageNum})
@@ -163,6 +162,21 @@ async function dispatcher_async(req){
             tmpResult=await updateUser_async(req)
             break;
         case e_method.DELETE: //delete
+            userLoginCheck={
+                needCheck:true,
+                error:controllerError.notLoginCantDeleteUser
+            }
+            penalizeCheck={
+                /*                penalizeType:e_penalizeType.NO_ARTICLE,
+                 penalizeSubType:e_penalizeSubType.CREATE,
+                 penalizeCheckError:controllerError.userInPenalizeNoCommentCreate*/
+            }
+            expectedPart=[e_part.RECORD_ID]
+            // console.log(`before precheck done=====.`)
+            await controllerHelper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
+            //await helper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart,e_field:e_field,e_coll:e_coll,e_internal_field:e_internal_field,maxSearchKeyNum:maxSearchKeyNum,maxSearchPageNum:maxSearchPageNum})
+            // console.log(`after precheck done=====.`)
+            tmpResult=await deleteUser_async(req)
             break;
         case e_method.MATCH: //match(login_async)
             userLoginCheck={
@@ -178,6 +192,7 @@ async function dispatcher_async(req){
             // console.log(`before precheck done=====.`)
             await controllerHelper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
 	    //await helper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart,e_field:e_field,e_coll:e_coll,e_internal_field:e_internal_field,maxSearchKeyNum:maxSearchKeyNum,maxSearchPageNum:maxSearchPageNum})
+         //    console.log(`after precheck done=====.`)
             tmpResult=await userLogin_async(req)
             break;
         default:

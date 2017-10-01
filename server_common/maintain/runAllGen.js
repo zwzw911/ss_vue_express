@@ -89,12 +89,13 @@ function _genForGeneral_part2(absoluteDestDirForInputRule,absoluteDestDirForEnum
 
 
 
-    const getInitSettingObjectId=require('./preDeploy/getInitSettingId').writeInitSettingEnum_async
+
     let {skipFilesArray,skipCollNameArray}=skipObject
 
     /*                  inputRule                      */
     //合并生成internal/browse/all inputRule
     //absoluteDestDirForInputRule:  server/inputRule
+    console.log(`start generateAllRuleInOneFile`)
     const generateAllRuleInOneFile=require('./generateFunction/generateAllRuleInOneFile').writeResult
     generateAllRuleInOneFile(modelCollRootDir,`${absoluteDestDirForInputRule}inputRule.js`,e_ruleType.BOTH,skipFilesArray,inputRuleBaseDir)
     generateAllRuleInOneFile(modelCollRootDir,`${absoluteDestDirForInputRule}browserInputRule.js`,e_ruleType.BROWSER,skipFilesArray,inputRuleBaseDir)
@@ -110,10 +111,7 @@ function _genForGeneral_part2(absoluteDestDirForInputRule,absoluteDestDirForEnum
     generateRuleFieldChineseName(`${inputRuleBaseDir}inputRule.js`,`${absoluteDestDirForEnum}inputRule_field_chineseName.js`,skipCollNameArray)
 
 
-    getInitSettingObjectId(absoluteDestDirForEnum).then(
-        (result)=>{console.log(`getInitSettingObjectId result is ${JSON.stringify(result)}`)},
-        (err)=>{console.log(`getInitSettingObjectId err is ${JSON.stringify(err)}`)},
-    )
+
 
 
     console.log(`part2 done`)

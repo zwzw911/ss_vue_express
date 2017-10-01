@@ -41,6 +41,7 @@ const validateError=server_common_file_require.validateError//require('../../ser
 // const test_helper=require("../API_helper/db_operation_helper")
 const testData=require('../testData')
 const helper=server_common_file_require.controllerHelper//require('../../server/controller/helper')
+const controllerChecker=server_common_file_require.controllerChecker
 
 const db_operation_helper=require('../API_helper/db_operation_helper')
 
@@ -183,7 +184,7 @@ describe('help=>calcExistResource_async ', async function() {
             resourceProfile[singleResourceProfileRange]=await helper.chooseLastValidResourceProfile_async({resourceProfileRange:singleResourceProfileRange,userId:user2Id})
 
 // console.log(`tester chosee last range===========>${JSON.stringify(resourceProfile[singleResourceProfileRange])}`)
-            let result=await helper.ifNewFileLeadExceed_async({
+            let result=await controllerChecker.ifNewFileLeadExceed_async({
                 currentResourceUsage:currentResourceResult,
                 currentResourceProfile:resourceProfile[singleResourceProfileRange],
                 fileInfo:{size:1177, path:"h:/test/txt"},

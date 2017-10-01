@@ -4,8 +4,6 @@
 
 const Field={
     admin_penalize:['creatorId',],
-],
-],
     category:[],
     resource_profile:[],
     store_path:['usedSize','status',],

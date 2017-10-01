@@ -35,18 +35,19 @@ async function removeExistsRecord_async(){
 }
 
 
-async function createAdminUser_async({userData}){
-    let data={}
+async function createAdminUser_async({userData,sess}){
+    let data={values:{}}
     let url='/admin_user/'
-    data.values={}
+
     data.values[e_part.RECORD_INFO]=userData
-console.log(`userDate==============>${JSON.stringify(userData)}`)
-    data.values.method=e_method.CREATE
+// console.log(`userDate==============>${JSON.stringify(userData)}`)
+    data.values[e_part.METHOD]=e_method.CREATE
+    // console.log(`data.values==============>${JSON.stringify(data.values)}`)
     return new Promise(function(resolve,reject){
-        request(app).post(url).set('Accept', 'application/json').send(data)
+        request(app).post(url).set('Accept', 'application/json').set('Cookie',[sess]).send(data)
             .end(function(err, res) {
                 let parsedRes=JSON.parse(res.text)
-                console.log(`created user =========> ${JSON.stringify(parsedRes)}`)
+                // console.log(`created user =========> ${JSON.stringify(parsedRes)}`)
                 assert.deepStrictEqual(parsedRes.rc,0)
                 return resolve({rc:0})
             });
@@ -55,22 +56,27 @@ console.log(`userDate==============>${JSON.stringify(userData)}`)
 }
 
 //返回一个promise，那么无需done
-async function userLogin_returnSess_async({userData}){
+//userData:{name:{value:xxx},password:{value:yyyyy}}
+async function adminUserLogin_returnSess_async({userData}){
     let data={}
     data.values={}
     data.values.method=e_method.MATCH
-    let userTmp=objectDeepCopy(userData)
+/*    let userTmp=objectDeepCopy(userData)
     delete userTmp['name']
-    delete userTmp['userType']
-    data.values[e_part.RECORD_INFO]=userTmp//,notExist:{value:123}
+    delete userTmp['userType']*/
+    // console.log(`userData ===>${JSON.stringify(userData)}`)
+    data.values[e_part.RECORD_INFO]=userData//,notExist:{value:123}
+    // console.log(`data ===>${JSON.stringify(data)}`)
     return new Promise(function(resolve,reject){
-        request.agent(app).post('/user/').set('Accept', 'application/json').send(data)
+        request.agent(app).post('/admin_user/').set('Accept', 'application/json').send(data)
             .end(function(err, res) {
+                // console.log(`err ==================> ${JSON.stringify(err)}`)
+                // console.log(`res ==================> ${JSON.stringify(res)}`)
                 let returnSess=res['header']['set-cookie'][0].split(';')[0]
                 let parsedRes=JSON.parse(res.text)
                 // console.log(`returnSess ################### ${JSON.stringify(returnSess)}`)
                 assert.deepStrictEqual(parsedRes.rc,0)
-                // console.log(`user login result ==================> ${JSON.stringify(parsedRes)}`)
+
                 // done();
                 return resolve(returnSess)
                 // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
@@ -186,7 +192,8 @@ function updateImpeach({data,userSess,expectRc,done}) {
 module.exports={
     removeExistsRecord_async,
     createAdminUser_async,
-/*    userLogin_returnSess_async,
+    adminUserLogin_returnSess_async,
+/*
     userCreateArticle_returnArticleId_async,
     createImpeachForArticle_returnImpeachId_async,
     createImpeachForComment_returnImpeachId_async,

@@ -95,29 +95,35 @@ function _validateRecorderValue(inputValue,collRules,baseType){
 
             let fieldType=collRules[fieldName]['type']
             if(dataTypeCheck.isArray(fieldType)){
+                console.log(`field ${fieldName} is array`)
                 //首先检查数据类型是不是array
                 if(false===dataTypeCheck.isArray(fieldValue)){
                     rc[fieldName]=validateValueError.CUDTypeWrong
                     continue
                 }
+                // console.log(`1`)
+                // console.log(`fieldRule=======>${JSON.stringify(fieldRule)}`)
+                // console.log(`${JSON.stringify(fieldRule[e_serverRuleType.ARRAY_MIN_LENGTH])}`)
                 //检查array的长度
-                if(fieldRule[e_serverRuleType.ARRAY_MIN_LENGTH]['define']){
+                if(undefined!==fieldRule[e_serverRuleType.ARRAY_MIN_LENGTH] && undefined!==fieldRule[e_serverRuleType.ARRAY_MIN_LENGTH]['define']){
                     if(fieldValue.length<fieldRule[e_serverRuleType.ARRAY_MIN_LENGTH]['define']){
                         rc[fieldName]=genInputError(fieldRule,e_serverRuleType.ARRAY_MIN_LENGTH)
                         break
                     }
                 }
-                if(fieldRule[e_serverRuleType.ARRAY_MAX_LENGTH]['define']){
+                // console.log(`2`)
+                if(undefined!==fieldRule[e_serverRuleType.ARRAY_MAX_LENGTH] && undefined!==fieldRule[e_serverRuleType.ARRAY_MAX_LENGTH]['define']){
                     if(fieldValue.length>fieldRule[e_serverRuleType.ARRAY_MAX_LENGTH]['define']){
                         rc[fieldName]=genInputError(fieldRule,e_serverRuleType.ARRAY_MAX_LENGTH)
                         break
                     }
                 }
+                // console.log(`3`)
                 rc[fieldName]={rc:0}
                 for(let singleFieldValue of fieldValue){
 /*console.log(`singleFieldValue is ${singleFieldValue}`)
                     console.log(`fieldRule is ${JSON.stringify(fieldRule)}`)*/
-// console.log(`1`)
+
                     let tmpRc=validateSingleRecorderFieldValue(singleFieldValue,fieldRule)
                     if(tmpRc.rc>0){
                         rc[fieldName]=tmpRc
@@ -840,6 +846,8 @@ function validateEventValue(v,eventIdEnum){
 
 
 function validateMethodValue(methodValue){
+    // console.log(`e_method=======>${JSON.stringify(e_method)}`)
+    // console.log(`methodValue=======>${JSON.stringify(methodValue)}`)
     if(-1===Object.values(e_method).indexOf(methodValue)){
         return validateValueError.methodValueUndefined
     }

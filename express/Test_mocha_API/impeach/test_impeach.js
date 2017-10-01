@@ -115,7 +115,7 @@ describe('impeach: ', async function() {
         request(app).post('/impeach/comment').set('Accept', 'application/json').set('Cookie', [user2Sess]).send(data)
             .end(function (err, res) {
                 let parsedRes = JSON.parse(res.text)
-                console.log(`createImpeach_returnImpeachId_async result=========> ${JSON.stringify(parsedRes)}`)
+                // console.log(`createImpeach_returnImpeachId_async result=========> ${JSON.stringify(parsedRes)}`)
                 assert.deepStrictEqual(parsedRes.rc, controllerError.impeachObjectNotExist.rc)
                 done();
             });

@@ -26,6 +26,7 @@ const browserInputRule=require('../../server/constant/inputRule/browserInputRule
 
 const validateError=server_common_file_require.validateError//require('../../server/constant/error/validateError').validateError
 const controllerHelperError=server_common_file_require.helperError.helper//require('../../server/constant/error/controller/helperError').helper
+const controllerCheckerError=server_common_file_require.helperError.checker
 
 const controllerError=require('../../server/controller/user/user_logic/user_controllerError').controllerError
 
@@ -234,7 +235,7 @@ describe('user1 register unique check:', function() {
 
                 let parsedRes=JSON.parse(res.text)
                 console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc, controllerHelperError.fieldValueUniqueCheckError({collName:e_coll.USER, fieldName:e_field.USER.NAME}).rc)
+                assert.deepStrictEqual(parsedRes.rc, controllerCheckerError.fieldValueUniqueCheckError({collName:e_coll.USER, fieldName:e_field.USER.NAME}).rc)
                 // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
                 done();
             });
@@ -251,7 +252,7 @@ describe('user1 register unique check:', function() {
 
                 let parsedRes=JSON.parse(res.text)
                 console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,controllerHelperError.fieldValueUniqueCheckError({collName:e_coll.USER, fieldName:e_field.USER.ACCOUNT}).rc)
+                assert.deepStrictEqual(parsedRes.rc,controllerCheckerError.fieldValueUniqueCheckError({collName:e_coll.USER, fieldName:e_field.USER.ACCOUNT}).rc)
                 // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
                 done();
             });
@@ -269,7 +270,7 @@ describe('POST /user/uniqueCheck_async ', function() {
 
                 let parsedRes=JSON.parse(res.text)
                 console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,controllerHelperError.fieldValueUniqueCheckError({collName:e_coll.USER, fieldName:e_field.USER.NAME}).rc)
+                assert.deepStrictEqual(parsedRes.rc,controllerCheckerError.fieldValueUniqueCheckError({collName:e_coll.USER, fieldName:e_field.USER.NAME}).rc)
                 // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
                 done();
             });
@@ -283,7 +284,7 @@ describe('POST /user/uniqueCheck_async ', function() {
 
                 let parsedRes=JSON.parse(res.text)
                 console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,controllerHelperError.fieldValueUniqueCheckError({collName:e_coll.USER, fieldName:e_field.USER.ACCOUNT}).rc)
+                assert.deepStrictEqual(parsedRes.rc,controllerCheckerError.fieldValueUniqueCheckError({collName:e_coll.USER, fieldName:e_field.USER.ACCOUNT}).rc)
                 // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
                 done();
             });
@@ -507,7 +508,7 @@ describe('update user： ', function() {
                 done();
             });
     })
-    it('update testData.user.user1 with  account not change', function(done) {
+    it('update testData.user.user1 with account not change', function(done) {
         data.values.method=e_method.UPDATE
         data.values[e_part.RECORD_INFO]={account:{value:testData.user.user1.account.value},name:{value:'anotherName'}}//,notExist:{value:123}
         // console.log(`data.values ${JSON.stringify(data.values)}`)
@@ -597,7 +598,7 @@ describe('update user： ', function() {
                 // console.log(`res ${JSON.stringify(res['header']['set-cookie']['connect.sid'])}`)
                 let parsedRes=JSON.parse(res.text)
                 console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,controllerHelperError.fieldValueUniqueCheckError({collName:e_coll.USER,fieldName:e_field.USER.ACCOUNT}).rc)
+                assert.deepStrictEqual(parsedRes.rc,controllerCheckerError.fieldValueUniqueCheckError({collName:e_coll.USER,fieldName:e_field.USER.ACCOUNT}).rc)
                 // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
                 done();
             });
@@ -658,73 +659,18 @@ describe('update user： ', function() {
 
 describe('retrieve password: ', function() {
     let data = {values:{}}, url = '', finalUrl = baseUrl + url,sess
-    before('delete exist user3', async function(){
+    before('recreate exist user3', async function(){
         /*              清理已有数据              */
         // console.log(`######   delete exist record   ######`)
         // console.log(`correctValueForModel ${JSON.stringify(correctValueForModel)}`)
-        await test_helper.deleteUserAndRelatedInfo_async({account:testData.user.user3ForModel.account})
+        await test_helper.deleteUserAndRelatedInfo_async({account:testData.user.user3.account.value})
+        // console.log(`######   create exist record   ######`)
+        await API_helper.createUser_async({userData:testData.user.user3})
+        // console.log(`######   login exist record   ######`)
+        sess=await  API_helper.userLogin_returnSess_async({userData:testData.user.user3})
         // done()
     });
-    before('user3 create and login', async function () {
-        await API_helper.createUser_async({userData:testData.user.user3})
-        sess=await  API_helper.userLogin_returnSess_async({userData:testData.user.user3})
-    })
-    /*it('create new user3', function(done) {
-        data.values.method=e_method.CREATE
-        data.values[e_part.RECORD_INFO]=testData.user.user3//
-        request(app).post(finalUrl).set('Accept', 'application/json').send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
 
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,0)
-                // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
-                done();
-            });
-    })
-
-    it('user3 login correct', function(done) {
-        // console.log(`testData.user.user3 ${JSON.stringify(testData.user.user1)}`)
-        data.values.method=e_method.MATCH
-        let user3Tmp=objectDeepCopy(testData.user.user3)
-        delete user3Tmp['name']
-        delete user3Tmp['userType']
-        data.values[e_part.RECORD_INFO]=user3Tmp//,notExist:{value:123}
-        // console.log(`data.values ${JSON.stringify(data.values)}`)
-
-        request.agent(app).post(finalUrl).set('Accept', 'application/json').send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-                sess=res['header']['set-cookie'][0].split(';')[0]
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,0)
-                // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
-                done();
-            });
-    })*/
-
-/*    it('testData.user.user3 login correct', function(done) {
-        // console.log(`testData.user.user3 ${JSON.stringify(testData.user.user1)}`)
-        data.values.method=e_method.MATCH
-        let user3Tmp=objectDeepCopy(testData.user.user3)
-        delete user3Tmp['name']
-        delete user3Tmp['userType']
-        data.values[e_part.RECORD_INFO]=user3Tmp//,notExist:{value:123}
-        // console.log(`data.values ${JSON.stringify(data.values)}`)
-
-        request.agent(app).post(finalUrl).set('Accept', 'application/json').send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-                sess=res['header']['set-cookie'][0].split(';')[0]
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,0)
-                // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
-                done();
-            });
-    })*/
 
     it('testData.user.user3 update new account', function(done) {
         // console.log(`testData.user.user3 ${JSON.stringify(testData.user.user1)}`)
@@ -745,28 +691,7 @@ describe('retrieve password: ', function() {
 
     })
 
-   /* it('testData.user.user3 use current account retrieve password', function(done) {
-        // console.log(`testData.user.user3 ${JSON.stringify(testData.user.user1)}`)
-        url='retrievePassword'
-        finalUrl=baseUrl+url
-        delete data.values[e_part.METHOD]
-        delete data.values[e_part.RECORD_INFO]
-        data.values[e_part.SINGLE_FIELD]={account:{value:testData.user.user3NewAccount},}//,notExist:{value:123}
-        console.log(`data.values ${JSON.stringify(data.values)}`)
-        // console.log(`sess==============> ${JSON.stringify(sess)}`)
-        request.agent(app).post(finalUrl).set('Accept', 'application/json').send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-                // console.log(`res ${JSON.stringify(res['header']['set-cookie']['connect.sid'])}`)
-                // console.log()
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,0)
-                // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
-                done();
-            });
 
-    })*/
 
     it('testData.user.user3 use old(qq) account retrieve password', function(done) {
         // console.log(`testData.user.user3 ${JSON.stringify(testData.user.user1)}`)

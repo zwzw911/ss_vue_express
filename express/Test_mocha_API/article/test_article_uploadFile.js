@@ -258,7 +258,7 @@ describe('create new comment: ', async function() {
     });
 
 
-    it('user1 upload image for newArticle correct', function(done) {
+    it('user1 upload image for newArticle correct(cant test since supertest not support data and file upload simulatus)', function(done) {
         url = 'articleImage'
         finalUrl=baseUrl+url
         delete data.values

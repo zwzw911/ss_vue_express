@@ -7,7 +7,7 @@
 const server_common_file_require=require('../../server_common_file_require')
 const common_operation_model=server_common_file_require.common_operation_model
 
-const generateSugarAndhashPassword=server_common_file_require.controllerHelper.generateSugarAndhashPassword
+const generateSugarAndHashPassword=server_common_file_require.controllerHelper.generateSugarAndHashPassword
 const mongoEnum=server_common_file_require.mongoEnum
 const e_docStatus=mongoEnum.DocStatus.DB
 const e_adminPriorityType=mongoEnum.AdminPriorityType.DB
@@ -53,7 +53,7 @@ async function createRoot(adminUser){
     await common_operation_model.deleteOne_returnRecord_async({dbModel:e_dbModel.admin_user,condition:condition})
 
     //获得sugar和hash后的password
-    let hashResult=generateSugarAndhashPassword({ifUser:false,ifAdminUser:true,password:adminUser[e_field.ADMIN_USER.PASSWORD]})
+    let hashResult=generateSugarAndHashPassword({ifUser:false,ifAdminUser:true,password:adminUser[e_field.ADMIN_USER.PASSWORD]})
     let sugar=hashResult.msg['sugar']
     adminUser[e_field.ADMIN_USER.PASSWORD]=hashResult.msg['hashedPassword']
 

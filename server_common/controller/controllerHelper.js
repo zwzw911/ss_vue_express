@@ -5,12 +5,6 @@
  * 拆分辅助函数，合并路由函数（几个coll的路由过程都是类似的）
  */
 'use strict'
-//require("babel-polyfill");
-//require("babel-core/register")
-
-
-// var inputRule=require('../../define/validateRule/inputRule').inputRule
-//var validateFunc=require('../../assist/not_used_validateFunc').func
 const fs=require('fs')
 
 // const server_common_file_require=require('../')
@@ -20,21 +14,32 @@ const validateValue=require('../function/validateInput/validateValue')
 const dataConvert=require('./dataConvert')
 const misc=require('../function/assist/misc')
 
-const e_part=require('../constant/enum/nodeEnum').ValidatePart
+const nodeEnum=require('../constant/enum/nodeEnum')
+const e_part=nodeEnum.ValidatePart
+const e_inputFieldCheckType=nodeEnum.InputFieldCheckType
+const e_method=nodeEnum.Method
 
-const e_method=require('../constant/enum/nodeEnum').Method
+const mongoEnum=require('../constant/enum/mongoEnum')
+const e_storePathUsage=mongoEnum.StorePathUsage.DB
+const e_storePathStatus=mongoEnum.StorePathStatus.DB
+const e_penalizeSubType=mongoEnum.PenalizeSubType.DB
+
+const nodeRuntimeEnum=require('../constant/enum/nodeRuntimeEnum')
+const e_hashType=nodeRuntimeEnum.HashType
+const e_fileSizeUnit=nodeRuntimeEnum.FileSizeUnit
+const e_userInfoMandatoryField=nodeRuntimeEnum.userInfoMandatoryField
+
+
 
 const e_dbModel=require('../constant/genEnum/dbModel')
 const e_coll=require('../constant/genEnum/DB_Coll').Coll
 const e_field=require('../constant/genEnum/DB_field').Field
 const e_internal_field=require('../constant/genEnum/DB_internal_field').Field
-const e_uniqueField=require('../constant/genEnum/DB_uniqueField').UniqueField
-const e_chineseName=require('../constant/genEnum/inputRule_field_chineseName').ChineseName
-const e_inputFieldCheckType=require('../constant/enum/nodeEnum').InputFieldCheckType
 
-const e_fileSizeUnit=require('../constant/enum/nodeRuntimeEnum').FileSizeUnit
 
-const e_penalizeSubType=require('../constant/enum/mongoEnum').PenalizeSubType.DB
+
+
+
 // const e_docStatus=require('../constant/enum/mongoEnum').DocStatus.DB
 // const e_resourceProfileRange=require('../constant/enum/mongoEnum').ResourceProfileRange
 // var miscFunc=require('../../assist/misc')
@@ -57,10 +62,7 @@ const inputRule=require('../constant/inputRule/inputRule').inputRule
 
 const fkConfig=require('../model/mongo/fkConfig').fkConfig
 
-const e_storePathUsage=require('../constant/enum/mongoEnum').StorePathUsage.DB
-const e_storePathStatus=require('../constant/enum/mongoEnum').StorePathStatus.DB
 
-const e_hashType=require('../constant/enum/nodeRuntimeEnum').HashType
 
 const handleSystemError=require('../function/assist/system').handleSystemError
 const systemError=require('../constant/error/systemError').systemError
@@ -272,30 +274,6 @@ function validatePartValue({req,expectedPart,collName,inputRule,recordInfoBaseRu
 }
 
 
-/*/!* 检测doc中的外键字段（objectId）是否存在
- * @doc：要保存（sreate/update）到db中的doc
- * @collFkConfig: doc对应的fkConfig，用来确定doc中那些字段是外键，且对应的配置是什么
- *
- * return：字段对应的外键不存在
- * *!/
-async function checkIfFkExist_async(value,collFkConfig,collName){
-    for(let singleFkField in collFkConfig){
-        let relatedColl=collFkConfig[singleFkField]['relatedColl']
-        let dbModel=e_dbModel[relatedColl]
-
-        let value_objectId=value[singleFkField]
-        let result=await common_operation_model.findById({dbModel:dbModel,id:value_objectId})
-        if(result.rc>0){
-            return Promise.reject(result)
-        }
-        if(result.rc===0 && result.msg===null){
-            return Promise.reject(helperError.fkFileNotExist(collName,singleFkField,value_objectId,relatedColl))
-        }
-    }
-    return Promise.resolve({rc:0})
-}*/
-
-
 /*          预检method是否正确，以便后续能使用正确的method调用不同的CRUD方法            */
 function checkMethod({req}){
     // console.log(`CRUDPreCheckFormat in=========>`)
@@ -314,7 +292,7 @@ function checkMethod({req}){
     }else{
         methodPart={method:req.body.values[e_part.METHOD]}
     }
-
+// console.log(`methodPart=====>${JSON.stringify(methodPart)}`)
     // 此处只检查method
     result=validateFormat.validatePartFormat(methodPart,expectedPart)
     if(result.rc>0){return result}
@@ -346,7 +324,7 @@ function CRUDPreCheck({req,expectedPart,collName,method}){
     // 此处检查除了method之外的part（method已经在checkMethod中预检）
     delete req.body.values[e_part.METHOD]
 // console.log(`req.body.values ====>${JSON.stringify(req.body.values)}`)
-    // console.log(`expectedPart ====>${JSON.stringify(expectedPart)}`)
+//     console.log(`expectedPart ====>${JSON.stringify(expectedPart)}`)
     result=validateFormat.validatePartFormat(req.body.values,expectedPart)
  // console.log(`validatePartFormat result ====>${JSON.stringify(result)}`)
     if(result.rc>0){return result}
@@ -472,54 +450,6 @@ function nonCRUDPreCheck({req,expectPart,collName}){
     // }
 }
 
-/*              字段值是否已经存在               */
-async function ifFieldValueExistInColl_async({dbModel,fieldName,fieldValue}){
-    let condition = {}
-    condition[fieldName]=fieldValue
-    // console.log(`condition ${JSON.stringify(condition)}`)
-
-    // console.log(`fieldName:${fieldName}----fieldValue ${fieldValue}`)
-    let uniqueCheckResult = await common_operation_model.find_returnRecords_async({dbModel: dbModel, condition: condition})
-
-/*    if (uniqueCheckResult.rc > 0) {
-        return Promise.reject(uniqueCheckResult)
-    }*/
-
-    return Promise.resolve({rc:0,msg:uniqueCheckResult.length>0})
-    // }
-}
-
-//additionalCheckCondition: {key,value}
-async function ifFiledInDocValueUnique_async({collName,docValue,additionalCheckCondition}){
-    // if(undefined!==e_uniqueField[collName] &&  e_uniqueField[collName].length>0){
-    //     console.log(`ifFiledInDocValueUnique_async in=========>}`)
-        // console.log(`ifFiledInDocValueUnique_async docValue=========>${JSON.stringify(docValue)}`)
-        for(let singleFieldName in docValue){
-            // console.log(`singleFieldName=========>${JSON.stringify(singleFieldName)}`)
-            if(-1!==e_uniqueField[collName].indexOf(singleFieldName)){
-                // console.log(`singleFieldName is uhnqieu=========>${JSON.stringify(singleFieldName)}`)
-                let condition = {}
-                condition[singleFieldName]=docValue[singleFieldName]
-                //patch(user中，还有额外的字段docStatus用来判断是否unique)
-
-                if(undefined!==additionalCheckCondition){
-                    Object.assign(condition,additionalCheckCondition)
-                }
-                let uniqueCheckResult = await common_operation_model.find_returnRecords_async({dbModel: e_dbModel[collName], condition: condition})
-// console.log(`ifFiledInDocValueUnique_asyn uniqueCheckResult=========>: ${JSON.stringify(uniqueCheckResult)}`)
-                if(uniqueCheckResult.length>0){
-                    let chineseName=e_chineseName[collName][singleFieldName]
-                    // let fieldInputValue=docValue[singleFieldName]
-// console.log(`collname ${collName}`)
-// console.log(`singleFieldName ${singleFieldName}`)
-// console.log(`chineseName ${chineseName}`)
-                    return Promise.reject(helperError.fieldValueUniqueCheckError({collName:collName,fieldName:singleFieldName,fieldChineseName:chineseName}))
-                }
-            }
-        }
-    // }
-    return Promise.resolve({rc:0})
-}
 /*
 * @ usage: storePath的用途
 * */
@@ -662,117 +592,6 @@ function checkInternalValue({internalValue,collInputRule,collInternalRule}){
     // }
 }
 
-/*//检查一个外键的值是否存在
-async function ifFkValueExist_async_old({dbModel,fkObjectId}){
-    let tmpResult=await  common_operation_model.findById({dbModel:dbModel,id:fkObjectId})
-    if(null===tmpResult.msg){
-        return Promise.resolve({rc:0,msg:false})
-    }else{
-        return Promise.resolve({rc:0,msg:true})
-    }
-
-
-}*/
-
-
-/*
-* @docValue；待检测的记录
-* @collFkConfig:当前coll对应的fk配置，用来查找field的fk关系（对应到哪个coll）
-* @collFieldChineseName:如果外键不存在，报错是需要指明的字段的chineseName
-*
-* return：存在: {rc:0}   不存在：helperError.fkValueNotExist
-* */
-async function ifFkValueExist_async({docValue,collFkConfig,collFieldChineseName}){
-
-
-    if(undefined!==collFkConfig){
-        // console.log(`collFkConfig fields========>${JSON.stringify(Object.keys(collFkConfig))}`)
-        // console.log(`docValue ========>${JSON.stringify(docValue)}`)
-        for(let singleFkFieldName in collFkConfig){
-            // console.log(`singleFkFieldName=======>${singleFkFieldName}`)
-            // console.log(`docValue[singleFkFieldName]===============>${JSON.stringify(docValue[singleFkFieldName])}`)
-            if(undefined!==docValue[singleFkFieldName]){
-                let fkFieldValueInObjectId=docValue[singleFkFieldName]
-                let fkFieldRelatedColl=collFkConfig[singleFkFieldName]['relatedColl']
-// console.log(`ifFkValueExist_async===>fkFieldRelatedColl===>${fkFieldRelatedColl}, id=====>${fkFieldValueInObjectId}`)
-                let tmpResult=await  common_operation_model.findById_returnRecord_async({dbModel:e_dbModel[fkFieldRelatedColl],id:fkFieldValueInObjectId})
-                // console.log(`fk value exit check =========>${JSON.stringify(tmpResult)}`)
-                if(null===tmpResult){
-                    let chineseName=collFieldChineseName[singleFkFieldName]
-                    let fieldInputValue=docValue[singleFkFieldName]
-                    return Promise.reject(helperError.fkValueNotExist(chineseName,fieldInputValue))
-                    // return Promise.resolve({rc:0,msg:false})
-                }
-                /*            else{
-                 return Promise.resolve({rc:0,msg:true})
-                 }*/
-
-            }
-        }
-    }
-
-    return Promise.resolve({rc:0,msg:true})
-}
-
-/*          对单个字段进行外键值是否存
-*   某些情况下，外键字段需要和其他字段的值组合，才能决定外键对应到哪个coll（而不是使用fkConfig），所以才有此函数
-*
-* */
-async function ifSingleFieldFkValueExist_async({fkFieldValue,relatedCollName,fkFieldChineseName}){
-    if(undefined!==fkFieldValue && null!==fkFieldValue){
-        let tmpResult=await  common_operation_model.findById_returnRecord_async({dbModel:e_dbModel[relatedCollName],id:fkFieldValue})
-        if(null===tmpResult){
-            // let chineseName=collFieldChineseName[singleFkFieldName]
-            // let fieldInputValue=docValue[singleFkFieldName]
-            return Promise.reject(helperError.fkValueNotExist(fkFieldChineseName,fkFieldValue))
-            // return Promise.resolve({rc:0,msg:false})
-        }
-    }
-            // let fkFieldValueInObjectId=docValue[singleFkFieldName]
-            // let fkFieldRelatedColl=collFkConfig[singleFkFieldName]['relatedColl']
-// console.log(`ifFkValueExist_async===>fkFieldRelatedColl===>${fkFieldRelatedColl}, id=====>${fkFieldValueInObjectId}`)
-
-
-    return Promise.resolve({rc:0,msg:true})
-}
-
-/*用户(userId)是否被禁止做某事（penalizeType）
-* 查找admin_penalize中最后一条penalize记录，体重的ifExpire是否为true
-*
-* */
-async function ifPenalizeOngoing_async({userId, penalizeType,penalizeSubType}){
-    let condition={}
-    /*                  首先检查 penalizeSubType=all的记录，因为all具有最高优先级             */
-    condition[e_field.ADMIN_PENALIZE.PUNISHED_ID]=userId
-    condition[e_field.ADMIN_PENALIZE.PENALIZE_TYPE]=penalizeType
-    condition[e_field.ADMIN_PENALIZE.PENALIZE_SUB_TYPE]=e_penalizeSubType.ALL
-    let option={}
-    option['limit']=1
-    option['sort']={cDate:-1} //选取最近一个penalize记录
-    // condition['ifExpire']=true //这是virtual 方法
-    // console.log(`penalize condition====>${JSON.stringify(condition)}`)
-    let tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.admin_penalize,condition:condition,options:option,selectedFields:'-uDate'})
-    // console.log(`penalize sub type all's result====>${JSON.stringify(tmpResult)}`)
-    //all的处罚记录有效
-    if(tmpResult.length>0 && false===tmpResult[0]['isExpire']){
-        return Promise.resolve(true)
-    }
-
-    /*         继续检查penalizeSubType!==ALL的记录              */
-    if(penalizeSubType!==e_penalizeSubType.ALL){
-        condition[e_field.ADMIN_PENALIZE.PENALIZE_SUB_TYPE]=penalizeSubType
-        // console.log(`penalize condition for not ALL====>${JSON.stringify(condition)}`)
-        let tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.admin_penalize,condition:condition,options:option,selectedFields:'-uDate'})
-        // console.log(`penalize sub type not ALL result====>${JSON.stringify(tmpResult)}`)
-        //CRUD（非ALL）的处罚记录有效
-        if(tmpResult.length>0 && false===tmpResult[0]['isExpire']){
-            return Promise.resolve(true)
-        }
-    }
-
-
-    return Promise.resolve(false)
-}
 
 /*
 * @docValue: client的输入（recordInfo）
@@ -811,14 +630,14 @@ async function preCheck_async({req,collName,method,userLoginCheck={needCheck:fal
     //let {e_field,e_coll,e_internal_field}=dbMetaInfo
     //let {maxSearchKeyNum,maxSearchPageNum}=searchSetting
     //let {browserInputRule,internalInputRule,inputRule}=allRule
-// console.log(`preCheck in====>`)
+// console.log(`preCheck in====>${JSON.stringify(req.body.values)}`)
     /*              检查用户是否登录            */
     let {needCheck,error}=userLoginCheck
     if(true===needCheck){
         if(undefined===error){
             console.log(`error============================>need to check **user login**, but not supply related error`)
         }
-        if(undefined===req.session.userId){
+        if(undefined===req.session.userInfo){
             return Promise.reject(error)
         }
         // console.log(`====user login check done====`)
@@ -828,19 +647,19 @@ async function preCheck_async({req,collName,method,userLoginCheck={needCheck:fal
     // console.log(`checkRobot_async======>${JSON.stringify(checkRobot_async)}`)
     // console.log(`type ======>${JSON.stringify(typeof checkRobot_async[e_coll.ARTICLE][method]({userId:req.session.userId}))}`)
     if(undefined!==checkRobot_async[collName] && undefined!==checkRobot_async[collName][method]){
-        await checkRobot_async[collName][method]({userId:req.session.userId})
+        await checkRobot_async[collName][method]({userId:req.session.userInfo.userId})
         // console.log(`====robot check done====`)
     }
 // console.log(`robot done====>`)
     /*        检查用户是否被处罚                                 */
     // console.log(`create in with robot check result =======> ${result}`)
     let {penalizeType,penalizeSubType,penalizeCheckError}=penalizeCheck
-    if(undefined!==req.session.userId){
+    if(undefined!==req.session.userInfo && undefined!==req.session.userInfo.userId){
         if(undefined!==penalizeType && undefined!==penalizeSubType){
             if(undefined===penalizeCheckError){
                 console.log(`error============================>need to check **penalize**, but not supply related error`)
             }
-            tmpResult=await ifPenalizeOngoing_async({userId:req.session.userId, penalizeType:penalizeType,penalizeSubType:penalizeSubType})
+            tmpResult=await ifPenalizeOngoing_async({userId:req.session.userInfo.userId, penalizeType:penalizeType,penalizeSubType:penalizeSubType})
             // console.log(`preCheck_async penalize ongoing check result====>${JSON.stringify(tmpResult)}`)
             // return false
             if(true===tmpResult){
@@ -1043,6 +862,43 @@ async function contentDbDeleteNotExistImage_async({content,recordId,collConfig,c
     return Promise.resolve(content)
 }
 
+/*用户(userId)是否被禁止做某事（penalizeType）
+ * 查找admin_penalize中最后一条penalize记录，体重的ifExpire是否为true
+ *
+ * */
+async function ifPenalizeOngoing_async({userId, penalizeType,penalizeSubType}){
+    let condition={}
+    /*                  首先检查 penalizeSubType=all的记录，因为all具有最高优先级             */
+    condition[e_field.ADMIN_PENALIZE.PUNISHED_ID]=userId
+    condition[e_field.ADMIN_PENALIZE.PENALIZE_TYPE]=penalizeType
+    condition[e_field.ADMIN_PENALIZE.PENALIZE_SUB_TYPE]=e_penalizeSubType.ALL
+    let option={}
+    option['limit']=1
+    option['sort']={cDate:-1} //选取最近一个penalize记录
+    // condition['ifExpire']=true //这是virtual 方法
+    // console.log(`penalize condition====>${JSON.stringify(condition)}`)
+    let tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.admin_penalize,condition:condition,options:option,selectedFields:'-uDate'})
+    // console.log(`penalize sub type all's result====>${JSON.stringify(tmpResult)}`)
+    //all的处罚记录有效
+    if(tmpResult.length>0 && false===tmpResult[0]['isExpire']){
+        return Promise.resolve(true)
+    }
+
+    /*         继续检查penalizeSubType!==ALL的记录              */
+    if(penalizeSubType!==e_penalizeSubType.ALL){
+        condition[e_field.ADMIN_PENALIZE.PENALIZE_SUB_TYPE]=penalizeSubType
+        // console.log(`penalize condition for not ALL====>${JSON.stringify(condition)}`)
+        let tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.admin_penalize,condition:condition,options:option,selectedFields:'-uDate'})
+        // console.log(`penalize sub type not ALL result====>${JSON.stringify(tmpResult)}`)
+        //CRUD（非ALL）的处罚记录有效
+        if(tmpResult.length>0 && false===tmpResult[0]['isExpire']){
+            return Promise.resolve(true)
+        }
+    }
+
+
+    return Promise.resolve(false)
+}
 
 /*          根据resourceProfileRange，resourceColl，从预定义的对象中获得对应的fieldName和grougby的设置，统计使用的资源数
 * @resourceProfileRange: PER_PERSON/PER_ARTICLE/PER_IMPEACH，此函数只是作为key，从fieldsValueToFilterGroup获得对应的groupby字段设置
@@ -1095,68 +951,8 @@ async function calcExistResource_async({resourceProfileRange,resourceFileFieldNa
 
 }
 
-/*          当前资源使用量（currentResourceUsage），是否已经超出资源定义（currentResourceProfile），超出返回错误（error）
-* @currentResourceUsage: 获得当前resourceProfileRange（PER_PERSON/IMPEACH/ARTICLE）已经使用的资源信息，size和path
-*               {totalSizeInMb:xxxx, totalFileNum: yyyyy}
-* @currentResourceProfile： 当前需要比较的profile
-* @error;   如果size或者number超出，对应的error
-*               {sizeExceed: size超出对应的error,numberExceed：数量超出的error }
-* */
-async function ifResourceStillValid_async({currentResourceUsage,currentResourceProfile,error}) {
-    //进行比较
-    if (currentResourceUsage.totalSizeInMb > currentResourceProfile[e_field.RESOURCE_PROFILE.TOTAL_FILE_SIZE_IN_MB]) {
-        return Promise.reject(error.sizeExceed)
-    }
-    if (currentResourceUsage.totalFileNum > currentResourceProfile[e_field.RESOURCE_PROFILE.MAX_FILE_NUM]) {
-        return Promise.reject(error.numberExceed)
-    }
-
-    return Promise.resolve(true)
-
-}
-
-/*          当前资源使用量（currentResourceUsage）+新文件（fileInfo），是否已经超出资源定义（currentResourceProfile），超出返回错误（error）
- * @currentResourceUsage: 获得当前resourceProfileRange（PER_PERSON/IMPEACH/ARTICLE）已经使用的资源信息，size和path
- *               {totalSizeInMb:xxxx, totalFileNum: yyyyy}
- * @currentResourceProfile： 当前需要比较的profile
- * @fileInfo： {size:, path:}
- * @error;   如果size或者number超出，对应的error
- *               {sizeExceed: size超出对应的error,numberExceed：数量超出的error }
- * */
-async function ifNewFileLeadExceed_async({currentResourceUsage,currentResourceProfile,fileInfo,error}){
-    /*    let currentResourceProfile //根据resourceProfileRange和userId，选中的资源配置记录
-     //查找resource配置文件
-     let tmpResult = await chooseLastValidResourceProfile_async({resourceProfileRange: resourceProfileRange, userId: userId})
-     // console.log(`chosed profile========>${JSON.stringify(tmpResult.msg)}`)
-     //有资源配置文件，才进行检查
-     if(undefined!==tmpResult.msg){
-
-     currentResourceProfile=misc.objectDeepCopy(tmpResult.msg)
-     }*/
-    // console.log(`currentResourceProfile =====>${JSON.stringify(currentResourceProfile)}`)
-    // console.log(`currentResourceUsage =====>${JSON.stringify(currentResourceUsage)}`)
-    /*    currentResourceUsage.totalSizeInMb += tmpResult['totalImageSizeInMb']
-     currentResourceUsage.totalFileNum += tmpResult['totalFileNum']*/
-
-    // console.log(`fileInfo.size=========>${fileInfo.size}`)
-    // console.log(`currentResourceUsage.totalSizeInMb=========>${currentResourceUsage.totalSizeInMb}`)
-    // console.log(`profile size===========>${currentResourceProfile[e_field.RESOURCE_PROFILE.TOTAL_FILE_SIZE_IN_MB]}`)
-    //进行比较
-    if (fileInfo.size + currentResourceUsage.totalSizeInMb > currentResourceProfile[e_field.RESOURCE_PROFILE.TOTAL_FILE_SIZE_IN_MB]) {
-
-        fs.unlink(fileInfo.path)
-        return Promise.reject(error.sizeExceed)
-    }
-    if (1 + currentResourceUsage.totalFileNum > currentResourceProfile[e_field.RESOURCE_PROFILE.MAX_FILE_NUM]) {
-        fs.unlink(fileInfo.path)
-        return Promise.reject(error.numberExceed)
-    }
-
-    return Promise.resolve(true)
-}
-
 /*                  根据用户的类型（普通用户，还是管理员用户），生成sugar，并hash输入的密码                        */
-function generateSugarAndhashPassword({ifAdminUser,ifUser,password}){
+function generateSugarAndHashPassword({ifAdminUser,ifUser,password}){
     let randomStringLength,hashType
     //根据用户类型确定参数
     if(true===ifAdminUser && false===ifUser){
@@ -1165,7 +961,7 @@ function generateSugarAndhashPassword({ifAdminUser,ifUser,password}){
     }
     if(false===ifAdminUser && true===ifUser){
         randomStringLength=5
-        hashType=e_hashType.SHA1
+        hashType=e_hashType.SHA256 //SHA1已经被破解
     }
     if(undefined===randomStringLength || undefined===hashType){
         return helperError.userTypeNotCorrect
@@ -1176,6 +972,36 @@ function generateSugarAndhashPassword({ifAdminUser,ifUser,password}){
     if(hashedPassword.rc>0){return hashedPassword}
     return {rc:0,msg:{sugar:sugar,hashedPassword:hashedPassword.msg}}
 }
+
+/*          保存登录用户的信息    采用async方式，方便处理返回值
+* @userInfo:{userId,collName,userType}   保存userId，user位于哪个coll，用户类型
+*
+* */
+async function setLoginUserInfo_async({req,userInfo}){
+    // console.log(`setLoginUserInfo in==========>`)
+    if(undefined===userInfo){
+        return Promise.reject(helperError.userInfoUndefine)
+    }
+    let mandatoryFields=[e_userInfoMandatoryField.USER_ID,e_userInfoMandatoryField.COLL_NAME,e_userInfoMandatoryField.USER_TYPE]
+    for(let singleMandatoryField of mandatoryFields){
+        if(undefined===userInfo[singleMandatoryField]){
+            return Promise.reject(helperError.mandatoryFieldValueUndefine(singleMandatoryField))
+        }
+    }
+    //保存信息到session中
+    // console.log(`userInfo==========>${JSON.stringify(userInfo)}`)
+    req.session.userInfo=userInfo
+    return Promise.resolve()
+}
+
+async function getLoginUserInfo_async({req}){
+    if(undefined===req.session || undefined===req.session.userInfo){
+        return Promise.reject(helperError.userInfoNotInSession)
+    }
+    return Promise.resolve(req.session.userInfo)
+}
+
+
 
 module.exports= {
     inputCommonCheck,//每个请求进来是，都要进行的操作（时间间隔检查等）
@@ -1189,8 +1015,8 @@ module.exports= {
     // covertToServerFormat,//将req中诸如RECORD_INFO/SINGLE_FIELD的值转换成server的格式，并去除不合格字段值（create：控制
 
     // checkIfFkExist_async,//检测doc中外键值是否在对应的coll中存在
-    ifFieldValueExistInColl_async,// 检测字段值是否已经在db中存在
-    ifFiledInDocValueUnique_async,//未使用ifFieldValueExistInColl_async，直接使用find方法对整个输入的字段进行unique检测
+
+
 
     chooseStorePath_async,//根据某种算法（平均法），选择合适的storePath来存储文件
     chooseLastValidResourceProfile_async,//查找最近可用的resourceProfile
@@ -1198,10 +1024,8 @@ module.exports= {
 
     checkInternalValue,//
 
+    ifPenalizeOngoing_async,//call by preCheck
     // ifFkValueExist_async_old,
-    ifSingleFieldFkValueExist_async,
-    ifFkValueExist_async,
-    ifPenalizeOngoing_async,
 
     deleteInternalField,//检查client端输入的值（recordInfo），如果其中包含了internalField，直接删除
     preCheck_async,//user login+robot+penalize+delete internal+ CRUD
@@ -1213,10 +1037,11 @@ module.exports= {
     contentDbDeleteNotExistImage_async,
 
     calcExistResource_async,//根据resourceProfileRange，resourceProfileType，从预定义的对象中获得对应的fieldName和grougby的设置
-    ifResourceStillValid_async, //直接计算（db）中已有的resource是否超出profile的定义
-    ifNewFileLeadExceed_async,  //db中已有resource+上传文件，是否超出profile定义
 
-    generateSugarAndhashPassword,//根据用户类型，生成sugar和hash过得密码
+    generateSugarAndHashPassword,//根据用户类型，生成sugar和hash过得密码
+
+    setLoginUserInfo_async,
+    getLoginUserInfo_async,
 }
 
 

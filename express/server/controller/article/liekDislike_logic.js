@@ -52,6 +52,7 @@ const e_field=require('../../constant/genEnum/DB_field').Field
 // const e_inputFieldCheckType=require('../../constant/enum/node').InputFieldCheckType
 
 const controllerHelper=server_common_file_require.controllerHelper
+const controllerChecker=server_common_file_require.controllerChecker
 const common_operation_model=server_common_file_require.common_operation_model
 // const hash=require('../../function/assist/crypt').hash
 
@@ -120,7 +121,7 @@ async function article_likeDislike_dispatcher_async({req}){
     //检查格式
     // console.log(`req is ${JSON.stringify(req.cookies)}`)
     // console.log(`dispatcher in`)
-    console.log(`req.body.values in likedislike========> ${JSON.stringify(req.body.values)}`)
+    // console.log(`req.body.values in likedislike========> ${JSON.stringify(req.body.values)}`)
     let collName=e_coll.LIKE_DISLIKE,tmpResult
 
     //checkMethod只检测req的结构，以及req中method的格式和值，以便后续可以直接根据method进行调用
@@ -186,8 +187,11 @@ async function article_likeDislike_dispatcher_async({req}){
 
 /*              记录likeDislike                */
 async  function createLikeDislike_async(req) {
-    let tmpResult, userId, docValue,collName,collNameStatic
-    userId = req.session.userId
+    let tmpResult, docValue,collName,collNameStatic
+
+    let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
+    let userId=userInfo.userId
+
     collName=e_coll.LIKE_DISLIKE
     collNameStatic=e_coll.LIKE_DISLIKE_STATIC
     // userId='598dae560706320f40c0cab1'
@@ -220,7 +224,7 @@ async  function createLikeDislike_async(req) {
     Object.assign(docValue, internalValue)
 // console.log(`docValue after internal=========>${JSON.stringify(docValue)}`)
     /*              外键（article/authorId）是否存在                 */
-    await controllerHelper.ifFkValueExist_async({docValue:docValue,collFkConfig:fkConfig[collName],collFieldChineseName:e_fieldChineseName[collName]})
+    await controllerChecker.ifFkValueExist_async({docValue:docValue,collFkConfig:fkConfig[collName],collFieldChineseName:e_fieldChineseName[collName]})
 
     /*                  复合unique index检查(用户是否对此文档进行过踩赞)                    */
     let condition={}

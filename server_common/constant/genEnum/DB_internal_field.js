@@ -5,7 +5,7 @@
 const Field={
     admin_penalize:['creatorId',],
     admin_sugar:['userId','sugar',],
-    admin_user:['password',],
+    admin_user:['password','docStatus','lastAccountUpdateDate','lastSignInDate',],
     category:[],
     resource_profile:[],
     store_path:['usedSize','status',],

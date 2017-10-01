@@ -17,9 +17,9 @@ const redisError=require('../server_common/constant/error/redisError.js')
 const systemError=require('../server_common/constant/error/systemError.js')
 const validateError=require('../server_common/constant/error/validateError.js')
 const regex=require('../server_common/constant/regex/regex.js')
+const controllerChecker=require('../server_common/controller/controllerChecker.js')
 const controllerHelper=require('../server_common/controller/controllerHelper.js')
 const dataConvert=require('../server_common/controller/dataConvert.js')
-const priorityCHeck=require('../server_common/controller/priorityCHeck.js')
 const checkRobot=require('../server_common/function/assist/checkRobot.js')
 const cookieSession=require('../server_common/function/assist/cookieSession.js')
 const crypt=require('../server_common/function/assist/crypt.js')
@@ -53,9 +53,9 @@ module.exports={
     systemError,
     validateError,
     regex,
+    controllerChecker,
     controllerHelper,
     dataConvert,
-    priorityCHeck,
     checkRobot,
     cookieSession,
     crypt,

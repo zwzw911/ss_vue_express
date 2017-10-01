@@ -119,7 +119,7 @@ function generateRandomString(len=4,type=e_randomStringType.NORMAL){
      if(true===strict){validString+=`${validString}!@#$%^&*()+={}[]|\?/><`}*/
     let validString
     let basicString='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-    console.log(`misc==>e_randomStringType is ${JSON.stringify(type)}`)
+    //console.log(`misc==>e_randomStringType is ${JSON.stringify(type)}`)
     switch (type){
         case e_randomStringType.BASIC:
             validString=basicString
@@ -168,16 +168,16 @@ let restTimeInDay=function(timeUnit=e_timeUnit.SEC){
 
 
 //获得当前用户的信息，以便在toolbar上显示对应的信息
-let getUserInfo=function(req){
+/*let getUserInfo=function(req){
     return req.session.userName
-    /*    let result
+    /!*    let result
      if(req.session.state===e_userStateEnum.login){
      result=req.session.userName
      //result.userId=req.session.userId
      }
      //console.log(result)
-     return result*/
-}
+     return result*!/
+}*/
 
 
 
@@ -485,13 +485,31 @@ function recursiveRequireAllFileInDir(filesArray,absoluteDestFilePath) {
 
 }
 
+/*
+* 数组中的每个值作为key，值的类型作为value，赋给一个对象。如果已经存在，说明是重复
+* */
+function ifArrayHasDuplicate(array){
+    let obj={}
+    for(let singleEle of array){
+        //有key且类型一致，说明重复
+        if(undefined!==obj[singleEle] && typeof singleEle===obj[singleEle]){
+            return true
+        }
+        obj[singleEle]=typeof singleEle
+    }
+    return false
+}
+
+// console.log(`${ifArrayHasDuplicate([1,'1'])}`)
+// console.log(`${ifArrayHasDuplicate([1,1])}`)
+
 module.exports={
     checkInterval_async,
     generateRandomString,
     restTimeInDay,
 
 
-    getUserInfo,
+    // getUserInfo,
     checkUserState,
     ifUserLogin,
 
@@ -512,4 +530,8 @@ module.exports={
 
     recursiveReadFileIntoArray,//递归读取一个目录下所有文件的路径
     recursiveRequireAllFileInDir,//将数组中所有文件名require到指定文件中
+
+    ifArrayHasDuplicate,
 }
+
+

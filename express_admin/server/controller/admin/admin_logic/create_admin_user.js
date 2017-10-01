@@ -18,13 +18,16 @@ const e_iniSettingObject=require('../../../constant/genEnum/initSettingObject').
 /*                      specify: inputRule                */
 const inputRule=require('../../../constant/inputRule/inputRule').inputRule
 const internalInputRule=require('../../../constant/inputRule/internalInputRule').internalInputRule
-
+const browserInputRule=require('../../../constant/inputRule/browserInputRule').browserInputRule
+/*                      specify: controllerError                */
+const controllerError=require('../admin_setting/admin_user_controllerError').controllerError
 /*                      server common                                           */
 const server_common_file_require=require('../../../../server_common_file_require')
 const nodeEnum=server_common_file_require.nodeEnum
 /*                      server common：function                                       */
 const dataConvert=server_common_file_require.dataConvert
 const controllerHelper=server_common_file_require.controllerHelper
+const controllerChecker=server_common_file_require.controllerChecker
 const common_operation_model=server_common_file_require.common_operation_model
 const misc=server_common_file_require.misc
 const hash=server_common_file_require.crypt.hash
@@ -35,6 +38,7 @@ const e_env=nodeEnum.Env
 const e_part=server_common_file_require.nodeEnum.ValidatePart
 const e_hashType=server_common_file_require.nodeRuntimeEnum.HashType
 const e_adminUserType=server_common_file_require.mongoEnum.AdminUserType.DB
+const e_adminPriorityType=server_common_file_require.mongoEnum.AdminPriorityType.DB
 /*                      server common：other                                       */
 const regex=server_common_file_require.regex.regex
 const currentEnv=server_common_file_require.appSetting.currentEnv
@@ -46,25 +50,47 @@ const currentEnv=server_common_file_require.appSetting.currentEnv
 //执行db操作并返回结果
 async  function createUser_async(req){
     // console.log(`create user in`)
+    let tmpResult
     let collName=controller_setting.MAIN_HANDLED_COLL_NAME
-
-    /*                      logic                               */
     let docValue=req.body.values[e_part.RECORD_INFO]
-// console.log(`docValue===> ${JSON.stringify(docValue)}`)
 
+    let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
+    let userId=userInfo.userId
+
+// console.log(`docValue===> ${JSON.stringify(docValue)}`)
+// console.log(`userId===> ${JSON.stringify(userId)}`)
     /*              参数转为server格式            */
     dataConvert.convertCreateUpdateValueToServerFormat(docValue)
     dataConvert.constructCreateCriteria(docValue)
+
+    /*              不能通过API创建ROOT           */
+    if(e_adminUserType.ROOT===docValue[e_field.ADMIN_USER.USER_TYPE]){
+        return Promise.reject(controllerError.cantCreateRootUserByAPI)
+    }
+    /*              当前用户是否有创建用户的权限      */
+    let hasCreatePriority=await controllerChecker.ifAdminUserHasExpectedPriority({userId:userId,arr_expectedPriority:[e_adminPriorityType.CREATE_ADMIN_USER]})
+    if(false===hasCreatePriority){
+        return Promise.reject(controllerError.currentUserHasNotPriorityToCreateUser)
+    }
+
+    /*              检测enum+array的字段是否有重复值       */
+    // console.log(`browserInputRule[collName]==========> ${JSON.stringify(browserInputRule[collName])}`)
+    // console.log(`docValue==========> ${JSON.stringify(docValue)}`)
+    tmpResult=controllerChecker.ifEnumHasDuplicateValue({collValue:docValue,collRule:browserInputRule[collName]})
+    // console.log(`duplicate check result ==========> ${JSON.stringify(tmpResult)}`)
+    if(tmpResult.rc>0){
+        return Promise.reject(tmpResult)
+    }
 // console.log(`createUser_async docValue===> ${JSON.stringify(docValue)}`)
     /*      因为name是unique，所以要检查用户名是否存在(unique check)     */
     if(undefined!==e_uniqueField[collName] &&  e_uniqueField[collName].length>0) {
         let additionalCheckCondition={[e_field.ADMIN_USER.DOC_STATUS]:e_docStatus.DONE}
-        await controllerHelper.ifFiledInDocValueUnique_async({collName: collName, docValue: docValue,additionalCheckCondition:additionalCheckCondition})
+        await controllerChecker.ifFieldInDocValueUnique_async({collName: collName, docValue: docValue,additionalCheckCondition:additionalCheckCondition})
     }
-// console.log(`ifFiledInDocValueUnique_async done===>`)
+// console.log(`ifFieldInDocValueUnique_async done===>`)
 
     //如果用户在db中存在，但是创建到一半，则删除用户(然后重新开始流程)
-    let tmpResult
+
     let condition={name:docValue[e_field.ADMIN_USER.NAME]}
     let docStatusTmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.admin_user,condition:condition})
     if(docStatusTmpResult[0] && e_docStatus.PENDING===docStatusTmpResult[0][e_field.ADMIN_USER.DOC_STATUS]){
@@ -83,20 +109,21 @@ async  function createUser_async(req){
     // console.log(`before hash is ${JSON.stringify(docValue)}`)
     let internalValue={}
 
-    let hashResult=controllerHelper.generateSugarAndhashPassword({ifAdminUser:false,ifUser:true,password:docValue[e_field.USER.PASSWORD]})
+    let hashResult=controllerHelper.generateSugarAndHashPassword({ifAdminUser:true,ifUser:false,password:docValue[e_field.ADMIN_USER.PASSWORD]})
+    // console.log(`hashResult is ${JSON.stringify(hashResult)}`)
     if(hashResult.rc>0){return Promise.reject(hashResult)}
     let sugar=hashResult.msg['sugar']
-    internalValue[e_field.USER.PASSWORD]=hashResult.msg['hashedPassword']
-    internalValue[e_field.USER.DOC_STATUS]=e_docStatus.PENDING
+    internalValue[e_field.ADMIN_USER.PASSWORD]=hashResult.msg['hashedPassword']
+    internalValue[e_field.ADMIN_USER.DOC_STATUS]=e_docStatus.PENDING
 
 // console.log(`docValue   ${JSON.stringify(docValue)}`)
-    let accountValue=docValue[e_field.ADMIN_USER.ACCOUNT]
+/*    let accountValue=docValue[e_field.ADMIN_USER.ACCOUNT]
     if(regex.email.test(accountValue)){
         internalValue[e_field.ADMIN_USER.ACCOUNT_TYPE]=e_accountType.EMAIL
     }
     if(regex.mobilePhone.test(accountValue)){
         internalValue[e_field.ADMIN_USER.ACCOUNT_TYPE]=e_accountType.MOBILE_PHONE
-    }
+    }*/
 
     // docValue[e_field.USER.USED_ACCOUNT]=docValue[e_field.USER.ACCOUNT]
     internalValue[e_field.ADMIN_USER.LAST_ACCOUNT_UPDATE_DATE]=Date.now()
@@ -129,7 +156,7 @@ async  function createUser_async(req){
     // console.log(`user created  ==========> ${JSON.stringify(userCreateTmpResult)}`)
 
     //对关联表sugar进行insert操作
-    let sugarValue={userId:userCreateTmpResult._id,admin_sugar:sugar}
+    let sugarValue={userId:userCreateTmpResult._id,sugar:sugar}
     // console.log(`sugarValue ${JSON.stringify(sugarValue)}`)
     await common_operation_model.create_returnRecord_async({dbModel:e_dbModel.admin_sugar,value:sugarValue})
     // console.log(`tmpResult is ${JSON.stringify(tmpResult)}`)

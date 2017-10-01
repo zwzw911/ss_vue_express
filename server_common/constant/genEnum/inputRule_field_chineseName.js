@@ -20,6 +20,9 @@ const ChineseName={
         'password':'密码',
         'userType':'管理员类型',
         'userPriority':'用户权限',
+        'docStatus':'document状态',
+        'lastAccountUpdateDate':'账号更改日期',
+        'lastSignInDate':'上次登录时间',
     },
     category:{
         'name':'分类名称',

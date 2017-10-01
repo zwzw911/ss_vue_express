@@ -76,7 +76,7 @@ describe('impeachUploadFile_dispatch_async ', async function() {
 
 
     before('user2 create impeach', async function () {
-        impeachId=await API_helper.createImpeach_returnImpeachId_async({impeachType:e_impeachType.ARTICLE,articleId:articleId,userSess:user2Sess})
+        impeachId=await API_helper.createImpeachForArticle_returnImpeachId_async({articleId:articleId,userSess:user2Sess})
     });
 
     it("user2 upload image for impeach",function(){

@@ -29,18 +29,21 @@ const user={
 }
 
 const admin_user={
+    rootAdmin:{name:{value:'zw'},password:{value:'123456'},userType:{value:e_adminUserType.ROOT}},
     user1:{name:{value:'123456789'},password:{value:'123456'},userType:{value:e_adminUserType.NORMAL}},
-    user2:{name:{value:'zw'},password:{value:'654321'},userType:{value:e_adminUserType.NORMAL}},
+    user2:{name:{value:'zhangwei'},password:{value:'654321'},userType:{value:e_adminUserType.NORMAL}},
     user3:{name:{value:'ada'},password:{value:'654321'},userType:{value:e_adminUserType.NORMAL}},
     user3NewAccount:'wei.ag.zhang@alcate-sbell.com.cn',
 
     userNotExist:{name:{value:'test'},password:{value:'123456'},userType:{value:e_adminUserType.NORMAL}},
 
+    rootAdminForModel:{name:'zw',password:'123456',userType:e_adminUserType.ROOT},
     user1ForModel:{name:'123456789',password:'123456',userType:e_adminUserType.NORMAL},
-    user2ForModel:{name:'zw',password:'654321',userType:e_adminUserType.NORMAL},
+    user2ForModel:{name:'zhangwei',password:'654321',userType:e_adminUserType.NORMAL},
     user3ForModel:{name:'ada',password:'654321',userType:e_adminUserType.NORMAL},
     useNotExistForModel:{name:'test',password:'123456',userType:e_adminUserType.NORMAL},
 }
+
 
 const impeach_image={
 

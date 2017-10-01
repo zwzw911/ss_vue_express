@@ -51,6 +51,7 @@ const e_chineseName=require('../../constant/genEnum/inputRule_field_chineseName'
 // const e_inputFieldCheckType=server_common_file_require.nodeEnum.InputFieldCheckType
 
 const controllerHelper=server_common_file_require.controllerHelper
+const controllerChecker=server_common_file_require.controllerChecker
 const common_operation_model=server_common_file_require.common_operation_model
 // const hash=require('../../function/assist/crypt').hash
 
@@ -151,7 +152,9 @@ async function article_dispatcher_async(req){
                 penalizeCheckError:controllerError.userInPenalizeNoArticleCreate
             }
             expectedPart=[]
-            tmpResult=await controllerHelper.preCheck_async({req:req,collName,method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart,e_field:e_field,e_coll:e_coll,e_internal_field:e_internal_field,maxSearchKeyNum:maxSearchKeyNum,maxSearchPageNum:maxSearchPageNum})
+            /*          新建文档无需任何输入参数，需要内部自动产生            */
+
+            tmpResult=await controllerHelper.preCheck_async({req:req,collName,method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart,}) //e_field:e_field,e_coll:e_coll,e_internal_field:e_internal_field,maxSearchKeyNum:maxSearchKeyNum,maxSearchPageNum:maxSearchPageNum
 
             tmpResult=await createArticle_async(req)
 
@@ -191,10 +194,11 @@ async function article_dispatcher_async(req){
 
 /*              新article无任何输入，所有的值都是内部产生                */
 async  function createArticle_async(req){
-    let tmpResult,userId,docValue
-    userId=req.session.userId
+    let tmpResult,docValue
+    let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
+    let userId=userInfo.userId
 // console.log(`userId ====>${userId}`)
-    /*                  添加内部产生的client值（name && status && authorId && folderId）                  */
+
     docValue={}
     docValue[e_field.ARTICLE.NAME]="新建文档"
 
@@ -212,7 +216,7 @@ async  function createArticle_async(req){
 // console.log(`docValue is ====>${JSON.stringify(docValue)}`)
     /*              对内部产生的值进行检测（开发时使用，上线后为了减低负荷，无需使用）           */
     let internalValue={}
-    internalValue[e_field.ARTICLE.AUTHOR_ID]=req.session.userId
+    internalValue[e_field.ARTICLE.AUTHOR_ID]=userId
     if(e_env.DEV===currentEnv && Object.keys(internalValue).length>0){
         // console.log(`before newDocValue====>${JSON.stringify(internalValue)}`)
         // let newDocValue=dataConvert.addSubFieldKeyValue(internalValue)
@@ -244,7 +248,10 @@ async function updateArticle_async(req){
     // console.log(`update article in========>`)
 
     let tmpResult
-    let userId=req.session.userId
+
+    let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
+    let userId=userInfo.userId
+
     let articleId=req.body.values[e_part.RECORD_ID]
     let originalArticle
     let collName=e_coll.ARTICLE
@@ -278,13 +285,13 @@ async function updateArticle_async(req){
 
 
     /*              检查外键字段的值是否存在                */
-    console.log(`before fk exist check`)
-    console.log(`docValue=${JSON.stringify(docValue)}`)
-    console.log(`collFkConfig=${JSON.stringify(fkConfig[collName])}`)
-    console.log(`collFieldChineseName=${JSON.stringify(e_fieldChineseName[collName])}`)
+    // console.log(`before fk exist check`)
+    // console.log(`docValue=${JSON.stringify(docValue)}`)
+    // console.log(`collFkConfig=${JSON.stringify(fkConfig[collName])}`)
+    // console.log(`collFieldChineseName=${JSON.stringify(e_fieldChineseName[collName])}`)
     // docValue,collFkConfig,collFieldChineseName
-    await controllerHelper.ifFkValueExist_async({docValue:docValue,collFkConfig:fkConfig[collName],collFieldChineseName:e_fieldChineseName[collName]})
-    console.log(`after fk exist check`)
+    await controllerChecker.ifFkValueExist_async({docValue:docValue,collFkConfig:fkConfig[collName],collFieldChineseName:e_fieldChineseName[collName]})
+    // console.log(`after fk exist check`)
 // console.log(`fk exist check done====>`)
 //     console.log(`docValue====>${JSON.stringify(docValue)}`)
 
@@ -361,10 +368,10 @@ async function updateArticle_async(req){
     //因为internalValue只是进行了转换，而不是新增，所以无需ObjectDeepCopy
     // Object.assign(docValue,internalValue)
 
-console.log(`to be update =============>`)
+// console.log(`to be update =============>`)
     /*              如果有unique字段，需要预先检查unique(express级别，而不是mongoose级别)            */
     if(undefined!==e_uniqueField[collName] && e_uniqueField[collName].length>0) {
-        await controllerHelper.ifFiledInDocValueUnique_async({collName: collName, docValue: docValue})
+        await controllerChecker.ifFieldInDocValueUnique_async({collName: collName, docValue: docValue})
     }
 
     /*              更新数据            */

@@ -11,6 +11,7 @@ const dataConvert=server_common_file_include.dataConvert
 
 const nodeEnum=server_common_file_include.nodeEnum
 const mongoEnum=server_common_file_include.mongoEnum
+const nodeRuntimeEnum=server_common_file_include.nodeRuntimeEnum
 // const nodeRuntimeEnum=server_common_file_include.nodeRuntimeEnum
 
 const common_operation_model=server_common_file_include.common_operation_model
@@ -19,7 +20,9 @@ const common_operation_model=server_common_file_include.common_operation_model
 // const validateFormat=server_common_file_include.validateFormat
 
 const e_part=nodeEnum.ValidatePart
-const e_hashType=server_common_file_include.nodeRuntimeEnum.HashType
+const e_hashType=nodeRuntimeEnum.HashType
+const e_userInfoMandatoryField=nodeRuntimeEnum.userInfoMandatoryField
+
 const hash=server_common_file_include.crypt.hash
 // const e_randomStringType=nodeEnum.RandomStringType
 // const e_userState=nodeEnum.UserState
@@ -28,7 +31,7 @@ const hash=server_common_file_include.crypt.hash
 // const e_gmCommand=nodeRuntimeEnum.GmCommand
 // const e_gmGetter=nodeRuntimeEnum.GmGetter
 
-// const e_docStatus=mongoEnum.DocStatus.DB
+const e_docStatus=mongoEnum.DocStatus.DB
 //
 const e_coll=require('../../../constant/genEnum/DB_Coll').Coll
 const e_field=require('../../../constant/genEnum/DB_field').Field
@@ -48,10 +51,11 @@ const controllerError=require('../admin_setting/admin_user_controllerError').con
 
 
 async function login_async(req){
+    // console.log(`admin user login in========>`)
     /*                              logic                                   */
     /*              略有不同，需要确定字段有且只有账号和密码                */
     // let usedColl=e_coll.USER
-    let docValue = req.body.values[e_part.RECORD_INFO]
+    let docValue = req.body.values[e_part.RECORD_INFO],tmpResult
     /*              参数转为server格式            */
     dataConvert.convertCreateUpdateValueToServerFormat(docValue)
     // dataConvert.constructCreateCriteria(docValue)
@@ -69,13 +73,18 @@ async function login_async(req){
 // console.log(`converted doc value ${JSON.stringify(docValue)}`)
     /*              判断user是否存在且password正确                      */
 //    读取sugar，并和输入的password进行运算，得到的结果进行比较
-    let condition={[e_field.ADMIN_USER.NAME]:docValue[e_field.ADMIN_USER.NAME]}
+    //根据姓名查找用户，用户状态为DONE，且没有dDate
+    let condition={
+        [e_field.ADMIN_USER.NAME]:docValue[e_field.ADMIN_USER.NAME],
+        [e_field.ADMIN_USER.DOC_STATUS]:e_docStatus.DONE,
+        ['dDate']:{$exists:false},
+    }
     let userTmpResult = await common_operation_model.find_returnRecords_async({dbModel: e_dbModel.admin_user,condition:condition})
     // if(userTmpResult.rc>0){
     //     return Promise.reject(userTmpResult)
     // }
     if(0===userTmpResult.length){
-        return Promise.reject(controllerError.accountNotExist)
+        return Promise.reject(controllerError.userNameNotExist)
     }
 // console.log(`userTmpResult ${JSON.stringify(userTmpResult)}`)
     condition={userId:userTmpResult[0]['id']}
@@ -94,14 +103,20 @@ async function login_async(req){
 
     // console.log(`user/pwd  ${docValue[e_field.USER.ACCOUNT]}///${encryptPassword.msg}`)
     if(userTmpResult[0][e_field.ADMIN_USER.PASSWORD]!==encryptPassword['msg']){
-        return Promise.reject(controllerError.accountPasswordNotMatch)
+        return Promise.reject(controllerError.passwordNotMatch)
     }
 
     /*
      *  需要设置session，并设lastSignInDate为当前日期
      * */
     // console.log(`userTmpResult.msg[0]['id'] ${JSON.stringify(userTmpResult.msg[0]['id'])}`)
-    req.session.userId=userTmpResult[0]['id']
+    let userInfo={}
+    userInfo[e_userInfoMandatoryField.USER_ID]=userTmpResult[0]['id']
+    userInfo[e_userInfoMandatoryField.USER_TYPE]=userTmpResult[0][e_field.ADMIN_USER.USER_TYPE]
+    userInfo[e_userInfoMandatoryField.COLL_NAME]=e_coll.ADMIN_USER
+    await controllerHelper.setLoginUserInfo_async({req:req,userInfo:userInfo})
+
+
     await common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel.admin_user,id:userTmpResult[0]['id'],updateFieldsValue:{'lastSignInDate':Date.now()}})
     return Promise.resolve({rc:0})
 }
