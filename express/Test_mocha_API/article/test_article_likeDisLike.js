@@ -34,8 +34,9 @@ const contollerError=require('../../server/controller/article/liekDislike_logic'
 
 const objectDeepCopy=server_common_file_require.misc.objectDeepCopy//require('../../server/function/assist/misc').objectDeepCopy
 
-const test_helper=require("../API_helper/db_operation_helper")
-const testData=require('../testData')
+//const test_helper=require("../API_helper/db_operation_helper")
+const testData=server_common_file_require.testData//require('../testData')
+const API_helper=server_common_file_require.API_helper
 
 let baseUrl="/article/"
 let userId  //create后存储对应的id，以便后续的update操作
@@ -51,59 +52,20 @@ describe('create new likeDislike for article ', async function() {
     let url = 'likeDislike', finalUrl = baseUrl + url
 
     let articleId,userId
-    before('user1 login correct', function (done) {
-        // console.log(`testData.user.user1 ${JSON.stringify(testData.user.user1)}`)
-        let user1Tmp = {}
-        user1Tmp[e_field.USER.ACCOUNT] = testData.user.user1[e_field.USER.ACCOUNT]
-        user1Tmp[e_field.USER.PASSWORD] = testData.user.user1[e_field.USER.PASSWORD]
-        // console.log(`user1Tmp ===>${JSON.stringify(user1Tmp)}`)
-        data.values[e_part.RECORD_INFO] = user1Tmp//,notExist:{value:123}
-        data.values[e_part.METHOD] = e_method.MATCH
-        // console.log(`data.values ${JSON.stringify(data.values)}`)
+    before('user1 login correct', async function () {
+        sess1=await API_helper.userLogin_returnSess_async({userData:testData.user.user1,app:app})
 
-        request.agent(app).post('/user/').set('Accept', 'application/json').send(data)
-            .end(function (err, res) {
-                // if (err) return done(err);
-                console.log(`user1 login sess ======> ${JSON.stringify(res['header']['set-cookie'][0].split(';')[0])}`)
-                sess1 = res['header']['set-cookie'][0].split(';')[0]
-                let parsedRes = JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc, 0)
-                // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
-                done();
-            });
     })
 
     before('get user1 id', async function(){
         let tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.user,condition:{[e_field.USER.ACCOUNT]:testData.user.user1ForModel[e_field.USER.ACCOUNT]}})
         // console.log(`tmpResult=====> ${JSON.stringify(tmpResult)}`)
         userId=tmpResult[0]['_id']
-        /*        tmpResult=await common_operation_model.find({dbModel:e_dbModel.article,condition:{[e_field.ARTICLE.AUTHOR_ID]:userId}})
-         // console.log(`tmpResult=====> ${JSON.stringify(tmpResult)}`)
-         articleId=tmpResult.msg[0]['_id']
-
-         console.log(`userid=====> ${JSON.stringify(userId)}`)
-         console.log(`articleId=====> ${JSON.stringify(articleId)}`)*/
     });
 
     //create new article
-    before('create correct article', function(done) {
-        data.values={}
-        // console.log(`sess1 ===>${JSON.stringify(sess1)}`)
-        // console.log(`data.values ===>${JSON.stringify(data.values)}`)
-        data.values[e_part.METHOD]=e_method.CREATE
-        // console.log(`data.values ===>${JSON.stringify(data.values)}`)
-        request(app).post('/article/').set('Accept', 'application/json').set('Cookie',[sess1]).send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-                // console.log(`res ios ${JSON.stringify(res)}`)
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                articleId=parsedRes['msg']['_id']
-                assert.deepStrictEqual(parsedRes.rc,0)
-                // assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.require.error.rc)
-                done();
-            });
+    before('create correct article', async function() {
+        articleId=await API_helper.userCreateArticle_returnArticleId_async({userSess:sess1,app:app})
     });
 
     it('articleId not exist', function(done) {

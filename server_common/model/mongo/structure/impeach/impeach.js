@@ -74,7 +74,7 @@ const collFieldDefine={
     // impeachStatus:{type:String,}, //enum:enumValue.ImpeachStatus       enum， 通过setMongooseBuildInValidator从inputRule中获得对应的enum定义
     cDate:{type:Date,default:Date.now},
     // uDate:{type:Date,default:Date.now},
-    // dDate:{type:Date},
+    dDate:{type:Date}, //用户可以撤销举报
 }
 
 // console.log(`before: ${JSON.stringify(collFieldDefine)}`)

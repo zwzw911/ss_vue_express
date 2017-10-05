@@ -66,7 +66,7 @@ async function insertMany_returnRecord_async({dbModel,docs}){
      return Promise.resolve(result)
 }
 
-async function update_returnRecord_async({dbModel,updateOptions,id,values,returnResult=true}){
+async function update_returnRecord_async({dbModel,updateOptions,id,values}){
     values['uDate']=Date.now()
     // console.log(`id is ${id}, values is ${JSON.stringify(values)}`)
     //无需执行exec返回一个promise就可以使用了？？？
@@ -274,7 +274,7 @@ async function findById_returnRecord_async({dbModel,id,selectedFields='-cDate -u
 }
 
 
-async function find_returnRecords_async({dbModel,condition,returnResult=true,selectedFields='-cDate -uDate -dDate',options={}}){
+async function find_returnRecords_async({dbModel,condition,selectedFields='-cDate -uDate -dDate',options={}}){
     // console.log(`find by id :${id}`)
     let result=await dbModel.find(condition,selectedFields,options)
         .catch(

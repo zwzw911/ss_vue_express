@@ -1,29 +1,32 @@
 /**
- * Created by ada on 2017/7/26.
- * 在正式部署之前，需要预先设定一些值（例如，user_thumb存放路径，文档分类信息等）
+ * Created by Ada on 2017/10/4.
+ * 需要插入db的初始数据
  */
 'use strict'
 
-const server_common_file_require=require('../../server_common_file_require')
-const common_operation_model=server_common_file_require.common_operation_model
-const mongoEnum=server_common_file_require.mongoEnum
+const allAdminPriorityType=require('../../constant/genEnum/enumValue').AdminPriorityType
+const mongoEnum=require(`../../constant/enum/mongoEnum`)//server_common_file_require.mongoEnum
 const e_storePathUsage=mongoEnum.StorePathUsage.DB
 const e_storePathStatus=mongoEnum.StorePathStatus.DB
-const e_resourceProfileRange=mongoEnum.ResourceProfileRange
-const e_resourceProfileType=mongoEnum.ResourceProfileType
+const e_resourceProfileRange=mongoEnum.ResourceProfileRange.DB
+const e_resourceProfileType=mongoEnum.ResourceProfileType.DB
+const e_adminUserType=mongoEnum.AdminUserType.DB
+const e_docStatus=mongoEnum.DocStatus.DB
 
-const e_dbModel=require('../../server/constant/genEnum/dbModel')
-const e_coll=require('../../server/constant/genEnum/DB_Coll').Coll
-const e_field=require('../../server/constant/genEnum/DB_field').Field
-const generateMongoEnumKeyValueExchange=server_common_file_require.generateMongoEnumKeyValueExchange
+const e_field=require('../../constant/genEnum/DB_field').Field
 
-
-const fs=require('fs')
-// common_operation_model.removeAll({dbModel:e_dbModel.store_path})
-// common_operation_model.removeAll({dbModel:e_dbModel.category})
-
-const initSetting= {
-    storePath: {
+const admin_user=[
+        {
+            [e_field.ADMIN_USER.NAME]:'zw',
+            [e_field.ADMIN_USER.DOC_STATUS]:e_docStatus.DONE,
+            [e_field.ADMIN_USER.LAST_ACCOUNT_UPDATE_DATE]:Date.now(),
+            [e_field.ADMIN_USER.LAST_SIGN_IN_DATE]:Date.now(),
+            [e_field.ADMIN_USER.PASSWORD]:'123456',
+            [e_field.ADMIN_USER.USER_PRIORITY]:allAdminPriorityType,
+            [e_field.ADMIN_USER.USER_TYPE]:e_adminUserType.ROOT,
+        },
+    ]
+const storePath= {
         tmpDir:{
             tmpUploadDir: [
                 {
@@ -102,109 +105,62 @@ const initSetting= {
                 },
             ],
         }
-    },
-    category: {
+    }
+    
+const category= {
         other: 'other',
         LTE_A: 'LTE_A',
-    },
-    resource_profile: [
+    }
+const resource_profile= [
         {
             [e_field.RESOURCE_PROFILE.NAME]:"普通用户文档资源设定",
-            [e_field.RESOURCE_PROFILE.RANGE]:e_resourceProfileRange.DB.PER_ARTICLE,
-            [e_field.RESOURCE_PROFILE.TYPE]:e_resourceProfileType.DB.DEFAULT,
+            [e_field.RESOURCE_PROFILE.RANGE]:e_resourceProfileRange.PER_ARTICLE,
+            [e_field.RESOURCE_PROFILE.TYPE]:e_resourceProfileType.DEFAULT,
             [e_field.RESOURCE_PROFILE.MAX_FILE_NUM]:10,
             [e_field.RESOURCE_PROFILE.TOTAL_FILE_SIZE_IN_MB]:20, //假设每个文件大小为2M
         },
         {
             [e_field.RESOURCE_PROFILE.NAME]:"普通用户总体资源设定",
-            [e_field.RESOURCE_PROFILE.RANGE]:e_resourceProfileRange.DB.PER_PERSON,
-            [e_field.RESOURCE_PROFILE.TYPE]:e_resourceProfileType.DB.DEFAULT,
+            [e_field.RESOURCE_PROFILE.RANGE]:e_resourceProfileRange.PER_PERSON,
+            [e_field.RESOURCE_PROFILE.TYPE]:e_resourceProfileType.DEFAULT,
             [e_field.RESOURCE_PROFILE.MAX_FILE_NUM]:1000,
             [e_field.RESOURCE_PROFILE.TOTAL_FILE_SIZE_IN_MB]:2000, //假设每个文件大小为2M
         },
         {
             [e_field.RESOURCE_PROFILE.NAME]:"升级用户文档资源设定",
-            [e_field.RESOURCE_PROFILE.RANGE]:e_resourceProfileRange.DB.PER_ARTICLE,
-            [e_field.RESOURCE_PROFILE.TYPE]:e_resourceProfileType.DB.ADVANCED,
+            [e_field.RESOURCE_PROFILE.RANGE]:e_resourceProfileRange.PER_ARTICLE,
+            [e_field.RESOURCE_PROFILE.TYPE]:e_resourceProfileType.ADVANCED,
             [e_field.RESOURCE_PROFILE.MAX_FILE_NUM]:100,
             [e_field.RESOURCE_PROFILE.TOTAL_FILE_SIZE_IN_MB]:200, //假设每个文件大小为200M
         },
         {
             [e_field.RESOURCE_PROFILE.NAME]:"升级用户总体资源设定",
-            [e_field.RESOURCE_PROFILE.RANGE]:e_resourceProfileRange.DB.PER_PERSON,
-            [e_field.RESOURCE_PROFILE.TYPE]:e_resourceProfileType.DB.ADVANCED,
+            [e_field.RESOURCE_PROFILE.RANGE]:e_resourceProfileRange.PER_PERSON,
+            [e_field.RESOURCE_PROFILE.TYPE]:e_resourceProfileType.ADVANCED,
             [e_field.RESOURCE_PROFILE.MAX_FILE_NUM]:1000,
             [e_field.RESOURCE_PROFILE.TOTAL_FILE_SIZE_IN_MB]:2000, //假设每个文件大小为2000M
         },
 
         {
             [e_field.RESOURCE_PROFILE.NAME]:"用户举报资源设定",
-            [e_field.RESOURCE_PROFILE.RANGE]:e_resourceProfileRange.DB.PER_IMPEACH_OR_COMMENT,
-            [e_field.RESOURCE_PROFILE.TYPE]:e_resourceProfileType.DB.DEFAULT,
+            [e_field.RESOURCE_PROFILE.RANGE]:e_resourceProfileRange.PER_IMPEACH_OR_COMMENT,
+            [e_field.RESOURCE_PROFILE.TYPE]:e_resourceProfileType.DEFAULT,
             [e_field.RESOURCE_PROFILE.MAX_FILE_NUM]:10,
             [e_field.RESOURCE_PROFILE.TOTAL_FILE_SIZE_IN_MB]:20, //假设每个文件大小为2M
         },
         {
             [e_field.RESOURCE_PROFILE.NAME]:"用户举报总体资源设定", //假设一次举报中，用户总共进行了10次（发起，回复）的操作，每个操作10文件，20M
-            [e_field.RESOURCE_PROFILE.RANGE]:e_resourceProfileRange.DB.PER_PERSON_IN_IMPEACH,
-            [e_field.RESOURCE_PROFILE.TYPE]:e_resourceProfileType.DB.DEFAULT,
+            [e_field.RESOURCE_PROFILE.RANGE]:e_resourceProfileRange.PER_PERSON_IN_IMPEACH,
+            [e_field.RESOURCE_PROFILE.TYPE]:e_resourceProfileType.DEFAULT,
             [e_field.RESOURCE_PROFILE.MAX_FILE_NUM]:100,
             [e_field.RESOURCE_PROFILE.TOTAL_FILE_SIZE_IN_MB]:200, //假设每个文件大小为2M
         },
-    ],
+    ]
 
+
+module.exports={
+    admin_user,
+    storePath,
+    category,
+    resource_profile,
 }
-
-let storePathDocs=[]
-// console.log(`==================>initSetting.storePath ${JSON.stringify(initSetting.storePath)}`)
-// console.log(`==================>initSetting.storePath ${JSON.stringify(typeof initSetting.storePath)}`)
-for(let firstLevel in initSetting.storePath){
-
-
-        for(let secondLevel in initSetting.storePath[firstLevel]){
-
-            for(let ele of initSetting.storePath[firstLevel][secondLevel]){
-                storePathDocs.push(ele)
-            }
-
-        }
-
-}
-
-console.log(`storePathDocs==============>${JSON.stringify(storePathDocs)}`)
-common_operation_model.insertMany_returnRecord_async({dbModel:e_dbModel.store_path,docs:storePathDocs}).then(
-    (v)=>{console.log(`success====>${JSON.stringify(v)}`)},
-    (e)=>{console.log(`err====>${JSON.stringify(e)}`)}
-)
-
-
-console.log(`${JSON.stringify(initSetting.category)}`)
-let categoryDocs=[]
-//init use category
-for(let singleCategory of Object.values(initSetting.category)){
-    categoryDocs.push({name:`${singleCategory}`})
-}
-console.log(`${JSON.stringify(categoryDocs)}`)
-common_operation_model.insertMany_returnRecord_async({dbModel:e_dbModel.category,docs:categoryDocs}).then(
-    (v)=>{console.log(`success====>${JSON.stringify(v)}`)},
-    (e)=>{console.log(`err====>${JSON.stringify(e)}`)}
-)
-
-
-
-
-// console.log(`in=======>`)
-console.log(`${JSON.stringify(initSetting.resource_profile)}`)
-let resourceProfileDocs=[]
-//init use category
-for(let singleItem of initSetting.resource_profile){
-    resourceProfileDocs.push(singleItem)
-}
-console.log(`resourceProfileDocs====》${JSON.stringify(resourceProfileDocs)}`)
-common_operation_model.insertMany_returnRecord_async({dbModel:e_dbModel.resource_profile,docs:resourceProfileDocs}).then(
-    (v)=>{console.log(`success====>${JSON.stringify(v)}`)},
-    (e)=>{console.log(`err====>${JSON.stringify(e)}`)}
-)
-
-
-

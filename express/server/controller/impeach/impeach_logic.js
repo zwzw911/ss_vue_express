@@ -356,6 +356,8 @@ async  function createContent_async({req,collConfig,impeachType}){
         [e_field.IMPEACH_STATE.OWNER_ID]:userId,
         [e_field.IMPEACH_STATE.OWNER_COLL]:e_coll.USER,
         [e_field.IMPEACH_STATE.STATE]:e_impeachState.NEW,
+        [e_field.IMPEACH_STATE.DEALER_ID]:userId,
+        [e_field.IMPEACH_STATE.DEALER_COLL]:e_coll.USER,
     }
     await common_operation_model.create_returnRecord_async({dbModel:e_dbModel.impeach_state,value:impeachStateValue})
     return Promise.resolve({rc:0,msg:tmpResult})

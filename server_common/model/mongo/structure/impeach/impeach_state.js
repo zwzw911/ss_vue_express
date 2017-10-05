@@ -46,7 +46,7 @@ const collFieldDefine={
     dealerId:{type:mongoose.Schema.Types.ObjectId},     //谁对impeach做出了修改
     dealerColl:{type:String},   //做出修改的人位于哪个coll（可能是普通用户，也可能是admin）
     state:{type:String},        //enum
-    ownerId:{type:mongoose.Schema.Types.ObjectId},            //当前impeach需要被谁处理(球在谁的脚下)
+    ownerId:{type:mongoose.Schema.Types.ObjectId},            //当前impeach需要被谁处理(球在谁的脚下)    //提供统计查询需要的信息（使得统计查询更方便：例如，查询/统计 某个用户有多少需要处理的举报）
     ownerColl:{type:String},    //处理人是普通还是admin
     cDate:{type:Date,default:Date.now},
     // uDate:{type:Date,default:Date.now},

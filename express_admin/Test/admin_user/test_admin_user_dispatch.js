@@ -34,11 +34,9 @@ const controllerError=require('../../server/controller/admin/admin_setting/admin
 
 const objectDeepCopy=server_common_file_require.misc.objectDeepCopy
 
-const test_helper=require("../Test_helper/db_operation_helper")
-
-const testData=require('../testData')
-
-const API_helper=require('../Test_helper/API')
+const test_helper=server_common_file_require.db_operation_helper//require("../../../server_common/Test/db_operation_helper")
+const testData=server_common_file_require.testData//require('../../../server_common/Test/testData')
+const API_helper=server_common_file_require.API_helper//require('../../../server_common/Test/API')
 
 
 let userId  //create后存储对应的id，以便后续的update操作
@@ -54,7 +52,7 @@ describe('user format check:', function() {
         rootSess=await API_helper.adminUserLogin_returnSess_async({userData:{
             [e_field.ADMIN_USER.NAME]:testData.admin_user.rootAdmin.name,
             [e_field.ADMIN_USER.PASSWORD]:testData.admin_user.rootAdmin.password,
-        }})
+        },adminApp:app})
         // console.log(`rootSess ${JSON.stringify(rootSess)}`)
     });
 
@@ -133,7 +131,7 @@ describe('user format check:', function() {
         data={values:{}}
         data.values[e_part.METHOD]=e_method.CREATE
         data.values[e_part.RECORD_INFO]=10
-        request(app).post(baseUrl).set('Accept', 'application/json').send(data)
+        request(app).post(baseUrl).set('Accept', 'application/json').set('Cookie',[rootSess]).send(data)
             .end(function(err, res) {
                 // if (err) return done(err);
                 // console.log(`res ios ${JSON.stringify(res)}`)
@@ -142,7 +140,7 @@ describe('user format check:', function() {
                 // console.log(`${controllerHelperError.methodPartMustExistInDispatcher}`)
                 // assert.deepStrictEqual(parsedRes.rc,99999)
                 // controllerHelperError.methodPartMustExistInDispatcher.rc
-                assert.deepStrictEqual(parsedRes.rc,controllerError.notLoginCantCreateUser.rc)
+                assert.deepStrictEqual(parsedRes.rc,validateError.validateFormat.inputValuePartRecordInfoValueFormatWrong.rc)
                 done();
             });
     });
@@ -158,7 +156,7 @@ describe('method=create: preCheck', function() {
         rootSess=await API_helper.adminUserLogin_returnSess_async({userData:{
             [e_field.ADMIN_USER.NAME]:testData.admin_user.rootAdmin.name,
             [e_field.ADMIN_USER.PASSWORD]:testData.admin_user.rootAdmin.password,
-        }})
+        },adminApp:app})
         /*              delete admin user1                    */
         await test_helper.deleteAdminUserAndRelatedInfo_async(testData.admin_user.user1ForModel.name)
     });

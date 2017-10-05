@@ -115,9 +115,10 @@ async function ifFieldInDocValueUnique_async({collName,docValue,additionalCheckC
  * return：存在: {rc:0}   不存在：helperError.fkValueNotExist
  * */
 async function ifFkValueExist_async({docValue,collFkConfig,collFieldChineseName}){
+    //console.log(`collFkConfig fields========>${JSON.stringify(Object.keys(collFkConfig))}`)
     if(undefined!==collFkConfig){
-        // console.log(`collFkConfig fields========>${JSON.stringify(Object.keys(collFkConfig))}`)
-        // console.log(`docValue ========>${JSON.stringify(docValue)}`)
+        //console.log(`collFkConfig fields========>${JSON.stringify(Object.keys(collFkConfig))}`)
+        //console.log(`docValue ========>${JSON.stringify(docValue)}`)
         for(let singleFkFieldName in collFkConfig){
             // console.log(`singleFkFieldName=======>${singleFkFieldName}`)
             // console.log(`docValue[singleFkFieldName]===============>${JSON.stringify(docValue[singleFkFieldName])}`)

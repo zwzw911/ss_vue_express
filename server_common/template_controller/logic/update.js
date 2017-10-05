@@ -3,29 +3,37 @@
  */
 'use strict'
 /*                      controller setting                */
-const controller_setting=require('../admin_setting/admin_setting').setting
-const controllerError=require('../admin_setting/admin_user_controllerError').controllerError
+const controller_setting=require('../impeach_state_setting/impeach_state_setting').setting
+const controllerError=require('../impeach_state_setting/impeach_state_controllerError').controllerError
 
 /*                      specify: genEnum                */
 const e_uniqueField=require('../../../constant/genEnum/DB_uniqueField').UniqueField
-const e_chineseName=require('../../../constant/genEnum/inputRule_field_chineseName').ChineseName
+// const e_chineseName=require('../../../constant/genEnum/inputRule_field_chineseName').ChineseName
 const e_coll=require('../../../constant/genEnum/DB_Coll').Coll
 const e_field=require('../../../constant/genEnum/DB_field').Field
 const e_dbModel=require('../../../constant/genEnum/dbModel')
-// const e_iniSettingObject=require('../../../constant/genEnum/initSettingObject').iniSettingObject
+const e_iniSettingObject=require('../../../constant/genEnum/initSettingObject').iniSettingObject
+const inputRule=require('../../../constant/inputRule/inputRule').inputRule
+const internalInputRule=require('../../../constant/inputRule/internalInputRule').internalInputRule
+const browserInputRule=require('../../../constant/inputRule/browserInputRule').browserInputRule
+
 
 /*                      server common                                           */
 const server_common_file_require=require('../../../../server_common_file_require')
-/*                      specify: genEnum                */
+/*                      server common：enum                                       */
 const nodeEnum=server_common_file_require.nodeEnum
+const nodeRuntimeEnum=server_common_file_require.nodeRuntimeEnum
 const mongoEnum=server_common_file_require.mongoEnum
-const e_hashType=server_common_file_require.nodeRuntimeEnum.HashType
 
-const e_docStatus=mongoEnum.DocStatus.DB
-const e_adminPriorityType=mongoEnum.AdminPriorityType.DB
-const e_part=nodeEnum.ValidatePart
 const e_env=nodeEnum.Env
+const e_part=nodeEnum.ValidatePart
+
+const e_hashType=nodeRuntimeEnum.HashType
+
+const e_accountType=mongoEnum.AccountType.DB
+const e_docStatus=mongoEnum.DocStatus.DB
 const e_adminUserType=mongoEnum.AdminUserType.DB
+const e_adminPriorityType=mongoEnum.AdminPriorityType.DB
 
 /*                      server common：function                                       */
 const dataConvert=server_common_file_require.dataConvert
@@ -33,13 +41,12 @@ const controllerHelper=server_common_file_require.controllerHelper
 const controllerChecker=server_common_file_require.controllerChecker
 const common_operation_model=server_common_file_require.common_operation_model
 const misc=server_common_file_require.misc
-const miscConfiguration=server_common_file_require.globalConfiguration.misc
-const maxNumber=server_common_file_require.globalConfiguration.maxNumber
-const fkConfig=server_common_file_require.fkConfig
 const hash=server_common_file_require.crypt.hash
 
+/*                      server common：other                                       */
+const regex=server_common_file_require.regex.regex
 const currentEnv=server_common_file_require.appSetting.currentEnv
-// const e_accountType=server_common_file_require.mongoEnum.AccountType.DB
+
 
 /*
  * 更新用户资料
@@ -58,14 +65,6 @@ async function updateUser_async(req){
     let docValue=req.body.values[e_part.RECORD_INFO]
     let userToBeUpdateId=req.body.values[e_part.RECORD_ID]
     /*******************************************************************************************/
-    /*                                       authorization check                               */
-    /*******************************************************************************************/
-
-    /*******************************************************************************************/
-    /*                                       resource check                                    */
-    /*******************************************************************************************/
-
-    /*******************************************************************************************/
     /*                                     参数转为server格式                                  */
     /*******************************************************************************************/
 
@@ -73,6 +72,15 @@ async function updateUser_async(req){
     dataConvert.convertCreateUpdateValueToServerFormat(docValue)
     // console.log(`fkConfig[e_coll.USER] ${JSON.stringify(fkConfig[e_coll.USER])}`)
     dataConvert.constructUpdateCriteria(docValue,fkConfig[collName])
+    /*******************************************************************************************/
+    /*                                       authorization check                               */
+    /*******************************************************************************************/
+
+    /*******************************************************************************************/
+    /*                                       resource check                                    */
+    /*******************************************************************************************/
+
+
 
     // let tmpResult=await common_operation_model.findById({dbModel:dbModel[e_coll.USER],id:objectId})
     // let userId=tmpResult.msg[e_field.USER.]

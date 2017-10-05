@@ -34,99 +34,18 @@ const controllerError=require('../../server/controller/admin/admin_setting/admin
 
 const objectDeepCopy=server_common_file_require.misc.objectDeepCopy
 
-const test_helper=require("../Test_helper/db_operation_helper")
-
-const testData=require('../testData')
-
-const API_helper=require('../Test_helper/API')
+const test_helper= server_common_file_require.db_operation_helper
+const testData=server_common_file_require.testData//require('../testData')
+const API_helper=server_common_file_require.API_helper//require('../API_helper/API_helper')
 
 // const db=require('../Test_helper/db_operation_helper')
-let userId  //create后存储对应的id，以便后续的update操作
 
-let baseUrl='/admin_user/'
+let data = {values: {}},  baseUrl="/admin_user/",finalUrl=baseUrl
+let user1Sess,user2Sess,user1Id,user2Id
 
-/*              admin_user_login 中的错误               */
-describe('login user error:', function() {
-    let data = {values: {method: e_method.MATCH}}, url = ``, finalUrl = baseUrl + url
-    it('miss mandatory field', function(done) {
-        data.values[e_part.RECORD_INFO]={
-            [e_field.ADMIN_USER.NAME]:{value:'zsdf'}
-        }
-        // console.log(`Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]})=========>${JSON.stringify(Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]}))}`)
-        // data.values[e_part.RECORD_INFO]=Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:{value:['1','1']}})
-        console.log(`data=====>${JSON.stringify(data.values[e_part.RECORD_INFO])}`)
-        request(app).post(finalUrl).set('Accept', 'application/json').send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-                // console.log(`res ios ${JSON.stringify(res)}`)
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                // assert.deepStrictEqual(parsedRes.rc,99999)
-                assert.deepStrictEqual(parsedRes.rc,controllerError.loginFieldNumNotExpected.rc)
-                done();
-            });
-    });
-    it('wrong mandatory field', function(done) {
-        data.values[e_part.RECORD_INFO]={
-            [e_field.ADMIN_USER.NAME]:{value:'zsdf'},
-            [e_field.ADMIN_USER.ID]:{value:'zsdf'},
-    }
-        // console.log(`Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]})=========>${JSON.stringify(Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]}))}`)
-        // data.values[e_part.RECORD_INFO]=Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:{value:['1','1']}})
-        console.log(`data=====>${JSON.stringify(data.values[e_part.RECORD_INFO])}`)
-        request(app).post(finalUrl).set('Accept', 'application/json').send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-                // console.log(`res ios ${JSON.stringify(res)}`)
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                // assert.deepStrictEqual(parsedRes.rc,99999)
-                assert.deepStrictEqual(parsedRes.rc,controllerError.loginMandatoryFieldNotExist('id').rc)
-                done();
-            });
-    });
-    it('user name not exist', function(done) {
-        data.values[e_part.RECORD_INFO]={
-            [e_field.ADMIN_USER.NAME]:{value:'zsdf'},
-            [e_field.ADMIN_USER.PASSWORD]:{value:'zsdfasdfasf'},
-        }
-        // console.log(`Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]})=========>${JSON.stringify(Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]}))}`)
-        // data.values[e_part.RECORD_INFO]=Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:{value:['1','1']}})
-        console.log(`data=====>${JSON.stringify(data.values[e_part.RECORD_INFO])}`)
-        request(app).post(finalUrl).set('Accept', 'application/json').send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-                // console.log(`res ios ${JSON.stringify(res)}`)
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                // assert.deepStrictEqual(parsedRes.rc,99999)
-                assert.deepStrictEqual(parsedRes.rc,controllerError.userNameNotExist.rc)
-                done();
-            });
-    });
-    it('password not match exist user name', function(done) {
-        data.values[e_part.RECORD_INFO]={
-            [e_field.ADMIN_USER.NAME]:{value:testData.admin_user.rootAdminForModel.name},
-            [e_field.ADMIN_USER.PASSWORD]:{value:'zsdfadfd'},
-        }
-        // console.log(`Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]})=========>${JSON.stringify(Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]}))}`)
-        // data.values[e_part.RECORD_INFO]=Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:{value:['1','1']}})
-        console.log(`data=====>${JSON.stringify(data.values[e_part.RECORD_INFO])}`)
-        request(app).post(finalUrl).set('Accept', 'application/json').send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-                // console.log(`res ios ${JSON.stringify(res)}`)
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                // assert.deepStrictEqual(parsedRes.rc,99999)
-                assert.deepStrictEqual(parsedRes.rc,controllerError.passwordNotMatch.rc)
-                done();
-            });
-    });
-})
 /*              create_admin_user中的错误               */
 describe('create user error:', function() {
-    let data={values:{method:e_method.CREATE}},url=``,finalUrl=baseUrl+url
+    let data={values:{method:e_method.CREATE}}
     let rootSess
     before('prepare', async function(){
         // console.log(`######   delete exist record   ######`)
@@ -134,7 +53,7 @@ describe('create user error:', function() {
         rootSess=await API_helper.adminUserLogin_returnSess_async({userData:{
             [e_field.ADMIN_USER.NAME]:testData.admin_user.rootAdmin.name,
             [e_field.ADMIN_USER.PASSWORD]:testData.admin_user.rootAdmin.password,
-        }})
+        },adminApp:app})
         /*              delete admin user1                    */
         await test_helper.deleteAdminUserAndRelatedInfo_async(testData.admin_user.user1ForModel.name)
     });
@@ -240,22 +159,22 @@ describe('update user error:', function() {
         rootSess=await API_helper.adminUserLogin_returnSess_async({userData:{
             [e_field.ADMIN_USER.NAME]:testData.admin_user.rootAdmin.name,
             [e_field.ADMIN_USER.PASSWORD]:testData.admin_user.rootAdmin.password,
-        }})
+        },adminApp:app})
         /*              delete admin user1 then create user1 with no anu CRUD priority                    */
         await test_helper.deleteAdminUserAndRelatedInfo_async(testData.admin_user.user1ForModel.name)
-        await API_helper.createAdminUser_async({sess:rootSess,userData:Object.assign({},testData.admin_user.user1, {[e_field.ADMIN_USER.USER_PRIORITY]:{value:[]}})})
+        await API_helper.createAdminUser_async({sess:rootSess,userData:Object.assign({},testData.admin_user.user1, {[e_field.ADMIN_USER.USER_PRIORITY]:{value:[]}}),adminApp:app})
 
         adminUser1Sess=await API_helper.adminUserLogin_returnSess_async({userData:{
             [e_field.ADMIN_USER.NAME]:{value:testData.admin_user.user1ForModel.name},
             [e_field.ADMIN_USER.PASSWORD]:{value:testData.admin_user.user1ForModel.password},
-        }})
+        },adminApp:app})
         /*              delete admin user2 then create user2                    */
         await test_helper.deleteAdminUserAndRelatedInfo_async(testData.admin_user.user2ForModel.name)
-        await API_helper.createAdminUser_async({sess:rootSess,userData:Object.assign({},testData.admin_user.user2, {[e_field.ADMIN_USER.USER_PRIORITY]:{value:[e_adminPriorityType.UPDATE_ADMIN_USER]}})})
+        await API_helper.createAdminUser_async({sess:rootSess,userData:Object.assign({},testData.admin_user.user2, {[e_field.ADMIN_USER.USER_PRIORITY]:{value:[e_adminPriorityType.UPDATE_ADMIN_USER]}}),adminApp:app})
         adminUser2Sess=await API_helper.adminUserLogin_returnSess_async({userData:{
             [e_field.ADMIN_USER.NAME]:{value:testData.admin_user.user2ForModel.name},
             [e_field.ADMIN_USER.PASSWORD]:{value:testData.admin_user.user2ForModel.password},
-        }})
+        },adminApp:app})
         /*              get rootid and adminUser1Id                     */
         rootId=await test_helper.getAdminUserId_async({userName:testData.admin_user.rootAdminForModel.name})
         adminUser1Id=await test_helper.getAdminUserId_async({userName:testData.admin_user.user1ForModel.name})
@@ -329,23 +248,23 @@ describe('delete user error:', function() {
         rootSess=await API_helper.adminUserLogin_returnSess_async({userData:{
             [e_field.ADMIN_USER.NAME]:testData.admin_user.rootAdmin.name,
             [e_field.ADMIN_USER.PASSWORD]:testData.admin_user.rootAdmin.password,
-        }})
+        },adminApp:app})
         //API_helper.
         /*              delete admin user1 then create user1 with no anu CRUD priority                    */
         await test_helper.deleteAdminUserAndRelatedInfo_async(testData.admin_user.user1ForModel.name)
-        await API_helper.createAdminUser_async({sess:rootSess,userData:Object.assign({},testData.admin_user.user1, {[e_field.ADMIN_USER.USER_PRIORITY]:{value:[]}})})
+        await API_helper.createAdminUser_async({sess:rootSess,userData:Object.assign({},testData.admin_user.user1, {[e_field.ADMIN_USER.USER_PRIORITY]:{value:[]}}),adminApp:app})
 
         await test_helper.deleteAdminUserAndRelatedInfo_async(testData.admin_user.user2ForModel.name)
-        await API_helper.createAdminUser_async({sess:rootSess,userData:Object.assign({},testData.admin_user.user2, {[e_field.ADMIN_USER.USER_PRIORITY]:{value:[e_adminPriorityType.DELETE_ADMIN_USER]}})})
+        await API_helper.createAdminUser_async({sess:rootSess,userData:Object.assign({},testData.admin_user.user2, {[e_field.ADMIN_USER.USER_PRIORITY]:{value:[e_adminPriorityType.DELETE_ADMIN_USER]}}),adminApp:app})
 
         adminUser1Sess=await API_helper.adminUserLogin_returnSess_async({userData:{
             [e_field.ADMIN_USER.NAME]:{value:testData.admin_user.user1ForModel.name},
             [e_field.ADMIN_USER.PASSWORD]:{value:testData.admin_user.user1ForModel.password},
-        }})
+        },adminApp:app})
         adminUser2Sess=await API_helper.adminUserLogin_returnSess_async({userData:{
             [e_field.ADMIN_USER.NAME]:{value:testData.admin_user.user2ForModel.name},
             [e_field.ADMIN_USER.PASSWORD]:{value:testData.admin_user.user2ForModel.password},
-        }})
+        },adminApp:app})
         /*              get rootid and adminUser1Id                     */
         rootId=await test_helper.getAdminUserId_async({userName:testData.admin_user.rootAdminForModel.name})
         adminUser1Id=await test_helper.getAdminUserId_async({userName:testData.admin_user.user1ForModel.name})

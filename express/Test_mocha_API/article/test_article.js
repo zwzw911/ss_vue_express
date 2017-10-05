@@ -35,14 +35,15 @@ const controllerError=require('../../server/controller/article/article_logic').c
 // const objectDeepCopy=require('../../server/function/assist/misc').objectDeepCopy
 
 // const test_helper=require("../API_helper/db_operation_helper")
-const testData=require('../testData')
+const testData=server_common_file_require.testData//require('../testData')
+const API_helper=server_common_file_require.API_helper//require('../API_helper/API_helper')
 
 let baseUrl="/article/"
 let userId  //create后存储对应的id，以便后续的update操作
 
 let sess1,sess2,data={values:{}}
 
-const API_helper=require('../API_helper/API_helper')
+
 
 describe('create new article and update, then create new comment: ', async function() {
     let url = '', finalUrl = baseUrl + url
@@ -53,12 +54,12 @@ describe('create new article and update, then create new comment: ', async funct
     })
 
     before('user1 create and login', async function () {
-        await API_helper.createUser_async({userData:testData.user.user1})
-        user1Sess=await  API_helper.userLogin_returnSess_async({userData:testData.user.user1})
+        await API_helper.createUser_async({userData:testData.user.user1,app:app})
+        user1Sess=await  API_helper.userLogin_returnSess_async({userData:testData.user.user1,app:app})
     })
     before('user2 create and login', async function () {
-        await API_helper.createUser_async({userData:testData.user.user2})
-        user2Sess=await  API_helper.userLogin_returnSess_async({userData:testData.user.user2})
+        await API_helper.createUser_async({userData:testData.user.user2,app:app})
+        user2Sess=await  API_helper.userLogin_returnSess_async({userData:testData.user.user2,app:app})
     })
     before('insert user2 penalize for both article and comment', async function () {
         // console.log(`testData.user.user1 ${JSON.stringify(testData.user.user1)}`)

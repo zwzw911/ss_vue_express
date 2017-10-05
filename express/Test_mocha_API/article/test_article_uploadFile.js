@@ -36,7 +36,8 @@ const controllerError=require('../../server/controller/article/article_upload_fi
 // const objectDeepCopy=server_common_file_require.misc.objectDeepCopy
 
 // const test_helper=require("../API_helper/db_operation_helper")
-const testData=require('../testData')
+const testData=server_common_file_require.testData//require('../testData')
+const API_helper=server_common_file_require.API_helper//require('../API_helper/API_helper')
 
 let baseUrl="/article/"
 let userId  //create后存储对应的id，以便后续的update操作
@@ -54,8 +55,9 @@ describe('create new comment: ', async function() {
 
 
     let articleId,userId
-    before('user1 login correct', function (done) {
-        // console.log(`testData.user.user1 ${JSON.stringify(testData.user.user1)}`)
+    before('user1 login correct',async function () {
+        sess1=await  API_helper.userLogin_returnSess_async({userData:testData.user.user1,app:app})
+       /* // console.log(`testData.user.user1 ${JSON.stringify(testData.user.user1)}`)
         let user1Tmp = {}
         user1Tmp[e_field.USER.ACCOUNT] = testData.user.user1[e_field.USER.ACCOUNT]
         user1Tmp[e_field.USER.PASSWORD] = testData.user.user1[e_field.USER.PASSWORD]
@@ -74,10 +76,11 @@ describe('create new comment: ', async function() {
                 assert.deepStrictEqual(parsedRes.rc, 0)
                 // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
                 done();
-            });
+            });*/
     })
-    before('user2 login correct', function(done) {
-        // console.log(`testData.user.user1 ${JSON.stringify(testData.user.user1)}`)
+    before('user2 login correct', async function() {
+        sess2=await  API_helper.userLogin_returnSess_async({userData:testData.user.user2,app:app})
+       /* // console.log(`testData.user.user1 ${JSON.stringify(testData.user.user1)}`)
         let user1Tmp={}
         user1Tmp[e_field.USER.ACCOUNT]=testData.user.user2[e_field.USER.ACCOUNT]
         user1Tmp[e_field.USER.PASSWORD]=testData.user.user2[e_field.USER.PASSWORD]
@@ -96,7 +99,7 @@ describe('create new comment: ', async function() {
                 assert.deepStrictEqual(parsedRes.rc,0)
                 // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
                 done();
-            });
+            });*/
     })
     before('insert user2 penalize for both article and comment',async  function() {
         // console.log(`testData.user.user1 ${JSON.stringify(testData.user.user1)}`)
@@ -141,8 +144,9 @@ describe('create new comment: ', async function() {
 
 
     //create new article
-    before('correct article', function(done) {
-        data.values={}
+    before('correct article', async function() {
+        articleId=await API_helper.userCreateArticle_returnArticleId_async({userSess:sess1,app:app})
+       /* data.values={}
         // console.log(`sess1 ===>${JSON.stringify(sess1)}`)
         // console.log(`data.values ===>${JSON.stringify(data.values)}`)
         data.values[e_part.METHOD]=e_method.CREATE
@@ -157,7 +161,7 @@ describe('create new comment: ', async function() {
                 assert.deepStrictEqual(parsedRes.rc,0)
                 // assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.require.error.rc)
                 done();
-            });
+            });*/
     });
 
 

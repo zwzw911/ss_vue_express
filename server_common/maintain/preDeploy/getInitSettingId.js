@@ -1,20 +1,22 @@
 /**
  * Created by ada on 2017/7/26.
  * 在正式部署之前，需要预先设定一些值（例如，user_thumb存放路径，文档分类信息等）
+ *
+ * 被genCollFieldEnum调用
  */
 'use strict'
-const server_common_file_require=require('../../server_common_file_require')
-const common_operation_model=server_common_file_require.common_operation_model
+// const server_common_file_require=require('../../../express/server_common_file_require')
+const common_operation_model=require(`../../model/mongo/operation/common_operation_model`)//server_common_file_require.common_operation_model
 
-const mongoEnum=server_common_file_require.mongoEnum
+const mongoEnum=require(`../../constant/enum/mongoEnum`)//server_common_file_require.mongoEnum
 const e_storePathUsage=mongoEnum.StorePathUsage
 const e_storePathStatus=mongoEnum.StorePathStatus
 const e_resourceProfileRange=mongoEnum.ResourceProfileRange
 
-const e_dbModel=require('../../server/constant/genEnum/dbModel')
-const e_coll=require('../../server/constant/genEnum/DB_Coll').Coll
-const e_field=require('../../server/constant/genEnum/DB_field').Field
-const generateMongoEnumKeyValueExchange=server_common_file_require.generateMongoEnumKeyValueExchange
+const e_dbModel=require('../../../express/server/constant/genEnum/dbModel')
+const e_coll=require('../../../express/server/constant/genEnum/DB_Coll').Coll
+const e_field=require('../../../express/server/constant/genEnum/DB_field').Field
+const generateMongoEnumKeyValueExchange=require(`../generateFunction/generateMongoEnumKeyValueExchange`)//server_common_file_require.generateMongoEnumKeyValueExchange
 
 
 const fs=require('fs')

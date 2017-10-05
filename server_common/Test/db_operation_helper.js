@@ -3,22 +3,22 @@
  */
 'use strict'
 
-const server_common_file_require=require('../../server_common_file_require')
-const nodeEnum=server_common_file_require.nodeEnum
-const mongoEnum=server_common_file_require.mongoEnum
-const nodeRuntimeEnum=server_common_file_require.nodeRuntimeEnum
+// const server_common_file_require=require('../../express_admin/server_common_file_require')
+const nodeEnum=require(`../constant/enum/nodeEnum`)
+const mongoEnum=require(`../constant/enum/mongoEnum`)
+const nodeRuntimeEnum=require(`../constant/enum/nodeRuntimeEnum`)
 
-const common_operation_model=server_common_file_require.common_operation_model
-const e_dbModel=require('../../server/constant/genEnum/dbModel')
+const common_operation_model=require(`../model/mongo/operation/common_operation_model`)
+const e_dbModel=require('../constant/genEnum/dbModel')
 
 // const e_part=require('../../server/constant/enum/node').ValidatePart
 // const e_method=require('../../server/constant/enum/node').Method
-const e_coll=require('../../server/constant/genEnum/DB_Coll').Coll
-const e_field=require('../../server/constant/genEnum/DB_field').Field
-const dbModelInArray=require('../../server/constant/genEnum/dbModelInArray')
+const e_coll=require('../constant/genEnum/DB_Coll').Coll
+const e_field=require('../constant/genEnum/DB_field').Field
+const dbModelInArray=require('../constant/genEnum/dbModelInArray')
 
 const e_hashType=nodeRuntimeEnum.HashType
-const hash=server_common_file_require.crypt.hash//require('../../server/function/assist/crypt').hash
+const hash=require('../function/assist/crypt').hash() //server_common_file_require.crypt.hash
 
 const e_accountType=mongoEnum.AccountType.DB
 const e_docStatus=mongoEnum.DocStatus.DB
@@ -26,12 +26,13 @@ const e_articleStatus=mongoEnum.ArticleStatus.DB
 const e_impeachType=mongoEnum.ImpeachType.DB
 const e_impeachState=mongoEnum.ImpeachState.DB
 
-const initSettingObject=require('../../server/constant/genEnum/initSettingObject').iniSettingObject
+const initSettingObject=require('../constant/genEnum/initSettingObject').iniSettingObject
 
-const regex=server_common_file_require.regex.regex
+const regex=require(`../constant/regex/regex`).regex//server_common_file_require.regex.regex
 
 let tmpResult
 async function deleteUserAndRelatedInfo_async({account}){
+    // console.log(`account =====>${JSON.stringify(account)}`)
     let result=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.user,condition:{account:account}})
     // console.log(`find user result =======>${JSON.stringify(result)}`)
     if(0<result.length){
@@ -89,6 +90,16 @@ async function create_user_async({userInfo}){
     return Promise.resolve(tmpResult)
 }
 
+async function deleteMany_async({dbModel,condition}){
+    return new Promise(function(resolve,reject){
+        dbModel.deleteMany(condition,function(err){
+            if(err){
+                return reject(err)
+            }
+            return resolve(true)
+        })
+    })
+}
 
 async function create_article_async({userId,categoryId}){
     tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.folder,condition:{[e_field.FOLDER.AUTHOR_ID]:userId}})
@@ -146,10 +157,21 @@ async function getAdminUserId_async({userName}) {
     return Promise.resolve(tmpResult[0]['_id'])
 }
 
+/*async function findByIdAndUpdate_returnRecord_async({dbModel,id,updateFieldsValue,updateOption}){
+    // console.log(`find by id :${id}`)
+    let result=await dbModel.findByIdAndUpdate(id,updateFieldsValue,updateOption)
+        .catch(
+            function(err){
+                return Promise.reject(err)
+            })
+    return Promise.resolve(result)
+}*/
+
 module.exports={
     deleteUserAndRelatedInfo_async,
     deleteAdminUserAndRelatedInfo_async,
     deleteAllModelRecord_async,
+    deleteMany_async,
 
     create_user_async,
     create_article_async,
@@ -158,4 +180,6 @@ module.exports={
     createImageForImpeach_ReturnAllRecord_async,
     getUserId_async,
     getAdminUserId_async,
+
+    // findByIdAndUpdate_returnRecord_async,
 }

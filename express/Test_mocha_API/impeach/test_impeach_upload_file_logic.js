@@ -36,9 +36,8 @@ const controllerError=require('../../server/controller/impeach/impeach_upload_fi
 // const objectDeepCopy=server_common_file_require.misc.objectDeepCopy
 
 // const test_helper=require("../API_helper/db_operation_helper")
-const testData=require('../testData')
-
-const API_helper=require('../API_helper/API_helper')
+const testData=server_common_file_require.testData//require('../testData')
+const API_helper=server_common_file_require.API_helper//require('../API_helper/API_helper')
 
 const calcResourceConfig=require('../../server/constant/config/calcResourceConfig')
 

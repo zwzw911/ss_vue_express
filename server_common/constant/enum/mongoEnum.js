@@ -173,22 +173,24 @@ const ImpeachState={
     DB:{
         NEW: '1',
         SUBMIT:'2',
-        ACCEPT:'3',
-        ASSIGN:'4',
-        ONGOING:'5',
-        REJECT:'6',
-        DONE:'7',
-        RECALL:'8',
+        REVOKE:'3',
+        ACCEPT:'4',
+        ASSIGN:'5',
+        ONGOING:'6',
+        REJECT:'7',
+        DONE:'8',
+
     },
     SHOW:{
         NEW: '新建',
         SUBMIT:'提交',
+        REVOKE:'撤回',
         ACCEPT:'接受',
         ASSIGN:'分配',
         ONGOING:'处理中',
         REJECT:'驳回',
         DONE:'处理完',
-        RECALL:'撤回',
+
     },
 }
 

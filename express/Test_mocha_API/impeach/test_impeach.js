@@ -32,9 +32,8 @@ const helperError=server_common_file_require.helperError.helper//require('../../
 
 const controllerError=require('../../server/controller/impeach/impeach_logic').controllerError
 
-const testData=require('../testData')
-
-const API_helper=require('../API_helper/API_helper')
+const testData=server_common_file_require.testData//require('../testData')
+const API_helper=server_common_file_require.API_helper//require('../API_helper/API_helper')
 
 const calcResourceConfig=require('../../server/constant/config/calcResourceConfig')
 
@@ -46,20 +45,20 @@ describe('impeach: ', async function() {
     })
 
     before('user1 create and login', async function () {
-        await API_helper.createUser_async({userData:testData.user.user1})
-        user1Sess=await  API_helper.userLogin_returnSess_async({userData:testData.user.user1})
+        await API_helper.createUser_async({userData:testData.user.user1,app:app})
+        user1Sess=await  API_helper.userLogin_returnSess_async({userData:testData.user.user1,app:app})
     })
     before('user2 create and login', async function () {
-        await API_helper.createUser_async({userData:testData.user.user2})
-        user2Sess=await  API_helper.userLogin_returnSess_async({userData:testData.user.user2})
+        await API_helper.createUser_async({userData:testData.user.user2,app:app})
+        user2Sess=await  API_helper.userLogin_returnSess_async({userData:testData.user.user2,app:app})
     })
 
     before('user1 create new article1', async function () {
-        articleId=await API_helper.userCreateArticle_returnArticleId_async({userSess:user1Sess})
+        articleId=await API_helper.userCreateArticle_returnArticleId_async({userSess:user1Sess,app:app})
     });
 
     before('user1 create new article2', async function () {
-        articleId2=await API_helper.userCreateArticle_returnArticleId_async({userSess:user1Sess})
+        articleId2=await API_helper.userCreateArticle_returnArticleId_async({userSess:user1Sess,app:app})
     });
     /*********************************************************************/
     /*********************    format      *******************************/
@@ -135,7 +134,7 @@ describe('impeach: ', async function() {
             });
     });
     it('user2 create impeach for article normally', async function () {
-        impeachId=await API_helper.createImpeachForArticle_returnImpeachId_async({articleId:articleId,userSess:user2Sess})
+        impeachId=await API_helper.createImpeachForArticle_returnImpeachId_async({articleId:articleId,userSess:user2Sess,app:app})
     });
     /*********************************************************************/
     /********************************   update    ***********************/
@@ -167,6 +166,7 @@ describe('impeach: ', async function() {
              userSess:user2Sess,
              expectRc:validateError.validateFormat.recordInfoFiledRuleNotDefine.rc,
              done:done,
+             app:app,
          })
     });
     it('user2 update impeach with internal field impeachedArticleId', function (done) {
@@ -181,6 +181,7 @@ describe('impeach: ', async function() {
             userSess:user2Sess,
             expectRc:0,
             done:done,
+            app:app,
         })
     });
     it('user2 update impeach with field value not match rule', function (done) {
@@ -195,6 +196,7 @@ describe('impeach: ', async function() {
             userSess:user2Sess,
             expectRc:99999,
             done:done,
+            app:app,
         })
     });
 
@@ -210,6 +212,7 @@ describe('impeach: ', async function() {
             userSess:user2Sess,
             expectRc:controllerError.inputSanityFailed.rc,
             done:done,
+            app:app,
         })
     });
 })

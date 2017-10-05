@@ -24,6 +24,7 @@ function requireServerCommon(serverCommonRelateBaseDir,absoluteDestFilePath,fina
         `${serverCommonRelateBaseDir}constant/regex/`,
         `${serverCommonRelateBaseDir}controller/`,
         `${serverCommonRelateBaseDir}function/`,
+        `${serverCommonRelateBaseDir}Test/`,  //包含Test通用数据和API
     ]
 
     /*                  临时patch，captcha需要canvas，等待Node支持图像处理                */

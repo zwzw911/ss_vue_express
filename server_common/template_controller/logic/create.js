@@ -5,8 +5,8 @@
 
 
 /*                      controller setting                */
-const controller_setting=require('../admin_setting/admin_setting').setting
-const controllerError=require('../admin_setting/admin_user_controllerError').controllerError
+const controller_setting=require('../impeach_state_setting/impeach_state_setting').setting
+const controllerError=require('../impeach_state_setting/impeach_state_controllerError').controllerError
 
 /*                      specify: genEnum                */
 const e_uniqueField=require('../../../constant/genEnum/DB_uniqueField').UniqueField
@@ -22,7 +22,21 @@ const browserInputRule=require('../../../constant/inputRule/browserInputRule').b
 
 /*                      server common                                           */
 const server_common_file_require=require('../../../../server_common_file_require')
+/*                      server common：enum                                       */
 const nodeEnum=server_common_file_require.nodeEnum
+const nodeRuntimeEnum=server_common_file_require.nodeRuntimeEnum
+const mongoEnum=server_common_file_require.mongoEnum
+
+const e_env=nodeEnum.Env
+const e_part=nodeEnum.ValidatePart
+
+const e_hashType=nodeRuntimeEnum.HashType
+
+const e_accountType=mongoEnum.AccountType.DB
+const e_docStatus=mongoEnum.DocStatus.DB
+const e_adminUserType=mongoEnum.AdminUserType.DB
+const e_adminPriorityType=mongoEnum.AdminPriorityType.DB
+
 /*                      server common：function                                       */
 const dataConvert=server_common_file_require.dataConvert
 const controllerHelper=server_common_file_require.controllerHelper
@@ -30,17 +44,11 @@ const controllerChecker=server_common_file_require.controllerChecker
 const common_operation_model=server_common_file_require.common_operation_model
 const misc=server_common_file_require.misc
 const hash=server_common_file_require.crypt.hash
-/*                      server common：enum                                       */
-const e_accountType=server_common_file_require.mongoEnum.AccountType.DB
-const e_docStatus=server_common_file_require.mongoEnum.DocStatus.DB
-const e_env=nodeEnum.Env
-const e_part=server_common_file_require.nodeEnum.ValidatePart
-const e_hashType=server_common_file_require.nodeRuntimeEnum.HashType
-const e_adminUserType=server_common_file_require.mongoEnum.AdminUserType.DB
-const e_adminPriorityType=server_common_file_require.mongoEnum.AdminPriorityType.DB
+
 /*                      server common：other                                       */
 const regex=server_common_file_require.regex.regex
 const currentEnv=server_common_file_require.appSetting.currentEnv
+
 
 
 //添加内部产生的值（hash password）
@@ -60,6 +68,11 @@ async  function createUser_async(req){
 // console.log(`docValue===> ${JSON.stringify(docValue)}`)
 // console.log(`userId===> ${JSON.stringify(userId)}`)
     /*******************************************************************************************/
+    /*                                     参数转为server格式                                  */
+    /*******************************************************************************************/
+    dataConvert.convertCreateUpdateValueToServerFormat(docValue)
+    dataConvert.constructCreateCriteria(docValue)
+    /*******************************************************************************************/
     /*                                       authorization check                               */
     /*******************************************************************************************/
 
@@ -67,11 +80,7 @@ async  function createUser_async(req){
     /*                                       resource check                                    */
     /*******************************************************************************************/
 
-    /*******************************************************************************************/
-    /*                                     参数转为server格式                                  */
-    /*******************************************************************************************/
-    dataConvert.convertCreateUpdateValueToServerFormat(docValue)
-    dataConvert.constructCreateCriteria(docValue)
+
 
     /*******************************************************************************************/
     /*                                  fk value是否存在                                       */
@@ -96,7 +105,9 @@ async  function createUser_async(req){
         await controllerChecker.ifFieldInDocValueUnique_async({collName: collName, docValue: docValue,additionalCheckCondition:additionalCheckCondition})
     }
 // console.log(`ifFieldInDocValueUnique_async done===>`)
-
+    /*******************************************************************************************/
+    /*                                       特定字段的处理（检查）                            */
+    /*******************************************************************************************/
     //如果用户在db中存在，但是创建到一半，则删除用户(然后重新开始流程)
 
     let condition={name:docValue[e_field.ADMIN_USER.NAME]}

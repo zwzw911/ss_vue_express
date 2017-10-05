@@ -32,6 +32,9 @@ const upload=require('../server_common/function/assist/upload.js')
 const validateFormat=require('../server_common/function/validateInput/validateFormat.js')
 const validateHelper=require('../server_common/function/validateInput/validateHelper.js')
 const validateValue=require('../server_common/function/validateInput/validateValue.js')
+const API_helper=require('../server_common/Test/API_helper.js')
+const db_operation_helper=require('../server_common/Test/db_operation_helper.js')
+const testData=require('../server_common/Test/testData.js')
 const common_operation_model=require('../server_common/model/mongo/operation/common_operation_model.js')
 const common_operation_document=require('../server_common/model/mongo/operation/common_operation_document.js')
 const fkConfig=require('../server_common/model/mongo/fkConfig.js')
@@ -68,6 +71,9 @@ module.exports={
     validateFormat,
     validateHelper,
     validateValue,
+    API_helper,
+    db_operation_helper,
+    testData,
     common_operation_model,
     common_operation_document,
     fkConfig,

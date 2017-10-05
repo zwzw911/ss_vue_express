@@ -32,11 +32,9 @@ const controllerError=require('../../server/controller/user/user_logic/user_cont
 
 const objectDeepCopy=server_common_file_require.misc.objectDeepCopy
 
-const test_helper=require("../API_helper/db_operation_helper")
-
-const testData=require('../testData')
-
-const API_helper=require('../API_helper/API_helper')
+const test_helper=server_common_file_require.db_operation_helper//require("../API_helper/db_operation_helper")
+const testData=server_common_file_require.testData//require('../testData')
+const API_helper=server_common_file_require.API_helper//require('../API_helper/API_helper')
 
 let baseUrl="/user/"
 let userId  //create后存储对应的id，以便后续的update操作
@@ -44,8 +42,6 @@ let userId  //create后存储对应的id，以便后续的update操作
 
 describe('user format check:', function() {
     let data = {values: {recordInfo: {}}}, url = ``, finalUrl = baseUrl + url
-
-
     it('miss part method', function(done) {
         // data.values[e_part.RECORD_INFO]={account:{value:'1'}}
         request(app).post(finalUrl).set('Accept', 'application/json').send(data)
@@ -428,7 +424,7 @@ describe('update user： ', function() {
 
     let sess
     before('user login first before update', async function() {
-        sess=await  API_helper.userLogin_returnSess_async({userData:testData.user.user1})
+        sess=await  API_helper.userLogin_returnSess_async({userData:testData.user.user1,app:app})
         // console.log(`sess ======>${JSON.stringify(sess)}`)
     })
 /*    after('delete exist create testData.user.user2', async function() {
@@ -665,9 +661,9 @@ describe('retrieve password: ', function() {
         // console.log(`correctValueForModel ${JSON.stringify(correctValueForModel)}`)
         await test_helper.deleteUserAndRelatedInfo_async({account:testData.user.user3.account.value})
         // console.log(`######   create exist record   ######`)
-        await API_helper.createUser_async({userData:testData.user.user3})
+        await API_helper.createUser_async({userData:testData.user.user3,app:app})
         // console.log(`######   login exist record   ######`)
-        sess=await  API_helper.userLogin_returnSess_async({userData:testData.user.user3})
+        sess=await  API_helper.userLogin_returnSess_async({userData:testData.user.user3,app:app})
         // done()
     });
 
