@@ -9,7 +9,7 @@ const controller_setting=require('../impeach_state_setting/impeach_state_setting
 const controllerError=require('../impeach_state_setting/impeach_state_controllerError').controllerError
 const availableNextState=require(`../impeach_state_setting/impeach_state_setting`).availableNextState
 const endState=require(`../impeach_state_setting/impeach_state_setting`).endState
-
+const adminPriorityRelatedState=require(`../impeach_state_setting/impeach_state_setting`).adminPriorityRelatedState
 /*                      specify: genEnum                */
 const e_uniqueField=require('../../../constant/genEnum/DB_uniqueField').UniqueField
 const e_chineseName=require('../../../constant/genEnum/inputRule_field_chineseName').ChineseName
@@ -31,7 +31,7 @@ const mongoEnum=server_common_file_require.mongoEnum
 
 const e_env=nodeEnum.Env
 const e_part=nodeEnum.ValidatePart
-const e_userInfoMandatoryField=nodeRuntimeEnum.userInfoMandatoryField
+const e_userInfoField=nodeRuntimeEnum.userInfoField
 const e_impeachState=mongoEnum.ImpeachState.DB
 
 
@@ -61,7 +61,7 @@ async  function createImpeachState_async(req){
     let collName=controller_setting.MAIN_HANDLED_COLL_NAME
     let docValue=req.body.values[e_part.RECORD_INFO]
     let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
-    let userId=userInfo.userId,userCollName=userInfo[e_userInfoMandatoryField.COLL_NAME],userType=[e_userInfoMandatoryField.USER_TYPE]
+    let userId=userInfo.userId,userCollName=userInfo[e_userInfoField.COLL_NAME],userType=[e_userInfoField.USER_TYPE]
     let impeachDoc,impeachId,impeachCreator,impeachStateRecords,lastImpeachState,condition
     /*******************************************************************************************/
     /*                                     参数转为server格式                                  */
@@ -133,7 +133,7 @@ async  function createImpeachState_async(req){
 
 // console.log(`createUser_async docValue===> ${JSON.stringify(docValue)}`)
     /*******************************************************************************************/
-    /*                 因为name是unique，所以要检查用户名是否存在(unique check)                */
+    /*                                          unique check                                   */
     /*******************************************************************************************/
     if(undefined!==e_uniqueField[collName] &&  e_uniqueField[collName].length>0) {
         let additionalCheckCondition={[e_field.ADMIN_USER.DOC_STATUS]:e_docStatus.DONE}
@@ -147,6 +147,19 @@ async  function createImpeachState_async(req){
     //当前传入的state不能为NEW（NEW是创建impeach的时候自动生成的）
     if(e_impeachState.NEW===docValue[e_field.IMPEACH_STATE.STATE]){
         return Promise.reject(controllerError.NEWStateNotAllow)
+    }
+    //如果是admin，根据权限判断是否可以完成当前输入的state
+    if(userCollName===e_coll.ADMIN_USER){
+        let userPriority=userInfo.userPriority
+        let validState=[]
+        for(let validPriorityForImpeach of adminPriorityRelatedState){
+            if(-1!==userPriority.indexOf(validPriorityForImpeach)){
+                validState.concat(adminPriorityRelatedState[validPriorityForImpeach])
+            }
+        }
+        if(-1===validState.indexOf(docValue[e_field.IMPEACH_STATE.STATE])){
+            return Promise.reject(controllerError.adminHasNoPriorityChangeToInputState)
+        }
     }
     //根据最近一个state的记录，判断输入state是否OK
     lastImpeachState=impeachStateRecords[0][e_field.IMPEACH_STATE.STATE]
@@ -167,6 +180,11 @@ async  function createImpeachState_async(req){
         docValue[e_field.IMPEACH_STATE.STATE]===e_impeachState.NEW
     }
 
+    //如果输入的状态是最终状态，则OWNER要变成当前用户
+    if(-1!==endState.indexOf(docValue[e_field.IMPEACH_STATE.STATE])){
+        docValue[e_field.IMPEACH_STATE.OWNER_COLL]=userCollName
+        docValue[e_field.IMPEACH_STATE.OWNER_ID]=userId
+    }
     /*******************************************************************************************/
     /*                         添加internal field，然后检查                                    */
     /*******************************************************************************************/
@@ -174,6 +192,7 @@ async  function createImpeachState_async(req){
     let internalValue={}
     internalValue[e_field.IMPEACH_STATE.DEALER_COLL]=userCollName
     internalValue[e_field.IMPEACH_STATE.DEALER_ID]=userId
+
     if(e_env.DEV===currentEnv){
         let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInputRule:inputRule[collName],collInternalRule:internalInputRule[collName]})
         // console.log(`internalValue check result====>   ${JSON.stringify(tmpResult)}`)

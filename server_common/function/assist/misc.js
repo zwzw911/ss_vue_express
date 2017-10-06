@@ -500,8 +500,24 @@ function ifArrayHasDuplicate(array){
     return false
 }
 
+/*  childArray中的每个元素都包含在parentArray中
+*
+* */
+function ifArrayContainArray({parentArray,childArray}){
+    if(childArray.length===0 || parentArray.length===0){
+        return false
+    }
+    for(let singleChildEle of childArray){
+        if(-1===parentArray.indexOf(singleChildEle)){
+            return false
+        }
+    }
+    return true
+}
 // console.log(`${ifArrayHasDuplicate([1,'1'])}`)
 // console.log(`${ifArrayHasDuplicate([1,1])}`)
+// console.log(`${ifArrayContainArray({parentArray:['1','2'],childArray:['1']})}`)
+// console.log(`${ifArrayContainArray({parentArray:['1','2'],childArray:['3']})}`)
 
 module.exports={
     checkInterval_async,
@@ -532,6 +548,7 @@ module.exports={
     recursiveRequireAllFileInDir,//将数组中所有文件名require到指定文件中
 
     ifArrayHasDuplicate,
+    ifArrayContainArray,
 }
 
 

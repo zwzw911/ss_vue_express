@@ -49,7 +49,7 @@ async function deleteUser_async(req){
     let tmpResult,collName=controller_setting.MAIN_HANDLED_COLL_NAME
     let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
     let userId=userInfo.userId
-
+    let userPriority=userInfo.userPriority
     /*              client数据转换                  */
     let userToBeDeleteId=req.body.values[e_part.RECORD_ID]
     // console.log(`befreo dataConvert`)
@@ -60,7 +60,7 @@ async function deleteUser_async(req){
     // let tmpResult=await common_operation_model.findById({dbModel:dbModel[e_coll.USER],id:objectId})
     // let userId=tmpResult.msg[e_field.USER.]
     /*              当前用户是否有删除用户的权限      */
-    let hasDeletePriority=await controllerChecker.ifAdminUserHasExpectedPriority({userId:userId,arr_expectedPriority:[e_adminPriorityType.DELETE_ADMIN_USER]})
+    let hasDeletePriority=await controllerChecker.ifAdminUserHasExpectedPriority({userPriority:userPriority,arr_expectedPriority:[e_adminPriorityType.DELETE_ADMIN_USER]})
     console.log(`hasDeletePriority===========>${JSON.stringify(hasDeletePriority)}`)
     if(false===hasDeletePriority){
         return Promise.reject(controllerError.currentUserHasNotPriorityToDeleteUser)

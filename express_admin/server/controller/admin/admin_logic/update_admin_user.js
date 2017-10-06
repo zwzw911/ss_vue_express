@@ -12,7 +12,9 @@ const e_coll=require('../../../constant/genEnum/DB_Coll').Coll
 const e_field=require('../../../constant/genEnum/DB_field').Field
 const e_dbModel=require('../../../constant/genEnum/dbModel')
 // const e_iniSettingObject=require('../../../constant/genEnum/initSettingObject').iniSettingObject
-
+const inputRule=require('../../../constant/inputRule/inputRule').inputRule
+const internalInputRule=require('../../../constant/inputRule/internalInputRule').internalInputRule
+const browserInputRule=require('../../../constant/inputRule/browserInputRule').browserInputRule
 
 const server_common_file_require=require('../../../../server_common_file_require')
 
@@ -48,6 +50,7 @@ async function updateUser_async(req){
     let tmpResult,collName=controller_setting.MAIN_HANDLED_COLL_NAME
     let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
     let userId=userInfo.userId
+    let userPriority=userInfo.userPriority
     /*              client数据转换                  */
     let docValue=req.body.values[e_part.RECORD_INFO]
     let userToBeUpdateId=req.body.values[e_part.RECORD_ID]
@@ -59,12 +62,17 @@ async function updateUser_async(req){
     // let tmpResult=await common_operation_model.findById({dbModel:dbModel[e_coll.USER],id:objectId})
     // let userId=tmpResult.msg[e_field.USER.]
     /*              当前用户是否有创建用户的权限      */
-    let hasCreatePriority=await controllerChecker.ifAdminUserHasExpectedPriority({userId:userId,arr_expectedPriority:[e_adminPriorityType.UPDATE_ADMIN_USER]})
+    // console.log(`userPriority========>${JSON.stringify(userPriority)}`)
+    // console.log(`e_adminPriorityType.UPDATE_ADMIN_USER========>${JSON.stringify(e_adminPriorityType.UPDATE_ADMIN_USER)}`)
+    let hasCreatePriority=await controllerChecker.ifAdminUserHasExpectedPriority({userPriority:userPriority,arr_expectedPriority:[e_adminPriorityType.UPDATE_ADMIN_USER]})
+    // console.log(`hasCreatePriority=========>${JSON.stringify(hasCreatePriority)}`)
     if(false===hasCreatePriority){
         return Promise.reject(controllerError.currentUserHasNotPriorityToUpdateUser)
     }
+
     /*              如果是root，则只有root可以修改自己（specific）              */
     let userToBeUpdate=await common_operation_model.findById_returnRecord_async({dbModel:e_dbModel.admin_user,id:userToBeUpdateId})
+    console.log(`userToBeUpdate=========>${JSON.stringify(userToBeUpdate)}`)
     if(e_adminUserType.ROOT===userToBeUpdate[e_field.ADMIN_USER.USER_TYPE]){
         if(userToBeUpdate['_id']!==userId){
             return Promise.reject(controllerError.onlyRootCanUpdateRoot)
@@ -74,10 +82,24 @@ async function updateUser_async(req){
     /*              检测enum+array的字段是否有重复值       */
     // console.log(`browserInputRule[collName]==========> ${JSON.stringify(browserInputRule[collName])}`)
     // console.log(`docValue==========> ${JSON.stringify(docValue)}`)
+    // console.log(`docValue ==========> ${JSON.stringify(docValue)}`)
+    // console.log(`collName ==========> ${JSON.stringify(collName)}`)
+    // console.log(`browserInputRule[collName] ==========> ${JSON.stringify(browserInputRule[collName])}`)
     tmpResult=controllerChecker.ifEnumHasDuplicateValue({collValue:docValue,collRule:browserInputRule[collName]})
     // console.log(`duplicate check result ==========> ${JSON.stringify(tmpResult)}`)
     if(tmpResult.rc>0){
         return Promise.reject(tmpResult)
+    }
+    /*******************************************************************************************/
+    /*                                       特定字段的处理（检查）                            */
+    /*******************************************************************************************/
+    //更新的用户的权限必须来自当前login用户的权限（是login用户权限的子集）
+    // console.log(`update admin======>parent pri ${JSON.stringify(userPriority)}`)
+    // console.log(`update admin======>child pri ${JSON.stringify(docValue[e_field.ADMIN_USER.USER_PRIORITY])}`)
+    if(undefined!==docValue[e_field.ADMIN_USER.USER_PRIORITY]){
+        if(false===misc.ifArrayContainArray({parentArray:userPriority,childArray:docValue[e_field.ADMIN_USER.USER_PRIORITY]})){
+            return Promise.reject(controllerError.updatePriorityNotInheritedFromParent)
+        }
     }
 
 

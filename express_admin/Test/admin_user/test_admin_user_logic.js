@@ -41,21 +41,35 @@ const API_helper=server_common_file_require.API_helper//require('../API_helper/A
 // const db=require('../Test_helper/db_operation_helper')
 
 let data = {values: {}},  baseUrl="/admin_user/",finalUrl=baseUrl
-let user1Sess,user2Sess,user1Id,user2Id
+let user1Sess,user2Sess,user3Sess,user1Id,user2Id
 
 /*              create_admin_user中的错误               */
 describe('create user error:', function() {
     let data={values:{method:e_method.CREATE}}
     let rootSess
-    before('prepare', async function(){
+    before('prepare===>create user error', async function(){
         // console.log(`######   delete exist record   ######`)
         /*              root admin login                    */
         rootSess=await API_helper.adminUserLogin_returnSess_async({userData:{
             [e_field.ADMIN_USER.NAME]:testData.admin_user.rootAdmin.name,
             [e_field.ADMIN_USER.PASSWORD]:testData.admin_user.rootAdmin.password,
         },adminApp:app})
-        /*              delete admin user1                    */
+        /*              delete admin user1/2/3                    */
         await test_helper.deleteAdminUserAndRelatedInfo_async(testData.admin_user.user1ForModel.name)
+        await test_helper.deleteAdminUserAndRelatedInfo_async(testData.admin_user.user2ForModel.name)
+        await test_helper.deleteAdminUserAndRelatedInfo_async(testData.admin_user.user3ForModel.name)
+        /*                  create user2 without create adminUser priority      */
+        await API_helper.createAdminUser_async({sess:rootSess,userData:Object.assign({},testData.admin_user.user2, {[e_field.ADMIN_USER.USER_PRIORITY]:{value:[e_adminPriorityType.IMPEACH_DEAL]}}),adminApp:app})
+        user2Sess=await API_helper.adminUserLogin_returnSess_async({userData:{
+            [e_field.ADMIN_USER.NAME]:testData.admin_user.user2.name,
+            [e_field.ADMIN_USER.PASSWORD]:testData.admin_user.user2.password,
+        },adminApp:app})
+        /*                  create user3 without create adminUser priority      */
+        await API_helper.createAdminUser_async({sess:rootSess,userData:Object.assign({},testData.admin_user.user3, {[e_field.ADMIN_USER.USER_PRIORITY]:{value:[e_adminPriorityType.CREATE_ADMIN_USER]}}),adminApp:app})
+        user3Sess=await API_helper.adminUserLogin_returnSess_async({userData:{
+            [e_field.ADMIN_USER.NAME]:testData.admin_user.user3.name,
+            [e_field.ADMIN_USER.PASSWORD]:testData.admin_user.user3.password,
+        },adminApp:app})
     });
     it('create user without login(no sess)', function(done) {
         data.values[e_part.RECORD_INFO]=testData.admin_user.user1
@@ -108,7 +122,40 @@ describe('create user error:', function() {
                 done();
             });
     });
-
+    it('adminUser2 without create priority try to create adminUser1', function(done) {
+        data.values={}
+        data.values[e_part.METHOD]=e_method.CREATE
+        // console.log(`Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]})=========>${JSON.stringify(Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]}))}`)
+        data.values[e_part.RECORD_INFO]=Object.assign({},testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:{value:[e_adminPriorityType.IMPEACH_DEAL]}})
+        console.log(`data=====>${JSON.stringify(data.values[e_part.RECORD_INFO])}`)
+        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[user2Sess]).send(data)
+            .end(function(err, res) {
+                // if (err) return done(err);
+                // console.log(`res ios ${JSON.stringify(res)}`)
+                let parsedRes=JSON.parse(res.text)
+                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
+                // assert.deepStrictEqual(parsedRes.rc,99999)
+                assert.deepStrictEqual(parsedRes.rc,controllerError.currentUserHasNotPriorityToCreateUser.rc)
+                done();
+            });
+    });
+    it('adminUser3 try to create adminUser1 without inherit priority', function(done) {
+        data.values={}
+        data.values[e_part.METHOD]=e_method.CREATE
+        // console.log(`Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]})=========>${JSON.stringify(Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]}))}`)
+        data.values[e_part.RECORD_INFO]=Object.assign({},testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:{value:[e_adminPriorityType.IMPEACH_REVIEW]}})
+        // console.log(`data=====>${JSON.stringify(data.values[e_part.RECORD_INFO])}`)
+        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[user3Sess]).send(data)
+            .end(function(err, res) {
+                // if (err) return done(err);
+                // console.log(`res ios ${JSON.stringify(res)}`)
+                let parsedRes=JSON.parse(res.text)
+                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
+                // assert.deepStrictEqual(parsedRes.rc,99999)
+                assert.deepStrictEqual(parsedRes.rc,controllerError.createUserPriorityNotInheritedFromParent.rc)
+                done();
+            });
+    });
     it('create admin user1 correctly(without priority create)', function(done) {
         data.values={}
         data.values[e_part.METHOD]=e_method.CREATE
@@ -126,6 +173,7 @@ describe('create user error:', function() {
                 done();
             });
     });
+
     it('create admin user1 again to unique check', function(done) {
         data.values={}
         data.values[e_part.METHOD]=e_method.CREATE
@@ -153,7 +201,7 @@ describe('create user error:', function() {
 describe('update user error:', function() {
     let data={values:{method:e_method.UPDATE}},url=``,finalUrl=baseUrl+url
     let rootSess,adminUser1Sess,adminUser2Sess,rootId,adminUser1Id,adminUser2Id
-    before('prepare', async function(){
+    before('prepare===>update user error', async function(){
         // console.log(`######   delete exist record   ######`)
         /*              root admin login                    */
         rootSess=await API_helper.adminUserLogin_returnSess_async({userData:{
@@ -162,13 +210,13 @@ describe('update user error:', function() {
         },adminApp:app})
         /*              delete admin user1 then create user1 with no anu CRUD priority                    */
         await test_helper.deleteAdminUserAndRelatedInfo_async(testData.admin_user.user1ForModel.name)
-        await API_helper.createAdminUser_async({sess:rootSess,userData:Object.assign({},testData.admin_user.user1, {[e_field.ADMIN_USER.USER_PRIORITY]:{value:[]}}),adminApp:app})
+        await API_helper.createAdminUser_async({sess:rootSess,userData:Object.assign({},testData.admin_user.user1, {[e_field.ADMIN_USER.USER_PRIORITY]:{value:[e_adminPriorityType.IMPEACH_DEAL]}}),adminApp:app})
 
         adminUser1Sess=await API_helper.adminUserLogin_returnSess_async({userData:{
             [e_field.ADMIN_USER.NAME]:{value:testData.admin_user.user1ForModel.name},
             [e_field.ADMIN_USER.PASSWORD]:{value:testData.admin_user.user1ForModel.password},
         },adminApp:app})
-        /*              delete admin user2 then create user2                    */
+        /*              delete admin user2 then create user2 with update priority                  */
         await test_helper.deleteAdminUserAndRelatedInfo_async(testData.admin_user.user2ForModel.name)
         await API_helper.createAdminUser_async({sess:rootSess,userData:Object.assign({},testData.admin_user.user2, {[e_field.ADMIN_USER.USER_PRIORITY]:{value:[e_adminPriorityType.UPDATE_ADMIN_USER]}}),adminApp:app})
         adminUser2Sess=await API_helper.adminUserLogin_returnSess_async({userData:{
@@ -218,6 +266,24 @@ describe('update user error:', function() {
                 done();
             });
     });
+    it('user2 update admin user1 without inherit priority', function(done) {
+        data.values={}
+        data.values[e_part.METHOD]=e_method.UPDATE
+        // console.log(`Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]})=========>${JSON.stringify(Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]}))}`)
+        data.values[e_part.RECORD_ID]=adminUser1Id
+        data.values[e_part.RECORD_INFO]=Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:{value:[e_adminPriorityType.CREATE_ADMIN_USER]}})
+        // console.log(`data=====>${JSON.stringify(data.values[e_part.RECORD_INFO])}`)
+        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[adminUser2Sess]).send(data)
+            .end(function(err, res) {
+                // if (err) return done(err);
+                // console.log(`res ios ${JSON.stringify(res)}`)
+                let parsedRes=JSON.parse(res.text)
+                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
+                // assert.deepStrictEqual(parsedRes.rc,99999)
+                assert.deepStrictEqual(parsedRes.rc,controllerError.updatePriorityNotInheritedFromParent.rc)
+                done();
+            });
+    });
     it('user2 with priority try to update root', function(done) {
         data.values={}
         data.values[e_part.METHOD]=e_method.UPDATE
@@ -242,7 +308,7 @@ describe('update user error:', function() {
 describe('delete user error:', function() {
     let data={values:{method:e_method.DELETE}},url=``,finalUrl=baseUrl+url
     let rootSess,adminUser1Sess,adminUser2Sess,rootId,adminUser1Id,adminUser2Id
-    before('prepare', async function(){
+    before('prepare=====>delete user error', async function(){
         // console.log(`######   delete exist record   ######`)
         /*              root admin login                    */
         rootSess=await API_helper.adminUserLogin_returnSess_async({userData:{
@@ -252,7 +318,7 @@ describe('delete user error:', function() {
         //API_helper.
         /*              delete admin user1 then create user1 with no anu CRUD priority                    */
         await test_helper.deleteAdminUserAndRelatedInfo_async(testData.admin_user.user1ForModel.name)
-        await API_helper.createAdminUser_async({sess:rootSess,userData:Object.assign({},testData.admin_user.user1, {[e_field.ADMIN_USER.USER_PRIORITY]:{value:[]}}),adminApp:app})
+        await API_helper.createAdminUser_async({sess:rootSess,userData:Object.assign({},testData.admin_user.user1, {[e_field.ADMIN_USER.USER_PRIORITY]:{value:[e_adminPriorityType.IMPEACH_DEAL]}}),adminApp:app})
 
         await test_helper.deleteAdminUserAndRelatedInfo_async(testData.admin_user.user2ForModel.name)
         await API_helper.createAdminUser_async({sess:rootSess,userData:Object.assign({},testData.admin_user.user2, {[e_field.ADMIN_USER.USER_PRIORITY]:{value:[e_adminPriorityType.DELETE_ADMIN_USER]}}),adminApp:app})

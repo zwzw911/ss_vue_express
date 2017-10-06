@@ -27,7 +27,7 @@ const e_penalizeSubType=mongoEnum.PenalizeSubType.DB
 const nodeRuntimeEnum=require('../constant/enum/nodeRuntimeEnum')
 const e_hashType=nodeRuntimeEnum.HashType
 const e_fileSizeUnit=nodeRuntimeEnum.FileSizeUnit
-const e_userInfoMandatoryField=nodeRuntimeEnum.userInfoMandatoryField
+const e_userInfoField=nodeRuntimeEnum.userInfoField
 
 
 
@@ -982,7 +982,7 @@ async function setLoginUserInfo_async({req,userInfo}){
     if(undefined===userInfo){
         return Promise.reject(helperError.userInfoUndefine)
     }
-    let mandatoryFields=[e_userInfoMandatoryField.USER_ID,e_userInfoMandatoryField.COLL_NAME,e_userInfoMandatoryField.USER_TYPE]
+    let mandatoryFields=[e_userInfoField.USER_ID,e_userInfoField.COLL_NAME,e_userInfoField.USER_TYPE]
     for(let singleMandatoryField of mandatoryFields){
         if(undefined===userInfo[singleMandatoryField]){
             return Promise.reject(helperError.mandatoryFieldValueUndefine(singleMandatoryField))

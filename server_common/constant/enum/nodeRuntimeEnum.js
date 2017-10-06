@@ -42,10 +42,11 @@ const FileSizeUnit={
 }
 
 //保存用户信息到session时，那些字段是必须的
-const userInfoMandatoryField={
+const userInfoField={
     USER_ID:`userId`,
     COLL_NAME:`collName`,
     USER_TYPE:`userType`,
+    USER_PRIORITY:'userPriority',//adminUser权限
 }
 module.exports={
     HashType,
@@ -53,5 +54,5 @@ module.exports={
     GmGetter,
     GmCommand,
     FileSizeUnit,
-    userInfoMandatoryField,
+    userInfoField,
 }

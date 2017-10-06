@@ -9,7 +9,7 @@ const server_common_file_require=require('../../../../server_common_file_require
 /*                      genEnum                     */
 const e_coll=require('../../../constant/genEnum/DB_Coll').Coll
 const e_impeachState=server_common_file_require.mongoEnum.ImpeachState.DB
-
+const e_adminPriorityType=server_common_file_require.mongoEnum.AdminPriorityType.DB
 
 const setting={
     MAIN_HANDLED_COLL_NAME:e_coll.IMPEACH_STATE
@@ -39,9 +39,17 @@ const availableNextState={
 //一个impeach的最终状态
 const endState=[e_impeachState.REJECT,e_impeachState.DONE]
 
+//admin拥有的权限，对应可以操作的state
+const adminPriorityRelatedState={
+    [e_adminPriorityType.IMPEACH_ASSIGN]:[e_impeachState.ASSIGN,e_impeachState.ONGOING],
+    [e_adminPriorityType.IMPEACH_DEAL]:[e_impeachState.ACCEPT,e_impeachState.DONE,e_impeachState.REJECT]
+}
+
+// console.log(`${JSON.stringify(adminPriorityRelatedState)}`)
 module.exports={
     setting,
     endState,
+    adminPriorityRelatedState,
     availableNextState,
 }
 // console.log(`${JSON.stringify(setting)}`)

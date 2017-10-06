@@ -49,14 +49,14 @@ const currentEnv=server_common_file_require.appSetting.currentEnv
 //对数值逻辑进行判断（外键是否有对应的记录等）
 //执行db操作并返回结果
 async  function createUser_async(req){
-    // console.log(`create user in`)
+    console.log(`create user in`)
     let tmpResult
     let collName=controller_setting.MAIN_HANDLED_COLL_NAME
     let docValue=req.body.values[e_part.RECORD_INFO]
 
     let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
     let userId=userInfo.userId
-
+    let userPriority=userInfo.userPriority
 // console.log(`docValue===> ${JSON.stringify(docValue)}`)
 // console.log(`userId===> ${JSON.stringify(userId)}`)
     /*              参数转为server格式            */
@@ -68,7 +68,7 @@ async  function createUser_async(req){
         return Promise.reject(controllerError.cantCreateRootUserByAPI)
     }
     /*              当前用户是否有创建用户的权限      */
-    let hasCreatePriority=await controllerChecker.ifAdminUserHasExpectedPriority({userId:userId,arr_expectedPriority:[e_adminPriorityType.CREATE_ADMIN_USER]})
+    let hasCreatePriority=await controllerChecker.ifAdminUserHasExpectedPriority({userPriority:userPriority,arr_expectedPriority:[e_adminPriorityType.CREATE_ADMIN_USER]})
     if(false===hasCreatePriority){
         return Promise.reject(controllerError.currentUserHasNotPriorityToCreateUser)
     }
@@ -88,6 +88,18 @@ async  function createUser_async(req){
         await controllerChecker.ifFieldInDocValueUnique_async({collName: collName, docValue: docValue,additionalCheckCondition:additionalCheckCondition})
     }
 // console.log(`ifFieldInDocValueUnique_async done===>`)
+    /*******************************************************************************************/
+    /*                                       特定字段的处理（检查）                            */
+    /*******************************************************************************************/
+    //创建的用户的权限必须来自当前login用户的权限（是login用户权限的子集）
+    // console.log(`create admin======>parent pri ${JSON.stringify(userPriority)}`)
+    // console.log(`create admin======>child pri ${JSON.stringify(docValue[e_field.ADMIN_USER.USER_PRIORITY])}`)
+    if(false===misc.ifArrayContainArray({parentArray:userPriority,childArray:docValue[e_field.ADMIN_USER.USER_PRIORITY]})){
+        return Promise.reject(controllerError.createUserPriorityNotInheritedFromParent)
+    }
+
+
+
 
     //如果用户在db中存在，但是创建到一半，则删除用户(然后重新开始流程)
 

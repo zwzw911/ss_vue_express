@@ -81,10 +81,11 @@ async function resourceProfile(){
 async function createRoot(){
     // console.log(`adminUser===>${JSON.stringify(adminUser)}`)
     // //删除ROOT用户
-    // let condition={
-    //     [e_field.ADMIN_USER.USER_TYPE]:e_adminUserType.ROOT
-    // }
-    // await common_operation_model.deleteOne_returnRecord_async({dbModel:e_dbModel.admin_user,condition:condition})
+/*    let condition={
+        [e_field.ADMIN_USER.USER_TYPE]:e_adminUserType.ROOT
+    }
+    await common_operation_model.deleteOne_returnRecord_async({dbModel:e_dbModel.admin_user,condition:condition})*/
+
     let adminUser=adminUserRecord[0]
     //获得sugar和hash后的password
     let hashResult=generateSugarAndHashPassword({ifUser:false,ifAdminUser:true,password:adminUser[e_field.ADMIN_USER.PASSWORD]})

@@ -50,8 +50,10 @@ const admin_user= {
         'require': {define: false, error: {rc: 10018}, mongoError: {rc: 20018, msg: '用户权限不能为空'}},//用户权限初始可以为空，以后ROOT用户进行分配
         'enum':{define:enumValue.AdminPriorityType,error:{rc:10020},mongoError:{rc:20020,msg:'用户权限不正确'}},//server端使用
          // 'arrayMinLength': {define: 1, error: {rc: 10002}, mongoError: {rc: 20002, msg: '至少设置1个权限'}},
+        //至少包含1个权限
+        'arrayMinLength': {define: 1, error: {rc: 10021}, mongoError: {rc: 20021, msg: `至少拥有1个权限`}},
         //最多包含所有权限
-        'arrayMaxLength': {define: enumValue.AdminPriorityType.length, error: {rc: 10021}, mongoError: {rc: 20021, msg: `最多拥有${enumValue.AdminPriorityType.length}个权限`}},
+        'arrayMaxLength': {define: enumValue.AdminPriorityType.length, error: {rc: 10022}, mongoError: {rc: 20022, msg: `最多拥有${enumValue.AdminPriorityType.length}个权限`}},
     },
 }
 

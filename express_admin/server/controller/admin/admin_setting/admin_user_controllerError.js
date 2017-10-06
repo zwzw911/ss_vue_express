@@ -19,6 +19,8 @@ const controllerError={
     cantCreateRootUserByAPI:{rc:51010,msg:'无法创建root用户'},
     cantDeleteRootUserByAPI:{rc:51011,msg:'无法删除root用户'},
     onlyRootCanUpdateRoot:{rc:51012,msg:'无法更新root用户'},
+
+    createUserPriorityNotInheritedFromParent:{rc:51013,msg:'创建新用户时，权限不能超出创建者的权限'},
     // nameAlreadyExists:{rc:50100,msg:`用户名已经存在`}, //key名字必须固定为 field+AlreadyExists
     // accountAlreadyExists:{rc:50102,msg:`账号已经存在`},
     // fieldNotSupport:{rc:50104,msg:`字段名称不正确`},
@@ -26,11 +28,15 @@ const controllerError={
     loginFieldNumNotExpected:{rc:51015,msg:`输入字段字段数量不正确`},
     loginMandatoryFieldNotExist(fieldName){return {rc:51016,msg:`缺少字段${fieldName}`}},
     userNameNotExist:{rc:51018,msg:`用户或者密码不正确`},
-    passwordNotMatch:{rc:51020,msg:`用户或者密码不正确`}
+    passwordNotMatch:{rc:51020,msg:`用户或者密码不正确`},
+
+    /*                  updateUser_async                */
+    updatePriorityNotInheritedFromParent:{rc:51022,msg:'更新用户时，权限不能超出创建者的权限'},
     /*//不能泄露具体信息
     ,
 
     /!*              updateUser_async            *!/
+
     // notLogin:{rc:50112,msg:`尚未登录，无法执行用户信息更改`},
     cantUpdateOwnProfile:{rc:50114,msg:`只能更改自己的信息`},
     userNotExist:{rc:50116,msg:`用户信息不存在`},//update的时候，无法根据req.session.userId找到对应的记录

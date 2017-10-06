@@ -268,6 +268,41 @@ describe('method=create: preCheck', function() {
             });
     });
 
+    it('priority(enum) too short(no value)', function(done) {
+        data.values={}
+        data.values[e_part.METHOD]=e_method.CREATE
+        // console.log(`Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]})=========>${JSON.stringify(Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]}))}`)
+        data.values[e_part.RECORD_INFO]=Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:{value:[]}})
+        console.log(`data=====>${JSON.stringify(data.values[e_part.RECORD_INFO])}`)
+        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[rootSess]).send(data)
+            .end(function(err, res) {
+                // if (err) return done(err);
+                // console.log(`res ios ${JSON.stringify(res)}`)
+                let parsedRes=JSON.parse(res.text)
+                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
+                assert.deepStrictEqual(parsedRes.rc,99999)
+                assert.deepStrictEqual(parsedRes.msg.userPriority.rc,browserInputRule.admin_user.userPriority.arrayMinLength.error.rc)
+                done();
+            });
+    });
+
+    it('priority(enum) too long', function(done) {
+        data.values={}
+        data.values[e_part.METHOD]=e_method.CREATE
+        // console.log(`Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]})=========>${JSON.stringify(Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]}))}`)
+        data.values[e_part.RECORD_INFO]=Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:{value:["1","2","3","10","11","12","20","21","22",]}})
+        console.log(`data=====>${JSON.stringify(data.values[e_part.RECORD_INFO])}`)
+        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[rootSess]).send(data)
+            .end(function(err, res) {
+                // if (err) return done(err);
+                // console.log(`res ios ${JSON.stringify(res)}`)
+                let parsedRes=JSON.parse(res.text)
+                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
+                assert.deepStrictEqual(parsedRes.rc,99999)
+                assert.deepStrictEqual(parsedRes.msg.userPriority.rc,browserInputRule.admin_user.userPriority.arrayMaxLength.error.rc)
+                done();
+            });
+    });
 })
 
 

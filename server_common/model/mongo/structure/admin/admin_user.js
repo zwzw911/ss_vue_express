@@ -40,7 +40,20 @@ const assist=require('../../common/assist')
 /*                           department                        */
 const collName='admin_user'
 
-const serPriority_arrayMaxLength={
+const setPriority_arrayMinLength={
+    validator(v){
+        /*        console.log(`tag is ${JSON.stringify(v)}`)
+                console.log(`tag length is ${JSON.stringify(v.length)}`)*/
+        if(false===collInputRule['userPriority'][serverRuleType.REQUIRE]['define']){
+            if(0===v.length){
+                return true
+            }
+        }
+        return v.length>=collInputRule['userPriority'][serverRuleType.ARRAY_MIN_LENGTH]['define']
+    },
+    message:`错误代码${collInputRule['userPriority'][serverRuleType.ARRAY_MIN_LENGTH]['mongoError']['rc']}:${collInputRule['userPriority'][serverRuleType.ARRAY_MIN_LENGTH]['mongoError']['msg']}`
+}
+const setPriority_arrayMaxLength={
     validator(v){
         // console.log(`v is ${JSON.stringify(v)}`)
         return v.length<=collInputRule['userPriority'][serverRuleType.ARRAY_MAX_LENGTH]['define']
@@ -69,7 +82,7 @@ const collFieldDefine={
     //account:{type:String,unique:true}, //email或者手机号
     password:{type:String}, //加密后的密码
     userType:{type:String,}, //enum只能支持string，不支持Number
-    userPriority:{type:[{type:String}],validate:[serPriority_arrayMaxLength]},//
+    userPriority:{type:[{type:String}],validate:[setPriority_arrayMinLength,setPriority_arrayMaxLength]},//
     docStatus:{type:String},//实现 事务 的一致性
     lastSignInDate:{type:Date},
     lastAccountUpdateDate:{type:Date},//最近一次修改account的时间

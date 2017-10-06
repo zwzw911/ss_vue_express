@@ -100,7 +100,7 @@ async function adminUserLogin_returnSess_async({userData,adminApp}){
 /*    let userTmp=objectDeepCopy(userData)
     delete userTmp['name']
     delete userTmp['userType']*/
-    // console.log(`userData ===>${JSON.stringify(userData)}`)
+    // console.log(`userData =============>${JSON.stringify(userData)}`)
     data.values[e_part.RECORD_INFO]=userData//,notExist:{value:123}
     // console.log(`data ===>${JSON.stringify(data)}`)
     return new Promise(function(resolve,reject){

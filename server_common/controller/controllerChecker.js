@@ -240,12 +240,12 @@ function ifEnumHasDuplicateValue({collValue,collRule}){
     return {rc:0}
 }
 
-/*  判断adminUser是否拥有指定权限
+/*/!*  判断adminUser是否拥有指定权限
 *
 * @userId: 要检测的adminUser的id
 * @arr_expectedPriority: 数组。要检测的权限
 * return: boolean
-* */
+* *!/
 async function ifAdminUserHasExpectedPriority({userId,arr_expectedPriority}){
     if(undefined===arr_expectedPriority || 0===arr_expectedPriority.length){
         return Promise.reject(checkerError.adminUserPriorityCantBeEmpty)
@@ -267,13 +267,29 @@ async function ifAdminUserHasExpectedPriority({userId,arr_expectedPriority}){
         }
     }
     return Promise.resolve(true)
+}*/
+
+
+/*  判断adminUser是否拥有指定权限
+* @userPriority：存储在session中的权限
+* @arr_expectedPriority: 期望的权限
+* */
+async function ifAdminUserHasExpectedPriority({userPriority,arr_expectedPriority}){
+    for(let singleExpectedPriority of arr_expectedPriority){
+        if(-1===userPriority.indexOf(singleExpectedPriority.toString())){
+            return Promise.resolve(false)
+        }
+    }
+    return Promise.resolve(true)
 }
 
-/*/!*  检测当前用户是否可以CRUD ROOT用户
-*
-* *!/
-function if(){
-
+/*async function ifAdminUserHasExpectedPriority({userPriority,arr_expectedPriority}){
+    for(let singleExpectedPriority of arr_expectedPriority){
+        if(-1===userPriority.indexOf(singleExpectedPriority.toString())){
+            return Promise.resolve(false)
+        }
+    }
+    return Promise.resolve(true)
 }*/
 
 

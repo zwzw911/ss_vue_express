@@ -18,7 +18,7 @@ const common_operation_model=server_common_file_include.common_operation_model
 
 const e_part=nodeEnum.ValidatePart
 const e_hashType=nodeRuntimeEnum.HashType
-const e_userInfoMandatoryField=nodeRuntimeEnum.userInfoMandatoryField
+const e_userInfoField=nodeRuntimeEnum.userInfoField
 const hash=server_common_file_include.crypt.hash
 // const e_randomStringType=nodeEnum.RandomStringType
 // const e_userState=nodeEnum.UserState
@@ -103,9 +103,9 @@ async function login_async(req){
      * */
     // console.log(`userTmpResult.msg[0]['id'] ${JSON.stringify(userTmpResult.msg[0]['id'])}`)
     let userInfo={}
-    userInfo[e_userInfoMandatoryField.USER_ID]=userTmpResult[0]['id']
-    userInfo[e_userInfoMandatoryField.USER_TYPE]=userTmpResult[0][e_field.USER.USER_TYPE]
-    userInfo[e_userInfoMandatoryField.COLL_NAME]=e_coll.USER
+    userInfo[e_userInfoField.USER_ID]=userTmpResult[0]['id']
+    userInfo[e_userInfoField.USER_TYPE]=userTmpResult[0][e_field.USER.USER_TYPE]
+    userInfo[e_userInfoField.COLL_NAME]=e_coll.USER
     await controllerHelper.setLoginUserInfo_async({req:req,userInfo:userInfo})
     // if(tmpResult.rc>0){return Promise.reject(tmpResult)}
 
