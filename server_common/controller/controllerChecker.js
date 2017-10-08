@@ -274,7 +274,7 @@ async function ifAdminUserHasExpectedPriority({userId,arr_expectedPriority}){
 * @userPriority：存储在session中的权限
 * @arr_expectedPriority: 期望的权限
 * */
-async function ifAdminUserHasExpectedPriority({userPriority,arr_expectedPriority}){
+async function ifAdminUserHasExpectedPriority_async({userPriority,arr_expectedPriority}){
     for(let singleExpectedPriority of arr_expectedPriority){
         if(-1===userPriority.indexOf(singleExpectedPriority.toString())){
             return Promise.resolve(false)
@@ -303,5 +303,5 @@ module.exports={
     ifNewFileLeadExceed_async,  //db中已有resource+上传文件，是否超出profile定义
     ifEnumHasDuplicateValue,//数组是否可以包含重复值
 
-    ifAdminUserHasExpectedPriority,
+    ifAdminUserHasExpectedPriority_async,
 }

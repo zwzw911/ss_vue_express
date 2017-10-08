@@ -113,7 +113,7 @@ async function login_async(req){
     let userInfo={}
     userInfo[e_userInfoField.USER_ID]=userTmpResult[0]['id']
     userInfo[e_userInfoField.USER_TYPE]=userTmpResult[0][e_field.ADMIN_USER.USER_TYPE]
-    userInfo[e_userInfoField.COLL_NAME]=e_coll.ADMIN_USER
+    userInfo[e_userInfoField.USER_COLL_NAME]=e_coll.ADMIN_USER
     userInfo[e_userInfoField.USER_PRIORITY]=userTmpResult[0][e_field.ADMIN_USER.USER_PRIORITY]
 // console.log(`admin user login ============>${JSON.stringify(userInfo)}`)
     await controllerHelper.setLoginUserInfo_async({req:req,userInfo:userInfo})

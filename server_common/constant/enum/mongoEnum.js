@@ -128,7 +128,7 @@ const PenalizeType={
         NO_IMPEACH_COMMENT:'5',
     },
     SHOW:{
-        NO_ARTICLE: '禁止写文档',
+        NO_ARTICLE: '禁止文档',
         NO_COMMENT:'禁止评论',
         NO_TOPIC:'禁止创建系列',
         NO_LIKE_DISLIKE:'禁止踩赞',

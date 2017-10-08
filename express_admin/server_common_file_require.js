@@ -34,6 +34,7 @@ const validateHelper=require('../server_common/function/validateInput/validateHe
 const validateValue=require('../server_common/function/validateInput/validateValue.js')
 const API_helper=require('../server_common/Test/API_helper.js')
 const db_operation_helper=require('../server_common/Test/db_operation_helper.js')
+const inputRule_API_tester=require('../server_common/Test/inputRule_API_tester.js')
 const testData=require('../server_common/Test/testData.js')
 const common_operation_model=require('../server_common/model/mongo/operation/common_operation_model.js')
 const common_operation_document=require('../server_common/model/mongo/operation/common_operation_document.js')
@@ -73,6 +74,7 @@ module.exports={
     validateValue,
     API_helper,
     db_operation_helper,
+    inputRule_API_tester,
     testData,
     common_operation_model,
     common_operation_document,

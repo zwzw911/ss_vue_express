@@ -52,7 +52,7 @@ const OtherORuleFiledName={
 /*
  * client使用iview的Form进行验证（async-validator），所以无需自定cilentRule了
  * */
-const clientRuleType={
+const ruleTypeInRuleDefine={
     require:'require',
     maxLength:'maxLength',
     minLength:'minLength',
@@ -60,8 +60,8 @@ const clientRuleType={
     min:'min',
     max:'max',
     'enum':'enum',
-    /*    format:'format',
-     equalTo:'equalTo',*/
+    format:'format',
+     // equalTo:'equalTo',
 }
 
 //async-validator使用的数据类型
@@ -84,7 +84,7 @@ const ClientDataType={
     REGEXP: 'regexp',
 }
 
-//asyncValidator的ruletype
+//asyncValidator的ruletype（用在client（vue）代码中）
 const ClientRuleType={
     REQUIRE:'required',
     PATTERN:'pattern',
@@ -120,7 +120,7 @@ module.exports={
     ServerRuleType,
     //clientRule,
     OtherORuleFiledName,
-    // clientRuleType,
+    ruleTypeInRuleDefine,
     ClientDataType,
     ClientRuleType,
 

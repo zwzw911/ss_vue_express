@@ -18,6 +18,8 @@ const e_method=nodeEnum.Method
 const e_coll=require('../../server/constant/genEnum/DB_Coll').Coll
 const e_field=require('../../server/constant/genEnum/DB_field').Field
 
+const e_serverRuleType=server_common_file_require.inputDataRuleType.ServerRuleType
+
 const e_adminUserType=server_common_file_require.mongoEnum.AdminUserType.DB
 const e_adminUserPriority=server_common_file_require.mongoEnum.AdminPriorityType.DB
 
@@ -37,11 +39,14 @@ const objectDeepCopy=server_common_file_require.misc.objectDeepCopy
 const test_helper=server_common_file_require.db_operation_helper//require("../../../server_common/Test/db_operation_helper")
 const testData=server_common_file_require.testData//require('../../../server_common/Test/testData')
 const API_helper=server_common_file_require.API_helper//require('../../../server_common/Test/API')
-
+const inputRule_API_tester=server_common_file_require.inputRule_API_tester
 
 let userId  //create后存储对应的id，以便后续的update操作
 
 let finalUrl='',baseUrl=''
+
+let normalRecord=testData.admin_user.user1
+
 describe('user format check:', function() {
     let data = {values: {}},  baseUrl="/admin_user/"
     let rootSess
@@ -148,7 +153,7 @@ describe('user format check:', function() {
 
 
 
-describe('method=create: preCheck', function() {
+describe('method=create: preCheck:misc', function() {
     let rootSess
     before('prepare', async function(){
         // console.log(`######   delete exist record   ######`)
@@ -303,6 +308,54 @@ describe('method=create: preCheck', function() {
                 done();
             });
     });
+})
+
+
+describe('inputRule', async function() {
+    let url = ``, finalUrl = baseUrl + url
+
+
+
+    /*
+    * @sess：是否需要sess
+    * @APIUrl:测试使用的URL
+    * @normalRecordInfo:一个正常的输入(document)
+    * @method：测试require的时候，使用哪种method。默认是create
+    * @fieldName：需要对那个field进行require测试
+    * @singleRuleName: field下，某个rule的名称
+    * @collRule: 整个coll的rule
+    * */
+    let parameter={
+        // sess:rootSess,
+        APIUrl:'/admin_user/',
+        normalRecordInfo:normalRecord,
+        method:e_method.CREATE,
+        collRule:browserInputRule[e_coll.ADMIN_USER],
+        app:app,
+    }
+
+    before('prepare', async function () {
+        // console.log(`######   delete exist record   ######`)
+        /*              root admin login                    */
+        parameter.sess = await API_helper.adminUserLogin_returnSess_async({
+            userData: {
+                [e_field.ADMIN_USER.NAME]: testData.admin_user.rootAdmin.name,
+                [e_field.ADMIN_USER.PASSWORD]: testData.admin_user.rootAdmin.password,
+            }, adminApp: app
+        })
+        // console.log(`parameter.sess is=============>${JSON.stringify(parameter.sess)}`)
+        /*              delete  adminUser1                    */
+        await test_helper.deleteAdminUserAndRelatedInfo_async(testData.admin_user.user1ForModel.name)
+        // await API_helper.createUser_async({userData:testData.user.user1,app:app})
+        // normalRecord[e_field.ADMIN_PENALIZE.PUNISHED_ID]={}
+        // normalRecord[e_field.ADMIN_PENALIZE.PUNISHED_ID]['value']=await test_helper.getUserId_async({userAccount:testData.user.user1ForModel.account})
+        // console.log(`normalRecord===========>${JSON.stringify(normalRecord)}`)
+    });
+
+
+    inputRule_API_tester.ruleCheckAll({parameter:parameter,expectedRuleToBeCheck:[]})
+
+
 })
 
 

@@ -30,8 +30,8 @@ const admin_user= {
         'chineseName': '密码',
         'type': serverDataType.STRING,
         'require': {define: true, error: {rc: 10006}, mongoError: {rc: 20006, msg: '密码不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
-        'minLength': {define: 6, error: {rc: 10008}, mongoError: {rc: 20008, msg: '密码至少6个字符'}},
-        'maxLength': {define: 20, error: {rc: 10010}, mongoError: {rc: 20010, msg: '密码的长度不能超过20个字符'}},
+        // 'minLength': {define: 6, error: {rc: 10008}, mongoError: {rc: 20008, msg: '密码至少6个字符'}},
+        // 'maxLength': {define: 20, error: {rc: 10010}, mongoError: {rc: 20010, msg: '密码的长度不能超过20个字符'}},
         'format': {define: regex.password, error: {rc: 10012}, mongoError: {rc: 20012, msg: '密码必须由6-20个字符组成'}} //server端使用
     },
 

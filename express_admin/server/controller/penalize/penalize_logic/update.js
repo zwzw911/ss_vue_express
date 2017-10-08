@@ -60,7 +60,7 @@ async function updateUser_async(req){
     /*******************************************************************************************/
     let tmpResult,collName=controller_setting.MAIN_HANDLED_COLL_NAME
     let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
-    let {userId,userCollName,userType,userPriority}=userInfo
+    let userId=userInfo.userId
 
     let docValue=req.body.values[e_part.RECORD_INFO]
     let userToBeUpdateId=req.body.values[e_part.RECORD_ID]
@@ -102,7 +102,6 @@ async function updateUser_async(req){
     /*******************************************************************************************/
     /*                                    fk value是否存在                                     */
     /*******************************************************************************************/
-    await controllerChecker.ifFkValueExist_async({docValue:docValue,collFkConfig:fkConfig[collName],collFieldChineseName:e_chineseName[collName]})
     /*******************************************************************************************/
     /*                                  enum unique check(enum in array)                       */
     /*******************************************************************************************/

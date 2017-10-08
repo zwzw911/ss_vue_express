@@ -1,7 +1,7 @@
 /**
  * Created by wzhan039 on 2017-06-22.
  *
- * 定义用户信息
+ * 定义群主对成员的处罚信息
  */
 
 'use strict'

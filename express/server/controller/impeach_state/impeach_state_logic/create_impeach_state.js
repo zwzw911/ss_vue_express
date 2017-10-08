@@ -61,7 +61,8 @@ async  function createImpeachState_async(req){
     let collName=controller_setting.MAIN_HANDLED_COLL_NAME
     let docValue=req.body.values[e_part.RECORD_INFO]
     let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
-    let userId=userInfo.userId,userCollName=userInfo[e_userInfoField.COLL_NAME],userType=[e_userInfoField.USER_TYPE]
+    // let userId=userInfo.userId,userCollName=userInfo[e_userInfoField.COLL_NAME],userType=[e_userInfoField.USER_TYPE]
+    let {userId,userCollName,userType,userPriority}=userInfo
     let impeachDoc,impeachId,impeachCreator,impeachStateRecords,lastImpeachState,condition
     /*******************************************************************************************/
     /*                                     参数转为server格式                                  */
@@ -148,7 +149,7 @@ async  function createImpeachState_async(req){
     if(e_impeachState.NEW===docValue[e_field.IMPEACH_STATE.STATE]){
         return Promise.reject(controllerError.NEWStateNotAllow)
     }
-    //如果是admin，根据权限判断是否可以完成当前输入的state
+    //如果是admin，根据其权限，判断是否可以完成当前输入的state
     if(userCollName===e_coll.ADMIN_USER){
         let userPriority=userInfo.userPriority
         let validState=[]

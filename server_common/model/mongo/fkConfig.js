@@ -100,6 +100,14 @@ const fkConfig={
             relatedColl:e_coll.IMPEACH,forSelect:`${e_field.IMPEACH.TITLE}`,forSetValue:[e_field.IMPEACH.TITLE]
         },
     },
+
+    /****************************************************************/
+    /****************       admin penalize      *********************/
+    /****************************************************************/
+    [e_coll.ADMIN_PENALIZE]:{
+        [e_field.ADMIN_PENALIZE.CREATOR_ID]:{relatedColl:e_coll.ADMIN_USER,forSelect:`${e_field.ADMIN_USER.NAME}`,forSetValue:[e_field.ADMIN_USER.NAME]},
+        [e_field.ADMIN_PENALIZE.PUNISHED_ID]:{relatedColl:e_coll.USER,forSelect:`${e_field.USER.NAME}`,forSetValue:[e_field.USER.NAME]},
+    }
 }
 
 // console.log(`${JSON.stringify(fkConfig)}`)

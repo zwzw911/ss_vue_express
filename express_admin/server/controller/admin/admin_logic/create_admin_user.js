@@ -68,7 +68,7 @@ async  function createUser_async(req){
         return Promise.reject(controllerError.cantCreateRootUserByAPI)
     }
     /*              当前用户是否有创建用户的权限      */
-    let hasCreatePriority=await controllerChecker.ifAdminUserHasExpectedPriority({userPriority:userPriority,arr_expectedPriority:[e_adminPriorityType.CREATE_ADMIN_USER]})
+    let hasCreatePriority=await controllerChecker.ifAdminUserHasExpectedPriority_async({userPriority:userPriority,arr_expectedPriority:[e_adminPriorityType.CREATE_ADMIN_USER]})
     if(false===hasCreatePriority){
         return Promise.reject(controllerError.currentUserHasNotPriorityToCreateUser)
     }
@@ -94,9 +94,12 @@ async  function createUser_async(req){
     //创建的用户的权限必须来自当前login用户的权限（是login用户权限的子集）
     // console.log(`create admin======>parent pri ${JSON.stringify(userPriority)}`)
     // console.log(`create admin======>child pri ${JSON.stringify(docValue[e_field.ADMIN_USER.USER_PRIORITY])}`)
-    if(false===misc.ifArrayContainArray({parentArray:userPriority,childArray:docValue[e_field.ADMIN_USER.USER_PRIORITY]})){
-        return Promise.reject(controllerError.createUserPriorityNotInheritedFromParent)
+    if(undefined!==docValue[e_field.ADMIN_USER.USER_PRIORITY]){
+        if(false===misc.ifArrayContainArray({parentArray:userPriority,childArray:docValue[e_field.ADMIN_USER.USER_PRIORITY]})){
+            return Promise.reject(controllerError.createUserPriorityNotInheritedFromParent)
+        }
     }
+
 
 
 

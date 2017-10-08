@@ -3,8 +3,8 @@
  */
 'use strict'
 /*                      controller setting                */
-const controller_setting=require('../admin_setting/admin_setting').setting
-const controllerError=require('../admin_setting/admin_user_controllerError').controllerError
+const controller_setting=require('../penalize_setting/penalize_setting').setting
+const controllerError=require('../penalize_setting/penalize_controllerError').controllerError
 
 
 /*                      specify: genEnum                */
@@ -42,7 +42,7 @@ const currentEnv=server_common_file_require.appSetting.currentEnv
  * 更新用户资料
  * 1. 需要对比req中的userId和session中的id是否一致
  * */
-async function deleteUser_async(req){
+async function deletePenalize_async(req){
     // console.log(`deleteUser_async in`)
     // console.log(`req.session ${JSON.stringify(req.session)}`)
     // console.log(`data.body==============>${JSON.stringify(req.body)}`)
@@ -58,24 +58,25 @@ async function deleteUser_async(req){
     /*******************************************************************************************/
     /*                                     specific priority check                             */
     /*******************************************************************************************/
-    let hasDeletePriority=await controllerChecker.ifAdminUserHasExpectedPriority_async({userId:userId,arr_expectedPriority:[e_adminPriorityType.DELETE_ADMIN_USER]})
+    //用户是否为admin
+    if(userCollName!==e_coll.ADMIN_USER){
+        return Promise.reject(controllerError.onlyAdminUserCanRevokePenalize)
+    }
+    //用户是否有权撤销处罚
+    let hasDeletePriority=await controllerChecker.ifAdminUserHasExpectedPriority_async({userId:userId,arr_expectedPriority:[e_adminPriorityType.REVOKE_PENALIZE]})
     console.log(`hasDeletePriority===========>${JSON.stringify(hasDeletePriority)}`)
     if(false===hasDeletePriority){
-        return Promise.reject(controllerError.currentUserHasNotPriorityToDeleteUser)
+        return Promise.reject(controllerError.currentUserHasNotPriorityToRevokePenalize)
     }
 
-    /*              不能删除的root用户（specific）              */
-    let userToBeDelete=await common_operation_model.findById_returnRecord_async({dbModel:e_dbModel.admin_user,id:recordToBeDeleted})
-    if(e_adminUserType.ROOT===userToBeDelete[e_field.ADMIN_USER.USER_TYPE]){
-        return Promise.reject(controllerError.cantDeleteRootUserByAPI)
-    }
-
-
-    await common_operation_model.update_returnRecord_async({dbModel:e_dbModel.admin_user,id:recordToBeDeleted,values:{'dDate':Date.now()}})
+    /*******************************************************************************************/
+    /*                                       logic: delete                                     */
+    /*******************************************************************************************/
+    await common_operation_model.update_returnRecord_async({dbModel:e_dbModel.admin_penalize,id:recordToBeDeleted,values:{'dDate':Date.now()}})
     return Promise.resolve({rc:0})
 
 }
 
 module.exports={
-    deleteUser_async,
+    deletePenalize_async,
 }

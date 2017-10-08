@@ -83,7 +83,7 @@ function _validateRecorderValue(inputValue,collRules,baseType){
 
 // console.log(`valie to be check is ${JSON.stringify(inputValue[fieldName])}`)
         //value中对应的字段是有的，才进行检测
-        if(inputValue[fieldName]){
+        if(undefined!==inputValue[fieldName]){
             // console.log(`inputValue[fieldName]['value'] is ${JSON.stringify(inputValue[fieldName]['value'])}`)
             // console.log(`before validate result of single field is ${JSON.stringify(inputValue[fieldName]['value'])}`)
             // 输入的值默认要去掉头尾空白后在处理
@@ -121,8 +121,8 @@ function _validateRecorderValue(inputValue,collRules,baseType){
                 // console.log(`3`)
                 rc[fieldName]={rc:0}
                 for(let singleFieldValue of fieldValue){
-/*console.log(`singleFieldValue is ${singleFieldValue}`)
-                    console.log(`fieldRule is ${JSON.stringify(fieldRule)}`)*/
+// console.log(`singleFieldValue is ${singleFieldValue}`)
+//                     console.log(`fieldRule is ${JSON.stringify(fieldRule)}`)
 
                     let tmpRc=validateSingleRecorderFieldValue(singleFieldValue,fieldRule)
                     if(tmpRc.rc>0){
