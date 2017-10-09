@@ -73,7 +73,9 @@ function getSessionOption(){
 
 function getStore(){
     // console.log(`tore option is ${JSON.stringify(storeOption.redis)}`)
-    return new sessionStore(storeOption.redis)
+    //设置storeOption的副本，防止连续在2个以上app调用时，第一个app的connect-redis中，会执行delete options.prefix，造成第一个app中是prefix+sid,第二个变成sess：+sid（sess:是当prefix空的时候采用的默认值）
+    let copyStoreOption=JSON.parse(JSON.stringify(storeOption))
+    return new sessionStore(copyStoreOption.redis)
 }
 
 

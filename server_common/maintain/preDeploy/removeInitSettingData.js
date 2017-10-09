@@ -27,7 +27,6 @@ remove_all_init_data_async().then(
         console.log(`removeAll fail========>${JSON.stringify(err)}`)
     }
 )
-/*
 remove_all_async().then(
     (result)=>{
 
@@ -35,4 +34,4 @@ remove_all_async().then(
     (err)=>{
         console.log(`removeAll fail========>${JSON.stringify(err)}`)
     }
-)*/
+)

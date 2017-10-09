@@ -106,7 +106,9 @@ async function login_async(req){
     userInfo[e_userInfoField.USER_ID]=userTmpResult[0]['id']
     userInfo[e_userInfoField.USER_TYPE]=userTmpResult[0][e_field.USER.USER_TYPE]
     userInfo[e_userInfoField.USER_COLL_NAME]=e_coll.USER
+    // console.log(`login result ======>${JSON.stringify(userInfo)}`)
     await controllerHelper.setLoginUserInfo_async({req:req,userInfo:userInfo})
+    // console.log(`req.session after user login ==============>${JSON.stringify(req.session)}`)
     // if(tmpResult.rc>0){return Promise.reject(tmpResult)}
 
     await common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel.user,id:userTmpResult[0]['id'],updateFieldsValue:{'lastSignInDate':Date.now()}})

@@ -186,8 +186,6 @@ const constructCreateCriteria=function(formattedValues){
             delete formattedValues[key]
             // continue
         }
-
-
     }
 
 }

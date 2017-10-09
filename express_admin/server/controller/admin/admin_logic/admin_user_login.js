@@ -80,6 +80,7 @@ async function login_async(req){
         ['dDate']:{$exists:false},
     }
     let userTmpResult = await common_operation_model.find_returnRecords_async({dbModel: e_dbModel.admin_user,condition:condition})
+    // console.log(`userTmpResult========>${JSON.stringify(userTmpResult)}`)
     // if(userTmpResult.rc>0){
     //     return Promise.reject(userTmpResult)
     // }
@@ -89,6 +90,7 @@ async function login_async(req){
 // console.log(`userTmpResult ${JSON.stringify(userTmpResult)}`)
     condition={userId:userTmpResult[0]['id']}
     let sugarTmpResult = await common_operation_model.find_returnRecords_async({dbModel: e_dbModel.admin_sugar,condition:condition})
+    // console.log(`sugarTmpResult ${JSON.stringify(sugarTmpResult)}`)
     /*    if(sugarTmpResult.rc>0){
      return Promise.reject(sugarTmpResult)
      }*/

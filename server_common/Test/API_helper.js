@@ -61,7 +61,7 @@ async function userLogin_returnSess_async({userData,app}){
             .end(function(err, res) {
                 let returnSess=res['header']['set-cookie'][0].split(';')[0]
                 let parsedRes=JSON.parse(res.text)
-                // console.log(`returnSess ################### ${JSON.stringify(returnSess)}`)
+                // console.log(`userlogin returnSess ################### ${JSON.stringify(returnSess)}`)
                 assert.deepStrictEqual(parsedRes.rc,0)
                 // console.log(`user login result ==================> ${JSON.stringify(parsedRes)}`)
                 // done();
@@ -97,9 +97,7 @@ async function adminUserLogin_returnSess_async({userData,adminApp}){
     let data={}
     data.values={}
     data.values.method=e_method.MATCH
-/*    let userTmp=objectDeepCopy(userData)
-    delete userTmp['name']
-    delete userTmp['userType']*/
+    delete userData['userType']
     // console.log(`userData =============>${JSON.stringify(userData)}`)
     data.values[e_part.RECORD_INFO]=userData//,notExist:{value:123}
     // console.log(`data ===>${JSON.stringify(data)}`)
@@ -107,8 +105,9 @@ async function adminUserLogin_returnSess_async({userData,adminApp}){
         request.agent(adminApp).post('/admin_user/').set('Accept', 'application/json').send(data)
             .end(function(err, res) {
                 // console.log(`err ==================> ${JSON.stringify(err)}`)
-                // console.log(`res ==================> ${JSON.stringify(res)}`)
+                // console.log(`adminUserLogin_returnSess_async res ==================> ${JSON.stringify(res)}`)
                 let returnSess=res['header']['set-cookie'][0].split(';')[0]
+                // console.log(`admin userlogin returnSess ################### ${JSON.stringify(returnSess)}`)
                 let parsedRes=JSON.parse(res.text)
                 // console.log(`returnSess ################### ${JSON.stringify(returnSess)}`)
                 assert.deepStrictEqual(parsedRes.rc,0)

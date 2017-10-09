@@ -34,7 +34,7 @@ const controllerError=require('../../server/controller/article/article_logic').c
 
 // const objectDeepCopy=require('../../server/function/assist/misc').objectDeepCopy
 
-// const test_helper=require("../API_helper/db_operation_helper")
+const test_helper=server_common_file_require.db_operation_helper
 const testData=server_common_file_require.testData//require('../testData')
 const API_helper=server_common_file_require.API_helper//require('../API_helper/API_helper')
 
@@ -44,6 +44,31 @@ let userId  //create后存储对应的id，以便后续的update操作
 let sess1,sess2,data={values:{}}
 
 
+/*describe('test', async function() {
+    it('test', async function() {
+        const adminApp=require('../../../express_admin/app')
+        let rootSess=await API_helper.adminUserLogin_returnSess_async({userData:testData.admin_user.rootAdmin,adminApp:adminApp})
+/!*        await test_helper.deleteAdminUserAndRelatedInfo_async(testData.admin_user.user1ForModel.name)
+        await API_helper.createAdminUser_async({
+            sess: rootSess,
+            userData: Object.assign({}, testData.admin_user.user1, {[e_field.ADMIN_USER.USER_PRIORITY]: {value: [e_adminPriorityType.PENALIZE_USER]}}),
+            adminApp: adminApp
+        })
+        let adminUser1Sess = await API_helper.adminUserLogin_returnSess_async({
+            userData: testData.admin_user.user1,
+            adminApp: adminApp
+        })*!/
+    })*/
+/*    it('remove exists record', async function(){
+        await API_helper.removeExistsRecord_async()
+    })
+
+    it('user1 create and login', async function () {
+        await API_helper.createUser_async({userData:testData.user.user1,app:app})
+        let user1Sess=await  API_helper.userLogin_returnSess_async({userData:testData.user.user1,app:app})
+        console.log(`test_article sess =====>${JSON.stringify(user1Sess)}`)
+    })*/
+// })
 
 describe('create new article and update, then create new comment: ', async function() {
     let url = '', finalUrl = baseUrl + url

@@ -631,6 +631,7 @@ async function preCheck_async({req,collName,method,userLoginCheck={needCheck:fal
     //let {maxSearchKeyNum,maxSearchPageNum}=searchSetting
     //let {browserInputRule,internalInputRule,inputRule}=allRule
 // console.log(`preCheck in====>${JSON.stringify(req.body.values)}`)
+    //console.log(`req.session in====>${JSON.stringify(req.session)}`)
     /*              检查用户是否登录            */
     let {needCheck,error}=userLoginCheck
     if(true===needCheck){
@@ -989,7 +990,7 @@ async function setLoginUserInfo_async({req,userInfo}){
         }
     }
     //保存信息到session中
-    // console.log(`userInfo==========>${JSON.stringify(userInfo)}`)
+    // console.log(`userInfo to be saved into session==========>${JSON.stringify(userInfo)}`)
     req.session.userInfo=userInfo
     return Promise.resolve()
 }

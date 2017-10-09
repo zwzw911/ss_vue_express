@@ -57,11 +57,24 @@ async function deleteAdminUserAndRelatedInfo_async(userName){
         // await common_operation_model.deleteOne_returnRecord_async({dbModel:e_dbModel.folder,condition:{authorId:userId}})
         // await common_operation_model.deleteOne_returnRecord_async({dbModel:e_dbModel.user_resource_profile,condition:{userId:userId}})
     }
+}
+
+async function deleteUserPenalize_async({account}){
+    let result=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.user,condition:{account:account}})
+    // console.log(`find user result =======>${JSON.stringify(result)}`)
+    if(0<result.length){
+        let userId=result[0]['id']
+        await common_operation_model.deleteMany_async({dbModel:e_dbModel.admin_penalize,condition:{[e_field.ADMIN_PENALIZE.PUNISHED_ID]:userId}})
+        // await common_operation_model.deleteOne_returnRecord_async({dbModel:e_dbModel.admin_sugar,condition:{userId:userId}})
+        // await common_operation_model.deleteOne_returnRecord_async({dbModel:e_dbModel.user_friend_group,condition:{userId:userId}})
+        // await common_operation_model.deleteOne_returnRecord_async({dbModel:e_dbModel.folder,condition:{authorId:userId}})
+        // await common_operation_model.deleteOne_returnRecord_async({dbModel:e_dbModel.user_resource_profile,condition:{userId:userId}})
+    }
 
 }
 
 async function deleteAllModelRecord_async({}){
-    let skipColl=[e_coll.STORE_PATH,e_coll.CATEGORY,e_coll.RESOURCE_PROFILE]
+    let skipColl=[e_coll.STORE_PATH,e_coll.CATEGORY,e_coll.RESOURCE_PROFILE,e_coll.ADMIN_USER]
     for(let singleDbModel of dbModelInArray){
         if(-1===skipColl.indexOf(singleDbModel.modelName)){
         //console.log(`model name======>${singleDbModel.modelName}`)
@@ -170,6 +183,7 @@ async function getAdminUserId_async({userName}) {
 module.exports={
     deleteUserAndRelatedInfo_async,
     deleteAdminUserAndRelatedInfo_async,
+    deleteUserPenalize_async,
     deleteAllModelRecord_async,
     deleteMany_async,
 
