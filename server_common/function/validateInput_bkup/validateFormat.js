@@ -12,7 +12,7 @@
 // require("babel-core/register")
 
 const dataTypeCheck=require('./validateHelper').dataTypeCheck
-const searchSetting=require('../../constant/config/globalConfiguration').searchSetting
+// const searchSetting=require('../../constant/config/globalConfiguration').searchSetting
 const validateFormatError=require('../../constant/error/validateError').validateFormat
 const e_compOp=require('../../constant/enum/nodeEnum').CompOp
 const dataType=require('../../constant/enum/inputDataRuleType').ServerDataType
@@ -22,18 +22,14 @@ const e_keyForSearchParams=require('../../constant/enum/nodeEnum').KeyForSearchP
 const e_method=require('../../constant/enum/nodeEnum').Method
 const arr_editSubField=require('../../constant/define/nodeDefine').SUB_FIELD
 const arr_eventField=require('../../constant/define/nodeDefine').EVENT_FIELD
-const regex=require(`../../constant/regex/regex`).regex
+
 //检测req.body.values是否存在且为object
 function validateReqBody(reqBody){
     //reqBody未定义
-    if(false===dataTypeCheck.isSetValue(reqBody)){
-        // console.log(`!reqBody==>${JSON.stringify(reqBody)}`)
+    if(!reqBody){
         return validateFormatError.valuesUndefined
     }
-    if(false===dataTypeCheck.isObject(reqBody)){
-        return validateFormatError.reqBodyMustBeObject
-    }
-    if(false==='values' in reqBody || false===dataTypeCheck.isSetValue(reqBody['values'])){
+    if(false==='values' in reqBody){
         return validateFormatError.valuesUndefined
     }
     //0 如果需要检查inputValue，则inputValue必须为object
@@ -109,12 +105,12 @@ function  validatePartFormat (inputValue,expectedParts){
                 }
                 break
             case e_validatePart.RECORD_ID:
-                if(false===dataTypeCheck.isString(inputValue[partKey]) || false===regex.objectId.test(inputValue[partKey])) {
+                if(false===dataTypeCheck.isString(inputValue[partKey])){
                     return validateFormatError.inputValuePartRecordIdValueFormatWrong
                 }
                 break
             case e_validatePart.RECORD_ID_ARRAY:
-                if(false===dataTypeCheck.isArray(inputValue[partKey]) ){
+                if(false===dataTypeCheck.isArray(inputValue[partKey])){
                     return validateFormatError.inputValuePartRecIdArrValueFormatWrong
                 }
                 break
@@ -224,7 +220,7 @@ function validateCURecordInfoFormat(recordInfo,rule){
 
     }
 
-/*    //5. 每个key的value必须是object，且有key为value的key-value对,且value不能为undefined(可以为null，说明update的时候要清空字段)
+    //5. 每个key的value必须是object，且有key为value的key-value对,且value不能为undefined(可以为null，说明update的时候要清空字段)
     for(let singleField in recordInfo){
         //5.1 field是否为对象
         if(false===dataTypeCheck.isObject(recordInfo[singleField])){
@@ -239,20 +235,20 @@ function validateCURecordInfoFormat(recordInfo,rule){
             return validateFormatError.recordInfoSubObjectFiledNameWrong
         }
         //null值表示update的时候，要删除这个field，所以是valid的值
-        /!*        if(null===recordInfo[singleField]['value']){
+        /*        if(null===recordInfo[singleField]['value']){
          return validateFormatError.valueNotDefineWithRequireTrue
-         }*!/
-    }*/
+         }*/
+    }
 
     return rightResult
 }
 
-/*  用于e_part.SINGLR_FIELD的格式检查
+/*
 * 和validateCURecordInfoFormat类似，只是对应的part只有一个字段
 * */
 function validateSingleFieldFormat(singleField,collRule){
     let inputValueFields=Object.keys(singleField)
-    // let collRulesFields=Object.keys(collRule)
+    let collRulesFields=Object.keys(collRule)
 
     //1. 必须只能包含一个字段
     if(1!==inputValueFields.length){
@@ -260,14 +256,10 @@ function validateSingleFieldFormat(singleField,collRule){
     }
 
     let singleFieldName=inputValueFields[0]
-    //不能为undefined，可以为null（说明删除字段）
-    if(undefined===singleField[singleFieldName]){
-        return validateFormatError.singleFieldValueCantUndefined
-    }
     //2. 判断输入值中的字段是否在inputRule中有定义
     // for(let singleFieldName in singleField){
         //必须是非id/_id的字段，因为这是db自动生成的
-        if(singleFieldName==='_id' || singleFieldName ==='id'){
+        if(singleFieldName==='_id' && singleFieldName ==='id'){
             return validateFormatError.singleFieldCantContainId
         }
         if(undefined===collRule[singleFieldName]){
@@ -277,7 +269,7 @@ function validateSingleFieldFormat(singleField,collRule){
 
     //5. 每个key的value必须是object，且有key为value的key-value对,且value不能为undefined(可以为null，说明update的时候要清空字段)
     // for(let singleField in recordInfo){
-/*        //5.1 field是否为对象
+        //5.1 field是否为对象
         if(false===dataTypeCheck.isObject(singleField[singleFieldName])){
             return validateFormatError.singleFiledRValueMustBeObject
         }
@@ -288,7 +280,7 @@ function validateSingleFieldFormat(singleField,collRule){
         //5.3. 且此key为value
         if(false==='value' in singleField[singleFieldName]){
             return validateFormatError.singleFiledValuesKeyNameWrong
-        }*/
+        }
         //null值表示update的时候，要删除这个field，所以是valid的值
         /*        if(null===recordInfo[singleField]['value']){
          return validateFormatError.valueNotDefineWithRequireTrue
@@ -370,7 +362,7 @@ return rightResult
  * */
 function validateSearchParamsFormat(searchParams,collFKConfig,collName,inputRulesForSearch) {
     let inputValueFields=Object.keys(searchParams)
-    if(undefined===inputRulesForSearch[collName]){
+    if(!inputRulesForSearch[collName]){
         return validateFormatError.searchParamsCollNoRelatedRule
     }
     let collRulesFields=Object.keys(inputRulesForSearch[collName])
@@ -392,12 +384,13 @@ function validateSearchParamsFormat(searchParams,collFKConfig,collName,inputRule
             return result
         }
     }*/
+    //searchParams.searchParam中不空（为空的话，step0就检测到了），则检查每个key（字段）是否有对应的db字段，如果是外键，还要检查对应的冗余字段是否有定义
     // if(false===dataTypeCheck.isEmpty(searchParams)){
         for (let singleFieldName in searchParams) {
             let fieldRule
             // console.log(`field`)
-            //字段不是外键，则在当前coll中检查
-            if(undefined===collFKConfig[singleFieldName]) {
+
+            if(!collFKConfig[singleFieldName]) {
                 //3  是否有对应的rule（说明字段在数据库中有定义，而不是notExist的字段）
                 if (false === singleFieldName in inputRulesForSearch[collName]) {
                     return validateFormatError.searchParamsFieldNoRelatedRule

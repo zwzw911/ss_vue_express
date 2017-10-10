@@ -5,7 +5,7 @@
   "main": "index.js",
   "dependencies": {
     "body-parser": "^1.18.1",
-    "connect-redis": "^3.3.0",
+    "connect-redis": "^3.3.2",
     "cookie-parser": "^1.4.3",
     "debug": "^2.6.8",
     "dompurify": "^0.8.9",

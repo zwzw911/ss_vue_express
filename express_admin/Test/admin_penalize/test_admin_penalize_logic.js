@@ -49,7 +49,7 @@ let data = {values: {}},  baseUrl="/admin_penalize/",finalUrl=baseUrl
 let adminUser1Sess,adminUser2Sess,adminUser3Sess,user1Sess,user1Id,user2Id
 
 let normalRecord={
-    [e_field.ADMIN_PENALIZE.PUNISHED_ID]:{value:'asdf'}, //创建user后直接获得id后填入
+    // [e_field.ADMIN_PENALIZE.PUNISHED_ID]:{value:'asdf'}, //创建user后直接获得id后填入
     [e_field.ADMIN_PENALIZE.DURATION]:{value:5},
     [e_field.ADMIN_PENALIZE.REASON]:{value:'testtesttesttesttesttest'},
     [e_field.ADMIN_PENALIZE.PENALIZE_TYPE]:{value:e_penalizeType.NO_ARTICLE},
@@ -88,19 +88,30 @@ describe('create penalize', async function() {
 
     });
 
-    /*it('remove exists record', async function(){
-        await API_helper.removeExistsRecord_async()
-    })
-
-    it('user1 create and login', async function () {
-        await API_helper.createUser_async({userData:testData.user.user1,app:app})
-        user1Sess=await  API_helper.userLogin_returnSess_async({userData:testData.user.user1,app:app})
-        console.log(`test_penalize sess=====>${JSON.stringify(user1Sess)}`)
-    })*/
 
 
+    it('punished user not exists', function(done) {
+        data.values={}
+        normalRecord[e_field.ADMIN_PENALIZE.PUNISHED_ID]={value:"59d446dbbd708b15a4c11ae9"}
+        data.values[e_part.RECORD_INFO]=normalRecord
+        data.values[e_part.METHOD]=e_method.CREATE
+        // console.log(`Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]})=========>${JSON.stringify(Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]}))}`)
+        // data.values[e_part.RECORD_INFO]=Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:{value:['1','1']}})
+        // console.log(`data=====>${JSON.stringify(data.values[e_part.RECORD_INFO])}`)
+        request(adminApp).post(finalUrl).set('Accept', 'application/json').set('Cookie',[adminUser1Sess]).send(data)
+            .end(function(err, res) {
+                // if (err) return done(err);
+                // console.log(`res ios ${JSON.stringify(res)}`)
+                let parsedRes=JSON.parse(res.text)
+                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
+                // assert.deepStrictEqual(parsedRes.rc,99999)
+                assert.deepStrictEqual(parsedRes.rc,controllerHelperError.fkValueNotExist(e_chineseFieldName.admin_penalize.punishedId,normalRecord[e_field.ADMIN_PENALIZE.PUNISHED_ID]).rc)
+                done();
+            });
+    });
     it('non admin user create penalize not allow', function(done) {
         data.values={}
+        normalRecord[e_field.ADMIN_PENALIZE.PUNISHED_ID]={value:user1Id}
         data.values[e_part.RECORD_INFO]=normalRecord
         data.values[e_part.METHOD]=e_method.CREATE
         console.log(`user1Sess=====>${JSON.stringify(user1Sess)}`)
@@ -115,24 +126,7 @@ describe('create penalize', async function() {
                 done();
             });
     });
-    /*it('punished user not exists', function(done) {
-        data.values={}
-        data.values[e_part.RECORD_INFO]=normalRecord
-        data.values[e_part.METHOD]=e_method.CREATE
-        // console.log(`Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]})=========>${JSON.stringify(Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]}))}`)
-        // data.values[e_part.RECORD_INFO]=Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:{value:['1','1']}})
-        // console.log(`data=====>${JSON.stringify(data.values[e_part.RECORD_INFO])}`)
-        request(adminApp).post(finalUrl).set('Accept', 'application/json').set('Cookie',[adminUser1Sess]).send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-                // console.log(`res ios ${JSON.stringify(res)}`)
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                // assert.deepStrictEqual(parsedRes.rc,99999)
-                assert.deepStrictEqual(parsedRes.rc,controllerError.fkValueNotExist(e_chineseFieldName.admin_penalize.punishedId,normalRecord[e_field.ADMIN_PENALIZE.PUNISHED_ID]).rc)
-                done();
-            });
-    });
+
     it('admin user2 has no priority to create penalize', function(done) {
         data.values={}
         let testRecord=objectDeepCopy(normalRecord)
@@ -170,7 +164,7 @@ describe('create penalize', async function() {
                 let parsedRes=JSON.parse(res.text)
                 console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
                 // assert.deepStrictEqual(parsedRes.rc,99999)
-                assert.deepStrictEqual(parsedRes.rc,controllerError.cantCreateRootUserByAPI.rc)
+                assert.deepStrictEqual(parsedRes.rc,0)
                 done();
             });
     });
@@ -194,7 +188,8 @@ describe('create penalize', async function() {
                 assert.deepStrictEqual(parsedRes.rc,controllerError.currentUserHasValidPenalizeRecord.rc)
                 done();
             });
-    });*/
+    });
+
 })
 
 

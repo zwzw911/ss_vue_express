@@ -1,6 +1,8 @@
 /**
  * Created by zw on 2015/6/15.
+ *
  */
+'user strict'
 var testModule=require('../.././awesomeCaptcha');
 exports.testCaptcha=function(test){
     var result=testModule.awesomeCaptcha({},function(err,data){})

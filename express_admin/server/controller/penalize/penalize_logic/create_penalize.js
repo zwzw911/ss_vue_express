@@ -137,8 +137,10 @@ async  function createPenalize_async(req){
     /*******************************************************************************************/
     //检查用户valid的处罚记录，有的话，直接返回（只能有一个有效记录）
     let publishedId=docValue[e_field.ADMIN_PENALIZE.PUNISHED_ID]
-    let condition={'dDate':{'$exists':false},'isExpire':false,[e_field.ADMIN_PENALIZE.PUNISHED_ID]:publishedId}
+    let condition={"$or":[{'dDate':{'$exists':false}},{'isExpire':false}],[e_field.ADMIN_PENALIZE.PUNISHED_ID]:publishedId}//,,
+    // console.log(`condition+++++++++>${JSON.stringify(condition)}`)
     tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.admin_penalize,condition:condition,selectedFields:'-uDate'})
+    // console.log(`valid penalize result+++++++++>${JSON.stringify(tmpResult)}`)
     if(tmpResult.length>0){
         return Promise.reject(controllerError.currentUserHasValidPenalizeRecord)
     }

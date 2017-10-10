@@ -86,22 +86,7 @@ if(mongoSetting.configuration.setBuildInValidatorFlag){
 // console.log(`after: ${JSON.stringify(collFieldDefine)}`)
 
 
-/*
-* 根据define/validateRule/validateRule的rule设置schema的rule
-* */
-//validateInput中的rule，在mongoose中对应的validator
 
-//console.log(fieldDefine['department']['parentDepartment'])
-/*                          将inputRule中的rule定义转换成mongoose内置validator                          */
-
-
-
-// fs.writeFile('mongodb.txt',JSON.stringify(fieldDefine))
-// console.log(fieldDefine['department']['name'])
-//console.log(fieldDefine['employee']['gender']['enum'])
-// console.log(JSON.stringify(fieldDefine['department']))
-// console.log(JSON.stringify(fieldDefine['employee']))
-// console.log(JSON.stringify(fieldDefine['billType']))
 
 const collSchema=new mongoose.Schema(
     collFieldDefine,
@@ -109,10 +94,6 @@ const collSchema=new mongoose.Schema(
 )
 
 collSchema.virtual('isExpire').get(function(){
-    // console.log(`cDate=======>${this.cDate.getTime()}`)
-    // console.log(`cDate=======>${this.cDate.getTime()+this.duration*24*60*60*1000}`)
-    // console.log(`now  =======>${Date.now()}`)
-    // console.log(`result===>${(this.cDate.getTime()+this.duration*24*60*1000)<(Date.now())}`)
     //永久封号
     if(0===this.duration){
         return false

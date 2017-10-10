@@ -34,7 +34,8 @@ const validateRule={
 }
 
 const validateFormat={
-    valuesUndefined:{rc:40100,msg:{client:'输入值格式错误',server:'输入值不能为空(未定义)'}},
+    reqBodyMustBeObject:{rc:40100,msg:{client:`输入值格式错误`,server:`传入参数必须是对象`}},
+    valuesUndefined:{rc:40101,msg:{client:'输入值格式错误',server:'输入值不能为空(未定义)'}},
     valueMustBeObject:{rc:40102,msg:{client:`输入值格式错误`,server:`输入值必须是对象`}},
 
     inputValuePartNumNotExpected:{rc:40104,msg:{client:`输入值格式错误`,server:`输入参数中，输入值中字段数量和定义的不一致`}},
@@ -111,11 +112,12 @@ const validateFormat={
     eventFieldKeyNameWrong:{rc:40212,msg:{client:`输入值格式不正确`,server:`事件中键值的名称不是预定义`}},
 
     singleFieldMustOnlyOneField:{rc:40220,msg:{client:`输入值格式不正确`,server:`单个字段中只能包含一个字段`}},
+    singleFieldValueCantUndefined:{rc:40221,msg:{client:`输入值格式不正确`,server:`单个字段中值不能为undefined`}},
     singleFieldCantContainId:{rc:40222,msg:{client:`输入值格式不正确`,server:`单个字段中不能包含主键`}},
     singleFiledRuleNotDefine:{rc:40224,msg:{client:'输入值格式错误',server:'待检测的输入值字段没有对应的rule'}},
-    singleFiledRValueMustBeObject:{rc:40226,msg:{client:'输入值格式错误',server:'singleField的值必须是object'}},
+/*    singleFiledRValueMustBeObject:{rc:40226,msg:{client:'输入值格式错误',server:'singleField的值必须是object'}},
     singleFiledValueMustContainOneKey:{rc:40228,msg:{client:'输入值格式错误',server:'singleField的值(object)必须只有一个键'}},
-    singleFiledValuesKeyNameWrong:{rc:40230,msg:{client:'输入值格式错误',server:'singleField的值(object)的键名必须是value'}},
+    singleFiledValuesKeyNameWrong:{rc:40230,msg:{client:'输入值格式错误',server:'singleField的值(object)的键名必须是value'}},*/
 }
 
 const validateValue={

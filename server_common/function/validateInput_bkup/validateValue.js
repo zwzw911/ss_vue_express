@@ -45,8 +45,7 @@ const e_eventStatus=require('../../constant/enum/mongoEnum').EventStatus
 /*         检测create/update 输入值并返回结果        */
 /*********************************************/
 /* params:
- * XXXX@inputValue:{username:{value:xxx},password:{value:yyy}} 由调用函数保证输入参数的格式正确XXXX
- * @inputValue:{username::xxx,password:yyy} 由调用函数保证输入参数的格式正确
+ * @inputValue:{username:{value:xxx},password:{value:yyy}} 由调用函数保证输入参数的格式正确
  * @collRules： ruleDefine(以coll为单位)adminLogin。每个页面有不同的定义
  * @baseType: 是对coll中所有field check（例如：创建新纪录），还是根据inputValue中有的field检查（例如：更改field value或者对field进行unique检查）
  * return:
@@ -88,10 +87,10 @@ function _validateRecorderValue(inputValue,collRules,baseType){
             // console.log(`inputValue[fieldName]['value'] is ${JSON.stringify(inputValue[fieldName]['value'])}`)
             // console.log(`before validate result of single field is ${JSON.stringify(inputValue[fieldName]['value'])}`)
             // 输入的值默认要去掉头尾空白后在处理
-            if(true===dataTypeCheck.isString(inputValue[fieldName])){
-                inputValue[fieldName]=inputValue[fieldName].trim()
+            if(true===dataTypeCheck.isString(inputValue[fieldName]['value'])){
+                inputValue[fieldName]['value']=inputValue[fieldName]['value'].trim()
             }
-            let fieldValue=inputValue[fieldName]
+            let fieldValue=inputValue[fieldName]['value']
             let fieldRule=collRules[fieldName]
 
             let fieldType=collRules[fieldName]['type']
