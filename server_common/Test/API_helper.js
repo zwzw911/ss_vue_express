@@ -43,7 +43,6 @@ async function createUser_async({userData,app}){
                 return resolve({rc:0})
             });
     })
-
 }
 
 //返回一个promise，那么无需done
@@ -119,9 +118,9 @@ async function adminUserLogin_returnSess_async({userData,adminApp}){
     })
 }
 
-/*          登录用户创建一个新文档
+/*/!*          登录用户创建一个新文档
 *   return: articleId
-* */
+* *!/
 async function userCreateArticle_returnArticleId_async({userSess,app}){
     let data={}
     data.values={}
@@ -142,7 +141,7 @@ async function userCreateArticle_returnArticleId_async({userSess,app}){
             });
     })
 
-}
+}*/
 
 /*
 * @impeachType: article/comment
@@ -150,14 +149,10 @@ async function userCreateArticle_returnArticleId_async({userSess,app}){
 async function createImpeachForArticle_returnImpeachId_async({articleId,userSess,app}) {
     let data={}
     data.values={}
-
-
     data.values[e_part.RECORD_INFO]={
         // [e_field.IMPEACH.IMPEACH_TYPE]:{value:impeachType},
         [e_field.IMPEACH.IMPEACHED_ARTICLE_ID]:{value:articleId},
     }
-
-
     data.values[e_part.METHOD] = e_method.CREATE
     // console.log(`createImpeach_async===>data.values ===>${JSON.stringify(data.values)}`)
     return new Promise(function(resolve,reject){
@@ -173,7 +168,6 @@ async function createImpeachForArticle_returnImpeachId_async({articleId,userSess
                 // done();
             });
     })
-
 }
 async function createImpeachForComment_returnImpeachId_async({commentId,userSess}) {
     let data={}
@@ -205,7 +199,6 @@ async function createImpeachForComment_returnImpeachId_async({commentId,userSess
 }
 
 function updateImpeach({data,userSess,expectRc,done,app}) {
-
     // console.log(`createImpeach_async===>data.values ===>${JSON.stringify(data.values)}`)
     // return new Promise(function(resolve,reject){
         request(app).post('/impeach/').set('Accept', 'application/json').set('Cookie', [userSess]).send(data)
@@ -222,6 +215,29 @@ function updateImpeach({data,userSess,expectRc,done,app}) {
                 done();
             });
     // })
+}
+
+async function createNewArticle_returnArticleId_async({userSess,app}){
+    let data={values:{}}
+    // data.values={}
+    // console.log(`sess1 ===>${JSON.stringify(sess1)}`)
+    // console.log(`data.values ===>${JSON.stringify(data.values)}`)
+    data.values[e_part.METHOD]=e_method.CREATE
+    // console.log(`data.values ===>${JSON.stringify(data.values)}`)
+    return new Promise(function(resolve,reject){
+        request(app).post('/article/').set('Accept', 'application/json').set('Cookie',[userSess]).send(data)
+            .end(function(err, res) {
+                // if (err) return done(err);
+                // console.log(`res ios ${JSON.stringify(res)}`)
+                let parsedRes=JSON.parse(res.text)
+                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
+                // articleId=
+                assert.deepStrictEqual(parsedRes.rc,0)
+                return resolve(parsedRes['msg']['_id'])
+                // assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.require.error.rc)
+                // done();
+            });
+    })
 
 }
 module.exports={
@@ -232,8 +248,10 @@ module.exports={
     createAdminUser_async,
     adminUserLogin_returnSess_async,
 
-    userCreateArticle_returnArticleId_async,
+    // userCreateArticle_returnArticleId_async,
     createImpeachForArticle_returnImpeachId_async,
     // createImpeachForComment_returnImpeachId_async,
     updateImpeach,
+
+    createNewArticle_returnArticleId_async,
 }

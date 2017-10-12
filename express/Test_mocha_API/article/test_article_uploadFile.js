@@ -57,49 +57,11 @@ describe('create new comment: ', async function() {
     let articleId,userId
     before('user1 login correct',async function () {
         sess1=await  API_helper.userLogin_returnSess_async({userData:testData.user.user1,app:app})
-       /* // console.log(`testData.user.user1 ${JSON.stringify(testData.user.user1)}`)
-        let user1Tmp = {}
-        user1Tmp[e_field.USER.ACCOUNT] = testData.user.user1[e_field.USER.ACCOUNT]
-        user1Tmp[e_field.USER.PASSWORD] = testData.user.user1[e_field.USER.PASSWORD]
-        // console.log(`user1Tmp ===>${JSON.stringify(user1Tmp)}`)
-        data.values[e_part.RECORD_INFO] = user1Tmp//,notExist:{value:123}
-        data.values[e_part.METHOD] = e_method.MATCH
-        // console.log(`data.values ${JSON.stringify(data.values)}`)
 
-        request.agent(app).post('/user/').set('Accept', 'application/json').send(data)
-            .end(function (err, res) {
-                // if (err) return done(err);
-                console.log(`user1 login sess ======> ${JSON.stringify(res['header']['set-cookie'][0].split(';')[0])}`)
-                sess1 = res['header']['set-cookie'][0].split(';')[0]
-                let parsedRes = JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc, 0)
-                // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
-                done();
-            });*/
     })
     before('user2 login correct', async function() {
         sess2=await  API_helper.userLogin_returnSess_async({userData:testData.user.user2,app:app})
-       /* // console.log(`testData.user.user1 ${JSON.stringify(testData.user.user1)}`)
-        let user1Tmp={}
-        user1Tmp[e_field.USER.ACCOUNT]=testData.user.user2[e_field.USER.ACCOUNT]
-        user1Tmp[e_field.USER.PASSWORD]=testData.user.user2[e_field.USER.PASSWORD]
-        // console.log(`user1Tmp ===>${JSON.stringify(user1Tmp)}`)
-        data.values[e_part.RECORD_INFO]=user1Tmp//,notExist:{value:123}
-        data.values[e_part.METHOD]=e_method.MATCH
-        // console.log(`data.values ${JSON.stringify(data.values)}`)
 
-        request.agent(app).post('/user/').set('Accept', 'application/json').send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-                // console.log(`res ${JSON.stringify(res['header']['set-cookie'][0])}`)
-                sess2=res['header']['set-cookie'][0].split(';')[0]
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,0)
-                // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
-                done();
-            });*/
     })
     before('insert user2 penalize for both article and comment',async  function() {
         // console.log(`testData.user.user1 ${JSON.stringify(testData.user.user1)}`)
@@ -145,23 +107,8 @@ describe('create new comment: ', async function() {
 
     //create new article
     before('correct article', async function() {
-        articleId=await API_helper.userCreateArticle_returnArticleId_async({userSess:sess1,app:app})
-       /* data.values={}
-        // console.log(`sess1 ===>${JSON.stringify(sess1)}`)
-        // console.log(`data.values ===>${JSON.stringify(data.values)}`)
-        data.values[e_part.METHOD]=e_method.CREATE
-        // console.log(`data.values ===>${JSON.stringify(data.values)}`)
-        request(app).post('/article/').set('Accept', 'application/json').set('Cookie',[sess1]).send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-                // console.log(`res ios ${JSON.stringify(res)}`)
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                articleId=parsedRes['msg']['_id']
-                assert.deepStrictEqual(parsedRes.rc,0)
-                // assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.require.error.rc)
-                done();
-            });*/
+        articleId=await API_helper.createNewArticle_returnArticleId_async({userSess:sess1,app:app})
+
     });
 
 
@@ -182,7 +129,7 @@ describe('create new comment: ', async function() {
         request(app).post(finalUrl).set('Accept', 'application/json').send(data)
             .end(function(err, res) {
                 // if (err) return done(err);
-                console.log(`res ios ${JSON.stringify(res)}`)
+                // console.log(`res ios ${JSON.stringify(res)}`)
                 let parsedRes=JSON.parse(res.text)
                 console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
                 assert.deepStrictEqual(parsedRes['rc'],controllerError.userNotLoginCantCreateArticleImage.rc)

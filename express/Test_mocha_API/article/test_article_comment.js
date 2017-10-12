@@ -43,15 +43,10 @@ let userId  //create后存储对应的id，以便后续的update操作
 
 let data={values:{}}
 
-
-
-
-
-
-
 describe('create new comment: ', async function() {
     let url,finalUrl,user1Sess,user2Sess
-
+    url='comment'
+    finalUrl=baseUrl+url
 
     let articleId,userId
     before('user1 login correct', async function () {
@@ -90,42 +85,22 @@ describe('create new comment: ', async function() {
         // return Promise.resolve({rc:0})
     })
 
-
-
-    //create new article
-    before('correct article', function(done) {
-        data.values={}
-        // console.log(`sess1 ===>${JSON.stringify(sess1)}`)
-        // console.log(`data.values ===>${JSON.stringify(data.values)}`)
-        data.values[e_part.METHOD]=e_method.CREATE
-        // console.log(`data.values ===>${JSON.stringify(data.values)}`)
-        request(app).post('/article/').set('Accept', 'application/json').set('Cookie',[user1Sess]).send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-                // console.log(`res ios ${JSON.stringify(res)}`)
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                articleId=parsedRes['msg']['_id']
-                assert.deepStrictEqual(parsedRes.rc,0)
-                // assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.require.error.rc)
-                done();
-            });
+    //user1 create new article
+    before('user1 correct article', async function() {
+        articleId=await API_helper.createNewArticle_returnArticleId_async({userSess:user1Sess,app:app})
     });
-
-
 
     /*                              comment                                 */
     it('create comment without login', function(done) {
-        url = 'comment'
-        finalUrl=baseUrl+url
+        // url = 'comment'
+        // finalUrl=baseUrl+url
         data.values={}
         data.values[e_part.METHOD]=e_method.CREATE
         // data.values[e_part.RECORD_ID]=articleId
-
         request(app).post(finalUrl).set('Accept', 'application/json').send(data)
             .end(function(err, res) {
                 // if (err) return done(err);
-                console.log(`res ios ${JSON.stringify(res)}`)
+                // console.log(`res ios ${JSON.stringify(res)}`)
                 let parsedRes=JSON.parse(res.text)
                 console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
                 assert.deepStrictEqual(parsedRes['rc'],controllerError.userNotLoginCantCreateComment.rc)
@@ -133,20 +108,20 @@ describe('create new comment: ', async function() {
                 done();
             });
     });
-    it('create comment with articleId not exist', function(done) {
-        url = 'comment'
-        finalUrl=baseUrl+url
+    it('user1 create comment with articleId not exist', function(done) {
+        // url = 'comment'
+        // finalUrl=baseUrl+url
         data.values={}
         // data.values[e_part.RECORD_ID]=articleId
         data.values[e_part.METHOD]=e_method.CREATE
         data.values[e_part.RECORD_INFO]={}
-        data.values[e_part.RECORD_INFO][e_field.ARTICLE_COMMENT.CONTENT]={}
-        data.values[e_part.RECORD_INFO][e_field.ARTICLE_COMMENT.CONTENT]['value']='correct comment for newArticle'
-        data.values[e_part.RECORD_INFO][e_field.ARTICLE_COMMENT.ARTICLE_ID]={}
-        data.values[e_part.RECORD_INFO][e_field.ARTICLE_COMMENT.ARTICLE_ID]['value']='59817e549a1a3a4bac3a55f7'
+        data.values[e_part.RECORD_INFO][e_field.ARTICLE_COMMENT.CONTENT]='correct comment for newArticle'
+        // data.values[e_part.RECORD_INFO][e_field.ARTICLE_COMMENT.CONTENT]['value']=
+        data.values[e_part.RECORD_INFO][e_field.ARTICLE_COMMENT.ARTICLE_ID]='59817e549a1a3a4bac3a55f7'
+        // data.values[e_part.RECORD_INFO][e_field.ARTICLE_COMMENT.ARTICLE_ID]['value']=
 
-        console.log(`docvalues====>${JSON.stringify(data.values)}`)
-        console.log(`finalUrl====>${JSON.stringify(finalUrl)}`)
+        // console.log(`docvalues====>${JSON.stringify(data.values)}`)
+        // console.log(`finalUrl====>${JSON.stringify(finalUrl)}`)
         request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[user1Sess]).send(data)
             .end(function(err, res) {
                 // if (err) return done(err);
@@ -160,16 +135,16 @@ describe('create new comment: ', async function() {
     });
 
     it('user1 correct comment for newArticle', function(done) {
-        url = 'comment'
-        finalUrl=baseUrl+url
+        // url = 'comment'
+        // finalUrl=baseUrl+url
         data.values={}
         // data.values[e_part.RECORD_ID]=articleId
         data.values[e_part.METHOD]=e_method.CREATE
         data.values[e_part.RECORD_INFO]={}
-        data.values[e_part.RECORD_INFO][e_field.ARTICLE_COMMENT.CONTENT]={}
-        data.values[e_part.RECORD_INFO][e_field.ARTICLE_COMMENT.CONTENT]['value']='correct comment for newArticle'
-        data.values[e_part.RECORD_INFO][e_field.ARTICLE_COMMENT.ARTICLE_ID]={}
-        data.values[e_part.RECORD_INFO][e_field.ARTICLE_COMMENT.ARTICLE_ID]['value']=articleId
+        data.values[e_part.RECORD_INFO][e_field.ARTICLE_COMMENT.CONTENT]='correct comment for newArticle'
+        // data.values[e_part.RECORD_INFO][e_field.ARTICLE_COMMENT.CONTENT]['value']=
+        data.values[e_part.RECORD_INFO][e_field.ARTICLE_COMMENT.ARTICLE_ID]=articleId
+        // data.values[e_part.RECORD_INFO][e_field.ARTICLE_COMMENT.ARTICLE_ID]['value']=
 
         console.log(`docvalues====>${JSON.stringify(data.values)}`)
         console.log(`finalUrl====>${JSON.stringify(finalUrl)}`)
@@ -186,16 +161,16 @@ describe('create new comment: ', async function() {
     });
 
     it('user2 correct comment with penalize', function(done) {
-        url = 'comment'
-        finalUrl=baseUrl+url
+        // url = 'comment'
+        // finalUrl=baseUrl+url
         data.values={}
         // data.values[e_part.RECORD_ID]=articleId
         data.values[e_part.METHOD]=e_method.CREATE
         data.values[e_part.RECORD_INFO]={}
-        data.values[e_part.RECORD_INFO][e_field.ARTICLE_COMMENT.CONTENT]={}
-        data.values[e_part.RECORD_INFO][e_field.ARTICLE_COMMENT.CONTENT]['value']='correct comment for newArticle'
-        data.values[e_part.RECORD_INFO][e_field.ARTICLE_COMMENT.ARTICLE_ID]={}
-        data.values[e_part.RECORD_INFO][e_field.ARTICLE_COMMENT.ARTICLE_ID]['value']=articleId
+        data.values[e_part.RECORD_INFO][e_field.ARTICLE_COMMENT.CONTENT]='correct comment for newArticle'
+        // data.values[e_part.RECORD_INFO][e_field.ARTICLE_COMMENT.CONTENT]['value']=
+        data.values[e_part.RECORD_INFO][e_field.ARTICLE_COMMENT.ARTICLE_ID]=articleId
+        // data.values[e_part.RECORD_INFO][e_field.ARTICLE_COMMENT.ARTICLE_ID]['value']=
 
 
         request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[user2Sess]).send(data)

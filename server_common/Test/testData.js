@@ -14,35 +14,21 @@ const e_adminUserType=mongoEnum.AdminUserType.DB
 
 
 const user={
-     user1:{name:{value:'123456789'},account:{value:'15921776540'},password:{value:'123456'},userType:{value:e_userType.NORMAL}},
-     user2:{name:{value:'zw'},account:{value:'15921776549'},password:{value:'654321'},userType:{value:e_userType.NORMAL}},
-     user3:{name:{value:'ada'},account:{value:'1952206639@qq.com'},password:{value:'654321'},userType:{value:e_userType.NORMAL}},
-    user4:{name:{value:'test'},account:{value:'test@qq.com'},password:{value:'654321'},userType:{value:e_userType.NORMAL}},
-     user3NewAccount:'wei.ag.zhang@alcate-sbell.com.cn',
+    user1:{name:'user1',account:'1590000000',password:'123456',userType:e_userType.NORMAL},
+    user2:{name:'user2',account:'1590000001',password:'654321',userType:e_userType.NORMAL},
+    user3:{name:'user3',account:'1952206639@qq.com',password:'654321',userType:e_userType.NORMAL},
+    user4:{name:'user4',account:'user4@qq.com',password:'654321',userType:e_userType.NORMAL},
 
-     userNotExist:{name:{value:'test'},account:{value:'13912341234'},password:{value:'123456'},userType:{value:e_userType.NORMAL}},
-
-     user1ForModel:{name:'123456789',account:'15921776540',password:'123456',userType:e_userType.NORMAL},
-     user2ForModel:{name:'zw',account:'15921776549',password:'654321',userType:e_userType.NORMAL},
-     user3ForModel:{name:'ada',account:'wei.ag.zhang@alcate-sbell.com.cn',password:'654321',userType:e_userType.NORMAL},
-    user4ForModel:{name:'test',account:'test@qq.com',password:'654321',userType:e_userType.NORMAL},
-     useNotExistForModel:{name:'test',account:'13912341234',password:'123456',userType:e_userType.NORMAL},
+    user3NewAccount:'wei.ag.zhang@alcate-sbell.com.cn',
+    useNotExistForModel:{name:'userNotExist',account:'13912341234',password:'123456',userType:e_userType.NORMAL},
 }
 
 const admin_user={
-    rootAdmin:{name:{value:'zw'},password:{value:'123456'},userType:{value:e_adminUserType.ROOT}},
-    user1:{name:{value:'123456789'},password:{value:'123456'},userType:{value:e_adminUserType.NORMAL}},
-    user2:{name:{value:'zhangwei'},password:{value:'654321'},userType:{value:e_adminUserType.NORMAL}},
-    user3:{name:{value:'ada'},password:{value:'654321'},userType:{value:e_adminUserType.NORMAL}},
-    user3NewAccount:'wei.ag.zhang@alcate-sbell.com.cn',
-
-    userNotExist:{name:{value:'test'},password:{value:'123456'},userType:{value:e_adminUserType.NORMAL}},
-
-    rootAdminForModel:{name:'zw',password:'123456',userType:e_adminUserType.ROOT},
-    user1ForModel:{name:'123456789',password:'123456',userType:e_adminUserType.NORMAL},
-    user2ForModel:{name:'zhangwei',password:'654321',userType:e_adminUserType.NORMAL},
-    user3ForModel:{name:'ada',password:'654321',userType:e_adminUserType.NORMAL},
-    useNotExistForModel:{name:'test',password:'123456',userType:e_adminUserType.NORMAL},
+    adminRoot:{name:'root',password:'123456',userType:e_adminUserType.ROOT},
+    adminUser1:{name:'adminUser1',password:'123456',userType:e_adminUserType.NORMAL},
+    adminUser2:{name:'adminUser2',password:'654321',userType:e_adminUserType.NORMAL},
+    adminUser3:{name:'adminUser2',password:'654321',userType:e_adminUserType.NORMAL},
+    // useNotExistForModel:{name:'test',password:'123456',userType:e_adminUserType.NORMAL},
 }
 
 
@@ -56,8 +42,8 @@ const impeach_image={
 }
 
 const tag={
-     tag1:{name:{value:'tag1'}},
-    tag2:{name:{value:'tag2'}}
+     tag1:{name:'tag1'},
+    tag2:{name:'tag2'}
 }
 
 module.exports={

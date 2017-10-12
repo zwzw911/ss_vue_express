@@ -2,238 +2,302 @@
  * Created by wzhan039 on 2017-06-12.
  */
 'use strict'
-/*require("babel-polyfill");
-require("babel-core/register")*/
-const testModule=require('../../../server/function/validateInput/validateHelper');
+const assert=require('assert')
+const testModule=require('../../../function/validateInput/validateHelper');
 // var miscError=require('../../server/define/error/nodeError').nodeError.assistError
-const validateHelperError=require('../../../server/constant/error/validateError').validateError.validateRule
+const validateHelperError=require('../../../constant/error/validateError').validateRule
 /*          for generateRandomString test       */
-const regex=require('../../../server/constant/regex/regex').regex
-const serverDataType=require('../../../server/constant/enum/inputDataRuleType').ServerDataType
+const regex=require('../../../constant/regex/regex').regex
+const serverDataType=require('../../../constant/enum/inputDataRuleType').ServerDataType
 //var randomStringTypeEnum=require('../../server/define/enum/node').node.randomStringType
 const moment=require('moment')
 
 
 /*          数据类型的检测         */
-const dataTypeCheck=function(test){
-    test.expect(58);
-
+describe('validateEventFormat', function() {
     let func=testModule.dataTypeCheck
     let result,value,tmp
+
+    function formatDate(v){
+        return moment(v).format('YYYY-MM-DD HH:mm:ss')
+    }
     /*          isSetValue             */
-    //undefined variant
-    result=func.isSetValue(value)
-    test.equal(result,false,'isSetValue: check undefined variant failed')
-    //null variant
-    value=null
-    result=func.isSetValue(value)
-    test.equal(result,false,'isSetValue: check null variant failed')
+    it(`value undefined`,function(done){
+        assert.deepStrictEqual(func.isSetValue(undefined),false)
+        done()
+    })
+    it(`value null`,function(done){
+        assert.deepStrictEqual(func.isSetValue(null),false)
+        done()
+    })
+
     /*          isEmpty             */
-    /*    //not exist variant
-     result=func.isEmpty(a)
-     test.equal(result,true,'isEmpty: check not exist variant failed')*/
+    it(`value empty string`,function(done){
+        assert.deepStrictEqual(func.isEmpty(""),true)
+        done()
+    })
+    it(`value blank string`,function(done){
+        assert.deepStrictEqual(func.isEmpty("       "),true)
+        done()
+    })
+    it(`value empty array`,function(done){
+        assert.deepStrictEqual(func.isEmpty([]),true)
+        done()
+    })
+    it(`value empty object`,function(done){
+        assert.deepStrictEqual(func.isEmpty({}),true)
+        done()
+    })
+    it(`value not empty array`,function(done){
+        assert.deepStrictEqual(func.isEmpty([1]),false)
+        done()
+    })
+    it(`value not empty object`,function(done){
+        assert.deepStrictEqual(func.isEmpty({a:1}),false)
+        done()
+    })
 
-    //isEmpty
-    value=''
-    result=func.isEmpty(value)
-    test.equal(result,true,'isEmpty: check empty string failed')
-    value='     '
-    result=func.isEmpty(value)
-    test.equal(result,true,'isEmpty: check whitespace string failed')
-    value=[]
-    result=func.isEmpty(value)
-    test.equal(result,true,'isEmpty: check empty array failed')
-    value={}
-    result=func.isEmpty(value)
-    test.equal(result,true,'isEmpty: check empty object failed')
-    value=[1]
-    result=func.isEmpty(value)
-    test.equal(result,false,'isEmpty: check not empty array failed')
-    value={a:1}
-    result=func.isEmpty(value)
-    test.equal(result,false,'isEmpty: check not empty object failed')
+    /*          isString             */
+    it(`value empty string`,function(done){
+        assert.deepStrictEqual(func.isString(''),true)
+        done()
+    })
+    it(`value blank string`,function(done){
+        assert.deepStrictEqual(func.isString('     '),true)
+        done()
+    })
+    it(`value int not string`,function(done){
+        assert.deepStrictEqual(func.isString(123),false)
+        done()
+    })
+    it(`value empty array not string`,function(done){
+        assert.deepStrictEqual(func.isString([]),false)
+        done()
+    })
+    it(`value empty object not string`,function(done){
+        assert.deepStrictEqual(func.isString({}),false)
+        done()
+    })
+    it(`value null not string`,function(done){
+        assert.deepStrictEqual(func.isString(null),false)
+        done()
+    })
+    it(`value undefined not string`,function(done){
+        assert.deepStrictEqual(func.isString(undefined),false)
+        done()
+    })
 
-    //isString
-    value=''
-    result=func.isString(value)
-    test.equal(result,true,'isString: check blank string failed')
-    value='   '
-    result=func.isString(value)
-    test.equal(result,true,'isString: check whitespace string failed')
-    value=123
-    result=func.isString(value)
-    test.equal(result,false,'isString: check number failed')
-    value=[]
-    result=func.isString(value)
-    test.equal(result,false,'isString: check array failed')
-    value={}
-    result=func.isString(value)
-    test.equal(result,false,'isString: check object failed')
-    value=null
-    result=func.isString(value)
-    test.equal(result,false,'isString: check null failed')
-    value=undefined
-    result=func.isString(value)
-    test.equal(result,false,'isString: check undefined failed')
-    //isArray
-    value={}
-    result=func.isArray(value)
-    test.equal(result,false,'isArray: check not array failed')
-    value=[]
-    result=func.isArray(value)
-    test.equal(result,true,'isArray: check array failed')
-    value=[null]
-    result=func.isArray(value)
-    test.equal(result,true,'isArray: check [null] failed')
-    value=[undefined]
-    result=func.isArray(value)
-    test.equal(result,true,'isArray: check [undefined] failed')
-    value=null
-    result=func.isArray(value)
-    test.equal(result,false,'isArray: check null failed')
-    value=undefined
-    result=func.isArray(value)
-    test.equal(result,false,'isArray: check undefined failed')
+    /*          isArray             */
+    it(`value object not array`,function(done){
+        assert.deepStrictEqual(func.isArray({}),false)
+        done()
+    })
+    it(`value null not array`,function(done){
+        assert.deepStrictEqual(func.isArray(null),false)
+        done()
+    })
+    it(`value empty array is array`,function(done){
+        assert.deepStrictEqual(func.isArray([]),true)
+        done()
+    })
+    it(`value array with ele null is array`,function(done){
+        assert.deepStrictEqual(func.isArray([null]),true)
+        done()
+    })
 
-    //isObject
-    value={}
-    result=func.isObject(value)
-    test.equal(result,true,'isObject: check object failed')
-    value=[]    //array和object严格区分（js中，array是object）
-    result=func.isObject(value)
-    test.equal(result,false,'isObject: check object(array) failed')
-    value=1
-    result=func.isObject(value)
-    test.equal(result,false,'isObject: check int 1 failed')
-    value=null
-    result=func.isObject(value)
-    test.equal(result,false,'isObject: check null failed')
-    value=undefined
-    result=func.isObject(value)
-    test.equal(result,false,'isObject: check undefined failed')
+    /*          isObject          */
+    it(`value  is object`,function(done){
+        assert.deepStrictEqual(func.isObject({}),true)
+        done()
+    })
+    it(`value  is array, not object`,function(done){
+        assert.deepStrictEqual(func.isObject([]),false)
+        done()
+    })
+    it(`value  is int, not object`,function(done){
+        assert.deepStrictEqual(func.isObject(1),false)
+        done()
+    })
+    it(`value  is null, not object`,function(done){
+        assert.deepStrictEqual(func.isObject(null),false)
+        done()
+    })
+    it(`value  is undefined, not object`,function(done){
+        assert.deepStrictEqual(func.isObject(undefined),false)
+        done()
+    })
+    it(`value  is date, not object`,function(done){
+        assert.deepStrictEqual(func.isObject(Date.now()),false)
+        done()
+    })
+    
+    /*              idDate          */
+    it(`value  is year in string`,function(done){
+        assert.deepStrictEqual(formatDate(func.isDate('2016')),'2016-01-01 08:00:00')
+        done()
+    })
+    it(`value date 2016-02-30`,function(done){
+        assert.deepStrictEqual(formatDate(func.isDate('2016-02-30')),'2016-03-01 08:00:00')
+        done()
+    })
+    it(`value date 2016-02-02 25:30`,function(done){
+        assert.deepStrictEqual(func.isDate('2016-02-02 25:30'),false)
+        done()
+    })
+    it(`value date 2016-02-02 23:30`,function(done){
+        assert.deepStrictEqual(formatDate(func.isDate('2016-02-02 23:30')),'2016-02-02 23:30:00')
+        done()
+    })
+    it(`value date 2016-02-02 23:30`,function(done){
+        assert.deepStrictEqual(formatDate(func.isDate('2016-02-02 23:30')),'2016-02-02 23:30:00')
+        done()
+    })
+    it(`value date 2016/02/02`,function(done){
+        assert.deepStrictEqual(formatDate(func.isDate('2016/02/02')),'2016-02-02 00:00:00')
+        done()
+    })
 
+    /*      isInt           */
+    it(`value int with . convert to int`,function(done){
+        assert.deepStrictEqual(func.isInt(123456789.0),123456789)
+        done()
+    })
+    it(`value int with .1 fail convert to int`,function(done){
+        assert.deepStrictEqual(func.isInt(123456789.1),false)
+        done()
+    })
+    it(`value string with .0 fail convert to int`,function(done){
+        assert.deepStrictEqual(func.isInt('123456789.0'),false)
+        done()
+    })
+    it(`value string with .1 fail convert to int`,function(done){
+        assert.deepStrictEqual(func.isInt('123456789.1'),false)
+        done()
+    })
+    it(`value long int fail convert to int`,function(done){
+        assert.deepStrictEqual(func.isInt(123456789123456789123456789123456789123456789123456789),false)
+        done()
+    })
+    it(`value string with letter fail convert to int`,function(done){
+        assert.deepStrictEqual(func.isInt('123a'),false)
+        done()
+    })
+    it(`value array with ele int fail convert to int`,function(done){
+        assert.deepStrictEqual(func.isInt([1]),false)
+        done()
+    })
+    it(`value negative int`,function(done){
+        assert.deepStrictEqual(func.isInt(-123),-123)
+        done()
+    })
 
-    //isDate
-    value='2016'        //转换成2016-01-01
-    result=func.isDate(value)
-    test.equal(moment(result).format('YYYY-MM-DD HH:mm:ss'),'2016-01-01 08:00:00','isDate: check year only date failed')
-    value='2016-02-30'              //toLocaleString会自动转换成合适的日期（2016-03-01 08:00:00，8点是CST）
-    result=func.isDate(value)
-    test.equal(moment(result).format('YYYY-MM-DD HH:mm:ss'),'2016-03-01 08:00:00','isDate: check invalid date failed')
-    value='2016-02-02 25:30'
-    result=func.isDate(value)
-    test.equal(result,false,'isDate: check invalid time failed')
-    value='2016-02-02 23:30'
-    result=func.isDate(value)
-    test.equal(moment(result).format('YYYY-MM-DD HH:mm:ss'),'2016-02-02 23:30:00','isDate: check valid time - failed')
-    value='2016/02/02'
-    result=func.isDate(value)
-    test.equal(moment(result).format('YYYY-MM-DD HH:mm:ss'),'2016-02-02 00:00:00','isDate: check valid date / failed')
-    //isInt
-    value=123456789.0
-    result=func.isInt(value)
-    test.equal(result,123456789,'isInt: check int failed,number float with fraction 0 is int')
-    value=123456789.1
-    result=func.isInt(value)
-    test.equal(result,false,'isInt: check int failed,number float with fraction not 0 is not int')
-    value='123456789.0'
-    result=func.isInt(value)
-    test.equal(result,false,'isInt: check int failed,string float with fraction 0 not int')
-    value='123456789.1'
-    result=func.isInt(value)
-    test.equal(result,false,'isInt: check int failed,string float  with fraction not 0 not int')
-    value=123456789123456789123456789123456789123456789123456789
-    result=func.isInt(value)
-    test.equal(result,false,'isInt: check int failed,exceed maxim int')
-    value=-123
-    result=func.isInt(value)
-    test.equal(result,-123,'isInt: check valid int failed')
-    value='123.0'
-    result=func.isInt(value)
-    test.equal(result,false,'isInt: check int failed, value string is float')
-    value='123a'
-    result=func.isInt(value)
-    test.equal(result,false,'isInt: check int failed, value contain not number char')
-    value=[1]
-    result=func.isInt(value)
-    test.equal(result,false,'isInt: check int failed, value is arry')
+    /*      isNumber           */
+    it(`value array not number`,function(done){
+        assert.deepStrictEqual(func.isNumber([]),false)
+        done()
+    })
+    it(`value object not number`,function(done){
+        assert.deepStrictEqual(func.isNumber({}),false)
+        done()
+    })
+    it(`value empty string`,function(done){
+        assert.deepStrictEqual(func.isNumber(''),false)
+        done()
+    })
+    it(`value float with .`,function(done){
+        assert.deepStrictEqual(func.isNumber(123456789.0),true)
+        done()
+    })
+    it(`value string float with .`,function(done){
+        assert.deepStrictEqual(func.isNumber('123456789.0'),true)
+        done()
+    })
+    it(`value long number.`,function(done){
+        assert.deepStrictEqual(func.isNumber(123456789123456789123456789123456789123456789123456789),true)
+        done()
+    })
+    it(`value string long number.`,function(done){
+        assert.deepStrictEqual(func.isNumber('123456789123456789123456789123456789123456789123456789'),true)
+        done()
+    })
+    it(`value string negative long number.`,function(done){
+        assert.deepStrictEqual(func.isNumber('-123456789123456789123456789123456789123456789123456789'),true)
+        done()
+    })
 
+    /*          isFloat         */
+    it(`value number with .0.`,function(done){
+        assert.deepStrictEqual(func.isFloat(123456789.0),123456789)
+        done()
+    })
+    it(`value string number with .0.`,function(done){
+        assert.deepStrictEqual(func.isFloat('123456789.0'),123456789)
+        done()
+    })
+    it(`value string negative  number with `,function(done){
+        assert.deepStrictEqual(func.isFloat('-0.123456789'),-0.123456789)
+        done()
+    })
+    it(`value invalid number with 2 . `,function(done){
+        assert.deepStrictEqual(func.isFloat('-0.1.1'),false)
+        done()
+    })
+    it(`value negative number with . `,function(done){
+        assert.deepStrictEqual(func.isFloat(-123456789123456789123456789123456789123456789123456789.0),-123456789123456789123456789123456789123456789123456789.0)
+        done()
+    })
+    it(`value array cant convert to float `,function(done){
+        assert.deepStrictEqual(func.isFloat([1]),false)
+        done()
+    })
 
-    //isNumber
-    value=[]
-    result=func.isNumber(value)
-    test.equal(result,false,'isNumber: check empty array not number')
-    value={}
-    result=func.isNumber(value)
-    test.equal(result,false,'isNumber: check empty object not number')
-    value=''
-    result=func.isNumber(value)
-    test.equal(result,false,'isNumber: check nempty string not number')
-    value=123456789.0
-    result=func.isNumber(value)
-    test.equal(result,true,'isNumber: check number failed,float not number')
-    value='123456789.0'
-    result=func.isNumber(value)
-    test.equal(result,true,'isNumber: check number failed,string is float')
-    value=-123456789123456789123456789123456789123456789123456789
-    result=func.isNumber(value)
-    test.equal(result,true,'isNumber: check non string negative number failed')
-    value='123456789123456789123456789123456789123456789123456789'
-    result=func.isNumber(value)
-    test.equal(result,true,'isNumber: check string positive number failed')
-    value='-123456789123456789123456789123456789123456789123456789'
-    result=func.isNumber(value)
-    test.equal(result,true,'isNumber: check string negative number failed')
-    //isFolat
-    value=123456789.0
-    result=func.isFloat(value)
-    test.equal(result,123456789,'isFloat: check float failed')
-    value='123456789.0'
-    result=func.isFloat(value)
-    test.equal(result,123456789,'isFloat: check string float failed')
-    value='-0.123456789'
-    result=func.isFloat(value)
-    test.equal(result,-0.123456789,'isFloat: check negative string float failed')
-    value='0.1.0'
-    result=func.isFloat(value)
-    test.equal(result,false,'isFloat: check invalid float failed')
-    value=123456789123456789123456789123456789123456789123456789
-    result=func.isFloat(value)
-    test.equal(result,123456789123456789123456789123456789123456789123456789,'isFloat: check large number failed')
-    value=-123456789123456789123456789123456789123456789123456789
-    result=func.isFloat(value)
-    test.equal(result,-123456789123456789123456789123456789123456789123456789,'isFloat: check large negative number failed')
-    value=[1]
-    result=func.isFloat(value)
-    test.equal(result,false,'isFloat: check array failed')
-    //isPositive
-    value=-123456789123456789123456789123456789123456789123456789
-    result=func.isPositive(value)
-    test.equal(result,false,'isPositive: check large negative number failed')
-    value='-0.1'
-    result=func.isPositive(value)
-    //console.log(result)
-    test.equal(result,false,'isPositive: check invalid float failed')
-    value='0.1'
-    result=func.isPositive(value)
-    test.equal(result,true,'isPositive: check valid float failed')
+    /*      isPositive        */
+    it(`large negative number  `,function(done){
+        assert.deepStrictEqual(func.isPositive(-123456789123456789123456789123456789123456789123456789),false)
+        done()
+    })
+    it(`small negative number  `,function(done){
+        assert.deepStrictEqual(func.isPositive(-0.1),false)
+        done()
+    })
+    //执行isPositive之前，需要确保输入值是个数值
+/*    it(`invalid number cant test positive`,function(done){
+        assert.deepStrictEqual(func.isPositive([1]),false)
+        done()
+    })*/
+    it(`positive number`,function(done){
+        assert.deepStrictEqual(func.isPositive('0.1'),true)
+        done()
+    })
+})
 
-    test.done()
-}
 
 /***************************************************************************/
 /*******     辅助函数，根据预定义dataType，检测value是否合格      **********/
 /***************************************************************************/
-const valueTypeCheck=function(test){
+describe('valueTypeCheck:format', function() {
     let func=testModule.valueTypeCheck
     let value,tmpDataType,result,tmp
 
+    it(`unknown data type`,function(done){
+        value='randomString'
+        tmpDataType='noEnumDataType'
+        assert.deepStrictEqual(func(value,tmpDataType),validateHelperError.unknownDataType)
+        done();
+    })
+    it(`data type int`,function(done){
+        value='randomString'
+        tmpDataType='noEnumDataType'
+        assert.deepStrictEqual(func(value,tmpDataType),validateHelperError.unknownDataType)
+        done();
+    })
+})
+const valueTypeCheck=function(test){
+
+
     test.expect(9)
 
-    value='randomString'
-    tmpDataType='noEnumDataType'
-    result=func(value,tmpDataType)
-    test.equal(result.rc,validateHelperError.unknownDataType.rc,'unknown data type check failed');
+
 
     value='0'
     tmpDataType=serverDataType.INT
@@ -458,16 +522,7 @@ const convertClientSearchValueToServerFormat=function(test){
 
 
 exports.validate={
-     dataTypeCheck,//数据类型检测
-     valueTypeCheck,
-     valueMatchRuleDefineCheck,
-
-    //convertClientSearchValueToServerFormat//只是用来查看结果
-/*    _private:{
-        valueTypeCheck,
-    },
-    checkInput,
-    checkInputAdditional,*/
-     //validateInputSearchFormat,
-    //validateInputSearch,
+     // dataTypeCheck,//数据类型检测
+     // valueTypeCheck,
+     // valueMatchRuleDefineCheck,
 }

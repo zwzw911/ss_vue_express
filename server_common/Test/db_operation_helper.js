@@ -86,7 +86,6 @@ async function deleteAllModelRecord_async({}){
 
 //userModel；定义在testData中的user info
 async function create_user_async({userInfo}){
-
     //更改，添加额外字段
     userInfo[e_field.USER.PASSWORD]=hash(`${userInfo.password}`,e_hashType.SHA256).msg
     userInfo[e_field.USER.LAST_SIGN_IN_DATE]=Date.now()
@@ -170,6 +169,26 @@ async function getAdminUserId_async({userName}) {
     return Promise.resolve(tmpResult[0]['_id'])
 }
 
+async function getUserFolderId_async(userData){
+    // let user1Tmp = {}
+    // user1Tmp[e_field.USER.ACCOUNT] = testData.user.user2[e_field.USER.ACCOUNT]
+    // user1Tmp[e_field.USER.PASSWORD] = testData.user.user2[e_field.USER.PASSWORD]
+
+    let condition = {
+        [e_field.USER.ACCOUNT]:userData[e_field.USER.ACCOUNT]
+    }
+    // 查找userId
+    let tmpResult = await common_operation_model.find_returnRecords_async({dbModel: e_dbModel.user, condition: condition})
+    condition = {}
+    condition[e_field.FOLDER.AUTHOR_ID] = tmpResult[0]['_id']
+    let options = {$sort: {cDate: 1}}
+    tmpResult = await common_operation_model.find_returnRecords_async({
+        dbModel: e_dbModel.folder,
+        condition: condition,
+        options: options
+    })
+    return Promise.resolve({folderId:tmpResult[0]['_id']})
+}
 /*async function findByIdAndUpdate_returnRecord_async({dbModel,id,updateFieldsValue,updateOption}){
     // console.log(`find by id :${id}`)
     let result=await dbModel.findByIdAndUpdate(id,updateFieldsValue,updateOption)
@@ -195,5 +214,6 @@ module.exports={
     getUserId_async,
     getAdminUserId_async,
 
+    getUserFolderId_async,
     // findByIdAndUpdate_returnRecord_async,
 }

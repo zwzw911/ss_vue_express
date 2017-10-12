@@ -4,15 +4,16 @@
 'use strict'
 //require("babel-polyfill");
 //require("babel-core/register")
-const testModule=require('../../../server/function/validateInput/validateValue');
+const assert=require('assert')
+const testModule=require('../../../function/validateInput/validateValue');
 //const miscError=require('../../server/define/error/nodeError').nodeError.assistError
-const validateValueError=require('../../../server/constant/error/validateError').validateError.validateValue
-const validateHelperError=require('../../../server/constant/error/validateError').validateError.validateRule
+const validateValueError=require('../../../constant/error/validateError').validateValue
+const validateHelperError=require('../../../constant/error/validateError').validateRule
 /*          for generateRandomString test       */
-const regex=require('../../../server/constant/regex/regex').regex
+const regex=require('../../../constant/regex/regex').regex
 // const regex=require('../define/regex/regex').regex
-const e_serverDataType=require('../../../server/constant/enum/inputDataRuleType').ServerDataType
-const e_serverRuleType=require('../../../server/constant/enum/inputDataRuleType').ServerRuleType
+const e_serverDataType=require('../../../constant/enum/inputDataRuleType').ServerDataType
+const e_serverRuleType=require('../../../constant/enum/inputDataRuleType').ServerRuleType
 // const inputRule=require('../../../server/constant/inputRule/clientInput').inputRule
 
 
@@ -42,25 +43,26 @@ let rules ={
         age:{
             'chineseName':'年龄',
             'type':e_serverDataType.NUMBER,
-            'require': {define: false, error: {rc: 10047},mongoError:{rc:20047,msg:'父类别不能为空'}},
-            // 'format':{define:regex.objectId,error:{rc:10048},mongoError:{rc:20048,msg:'父类别的id格式不正确'}},//format == mongodb_match
+            'require': {define: false, error: {rc: 10049},mongoError:{rc:20049,msg:'父类别不能为空'}},
+            'min':{define:18,error:{rc:10050},mongoError:{rc:20050,msg:'年龄不能小于18'}},
+            'max':{define:100,error:{rc:10051},mongoError:{rc:20051,msg:'年龄不能超过100'}},
         },
         rembuiser:{
             'chineseName':'报销人',
             'type':[e_serverDataType.OBJECT_ID],
-            'require': {define: false, error: {rc: 10047},mongoError:{rc:20047,msg:'报销人不能为空'}},
-            'format':{define:regex.objectId,error:{rc:10048},mongoError:{rc:20048,msg:'报销人的id格式不正确'}},//format == mongodb_match
-            arrayMinLength:{define:1,error:{rc:10049},mongoError:{rc:20049,msg:'报销人的数量未达到最小数量'}},
-            arrayMaxLength:{define:2,error:{rc:10050},mongoError:{rc:20050,msg:'报销人的数量超过最大数量'}},
+            'require': {define: false, error: {rc: 10052},mongoError:{rc:20052,msg:'报销人不能为空'}},
+            'format':{define:regex.objectId,error:{rc:10053},mongoError:{rc:20053,msg:'报销人的id格式不正确'}},//format == mongodb_match
+            arrayMinLength:{define:1,error:{rc:10054},mongoError:{rc:20054,msg:'报销人的数量未达到最小数量'}},
+            arrayMaxLength:{define:2,error:{rc:10055},mongoError:{rc:20055,msg:'报销人的数量超过最大数量'}},
         },
         inOutEnum:{
             'chineseName': '支取数组类型',
             //'default':'male',
             'type':[e_serverDataType.STRING],
-            'require': {define: false, error: {rc: 10051},mongoError:{rc:20051,msg:'支取类型不能为空'}},
-            'enum':{define:['in','out'],error:{rc:10052},mongoError:{rc:20052,msg:'支取类型不正确'}},
-            arrayMinLength:{define:0,error:{rc:10053},mongoError:{rc:20053,msg:'支取类型的数量未达到最小数量'}},
-            arrayMaxLength:{define:2,error:{rc:10054},mongoError:{rc:20054,msg:'支取类型的数量超过最大数量'}},
+            'require': {define: false, error: {rc: 10056},mongoError:{rc:20056,msg:'支取类型不能为空'}},
+            'enum':{define:['in','out'],error:{rc:10057},mongoError:{rc:20057,msg:'支取类型不正确'}},
+            arrayMinLength:{define:0,error:{rc:10058},mongoError:{rc:20058,msg:'支取类型的数量未达到最小数量'}},
+            arrayMaxLength:{define:2,error:{rc:10059},mongoError:{rc:20059,msg:'支取类型的数量超过最大数量'}},
         },
     }
 }
@@ -83,174 +85,154 @@ let fkConfig =
     }
 
 /*                  create是update超集             */
-const validateCreateRecorderValue=function(test){
+describe('validateCreateRecorderValue', function() {
     let funcCreate=testModule.validateCreateRecorderValue
-    test.expect(10)
-    let value,result
     let rule=rules.billType
-
-
+    let value
     //1, create时，rule中为require的字段，value中没有
-    value={age:{value:10}}
-    result=funcCreate(value,rule)
-    // console.log(`error1 is ${JSON.stringify(result)}`)
-    test.equal(result.name.rc,rule.name.require.error.rc,"required field not set in value")
-    //2, create时，rule中为require的字段，value为null
-    value={name:{value:null}}
-    result=funcCreate(value,rule)
-    // console.log(`error2 is ${JSON.stringify(result)}`)
-    test.equal(result.name.rc,rule.name.require.error.rc,"required field is null in value")
+    it(`miss required field name`,function(done){
+        value={age:10}
+        assert.deepStrictEqual(funcCreate(value,rule).name.rc,rule.name.require.error.rc)
+        done()
+    })
+    //2, requied field的值是null
+    it(`required field name value is null`,function(done){
+        value={name:null}
+        assert.deepStrictEqual(funcCreate(value,rule).name.rc,rule.name.require.error.rc)
+        done()
+    })
+    //3, required field的值是undefined
+    it(`required field name value is undefined`,function(done){
+        value={name:undefined}
+        assert.deepStrictEqual(funcCreate(value,rule).name.rc,rule.name.require.error.rc)
+        done()
+    })
+    //4. required field的值是空字符串
+    it(`required field name value is empty string`,function(done){
+        value={name:""}
+        assert.deepStrictEqual(funcCreate(value,rule).name.rc,rule.name.require.error.rc)
+        done()
+    })
+    //5. required field的值是空字符串
+    it(`required field name value is blank string`,function(done){
+        value={name:"      "}
+        assert.deepStrictEqual(funcCreate(value,rule).name.rc,rule.name.require.error.rc)
+        done()
+    })
 
-    //3, type为array，但是其中值不符合要求
-    value={name:{value:'asdf'},rembuiser:{value:[1]}}
-    result=funcCreate(value,rule)
-    // console.log(`error2 is ${JSON.stringify(result)}`)
-    test.equal(result.rembuiser.rc,rule.rembuiser.format.error.rc,"rembuiser must be objectId")
+    //6, data type为array+objectId，但是其中值不符合要求
+    it(`data type is array, the ele value invalid: rembuiser must be objectId`,function(done){
+        value={name:"asdf",rembuiser:[1]}
+        assert.deepStrictEqual(funcCreate(value,rule).rembuiser.rc,rule.rembuiser.format.error.rc)
+        done()
+    })
+    //6, data type为array+objectId，值符合要求
+    it(`data type is array, the ele value invalid: rembuiser must be objectId`,function(done){
+        value={name:"asdf",rembuiser:['58c0c32486e5a6d02657303f']}
+        assert.deepStrictEqual(funcCreate(value,rule).rembuiser.rc,0)
+        done()
+    })
+    //6, data type为array+objectId，但是值类型不正确
+    it(`data type is array, value is not array`,function(done){
+        value={name:"asdf",rembuiser:1}
+        assert.deepStrictEqual(funcCreate(value,rule).rembuiser.rc,validateValueError.CUDTypeWrong.rc)
+        done()
+    })
+    //6, data type为array+objectId，min length未达到
+    it(`data type is array, value is not array`,function(done){
+        value={name:"asdf",rembuiser:[]}
+        assert.deepStrictEqual(funcCreate(value,rule).rembuiser.rc,rule.rembuiser.arrayMinLength.error.rc)
+        done()
+    })
+    //6, data type为array+objectId，超出max length
+    it(`data type is array, value is not array`,function(done){
+        value={name:"asdf",rembuiser:[1,2,3]}
+        assert.deepStrictEqual(funcCreate(value,rule).rembuiser.rc,rule.rembuiser.arrayMaxLength.error.rc)
+        done()
+    })
 
-    //4, type为array，但是其中值符合要求
-    value={name:{value:'asdf'},rembuiser:{value:['58c0c32486e5a6d02657303f']}}
-    result=funcCreate(value,rule)
-    // console.log(`error2 is ${JSON.stringify(result)}`)
-    test.equal(result.rembuiser.rc,0,"required field is null in value")
+    //6, data type为enum，但是对应的值类型不正确
+    it(`data type is array+enum, value is not array`,function(done){
+        value={name:"asdf",inOutEnum:[1]}
+        assert.deepStrictEqual(funcCreate(value,rule).inOutEnum.rc,validateValueError.CUDTypeWrong.rc)
+        done()
+    })
+    //6, data type为enum，但是对应的值不在范围内
+    it(`data type is array, value is not array`,function(done){
+        value={name:"asdf",inOutEnum:['any']}
+        assert.deepStrictEqual(funcCreate(value,rule).inOutEnum.rc,rule.inOutEnum.enum.error.rc)
+        done()
+    })
 
-    //5.  type为array，但是对应的值不是array
-    value={name:{value:'asdf'},rembuiser:{value:1}}
-    result=funcCreate(value,rule)
-    // console.log(`error2 is ${JSON.stringify(result)}`)
-    test.equal(result.rembuiser.rc,validateValueError.CUDTypeWrong.rc,"type is array, but value is not array")
+    //6, type为array，且ARRAY_MIX_LENGTH为0， 此时，对应的值为空可以pass
+    it(`data type is array, value is not array`,function(done){
+        value={name:"asdf",inOutEnum:[]}
+        assert.deepStrictEqual(funcCreate(value,rule).inOutEnum.rc,0)
+        done()
+    })
+})
 
-    //6.  type为array，但是对应的值未达到min
-    value={name:{value:'asdf'},rembuiser:{value:[]}}
-    result=funcCreate(value,rule)
-    // console.log(`error2 is ${JSON.stringify(result)}`)
-    test.equal(result.rembuiser.rc,rule.rembuiser.arrayMinLength.error.rc,"type is array, but value is not array")
-
-    //7.  type为array，但是对应的值超过max
-    value={name:{value:'asdf'},rembuiser:{value:[1,2,3]}}
-    result=funcCreate(value,rule)
-    // console.log(`error2 is ${JSON.stringify(result)}`)
-    test.equal(result.rembuiser.rc,rule.rembuiser.arrayMaxLength.error.rc,"type is array, but value is not array")
-
-    //8.  type为array，但是对应的值类型不正确
-    value={name:{value:'asdf'},inOutEnum:{value:[1]}}
-    result=funcCreate(value,rule)
-    // console.log(`error2 is ${JSON.stringify(result)}`)
-    test.equal(result.inOutEnum.rc,validateValueError.CUDTypeWrong.rc,"type is array, but value is not array")
-
-    //9.  type为array，但是对应的值不在范围内
-    value={name:{value:'asdf'},inOutEnum:{value:['any']}}
-    result=funcCreate(value,rule)
-    // console.log(`error2 is ${JSON.stringify(result)}`)
-    test.equal(result.inOutEnum.rc,rule.inOutEnum.enum.error.rc,"type is array, but value is not array")
-
-    //10.  type为array，且ARRAY_MIX_LENGTH为0， 此时，对应的值为空可以pass
-    value={name:{value:'asdf'},inOutEnum:{value:[]}}
-    result=funcCreate(value,rule)
-    // console.log(`error2 is ${JSON.stringify(result)}`)
-    test.equal(result.inOutEnum.rc,0,"type is array, but value is not array")
-
-    test.done()
-}
-
-
-/*                  recorder id            */
-const validateRecorderId=function(test){
-    let funcDelete=testModule.validateRecorderId
-    test.expect(6)
+/*                  recorder id是简单part，直接在validateFormat中检测          */
 
 
-
-    //1, objectId格式不正确（null）
-    let value=null
-    let result=funcDelete(value)
-    test.equal(result.rc,validateValueError.CUDObjectIdEmpty.rc,"Recorder Id is null" )
-    //2. objectId格式不正确（undefined）
-    value=undefined
-    result=funcDelete(value)
-    test.equal(result.rc,validateValueError.CUDObjectIdEmpty.rc,"objectId is undefined")
-
-    //3, objectId格式不正确（整数）
-    value=10
-    result=funcDelete(value)
-    test.equal(result.rc,validateValueError.CUDObjectIdWrong.rc,"objectId format wrong")
-    //4, objectId格式不正确（数组）
-    value=[10]
-    result=funcDelete(value)
-    test.equal(result.rc,validateValueError.CUDObjectIdWrong.rc,"objectId format wrong")
-    //5, objectId格式不正确（对象）
-    value={}
-    result=funcDelete(value)
-    test.equal(result.rc,validateValueError.CUDObjectIdEmpty.rc,'objectId format wrong')
-
-    //6. 正常id
-    value='58c0c32486e5a6d02657303f'
-    result=funcDelete(value)
-    // console.log(`error2 is ${JSON.stringify(result)}`)
-    test.equal(result.rc,0,"required field is null in value")
-
-    test.done()
-}
-
-/*                  recorder id            */
-const validateRecIdArr=function(test){
-    let funcDelete=testModule.validateRecIdArr
-    let maxLength=2
-    test.expect(8)
+/*                  recorder id arr           */
+describe('validateRecIdArr', function() {
+    let func=testModule.validateRecIdArr
+    let maxLength=2,value
 
     //1, 数组长度为0
-    let value=[]
-    let result=funcDelete(value,maxLength)
-    test.equal(result.rc,validateValueError.recIdArrValueCantEmpty.rc,"RecIdArr is empty" )
+    it(`recIdArr length is 0`,function(done){
+        value=[]
+        assert.deepStrictEqual(func(value,maxLength).rc,validateValueError.recIdArrValueCantEmpty.rc)
+        done()
+    })
     //2. 数组长度超出定义
-    value=[1,2,3]
-    result=funcDelete(value,maxLength)
-    test.equal(result.rc,validateValueError.recIdArrValueExceedMax.rc,"RecIdArr length exceed max")
-
+    it(`recIdArr length exceed maxLength`,function(done){
+        value=[1,2,3]
+        assert.deepStrictEqual(func(value,maxLength).rc,validateValueError.recIdArrValueExceedMax.rc)
+        done()
+    })
     //3, objectId格式不正确（null）
-    value=[null]
-    result=funcDelete(value,maxLength)
-    test.equal(result.rc,validateValueError.recIdArrValueEleShouldString.rc,"RecIdArr ele is null" )
-    //4. objectId格式不正确（undefined）
-    value=[undefined]
-    result=funcDelete(value,maxLength)
-    test.equal(result.rc,validateValueError.recIdArrValueEleShouldString.rc,"RecIdArr ele is undefined")
+    it(`recIdArr ele data type is null, not string`,function(done){
+        value=[null]
+        assert.deepStrictEqual(func(value,maxLength).rc,validateValueError.recIdArrValueEleShouldString.rc)
+        done()
+    })
+    //3, objectId格式不正确（undefined）
+    it(`recIdArr ele data type is undefined, not string`,function(done){
+        value=[undefined]
+        assert.deepStrictEqual(func(value,maxLength).rc,validateValueError.recIdArrValueEleShouldString.rc)
+        done()
+    })
+    //3, objectId格式不正确（int）
+    it(`recIdArr ele data type is int, not string`,function(done){
+        value=[10]
+        assert.deepStrictEqual(func(value,maxLength).rc,validateValueError.recIdArrValueEleShouldString.rc)
+        done()
+    })
+    //3, objectId格式不正确（object）
+    it(`recIdArr ele data type is object, not string`,function(done){
+        value=[{}]
+        assert.deepStrictEqual(func(value,maxLength).rc,validateValueError.recIdArrValueEleShouldString.rc)
+        done()
+    })
+    //3, objectId格式正确（objectId）
+    it(`recIdArr ele data type is objectId`,function(done){
+        value=['58c0c32486e5a6d02657303f','58c0c32486e5a6d02657303f']
+        assert.deepStrictEqual(func(value,maxLength).rc,0)
+        done()
+    })
+})
 
-    //5 objectId格式不正确（整数）
-    value=[10]
-    result=funcDelete(value,maxLength)
-    test.equal(result.rc,validateValueError.recIdArrValueEleShouldString.rc,"RecIdArr ele is int")
-    //6, objectId格式不正确（对象）
-    value=[{}]
-    result=funcDelete(value,maxLength)
-    test.equal(result.rc,validateValueError.recIdArrValueEleShouldString.rc,'RecIdArr ele is object')
-
-    //7. 正常id
-    value=['58c0c32486e5a6d02657303f','58c0c32486e5a6d02657303f']
-    result=funcDelete(value,maxLength)
-    // console.log(`error2 is ${JSON.stringify(result)}`)
-    test.equal(result.rc,0,"RecIdArr ele is objectId")
-
-    //8. 正常id+ 超出数量
-    value=['58c0c32486e5a6d02657303f','58c0c32486e5a6d02657303f','58c0c32486e5a6d02657303f']
-    result=funcDelete(value,maxLength)
-    // console.log(`error2 is ${JSON.stringify(result)}`)
-    test.equal(result.rc,validateValueError.recIdArrValueExceedMax.rc,"RecIdArr ele exceed max")
-
-    test.done()
-}
 
 /*              目的是测试validateSingleRecorderFieldValue，但是必须通过validateCreateRecorderValue调用       */
-const validateSingleRecorderFieldValue=function(test){
-
+describe('validateSingleRecorderFieldValue', function() {
     let funcCreate=testModule.validateCreateRecorderValue
     let funcUpdate=testModule.validateUpdateRecorderValue
     // let funcUpdate=testModule.validateUpdateRecorderValue
     //let preFunc=testModule.validate._private.checkRuleBaseOnRuleDefine
     let rule,value,tmpDataType,result,tmp
-    // let error={rc:1234,msg:''}
 
-    test.expect(15)
-    // test.expect(1)
     rule={
         mandatoryField1:{
             chineseName:'必填字段1',
@@ -286,114 +268,118 @@ const validateSingleRecorderFieldValue=function(test){
         },
     }
 
+    //1, create: require=true的字段输入为null
+    it(`create:required field value is null`,function(done){
+        value={mandatoryField1:null}
+        assert.deepStrictEqual(funcCreate(value,rule).mandatoryField1.rc,rule.mandatoryField1.require.error.rc)
+        done()
+    })
+    //2, update: require=true的字段输入为null
+    it(`update:required field value is null`,function(done){
+        value={mandatoryField1:null}
+        assert.deepStrictEqual(funcUpdate(value,rule).mandatoryField1.rc,rule.mandatoryField1.require.error.rc)
+        done()
+    })
+    //3, update: require=false的字段输入为null，不报错
+    it(`create:optional field value is null is OK`,function(done){
+        value={optionalField1:null}
+        assert.deepStrictEqual(funcUpdate(value,rule).optionalField1.rc,0)
+        done()
+    })
+    //4. type unknown field
+    it(`update: field data type unknown`,function(done){
+        value={typeUnknownField:1}
+        assert.deepStrictEqual(funcUpdate(value,rule).typeUnknownField.rc,validateHelperError.unknownDataType.rc)
+        done()
+    })
+    //5.  create:field value类型错误
+    it(`create: field data type wrong`,function(done){
+        value={mandatoryField1:1}
+        assert.deepStrictEqual(funcCreate(value,rule).mandatoryField1.rc,validateValueError.CUDTypeWrong.rc)
+        done()
+    })
+    //5.  update: field value类型错误
+    it(`update: field data type wrong`,function(done){
+        value={optionalField1:[1]}
+        assert.deepStrictEqual(funcUpdate(value,rule).optionalField1.rc,validateValueError.CUDTypeWrong.rc)
+        done()
+    })
+    //5.  update: field value类型错误
+    it(`update: field data type objectId wrong`,function(done){
+        value={typeObjectId:[1]}
+        assert.deepStrictEqual(funcUpdate(value,rule).typeObjectId.rc,rule.typeObjectId.format.error.rc)
+        done()
+    })
 
-    //2. create: require=true的字段输入为null
-    value={mandatoryField1:{value:null}}
-    // console.log(`rulke`)
-    result=funcCreate(value,rule)
-    // console.log(`resul is ${JSON.stringify(result)}`)
-    test.equal(result.mandatoryField1.rc,rule.mandatoryField1.require.error.rc,'when create new recorder, the required field value is not set')
+    //5.  update: format check
+    it(`update: field data type format wrong`,function(done){
+        value={optionalField1:111111}
+        assert.deepStrictEqual(funcUpdate(value,rule).optionalField1.rc,rule.optionalField1.format.error.rc)
+        done()
+    })
+    //5.  update: format check,for int, match format, not match min
+    it(`update: field data type format,the field value is not match min`,function(done){
+        value={optionalField1:0}
+        assert.deepStrictEqual(funcUpdate(value,rule).optionalField1.rc,rule.optionalField1.min.error.rc)
+        done()
+    })
+    //5.  update: format check,for int, match format, not match max
+    it(`update: field data type format,the field value is not match max`,function(done){
+        value={optionalField1:999}
+        assert.deepStrictEqual(funcUpdate(value,rule).optionalField1.rc,rule.optionalField1.max.error.rc)
+        done()
+    })
 
-    //3. update: require=true的字段输入为null，报require的错（既然填写了字段，就要符合rule的定义）
-    value={mandatoryField1:{value:null}}
-    result=funcUpdate(value,rule)
-    // console.log(`resul is ${JSON.stringify(result)}`)
-    test.equal(result.mandatoryField1.rc,rule.mandatoryField1.require.error.rc,'when update recorder, the required true field value is not set')
+    //5.  update: format check, match format ok
+    it(`update: field data type format,the field value is not match max`,function(done){
+        value={optionalField1:99}
+        assert.deepStrictEqual(funcUpdate(value,rule).optionalField1.rc,0)
+        done()
+    })
 
-    //4.  update: require=false的字段输入为null，不报错
-    value={optionalField1:{value:null}}
-    result=funcUpdate(value,rule)
-    // console.log(`resul is ${JSON.stringify(result)}`)
-    test.equal(result.optionalField1.rc,0,'when update recorder, the required false field value is not set')
+    //5.  create: format check, match format ok
+    it(`create: field data type format,the field value is not match max`,function(done){
+        value={mandatoryField1:'12345678901'}
+        assert.deepStrictEqual(funcCreate(value,rule).mandatoryField1.rc,rule.mandatoryField1.maxLength.error.rc)
+        done()
+    })
 
-    //5. 不存在的类型
-    value={typeUnknownField:{value:1}}
-    result=funcUpdate(value,rule)
-    // console.log(`resul is ${JSON.stringify(result)}`)
-    test.equal(result.typeUnknownField.rc,validateHelperError.unknownDataType.rc,'when update recorder, the field rule type is unknown')
-    //6. 检查类型
-    value={mandatoryField1:{value:1}}
-    result=funcCreate(value,rule)
-    // console.log(`resul is ${JSON.stringify(result)}`)
-    test.equal(result.mandatoryField1.rc,validateValueError.CUDTypeWrong.rc,'when create recorder, the field value wrong')
-    //7  另一个错误类型
-    value={optionalField1:{value:[1]}}
-    result=funcUpdate(value,rule)
-    // console.log(`resul is ${JSON.stringify(result)}`)
-    test.equal(result.optionalField1.rc,validateValueError.CUDTypeWrong.rc,'when update recorder, the field value wrong')
+    //5.  create: 检查minLength属性
+    it(`create: field data type ,field value length exceed minLength`,function(done){
+        value={mandatoryField1:'1'}
+        assert.deepStrictEqual(funcCreate(value,rule).mandatoryField1.rc,rule.mandatoryField1.minLength.error.rc)
+        done()
+    })
 
-    //8  type=objectId
-    value={typeObjectId:{value:[1]}}
-    result=funcUpdate(value,rule)
-    // console.log(`resul is ${JSON.stringify(result)}`)
-    test.equal(result.typeObjectId.rc,rule.typeObjectId.format.error.rc,'when update recorder, the field value is not objectId')
+    //5.  update: enum value invalid
+    it(`update: field data type ,field value is invalid value`,function(done){
+        value={enumField:'any'}
+        assert.deepStrictEqual(funcUpdate(value,rule).enumField.rc,rule.enumField.enum.error.rc)
+        done()
+    })
 
+    //5.  update: enum value valid
+    it(`update: field data type ,field value is invalid value`,function(done){
+        value={enumField:'male'}
+        assert.deepStrictEqual(funcUpdate(value,rule).enumField.rc,0)
+        done()
+    })
+})
 
-    //9. format check:not match
-    value={optionalField1:{value:111111}}
-    result=funcUpdate(value,rule)
-    // console.log(`resul is ${JSON.stringify(result)}`)
-    test.equal(result.optionalField1.rc,rule.optionalField1.format.error.rc,'when update recorder, the field value is not match format')
-    //10. format check:for int, match format, not match min
-    value={optionalField1:{value:0}}
-    result=funcUpdate(value,rule)
-    // console.log(`resul is ${JSON.stringify(result)}`)
-    test.equal(result.optionalField1.rc,rule.optionalField1.min.error.rc,'when update recorder, the field value is not match min')
-    //11. format check:for int, match format, not match max
-    value={optionalField1:{value:9999}}
-    result=funcUpdate(value,rule)
-    // console.log(`resul is ${JSON.stringify(result)}`)
-    test.equal(result.optionalField1.rc,rule.optionalField1.max.error.rc,'when update recorder, the field value is not match max')
-    //12. format check: match format/min.max
-    value={optionalField1:{value:99}}
-    result=funcUpdate(value,rule)
-    // console.log(`resul is ${JSON.stringify(result)}`)
-    test.equal(result.optionalField1.rc,0,'when update recorder, the field value  match format/min/max')
-
-    //13. create: 检查maxLength属性
-    value={mandatoryField1:{value:'12345678901'}}
-    result=funcCreate(value,rule)
-    // console.log(`resul is ${JSON.stringify(result)}`)
-    test.equal(result.mandatoryField1.rc,rule.mandatoryField1.maxLength.error.rc,'when create new recorder, the field value length exceed maxLength')
-    //14. create: 检查minLength属性
-    value={mandatoryField1:{value:'1'}}
-    result=funcCreate(value,rule)
-    // console.log(`resul is ${JSON.stringify(result)}`)
-    test.equal(result.mandatoryField1.rc,rule.mandatoryField1.minLength.error.rc,'when create new recorder, the field value length exceed minLength')
-
-    //15. update: not enum
-    value={enumField:{value:'any'}}
-    result=funcUpdate(value,rule)
-    // console.log(`resul is ${JSON.stringify(result)}`)
-    test.equal(result.enumField.rc,rule.enumField.enum.error.rc,'when update new recorder, the field value is not enum')
-    //16. update: is enum
-    value={enumField:{value:'male'}}
-    result=funcUpdate(value,rule)
-    // console.log(`resul is ${JSON.stringify(result)}`)
-    test.equal(result.enumField.rc,0,'when update new recorder, the field value is enum')
-
-    test.done()
-}
 
 
 
 /*                  searchParams check              */
-const validateSearchParamsValue=function(test){
-
+describe('validateSingleRecorderFieldValue', function() {
     let func=testModule.validateSearchParamsValue
-    //let error=miscError.misc.validateInputSearchValue
-    // let rules=require('../../server/define/validateRule/inputRule').inputRule
-    // let coll=require('../../server/define/enum/node').coll
-    // let searchSetting=require('../../server/config/global/globalSettingRule').searchSetting
-    //let preFunc=testModule.validate._private.checkRuleBaseOnRuleDefine
     let value,result,tmp
-    rules.billType.age={}
-    rules.billType.age['type']=e_serverDataType.INT
-    rules.billType.age['max']={define:100,error:{rc:10002},mongoError:{rc:20002,msg:'年龄不能超过100'}}
-    rules.billType.age['min']={define:18,error:{rc:10004},mongoError:{rc:20004,msg:'年龄不能小于100'}}
+
+
 
     rules.billType.test={}
     rules.billType.test['type']='test'
+    rules.billType.test['require']={define:false,error: {rc: 10049},mongoError:{rc:20049,msg:'test不能为空'}}
+
 
     rules.billType.formatField={
         chineseName:'可选字段1',
@@ -405,188 +391,207 @@ const validateSearchParamsValue=function(test){
     }
     //console.log(`test rule is ${JSON.stringify(rules.billType.age.type.toString())}`)
     let fkAdditionalFieldsConfig=
-    {
-        //冗余字段（nested）的名称：具体冗余那几个字段
-        //parentBillType:此字段为外键，需要冗余字段
-        //relatedColl：外键对应的coll
-        //nestedPrefix： 冗余字段一般放在nested结构中
-        //荣誉字段是nested结构，分成2种格式，字符和数组，只是为了方便操作。 forSelect，根据外键find到document后，需要返回值的字段；forSetValue：需要设置value的冗余字段（一般是nested结构）
-        parentBillType:{relatedColl:'billType',nestedPrefix:'parentBillTypeFields',forSelect:'name age',forSetValue:['name','age']}
-    }
+        {
+            //冗余字段（nested）的名称：具体冗余那几个字段
+            //parentBillType:此字段为外键，需要冗余字段
+            //relatedColl：外键对应的coll
+            //nestedPrefix： 冗余字段一般放在nested结构中
+            //荣誉字段是nested结构，分成2种格式，字符和数组，只是为了方便操作。 forSelect，根据外键find到document后，需要返回值的字段；forSetValue：需要设置value的冗余字段（一般是nested结构）
+            parentBillType:{relatedColl:'billType',nestedPrefix:'parentBillTypeFields',forSelect:'name age',forSetValue:['name','age']}
+        }
 
-    test.expect(11)
+    //search value:field value is null, return error
+    it(`search field is fk, value is null, return error`,function(done){
+        value={'parentBillType':{name:[{value:null}]}}
+        assert.deepStrictEqual(func(value,fkAdditionalFieldsConfig,'billType',rules).parentBillType.name.rc,validateValueError.SValueEmpty.rc)
+        done()
+    })
 
+    //search value exceed maxLength, delete, and return rc:0
+    it(`search field is fk, value is null, return rc:0 directly`,function(done){
+        value={'name':[{value:'012345678901234567890012'}]}
+        assert.deepStrictEqual(func(value,fkAdditionalFieldsConfig,'billType',rules).name.rc,0)
+        done()
+    })
 
+    //search value field is fk, which value exceed maxLength, delete, and return rc:0
+    it(`search field is fk, value exceed maxLength, delete, return rc:0 directly`,function(done){
+        value={'parentBillType':{name:[{value:'012345678901234567890012'}]}}
+        assert.deepStrictEqual(func(value,fkAdditionalFieldsConfig,'billType',rules).parentBillType.name.rc,0)
+        done()
+    })
 
-
-
-    //4, search value is empty, delete, and return rc:0
-    value={'age':[{value:null}]}
-    result=func(value,fkAdditionalFieldsConfig,'billType',rules)
-    // console.log(`value is ${JSON.stringify(value)}`)
-    // console.log(`result  is ${JSON.stringify(result)}`)
-    test.equal(result.age.rc,0,'search input value is empty, directly delete')
-
-    //5, fk search value is empty, delete, and return rc:0
-    value={'parentBillType':{name:[{value:null}]}}
-    result=func(value,fkAdditionalFieldsConfig,'billType',rules)
-    // console.log(`value is ${JSON.stringify(value)}`)
-    // console.log(`result  is ${JSON.stringify(result)}`)
-    test.equal(result.parentBillType.name.rc,0,'fk search input value is empty, directly delete')
-
-    //6, search value exceed maxLength, delete, and return rc:0
-    value={'name':[{value:'012345678901234567890012'}]}
-    result=func(value,fkAdditionalFieldsConfig,'billType',rules)
-    // console.log(`value is ${JSON.stringify(value)}`)
-    // console.log(`result  is ${JSON.stringify(result)}`)
-    test.equal(result.name.rc,0,'search input value exceed maxLength, directly delete')
-
-    //7, fk search value exceed maxLength, delete, and return rc:0
-    value={'parentBillType':{name:[{value:'012345678901234567890012'}]}}
-    result=func(value,fkAdditionalFieldsConfig,'billType',rules)
-    // console.log(`value is ${JSON.stringify(value)}`)
-    // console.log(`result  is ${JSON.stringify(result)}`)
-    test.equal(result.parentBillType.name.rc,0,'fk search input value exceed maxLength, directly delete')
-
-    //8. unkonwn e_serverDataType
-    value={'test':[{value:'a'}]}
-    result=func(value,fkAdditionalFieldsConfig,'billType',rules)
-    // console.log(`result is ${JSON.stringify(result)}`)
-    test.equal(result.test.rc,validateHelperError.unknownDataType.rc,'search input unknown type  check fail')
-
-    //9. e_serverDataType wrong
-    value={'age':[{value:'a'}]}
-    result=func(value,fkAdditionalFieldsConfig,'billType',rules)
-    // console.log(`result is ${JSON.stringify(result)}`)
-    test.equal(result.age.rc,validateValueError.STypeWrong.rc,'search input value type check fail')
-
-    //10. format check wrong
-    value={'formatField':[{value:12345}]}
-    result=func(value,fkAdditionalFieldsConfig,'billType',rules)
-    test.equal(result.formatField.rc,rules.billType.formatField.format.error.rc,'search input value format check fail')
-
-    //11. enum check
-    value={'inOut':[{value:'notEnum'}]}
-    result=func(value,fkAdditionalFieldsConfig,'billType',rules)
-    // console.log(`result is ${JSON.stringify(result)}`)
-    test.equal(result.inOut.rc,rules.billType.inOut.enum.error.rc,'search input value enum check fail')
-
-  //12. minLength不检查
-    value={'parentBillType':{
-        name:[{value:'a'}]
-    }}
-    result=func(value,fkAdditionalFieldsConfig,'billType',rules)
-    // console.log(`result is ${JSON.stringify(result)}`)
-    test.equal(result.parentBillType.name.rc,0,'search input value parentBillType minLength check fail')
+    //search field value is undefined（stop search）
+    it(`search field value undefined( stop search)`,function(done){
+        value={'age':[{value:undefined}]}
+        assert.deepStrictEqual(func(value,fkAdditionalFieldsConfig,'billType',rules).age.rc,validateValueError.SValueEmpty.rc)
+        done()
+    })
+    it(`search field value null( stop search)`,function(done){
+        value={'age':[{value:null}]}
+        assert.deepStrictEqual(func(value,fkAdditionalFieldsConfig,'billType',rules).age.rc,validateValueError.SValueEmpty.rc)
+        done()
+    })
+    it(`search field value empty string( stop search)`,function(done){
+        value={'name':[{value:""}]}
+        assert.deepStrictEqual(func(value,fkAdditionalFieldsConfig,'billType',rules).name.rc,validateValueError.SValueEmpty.rc)
+        done()
+    })
+    it(`search field value blank string( stop search)`,function(done){
+        value={'name':[{value:"     "}]}
+        assert.deepStrictEqual(func(value,fkAdditionalFieldsConfig,'billType',rules).name.rc,validateValueError.SValueEmpty.rc)
+        done()
+    })
+    //search value is [], should return error
+    it(`search value is empty array`,function(done){
+        value={'age':{value:[]}}
+        assert.deepStrictEqual(func(value,fkAdditionalFieldsConfig,'billType',rules).age.rc,validateValueError.SValueEmpty.rc)
+        done()
+    })
 
 
 
-    //13. min不再检查
-    value={'parentBillType':{
-        name:[{value:'a'}],
-        age:[{value:101,compOp:'gt'}]
-    }}
-    result=func(value,fkAdditionalFieldsConfig,'billType',rules)
-    // console.log(`result is ${JSON.stringify(result)}`)
-    test.equal(result.parentBillType.age.rc,0,'search input value parentBillType age 101 check fail')
-    //14. max不再检查
-    value={'parentBillType':{
-        name:[{value:'a'}],
-        age:[{value:1,compOp:'gt'}]
-    }}
-    result=func(value,fkAdditionalFieldsConfig,'billType',rules)
-    // console.log(`result is ${JSON.stringify(result)}`)
-    test.equal(result.parentBillType.age.rc,0,'search input value parentBillType age 1 check fail')
+    //unknown search field
+    it(`search field not defined in rule(should failed, due to rule check should in format check)`,function(done){
+        value={'test':[{value:'a'}]}
+        assert.deepStrictEqual(func(value,fkAdditionalFieldsConfig,'billType',rules).test.rc,validateHelperError.unknownDataType.rc)
+        done()
+    })
 
-    test.done()
-}
+    //wrong search field data type
+    it(`search field data type wrong`,function(done){
+        value={'age':[{value:'a'}]}
+        assert.deepStrictEqual(func(value,fkAdditionalFieldsConfig,'billType',rules).age.rc,validateValueError.STypeWrong.rc)
+        done()
+    })
 
-function validateFilterFieldValue(test){
+    //wrong search field rule check:format
+    it(`search field data type wrong, format check`,function(done){
+        value={'formatField':[{value:12345}]}
+        assert.deepStrictEqual(func(value,fkAdditionalFieldsConfig,'billType',rules).formatField.rc,rules.billType.formatField.format.error.rc)
+        done()
+    })
+
+    //wrong search field data type:enum
+    it(`search field field rule check:enum`,function(done){
+        value={'inOut':[{value:'notEnum'}]}
+        assert.deepStrictEqual(func(value,fkAdditionalFieldsConfig,'billType',rules).inOut.rc,rules.billType.inOut.enum.error.rc)
+        done()
+    })
+
+    //minLength不检查
+    it(`search field value minLength not check`,function(done){
+        value={'parentBillType':{
+            name:[{value:'a'}]
+        }}
+        assert.deepStrictEqual(func(value,fkAdditionalFieldsConfig,'billType',rules).parentBillType.name.rc,0)
+        done()
+    })
+
+    //min不检查
+    it(`search field value min not check`,function(done){
+        value={'parentBillType':{
+            name:[{value:'a'}],
+            age:[{value:101,compOp:'gt'}]
+        }}
+        assert.deepStrictEqual(func(value,fkAdditionalFieldsConfig,'billType',rules).parentBillType.age.rc,0)
+        done()
+    })
+
+    //max不再检查
+    it(`search field value min not check`,function(done){
+        value={'parentBillType':{
+            name:[{value:'a'}],
+            age:[{value:1,compOp:'gt'}]
+        }}
+        assert.deepStrictEqual(func(value,fkAdditionalFieldsConfig,'billType',rules).parentBillType.age.rc,0)
+        done()
+    })
+})
+
+
+describe('validateFilterFieldValue', function() {
     let func=testModule.validateFilterFieldValue
-
     let value,result,collName='billType'
-    test.expect(4)
 
-    //1 普通字段，字符，超出maxLength
-    value={name:'123456789012345687901234567890123456879012345678901234568790'}
-    result=func(value,fkConfig,collName,rules)
-    // console.log(`result is ${JSON.stringify(result)}`)
-    test.equal(result.rc,validateValueError.filterFieldValueOutRange.rc,'filter field value exceed maxLength check fail')
+//1 普通字段，字符，超出maxLength
+    it(`filter field value exceed maxLength`,function(done){
+        value={name:'123456789012345687901234567890123456879012345678901234568790'}
+        assert.deepStrictEqual(func(value,fkConfig,collName,rules).rc,validateValueError.filterFieldValueOutRange.rc)
+        done()
+    })
 
     //2 普通字段type不对(因为和searchParams复用一个函数检测，所以返回值是STypeWrong)
-    value={name:1}
-    result=func(value,fkConfig,collName,rules)
-    // console.log(`result is ${JSON.stringify(result)}`)
-    test.equal(result.rc,validateValueError.STypeWrong.rc,'filter field value exceed maxLength check fail')
-
-//3 外键字段，字符，超出maxLength
-    value={parentBillType:{name:'123456789012345687901234567890123456879012345678901234568790'}}
-    result=func(value,fkConfig,collName,rules)
-    // console.log(`result is ${JSON.stringify(result)}`)
-    test.equal(result.rc,validateValueError.filterFieldValueOutRange.rc,'filter field value exceed maxLength check fail')
-
-        //4 外键字段type不对(因为和searchParams复用一个函数检测，所以返回值是STypeWrong)
-     value={parentBillType:{name:1}}
-     result=func(value,fkConfig,collName,rules)
-     // console.log(`result is ${JSON.stringify(result)}`)
-     test.equal(result.rc,validateValueError.STypeWrong.rc,'filter field value exceed maxLength check fail')
-
-    test.done()
-}
-
+    it(`filter field value exceed maxLength `,function(done){
+        value={name:1}
+        assert.deepStrictEqual(func(value,fkConfig,collName,rules).rc,validateValueError.STypeWrong.rc)
+        done()
+    })
+    //3 外键字段，字符，超出maxLength
+    it(`filter field is fk, which value exceed maxLength`,function(done){
+        value={parentBillType:{name:'123456789012345687901234567890123456879012345678901234568790'}}
+        assert.deepStrictEqual(func(value,fkConfig,collName,rules).rc,validateValueError.filterFieldValueOutRange.rc)
+        done()
+    })
+    //4 外键字段type不对(因为和searchParams复用一个函数检测，所以返回值是STypeWrong)
+    it(`filter field value exceed maxLength `,function(done){
+        value={parentBillType:{name:1}}
+        assert.deepStrictEqual(func(value,fkConfig,collName,rules).rc,validateValueError.STypeWrong.rc)
+        done()
+    })
+})
 
 /***************************************************************************/
 /***************   editSubField   *******************/
 /***************************************************************************/
-const validateEditSubFieldValue=function(test) {
-    test.expect(7)
+describe('validateEditSubFieldValue', function() {
     let func = testModule.validateEditSubFieldValue
     let result, value
-
-    //1 from not objectId
-    value={from:undefined}
-    result=func(value)
-    test.equal(result.rc,validateValueError.fromMustBeObjectId.rc,'editSubField key from must be objectId check fail')
-
+//1 from not objectId
+    it(`editSubField key from must be objectId `,function(done){
+        value={from:undefined}
+        assert.deepStrictEqual(func(value).rc,validateValueError.fromMustBeObjectId.rc)
+        done()
+    })
     //2 to not objectId
-    value={to:undefined}
-    result=func(value)
-    test.equal(result.rc,validateValueError.toMustBeObjectId.rc,'editSubField key to must be objectId check fail')
+    it(`editSubField key to must be objectId `,function(done){
+        value={to:undefined}
+        assert.deepStrictEqual(func(value).rc,validateValueError.toMustBeObjectId.rc)
+        done()
+    })
 
     //3 eleArray not array
-    value={eleArray:undefined}
-    result=func(value)
-    test.equal(result.rc,validateValueError.eleArrayNotDefine.rc,'editSubField key eleArray must be array check fail')
+    it(`editSubField key eleArray must be array`,function(done){
+        value={eleArray:undefined}
+        assert.deepStrictEqual(func(value).rc,validateValueError.eleArrayNotDefine.rc)
+        done()
+    })
+
     //4 eleArray not array
-    value={eleArray:{}}
-    result=func(value)
-    test.equal(result.rc,validateValueError.eleArrayMustBeArray.rc,'editSubField key eleArray must be array check fail')
+    it(`editSubField key eleArray must be array`,function(done){
+        value={eleArray:{}}
+        assert.deepStrictEqual(func(value).rc,validateValueError.eleArrayMustBeArray.rc)
+        done()
+    })
 
     //5 eleArray中每个元素必须是objectId
-    value={eleArray:[1,2,3]}
-    result=func(value)
-    test.equal(result.rc,validateValueError.eleArrayMustContainObjectId.rc,'editSubField key eleArray must be array check fail')
-    //6 right result: 空数组
-    value={eleArray:[]}
-    result=func(value)
-    test.equal(result.rc,validateValueError.eleArrayCantEmpty.rc,'editSubField key eleArray cant empty check fail')
+    it(`editSubField key eleArray element must be objectId`,function(done){
+        value={eleArray:[1,2,3]}
+        assert.deepStrictEqual(func(value).rc,validateValueError.eleArrayMustContainObjectId.rc)
+        done()
+    })
+    //6 eleArray不能为空
+    it(`editSubField key eleArray cant be empty array`,function(done){
+        value={eleArray:[]}
+        assert.deepStrictEqual(func(value).rc,validateValueError.eleArrayCantEmpty.rc)
+        done()
+    })
 
     //7 right result
-    value={eleArray:['58c0c32486e5a6d02657303f']}
-    result=func(value)
-    test.equal(result.rc,0,'editSubField key eleArray must contain object id check fail')
+    it(`editSubField key eleArray cant be empty array`,function(done){
+        value={eleArray:['58c0c32486e5a6d02657303f']}
+        assert.deepStrictEqual(func(value).rc,0)
+        done()
+    })
+})
 
-    test.done()
-}
-
-
-module.exports={
-    validateCreateRecorderValue, //完成公共部分，单个value的验证交给validateSingleRecorderFieldValue
-    validateRecorderId, //因为结构简单，所有公共部分和实际单个value的验证一起完成
-    validateRecIdArr,//批量处理
-    validateSingleRecorderFieldValue,   // 单个value的验证，但是必须通过validateCreateRecorderValue调用
-    validateSearchParamsValue,  //检测所有的searchParams，validateStaticSearchParamsValue+validateCurrentCollValue+validateCurrentPageValue
-    validateFilterFieldValue,//part: filterFieldValue检测
-
-    validateEditSubFieldValue,
-}

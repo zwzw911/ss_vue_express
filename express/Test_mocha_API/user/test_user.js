@@ -80,7 +80,7 @@ describe('user register rule check', function() {
     let data={values:{recordInfo:{},method:e_method.CREATE}},url=``,finalUrl=baseUrl+url
 // console.log(`url ${JSON.stringify(finalUrl)}`)
     it('miss require field name', function(done) {
-        data.values[e_part.RECORD_INFO]={account:{value:'1'}}
+        data.values[e_part.RECORD_INFO]={account:'1'}
         request(app).post(finalUrl).set('Accept', 'application/json').send(data)
             .end(function(err, res) {
                 // if (err) return done(err);
@@ -93,7 +93,7 @@ describe('user register rule check', function() {
             });
     });
     it('require field name too short', function(done) {
-        data.values[e_part.RECORD_INFO]={name:{value:'1'}}
+        data.values[e_part.RECORD_INFO]={name:'1'}
         request(app).post(finalUrl).set('Accept', 'application/json').send(data)
             .end(function(err, res) {
                 // if (err) return done(err);
@@ -106,7 +106,7 @@ describe('user register rule check', function() {
             });
     });
     it('require field name too long', function(done) {
-        data.values[e_part.RECORD_INFO]={name:{value:'123456789012345678901234567890'}}
+        data.values[e_part.RECORD_INFO]={name:'123456789012345678901234567890'}
         request(app).post(finalUrl).set('Accept', 'application/json').send(data)
             .end(function(err, res) {
                 // if (err) return done(err);
@@ -120,7 +120,7 @@ describe('user register rule check', function() {
     });
 
     it('miss require field account', function(done) {
-        data.values[e_part.RECORD_INFO]={name:{value:'123456789'}}
+        data.values[e_part.RECORD_INFO]={name:'123456789'}
         request(app).post(finalUrl).set('Accept', 'application/json').send(data)
             .end(function(err, res) {
                 // if (err) return done(err);
@@ -133,7 +133,7 @@ describe('user register rule check', function() {
             });
     });
     it('require field account not phone or email', function(done) {
-        data.values[e_part.RECORD_INFO]={name:{value:'123456789'},account:{value:'1'}}
+        data.values[e_part.RECORD_INFO]={name:'123456789',account:'1'}
         request(app).post(finalUrl).set('Accept', 'application/json').send(data)
             .end(function(err, res) {
                 // if (err) return done(err);
@@ -148,7 +148,7 @@ describe('user register rule check', function() {
 
 
     it('miss require field password', function(done) {
-        data.values[e_part.RECORD_INFO]={name:{value:'123456789'},account:{value:'15921776543'}}
+        data.values[e_part.RECORD_INFO]={name:'123456789',account:'15921776543'}
         request(app).post(finalUrl).set('Accept', 'application/json').send(data)
             .end(function(err, res) {
                 // if (err) return done(err);
@@ -161,7 +161,7 @@ describe('user register rule check', function() {
             });
     });
     it('require field password not match', function(done) {
-        data.values[e_part.RECORD_INFO]={name:{value:'123456789'},account:{value:'15921776543'},password:{value:'1'}}
+        data.values[e_part.RECORD_INFO]={name:'123456789',account:'15921776543',password:'1'}
         request(app).post(finalUrl).set('Accept', 'application/json').send(data)
             .end(function(err, res) {
                 // if (err) return done(err);
@@ -175,7 +175,7 @@ describe('user register rule check', function() {
     });
 
     it('not exist field check', function(done) {
-        data.values[e_part.RECORD_INFO]={name:{value:'123456789'},account:{value:'15921776543'},password:{value:'1'},notExist:{value:123}}
+        data.values[e_part.RECORD_INFO]={name:'123456789',account:'15921776543',password:'1',notExist:123}
         request(app).post(finalUrl).set('Accept', 'application/json').send(data)
             .end(function(err, res) {
                 // if (err) return done(err);
@@ -199,7 +199,7 @@ describe('user1 register correct value:', function() {
         /*              清理已有数据              */
         // console.log(`######   delete exist record   ######`)
         // console.log(`correctValueForModel ${JSON.stringify(correctValueForModel)}`)
-        await test_helper.deleteUserAndRelatedInfo_async({account:testData.user.user1ForModel.account})
+        await test_helper.deleteUserAndRelatedInfo_async({account:testData.user.user1.account})
         // done()
     });
 
@@ -239,7 +239,7 @@ describe('user1 register unique check:', function() {
 
     it('register unique account check fail', function(done) {
         let user1Tmp=objectDeepCopy(testData.user.user1)
-        user1Tmp['name']['value']='19912341234'
+        user1Tmp['name']='19912341234'
         data.values[e_part.RECORD_INFO]=user1Tmp
         // console.log(` data.values[e_part.RECORD_INFO] ${JSON.stringify( data.values[e_part.RECORD_INFO])}`)
         request(app).post(finalUrl).set('Accept', 'application/json').send(data)
@@ -259,7 +259,7 @@ describe('POST /user/uniqueCheck_async ', function() {
     let data={values:{}},url='uniqueCheck_async',finalUrl=baseUrl+url
 
     it('single field unique name check', function(done) {
-        data.values[e_part.SINGLE_FIELD]={name:{value:testData.user.user1.name.value}}//,notExist:{value:123}
+        data.values[e_part.SINGLE_FIELD]={name:testData.user.user1.name.value}//,notExist:{value:123}
         request(app).post(finalUrl).set('Accept', 'application/json').send(data)
             .end(function(err, res) {
                 // if (err) return done(err);
@@ -273,7 +273,7 @@ describe('POST /user/uniqueCheck_async ', function() {
     });
 
     it('unique account check', function(done) {
-        data.values[e_part.SINGLE_FIELD]={account:{value:testData.user.user1.account.value}}//,notExist:{value:123}
+        data.values[e_part.SINGLE_FIELD]={account:testData.user.user1.account.value}//,notExist:{value:123}
         request(app).post(finalUrl).set('Accept', 'application/json').send(data)
             .end(function(err, res) {
                 // if (err) return done(err);
@@ -287,7 +287,7 @@ describe('POST /user/uniqueCheck_async ', function() {
     });
 
     it('unique: not support field check', function(done) {
-        data.values[e_part.SINGLE_FIELD]={password:{value:'123456'}}//,notExist:{value:123}
+        data.values[e_part.SINGLE_FIELD]={password:'123456'}//,notExist:{value:123}
         request(app).post(finalUrl).set('Accept', 'application/json').send(data)
             .end(function(err, res) {
                 // if (err) return done(err);
@@ -301,7 +301,7 @@ describe('POST /user/uniqueCheck_async ', function() {
     });
 
     it('unique name check ok', function(done) {
-        data.values[e_part.SINGLE_FIELD]={name:{value:'notExistName'}}//,notExist:{value:123}
+        data.values[e_part.SINGLE_FIELD]={name:'notExistName'}//,notExist:{value:123}
         request(app).post(finalUrl).set('Accept', 'application/json').send(data)
             .end(function(err, res) {
                 // if (err) return done(err);
@@ -345,7 +345,7 @@ describe('user1 login:', function() {
         delete user1Tmp['userType']
         // condition['account']['value']='12341234132'
         // console.log(`testData.user.user1Tmp==============> ${JSON.stringify(testData.user.user1Tmp)}`)
-        user1Tmp['password']['value']='12341234132'
+        user1Tmp['password']='12341234132'
         // console.log(`testData.user.user1Tmp==============> ${JSON.stringify(testData.user.user1Tmp)}`)
         // console.log(`testData.user.user1==============> ${JSON.stringify(testData.user.user1)}`)
         data.values[e_part.RECORD_INFO]=user1Tmp//,notExist:{value:123}
@@ -506,7 +506,7 @@ describe('update user： ', function() {
     })
     it('update testData.user.user1 with account not change', function(done) {
         data.values.method=e_method.UPDATE
-        data.values[e_part.RECORD_INFO]={account:{value:testData.user.user1.account.value},name:{value:'anotherName'}}//,notExist:{value:123}
+        data.values[e_part.RECORD_INFO]={account:testData.user.user1.account.value,name:'anotherName'}//,notExist:{value:123}
         // console.log(`data.values ${JSON.stringify(data.values)}`)
         // console.log(`sess ${JSON.stringify(sess)}`)
         request.agent(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[sess]).send(data)
@@ -525,7 +525,7 @@ describe('update user： ', function() {
     let newPassword='asdf456'
     it('update testData.user.user1 with  password change', function(done) {
         data.values.method=e_method.UPDATE
-        data.values[e_part.RECORD_INFO]={password:{value:newPassword},name:{value:'anotherName'}}//,notExist:{value:123}
+        data.values[e_part.RECORD_INFO]={password:newPassword,name:'anotherName'}//,notExist:{value:123}
         // console.log(`data.values ${JSON.stringify(data.values)}`)
         console.log(`sess==============> ${JSON.stringify(sess)}`)
         request.agent(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[sess]).send(data)
@@ -544,7 +544,7 @@ describe('update user： ', function() {
         let user1Tmp=objectDeepCopy(testData.user.user1)
         delete user1Tmp['name']
         delete user1Tmp['userType']
-        user1Tmp['password']['value']=newPassword
+        user1Tmp['password']=newPassword
         // delete testData.user.user1Tmp['password']
         data.values[e_part.RECORD_INFO]=user1Tmp//,notExist:{value:123}
         request(app).post(finalUrl).set('Accept', 'application/json').send(data)
@@ -602,7 +602,7 @@ describe('update user： ', function() {
 
     it('update testData.user.user1 account successfully(must disable duration check in updateUser_async)', function(done) {
         data.values.method=e_method.UPDATE
-        data.values[e_part.RECORD_INFO]={account:{value:'19912341234'}}//,notExist:{value:123}
+        data.values[e_part.RECORD_INFO]={account:'19912341234'}//,notExist:{value:123}
         request.agent(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[sess]).send(data)
             .end(function(err, res) {
                 // if (err) return done(err);
@@ -617,7 +617,7 @@ describe('update user： ', function() {
 
     it('update testData.user.user1 account too frequently(must enable duration check in updateUser_async)', function(done) {
         data.values.method=e_method.UPDATE
-        data.values[e_part.RECORD_INFO]={account:{value:'11912341235'}}//,notExist:{value:123}
+        data.values[e_part.RECORD_INFO]={account:'11912341235'}//,notExist:{value:123}
         request.agent(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[sess]).send(data)
             .end(function(err, res) {
                 // if (err) return done(err);
@@ -659,7 +659,7 @@ describe('retrieve password: ', function() {
         /*              清理已有数据              */
         // console.log(`######   delete exist record   ######`)
         // console.log(`correctValueForModel ${JSON.stringify(correctValueForModel)}`)
-        await test_helper.deleteUserAndRelatedInfo_async({account:testData.user.user3.account.value})
+        await test_helper.deleteUserAndRelatedInfo_async({account:testData.user.user3.account})
         // console.log(`######   create exist record   ######`)
         await API_helper.createUser_async({userData:testData.user.user3,app:app})
         // console.log(`######   login exist record   ######`)
@@ -671,7 +671,7 @@ describe('retrieve password: ', function() {
     it('testData.user.user3 update new account', function(done) {
         // console.log(`testData.user.user3 ${JSON.stringify(testData.user.user1)}`)
         data.values.method=e_method.UPDATE
-        data.values[e_part.RECORD_INFO]={account:{value:testData.user.user3NewAccount},}//,notExist:{value:123}
+        data.values[e_part.RECORD_INFO]={account:testData.user.user3NewAccount,}//,notExist:{value:123}
         // console.log(`data.values ${JSON.stringify(data.values)}`)
         // console.log(`sess==============> ${JSON.stringify(sess)}`)
         request.agent(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[sess]).send(data)
@@ -695,7 +695,7 @@ describe('retrieve password: ', function() {
         finalUrl=baseUrl+url
         delete data.values[e_part.METHOD]
         delete data.values[e_part.RECORD_INFO]
-        data.values[e_part.SINGLE_FIELD]={account:{value:testData.user.user3.account.value},}//,notExist:{value:123}
+        data.values[e_part.SINGLE_FIELD]={account:testData.user.user3.account,}//,notExist:{value:123}
         // console.log(`data.values ${JSON.stringify(data.values)}`)
         // console.log(`sess==============> ${JSON.stringify(sess)}`)
         request.agent(app).post(finalUrl).set('Accept', 'application/json').send(data)
@@ -714,7 +714,7 @@ describe('retrieve password: ', function() {
 
 
     after('delete new create testData.user.user3', async function() {
-        await test_helper.deleteUserAndRelatedInfo_async({account:testData.user.user3ForModel.account})
+        await test_helper.deleteUserAndRelatedInfo_async({account:testData.user.user3.account})
 
     })
 })

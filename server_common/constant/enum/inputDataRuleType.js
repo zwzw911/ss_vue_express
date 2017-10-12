@@ -29,7 +29,7 @@ const ServerDataType={
     FLOAT:'float',
     STRING:'string',
     DATE:'date',
-    ARRAY:'array',
+    // ARRAY:'array',
     OBJECT:'object',
     FILE:'file',
     FOLDER:'folder',

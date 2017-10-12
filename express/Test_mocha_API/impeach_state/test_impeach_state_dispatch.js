@@ -40,17 +40,19 @@ const objectDeepCopy=server_common_file_require.misc.objectDeepCopy
 const test_helper= server_common_file_require.db_operation_helper
 const testData=server_common_file_require.testData//require('../testData')
 const API_helper=server_common_file_require.API_helper//require('../API_helper/API_helper')
-
+const component_function=server_common_file_require.compenet_function
 
 let data = {values: {}},  baseUrl="/impeach_state/",finalUrl=baseUrl
 let user1Sess,user2Sess,user1Id,user2Id
 
 describe('user format check:', function() {
-    before('delete user1 then insert user1', async function(){
+    before('recreate user1', async function(){
         /*              普通用户操作             */
-        await test_helper.deleteUserAndRelatedInfo_async({account:testData.user.user1ForModel.account})
-        await  API_helper.createUser_async({userData:testData.user.user1,app:app})
-        user1Sess=await  API_helper.userLogin_returnSess_async({userData:testData.user.user1,app:app})
+        let userInfo=await component_function.reCreateUser_returnSessUserId_async({userData:testData.user.user1,app:app})
+        user1Sess=userInfo['sess']
+        // await test_helper.deleteUserAndRelatedInfo_async({account:testData.user.user1ForModel.account})
+        // await  API_helper.createUser_async({userData:testData.user.user1,app:app})
+        // user1Sess=await  API_helper.userLogin_returnSess_async({userData:testData.user.user1,app:app})
         // console.log(`rootSess ${JSON.stringify(rootSess)}`)
     });
 
@@ -150,15 +152,18 @@ describe('method=create: preCheck', function() {
     let rootSess
     before('delete user1 then insert user1', async function(){
         /*              普通用户操作             */
-        await test_helper.deleteUserAndRelatedInfo_async({account:testData.user.user1ForModel.account})
-        await  API_helper.createUser_async({userData:testData.user.user1,app:app})
-        user1Sess=await  API_helper.userLogin_returnSess_async({userData:testData.user.user1,app:app})
+        let userInfo=await component_function.reCreateUser_returnSessUserId_async({userData:testData.user.user1,app:app})
+        user1Sess=userInfo['sess']
         // console.log(`rootSess ${JSON.stringify(rootSess)}`)
     });
 
     it('not exist field check', function(done) {
         data.values[e_part.METHOD]=e_method.CREATE
-        data.values[e_part.RECORD_INFO]={impeachId:{value:'59d4694d5b1c291810713683'},state:{value:e_impeachState.NEW},notExist:{value:123}}
+        data.values[e_part.RECORD_INFO]={
+            impeachId:'59d4694d5b1c291810713683',
+            state:e_impeachState.NEW,
+            notExist:123,
+        }
         request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[user1Sess]).send(data)
             .end(function(err, res) {
                 // if (err) return done(err);
@@ -175,7 +180,9 @@ describe('method=create: preCheck', function() {
 // console.log(`url==============> ${JSON.stringify(finalUrl)}`)
     it('miss require field impeachId', function(done) {
         data.values[e_part.METHOD]=e_method.CREATE
-        data.values[e_part.RECORD_INFO]={[e_field.IMPEACH_STATE.STATE]:{value:e_impeachState.SUBMIT}}
+        data.values[e_part.RECORD_INFO]={
+            [e_field.IMPEACH_STATE.STATE]:e_impeachState.SUBMIT,
+        }
         request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[user1Sess]).send(data)
             .end(function(err, res) {
                 // if (err) return done(err);
@@ -189,8 +196,8 @@ describe('method=create: preCheck', function() {
     });
     it('require field impeachId not match format', function(done) {
         data.values[e_part.RECORD_INFO]={
-            [e_field.IMPEACH_STATE.IMPEACH_ID]:{value:'1234abcf'},
-            [e_field.IMPEACH_STATE.STATE]:{value:e_impeachState.SUBMIT}
+            [e_field.IMPEACH_STATE.IMPEACH_ID]:'1234abcf',
+            [e_field.IMPEACH_STATE.STATE]:e_impeachState.SUBMIT
         }
         request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[user1Sess]).send(data)
             .end(function(err, res) {
@@ -231,13 +238,16 @@ describe('method=create: preCheck', function() {
             });
     });
 
+    /****************************************************************************************/
+    /**************************below case need to be verified can be generate by inputRule_API_tester****************************************/
+    /****************************************************************************************/
     it('state(enum) value not array', function(done) {
         data.values={}
         data.values[e_part.METHOD]=e_method.CREATE
         // console.log(`Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]})=========>${JSON.stringify(Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]}))}`)
         data.values[e_part.RECORD_INFO]={
-            [e_field.IMPEACH_STATE.IMPEACH_ID]:{value:'59d45aa2ec0c05121c34c27d'},
-            [e_field.IMPEACH_STATE.STATE]:{value:'0'},
+            [e_field.IMPEACH_STATE.IMPEACH_ID]:'59d45aa2ec0c05121c34c27d',
+            [e_field.IMPEACH_STATE.STATE]:'0',
         }
         console.log(`data=====>${JSON.stringify(data.values[e_part.RECORD_INFO])}`)
         request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[user1Sess]).send(data)
@@ -256,8 +266,8 @@ describe('method=create: preCheck', function() {
         data.values[e_part.METHOD]=e_method.CREATE
         // console.log(`Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]})=========>${JSON.stringify(Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]}))}`)
         data.values[e_part.RECORD_INFO]={
-            [e_field.IMPEACH_STATE.IMPEACH_ID]:{value:'59d45aa2ec0c05121c34c27d'},
-            [e_field.IMPEACH_STATE.STATE]:{value:1},
+            [e_field.IMPEACH_STATE.IMPEACH_ID]:'59d45aa2ec0c05121c34c27d',
+            [e_field.IMPEACH_STATE.STATE]:1,
         }
         console.log(`data=====>${JSON.stringify(data.values[e_part.RECORD_INFO])}`)
         request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[user1Sess]).send(data)
@@ -276,8 +286,8 @@ describe('method=create: preCheck', function() {
         data.values[e_part.METHOD]=e_method.CREATE
         // console.log(`Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]})=========>${JSON.stringify(Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]}))}`)
         data.values[e_part.RECORD_INFO]={
-            [e_field.IMPEACH_STATE.IMPEACH_ID]:{value:'59d45aa2ec0c05121c34c27d'},
-            [e_field.IMPEACH_STATE.STATE]:{value:'99999'},
+            [e_field.IMPEACH_STATE.IMPEACH_ID]:'59d45aa2ec0c05121c34c27d',
+            [e_field.IMPEACH_STATE.STATE]:'99999',
         }
         console.log(`data=====>${JSON.stringify(data.values[e_part.RECORD_INFO])}`)
         request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[user1Sess]).send(data)
@@ -297,8 +307,8 @@ describe('method=create: preCheck', function() {
         data.values[e_part.METHOD]=e_method.CREATE
         // console.log(`Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]})=========>${JSON.stringify(Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]}))}`)
         data.values[e_part.RECORD_INFO]={
-            [e_field.IMPEACH_STATE.IMPEACH_ID]:{value:'59d45aa2ec0c05121c34c27d'},
-            [e_field.IMPEACH_STATE.STATE]:{value:['0','0']},
+            [e_field.IMPEACH_STATE.IMPEACH_ID]:'59d45aa2ec0c05121c34c27d',
+            [e_field.IMPEACH_STATE.STATE]:['0','0'],
         }
         console.log(`data=====>${JSON.stringify(data.values[e_part.RECORD_INFO])}`)
         request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[user1Sess]).send(data)
@@ -318,8 +328,8 @@ describe('method=create: preCheck', function() {
         data.values[e_part.METHOD]=e_method.CREATE
         // console.log(`Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]})=========>${JSON.stringify(Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]}))}`)
         data.values[e_part.RECORD_INFO]={
-            [e_field.IMPEACH_STATE.IMPEACH_ID]:{value:'59d45aa2ec0c05121c34c27d'},
-            [e_field.IMPEACH_STATE.STATE]:{value:[e_impeachState.SUBMIT,e_impeachState.NEW]},
+            [e_field.IMPEACH_STATE.IMPEACH_ID]:'59d45aa2ec0c05121c34c27d',
+            [e_field.IMPEACH_STATE.STATE]:[e_impeachState.SUBMIT,e_impeachState.NEW],
         }
         console.log(`data=====>${JSON.stringify(data.values[e_part.RECORD_INFO])}`)
         request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[user1Sess]).send(data)

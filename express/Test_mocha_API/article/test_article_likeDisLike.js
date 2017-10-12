@@ -44,17 +44,12 @@ let userId  //create后存储对应的id，以便后续的update操作
 let sess1,sess2,data={values:{}}
 
 
-
-
-
-
 describe('create new likeDislike for article ', async function() {
     let url = 'likeDislike', finalUrl = baseUrl + url
 
     let articleId,userId
     before('user1 login correct', async function () {
         sess1=await API_helper.userLogin_returnSess_async({userData:testData.user.user1,app:app})
-
     })
 
     before('get user1 id', async function(){
@@ -65,15 +60,18 @@ describe('create new likeDislike for article ', async function() {
 
     //create new article
     before('create correct article', async function() {
-        articleId=await API_helper.userCreateArticle_returnArticleId_async({userSess:sess1,app:app})
+        articleId=await API_helper.createNewArticle_returnArticleId_async({userSess:sess1,app:app})
     });
 
     it('articleId not exist', function(done) {
         data.values={}
-        console.log(`finalUrl ===>${JSON.stringify(finalUrl)}`)
+        // console.log(`finalUrl ===>${JSON.stringify(finalUrl)}`)
         // console.log(`data.values ===>${JSON.stringify(data.values)}`)
         data.values[e_part.METHOD]=e_method.CREATE
-        data.values[e_part.RECORD_INFO]={[e_field.LIKE_DISLIKE.ARTICLE_ID]:{value:'598ebecc1fb29c1ca49da342'},[e_field.LIKE_DISLIKE.LIKE]:{value:false}}
+        data.values[e_part.RECORD_INFO]={
+            [e_field.LIKE_DISLIKE.ARTICLE_ID]:'598ebecc1fb29c1ca49da342',
+            [e_field.LIKE_DISLIKE.LIKE]:false,
+        }
         // console.log(`data.values ===>${JSON.stringify(data.values)}`)
         request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[sess1]).send(data)
             .end(function(err, res) {
@@ -113,7 +111,10 @@ describe('create new likeDislike for article ', async function() {
         console.log(`finalUrl ===>${JSON.stringify(finalUrl)}`)
         // console.log(`data.values ===>${JSON.stringify(data.values)}`)
         data.values[e_part.METHOD]=e_method.CREATE
-        data.values[e_part.RECORD_INFO]={[e_field.LIKE_DISLIKE.ARTICLE_ID]:{value:articleId},[e_field.LIKE_DISLIKE.LIKE]:{value:'true'}}
+        data.values[e_part.RECORD_INFO]={
+            [e_field.LIKE_DISLIKE.ARTICLE_ID]:articleId,
+            [e_field.LIKE_DISLIKE.LIKE]:'true',
+        }
         // console.log(`data.values ===>${JSON.stringify(data.values)}`)
         request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[sess1]).send(data)
             .end(function(err, res) {
@@ -133,7 +134,10 @@ describe('create new likeDislike for article ', async function() {
         console.log(`finalUrl ===>${JSON.stringify(finalUrl)}`)
         // console.log(`data.values ===>${JSON.stringify(data.values)}`)
         data.values[e_part.METHOD]=e_method.CREATE
-        data.values[e_part.RECORD_INFO]={[e_field.LIKE_DISLIKE.ARTICLE_ID]:{value:articleId},[e_field.LIKE_DISLIKE.LIKE]:{value:true}}
+        data.values[e_part.RECORD_INFO]={
+            [e_field.LIKE_DISLIKE.ARTICLE_ID]:articleId,
+            [e_field.LIKE_DISLIKE.LIKE]:true,
+        }
         // console.log(`data.values ===>${JSON.stringify(data.values)}`)
         request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[sess1]).send(data)
             .end(function(err, res) {
@@ -153,7 +157,10 @@ describe('create new likeDislike for article ', async function() {
         console.log(`finalUrl ===>${JSON.stringify(finalUrl)}`)
         // console.log(`data.values ===>${JSON.stringify(data.values)}`)
         data.values[e_part.METHOD]=e_method.CREATE
-        data.values[e_part.RECORD_INFO]={[e_field.LIKE_DISLIKE.ARTICLE_ID]:{value:articleId},[e_field.LIKE_DISLIKE.LIKE]:{value:true}}
+        data.values[e_part.RECORD_INFO]={
+            [e_field.LIKE_DISLIKE.ARTICLE_ID]:articleId,
+            [e_field.LIKE_DISLIKE.LIKE]:true,
+        }
         // console.log(`data.values ===>${JSON.stringify(data.values)}`)
         request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[sess1]).send(data)
             .end(function(err, res) {

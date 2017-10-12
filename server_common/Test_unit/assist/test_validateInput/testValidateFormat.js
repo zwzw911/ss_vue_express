@@ -165,6 +165,13 @@ describe('validate part', function() {
         assert.deepStrictEqual(func(inputValue,expectPart).rc,validateFormatError.inputValuePartCurrentPageValueFormatWrong.rc)
         done();
     })
+
+    it(`part:recorderId value is null`,function(done){
+        inputValue={[e_part.RECORD_ID]:null}
+        expectPart=[e_part.RECORD_ID]
+        assert.deepStrictEqual(func(inputValue,expectPart).rc,validateFormatError.inputValuePartRecordIdValueFormatWrong.rc)
+        done();
+    })
     it(`part:recorderId value is not string`,function(done){
         inputValue={[e_part.RECORD_ID]:1.1}
         expectPart=[e_part.RECORD_ID]
@@ -418,350 +425,289 @@ describe('validateSingleSearchParamsFormat', function() {
 
     // let searchSetting=require('../../server/config/global/globalSettingRule').searchSetting
     //let preFunc=testModule.validate._private.checkRuleBaseOnRuleDefine
-    let sigleSearchField,value,result
-
+    let singleSearchField,value
+    let collRule=rules['billType']
 
     /*              对象的value必须是数组           */
-    it(`singleSearchField not array`,function(done){
-        sigleSearchField={}
-        assert.deepStrictEqual(func(sigleField,rules).rc,0)
+    it(`singleSearchField is {}, not array`,function(done){
+        singleSearchField={name:{}}
+        assert.deepStrictEqual(func(singleSearchField['name'],collRule['name']).rc,validateFormatError.singleSearchParamsValueMustBeArray.rc)
         done();
     })
-    value = {name: '1234'}
-    result = func(value.name, rules.billType.name)
-    //console.log(result)
-    test.equal(result.rc, validateFormatError.singleSearchParamsValueMustBeArray.rc, 'field value is string check fail')
-    value = {name: null}
-    result = func(value.name, rules.billType.name)
-    //console.log(result)
-    test.equal(result.rc, validateFormatError.singleSearchParamsValueMustBeArray.rc, 'field value is null check fail')
+    it(`singleSearchField is null, not array`,function(done){
+        singleSearchField={name:null}
+        assert.deepStrictEqual(func(singleSearchField['name'],collRule['name']).rc,validateFormatError.singleSearchParamsValueMustBeArray.rc)
+        done();
+    })
 
-    /*              对象的value必须是非空数组           */
-    //3
-    value = {name: []}
-    result = func(value.name, rules.billType.name)
-    //console.log(result)
-    test.equal(result.rc, validateFormatError.singleSearchParamsValueCantEmpty.rc, 'field value is [] check fail')
+    it(`singleSearchField is empty []`,function(done){
+        singleSearchField={name:[]}
+        assert.deepStrictEqual(func(singleSearchField['name'],collRule['name']).rc,validateFormatError.singleSearchParamsValueCantEmpty.rc)
+        done();
+    })
 
-    /*              对象的value为数组，且长度不能超过预定值           */
-    //4
-    value = {name: [1, 2, 3, 4, 5, 6]}
-    result = func(value.name, rules.billType.name)
-    //console.log(result)
-    test.equal(result.rc, validateFormatError.singleSearchParamsValueLengthExceed.rc, 'search input value is [1,2,3,4,5,6] check fail')
+    it(`singleSearchField array length exceed defined`,function(done){
+        singleSearchField = {name:[1, 2, 3, 4, 5, 6]}
+        assert.deepStrictEqual(func(singleSearchField['name'],collRule['name']).rc,validateFormatError.singleSearchParamsValueLengthExceed.rc)
+        done();
+    })
 
-    /*              对象的value的元素为对象           */
-    //5
-    value = {name: [1]}
-    result = func(value.name, rules.billType.name)
-    test.equal(result.rc, validateFormatError.singleSearchParamsElementMustBeObject.rc, 'search input value has non object element check fail')
-    value = {name: ['']}
-    result = func(value.name, rules.billType.name)
-    test.equal(result.rc, validateFormatError.singleSearchParamsElementMustBeObject.rc, 'search input value has "" element check fail')
-    value = {name: [null]}
-    result = func(value.name, rules.billType.name)
-    test.equal(result.rc, validateFormatError.singleSearchParamsElementMustBeObject.rc, 'search input value has null element check fail')
-    /*              对象的value的元素为对象，且key的数量不超过2           */
-    value = {name: [{key1: 1, key2: 2, key3: 3}]}
-    result = func(value.name, rules.billType.name)
-    test.equal(result.rc, validateFormatError.singleSearchParamsElementKeysLengthExceed.rc, 'search input value element key num exceed 2 check fail')
-
+    it(`singleSearchField array element is int, but should be  object`,function(done){
+        singleSearchField = {name: [1]}
+        assert.deepStrictEqual(func(singleSearchField['name'],collRule['name']).rc,validateFormatError.singleSearchParamsElementMustBeObject.rc)
+        done();
+    })
+    it(`singleSearchField array element is string, but should be object`,function(done){
+        singleSearchField = {name: ['']}
+        assert.deepStrictEqual(func(singleSearchField['name'],collRule['name']).rc,validateFormatError.singleSearchParamsElementMustBeObject.rc)
+        done();
+    })
+    it(`singleSearchField array element must be object`,function(done){
+        singleSearchField = {name: [null]}
+        assert.deepStrictEqual(func(singleSearchField['name'],collRule['name']).rc,validateFormatError.singleSearchParamsElementMustBeObject.rc)
+        done();
+    })
 
     /*              必须包含value这个key                                        */
-    //9
-    value = {name: [{'notExistKey': 'zw'}]}
-    result = func(value.name, rules.billType.name)
-    test.equal(result.rc, validateFormatError.singleSearchParamsElementContainUnexpectKey.rc, 'search input value element key must contain key value check fail')
+    it(`singleSearchField array element must be object,and key number not exceed 2(value and comp)`,function(done){
+        singleSearchField = {name: [{key1: 1, key2: 2, key3: 3}]}
+        assert.deepStrictEqual(func(singleSearchField['name'],collRule['name']).rc,validateFormatError.singleSearchParamsElementKeysLengthExceed.rc)
+        done();
+    })
 
+    it(`singleSearchField array element must be object,and contain key which name is value`,function(done){
+        singleSearchField = {name: [{'notExistKey': 'zw'}]}
+        assert.deepStrictEqual(func(singleSearchField['name'],collRule['name']).rc,validateFormatError.singleSearchParamsElementContainUnexpectKey.rc)
+        done();
+    })
 
     /*              类型为数字或者日期的字段，必须有compOp                      */
-    //10
-    value = {age: [{value: 12}]}
-    result = func(value.age, rules.billType.age)
-    // console.log(`reslu is ${JSON.stringify(rules.billType.age)}`)
-    test.equal(result.rc, validateFormatError.singleSearchParamsElementMissKeyCompOp.rc, 'search input value is int not compOp check fail')
-
-    value = {age: [{'value': 12, 'compOp': 'notExist'}]}
-    result = func(value.age, rules.billType.age)
-    test.equal(result.rc, validateFormatError.singleSearchParamsElementCompOpWrong.rc, 'search input value is int with wrong compOp check fail')
-
-
-    //成功的输入
-    //12
-    value = {
-        name: [{value: 'zw'}, {value: 'zw1'}, {value: 'zw2'}],
-        parentBillType: {
-            name: [{value: 'zw'}],
-            age: [{value: 12, compOp: 'gt'}]
-        }
-    }
-    result = func(value.name, rules.billType.name)
-    test.equal(result.rc, 0, 'search input value success:name check fail')
-    result = func(value.parentBillType.name, rules.billType.name)
-    test.equal(result.rc, 0, 'search input value success:parentBillType.name check fail')
-    result = func(value.parentBillType.age, rules.billType.age)
-    test.equal(result.rc, 0, 'search input value success:parentBillType.age check fail')
-
-})
-
-/*                  filterFieldValue    {field1:keyword} or {billType:{name:keyword}}              */
-//
-describe('validateSingleFieldFormat', function() {
-    let func=testModule.validateFilterFieldValueFormat
-    let value,result
-
-
-    it(`singleSearchField value not object`,function(done){
-
+    it(`singleSearchField array element is number, must contain compOp`,function(done){
+        singleSearchField = {age: [{value: 12}]}
+        assert.deepStrictEqual(func(singleSearchField['age'],collRule['age']).rc,validateFormatError.singleSearchParamsElementMissKeyCompOp.rc)
+        done();
     })
-    //1 value必须是object
-    value=[]
-    result=func(value,fkAdditionalFieldsConfig,'billType',rules)
-    test.equal(result.rc,validateFormatError.filterFieldValueMustBeObject.rc,"filter field value must be object")
-
-    //2 value的field数量不为1
-    value={name:{value:'a'},age:{value:10}}
-    result=func(value,fkAdditionalFieldsConfig,'billType',rules)
-    test.equal(result.rc,validateFormatError.filterFieldValueFieldNumMustHasOnly1Field.rc,"filter field value fields number not 1")
-
-    //3 value的field数量不为1
-    value={}
-    result=func(value,fkAdditionalFieldsConfig,'billType',rules)
-    test.equal(result.rc,validateFormatError.filterFieldValueFieldNumMustHasOnly1Field.rc,"filter field value fields number not 1")
-
-    //4 key未在rule中定义
-    value={id:{value:10}}
-    result=func(value,fkAdditionalFieldsConfig,'billType',rules)
-    // console.log(`error0 is ${JSON.stringify(result)}`)
-    test.equal(result.rc,validateFormatError.filterFieldValueFieldNotInRule.rc,"field defined in rule")
-
-    //5  value必须是字符数字，对象
-    value={name:[]}
-    result=func(value,fkAdditionalFieldsConfig,'billType',rules)
-    // console.log(`error0 is ${JSON.stringify(result)}`)
-    test.equal(result.rc,validateFormatError.filterFieldValueTypeWrong.rc," field  value should be number/string/object")
-    //6  value必须是字符数字，对象
-    value={name:null}
-    result=func(value,fkAdditionalFieldsConfig,'billType',rules)
-    // console.log(`error1 is ${JSON.stringify(result)}`)
-    test.equal(result.rc,validateFormatError.filterFieldValueNotSet.rc," field  value should be number/string/object")
-    //7  value必须是字符数字，对象
-    value={name:1}
-    result=func(value,fkAdditionalFieldsConfig,'billType',rules)
-    // console.log(`result is ${JSON.stringify(result)}`)
-    test.equal(result.rc,0," field  value should be number/string/object")
-
-
-
-    //8  fk的value必须是对象（存储对应的field：value）
-    value={parentBillType:1}
-    result=func(value,fkAdditionalFieldsConfig,'billType',rules)
-    // console.log(`error1 is ${JSON.stringify(result)}`)
-    test.equal(result.rc,validateFormatError.filterFieldValueFKFieldMustBeObject.rc," fk field  value should be object")
-    //9 value的field数量不为1
-    value={parentBillType:{name:'a',age:10}}
-    result=func(value,fkAdditionalFieldsConfig,'billType',rules)
-    test.equal(result.rc,validateFormatError.filterFieldValueFKFieldMustHasOnly1Field.rc,"fk  field value fields number not 1")
-
-    //10 value是object，但其中key未在fkConfig中定义
-    value={parentBillType:{'any':1}}
-    result=func(value,fkAdditionalFieldsConfig,'billType',rules)
-    // console.log(`error0 is ${JSON.stringify(result)}`)
-    test.equal(result.rc,validateFormatError.filterFieldValueFKFieldRealtedFKNotDefine.rc," non fk field with value object")
-
-    //11 fk field未在rule中
-    delete rules.billType.name
-    value={parentBillType:{'name':1}}
-    result=func(value,fkAdditionalFieldsConfig,'billType',rules)
-    /*    console.log(`rules is ${JSON.stringify(rules)}`)
-         console.log(`error0 is ${JSON.stringify(result)}`)*/
-    test.equal(result.rc,validateFormatError.filterFieldValueFKFieldNoRelateField.rc," field fk field not in forSetValue")
-    rules.billType.name={}
-
-
-
-    //12 最终的值必须是字符/数字/日期
-    value={parentBillType:{age:{}}}
-    result=func(value,fkAdditionalFieldsConfig,'billType',rules)
-    // console.log(`error0 is ${JSON.stringify(result)}`)
-    test.equal(result.rc,validateFormatError.filterFieldValueTypeWrong.rc," fk field value must be number/string")
-
-    //13 正确格式
-    value={name:1}
-    result=func(value,fkAdditionalFieldsConfig,'billType',rules)
-    // console.log(`error0 is ${JSON.stringify(result)}`)
-    test.equal(result.rc,0," correct format")
+    it(`singleSearchField array element is number, compOp undefined`,function(done){
+        singleSearchField = {age: [{'value': 12, 'compOp': 'notExist'}]}
+        assert.deepStrictEqual(func(singleSearchField['age'],collRule['age']).rc,validateFormatError.singleSearchParamsElementCompOpWrong.rc)
+        done();
+    })
+    //成功的输入
+    it(`singleSearchField array element is number, compOp undefined`,function(done){
+        let values = {
+            name: [{value: 'zw'}, {value: 'zw1'}, {value: 'zw2'}],
+            parentBillType: {
+                name: [{value: 'zw'}],
+                age: [{value: 12, compOp: 'gt'}]
+            }
+        }
+        assert.deepStrictEqual(func(values.name,collRule['name']).rc,0)
+        assert.deepStrictEqual(func(values.parentBillType.name,collRule['parentBillType']).rc,0)
+        assert.deepStrictEqual(func(values.parentBillType.age,collRule['parentBillType']).rc,0)
+        done();
+    })
 
 })
 
-
-/*/!***************************************************************************!/
-/!***************   validateSearchInputFormat
- * 当search的是或，验证输入的整体格式（是否包含seachParams/currentpage等）*******************!/
-/!***************************************************************************!/
-const validateSearchInputFormat=function(test){
-    let func=testModule.validateSearchInputFormat
-    let values,result
-    test.expect(8)
-
-    //1. 输入必须是object
-    values=null
-    result=func(values)
-    test.equal(result.rc,validateFormatError.inputValuePartFormatWrong.rc,'values must be object')
-    //2. 输入必须是object
-    values=[]
-    result=func(values)
-    test.equal(result.rc,validateFormatError.inputValuePartFormatWrong.rc,'values must be object')
-
-    //3.输入必须的object的key数量必须和expectParts一致（2个：searchparams和currentpage）
-    values={}
-    result=func(values)
-    test.equal(result.rc,validateFormatError.inputValuePartNumNotExcepted.rc,'values must contain 2 keys')
-
-    //4.输入必须的object的key数量必须和expectParts一致（2个：searchparams和currentpage）
-    values={'any1':null,'any2':"null",'any3':null}
-    result=func(values)
-    test.equal(result.rc,validateFormatError.inputValuePartNumNotExcepted.rc,'values must contain 2 keys')
-
-    //5 未定义字段
-    values={'searchParams':{},'any':null}
-    result=func(values)
-    test.equal(result.rc,validateFormatError.inputValuePartMiss.rc,' any not expect part')
-
-    //6. searchPamrs必须为object
-    values={'searchParams':null,'currentPage':1}
-    result=func(values)
-    test.equal(result.rc,validateFormatError.inputValuePartSearchParamsValueFormatWrong.rc,' SearchParams must be object')
-
-    //7. currentPage必须是整数
-    values={'searchParams':{},'currentPage':'test'}
-    result=func(values)
-    test.equal(result.rc,validateFormatError.inputValuePartCurrentPageValueFormatWrong.rc,'currentPage must be int')
-
-    //8 整体格式正常
-    values={'searchParams':{},'currentPage':1}
-    result=func(values)
-    test.equal(result.rc,0)
-
-    test.done()
-}*/
+/*                  filterFieldValue    {field1:keyword} or {billType:{name:keyword}}
+*   被测试的值，是part FILTER_FILED的值
+*
+* */
+describe('validateFilterFieldValueFormat', function() {
+    let func=testModule.validateFilterFieldValueFormat
+    let value
 
 
+    it(`filter field value not object`,function(done){
+        value = []
+        assert.deepStrictEqual(func(value,fkAdditionalFieldsConfig,'billType',rules).rc,validateFormatError.filterFieldValueMustBeObject.rc)
+        done();
+    })
+    //2 value的field数量不为1
+    it(`filter field value key must be 1`,function(done){
+        value={name:{value:'a'},age:{value:10}}
+        assert.deepStrictEqual(func(value,fkAdditionalFieldsConfig,'billType',rules).rc,validateFormatError.filterFieldValueFieldNumMustHasOnly1Field.rc)
+        done()
+    })
+    //3 value的field数量不为1
+    it(`filter field value key must be 1`,function(done){
+        value={}
+        assert.deepStrictEqual(func(value,fkAdditionalFieldsConfig,'billType',rules).rc,validateFormatError.filterFieldValueFieldNumMustHasOnly1Field.rc)
+        done()
+    })
+    //4  value不能为空
+    it(`filter field value must only be number or date`,function(done){
+        value={name:null}
+        assert.deepStrictEqual(func(value,fkAdditionalFieldsConfig,'billType',rules).rc,validateFormatError.filterFieldValueNotSet.rc)
+        done()
+    })
+    //5 key未在rule中定义
+    it(`filter field value key no match rule in rules`,function(done){
+        value={id:{value:10}}
+        assert.deepStrictEqual(func(value,fkAdditionalFieldsConfig,'billType',rules).rc,validateFormatError.filterFieldValueFieldNotInRule.rc)
+        done()
+    })
+    //6  value必须是字符数字，对象
+    it(`filter field value must only be number or date`,function(done){
+        value={name:[]}
+        assert.deepStrictEqual(func(value,fkAdditionalFieldsConfig,'billType',rules).rc,validateFormatError.filterFieldValueTypeWrong.rc)
+        done()
+    })
+    //7  正确的值
+    it(`filter field value must only be number or date`,function(done){
+        value={name:1}
+        assert.deepStrictEqual(func(value,fkAdditionalFieldsConfig,'billType',rules).rc,0)
+        done()
+    })
 
-
-
-
-
-
-
+    /*                  外键                          */
+    //8  fk的value必须是对象（存储对应的field：value）
+    it(`filter field value key is fk, then the value must be object`,function(done){
+        value={parentBillType:1}
+        assert.deepStrictEqual(func(value,fkAdditionalFieldsConfig,'billType',rules).rc,validateFormatError.filterFieldValueFKFieldMustBeObject.rc)
+        done()
+    })
+    //9 外键value的field数量不为1
+    it(`filter field value key is fk, then the value must be object`,function(done){
+        value={parentBillType:{name:'a',age:10}}
+        assert.deepStrictEqual(func(value,fkAdditionalFieldsConfig,'billType',rules).rc,validateFormatError.filterFieldValueFKFieldMustHasOnly1Field.rc)
+        done()
+    })
+    //10 value是object，但其中key未在fkConfig中定义
+    it(`filter field value key is fk, but not configure in fkConfig`,function(done){
+        value={parentBillType:{'any':1}}
+        assert.deepStrictEqual(func(value,fkAdditionalFieldsConfig,'billType',rules).rc,validateFormatError.filterFieldValueFKFieldRealtedFKNotDefine.rc)
+        done()
+    })
+    //11 fk field未在rule中
+    it(`filter field value key is fk, but not configure in fkConfig`,function(done){
+        let rulesCopy=JSON.parse(JSON.stringify(rules))
+        delete rulesCopy.billType.name
+        value={parentBillType:{'name':1}}
+        assert.deepStrictEqual(func(value,fkAdditionalFieldsConfig,'billType',rulesCopy).rc,validateFormatError.filterFieldValueFKFieldNoRelateField.rc)
+        done()
+    })
+    //12 最终的值必须是字符/数字/日期
+    it(`filter field value key, the value must be string/number/date`,function(done){
+        value={parentBillType:{age:{}}}
+        assert.deepStrictEqual(func(value,fkAdditionalFieldsConfig,'billType',rules).rc,validateFormatError.filterFieldValueTypeWrong.rc)
+        done()
+    })
+    //13 正确格式
+    it(`filter field value key, the value must be string/number/date`,function(done){
+        value={name:1}
+        assert.deepStrictEqual(func(value,fkAdditionalFieldsConfig,'billType',rules).rc,0)
+        done()
+    })
+})
 
 
 /***************************************************************************/
 /***************   editSubField   *******************/
 /***************************************************************************/
-const validateEditSubFieldFormat=function(test){
-    test.expect(7)
+describe('validateEditSubFieldFormat', function() {
     let func=testModule.validateEditSubFieldFormat
-    let result,value
+    let value
 
     //1     value is undefined
-    // value=[]
-    result=func(value)
-    test.equal(result.rc,validateFormatError.editSubFieldMustBeObject.rc,'subField is undefined,not object check fail')
+    it(`edit sub field value is undefined, not object`,function(done){
+        assert.deepStrictEqual(func(value).rc,validateFormatError.editSubFieldMustBeObject.rc)
+        done()
+    })
     //2      value is array
-    value=[]
-    result=func(value)
-    test.equal(result.rc,validateFormatError.editSubFieldMustBeObject.rc,'subField is [],not object check fail')
-
-    //3      key number smaller than 2
-    value={k1:undefined}
-    result=func(value)
-    test.equal(result.rc,validateFormatError.editSubFieldKeyNumberWrong.rc,'subField key number is 1, check fail')
+    it(`edit sub field value is array, not object`,function(done){
+        value=[]
+        assert.deepStrictEqual(func(value).rc,validateFormatError.editSubFieldMustBeObject.rc)
+        done()
+    })
+    //3      key number less than 2
+    it(`edit sub field value key number must 2`,function(done){
+        value={k1:undefined}
+        assert.deepStrictEqual(func(value).rc,validateFormatError.editSubFieldKeyNumberWrong.rc)
+        done()
+    })
     //4      key number larger than 3
-    value={k1:undefined,k2:undefined,k3:undefined,k4:undefined,}
-    result=func(value)
-    test.equal(result.rc,validateFormatError.editSubFieldKeyNumberWrong.rc,'subField key number is 14, check fail')
-
+    it(`edit sub field value key number must 2`,function(done){
+        value={k1:undefined,k2:undefined,k3:undefined,k4:undefined,}
+        assert.deepStrictEqual(func(value).rc,validateFormatError.editSubFieldKeyNumberWrong.rc)
+        done()
+    })
     //5      key not validate
-    value={k1:undefined,k2:undefined,k3:undefined}
-    result=func(value)
-    test.equal(result.rc,validateFormatError.editSubFieldKeyNameWrong.rc,'subField key not validate, check fail')
+    it(`edit sub field value key not predefined`,function(done){
+        value={from:undefined,to:undefined,k3:undefined}
+        assert.deepStrictEqual(func(value).rc,validateFormatError.editSubFieldKeyNameWrong.rc)
+        done()
+    })
+    //6      只有2个key，那么from/to 2者有其1
+    it(`edit sub field value key number is 2, from or to exist`,function(done){
+        value={from:undefined,to:undefined}
+        assert.deepStrictEqual(func(value).rc,validateFormatError.editSubFieldFromOrToExistOne.rc)
+        done()
+    })
+    //7    right result
+    it(`right result`,function(done){
+        value={from:undefined,eleArray:undefined}
+        assert.deepStrictEqual(func(value).rc,0)
+        done()
+    })
 
-    //6      from/to 2选1
-    value={from:undefined,to:undefined}
-    result=func(value)
-    // console.log(result)
-    test.equal(result.rc,validateFormatError.editSubFieldFromOrToExistOne.rc,'subField key not validate, check fail')
+})
 
-    //7     right result
-    value={from:undefined,eleArray:undefined}
-    result=func(value)
-    // console.log(result)
-    test.equal(result.rc,0,'subField key not validate, check fail')
-
-    test.done()
-}
 
 /***************************************************************************/
 /***************   EventFormat   *******************/
 /***************************************************************************/
-const validateEventFormat=function(test) {
-    test.expect(8)
+//被测value是part EVENT的值
+describe('validateEventFormat', function() {
     let func = testModule.validateEventFormat
-    let result, value
+    let value
 
     //1     value is undefined
-    // value=[]
-    result=func(value)
-    test.equal(result.rc,validateFormatError.eventMustBeObject.rc,'event is undefined,not object check fail')
+    it(`event value is undefined, should be object`,function(done){
+        assert.deepStrictEqual(func(value).rc,validateFormatError.eventMustBeObject.rc)
+        done()
+    })
     //2      value is array
-    value=[]
-    result=func(value)
-    test.equal(result.rc,validateFormatError.eventMustBeObject.rc,'event is [],not object check fail')
-
-    //3      key number smaller than 4
-    value={k1:undefined}
-    result=func(value)
-    test.equal(result.rc,validateFormatError.eventKeyNumberWrong.rc,'event key number is 1, check fail')
+    it(`event value is undefined, should be object`,function(done){
+        value=[]
+        assert.deepStrictEqual(func(value).rc,validateFormatError.eventMustBeObject.rc)
+        done()
+    })
+    //3      key number less than 4
+    it(`event value key number less than 4`,function(done){
+        value={k1:undefined}
+        assert.deepStrictEqual(func(value).rc,validateFormatError.eventKeyNumberWrong.rc)
+        done()
+    })
     //4      key number larger than 5
-    value={k1:undefined,k2:undefined,k3:undefined,k4:undefined,k5:undefined,k6:undefined,}
-    result=func(value)
-    test.equal(result.rc,validateFormatError.eventKeyNumberWrong.rc,'event key number is 6, check fail')
-
+    it(`event value key number more than 5`,function(done){
+        value={k1:undefined,k2:undefined,k3:undefined,k4:undefined,k5:undefined,k6:undefined,}
+        assert.deepStrictEqual(func(value).rc,validateFormatError.eventKeyNumberWrong.rc)
+        done()
+    })
     //5      key not validate
-    value={k1:undefined,k2:undefined,k3:undefined,k4:undefined,k5:undefined}
-    result=func(value)
-    test.equal(result.rc,validateFormatError.eventFieldKeyNameWrong.rc,'event key invalidate, check fail')
-
+    it(`event value key not defined`,function(done){
+        value={k1:undefined,k2:undefined,k3:undefined,k4:undefined,k5:undefined}
+        assert.deepStrictEqual(func(value).rc,validateFormatError.eventFieldKeyNameWrong.rc)
+        done()
+    })
     //6      4个key时，只有targetId 可以不存在
-    value={eventId:undefined,sourceId:undefined,targetId:undefined,status:undefined}
-    result=func(value)
-    // console.log(result)
-    test.equal(result.rc,validateFormatError.eventMandatoryKeyNotExist.rc,'event key miss nabdatory field, check fail')
-
+    it(`event value key number is 4, miss mandatory field`,function(done){
+        value={eventId:undefined,sourceId:undefined,targetId:undefined,status:undefined}
+        assert.deepStrictEqual(func(value).rc,validateFormatError.eventMandatoryKeyNotExist.rc)
+        done()
+    })
     //7     right result
-    value={eventId:undefined,sourceId:undefined,cDate:undefined,status:undefined}
-    result=func(value)
-    // console.log(result)
-    test.equal(result.rc,0,'event key no targetId, check fail')
+    it(`event value key number is 4, miss mandatory field`,function(done){
+        value={eventId:undefined,sourceId:undefined,cDate:undefined,status:undefined}
+        assert.deepStrictEqual(func(value).rc,0)
+        done()
+    })
     //7     right result
-    value={eventId:undefined,sourceId:undefined,targetId:undefined,cDate:undefined,status:undefined}
-    result=func(value)
-    // console.log(result)
-    test.equal(result.rc,0,'event contain all 5 keys, check fail')
+    it(`event value key number is 4, miss mandatory field`,function(done){
+        value={eventId:undefined,sourceId:undefined,targetId:undefined,cDate:undefined,status:undefined}
+        assert.deepStrictEqual(func(value).rc,0)
+        done()
+    })
+})
 
-    test.done()
-}
-
-exports.validate={
-    // validateReqBody,
-    // e_partFormat,
-    // validateRecorderInfoFormat, //create/update的时候的recorderInfo
-    // validateSingleFieldFormat,
-    // validateFilterFieldValueFormat,  //part：filterFieldValue，
-    // validateSingleSearchParamsFormat,
-    // validateSearchParamsFormat,
-    // validateEditSubFieldFormat,
-    // validateEventFormat,
-
-}

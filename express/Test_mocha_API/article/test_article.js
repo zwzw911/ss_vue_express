@@ -34,41 +34,15 @@ const controllerError=require('../../server/controller/article/article_logic').c
 
 // const objectDeepCopy=require('../../server/function/assist/misc').objectDeepCopy
 
-const test_helper=server_common_file_require.db_operation_helper
+const db_operation_helper=server_common_file_require.db_operation_helper
 const testData=server_common_file_require.testData//require('../testData')
 const API_helper=server_common_file_require.API_helper//require('../API_helper/API_helper')
+const component_function=server_common_file_require.compoenet_function
 
 let baseUrl="/article/"
 let userId  //create后存储对应的id，以便后续的update操作
 
 let sess1,sess2,data={values:{}}
-
-
-/*describe('test', async function() {
-    it('test', async function() {
-        const adminApp=require('../../../express_admin/app')
-        let rootSess=await API_helper.adminUserLogin_returnSess_async({userData:testData.admin_user.rootAdmin,adminApp:adminApp})
-/!*        await test_helper.deleteAdminUserAndRelatedInfo_async(testData.admin_user.user1ForModel.name)
-        await API_helper.createAdminUser_async({
-            sess: rootSess,
-            userData: Object.assign({}, testData.admin_user.user1, {[e_field.ADMIN_USER.USER_PRIORITY]: {value: [e_adminPriorityType.PENALIZE_USER]}}),
-            adminApp: adminApp
-        })
-        let adminUser1Sess = await API_helper.adminUserLogin_returnSess_async({
-            userData: testData.admin_user.user1,
-            adminApp: adminApp
-        })*!/
-    })*/
-/*    it('remove exists record', async function(){
-        await API_helper.removeExistsRecord_async()
-    })
-
-    it('user1 create and login', async function () {
-        await API_helper.createUser_async({userData:testData.user.user1,app:app})
-        let user1Sess=await  API_helper.userLogin_returnSess_async({userData:testData.user.user1,app:app})
-        console.log(`test_article sess =====>${JSON.stringify(user1Sess)}`)
-    })*/
-// })
 
 describe('create new article and update, then create new comment: ', async function() {
     let url = '', finalUrl = baseUrl + url
@@ -79,12 +53,16 @@ describe('create new article and update, then create new comment: ', async funct
     })
 
     before('user1 create and login', async function () {
-        await API_helper.createUser_async({userData:testData.user.user1,app:app})
-        user1Sess=await  API_helper.userLogin_returnSess_async({userData:testData.user.user1,app:app})
+        let userInfo=await component_function.reCreateUser_returnSessUserId_async({userData:testData.user.user1,app:app})
+        user1Sess=userInfo['sess']
+        // await API_helper.createUser_async({userData:,app:app})
+        // user1Sess=await  API_helper.userLogin_returnSess_async({userData:testData.user.user1,app:app})
     })
     before('user2 create and login', async function () {
-        await API_helper.createUser_async({userData:testData.user.user2,app:app})
-        user2Sess=await  API_helper.userLogin_returnSess_async({userData:testData.user.user2,app:app})
+        let userInfo=await component_function.reCreateUser_returnSessUserId_async({userData:testData.user.user2,app:app})
+        user2Sess=userInfo['sess']
+        // await API_helper.createUser_async({userData:testData.user.user2,app:app})
+        // user2Sess=await  API_helper.userLogin_returnSess_async({userData:testData.user.user2,app:app})
     })
     before('insert user2 penalize for both article and comment', async function () {
         // console.log(`testData.user.user1 ${JSON.stringify(testData.user.user1)}`)
@@ -116,36 +94,13 @@ describe('create new article and update, then create new comment: ', async funct
         // return Promise.resolve({rc:0})
     })
     before('get user2 folder', async function () {
-        // console.log(`testData.user.user1 ${JSON.stringify(testData.user.user1)}`)
-        let user1Tmp = {}
-        user1Tmp[e_field.USER.ACCOUNT] = testData.user.user2[e_field.USER.ACCOUNT]
-        user1Tmp[e_field.USER.PASSWORD] = testData.user.user2[e_field.USER.PASSWORD]
-
-        let condition = {}
-        condition[e_field.USER.ACCOUNT] = testData.user.user2[e_field.USER.ACCOUNT]['value']
-        let tmpResult = await common_operation_model.find_returnRecords_async({dbModel: e_dbModel.user, condition: condition})
-
-        condition = {}
-        condition[e_field.FOLDER.AUTHOR_ID] = tmpResult[0]['_id']
-        let options = {$sort: {cDate: 1}}
-        tmpResult = await common_operation_model.find_returnRecords_async({
-            dbModel: e_dbModel.folder,
-            condition: condition,
-            options: options
-        })
-        folder2 = tmpResult[0]['_id']
-
+        let tmpResult=await db_operation_helper.getUserFolderId_async(testData.user.user2)
+        folder2 = tmpResult['folderId']
         console.log(`folder2======>${JSON.stringify(folder2)}`)
         // done()
         // return Promise.resolve({rc:0})
     })
-    /*    before('remove all tagsId and article',async  function() {
 
-            let tmpResult=await common_operation_model.removeAll({dbModel:e_dbModel.tag})
-            tmpResult=await common_operation_model.removeAll({dbModel:e_dbModel.article})
-            // done()
-            // return Promise.resolve({rc:0})
-        })*/
 
     it('new article without sess1', function (done) {
         // data.values[e_part.RECORD_INFO]={name:{value:'my article'}}
@@ -163,7 +118,7 @@ describe('create new article and update, then create new comment: ', async funct
     });
 
     it('new article with additional part', function (done) {
-        data.values[e_part.RECORD_INFO] = {name: {value: 'my article'}}
+        data.values[e_part.RECORD_INFO] = {name:'my article'}
         data.values[e_part.METHOD] = e_method.CREATE
         request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie', [user1Sess]).send(data)
             .end(function (err, res) {
@@ -179,10 +134,10 @@ describe('create new article and update, then create new comment: ', async funct
 
     it('correct article', function (done) {
         delete data.values[e_part.RECORD_INFO]
-        console.log(`user1Sess ===>${JSON.stringify(user1Sess)}`)
-        console.log(`data.values ===>${JSON.stringify(data.values)}`)
+        // console.log(`user1Sess ===>${JSON.stringify(user1Sess)}`)
+        // console.log(`data.values ===>${JSON.stringify(data.values)}`)
         data.values[e_part.METHOD] = e_method.CREATE
-        console.log(`data.values ===>${JSON.stringify(data.values)}`)
+        // console.log(`data.values ===>${JSON.stringify(data.values)}`)
         request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie', [user1Sess]).send(data)
             .end(function (err, res) {
                 // if (err) return done(err);
@@ -219,8 +174,8 @@ describe('create new article and update, then create new comment: ', async funct
         data.values[e_part.RECORD_ID] = newArticleId
         data.values[e_part.METHOD] = e_method.UPDATE
         data.values[e_part.RECORD_INFO] = {}
-        data.values[e_part.RECORD_INFO][e_field.ARTICLE.HTML_CONTENT] = {}
-        data.values[e_part.RECORD_INFO][e_field.ARTICLE.HTML_CONTENT]['value'] = ''
+        // data.values[e_part.RECORD_INFO][e_field.ARTICLE.HTML_CONTENT] = {}
+        data.values[e_part.RECORD_INFO][e_field.ARTICLE.HTML_CONTENT] = ''
         console.log(`docvalues====>${JSON.stringify(data.values)}`)
         request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie', [user1Sess]).send(data)
             .end(function (err, res) {
@@ -238,8 +193,8 @@ describe('create new article and update, then create new comment: ', async funct
         data.values[e_part.RECORD_ID] = newArticleId
         data.values[e_part.METHOD] = e_method.UPDATE
         data.values[e_part.RECORD_INFO] = {}
-        data.values[e_part.RECORD_INFO]['notExist'] = {}
-        data.values[e_part.RECORD_INFO]['notExist']['value'] = ''
+        // data.values[e_part.RECORD_INFO]['notExist'] = {}
+        data.values[e_part.RECORD_INFO]['notExist'] = ''
         console.log(`docvalues====>${JSON.stringify(data.values)}`)
         request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie', [user1Sess]).send(data)
             .end(function (err, res) {
@@ -259,8 +214,8 @@ describe('create new article and update, then create new comment: ', async funct
         data.values[e_part.RECORD_ID] = newArticleId
         data.values[e_part.METHOD] = e_method.UPDATE
         data.values[e_part.RECORD_INFO] = {}
-        data.values[e_part.RECORD_INFO][e_field.ARTICLE.HTML_CONTENT] = {}
-        data.values[e_part.RECORD_INFO][e_field.ARTICLE.HTML_CONTENT]['value'] = 'test'
+        data.values[e_part.RECORD_INFO][e_field.ARTICLE.HTML_CONTENT] = 'test'
+        // data.values[e_part.RECORD_INFO][e_field.ARTICLE.HTML_CONTENT]['value'] = 'test'
         console.log(`docvalues====>${JSON.stringify(data.values)}`)
         request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie', [user2Sess]).send(data)
             .end(function (err, res) {
@@ -278,8 +233,8 @@ describe('create new article and update, then create new comment: ', async funct
         data.values[e_part.RECORD_ID] = newArticleId
         data.values[e_part.METHOD] = e_method.UPDATE
         data.values[e_part.RECORD_INFO] = {}
-        data.values[e_part.RECORD_INFO][e_field.ARTICLE.HTML_CONTENT] = {}
-        data.values[e_part.RECORD_INFO][e_field.ARTICLE.HTML_CONTENT]['value'] = `<script></script>asdf`
+        data.values[e_part.RECORD_INFO][e_field.ARTICLE.HTML_CONTENT] =`<script></script>asdf`
+        // data.values[e_part.RECORD_INFO][e_field.ARTICLE.HTML_CONTENT]['value'] =
         console.log(`docvalues====>${JSON.stringify(data.values)}`)
         request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie', [user1Sess]).send(data)
             .end(function (err, res) {
@@ -297,8 +252,8 @@ describe('create new article and update, then create new comment: ', async funct
         data.values[e_part.RECORD_ID] = newArticleId
         data.values[e_part.METHOD] = e_method.UPDATE
         data.values[e_part.RECORD_INFO] = {}
-        data.values[e_part.RECORD_INFO][e_field.ARTICLE.TAGS] = {}
-        data.values[e_part.RECORD_INFO][e_field.ARTICLE.TAGS]['value'] = [testData.tag.tag1.name.value]
+        data.values[e_part.RECORD_INFO][e_field.ARTICLE.TAGS] = testData.tag.tag1.name
+        // data.values[e_part.RECORD_INFO][e_field.ARTICLE.TAGS]['value'] =
         console.log(`docvalues====>${JSON.stringify(data.values)}`)
         request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie', [user1Sess]).send(data)
             .end(function (err, res) {
@@ -316,8 +271,8 @@ describe('create new article and update, then create new comment: ', async funct
         data.values[e_part.RECORD_ID] = newArticleId
         data.values[e_part.METHOD] = e_method.UPDATE
         data.values[e_part.RECORD_INFO] = {}
-        data.values[e_part.RECORD_INFO][e_field.ARTICLE.FOLDER_ID] = {}
-        data.values[e_part.RECORD_INFO][e_field.ARTICLE.FOLDER_ID]['value'] = newArticleId
+        data.values[e_part.RECORD_INFO][e_field.ARTICLE.FOLDER_ID] = newArticleId
+        // data.values[e_part.RECORD_INFO][e_field.ARTICLE.FOLDER_ID]['value'] =
         console.log(`docvalues====>${JSON.stringify(data.values)}`)
         request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie', [user1Sess]).send(data)
             .end(function (err, res) {
@@ -334,8 +289,8 @@ describe('create new article and update, then create new comment: ', async funct
         data.values[e_part.RECORD_ID] = newArticleId
         data.values[e_part.METHOD] = e_method.UPDATE
         data.values[e_part.RECORD_INFO] = {}
-        data.values[e_part.RECORD_INFO][e_field.ARTICLE.CATEGORY_ID] = {}
-        data.values[e_part.RECORD_INFO][e_field.ARTICLE.CATEGORY_ID]['value'] = newArticleId
+        data.values[e_part.RECORD_INFO][e_field.ARTICLE.CATEGORY_ID] = newArticleId
+        // data.values[e_part.RECORD_INFO][e_field.ARTICLE.CATEGORY_ID]['value'] =
         console.log(`docvalues====>${JSON.stringify(data.values)}`)
         request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie', [user1Sess]).send(data)
             .end(function (err, res) {
@@ -353,8 +308,8 @@ describe('create new article and update, then create new comment: ', async funct
         data.values[e_part.RECORD_ID] = newArticleId
         data.values[e_part.METHOD] = e_method.UPDATE
         data.values[e_part.RECORD_INFO] = {}
-        data.values[e_part.RECORD_INFO][e_field.ARTICLE.FOLDER_ID] = {}
-        data.values[e_part.RECORD_INFO][e_field.ARTICLE.FOLDER_ID]['value'] = folder2
+        data.values[e_part.RECORD_INFO][e_field.ARTICLE.FOLDER_ID] = folder2
+        // data.values[e_part.RECORD_INFO][e_field.ARTICLE.FOLDER_ID]['value'] =
         console.log(`docvalues====>${JSON.stringify(data.values)}`)
         request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie', [user1Sess]).send(data)
             .end(function (err, res) {
@@ -373,8 +328,8 @@ describe('create new article and update, then create new comment: ', async funct
         data.values[e_part.RECORD_ID] = newArticleId
         data.values[e_part.METHOD] = e_method.UPDATE
         data.values[e_part.RECORD_INFO] = {}
-        data.values[e_part.RECORD_INFO][e_field.ARTICLE.HTML_CONTENT] = {}
-        data.values[e_part.RECORD_INFO][e_field.ARTICLE.HTML_CONTENT]['value'] = 'update article with attachment exist'
+        data.values[e_part.RECORD_INFO][e_field.ARTICLE.HTML_CONTENT] = 'update article with attachment exist'
+        // data.values[e_part.RECORD_INFO][e_field.ARTICLE.HTML_CONTENT]['value'] =
         // data.values[e_part.RECORD_INFO][e_field.ARTICLE.ARTICLE_ATTACHMENTS_ID] = {}
         // data.values[e_part.RECORD_INFO][e_field.ARTICLE.ARTICLE_ATTACHMENTS_ID]['value'] = ['59817e549a1a3a4bac3a55f7']
         // data.values[e_part.RECORD_INFO][e_field.ARTICLE.ARTICLE_IMAGES_ID] = {}

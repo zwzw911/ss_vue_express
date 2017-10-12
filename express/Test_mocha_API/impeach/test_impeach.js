@@ -34,6 +34,7 @@ const controllerError=require('../../server/controller/impeach/impeach_logic').c
 
 const testData=server_common_file_require.testData//require('../testData')
 const API_helper=server_common_file_require.API_helper//require('../API_helper/API_helper')
+const component_function=server_common_file_require.compenet_function
 
 const calcResourceConfig=require('../../server/constant/config/calcResourceConfig')
 
@@ -44,21 +45,25 @@ describe('impeach: ', async function() {
         await API_helper.removeExistsRecord_async()
     })
 
-    before('user1 create and login', async function () {
-        await API_helper.createUser_async({userData:testData.user.user1,app:app})
-        user1Sess=await  API_helper.userLogin_returnSess_async({userData:testData.user.user1,app:app})
+    before('user1 recreate and login', async function () {
+        let userInfo=await component_function.reCreateUser_returnSessUserId_async({userData:testData.user.user1,app:app})
+        user1Sess=userInfo['sess']
+        // await API_helper.createUser_async({userData:testData.user.user1,app:app})
+        // user1Sess=await  API_helper.userLogin_returnSess_async({userData:testData.user.user1,app:app})
     })
     before('user2 create and login', async function () {
-        await API_helper.createUser_async({userData:testData.user.user2,app:app})
-        user2Sess=await  API_helper.userLogin_returnSess_async({userData:testData.user.user2,app:app})
+        let userInfo=await component_function.reCreateUser_returnSessUserId_async({userData:testData.user.user2,app:app})
+        user2Sess=userInfo['sess']
+        // await API_helper.createUser_async({userData:testData.user.user2,app:app})
+        // user2Sess=await  API_helper.userLogin_returnSess_async({userData:testData.user.user2,app:app})
     })
 
     before('user1 create new article1', async function () {
-        articleId=await API_helper.userCreateArticle_returnArticleId_async({userSess:user1Sess,app:app})
+        articleId=await API_helper.createNewArticle_returnArticleId_async({userSess:user1Sess,app:app})
     });
 
     before('user1 create new article2', async function () {
-        articleId2=await API_helper.userCreateArticle_returnArticleId_async({userSess:user1Sess,app:app})
+        articleId2=await API_helper.createNewArticle_returnArticleId_async({userSess:user1Sess,app:app})
     });
     /*********************************************************************/
     /*********************    format      *******************************/
@@ -77,7 +82,6 @@ describe('impeach: ', async function() {
     it('user2; no record_info ', function (done) {
         data.values={}
         data.values[e_part.METHOD] = e_method.CREATE
-
         request(app).post('/impeach/article').set('Accept', 'application/json').set('Cookie', [user2Sess]).send(data)
             .end(function (err, res) {
                 // if (err) return done(err);
@@ -109,7 +113,7 @@ describe('impeach: ', async function() {
         data.values={}
         data.values[e_part.METHOD]=e_method.CREATE
         data.values[e_part.RECORD_INFO]={
-            [e_field.IMPEACH.IMPEACHED_ARTICLE_ID]:{value:articleId},
+            [e_field.IMPEACH.IMPEACHED_ARTICLE_ID]:articleId,
         }
         request(app).post('/impeach/comment').set('Accept', 'application/json').set('Cookie', [user2Sess]).send(data)
             .end(function (err, res) {
@@ -123,7 +127,7 @@ describe('impeach: ', async function() {
         data.values={}
         data.values[e_part.METHOD]=e_method.CREATE
         data.values[e_part.RECORD_INFO]={
-            [e_field.IMPEACH.IMPEACHED_ARTICLE_ID]:{value:articleId},
+            [e_field.IMPEACH.IMPEACHED_ARTICLE_ID]:articleId,
         }
         request(app).post('/impeach').set('Accept', 'application/json').set('Cookie', [user2Sess]).send(data)
             .end(function (err, res) {
@@ -144,7 +148,7 @@ describe('impeach: ', async function() {
         data.values[e_part.METHOD]=e_method.UPDATE
         data.values[e_part.RECORD_ID]=articleId
         data.values[e_part.RECORD_INFO]={
-            [e_field.IMPEACH.IMPEACHED_ARTICLE_ID]:{value:articleId},
+            [e_field.IMPEACH.IMPEACHED_ARTICLE_ID]:articleId,
         }
         request(app).post('/impeach/article').set('Accept', 'application/json').set('Cookie', [user2Sess]).send(data)
             .end(function (err, res) {
@@ -157,7 +161,7 @@ describe('impeach: ', async function() {
     it('user2 update impeach with internal field', function (done) {
         data.values={}
         data.values[e_part.RECORD_INFO]={
-            [e_field.IMPEACH.IMPEACH_IMAGES_ID]:{value:[impeachId]}
+            [e_field.IMPEACH.IMPEACH_IMAGES_ID]:[impeachId],
         }
         data.values[e_part.RECORD_ID]=impeachId
         data.values[e_part.METHOD]=e_method.UPDATE
@@ -172,7 +176,7 @@ describe('impeach: ', async function() {
     it('user2 update impeach with internal field impeachedArticleId', function (done) {
         data.values={}
         data.values[e_part.RECORD_INFO]={
-            [e_field.IMPEACH.IMPEACHED_ARTICLE_ID]:{value:articleId2}
+            [e_field.IMPEACH.IMPEACHED_ARTICLE_ID]:articleId2,
         }
         data.values[e_part.RECORD_ID]=impeachId
         data.values[e_part.METHOD]=e_method.UPDATE
@@ -187,7 +191,7 @@ describe('impeach: ', async function() {
     it('user2 update impeach with field value not match rule', function (done) {
         data.values={}
         data.values[e_part.RECORD_INFO]={
-            [e_field.IMPEACH.TITLE]:{value:''}
+            [e_field.IMPEACH.TITLE]:'',
         }
         data.values[e_part.RECORD_ID]=impeachId
         data.values[e_part.METHOD]=e_method.UPDATE
@@ -203,7 +207,7 @@ describe('impeach: ', async function() {
     it('user2 update impeach with field value contain xss', function (done) {
         data.values={}
         data.values[e_part.RECORD_INFO]={
-            [e_field.IMPEACH.TITLE]:{value:'<alert>'}
+            [e_field.IMPEACH.TITLE]:'<alert>',
         }
         data.values[e_part.RECORD_ID]=impeachId
         data.values[e_part.METHOD]=e_method.UPDATE

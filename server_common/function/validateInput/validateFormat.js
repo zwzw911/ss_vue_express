@@ -583,6 +583,7 @@ function validateSingleSearchParamsFormat(fieldValue,fieldRule){
 * */
 /*      对filterFieldValue（为单个字段提供autoComplete的功能） {field1:keyword}  or {fkField:{relatedField:keyword}}     */
 /*  说明，只支持{field1:keyword}的格式，至于field是否为外键，通过fkConfig在server端判断
+*   被测试的值filterFieldValue，是part FILTER_FIELD的值
 * 1. 必须是object
 * 2. 必须只有一个key
 * 3. value必须赋值

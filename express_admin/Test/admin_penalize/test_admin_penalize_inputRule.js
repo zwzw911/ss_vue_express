@@ -47,11 +47,11 @@ let data={values:{}}
 let rootSess
 
 let normalRecord={
-    [e_field.ADMIN_PENALIZE.PUNISHED_ID]:{value:'asdf'}, //创建user后直接获得id后填入
-    [e_field.ADMIN_PENALIZE.DURATION]:{value:5},
-    [e_field.ADMIN_PENALIZE.REASON]:{value:'testtesttesttesttesttest'},
-    [e_field.ADMIN_PENALIZE.PENALIZE_TYPE]:{value:e_penalizeType.NO_ARTICLE},
-    [e_field.ADMIN_PENALIZE.PENALIZE_SUB_TYPE]:{value:e_penalizeSubType.CREATE},
+    [e_field.ADMIN_PENALIZE.PUNISHED_ID]:'asdf', //创建user后直接获得id后填入
+    [e_field.ADMIN_PENALIZE.DURATION]:5,
+    [e_field.ADMIN_PENALIZE.REASON]:'testtesttesttesttesttest',
+    [e_field.ADMIN_PENALIZE.PENALIZE_TYPE]:e_penalizeType.NO_ARTICLE,
+    [e_field.ADMIN_PENALIZE.PENALIZE_SUB_TYPE]:e_penalizeSubType.CREATE,
 }
 
 describe('method=create   misc', function() {
@@ -59,10 +59,8 @@ describe('method=create   misc', function() {
         // console.log(`######   delete exist record   ######`)
         /*              root admin login                    */
         rootSess = await API_helper.adminUserLogin_returnSess_async({
-            userData: {
-                [e_field.ADMIN_USER.NAME]: testData.admin_user.rootAdmin.name,
-                [e_field.ADMIN_USER.PASSWORD]: testData.admin_user.rootAdmin.password,
-            }, adminApp: adminApp
+            userData: testData.admin_user.adminRoot,
+            adminApp: adminApp
         })
         // console.log(`rootSess is=============>${JSON.stringify(rootSess)}`)
         /*              delete admin user1                    */
@@ -73,7 +71,7 @@ describe('method=create   misc', function() {
         data.values[e_part.METHOD]=e_method.CREATE
         let recordInfo=objectDeepCopy(normalRecord)
         delete recordInfo[e_field.ADMIN_PENALIZE.REASON]
-        recordInfo['notExist']={value:'xdfg'}
+        recordInfo['notExist']='xdfg'
         data.values[e_part.RECORD_INFO]=recordInfo
         console.log(`data.values==========>${JSON.stringify(data.values)}`)
         request(adminApp).post(baseUrl).set('Accept', 'application/json').set('Cookie',[rootSess]).send(data)
@@ -115,17 +113,15 @@ describe('inputRule', async function() {
         // console.log(`######   delete exist record   ######`)
         /*              root admin login                    */
         parameter.sess = await API_helper.adminUserLogin_returnSess_async({
-            userData: {
-                [e_field.ADMIN_USER.NAME]: testData.admin_user.rootAdmin.name,
-                [e_field.ADMIN_USER.PASSWORD]: testData.admin_user.rootAdmin.password,
-            }, adminApp: adminApp
+            userData: testData.admin_user.adminRoot,
+            adminApp: adminApp
         })
         // console.log(`parameter.sess is=============>${JSON.stringify(parameter.sess)}`)
         /*              delete/create/getId  user1                    */
-        await test_helper.deleteUserAndRelatedInfo_async({account:testData.user.user1ForModel.account})
+        await test_helper.deleteUserAndRelatedInfo_async({account:testData.user.user1.account})
         await API_helper.createUser_async({userData:testData.user.user1,app:app})
         // normalRecord[e_field.ADMIN_PENALIZE.PUNISHED_ID]={}
-        normalRecord[e_field.ADMIN_PENALIZE.PUNISHED_ID]['value']=await test_helper.getUserId_async({userAccount:testData.user.user1ForModel.account})
+        normalRecord[e_field.ADMIN_PENALIZE.PUNISHED_ID]['value']=await test_helper.getUserId_async({userAccount:testData.user.user1.account})
         // console.log(`normalRecord===========>${JSON.stringify(normalRecord)}`)
     });
 

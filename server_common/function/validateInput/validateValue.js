@@ -67,8 +67,9 @@ function _validateRecorderValue(inputValue,collRules,baseType){
         if(e_inputFieldCheckType.BASE_INPUT_RULE===baseType){
             //如果rule中为require，但是inputValue中没有，返回据错误。否则后续的赋值会报错
             //require是rule中的必填字段，区别只是false/true
+            // console.log(`collRules is ${JSON.stringify(collRules)}`)
             // console.log(`field is ${fieldName}`)
-            // console.log(`require define is ${collRules[fieldName][e_serverRuleType.REQUIRE]['define']}`)
+            // console.log(`require  is ${JSON.stringify(collRules[fieldName])}`)
             if(collRules[fieldName][e_serverRuleType.REQUIRE]['define'] ){
                 //只检查是否定义，如果定义（即使为{value:undefined}），交给validateSingleRecorderFieldValue处理
                 if(false===dataTypeCheck.isSetValue(inputValue[fieldName])  ){
@@ -96,7 +97,7 @@ function _validateRecorderValue(inputValue,collRules,baseType){
 
             let fieldType=collRules[fieldName]['type']
             if(dataTypeCheck.isArray(fieldType)){
-                console.log(`field ${fieldName} is array`)
+                // console.log(`field ${fieldName} is array`)
                 //首先检查数据类型是不是array
                 if(false===dataTypeCheck.isArray(fieldValue)){
                     rc[fieldName]=validateValueError.CUDTypeWrong
@@ -421,8 +422,8 @@ function validateSearchParamsValue(searchParams,fkConfig,collName,inputRules){
             // console.log(  `not fk field `  )
             //普通字段和外加字段的格式不同
             //{name:[{value:xxx}]}
-            if(searchParams[singleFieldName]){
-                // console.log(  `searchParams[singleFieldName] exist `  )
+            if(undefined!==searchParams[singleFieldName]){
+                // console.log(  `searchParams[singleFieldName] is ${JSON.stringify(searchParams[singleFieldName])} `  )
                 let fieldValue=searchParams[singleFieldName]
                 fieldRule=inputRules[collName][singleFieldName]
                 // console.log(  `bfrowe validateSingleSearchFieldValue `  )
@@ -436,10 +437,10 @@ function validateSearchParamsValue(searchParams,fkConfig,collName,inputRules){
 
         }
         //如果是外键字段
-        if (fkConfig[singleFieldName]) {
+        if (undefined!==fkConfig[singleFieldName]) {
             let fieldFkConfig=fkConfig[singleFieldName]
             //遍历当前字段岁对应的所有外键字段
-            if(searchParams[singleFieldName]){
+            if(undefined!==searchParams[singleFieldName]){
                 for(let fkRedundantFieldName in searchParams[singleFieldName]){
                     //普通字段和外加字段的格式不同
                     ////{parentBillType:{name:[{value:xxx}]}}
@@ -484,10 +485,10 @@ function validateSingleSearchFieldValue(fieldValue,fieldRule){
         let singleSearchElement=fieldValue[idx]
         // let singleElement=singleSearchElement
         let result=_validateSingleSearchElementValue(singleSearchElement,fieldRule)
-        //空值或者超出maxLength，则直接删除搜索值而不报错（搜索可以继续）
+        //超出maxLength，则直接删除搜索值而不报错（搜索可以继续）
         // console.log(`result tt is ${JSON.stringify(result)}`)
         // console.log(`rule tt is ${JSON.stringify(fieldRule[e_serverRuleType.MAX_LENGTH])}`)
-        if(result.rc===validateValueError.SValueEmpty.rc || (fieldRule[e_serverRuleType.MAX_LENGTH] &&result.rc===fieldRule[e_serverRuleType.MAX_LENGTH]['error']['rc'])){
+        if( fieldRule[e_serverRuleType.MAX_LENGTH] &&result.rc===fieldRule[e_serverRuleType.MAX_LENGTH]['error']['rc']){
             fieldValue.splice(idx,1)
             continue
 /*            //删除搜索值之后，如果为空数组，则把对应的field也删除
@@ -496,7 +497,7 @@ function validateSingleSearchFieldValue(fieldValue,fieldRule){
                 break
             }*/
         }
-        //其他错误，返回client（搜索不继续）
+        //其他错误（例如空值），返回client（搜索不继续）
         if(result.rc>0){
             return result
         }
@@ -531,9 +532,12 @@ function _validateSingleSearchElementValue(searchElement,fieldRule){
 function _validateSingleSearchValue(searchValue,fieldRule){
     let chineseName=fieldRule['chineseName']
     let rc={rc:0}
-
+// console.log(`searchvalue is ${JSON.stringify(searchValue)}`)
+//     console.log(`dataTypeCheck.isSetValue(searchValue) is ${JSON.stringify(dataTypeCheck.isSetValue(searchValue))}`)
+//     console.log(`dataTypeCheck.isEmpty(searchValue) is ${JSON.stringify(dataTypeCheck.isEmpty(searchValue))}`)
     //1. 检测是否为undefined或者null或者空字符，是：返回删除
     if(false===dataTypeCheck.isSetValue(searchValue) || true===dataTypeCheck.isEmpty(searchValue)){
+        // console.log(`error reutn`)
         return validateValueError.SValueEmpty
     }
     //2 检查value的类型是否符合type中的定义，错误返回
@@ -724,11 +728,11 @@ function validateCurrentPageValue(currentPage){
 }
 
 /*      如果字段名称是id或者_id（没有定义在rule中），直接验证是否mongodb id的格式      */
-function validateRecorderId(value){
+/*function validateRecorderId(value){
     let rc={rc:0}
 
-/*    console.log(`value is ${JSON.stringify(value)}`)
-    console.log(`value set result  is ${JSON.stringify(dataTypeCheck.isSetValue(value))}`)*/
+/!*    console.log(`value is ${JSON.stringify(value)}`)
+    console.log(`value set result  is ${JSON.stringify(dataTypeCheck.isSetValue(value))}`)*!/
     if(false===dataTypeCheck.isSetValue(value) || true===dataTypeCheck.isEmpty(value)){
         return validateValueError.CUDObjectIdEmpty
     }
@@ -737,7 +741,7 @@ function validateRecorderId(value){
     }
 
     return rc
-}
+}*/
 
 /*
  maxLength: 数组中最大哦包含多少个元素（一般是pagination. pageSize）
@@ -871,7 +875,7 @@ module.exports= {
     //validateDeleteObjectId,//delete比较特殊，使用POST，URL带objectID指明要删除的记录，同时body中带searchParams和currentPage，以便删除后继续定位对应的页数
     validateStaticSearchParamsValue,
 
-    validateRecorderId,//直接验证记录主键的值（而不是外键，虽然都是objectId）
+    //validateRecorderId,//不在需要，直接在validateFormat->validatePartFormat中完成（简单part，直接测试）
     // validateCurrentCollValue,
     validateCurrentPageValue,
     validateRecIdArr, //对记录进行批量处理（删除/更新），需要传入的part

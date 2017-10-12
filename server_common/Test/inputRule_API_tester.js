@@ -81,7 +81,11 @@ async function ruleTest_async(parameter){
     // console.log(`requireFieldRule is ${JSON.stringify(requireFieldRule)}`)
     let data={values:{}}
     data.values[e_part.METHOD] = method
-    let recordInfos=generateTestData({normalRecordInfo:normalRecordInfo,fieldName:fieldName,ruleName:singleRuleName,collRule:collRule})
+    let testDataBaseRule=generateTestDataBaseValidaRule({normalRecordInfo:normalRecordInfo,fieldName:fieldName,ruleName:singleRuleName,collRule:collRule})
+    let testDataBaseDataType=generateTestDataBaseFieldDataType({normalRecordInfo:normalRecordInfo,fieldName:fieldName,collRule:collRule})
+    let testDataMisc=generateMiscTestData({normalRecordInfo:normalRecordInfo,fieldName:fieldName,collRule:collRule})
+    let recordInfos=testDataBaseDataType.concat(testDataBaseRule).concat(testDataMisc)
+
     // console.log(`recordInfos==========>${JSON.stringify(recordInfos)}`)
     if(recordInfos.length>0){
         for(let singleRecordInfo of recordInfos){
@@ -98,7 +102,7 @@ async function ruleTest_async(parameter){
 *
 *  return:嵌入到data.values.recordInfo的数据
 * */
-function generateTestData({normalRecordInfo,fieldName,ruleName,collRule}){
+function generateTestDataBaseValidaRule({normalRecordInfo,fieldName,ruleName,collRule}){
     // console.log(`collRule=========>${JSON.stringify(collRule)}`)
     let ruleDefine=collRule[fieldName][ruleName]['define']
     let fieldDataType=collRule[fieldName]['type']
@@ -117,55 +121,54 @@ function generateTestData({normalRecordInfo,fieldName,ruleName,collRule}){
         case e_serverRuleType.REQUIRE:
             if(true===ruleDefine){
                 //字段未定义
-                let undefinedRecordInfo=misc.objectDeepCopy(normalRecordInfo)
+/*                let undefinedRecordInfo=misc.objectDeepCopy(normalRecordInfo)
                 delete  undefinedRecordInfo[fieldName]
-                recordInfos.push(undefinedRecordInfo)
-
-                let dataTypeBasedRecordInfo=misc.objectDeepCopy(normalRecordInfo)
+                recordInfos.push(undefinedRecordInfo)*/
+                recordInfos.push(generateTestRecord({fieldValueToBeGenerate:undefined,originNormalData:normalRecordInfo,fieldToBeCheck:fieldName}))
+                recordInfos.push(generateTestRecord({fieldValueToBeGenerate:null,originNormalData:normalRecordInfo,fieldToBeCheck:fieldName}))
+                // let dataTypeBasedRecordInfo
                 switch (fieldDataType){
                     case e_serverDataType.STRING:
-                        dataTypeBasedRecordInfo[fieldName]={value:""}
+                        recordInfos.push(generateTestRecord({fieldValueToBeGenerate:"",originNormalData:normalRecordInfo,fieldToBeCheck:fieldName}))
+                        recordInfos.push(generateTestRecord({fieldValueToBeGenerate:"       ",originNormalData:normalRecordInfo,fieldToBeCheck:fieldName}))
                         break;
                     case e_serverDataType.INT:
-                        dataTypeBasedRecordInfo[fieldName]={value:NaN}
+                        recordInfos.push(generateTestRecord({fieldValueToBeGenerate:NaN,originNormalData:normalRecordInfo,fieldToBeCheck:fieldName}))
                         break;
                     case e_serverDataType.NUMBER:
-                        dataTypeBasedRecordInfo[fieldName]={value:NaN}
+                        recordInfos.push(generateTestRecord({fieldValueToBeGenerate:NaN,originNormalData:normalRecordInfo,fieldToBeCheck:fieldName}))
                         break;
                     case e_serverDataType.FLOAT:
-                        dataTypeBasedRecordInfo[fieldName]={value:NaN}
+                        recordInfos.push(generateTestRecord({fieldValueToBeGenerate:NaN,originNormalData:normalRecordInfo,fieldToBeCheck:fieldName}))
                         break;
                     case e_serverDataType.FOLDER:
-                        dataTypeBasedRecordInfo[fieldName]={value:'folderNotExist'}
+                        recordInfos.push(generateTestRecord({fieldValueToBeGenerate:"folderNotExist",originNormalData:normalRecordInfo,fieldToBeCheck:fieldName}))
                         break;
                     case e_serverDataType.FILE:
-                        dataTypeBasedRecordInfo[fieldName]={value:'fileNotExist'}
+                        recordInfos.push(generateTestRecord({fieldValueToBeGenerate:"fileNotExist",originNormalData:normalRecordInfo,fieldToBeCheck:fieldName}))
                         break;
                     case e_serverDataType.OBJECT:
-                        dataTypeBasedRecordInfo[fieldName]={value:{}}
+                        recordInfos.push(generateTestRecord({fieldValueToBeGenerate:{},originNormalData:normalRecordInfo,fieldToBeCheck:fieldName}))
                         break;
                     case e_serverDataType.BOOLEAN:
-                        dataTypeBasedRecordInfo[fieldName]={value:null}
                         break;
                     case e_serverDataType.OBJECT_ID:
-                        dataTypeBasedRecordInfo[fieldName]={value:null}
                         break;
                 }
                 if(fieldDataType instanceof Array){
-                    dataTypeBasedRecordInfo[fieldName]={value:[]}
+                    recordInfos.push(generateTestRecord({fieldValueToBeGenerate:[],originNormalData:normalRecordInfo,fieldToBeCheck:fieldName}))
                 }
-                recordInfos.push(dataTypeBasedRecordInfo)
+                // recordInfos.push(dataTypeBasedRecordInfo)
             }
 
             break;
 
         case e_serverRuleType.FORMAT:
-            recordInfo[fieldName] = {value: '1(2'}
-            recordInfos.push(recordInfo)
+            recordInfos.push(generateTestRecord({fieldValueToBeGenerate:'1(2',originNormalData:normalRecordInfo,fieldToBeCheck:fieldName}))
             break;
         case e_serverRuleType.MIN_LENGTH:
-            recordInfo[fieldName] = {value: '1'}  //minLength采用字符长度为1。如果有rule设置minLenght为1，需要删除此rule，因为和require重复了
-            recordInfos.push(recordInfo)
+            //minLength采用字符长度为1。如果有rule设置minLenght为1，需要删除此rule，因为和require重复了
+            recordInfos.push(generateTestRecord({fieldValueToBeGenerate:'1',originNormalData:normalRecordInfo,fieldToBeCheck:fieldName}))
             break;
         case e_serverRuleType.MAX_LENGTH:
             // let maxLengthDefine=ruleDefine['define']
@@ -176,23 +179,19 @@ function generateTestData({normalRecordInfo,fieldName,ruleName,collRule}){
                 i++
             }
             // console.log(maxString.length)
-            recordInfo[fieldName] = {value:  maxString}
-            recordInfos.push(recordInfo)
+            recordInfos.push(generateTestRecord({fieldValueToBeGenerate:maxString,originNormalData:normalRecordInfo,fieldToBeCheck:fieldName}))
             break;
         case e_serverRuleType.MIN:
             let minValue=ruleDefine-1
-            recordInfo[fieldName] = {value:  minValue}
-            recordInfos.push(recordInfo)
+            recordInfos.push(generateTestRecord({fieldValueToBeGenerate:minValue,originNormalData:normalRecordInfo,fieldToBeCheck:fieldName}))
             break;
         case e_serverRuleType.MAX:
             let maxValue=ruleDefine+1
-            recordInfo[fieldName] = {value:  maxValue}
-            recordInfos.push(recordInfo)
+            recordInfos.push(generateTestRecord({fieldValueToBeGenerate:maxValue,originNormalData:normalRecordInfo,fieldToBeCheck:fieldName}))
             break;
         case e_serverRuleType.ARRAY_MIN_LENGTH:
             let arrayMinLength=[]
-            recordInfo[fieldName] = {value:  arrayMinLength}
-            recordInfos.push(recordInfo)
+            recordInfos.push(generateTestRecord({fieldValueToBeGenerate:arrayMinLength,originNormalData:normalRecordInfo,fieldToBeCheck:fieldName}))
             break;
         case e_serverRuleType.ARRAY_MAX_LENGTH:
             let arrayMaxLength=[]
@@ -202,8 +201,7 @@ function generateTestData({normalRecordInfo,fieldName,ruleName,collRule}){
                 i++
             }
             // console.log(`arrayMaxLength=====>${JSON.stringify(arrayMaxLength)}`)
-            recordInfo[fieldName] = {value:  arrayMaxLength}
-            recordInfos.push(recordInfo)
+            recordInfos.push(generateTestRecord({fieldValueToBeGenerate:arrayMaxLength,originNormalData:normalRecordInfo,fieldToBeCheck:fieldName}))
             break;
         case e_serverRuleType.ENUM:
             // console.log(`enum datatype =====>${JSON.stringify(fieldDataType)}`)
@@ -216,8 +214,7 @@ function generateTestData({normalRecordInfo,fieldName,ruleName,collRule}){
             if(fieldDataType instanceof Array){
                 notExistEnumValue=['999']
             }
-            recordInfo[fieldName] = {value:  notExistEnumValue}
-            recordInfos.push(recordInfo)
+            recordInfos.push(generateTestRecord({fieldValueToBeGenerate:notExistEnumValue,originNormalData:normalRecordInfo,fieldToBeCheck:fieldName}))
             break;
         default:
     }
@@ -225,7 +222,146 @@ function generateTestData({normalRecordInfo,fieldName,ruleName,collRule}){
     return recordInfos
 }
 
+function generateTestDataBaseFieldDataType({normalRecordInfo,fieldName,collRule}) {
+    // console.log(`collRule=========>${JSON.stringify(collRule)}`)
+    // let ruleDefine = collRule[fieldName][ruleName]['define']
 
+    let fieldDataType
+    if(collRule[fieldName]['type'] instanceof Array){
+        fieldDataType='array'
+    }else{
+        fieldDataType= collRule[fieldName]['type']
+    }
+
+    // let fieldRule = collRule[fieldName]
+    let recordInfo = misc.objectDeepCopy(normalRecordInfo)
+
+    let i = 0
+    //某些rule可能会生成多个测试数据（例如：require，可以是undefined，也可以是0/""/[]/{}等）
+    let recordInfos = []
+
+    let allValidDataType=Object.keys(e_serverDataType)
+    allValidDataType.push('array')//rule中直接用[]扩起数据类型，所以serverDataType无此类型，需要手工添加
+
+
+    for(let singleDataType of allValidDataType){
+        //产生其他非当前dataType的数据
+        let valueMatchDataType
+        if(fieldDataType!==singleDataType){
+            switch (singleDataType){
+                case "array":
+                    valueMatchDataType=[]
+                    break;
+                case e_serverDataType.OBJECT:
+                    valueMatchDataType={}
+                    break
+                case e_serverDataType.STRING:
+                    valueMatchDataType=``
+                    break
+                case e_serverDataType.FOLDER:
+                    valueMatchDataType=`C:/Windows/`
+                    break
+                case e_serverDataType.FILE:
+                    valueMatchDataType=`C:/Windows/win.ini`
+                    break
+                case e_serverDataType.NUMBER:
+                    valueMatchDataType=123456789123456789123456789
+                    break
+                case e_serverDataType.OBJECT_ID:
+                    valueMatchDataType="59db1e1e45112c01e472b6d7"
+                    break
+                case e_serverDataType.DATE:
+                    valueMatchDataType=Date.now()
+                    break
+                case e_serverDataType.BOOLEAN:
+                    valueMatchDataType=true
+                    break
+                case e_serverDataType.FLOAT:
+                    valueMatchDataType=1.1
+                    break
+                case e_serverDataType.INT:
+                    valueMatchDataType=1
+                    break
+                default:
+                    valueMatchDataType=null
+                    recordInfos.push(generateTestRecord({fieldValueToBeGenerate:valueMatchDataType,originNormalData:normalRecordInfo,fieldToBeCheck:fieldName}))
+                    valueMatchDataType=undefined
+                    recordInfos.push(generateTestRecord({fieldValueToBeGenerate:valueMatchDataType,originNormalData:normalRecordInfo,fieldToBeCheck:fieldName}))
+                    valueMatchDataType=NaN
+            }
+            recordInfos.push(generateTestRecord({fieldValueToBeGenerate:valueMatchDataType,originNormalData:normalRecordInfo,fieldToBeCheck:fieldName}))
+        }
+    }
+
+    //如果是array，为ele产生不同的类型
+    if(fieldDataType==='array'){
+        let eleDataType=collRule[fieldName]['type'][0]
+        let eleValueMatchDataType
+        for(let singleDataType of allValidDataType){
+            if(singleDataType!==eleDataType){
+                switch (singleDataType){
+                    case e_serverDataType.OBJECT:
+                        eleValueMatchDataType=[{}]
+                        break
+                    case e_serverDataType.STRING:
+                        eleValueMatchDataType=[``]
+                        break
+                    case e_serverDataType.FOLDER:
+                        eleValueMatchDataType=[`C:/Windows/`]
+                        break
+                    case e_serverDataType.FILE:
+                        eleValueMatchDataType=[`C:/Windows/win.ini`]
+                        break
+                    case e_serverDataType.NUMBER:
+                        eleValueMatchDataType=[23456789123456789123456789]
+                        break
+                    case e_serverDataType.OBJECT_ID:
+                        eleValueMatchDataType=["59db1e1e45112c01e472b6d7"]
+                        break
+                    case e_serverDataType.DATE:
+                        eleValueMatchDataType=[Date.now()]
+                        break
+                    case e_serverDataType.BOOLEAN:
+                        eleValueMatchDataType=[true]
+                        break
+                    case e_serverDataType.FLOAT:
+                        eleValueMatchDataType=[1.1]
+                        break
+                    case e_serverDataType.INT:
+                        eleValueMatchDataType=[1]
+                        break
+                    default:
+                        eleValueMatchDataType=[null]
+                        recordInfos.push(generateTestRecord({fieldValueToBeGenerate:eleValueMatchDataType,originNormalData:normalRecordInfo,fieldToBeCheck:fieldName}))
+                        eleValueMatchDataType=[undefined]
+                        recordInfos.push(generateTestRecord({fieldValueToBeGenerate:eleValueMatchDataType,originNormalData:normalRecordInfo,fieldToBeCheck:fieldName}))
+                        eleValueMatchDataType=[NaN]
+                }
+                recordInfos.push(generateTestRecord({fieldValueToBeGenerate:eleValueMatchDataType,originNormalData:normalRecordInfo,fieldToBeCheck:fieldName}))
+            }
+        }
+    }
+
+    return recordInfos
+}
+
+function generateMiscTestData({normalRecordInfo,fieldName,collRule}) {
+    let recordInfos=[]
+
+    let copyRecordInfo=misc.objectDeepCopy(normalRecordInfo)
+    delete copyRecordInfo[fieldName]
+    copyRecordInfo['notExist']=''
+
+    recordInfos.push(copyRecordInfo)
+
+    return recordInfos
+}
+
+function generateTestRecord({originNormalData,fieldToBeCheck,fieldValueToBeGenerate}){
+    let dataTypeBasedRecordInfo=misc.objectDeepCopy(originNormalData)
+    dataTypeBasedRecordInfo[fieldToBeCheck]=fieldValueToBeGenerate
+    return dataTypeBasedRecordInfo
+}
 /*  实际调用supertest，将数据发送到对应的API
 *
 * */

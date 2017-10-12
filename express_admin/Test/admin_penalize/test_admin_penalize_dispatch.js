@@ -5,7 +5,7 @@
 
 
 const request=require('supertest')
-const app=require('../../app')
+const adminApp=require('../../app')
 const assert=require('assert')
 
 const server_common_file_require=require('../../server_common_file_require')
@@ -50,15 +50,15 @@ describe('user format check:', function() {
         // console.log(`######   delete exist record   ######`)
         // console.log(`correctValueForModel ${JSON.stringify(correctValueForModel)}`)
         rootSess=await API_helper.adminUserLogin_returnSess_async({userData:{
-            [e_field.ADMIN_USER.NAME]:testData.admin_user.rootAdmin.name,
-            [e_field.ADMIN_USER.PASSWORD]:testData.admin_user.rootAdmin.password,
-        },adminApp:app})
+            [e_field.ADMIN_USER.NAME]:testData.admin_user.adminRoot.name,
+            [e_field.ADMIN_USER.PASSWORD]:testData.admin_user.adminRoot.password,
+        },adminApp:adminApp})
         // console.log(`rootSess ${JSON.stringify(rootSess)}`)
     });
 
     it('miss part:method', function(done) {
         // data.values[e_part.RECORD_INFO]={account:{value:'1'}}
-        request(app).post(baseUrl).set('Accept', 'application/json').send(data)
+        request(adminApp).post(baseUrl).set('Accept', 'application/json').send(data)
             .end(function(err, res) {
                 // if (err) return done(err);
                 // console.log(`res ios ${JSON.stringify(res)}`)
@@ -77,7 +77,7 @@ describe('user format check:', function() {
         data.values[e_part.METHOD]=e_method.CREATE
         data.values[e_part.RECORD_INFO]={}
         data.values[e_part.RECORD_ID]=10
-        request(app).post(baseUrl).set('Accept', 'application/json').set('Cookie',[rootSess]).send(data)
+        request(adminApp).post(baseUrl).set('Accept', 'application/json').set('Cookie',[rootSess]).send(data)
             .end(function(err, res) {
                 // if (err) return done(err);
                 // console.log(`res ios ${JSON.stringify(res)}`)
@@ -94,7 +94,7 @@ describe('user format check:', function() {
         data.values={}
         data.values[e_part.METHOD]='10'
         // console.log(`data is ========.${JSON.stringify(data)}`)
-        request(app).post(baseUrl).set('Accept', 'application/json').send(data)
+        request(adminApp).post(baseUrl).set('Accept', 'application/json').send(data)
             .end(function(err, res) {
                 // if (err) return done(err);
                 // console.log(`res ios ${JSON.stringify(res)}`)
@@ -111,8 +111,8 @@ describe('user format check:', function() {
         // data.values[e_part.RECORD_INFO]={account:{value:'1'}}
         data={values:{}}
         data.values[e_part.METHOD]=e_method.CREATE
-        data.values[e_part.RECORD_INFO]=testData.admin_user.user1
-        request(app).post(baseUrl).set('Accept', 'application/json').send(data)
+        data.values[e_part.RECORD_INFO]=testData.admin_user.adminUser1 //随便填入的数据
+        request(adminApp).post(baseUrl).set('Accept', 'application/json').send(data)
             .end(function(err, res) {
                 // if (err) return done(err);
                 // console.log(`res ios ${JSON.stringify(res)}`)
@@ -131,7 +131,7 @@ describe('user format check:', function() {
         data={values:{}}
         data.values[e_part.METHOD]=e_method.CREATE
         data.values[e_part.RECORD_INFO]=10
-        request(app).post(baseUrl).set('Accept', 'application/json').set('Cookie',[rootSess]).send(data)
+        request(adminApp).post(baseUrl).set('Accept', 'application/json').set('Cookie',[rootSess]).send(data)
             .end(function(err, res) {
                 // if (err) return done(err);
                 // console.log(`res ios ${JSON.stringify(res)}`)
