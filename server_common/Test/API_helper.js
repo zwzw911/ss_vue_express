@@ -32,7 +32,7 @@ async function createUser_async({userData,app}){
     let data={}
     data.values={}
     data.values[e_part.RECORD_INFO]=userData
-// console.log(`userDate for create user==============>${JSON.stringify(userData)}`)
+console.log(`userDate for create user==============>${JSON.stringify(userData)}`)
     data.values.method=e_method.CREATE
     return new Promise(function(resolve,reject){
         request(app).post('/user/').set('Accept', 'application/json').send(data)

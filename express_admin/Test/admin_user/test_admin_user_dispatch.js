@@ -34,7 +34,7 @@ const controllerHelperError=server_common_file_require.helperError.helper//requi
 // const controllerCheckerError=server_common_file_require.helperError.checker
 const controllerError=require('../../server/controller/admin/admin_setting/admin_user_controllerError').controllerError
 
-const objectDeepCopy=server_common_file_require.misc.objectDeepCopy
+// const objectDeepCopy=server_common_file_require.misc.objectDeepCopy
 
 const test_helper=server_common_file_require.db_operation_helper//require("../../../server_common/Test/db_operation_helper")
 const testData=server_common_file_require.testData//require('../../../server_common/Test/testData')
@@ -46,7 +46,8 @@ let userId  //create后存储对应的id，以便后续的update操作
 let finalUrl='',baseUrl=''
 
 let normalRecord=testData.admin_user.adminUser1
-testData.admin_user.adminUser1[e_field.ADMIN_USER.USER_PRIORITY]=['0']
+testData.admin_user.adminUser1[e_field.ADMIN_USER.USER_PRIORITY]=['1']
+
 describe('user format check:', function() {
     let data = {values: {}},  baseUrl="/admin_user/"
     let rootSess
@@ -148,168 +149,8 @@ describe('user format check:', function() {
     });
 })
 
-
-
-describe('method=create: preCheck:misc', function() {
-    let rootSess
-    before('prepare', async function(){
-        // console.log(`######   delete exist record   ######`)
-        /*              root admin login                    */
-        rootSess=await API_helper.adminUserLogin_returnSess_async({userData:testData.admin_user.adminRoot,adminApp:adminApp})
-        /*              delete admin user1                    */
-        await test_helper.deleteAdminUserAndRelatedInfo_async(testData.admin_user.adminUser1.name)
-    });
-
-    let data={values:{}},url=``,baseUrl='/admin_User/',finalUrl=baseUrl
-// console.log(`url==============> ${JSON.stringify(finalUrl)}`)
-    it('miss require field name', function(done) {
-        data.values[e_part.METHOD]=e_method.CREATE
-        data.values[e_part.RECORD_INFO]={password:'12345678'}
-        request(adminApp).post(finalUrl).set('Accept', 'application/json').set('Cookie',[rootSess]).send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-                console.log(`res is ${JSON.stringify(res)}`)
-                let parsedRes=JSON.parse(res.text)
-                // console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,99999)
-                assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.admin_user.name.require.error.rc)
-                done();
-            });
-    });
-    it('require field name too short', function(done) {
-        data.values[e_part.RECORD_INFO]={name:'1'}
-        request(adminApp).post(finalUrl).set('Accept', 'application/json').set('Cookie',[rootSess]).send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-                // console.log(`res ios ${JSON.stringify(res)}`)
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,99999)
-                assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.admin_user.name.format.error.rc)
-                done();
-            });
-    });
-    it('require field name too long', function(done) {
-        data.values[e_part.RECORD_INFO]={name:'123456789012345678901234567890'}
-        request(adminApp).post(finalUrl).set('Accept', 'application/json').set('Cookie',[rootSess]).send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-                // console.log(`res ios ${JSON.stringify(res)}`)
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,99999)
-                assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.admin_user.name.format.error.rc)
-                done();
-            });
-    });
-
-    it('miss require field password', function(done) {
-        data.values[e_part.RECORD_INFO]={name:'123456789'}
-        request(adminApp).post(finalUrl).set('Accept', 'application/json').set('Cookie',[rootSess]).send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-                // console.log(`res ios ${JSON.stringify(res)}`)
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,99999)
-                assert.deepStrictEqual(parsedRes.msg.password.rc,browserInputRule.admin_user.password.require.error.rc)
-                done();
-            });
-    });
-
-
-    it('not exist field check', function(done) {
-        data.values[e_part.RECORD_INFO]={name:'123456789',password:'1',notExist:123}
-        request(adminApp).post(finalUrl).set('Accept', 'application/json').set('Cookie',[rootSess]).send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-                // console.log(`res ios ${JSON.stringify(res)}`)
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                // assert.deepStrictEqual(parsedRes.rc,99999)
-                assert.deepStrictEqual(parsedRes.rc,validateError.validateFormat.recordInfoFiledRuleNotDefine.rc)
-                done();
-            });
-    });
-
-    it('priority enum: value not string', function(done) {
-        data.values={}
-        data.values[e_part.METHOD]=e_method.CREATE
-        // console.log(`Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]})=========>${JSON.stringify(Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]}))}`)
-        data.values[e_part.RECORD_INFO]=Object.assign(testData.admin_user.adminUser1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]})
-        console.log(`data=====>${JSON.stringify(data.values[e_part.RECORD_INFO])}`)
-        request(adminApp).post(finalUrl).set('Accept', 'application/json').set('Cookie',[rootSess]).send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-                // console.log(`res ios ${JSON.stringify(res)}`)
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,99999)
-                assert.deepStrictEqual(parsedRes.msg.userPriority.rc,validateError.validateValue.CUDTypeWrong.rc)
-                done();
-            });
-    });
-    it('priority(enum) value not correct', function(done) {
-        data.values={}
-        data.values[e_part.METHOD]=e_method.CREATE
-        // console.log(`Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]})=========>${JSON.stringify(Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]}))}`)
-        data.values[e_part.RECORD_INFO]=Object.assign(testData.admin_user.adminUser1,{[e_field.ADMIN_USER.USER_PRIORITY]:['99999']})
-        console.log(`data=====>${JSON.stringify(data.values[e_part.RECORD_INFO])}`)
-        request(adminApp).post(finalUrl).set('Accept', 'application/json').set('Cookie',[rootSess]).send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-                // console.log(`res ios ${JSON.stringify(res)}`)
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,99999)
-                assert.deepStrictEqual(parsedRes.msg.userPriority.rc,browserInputRule.admin_user.userPriority.enum.error.rc)
-                done();
-            });
-    });
-
-    it('priority(enum) too short(no value)', function(done) {
-        data.values={}
-        data.values[e_part.METHOD]=e_method.CREATE
-        // console.log(`Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]})=========>${JSON.stringify(Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]}))}`)
-        data.values[e_part.RECORD_INFO]=Object.assign(testData.admin_user.adminUser1,{[e_field.ADMIN_USER.USER_PRIORITY]:[]})
-        console.log(`data=====>${JSON.stringify(data.values[e_part.RECORD_INFO])}`)
-        request(adminApp).post(finalUrl).set('Accept', 'application/json').set('Cookie',[rootSess]).send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-                // console.log(`res ios ${JSON.stringify(res)}`)
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,99999)
-                assert.deepStrictEqual(parsedRes.msg.userPriority.rc,browserInputRule.admin_user.userPriority.arrayMinLength.error.rc)
-                done();
-            });
-    });
-
-    it('priority(enum) too long', function(done) {
-        data.values={}
-        data.values[e_part.METHOD]=e_method.CREATE
-        // console.log(`Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]})=========>${JSON.stringify(Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]}))}`)
-        data.values[e_part.RECORD_INFO]=Object.assign(testData.admin_user.adminUser1,{[e_field.ADMIN_USER.USER_PRIORITY]:["1","2","3","10","11","12","20","21","22",]})
-        console.log(`data=====>${JSON.stringify(data.values[e_part.RECORD_INFO])}`)
-        request(adminApp).post(finalUrl).set('Accept', 'application/json').set('Cookie',[rootSess]).send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-                // console.log(`res ios ${JSON.stringify(res)}`)
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,99999)
-                assert.deepStrictEqual(parsedRes.msg.userPriority.rc,browserInputRule.admin_user.userPriority.arrayMaxLength.error.rc)
-                done();
-            });
-    });
-})
-
-
 describe('inputRule', async function() {
     let url = ``, finalUrl = baseUrl + url
-
-
-
     /*
     * @sess：是否需要sess
     * @APIUrl:测试使用的URL
@@ -321,7 +162,7 @@ describe('inputRule', async function() {
     * */
     let parameter={
         // sess:rootSess,
-        APIUrl:'/admin_user/',
+        APIUrl:finalUrl,
         normalRecordInfo:normalRecord,
         method:e_method.CREATE,
         collRule:browserInputRule[e_coll.ADMIN_USER],
@@ -348,7 +189,7 @@ describe('inputRule', async function() {
     inputRule_API_tester.ruleCheckAll({
         parameter:parameter,
         expectedRuleToBeCheck:[],//[e_serverRuleType.REQUIRE],
-        expectedFieldName:[e_field.ADMIN_USER.USER_PRIORITY]
+        expectedFieldName:[],//[e_field.ADMIN_USER.USER_PRIORITY]
     })
 
 

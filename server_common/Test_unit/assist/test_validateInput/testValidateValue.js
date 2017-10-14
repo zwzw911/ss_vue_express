@@ -120,9 +120,19 @@ describe('validateCreateRecorderValue', function() {
         done()
     })
 
-    //6, data type为array+objectId，但是其中值不符合要求
-    it(`data type is array, the ele value invalid: rembuiser must be objectId`,function(done){
+    //6, data type为array+objectId，但是其中值类型不符合要求
+    it(`data type is array, the ele value type not string: rembuiser must be objectId`,function(done){
         value={name:"asdf",rembuiser:[1]}
+        assert.deepStrictEqual(funcCreate(value,rule).rembuiser.rc,validateValueError.CUDTypeWrong.rc)
+        done()
+    })
+    it(`data type is array, the ele value not match regex: rembuiser must be objectId`,function(done){
+        value={name:"asdf",rembuiser:[1]}
+        assert.deepStrictEqual(funcCreate(value,rule).rembuiser.rc,validateValueError.CUDTypeWrong.rc)
+        done()
+    })
+    it(`data type is array, the ele value is objectId`,function(done){
+        value={name:"asdf",rembuiser:['asdf']}
         assert.deepStrictEqual(funcCreate(value,rule).rembuiser.rc,rule.rembuiser.format.error.rc)
         done()
     })
@@ -305,12 +315,16 @@ describe('validateSingleRecorderFieldValue', function() {
         done()
     })
     //5.  update: field value类型错误
-    it(`update: field data type objectId wrong`,function(done){
-        value={typeObjectId:[1]}
+    it(`update: field data type wrong:not string`,function(done){
+        value={typeObjectId:1}
+        assert.deepStrictEqual(funcUpdate(value,rule).typeObjectId.rc,validateValueError.CUDTypeWrong.rc)
+        done()
+    })
+    it(`update: field data not match object`,function(done){
+        value={typeObjectId:'asdf'}
         assert.deepStrictEqual(funcUpdate(value,rule).typeObjectId.rc,rule.typeObjectId.format.error.rc)
         done()
     })
-
     //5.  update: format check
     it(`update: field data type format wrong`,function(done){
         value={optionalField1:111111}

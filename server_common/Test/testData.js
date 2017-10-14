@@ -14,8 +14,8 @@ const e_adminUserType=mongoEnum.AdminUserType.DB
 
 
 const user={
-    user1:{name:'user1',account:'1590000000',password:'123456',userType:e_userType.NORMAL},
-    user2:{name:'user2',account:'1590000001',password:'654321',userType:e_userType.NORMAL},
+    user1:{name:'user1',account:'15912345678',password:'123456',userType:e_userType.NORMAL},
+    user2:{name:'user2',account:'15987654321',password:'654321',userType:e_userType.NORMAL},
     user3:{name:'user3',account:'1952206639@qq.com',password:'654321',userType:e_userType.NORMAL},
     user4:{name:'user4',account:'user4@qq.com',password:'654321',userType:e_userType.NORMAL},
 

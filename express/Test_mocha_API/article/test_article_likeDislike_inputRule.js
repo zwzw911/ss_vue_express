@@ -5,9 +5,9 @@
 
 
 // const request=require('supertest')
-const adminApp=require('../../app')
+const app=require('../../app')
 // const assert=require('assert')
-const app=require(`../../../express/app`)
+const adminApp=require(`../../../express/app`)
 
 const server_common_file_require=require('../../server_common_file_require')
 const e_serverRuleType=server_common_file_require.inputDataRuleType.ServerRuleType
@@ -42,23 +42,20 @@ const API_helper=server_common_file_require.API_helper//require('../../../server
 const inputRule_API_tester=server_common_file_require.inputRule_API_tester
 const compoenet_function=server_common_file_require.compoenet_function
 
-// const controllerError=require('../../server/controller/penalize/penalize_setting/penalize_controllerError').controllerError
-let baseUrl="/admin_penalize/"
+// const controllerError=require('../../server/controller/article/liekDislike_logic').controllerError
+let baseUrl="/article/"
 let data={values:{}}
 let rootSess
 
 let normalRecord={
-    [e_field.ADMIN_PENALIZE.PUNISHED_ID]:'asdf', //创建user后直接获得id后填入
-    [e_field.ADMIN_PENALIZE.DURATION]:5,
-    [e_field.ADMIN_PENALIZE.REASON]:'testtesttesttesttesttest',
-    [e_field.ADMIN_PENALIZE.PENALIZE_TYPE]:e_penalizeType.NO_ARTICLE,
-    [e_field.ADMIN_PENALIZE.PENALIZE_SUB_TYPE]:e_penalizeSubType.CREATE,
+    [e_field.LIKE_DISLIKE.ARTICLE_ID]:'', //创建user后直接获得id后填入
+    [e_field.LIKE_DISLIKE.LIKE]:true,
 }
 
 
 
 describe('inputRule', async function() {
-    let url = ``, finalUrl = baseUrl + url
+    let url = `likeDislike`, finalUrl = baseUrl + url
     
     /*
     * @sess：是否需要sess
@@ -75,25 +72,28 @@ describe('inputRule', async function() {
         APIUrl:finalUrl,
         normalRecordInfo:normalRecord,
         method:e_method.CREATE,
-	    collRule:browserInputRule[e_coll.ADMIN_PENALIZE],
-        app:adminApp,
+	    collRule:browserInputRule[e_coll.LIKE_DISLIKE],
+        app:app,
     }
 
     before('prepare', async function () {
         // console.log(`######   delete exist record   ######`)
         /*              root admin login                    */
-        parameter.sess = await API_helper.adminUserLogin_returnSess_async({
+/*        parameter.sess = await API_helper.adminUserLogin_returnSess_async({
             userData: testData.admin_user.adminRoot,
             adminApp: adminApp
-        })
+        })*/
         // console.log(`testData.user.user1 is=============>${JSON.stringify(testData.user.user1)}`)
         /*              delete/create/getId  user1                    */
         let result=await compoenet_function.reCreateUser_returnSessUserId_async(testData.user.user1,app)
         let userId=result.userId
+        parameter.sess=result.sess
+
+        normalRecord[e_field.LIKE_DISLIKE.ARTICLE_ID]=await API_helper.createNewArticle_returnArticleId_async({userSess:result.sess,app:app})
         // await test_helper.deleteUserAndRelatedInfo_async({account:.account})
         // await API_helper.createUser_async({userData:testData.user.user1,app:app})
         // normalRecord[e_field.ADMIN_PENALIZE.PUNISHED_ID]={}
-        normalRecord[e_field.ADMIN_PENALIZE.PUNISHED_ID]=userId
+
         // console.log(`normalRecord===========>${JSON.stringify(normalRecord)}`)
     });
 

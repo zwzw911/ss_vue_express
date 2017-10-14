@@ -25,7 +25,7 @@ const validateHelperError=require('../../constant/error/validateError').validate
 
 const rightResult={rc:0,msg:null}
 
-
+// const regex=require(`../../constant/regex`).regex
 /*
  * 除了checkInputValue使用，其他地方也可能使用，所以单独作为一个函数
  * 数值123.0复制后，实际变成123，影响程序处理方式
@@ -225,6 +225,7 @@ function valueTypeCheck(value, type){
             return dataTypeCheck.isObject(value)
             return true
         case serverDataType.OBJECT_ID://在validateValue中通过format进行判断
+            return dataTypeCheck.isString(value)
             return true
         case serverDataType.FILE: //必须是string，且存在，才能判断
             return (dataTypeCheck.isString(value) && valueMatchRuleDefineCheck.isFileFolderExist(value) && dataTypeCheck.isFile(value));

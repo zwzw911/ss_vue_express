@@ -96,6 +96,7 @@ function _validateRecorderValue(inputValue,collRules,baseType){
             let fieldRule=collRules[fieldName]
 
             let fieldType=collRules[fieldName]['type']
+            //数组需要额外检查
             if(dataTypeCheck.isArray(fieldType)){
                 // console.log(`field ${fieldName} is array`)
                 //首先检查数据类型是不是array
@@ -106,7 +107,7 @@ function _validateRecorderValue(inputValue,collRules,baseType){
                 // console.log(`1`)
                 // console.log(`fieldRule=======>${JSON.stringify(fieldRule)}`)
                 // console.log(`${JSON.stringify(fieldRule[e_serverRuleType.ARRAY_MIN_LENGTH])}`)
-                //检查array的长度
+                //检查array的长度位于ARRAY_MIN_LENGTH和ARRAY_MAX_LENGTH
                 if(undefined!==fieldRule[e_serverRuleType.ARRAY_MIN_LENGTH] && undefined!==fieldRule[e_serverRuleType.ARRAY_MIN_LENGTH]['define']){
                     if(fieldValue.length<fieldRule[e_serverRuleType.ARRAY_MIN_LENGTH]['define']){
                         rc[fieldName]=genInputError(fieldRule,e_serverRuleType.ARRAY_MIN_LENGTH)
@@ -120,11 +121,17 @@ function _validateRecorderValue(inputValue,collRules,baseType){
                         break
                     }
                 }
-                // console.log(`3`)
                 rc[fieldName]={rc:0}
+                //预先检查数组中每个元素都是有意义的值，非null或者undefined,然后将单个元素传入函数validateSingleRecorderFieldValue进行检查
                 for(let singleFieldValue of fieldValue){
-// console.log(`singleFieldValue is ${singleFieldValue}`)
-                    console.log(`singleFieldValue pass in===========>${JSON.stringify(singleFieldValue)}`)
+                    // console.log(`singleFieldValue=========>${JSON.stringify(singleFieldValue)}`)
+                    // console.log(` dataTypeCheck.isSetValue(singleFieldValue)=========>${JSON.stringify( dataTypeCheck.isSetValue(singleFieldValue))}`)
+                    //每个元素不能是null或者undefined
+                    if(false===dataTypeCheck.isSetValue(singleFieldValue)){
+                        rc[fieldName]['rc']=validateValueError.CUDTypeWrong.rc
+                        rc[fieldName]['msg']=`${fieldRule['chineseName']}${validateValueError.CUDTypeWrong.msg}`
+                        break
+                    }
 
                     let tmpRc=validateSingleRecorderFieldValue(singleFieldValue,fieldRule)
                     if(tmpRc.rc>0){
@@ -138,8 +145,6 @@ function _validateRecorderValue(inputValue,collRules,baseType){
                 rc[fieldName]=validateSingleRecorderFieldValue(fieldValue,fieldRule)
                 // console.log(`2 result is ${JSON.stringify(rc)}` )
             }
-
-
             // console.log(`validate result of single field is ${JSON.stringify(rc)}`)
         }
 
@@ -185,9 +190,9 @@ function validateRecorderIdValue(recorderIdValue){
  *
  * */
 function validateSingleRecorderFieldValue(fieldValue,fieldRule){
-    console.log(`validateSingleRecorderFieldValue in ===================>${fieldRule['chineseName']}`)
-    console.log(`field value is ${JSON.stringify(fieldValue)}`)
-    console.log(`field rule is ${JSON.stringify(fieldRule)}`)
+    // console.log(`validateSingleRecorderFieldValue in ===================>${fieldRule['chineseName']}`)
+    // console.log(`field value is ${JSON.stringify(fieldValue)}`)
+    // console.log(`field rule is ${JSON.stringify(fieldRule)}`)
     // console.log(`field value isSetValue ${JSON.stringify(dataTypeCheck.isSetValue(fieldValue))}`)
     // console.log(`field value isEmpty ${JSON.stringify(dataTypeCheck.isEmpty(fieldValue))}`)
     let rc={rc:0}
@@ -205,7 +210,7 @@ function validateSingleRecorderFieldValue(fieldValue,fieldRule){
     //如果require为false
     //如果无值返回rc:0，有值，继续往下走
     if(false===fieldRule[e_serverRuleType.REQUIRE]['define']){
-        console.log(`field value is ${fieldValue}`)
+        // console.log(`field value is ${fieldValue}`)
         if(false===dataTypeCheck.isSetValue(fieldValue)){
             return rightResult
         }
@@ -260,7 +265,7 @@ function validateSingleRecorderFieldValue(fieldValue,fieldRule){
         return rc
     }
 
-    //3 如果有format，直接使用format(如果正确，还要继续其他的检测，例如：数字的格式检查完后，还要判断min和max)
+    //3 如果有format，直接使用format,如果正确，还要继续其他的检测，例如：数字的格式检查完后，还要判断min和max.
     if(fieldRule[e_serverRuleType.FORMAT] && fieldRule[e_serverRuleType.FORMAT]['define']){
         let formatDefine=fieldRule[e_serverRuleType.FORMAT]['define']
         // console.log(`formatDefine is ${JSON.stringify(formatDefine)}`)

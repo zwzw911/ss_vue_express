@@ -228,8 +228,10 @@ const convertToClient=function(document,skipFields){
 const addSubFieldKeyValue=function(obj){
     let newValue={}
     for(let fieldName in obj){
-        newValue[fieldName]={'value':obj[fieldName]}
+        // newValue[fieldName]={'value':obj[fieldName]}
+        newValue[fieldName]=obj[fieldName]
     }
+
     return newValue
 }
 
