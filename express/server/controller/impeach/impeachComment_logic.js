@@ -225,7 +225,7 @@ async  function createContent_async({req,collConfig}){
 
     /*              client数据转换                  */
     docValue=req.body.values[e_part.RECORD_INFO]
-    dataConvert.convertCreateUpdateValueToServerFormat(docValue)
+    //dataConvert.convertCreateUpdateValueToServerFormat(docValue)
     dataConvert.constructUpdateCriteria(docValue,fkConfig[collName])
 
     /*              特殊字段的检查                 */
@@ -348,7 +348,7 @@ async function updateContent_async({req,collConfig,collImageConfig}){
 
     /*              client数据转换                  */
     let docValue=req.body.values[e_part.RECORD_INFO]
-    dataConvert.convertCreateUpdateValueToServerFormat(docValue)
+    //dataConvert.convertCreateUpdateValueToServerFormat(docValue)
     dataConvert.constructUpdateCriteria(docValue,fkConfig[collName])
 
     /*              update中，字段impeachedArticleId和impeachedCommentId是client输入，但是在update是不能被修改，需要删除        */

@@ -107,7 +107,12 @@ async function dispatcher_async(req){
     //检查格式
     // console.log(`req is ${JSON.stringify(req.body)}`)
     // console.log(`dispatcher in`)
-    //  console.log(`req.body.values ${JSON.stringify(req.body.values)}`)
+    //  console.log(`req.body.values===========> ${JSON.stringify(req.body.values)}`)
+    // if(req.body.values[e_part.RECORD_INFO]['userPriority']){
+    //     console.log(`req.body.values[e_part.RECORD_INFO]['userPriority']===========> ${JSON.stringify(req.body.values[e_part.RECORD_INFO]['userPriority'])}`)
+    //     console.log(`req.body.values[userPriority] type===========> ${JSON.stringify(typeof req.body.values[e_part.RECORD_INFO]['userPriority'])}`)
+    // }
+
     let collName=e_coll.ADMIN_USER,tmpResult
 
     //dispatcher只检测req的结构，以及req中method的格式和值，以便后续可以直接根据method进行调用

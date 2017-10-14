@@ -268,7 +268,7 @@ async function updateArticle_async(req){
 
     /*              client数据转换                  */
     let docValue=req.body.values[e_part.RECORD_INFO]
-    dataConvert.convertCreateUpdateValueToServerFormat(docValue)
+    //dataConvert.convertCreateUpdateValueToServerFormat(docValue)
     dataConvert.constructUpdateCriteria(docValue,fkConfig[collName])
 
     // let result=await common_operation_model.findById({dbModel:dbModel[e_coll.USER],id:objectId})

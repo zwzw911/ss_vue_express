@@ -18,7 +18,7 @@ let error=require('../../constant/error/assistError').upload
 */
 function checkOption({ maxFilesSize=2097152 ,maxFileNumPerTrans=1 ,uploadDir }){
     //    3 检查maxFilesSize是否为整数
-    if ( false===dataTypeCheck.isInt(maxFilesSize) ) {
+    if ( false===dataTypeCheck.isStrictInt(maxFilesSize) ) {
         return error.maxSizeNotInt(maxFilesSize)
     }
     //    4 maxSize是否为正数
@@ -26,7 +26,7 @@ function checkOption({ maxFilesSize=2097152 ,maxFileNumPerTrans=1 ,uploadDir }){
         return error.maxSizeNotPositive(maxFilesSize)
     }
     //    5 maxFileNum是否为整数
-    if(false===dataTypeCheck.isInt(maxFileNumPerTrans)){
+    if(false===dataTypeCheck.isStrictInt(maxFileNumPerTrans)){
         return error.maxFileNumNotInt(maxFileNumPerTrans)
     }
     //    6 maxFileNum是否为正数

@@ -27,11 +27,11 @@ router.post('/',function(req,res,next){
 // console.log(`req is ${JSON.stringify(req.body)}`)
     userDispatcher_async(req).then(
         (v)=>{
-            console.log(`create   register   success, result:  ${JSON.stringify(v)}`)
+            // console.log(`create   admin register   success, result:  ${JSON.stringify(v)}`)
             return res.json(v)
         },
         (err)=>{
-            console.log(`create   register    fail: ${JSON.stringify(err)}`)
+            // console.log(`create  admin register    fail: ${JSON.stringify(err)}`)
             return res.json(genFinalReturnResult(err))
 
         }

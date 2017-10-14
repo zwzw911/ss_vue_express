@@ -187,7 +187,7 @@ async  function createUser_async(req){
     // console.log(`docValue ${JSON.stringify(docValue)}`)
 
     /*              参数转为server格式            */
-    dataConvert.convertCreateUpdateValueToServerFormat(docValue)
+    //dataConvert.convertCreateUpdateValueToServerFormat(docValue)
     dataConvert.constructCreateCriteria(docValue)
 
     /*      因为name是unique，所以要检查用户名是否存在(unique check)     */
@@ -350,7 +350,7 @@ async function updateUser_async(req){
 
     /*              client数据转换                  */
     let docValue=req.body.values[e_part.RECORD_INFO]
-    dataConvert.convertCreateUpdateValueToServerFormat(docValue)
+    //dataConvert.convertCreateUpdateValueToServerFormat(docValue)
     dataConvert.constructUpdateCriteria(docValue,fkConfig[e_coll.USER])
 
     // let result=await common_operation_model.findById({dbModel:dbModel[e_coll.USER],id:objectId})
@@ -476,7 +476,7 @@ async function login_async(req){
     // let usedColl=e_coll.USER
     let docValue = req.body.values[e_part.RECORD_INFO]
     /*              参数转为server格式            */
-    dataConvert.convertCreateUpdateValueToServerFormat(docValue)
+    //dataConvert.convertCreateUpdateValueToServerFormat(docValue)
     // dataConvert.constructCreateCriteria(docValue)
 
     let expectedField = [e_field.USER.ACCOUNT, e_field.USER.PASSWORD]
@@ -548,7 +548,7 @@ async  function  uniqueCheck_async(req) {
     /*                  logic               */
     let docValue = req.body.values[e_part.SINGLE_FIELD]
     /*              参数转为server格式（SINGLE_FIELD和RECORD_INFO格式一致）            */
-    dataConvert.convertCreateUpdateValueToServerFormat(docValue)
+    //dataConvert.convertCreateUpdateValueToServerFormat(docValue)
     // dataConvert.constructCreateCriteria(docValue)
 // console.log(`docValue ${JSON.stringify(docValue)}`)
 
@@ -600,7 +600,7 @@ async function retrievePassword_async(req){
     /*                  logic               */
     let docValue = req.body.values[e_part.SINGLE_FIELD]
     /*              参数转为server格式（SINGLE_FIELD和RECORD_INFO格式一致）            */
-    dataConvert.convertCreateUpdateValueToServerFormat(docValue)
+    //dataConvert.convertCreateUpdateValueToServerFormat(docValue)
 // console.log(`docValue ${JSON.stringify(docValue)}`)
 
     //读取字段名，进行不同的操作（userUnique或者password格式）

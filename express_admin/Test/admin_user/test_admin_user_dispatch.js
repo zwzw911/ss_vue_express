@@ -46,7 +46,7 @@ let userId  //create后存储对应的id，以便后续的update操作
 let finalUrl='',baseUrl=''
 
 let normalRecord=testData.admin_user.adminUser1
-
+testData.admin_user.adminUser1[e_field.ADMIN_USER.USER_PRIORITY]=['0']
 describe('user format check:', function() {
     let data = {values: {}},  baseUrl="/admin_user/"
     let rootSess
@@ -232,11 +232,11 @@ describe('method=create: preCheck:misc', function() {
             });
     });
 
-    it('priority(enum) value not string', function(done) {
+    it('priority enum: value not string', function(done) {
         data.values={}
         data.values[e_part.METHOD]=e_method.CREATE
         // console.log(`Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]})=========>${JSON.stringify(Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]}))}`)
-        data.values[e_part.RECORD_INFO]=Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]})
+        data.values[e_part.RECORD_INFO]=Object.assign(testData.admin_user.adminUser1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]})
         console.log(`data=====>${JSON.stringify(data.values[e_part.RECORD_INFO])}`)
         request(adminApp).post(finalUrl).set('Accept', 'application/json').set('Cookie',[rootSess]).send(data)
             .end(function(err, res) {
@@ -253,7 +253,7 @@ describe('method=create: preCheck:misc', function() {
         data.values={}
         data.values[e_part.METHOD]=e_method.CREATE
         // console.log(`Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]})=========>${JSON.stringify(Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]}))}`)
-        data.values[e_part.RECORD_INFO]=Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:['99999']})
+        data.values[e_part.RECORD_INFO]=Object.assign(testData.admin_user.adminUser1,{[e_field.ADMIN_USER.USER_PRIORITY]:['99999']})
         console.log(`data=====>${JSON.stringify(data.values[e_part.RECORD_INFO])}`)
         request(adminApp).post(finalUrl).set('Accept', 'application/json').set('Cookie',[rootSess]).send(data)
             .end(function(err, res) {
@@ -325,7 +325,7 @@ describe('inputRule', async function() {
         normalRecordInfo:normalRecord,
         method:e_method.CREATE,
         collRule:browserInputRule[e_coll.ADMIN_USER],
-        app:app,
+        app:adminApp,
     }
 
     before('prepare', async function () {
@@ -333,7 +333,7 @@ describe('inputRule', async function() {
         /*              root admin login                    */
         parameter.sess = await API_helper.adminUserLogin_returnSess_async({
             userData: testData.admin_user.adminRoot,
-            adminApp: app
+            adminApp: adminApp
         })
         // console.log(`parameter.sess is=============>${JSON.stringify(parameter.sess)}`)
         /*              delete  adminUser1                    */
@@ -345,7 +345,11 @@ describe('inputRule', async function() {
     });
 
 
-    inputRule_API_tester.ruleCheckAll({parameter:parameter,expectedRuleToBeCheck:[]})
+    inputRule_API_tester.ruleCheckAll({
+        parameter:parameter,
+        expectedRuleToBeCheck:[],//[e_serverRuleType.REQUIRE],
+        expectedFieldName:[e_field.ADMIN_USER.USER_PRIORITY]
+    })
 
 
 })

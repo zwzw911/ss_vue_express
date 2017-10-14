@@ -64,7 +64,7 @@ async  function createPenalize_async(req){
     /*******************************************************************************************/
     /*                                     参数转为server格式                                  */
     /*******************************************************************************************/
-    dataConvert.convertCreateUpdateValueToServerFormat(docValue)
+    //dataConvert.convertCreateUpdateValueToServerFormat(docValue)
     dataConvert.constructCreateCriteria(docValue)
     /*******************************************************************************************/
     /*                                       authorization check                               */

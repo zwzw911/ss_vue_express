@@ -61,7 +61,7 @@ async function deleteUser_async(req){
     // let userId=tmpResult.msg[e_field.USER.]
     /*              当前用户是否有删除用户的权限      */
     let hasDeletePriority=await controllerChecker.ifAdminUserHasExpectedPriority_async({userPriority:userPriority,arr_expectedPriority:[e_adminPriorityType.DELETE_ADMIN_USER]})
-    console.log(`hasDeletePriority===========>${JSON.stringify(hasDeletePriority)}`)
+    // console.log(`hasDeletePriority===========>${JSON.stringify(hasDeletePriority)}`)
     if(false===hasDeletePriority){
         return Promise.reject(controllerError.currentUserHasNotPriorityToDeleteUser)
     }

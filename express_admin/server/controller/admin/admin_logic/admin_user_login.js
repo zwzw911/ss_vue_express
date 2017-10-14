@@ -57,7 +57,7 @@ async function login_async(req){
     // let usedColl=e_coll.USER
     let docValue = req.body.values[e_part.RECORD_INFO],tmpResult
     /*              参数转为server格式            */
-    dataConvert.convertCreateUpdateValueToServerFormat(docValue)
+    //dataConvert.convertCreateUpdateValueToServerFormat(docValue)
     // dataConvert.constructCreateCriteria(docValue)
 
     /*              login对输入字段使用update的方式进行检查，但是必须确保只有name和password都被输入           */

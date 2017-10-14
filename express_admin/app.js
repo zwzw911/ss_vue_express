@@ -34,7 +34,7 @@ session.setSessionDurationInMinute(480) //session duration is 8hours
 // let op=
 app.use(session.getSession())
 
-
+console.log(`app in`)
 /*const checkInterval_async=require('./server/function/assist/misc').checkInterval_async
 /!*                      预处理                 *!/
 app.use(function(req,res,next){

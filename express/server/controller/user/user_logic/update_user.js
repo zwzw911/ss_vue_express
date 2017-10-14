@@ -49,7 +49,7 @@ async function updateUser_async(req){
     /*              client数据转换                  */
     let docValue=req.body.values[e_part.RECORD_INFO]
     // console.log(`befreo dataConvert`)
-    dataConvert.convertCreateUpdateValueToServerFormat(docValue)
+    //dataConvert.convertCreateUpdateValueToServerFormat(docValue)
     // console.log(`fkConfig[e_coll.USER] ${JSON.stringify(fkConfig[e_coll.USER])}`)
     dataConvert.constructUpdateCriteria(docValue,fkConfig[e_coll.USER])
 

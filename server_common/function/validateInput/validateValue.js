@@ -124,7 +124,7 @@ function _validateRecorderValue(inputValue,collRules,baseType){
                 rc[fieldName]={rc:0}
                 for(let singleFieldValue of fieldValue){
 // console.log(`singleFieldValue is ${singleFieldValue}`)
-//                     console.log(`fieldRule is ${JSON.stringify(fieldRule)}`)
+                    console.log(`singleFieldValue pass in===========>${JSON.stringify(singleFieldValue)}`)
 
                     let tmpRc=validateSingleRecorderFieldValue(singleFieldValue,fieldRule)
                     if(tmpRc.rc>0){
@@ -185,8 +185,9 @@ function validateRecorderIdValue(recorderIdValue){
  *
  * */
 function validateSingleRecorderFieldValue(fieldValue,fieldRule){
-    // console.log(`field value is ${JSON.stringify(fieldValue)}`)
-    // console.log(`field rule is ${JSON.stringify(fieldRule)}`)
+    console.log(`validateSingleRecorderFieldValue in ===================>${fieldRule['chineseName']}`)
+    console.log(`field value is ${JSON.stringify(fieldValue)}`)
+    console.log(`field rule is ${JSON.stringify(fieldRule)}`)
     // console.log(`field value isSetValue ${JSON.stringify(dataTypeCheck.isSetValue(fieldValue))}`)
     // console.log(`field value isEmpty ${JSON.stringify(dataTypeCheck.isEmpty(fieldValue))}`)
     let rc={rc:0}
@@ -204,7 +205,7 @@ function validateSingleRecorderFieldValue(fieldValue,fieldRule){
     //如果require为false
     //如果无值返回rc:0，有值，继续往下走
     if(false===fieldRule[e_serverRuleType.REQUIRE]['define']){
-        // console.log(`field value is ${fieldValue}`)
+        console.log(`field value is ${fieldValue}`)
         if(false===dataTypeCheck.isSetValue(fieldValue)){
             return rightResult
         }
@@ -233,21 +234,19 @@ function validateSingleRecorderFieldValue(fieldValue,fieldRule){
         // 如果错误，返回错误；如果正确，返回{rc:0}
         return rc
     }*/
-    //2 检查value的类型是否符合type中的定义
-    /*console.log(currentItemValue)
-     console.log(currentItemRule['type'])*/
-    // let result = valueTypeCheck(fieldValue,fieldRule['type'])
 
+
+    //2 检查value的类型是否符合type中的定义
     let valueTypeCheckResult
     // console.log(`fieldRule is ${JSON.stringify(fieldRule)}`)
     // console.log(`fieldRule['type'] is ${JSON.stringify(fieldRule['type'])}`)
     if(dataTypeCheck.isArray(fieldRule['type'])){
+        // console.log(`fieldRule is ===>${JSON.stringify(JSON.stringify(fieldRule))}`)
+        // console.log(`fieldValue is ===>${JSON.stringify(JSON.stringify(fieldValue))}`)
         valueTypeCheckResult= valueTypeCheck(fieldValue,fieldRule['type'][0])
+        // console.log(`valueTypeCheckResult is ===>${JSON.stringify(JSON.stringify(valueTypeCheckResult))}`)
     }else{
-        // console.log(`fieldRule is ===>${JSON.stringify(fieldRule)}`)
-        // console.log(`fieldValue is ===>${JSON.stringify(fieldRule)}`)
         valueTypeCheckResult= valueTypeCheck(fieldValue,fieldRule['type'])
-        // console.log(`valueTypeCheckResult is ===>${JSON.stringify(valueTypeCheckResult)}`)
     }
     // console.log(`valueTypeCheckResult is ${JSON.stringify(valueTypeCheckResult)}`)
     if(valueTypeCheckResult.rc && 0<valueTypeCheckResult.rc){
@@ -719,7 +718,7 @@ function validateStaticSearchParamsValue(searchParams,rules){
 
 function validateCurrentPageValue(currentPage){
     //传入可能是字符，需要转换成整数
-    currentPage=dataTypeCheck.isInt(currentPage)
+    currentPage=dataTypeCheck.isStrictInt(currentPage)
     // console.log(`after page int is :${currentPage}`)
     if(0>=currentPage || searchMaxPage.readName<currentPage){
         return validateValueError.invalidCurrentPage

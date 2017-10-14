@@ -198,7 +198,7 @@ async  function createLikeDislike_async(req) {
 // console.log(`userId ====>${userId}`)
     /*              client数据转换                  */
     docValue=req.body.values[e_part.RECORD_INFO]
-    dataConvert.convertCreateUpdateValueToServerFormat(docValue)
+    //dataConvert.convertCreateUpdateValueToServerFormat(docValue)
     dataConvert.constructUpdateCriteria(docValue,fkConfig[collName])
 
 // console.log(`after data convert docvalue==========>${JSON.stringify(docValue)}`)

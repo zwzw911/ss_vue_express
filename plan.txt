@@ -67,8 +67,10 @@
 
 
 1. isInt/isFloat/isDate or  isStrictInt/isStrictFloat。检查client传入的数据是否为原始格式，还是序列化过的格式。例如如果client传入int，收到的是否也是int，还是变成string。。如果是原始格式，采用strict；如果是string，采用非strict。 因为前者返回数值或者false，需要检查调用这2个函数的地方是否检查了false的情况
-2. API test，create/update的recordINfo的field中去除value
-3. API中去除convert
+	采用strict格式，因为传入的原始格式===》done
+2. API test，create/update的recordINfo的field中去除value==》done
+3. API中去除convert======》done
 4. 验证inputRule_API_tester中产生的数据，能够覆盖test_impeach_state_dispatch中enum中的测试case
 
 5. 为所有coll加上inputRule_API_tester，用API来测试input的正确性
+6. folder/file输入值必须是string，需要检测

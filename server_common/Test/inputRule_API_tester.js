@@ -23,6 +23,7 @@ const misc=require(`../function/assist/misc`)
 const e_serverRuleType=require(`../constant/enum/inputDataRuleType`).ServerRuleType
 const e_serverDataType=require(`../constant/enum/inputDataRuleType`).ServerDataType
 
+const validateValueError=require(`../constant/error/validateError`).validateValue
 /*  检查input中require的field
 * @sess：是否需要sess
 * @APIUrl:测试使用的URL
@@ -35,14 +36,28 @@ const e_serverDataType=require(`../constant/enum/inputDataRuleType`).ServerDataT
 * @expectedRuleToBeCheck：数组。那些rule是希望被检查的，如果为空数据，则所有rule都要检查
 * */
 
-function ruleCheckAll({parameter,expectedRuleToBeCheck}){
+function ruleCheckAll({parameter,expectedRuleToBeCheck,expectedFieldName}){
     let allValidRuleName=Object.values(e_serverRuleType)
     let collRule=parameter.collRule
+    let normalRecordInfo=parameter.normalRecordInfo
+    let generatedTestData
     for(let singleFieldName in collRule){
         // console.log(`singleFieldName=======>${JSON.stringify(singleFieldName)}`)
-        for(let singleRuleName in collRule[singleFieldName]){
+        if(expectedFieldName.length>0){
+            if(-1===expectedFieldName.indexOf(singleFieldName)){
+                continue
+            }
+        }
+        //field级别
+        it(`${[singleFieldName]}: ${`undefined`} `, async function(){
+            parameter.fieldName=singleFieldName
+            parameter.singleRuleName='undefined'
+            generatedTestData=generateTestDataBaseFieldDataType(parameter)
+            await ruleTest_async(parameter,generatedTestData,validateValueError.CUDTypeWrong.rc)
+        });
+        /*for(let singleRuleName in collRule[singleFieldName]){
             // console.log(`singleRuleOfField=======>${JSON.stringify(singleRuleOfField)}`)
-// console.log(`for singleRuleOfField========>${singleRuleOfField}`)
+            // console.log(`for singleRuleOfField========>${singleRuleOfField}`)
             //期望检查的rule不为空，且当前rule不为期望rule，skip
             if(undefined!==expectedRuleToBeCheck && expectedRuleToBeCheck.length>0){
                 if(-1===expectedRuleToBeCheck.indexOf(singleRuleName)){
@@ -56,10 +71,12 @@ function ruleCheckAll({parameter,expectedRuleToBeCheck}){
                     // parameter.collRule=collRule
                     // parameter.singleRuleDefine=collRule[singleFieldName][singleRuleName]
                     // parameter.fieldDataType=collRule[singleFieldName]['type']
-                    await ruleTest_async(parameter)
+                    //field中每个rule级别
+                    generatedTestData=generateTestDataBaseValidaRule(parameter)
+                    await ruleTest_async(parameter,generatedTestData,collRule[singleFieldName][singleRuleName]['error']['rc'])
                 });
             }
-        }
+        }*/
     }
 }
 
@@ -72,7 +89,7 @@ function ruleCheckAll({parameter,expectedRuleToBeCheck}){
 * @singleRuleName: field下，某个rule的名称
 * @collRule: 整个coll的rule
 * */
-async function ruleTest_async(parameter){
+async function ruleTest_async(parameter,generatedTestData,expectedErrorRc){
     let {sess,APIUrl,normalRecordInfo,method=e_method.CREATE,fieldName,singleRuleName,collRule,app}=parameter
     // console.log(`require:fieldName is ========>${JSON.stringify(fieldName)}`)
     // console.log(`collRule is ${JSON.stringify(collRule)}`)
@@ -81,17 +98,18 @@ async function ruleTest_async(parameter){
     // console.log(`requireFieldRule is ${JSON.stringify(requireFieldRule)}`)
     let data={values:{}}
     data.values[e_part.METHOD] = method
-    let testDataBaseRule=generateTestDataBaseValidaRule({normalRecordInfo:normalRecordInfo,fieldName:fieldName,ruleName:singleRuleName,collRule:collRule})
-    let testDataBaseDataType=generateTestDataBaseFieldDataType({normalRecordInfo:normalRecordInfo,fieldName:fieldName,collRule:collRule})
-    let testDataMisc=generateMiscTestData({normalRecordInfo:normalRecordInfo,fieldName:fieldName,collRule:collRule})
-    let recordInfos=testDataBaseDataType.concat(testDataBaseRule).concat(testDataMisc)
-
+    // let testDataBaseRule=generateTestDataBaseValidaRule({normalRecordInfo:normalRecordInfo,fieldName:fieldName,ruleName:singleRuleName,collRule:collRule})
+    // let testDataBaseDataType=generateTestDataBaseFieldDataType({normalRecordInfo:normalRecordInfo,fieldName:fieldName,collRule:collRule})
+    // let testDataMisc=generateMiscTestData({normalRecordInfo:normalRecordInfo,fieldName:fieldName,collRule:collRule})
+    // let recordInfos=testDataBaseDataType
+    // recordInfos.concat(testDataBaseRule).concat(testDataBaseDataType).concat(testDataMisc)
+    //recordInfos.concat(testDataBaseRule)//.concat(testDataMisc)
     // console.log(`recordInfos==========>${JSON.stringify(recordInfos)}`)
-    if(recordInfos.length>0){
-        for(let singleRecordInfo of recordInfos){
+    if(generatedTestData.length>0){
+        for(let singleRecordInfo of generatedTestData){
             data.values[e_part.RECORD_INFO] =singleRecordInfo
             // console.log(`data.values==========>${JSON.stringify(data.values)}`)
-            await  sendDataToAPI_async({APIUrl:APIUrl,sess:sess,data:data,singleRuleDefine:collRule[fieldName][singleRuleName],fieldName:fieldName,app:app})
+            await  sendDataToAPI_async({APIUrl:APIUrl,sess:sess,data:data,expectedErrorRc:expectedErrorRc,fieldName:fieldName,app:app})
         }
     }
 }
@@ -102,8 +120,9 @@ async function ruleTest_async(parameter){
 *
 *  return:嵌入到data.values.recordInfo的数据
 * */
-function generateTestDataBaseValidaRule({normalRecordInfo,fieldName,ruleName,collRule}){
+function generateTestDataBaseValidaRule(parameter){
     // console.log(`collRule=========>${JSON.stringify(collRule)}`)
+    let {normalRecordInfo,fieldName,singleRuleName:ruleName,collRule}=parameter
     let ruleDefine=collRule[fieldName][ruleName]['define']
     let fieldDataType=collRule[fieldName]['type']
     let fieldRule=collRule[fieldName]
@@ -160,9 +179,7 @@ function generateTestDataBaseValidaRule({normalRecordInfo,fieldName,ruleName,col
                 }
                 // recordInfos.push(dataTypeBasedRecordInfo)
             }
-
             break;
-
         case e_serverRuleType.FORMAT:
             recordInfos.push(generateTestRecord({fieldValueToBeGenerate:'1(2',originNormalData:normalRecordInfo,fieldToBeCheck:fieldName}))
             break;
@@ -222,10 +239,12 @@ function generateTestDataBaseValidaRule({normalRecordInfo,fieldName,ruleName,col
     return recordInfos
 }
 
-function generateTestDataBaseFieldDataType({normalRecordInfo,fieldName,collRule}) {
+/*                  根据field的数据类型，产生所有不符合此数据类型的测试数据              */
+function generateTestDataBaseFieldDataType(parameter) {
     // console.log(`collRule=========>${JSON.stringify(collRule)}`)
     // let ruleDefine = collRule[fieldName][ruleName]['define']
-
+    let {normalRecordInfo,fieldName,collRule}=parameter
+    // console.log(`normalRecordInfo======>${JSON.stringify(normalRecordInfo)}`)
     let fieldDataType
     if(collRule[fieldName]['type'] instanceof Array){
         fieldDataType='array'
@@ -234,40 +253,53 @@ function generateTestDataBaseFieldDataType({normalRecordInfo,fieldName,collRule}
     }
 
     // let fieldRule = collRule[fieldName]
-    let recordInfo = misc.objectDeepCopy(normalRecordInfo)
+    // let recordInfo = misc.objectDeepCopy(normalRecordInfo)
 
-    let i = 0
+    // let i = 0
     //某些rule可能会生成多个测试数据（例如：require，可以是undefined，也可以是0/""/[]/{}等）
     let recordInfos = []
 
-    let allValidDataType=Object.keys(e_serverDataType)
+    let allValidDataType=Object.values(e_serverDataType)
     allValidDataType.push('array')//rule中直接用[]扩起数据类型，所以serverDataType无此类型，需要手工添加
-
-
+    // console.log(`fieldDataType======>${fieldDataType}`)
+    // console.log(`allValidDataType======>${JSON.stringify(allValidDataType)}`)
     for(let singleDataType of allValidDataType){
         //产生其他非当前dataType的数据
         let valueMatchDataType
         if(fieldDataType!==singleDataType){
             switch (singleDataType){
                 case "array":
-                    valueMatchDataType=[]
+                    valueMatchDataType=[1]
                     break;
                 case e_serverDataType.OBJECT:
-                    valueMatchDataType={}
+                    // console.log(`in obhecadfadfafa`)
+                    valueMatchDataType={a:1}
                     break
                 case e_serverDataType.STRING:
-                    valueMatchDataType=``
+                    valueMatchDataType=`asdf`
                     break
                 case e_serverDataType.FOLDER:
+                    //如果字段类型是字符，此时再设置测试字段值为目录，可能会产生format的错误，而不是期望的类型错误，所以skip
+                    if(fieldDataType===e_serverDataType.STRING){
+                        continue
+                    }
                     valueMatchDataType=`C:/Windows/`
                     break
                 case e_serverDataType.FILE:
+                    //如果字段类型是字符，此时再设置测试字段值为目录，可能会产生format的错误，而不是期望的类型错误，所以skip
+                    if(fieldDataType===e_serverDataType.STRING){
+                        continue
+                    }
                     valueMatchDataType=`C:/Windows/win.ini`
                     break
                 case e_serverDataType.NUMBER:
                     valueMatchDataType=123456789123456789123456789
                     break
                 case e_serverDataType.OBJECT_ID:
+                    //如果字段类型是字符，此时再设置测试字段值为目录，可能会产生format的错误，而不是期望的类型错误，所以skip
+                    if(fieldDataType===e_serverDataType.STRING){
+                        continue
+                    }
                     valueMatchDataType="59db1e1e45112c01e472b6d7"
                     break
                 case e_serverDataType.DATE:
@@ -283,13 +315,15 @@ function generateTestDataBaseFieldDataType({normalRecordInfo,fieldName,collRule}
                     valueMatchDataType=1
                     break
                 default:
-                    valueMatchDataType=null
-                    recordInfos.push(generateTestRecord({fieldValueToBeGenerate:valueMatchDataType,originNormalData:normalRecordInfo,fieldToBeCheck:fieldName}))
-                    valueMatchDataType=undefined
-                    recordInfos.push(generateTestRecord({fieldValueToBeGenerate:valueMatchDataType,originNormalData:normalRecordInfo,fieldToBeCheck:fieldName}))
+                    // valueMatchDataType=null
+                    // recordInfos.push(generateTestRecord({fieldValueToBeGenerate:valueMatchDataType,originNormalData:normalRecordInfo,fieldToBeCheck:fieldName}))
+                    // valueMatchDataType=undefined
+                    // recordInfos.push(generateTestRecord({fieldValueToBeGenerate:valueMatchDataType,originNormalData:normalRecordInfo,fieldToBeCheck:fieldName}))
                     valueMatchDataType=NaN
             }
+            // console.log(`valueMatchDataType========${JSON.stringify(valueMatchDataType)}`)
             recordInfos.push(generateTestRecord({fieldValueToBeGenerate:valueMatchDataType,originNormalData:normalRecordInfo,fieldToBeCheck:fieldName}))
+            // console.log(`recordInfos=======>${JSON.stringify(recordInfos)}`)
         }
     }
 
@@ -301,21 +335,33 @@ function generateTestDataBaseFieldDataType({normalRecordInfo,fieldName,collRule}
             if(singleDataType!==eleDataType){
                 switch (singleDataType){
                     case e_serverDataType.OBJECT:
-                        eleValueMatchDataType=[{}]
+                        eleValueMatchDataType=[{},{}]
                         break
                     case e_serverDataType.STRING:
-                        eleValueMatchDataType=[``]
+                        eleValueMatchDataType=[``,``]
                         break
                     case e_serverDataType.FOLDER:
+                        //如果字段类型是数组，且其中元素的类型是字符，此时再设置测试字段值为目录，可能会产生format的错误，而不是期望的类型错误，所以skip
+                        if(eleDataType===e_serverDataType.STRING){
+                            continue
+                        }
                         eleValueMatchDataType=[`C:/Windows/`]
                         break
                     case e_serverDataType.FILE:
+                        //如果字段类型是数组，且其中元素的类型是字符，此时再设置测试字段值为目录，可能会产生format的错误，而不是期望的类型错误，所以skip
+                        if(eleDataType===e_serverDataType.STRING){
+                            continue
+                        }
                         eleValueMatchDataType=[`C:/Windows/win.ini`]
                         break
                     case e_serverDataType.NUMBER:
-                        eleValueMatchDataType=[23456789123456789123456789]
+                        eleValueMatchDataType=[923456789123456789123456789,923456789123456789123456789]
                         break
                     case e_serverDataType.OBJECT_ID:
+                        //如果字段类型是数组，且其中元素的类型是字符，此时再设置测试字段值为目录，可能会产生format的错误，而不是期望的类型错误，所以skip
+                        if(eleDataType===e_serverDataType.STRING){
+                            continue
+                        }
                         eleValueMatchDataType=["59db1e1e45112c01e472b6d7"]
                         break
                     case e_serverDataType.DATE:
@@ -333,7 +379,7 @@ function generateTestDataBaseFieldDataType({normalRecordInfo,fieldName,collRule}
                     default:
                         eleValueMatchDataType=[null]
                         recordInfos.push(generateTestRecord({fieldValueToBeGenerate:eleValueMatchDataType,originNormalData:normalRecordInfo,fieldToBeCheck:fieldName}))
-                        eleValueMatchDataType=[undefined]
+                        eleValueMatchDataType=[undefined,null]
                         recordInfos.push(generateTestRecord({fieldValueToBeGenerate:eleValueMatchDataType,originNormalData:normalRecordInfo,fieldToBeCheck:fieldName}))
                         eleValueMatchDataType=[NaN]
                 }
@@ -365,7 +411,7 @@ function generateTestRecord({originNormalData,fieldToBeCheck,fieldValueToBeGener
 /*  实际调用supertest，将数据发送到对应的API
 *
 * */
-async function sendDataToAPI_async({APIUrl,sess,data,singleRuleDefine,fieldName,app}){
+async function sendDataToAPI_async({APIUrl,sess,data,expectedErrorRc,fieldName,app}){
     return new Promise(function(resolve,reject){
         request(app).post(APIUrl).set('Accept', 'application/json').set('Cookie', [sess]).send(data)
             .end(function (err, res) {
@@ -375,7 +421,7 @@ async function sendDataToAPI_async({APIUrl,sess,data,singleRuleDefine,fieldName,
                 console.log(`data.values===========>${JSON.stringify(data.values)}`)
                 console.log(`parsedRes  ===========>${JSON.stringify(parsedRes)}`)
                 assert.deepStrictEqual(parsedRes.rc, 99999)
-                assert.deepStrictEqual(parsedRes.msg[fieldName].rc, singleRuleDefine.error.rc)
+                assert.deepStrictEqual(parsedRes.msg[fieldName].rc, expectedErrorRc)
                 return resolve(true)
             });
     })

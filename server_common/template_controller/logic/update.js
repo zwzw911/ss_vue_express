@@ -69,7 +69,7 @@ async function updateUser_async(req){
     /*******************************************************************************************/
 
     // console.log(`befreo dataConvert`)
-    dataConvert.convertCreateUpdateValueToServerFormat(docValue)
+    //dataConvert.convertCreateUpdateValueToServerFormat(docValue)
     // console.log(`fkConfig[e_coll.USER] ${JSON.stringify(fkConfig[e_coll.USER])}`)
     dataConvert.constructUpdateCriteria(docValue,fkConfig[collName])
     /*******************************************************************************************/

@@ -1,0 +1,2 @@
+1. 如果是float，小数点后全是0，则js内部全部转换成整数
+2. 使用nodejs的stats进行文件/文件夹判断时，需要确保a. 传入的是string或者buffer  b. 必须存在  否则无法执行stats

@@ -49,7 +49,7 @@ async  function createUser_async(req){
 // console.log(`docValue===> ${JSON.stringify(docValue)}`)
 
     /*              参数转为server格式            */
-    dataConvert.convertCreateUpdateValueToServerFormat(docValue)
+    //dataConvert.convertCreateUpdateValueToServerFormat(docValue)
     dataConvert.constructCreateCriteria(docValue)
 // console.log(`createUser_async docValue===> ${JSON.stringify(docValue)}`)
     /*      因为name是unique，所以要检查用户名是否存在(unique check)     */

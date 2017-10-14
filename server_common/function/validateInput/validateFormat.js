@@ -103,7 +103,7 @@ function  validatePartFormat (inputValue,expectedParts){
                 break*/
             case e_validatePart.CURRENT_PAGE:
                 //先要转换成int
-                inputValue[partKey]=dataTypeCheck.isInt(inputValue[partKey])
+                inputValue[partKey]=dataTypeCheck.isStrictInt(inputValue[partKey])
                 if(false===inputValue[partKey]){
                     return validateFormatError.inputValuePartCurrentPageValueFormatWrong
                 }
@@ -650,14 +650,9 @@ function validateFilterFieldValueFormat(filterFieldValue,collFKConfig,collName,i
     }
 
     //5 value必须是数字/字符/日期
-    if( false===dataTypeCheck.isNumber(realSearchValue)  && false===dataTypeCheck.isString(realSearchValue)  && false===dataTypeCheck.isDate(realSearchValue)){
+    if( false===dataTypeCheck.isStrictNumber(realSearchValue)  && false===dataTypeCheck.isString(realSearchValue)  && false===dataTypeCheck.isDate(realSearchValue)){
         return validateFormatError.filterFieldValueTypeWrong
     }
-
-
-
-
-
 
 
 /*    //5 如果是对象

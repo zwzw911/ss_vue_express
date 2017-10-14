@@ -78,7 +78,7 @@ async  function  uniqueCheck_async(req) {
     /*                  logic               */
     let docValue = req.body.values[e_part.SINGLE_FIELD]
     /*              参数转为server格式（SINGLE_FIELD和RECORD_INFO格式一致）            */
-    dataConvert.convertCreateUpdateValueToServerFormat(docValue)
+    //dataConvert.convertCreateUpdateValueToServerFormat(docValue)
     // dataConvert.constructCreateCriteria(docValue)
 // console.log(`docValue ${JSON.stringify(docValue)}`)
 

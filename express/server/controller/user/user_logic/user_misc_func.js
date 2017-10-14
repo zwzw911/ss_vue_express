@@ -79,7 +79,7 @@ async  function  uniqueCheck_async(req) {
     /*                  logic               */
     let docValue = req.body.values[e_part.SINGLE_FIELD]
     /*              参数转为server格式（SINGLE_FIELD和RECORD_INFO格式一致）            */
-    dataConvert.convertCreateUpdateValueToServerFormat(docValue)
+    //dataConvert.convertCreateUpdateValueToServerFormat(docValue)
     // dataConvert.constructCreateCriteria(docValue)
 // console.log(`docValue ${JSON.stringify(docValue)}`)
 
@@ -130,7 +130,7 @@ async function retrievePassword_async(req){
     /*                  logic               */
     let docValue = req.body.values[e_part.SINGLE_FIELD]
     /*              参数转为server格式（SINGLE_FIELD和RECORD_INFO格式一致）            */
-    dataConvert.convertCreateUpdateValueToServerFormat(docValue)
+    //dataConvert.convertCreateUpdateValueToServerFormat(docValue)
 // console.log(`docValue ${JSON.stringify(docValue)}`)
 
     //读取字段名，进行不同的操作（userUnique或者password格式）

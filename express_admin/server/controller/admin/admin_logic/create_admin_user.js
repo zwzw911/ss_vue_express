@@ -49,7 +49,7 @@ const currentEnv=server_common_file_require.appSetting.currentEnv
 //对数值逻辑进行判断（外键是否有对应的记录等）
 //执行db操作并返回结果
 async  function createUser_async(req){
-    console.log(`create user in`)
+    // console.log(`create user in`)
     let tmpResult
     let collName=controller_setting.MAIN_HANDLED_COLL_NAME
     let docValue=req.body.values[e_part.RECORD_INFO]
@@ -60,7 +60,7 @@ async  function createUser_async(req){
 // console.log(`docValue===> ${JSON.stringify(docValue)}`)
 // console.log(`userId===> ${JSON.stringify(userId)}`)
     /*              参数转为server格式            */
-    dataConvert.convertCreateUpdateValueToServerFormat(docValue)
+    // dataConvert.convertCreateUpdateValueToServerFormat(docValue)
     dataConvert.constructCreateCriteria(docValue)
 
     /*              不能通过API创建ROOT           */

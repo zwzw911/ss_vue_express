@@ -17,7 +17,7 @@ const e_field=require('../../constant/genEnum/DB_field').Field
 
 const admin_user=[
         {
-            [e_field.ADMIN_USER.NAME]:'zw',
+            [e_field.ADMIN_USER.NAME]:'root',
             [e_field.ADMIN_USER.DOC_STATUS]:e_docStatus.DONE,
             [e_field.ADMIN_USER.LAST_ACCOUNT_UPDATE_DATE]:Date.now(),
             [e_field.ADMIN_USER.LAST_SIGN_IN_DATE]:Date.now(),

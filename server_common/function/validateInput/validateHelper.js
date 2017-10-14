@@ -118,23 +118,22 @@ const dataTypeCheck= {
         //return false
     },
     //严格模式，待检查值是数值（而不是字符）
+    //value===parseInt(value)============> 1.0=>1
     isStrictInt(value){
-        if('number'!==typeof value){
-            return false
-        }
-        if(value!==parseInt(value)){
-            return false
-        }
-        return true
+        return ('number'===typeof value && !isNaN(parseInt(value)) && value===parseInt(value))
     },
     isStrictFloat(value){
-        if('number'!==typeof value){
-            return false
-        }
-        if(value!==parseFloat(value)){
-            return false
-        }
-        return true
+        //json格式，可以传送原始数据格式
+        //可能会出现1.0===>1  1234567891234567891234567899===>1.23456789e25，所以只能通过NaN判断是否为浮点
+        return ('number'===typeof value && !isNaN(parseFloat(value)) && value===parseFloat(value))
+
+    },
+    //返回整数或者浮点数
+    isStrictNumber(value){
+        //json格式，可以传送原始数据格式
+        //可能会出现1.0===>1  1234567891234567891234567899===>1.23456789e25，所以只能通过NaN判断是否为浮点
+        return ('number'===typeof value && !isNaN(Number(value)) && value===Number(value))
+
     },
     //整数，但是超出int所能表示的范围（无法处理，大数会变成科学计数法，从而无法用regex判断）。所以只能处理string类型
     isNumber(value) {
@@ -213,9 +212,9 @@ const dataTypeCheck= {
 function valueTypeCheck(value, type){
     switch (type) {
         case serverDataType.INT:
-            return dataTypeCheck.isInt(value)   //返回false或者int(使用宽松模式，因为输入的都是字符)
+            return dataTypeCheck.isStrictInt(value)   //返回boolean（client可以保存传入的数据格式）
         case serverDataType.FLOAT:
-            return dataTypeCheck.isFloat(value)   //返回false或者int
+            return dataTypeCheck.isStrictFloat(value)   //返回boolean（client可以保存传入的数据格式）
         case serverDataType.STRING:
             return dataTypeCheck.isString(value)
         case serverDataType.DATE:
@@ -227,12 +226,12 @@ function valueTypeCheck(value, type){
             return true
         case serverDataType.OBJECT_ID://在validateValue中通过format进行判断
             return true
-        case serverDataType.FILE:
-            return (valueMatchRuleDefineCheck.isFileFolderExist(value) && dataTypeCheck.isFile(value));
+        case serverDataType.FILE: //必须是string，且存在，才能判断
+            return (dataTypeCheck.isString(value) && valueMatchRuleDefineCheck.isFileFolderExist(value) && dataTypeCheck.isFile(value));
         case serverDataType.FOLDER:
-            return (valueMatchRuleDefineCheck.isFileFolderExist(value) && dataTypeCheck.isFolder(value))
+            return (dataTypeCheck.isString(value) && valueMatchRuleDefineCheck.isFileFolderExist(value) && dataTypeCheck.isFolder(value))
         case serverDataType.NUMBER:
-            return dataTypeCheck.isNumber(value)
+            return dataTypeCheck.isStrictNumber(value)
         case serverDataType.BOOLEAN:
             return dataTypeCheck.isBoolean(value)
         default:
@@ -613,14 +612,14 @@ const valueMatchRuleDefineCheck={
     exceedMaxLength(value, maxLength) {
         // console.log( `exceed enter`)
         //length属性只能在数字/字符/数组上执行
-        //其实只有number和string才有maxLength（在rule中定义）
-        if(false===dataTypeCheck.isArray(value) && false===dataTypeCheck.isInt(value) && false===dataTypeCheck.isFloat(value) && false===dataTypeCheck.isString(value)){
+        //其实只有float/number/int和string/array才有maxLength（在rule中定义）
+        if(false===dataTypeCheck.isArray(value) && false===dataTypeCheck.isStrictInt(value) && false===dataTypeCheck.isStrictFloat(value) && false===dataTypeCheck.isStrictNumber(value) && false===dataTypeCheck.isString(value)){
             // console.log( `exceed:type wrong`)
             return false
         }
         //数字需要转换成字符才能执行length
-        //isFloat和isInt返回false或者数字，所以必须使用false!==的格式判断
-        if(false!==dataTypeCheck.isFloat(value) || false!==dataTypeCheck.isInt(value)){
+        //float如下情况会自动转换  123.0===>123
+        if(true===dataTypeCheck.isStrictFloat(value) || true===dataTypeCheck.isStrictInt(value) || true===dataTypeCheck.isStrictNumber(value)){
             // console.log( `exceed:type number`)
             return value.toString().length > maxLength
         }
@@ -629,22 +628,25 @@ const valueMatchRuleDefineCheck={
     },
 
     exceedMinLength(value, minLength) {
-        if(false===dataTypeCheck.isArray(value) && false===dataTypeCheck.isInt(value) && false===dataTypeCheck.isFloat(value) && false===dataTypeCheck.isString(value)){
+        //其实只有float/number/int和string/array才有maxLength（在rule中定义）
+        if(false===dataTypeCheck.isArray(value) && false===dataTypeCheck.isStrictInt(value) && false===dataTypeCheck.isStrictFloat(value) && false===dataTypeCheck.isStrictNumber(value) && false===dataTypeCheck.isString(value)){
             return false
         }
         //数字需要转换成字符才能执行length
-        if(dataTypeCheck.isFloat(value) || dataTypeCheck.isInt(value)){
+        //float如下情况会自动转换  123.0===>123
+        if(true===dataTypeCheck.isStrictFloat(value) || true===dataTypeCheck.isStrictInt(value) || true===dataTypeCheck.isStrictNumber(value)){
             return value.toString().length < minLength
         }
         return value.length < minLength
     },
 
     exactLength(value, exactLength) {
-        if(false===dataTypeCheck.isArray(value) && false===dataTypeCheck.isInt(value) && false===dataTypeCheck.isFloat(value) && dataTypeCheck.isString(value)){
+        if(false===dataTypeCheck.isArray(value) && false===dataTypeCheck.isStrictInt(value) && false===dataTypeCheck.isStrictFloat(value) && false===dataTypeCheck.isStrictNumber(value) && false===dataTypeCheck.isString(value)){
             return false
         }
         //数字需要转换成字符才能执行length
-        if(dataTypeCheck.isFloat(value) || dataTypeCheck.isInt(value)){
+        //float如下情况会自动转换  123.0===>123
+        if(true===dataTypeCheck.isStrictFloat(value) || true===dataTypeCheck.isStrictInt(value) || true===dataTypeCheck.isStrictNumber(value)){
             return value.toString().length === exactLength
         }
         return value.length === exactLength
