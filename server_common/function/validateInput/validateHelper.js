@@ -79,6 +79,9 @@ const dataTypeCheck= {
         return typeof obj === 'object' && obj!==null && Object == obj.constructor;
     },
     isString(value){
+        // console.log(`enter string check`)
+        // console.log(`value===========>${JSON.stringify(value)}`)
+        // console.log(`value typeof===========>${JSON.stringify(typeof value)}`)
         return typeof value === 'string'
     },
 //检查是否有效日期; 返回false或者转换后的日期

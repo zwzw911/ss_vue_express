@@ -244,14 +244,17 @@ function validateSingleRecorderFieldValue(fieldValue,fieldRule){
     //2 检查value的类型是否符合type中的定义
     let valueTypeCheckResult
     // console.log(`fieldRule is ${JSON.stringify(fieldRule)}`)
-    // console.log(`fieldRule['type'] is ${JSON.stringify(fieldRule['type'])}`)
+
     if(dataTypeCheck.isArray(fieldRule['type'])){
         // console.log(`fieldRule is ===>${JSON.stringify(JSON.stringify(fieldRule))}`)
-        // console.log(`fieldValue is ===>${JSON.stringify(JSON.stringify(fieldValue))}`)
         valueTypeCheckResult= valueTypeCheck(fieldValue,fieldRule['type'][0])
         // console.log(`valueTypeCheckResult is ===>${JSON.stringify(JSON.stringify(valueTypeCheckResult))}`)
     }else{
+        // console.log(`fieldRule['chineseName'] is ${JSON.stringify(fieldRule['chineseName'])}`)
+        // console.log(`fieldRule['type'] is ${JSON.stringify(fieldRule['type'])}`)
+        // console.log(`fieldValue is ===>${JSON.stringify(JSON.stringify(fieldValue))}`)
         valueTypeCheckResult= valueTypeCheck(fieldValue,fieldRule['type'])
+        // console.log(`valueTypeCheckResult is ===>${JSON.stringify(JSON.stringify(valueTypeCheckResult))}`)
     }
     // console.log(`valueTypeCheckResult is ${JSON.stringify(valueTypeCheckResult)}`)
     if(valueTypeCheckResult.rc && 0<valueTypeCheckResult.rc){
@@ -330,10 +333,14 @@ function validateSingleRecorderFieldValue(fieldValue,fieldRule){
         let ruleDefine=fieldRule[singleItemRuleName]['define']
         switch (singleItemRuleName){
             case e_serverRuleType.MIN_LENGTH:
+                // console.log(`fieldRule of MIN_LENGTH============>${JSON.stringify(fieldRule)}`)
+                // console.log(`fieldValue of MIN_LENGTH============>${JSON.stringify(fieldValue)}`)
+                // console.log(`ruleDefine of MIN_LENGTH============>${JSON.stringify(ruleDefine)}`)
                 if(true===valueMatchRuleDefineCheck.exceedMinLength(fieldValue,ruleDefine)){
                     // rc['rc']=fieldRule[singleItemRuleName]['error']['rc']
                     // rc['msg']=genInputError(fieldRule,e_serverRuleType.MIN_LENGTH)
                     // return rc
+                    // console.log(`min length in==========>`)
                     return genInputError(fieldRule,e_serverRuleType.MIN_LENGTH)
                 }
                 break;

@@ -33,7 +33,7 @@ const validateFormat=require('../server_common/function/validateInput/validateFo
 const validateHelper=require('../server_common/function/validateInput/validateHelper.js')
 const validateValue=require('../server_common/function/validateInput/validateValue.js')
 const API_helper=require('../server_common/Test/API_helper.js')
-const compoenet_function=require('../server_common/Test/compoenet_function.js')
+const component_function=require('../server_common/Test/component_function.js')
 const db_operation_helper=require('../server_common/Test/db_operation_helper.js')
 const inputRule_API_tester=require('../server_common/Test/inputRule_API_tester.js')
 const testData=require('../server_common/Test/testData.js')
@@ -74,7 +74,7 @@ module.exports={
     validateHelper,
     validateValue,
     API_helper,
-    compoenet_function,
+    component_function,
     db_operation_helper,
     inputRule_API_tester,
     testData,

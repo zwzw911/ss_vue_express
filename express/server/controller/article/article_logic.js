@@ -174,7 +174,8 @@ async function article_dispatcher_async(req){
                 penalizeCheckError:controllerError.userInPenalizeNoArticleUpdate
             }
             expectedPart=[e_part.RECORD_INFO,e_part.RECORD_ID]
-            tmpResult=await controllerHelper.preCheck_async({req:req,collName,method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart,e_field:e_field,e_coll:e_coll,e_internal_field:e_internal_field,maxSearchKeyNum:maxSearchKeyNum,maxSearchPageNum:maxSearchPageNum})
+            // console.log(`update article=========>${JSON.stringify(req.body.values)}`)
+            tmpResult=await controllerHelper.preCheck_async({req:req,collName,method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})//,e_field:e_field,e_coll:e_coll,e_internal_field:e_internal_field,maxSearchKeyNum:maxSearchKeyNum,maxSearchPageNum:maxSearchPageNum})
 // console.log(`article update precheck result======>${JSON.stringify(tmpResult)}`)
 
             /*      执行逻辑                */
@@ -209,7 +210,7 @@ async  function createArticle_async(req){
     }
     docValue[e_field.ARTICLE.FOLDER_ID]=tmpResult[0]['id']
     docValue[e_field.ARTICLE.CATEGORY_ID]=e_iniSettingObject.category.other
-    docValue[e_field.ARTICLE.HTML_CONTENT]=`\br`
+    docValue[e_field.ARTICLE.HTML_CONTENT]=`<i>请在此输入文档内容......</i>`
 
 
     // console.log(`after attachment check=========>${JSON.stringify(docValue)}`)
@@ -260,6 +261,7 @@ async function updateArticle_async(req){
     let condition={}
     condition['_id']=articleId
     condition[e_field.ARTICLE.AUTHOR_ID]=userId
+    // console.log(`condition is ${JSON.stringify(condition)}`)
     tmpResult=await  common_operation_model.find_returnRecords_async({dbModel:e_dbModel[collName],condition:condition})
     if(tmpResult.length!==1){
         return Promise.reject(controllerError.notAuthorized)
@@ -324,7 +326,7 @@ async function updateArticle_async(req){
             collConfig:collConfig,
             collImageConfig:collImageConfig,
         })
-// console.log(`afet image check ==============>${JSON.stringify(docValue[e_field.ARTICLE.HTML_CONTENT])}`)
+console.log(`after image check ==============>${JSON.stringify(docValue[e_field.ARTICLE.HTML_CONTENT])}`)
     }
     // console.log(`image check done====>`)
     //2. 如果有tag，对其中的每个tag，在对应的coll（tag）中，执行“如果不存在，就插入”的操作。coll（tag）的功能是为搜索提供AutoComplete的功能

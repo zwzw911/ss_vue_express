@@ -36,7 +36,7 @@ const objectDeepCopy=server_common_file_require.misc.objectDeepCopy
 const test_helper= server_common_file_require.db_operation_helper
 const testData=server_common_file_require.testData//require('../testData')
 const API_helper=server_common_file_require.API_helper//require('../API_helper/API_helper')
-const component_function=server_common_file_require.compoenet_function
+const component_function=server_common_file_require.component_function
 
 
 

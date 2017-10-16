@@ -49,7 +49,7 @@ const ChineseName={
         'name':'文档名',
         'status':'文档状态',
         'folderId':'文档目录',
-        'htmlContent':'格式内容',
+        'htmlContent':'文档内容',
         'tags':'文档标签',
         'categoryId':'分类',
         'authorId':'作者',

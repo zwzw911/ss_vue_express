@@ -109,6 +109,9 @@ function  validatePartFormat (inputValue,expectedParts){
                 }
                 break
             case e_validatePart.RECORD_ID:
+                // console.log(`inputValue[partKey] of RECORD_ID==========>${JSON.stringify(inputValue[partKey])}`)
+                // console.log(`inputValue[partKey] of typeof RECORD_ID==========>${JSON.stringify(typeof inputValue[partKey])}`)
+                // console.log(`regex.objectId.test(inputValue[partKey])==========>${JSON.stringify(regex.objectId.test(inputValue[partKey]))}`)
                 if(false===dataTypeCheck.isString(inputValue[partKey]) || false===regex.objectId.test(inputValue[partKey])) {
                     return validateFormatError.inputValuePartRecordIdValueFormatWrong
                 }

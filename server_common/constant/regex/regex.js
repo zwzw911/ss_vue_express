@@ -16,7 +16,7 @@ const regex={
     imageDataUrl:/\<img.*?src="data:image\/.*?base64,.*?\>/g,
     imageDOM:/\<img.*?\>/g,
     // imageSrc:/src="(.*?)"/, //对单个imageDOM，获得src内容
-    objectId:/^[0-9a-f]{24}$/,//mongodb objectid
+    objectId:/^[0-9a-fA-F]{24}$/,//mongodb objectid
     
     userName:/^[\u4E00-\u9FFF\w]{2,20}$/,//2-20个汉字/英文/数字
     salt:/^[0-9a-zA-Z]{1,10}$/,

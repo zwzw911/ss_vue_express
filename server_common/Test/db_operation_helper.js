@@ -187,7 +187,8 @@ async function getUserFolderId_async(userData){
         condition: condition,
         options: options
     })
-    return Promise.resolve({folderId:tmpResult[0]['_id']})
+    // console.log(`folderis =====================>${JSON.stringify(tmpResult[0]['_id'].toString())}`)
+    return Promise.resolve(tmpResult[0]['_id'].toString())
 }
 /*async function findByIdAndUpdate_returnRecord_async({dbModel,id,updateFieldsValue,updateOption}){
     // console.log(`find by id :${id}`)

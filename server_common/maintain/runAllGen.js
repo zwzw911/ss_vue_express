@@ -95,10 +95,13 @@ function _genForGeneral_part2(absoluteDestDirForInputRule,absoluteDestDirForEnum
     /*                  inputRule                      */
     //合并生成internal/browse/all inputRule
     //absoluteDestDirForInputRule:  server/inputRule
-    console.log(`start generateAllRuleInOneFile`)
+
     const generateAllRuleInOneFile=require('./generateFunction/generateAllRuleInOneFile').writeResult
+    console.log(`start generateAllRuleInOneFile for both`)
     generateAllRuleInOneFile(modelCollRootDir,`${absoluteDestDirForInputRule}inputRule.js`,e_ruleType.BOTH,skipFilesArray,inputRuleBaseDir)
+    console.log(`start generateAllRuleInOneFile for browser`)
     generateAllRuleInOneFile(modelCollRootDir,`${absoluteDestDirForInputRule}browserInputRule.js`,e_ruleType.BROWSER,skipFilesArray,inputRuleBaseDir)
+    console.log(`start generateAllRuleInOneFile for internal`)
     generateAllRuleInOneFile(modelCollRootDir,`${absoluteDestDirForInputRule}internalInputRule.js`,e_ruleType.INTERNAL,skipFilesArray,inputRuleBaseDir)
 
 

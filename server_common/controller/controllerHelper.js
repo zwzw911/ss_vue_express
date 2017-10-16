@@ -204,12 +204,11 @@ function validatePartValue({req,expectedPart,collName,inputRule,recordInfoBaseRu
                 }
                 break;
             case e_part.RECORD_ID:
-                // console.log(`record id in ===================> `)
-                checkPartValueResult=validateValue.validateRecorderId(req.body.values[e_part.RECORD_ID])
-// console.log(`record id result ===================> ${JSON.stringify(checkPartValueResult)}`)
-                if(checkPartValueResult.rc>0){
-                    return checkPartValueResult
-                }
+                // 无需检测，直接在validateFormat中检测
+                // checkPartValueResult=validateValue.validateRecorderId(req.body.values[e_part.RECORD_ID])
+                // if(checkPartValueResult.rc>0){
+                //     return checkPartValueResult
+                // }
                 break;
             case e_part.RECORD_INFO:
                 // console.log(`record info in ===================> `)

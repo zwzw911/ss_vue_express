@@ -40,7 +40,7 @@ const test_helper=server_common_file_require.db_operation_helper//require("../..
 const testData=server_common_file_require.testData//require('../../../server_common/Test/testData')
 const API_helper=server_common_file_require.API_helper//require('../../../server_common/Test/API')
 const inputRule_API_tester=server_common_file_require.inputRule_API_tester
-const compoenet_function=server_common_file_require.compoenet_function
+const component_function=server_common_file_require.component_function
 
 // const controllerError=require('../../server/controller/article/liekDislike_logic').controllerError
 let baseUrl="/article/"
@@ -85,7 +85,7 @@ describe('inputRule', async function() {
         })*/
         // console.log(`testData.user.user1 is=============>${JSON.stringify(testData.user.user1)}`)
         /*              delete/create/getId  user1                    */
-        let result=await compoenet_function.reCreateUser_returnSessUserId_async(testData.user.user1,app)
+        let result=await component_function.reCreateUser_returnSessUserId_async(testData.user.user1,app)
         let userId=result.userId
         parameter.sess=result.sess
 

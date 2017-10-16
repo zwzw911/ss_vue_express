@@ -47,6 +47,7 @@ function ruleCheckAll({parameter,expectedRuleToBeCheck,expectedFieldName}){
     let allValidRuleName=Object.values(e_serverRuleType)
     let collRule=parameter.collRule
     let normalRecordInfo=parameter.normalRecordInfo
+    // console.log(`normalRecordInfo===========>${JSON.stringify(normalRecordInfo)}`)
     let generatedTestData
     //coll级别
 
@@ -132,6 +133,10 @@ async function ruleTest_async(parameter,generatedTestData,expectedErrorRc,rcLeve
     let {sess,APIUrl,normalRecordInfo,method=e_method.CREATE,fieldName,singleRuleName,collRule,app}=parameter
     let data={values:{}}
     data.values[e_part.METHOD] = method
+    //如果是update，还需要额外的redordId字段，以便通过preCheck中expectedParts的测试，所以实际Id是什么无所谓
+    if(method===e_method.UPDATE){
+        data.values[e_part.RECORD_ID]='59e40d516e27882dc82ce9f6'
+    }
     if(generatedTestData.length>0){
         for(let singleRecordInfo of generatedTestData){
             data.values[e_part.RECORD_INFO] =singleRecordInfo
@@ -156,9 +161,13 @@ async function ruleTest_async(parameter,generatedTestData,expectedErrorRc,rcLeve
 * */
 function generateTestDataBaseValidaRule(parameter){
     // console.log(`collRule=========>${JSON.stringify(collRule)}`)
-    let {normalRecordInfo,fieldName,singleRuleName:ruleName,collRule}=parameter
+    let {normalRecordInfo,fieldName,singleRuleName:ruleName,collRule,method}=parameter
     let ruleDefine=collRule[fieldName][ruleName]['define']
     let fieldDataType=collRule[fieldName]['type']
+
+    let fieldDataTypeIsArray=fieldDataType instanceof Array
+    let testValue
+
     let fieldRule=collRule[fieldName]
     let recordInfo = misc.objectDeepCopy(normalRecordInfo)
 
@@ -172,7 +181,8 @@ function generateTestDataBaseValidaRule(parameter){
 
     switch (ruleName){
         case e_serverRuleType.REQUIRE:
-            if(true===ruleDefine){
+            //cretea才有必要测试require
+            if(true===ruleDefine && method===e_method.CREATE){
                 //字段未定义
 /*                let undefinedRecordInfo=misc.objectDeepCopy(normalRecordInfo)
                 delete  undefinedRecordInfo[fieldName]
@@ -211,18 +221,28 @@ function generateTestDataBaseValidaRule(parameter){
                         recordInfos.push(generateTestRecord({fieldValueToBeGenerate:"       ",originNormalData:normalRecordInfo,fieldToBeCheck:fieldName}))
                         break;
                 }
-                if(fieldDataType instanceof Array){
+                if(true===fieldDataTypeIsArray){
                     recordInfos.push(generateTestRecord({fieldValueToBeGenerate:[],originNormalData:normalRecordInfo,fieldToBeCheck:fieldName}))
                 }
                 // recordInfos.push(dataTypeBasedRecordInfo)
             }
             break;
         case e_serverRuleType.FORMAT:
-            recordInfos.push(generateTestRecord({fieldValueToBeGenerate:'1(2',originNormalData:normalRecordInfo,fieldToBeCheck:fieldName}))
+            if(true===fieldDataTypeIsArray){
+                testValue=['1(2']
+            }else{
+                testValue='1(2'
+            }
+            recordInfos.push(generateTestRecord({fieldValueToBeGenerate:testValue,originNormalData:normalRecordInfo,fieldToBeCheck:fieldName}))
             break;
         case e_serverRuleType.MIN_LENGTH:
             //minLength采用字符长度为1。如果有rule设置minLenght为1，需要删除此rule，因为和require重复了
-            recordInfos.push(generateTestRecord({fieldValueToBeGenerate:'1',originNormalData:normalRecordInfo,fieldToBeCheck:fieldName}))
+            if(true===fieldDataTypeIsArray){
+                testValue=['1']
+            }else{
+                testValue='1'
+            }
+            recordInfos.push(generateTestRecord({fieldValueToBeGenerate:testValue,originNormalData:normalRecordInfo,fieldToBeCheck:fieldName}))
             break;
         case e_serverRuleType.MAX_LENGTH:
             // let maxLengthDefine=ruleDefine['define']
@@ -232,16 +252,31 @@ function generateTestDataBaseValidaRule(parameter){
                 maxString+='a'
                 i++
             }
+            if(true===fieldDataTypeIsArray){
+                testValue=[maxString]
+            }else{
+                testValue=maxString
+            }
             // console.log(maxString.length)
-            recordInfos.push(generateTestRecord({fieldValueToBeGenerate:maxString,originNormalData:normalRecordInfo,fieldToBeCheck:fieldName}))
+            recordInfos.push(generateTestRecord({fieldValueToBeGenerate:testValue,originNormalData:normalRecordInfo,fieldToBeCheck:fieldName}))
             break;
         case e_serverRuleType.MIN:
             let minValue=ruleDefine-1
-            recordInfos.push(generateTestRecord({fieldValueToBeGenerate:minValue,originNormalData:normalRecordInfo,fieldToBeCheck:fieldName}))
+            if(true===fieldDataTypeIsArray){
+                testValue=[minValue]
+            }else{
+                testValue=minValue
+            }
+            recordInfos.push(generateTestRecord({fieldValueToBeGenerate:testValue,originNormalData:normalRecordInfo,fieldToBeCheck:fieldName}))
             break;
         case e_serverRuleType.MAX:
             let maxValue=ruleDefine+1
-            recordInfos.push(generateTestRecord({fieldValueToBeGenerate:maxValue,originNormalData:normalRecordInfo,fieldToBeCheck:fieldName}))
+            if(true===fieldDataTypeIsArray){
+                testValue=[maxValue]
+            }else{
+                testValue=maxValue
+            }
+            recordInfos.push(generateTestRecord({fieldValueToBeGenerate:testValue,originNormalData:normalRecordInfo,fieldToBeCheck:fieldName}))
             break;
         case e_serverRuleType.ARRAY_MIN_LENGTH:
             let arrayMinLength=[]
@@ -462,14 +497,14 @@ function generateMiscTestData(parameter) {
             break
         }
     }
-    console.log(`before check: fieldNameToBeReplacedByNotExist>>>>>>>>>${JSON.stringify(fieldNameToBeReplacedByNotExist)}`)
+    //console.log(`before check: fieldNameToBeReplacedByNotExist>>>>>>>>>${JSON.stringify(fieldNameToBeReplacedByNotExist)}`)
 
     //如果没有，使用递归一个require=true的字段
     if(undefined===fieldNameToBeReplacedByNotExist){
         fieldNameToBeReplacedByNotExist=Object.keys(collRule)[0]
     }
-    console.log(`after check: fieldNameToBeReplacedByNotExist>>>>>>>>>${JSON.stringify(fieldNameToBeReplacedByNotExist)}`)
-    console.log(`before check: copyRecordInfo>>>>>>>>>${JSON.stringify(copyRecordInfo)}`)
+    //console.log(`after check: fieldNameToBeReplacedByNotExist>>>>>>>>>${JSON.stringify(fieldNameToBeReplacedByNotExist)}`)
+    // console.log(`before check: copyRecordInfo>>>>>>>>>${JSON.stringify(copyRecordInfo)}`)
     delete copyRecordInfo[fieldNameToBeReplacedByNotExist]
     copyRecordInfo['notExist']=''
 
@@ -519,6 +554,34 @@ async function sendDataToAPI_compareCommonRc_async({APIUrl,sess,data,expectedErr
             });
     })
 }
+
+//测试preCHeck中，非rule相关的部分
+/*async function dispatchCheckAll_async(parameter){
+    let {sess,APIUrl,normalRecordInfo,method,fieldName,singleRuleName,collRule,app}=parameter
+    let expectedErrorRc
+    let  data={values:{}}
+    //根据method，设定除了method之外的其他part
+    let expectedParts
+    switch (method){
+        case e_method.CREATE:
+            expectedParts=[e_part.RECORD_INFO]
+            break;
+        case e_method.UPDATE:
+            expectedParts=[e_part.RECORD_INFO,e_part.RECORD_ID]
+            break;
+        case e_method.DELETE:
+            expectedParts=[e_part.RECORD_ID]
+            break;
+    }
+    //1. miss method
+    expectedErrorRc=
+    await  sendDataToAPI_compareCommonRc_async({APIUrl:APIUrl,sess:undefined,data:data,expectedErrorRc:expectedErrorRc,app:app})
+    //2. miss mandatory part
+    //3  more part than mandatory
+
+    //
+
+}*/
 module.exports={
     // ruleTest_async,
     // ruleFormatTest_async,

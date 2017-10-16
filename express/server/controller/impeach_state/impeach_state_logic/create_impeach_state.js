@@ -178,7 +178,7 @@ async  function createImpeachState_async(req){
 
     //如果是REVOKE，则自动将state变成NEW
     if(docValue[e_field.IMPEACH_STATE.STATE]===e_impeachState.REVOKE){
-        docValue[e_field.IMPEACH_STATE.STATE]===e_impeachState.NEW
+        docValue[e_field.IMPEACH_STATE.STATE]=e_impeachState.NEW
     }
 
     //如果输入的状态是最终状态，则OWNER要变成当前用户

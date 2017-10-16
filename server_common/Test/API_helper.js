@@ -151,10 +151,10 @@ async function createImpeachForArticle_returnImpeachId_async({articleId,userSess
     data.values={}
     data.values[e_part.RECORD_INFO]={
         // [e_field.IMPEACH.IMPEACH_TYPE]:{value:impeachType},
-        [e_field.IMPEACH.IMPEACHED_ARTICLE_ID]:{value:articleId},
+        [e_field.IMPEACH.IMPEACHED_ARTICLE_ID]:articleId,
     }
     data.values[e_part.METHOD] = e_method.CREATE
-    // console.log(`createImpeach_async===>data.values ===>${JSON.stringify(data.values)}`)
+    console.log(`createImpeach_async===>data.values ===>${JSON.stringify(data.values)}`)
     return new Promise(function(resolve,reject){
         request(app).post('/impeach/article').set('Accept', 'application/json').set('Cookie', [userSess]).send(data)
             .end(function (err, res) {

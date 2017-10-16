@@ -169,8 +169,8 @@ async function impeach_dispatcher_async(req,impeachType){
             expectedPart=[e_part.RECORD_INFO]
             //默认值模拟client端格式，以便直接进行validate value的测试
             let defaultDocValue={}
-            defaultDocValue[e_field.IMPEACH.TITLE]={'value':'新举报'}
-            defaultDocValue[e_field.IMPEACH.CONTENT]={'value':'对文档/评论的内容进行举报'}
+            defaultDocValue[e_field.IMPEACH.TITLE]='新举报'
+            defaultDocValue[e_field.IMPEACH.CONTENT]='对文档/评论的内容进行举报'
             // defaultDocValue[e_field.IMPEACH.IMPEACH_STATUS]={'value':e_impeachStatus.NEW}
             //合并defaultDoCValue和client端输入，模拟新建举报的client输入
             if(undefined!==req.body.values[e_part.RECORD_INFO]){
@@ -191,11 +191,11 @@ async function impeach_dispatcher_async(req,impeachType){
         case e_method.SEARCH:// search
             break;
         case e_method.UPDATE: //update
-// console.log(`update in========================>`)
-            /*          update 必须没有impeachType（impeach_route中，根据URL设置）           */
-            if(undefined!==impeachType){
-                return Promise.reject(controllerError.impeachTypeNotAllow)
-            }
+// console.log(`update in========================>${JSON.stringify(req.body.values)}`)
+            /*          impeachTYpe根据URL确定，update无需impeachType，直接忽略           */
+            // if(undefined!==impeachType){
+            //     return Promise.reject(controllerError.impeachTypeNotAllow)
+            // }
 
 
             userLoginCheck={
@@ -320,11 +320,16 @@ async  function createContent_async({req,collConfig,impeachType}){
     // console.log(`impeachedThingRelatedColl======>${impeachedThingRelatedColl}`)
     // console.log(`e_dbModel[impeachedThingRelatedColl]=====>${JSON.stringify(e_dbModel[impeachedThingRelatedColl])}`)
     // console.log(`impeachedThingId=====>${JSON.stringify(impeachedThingId)}`)
-    tmpResult=await  common_operation_model.findById_returnRecord_async({dbModel:e_dbModel[impeachedThingRelatedColl],id:impeachedThingId})
-    if(null===tmpResult){
+    let impeachedRecord=await  common_operation_model.findById_returnRecord_async({dbModel:e_dbModel[impeachedThingRelatedColl],id:impeachedThingId})
+    if(null===impeachedRecord){
         return Promise.reject(controllerError.impeachObjectNotExist)
     }
-    internalValue[e_field.IMPEACH.IMPEACHED_USER_ID]=tmpResult[impeachedThingRelatedCollFieldName]
+    // console.log(`impeachedRecord=======>${JSON.stringify(impeachedRecord)}`)
+    // console.log(`impeachedThingRelatedCollFieldName=======>${JSON.stringify(impeachedThingRelatedCollFieldName)}`)
+    internalValue[e_field.IMPEACH.IMPEACHED_USER_ID]=impeachedRecord[impeachedThingRelatedCollFieldName].toString()    //返回mongoose文档，其中每个字段的值都是object，需要手工转换，以便通过OBJECT_ID的测试（字符）
+    // console.log(`impeachedRecord[impeachedThingRelatedCollFieldName]=======>${JSON.stringify(impeachedRecord['_id'].toString())}`)
+    // console.log(`typeof impeachedRecord[impeachedThingRelatedCollFieldName]=======>${JSON.stringify(typeof impeachedRecord['_id'].toString())}`)
+    // console.log(`typeof internalValue[e_field.IMPEACH.IMPEACHED_USER_ID]=======>${JSON.stringify(typeof internalValue[e_field.IMPEACH.IMPEACHED_USER_ID])}`)
 // console.log(`impeached user id=======>${JSON.stringify(internalValue[e_field.IMPEACH.IMPEACHED_USER_ID])}`)
 
     if(e_env.DEV===currentEnv && Object.keys(internalValue).length>0){
