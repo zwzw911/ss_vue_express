@@ -87,7 +87,7 @@ describe('inputRule', async function() {
         })*/
         // console.log(`testData.user.user1 is=============>${JSON.stringify(testData.user.user1)}`)
         /*              delete/create/getId  user1                    */
-        let result=await component_function.reCreateUser_returnSessUserId_async(testData.user.user1,app)
+        let result=await component_function.reCreateUser_returnSessUserId_async({userData:testData.user.user1,app:app})
         let userId=result.userId
         let user1Sess=result.sess
         parameter.sess=user1Sess

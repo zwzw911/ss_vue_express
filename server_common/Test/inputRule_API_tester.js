@@ -556,7 +556,7 @@ async function sendDataToAPI_compareCommonRc_async({APIUrl,sess,data,expectedErr
 }
 
 //测试preCHeck中，非rule相关的部分
-/*async function dispatchCheckAll_async(parameter){
+async function dispatchCheckAll_async({method,sess,}){
     let {sess,APIUrl,normalRecordInfo,method,fieldName,singleRuleName,collRule,app}=parameter
     let expectedErrorRc
     let  data={values:{}}
@@ -581,7 +581,7 @@ async function sendDataToAPI_compareCommonRc_async({APIUrl,sess,data,expectedErr
 
     //
 
-}*/
+}
 module.exports={
     // ruleTest_async,
     // ruleFormatTest_async,

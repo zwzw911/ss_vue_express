@@ -7,7 +7,7 @@
 const API_helper=require('./API_helper')
 const db_operation_helper=require('./db_operation_helper')
 
-async function reCreateUser_returnSessUserId_async(userData,app){
+async function reCreateUser_returnSessUserId_async({userData,app}){
     //删除用户
     await db_operation_helper.deleteUserAndRelatedInfo_async({account:userData.account})
     //建立用户

@@ -108,6 +108,7 @@ async function dispatcher_async(req){
 
     //dispatcher只检测req的结构，以及req中method的格式和值，以便后续可以直接根据method进行调用
     tmpResult=controllerHelper.checkMethod({req:req})
+    // console.log(   `tmpResult===========>${JSON.stringify(tmpResult)}`)
     if(tmpResult.rc>0){
         return Promise.reject(tmpResult)
     }

@@ -95,75 +95,75 @@ function  validatePartFormat (inputValue,expectedParts){
             return validateFormatError.inputValuePartNotMatch
         }
         //3.2 每个part的value的类型
-        switch (partKey){
-/*            case e_validatePart.CURRENT_COLL:
-                if(false===dataTypeCheck.isString(inputValue[partKey])){
-                    return validateFormatError.inputValuePartCurrentCollValueFormatWrong
-                }
-                break*/
-            case e_validatePart.CURRENT_PAGE:
-                //先要转换成int
-                inputValue[partKey]=dataTypeCheck.isStrictInt(inputValue[partKey])
-                if(false===inputValue[partKey]){
-                    return validateFormatError.inputValuePartCurrentPageValueFormatWrong
-                }
-                break
-            case e_validatePart.RECORD_ID:
-                // console.log(`inputValue[partKey] of RECORD_ID==========>${JSON.stringify(inputValue[partKey])}`)
-                // console.log(`inputValue[partKey] of typeof RECORD_ID==========>${JSON.stringify(typeof inputValue[partKey])}`)
-                // console.log(`regex.objectId.test(inputValue[partKey])==========>${JSON.stringify(regex.objectId.test(inputValue[partKey]))}`)
-                if(false===dataTypeCheck.isString(inputValue[partKey]) || false===regex.objectId.test(inputValue[partKey])) {
-                    return validateFormatError.inputValuePartRecordIdValueFormatWrong
-                }
-                break
-            case e_validatePart.RECORD_ID_ARRAY:
-                if(false===dataTypeCheck.isArray(inputValue[partKey]) ){
-                    return validateFormatError.inputValuePartRecIdArrValueFormatWrong
-                }
-                break
-            case e_validatePart.RECORD_INFO:
-                if(false===dataTypeCheck.isObject(inputValue[partKey])){
-                    return validateFormatError.inputValuePartRecordInfoValueFormatWrong
-                }
-                break;
-            case e_validatePart.SINGLE_FIELD:
-                if(false===dataTypeCheck.isObject(inputValue[partKey])){
-                    return validateFormatError.inputValuePartSingleFieldValueFormatWrong
-                }
-                break;
-            case e_validatePart.SEARCH_PARAMS:
-                if(false===dataTypeCheck.isObject(inputValue[partKey])){
-                    // console.log(`searchparam errir in`)
-                    return validateFormatError.inputValuePartSearchParamsValueFormatWrong
-                }
-                break;
-            case e_validatePart.FILTER_FIELD_VALUE:
-                if(false===dataTypeCheck.isObject(inputValue[partKey])){
-                    // console.log(`searchparam errir in`)
-                    return validateFormatError.inputValuePartSearchParamsValueFormatWrong
-                }
-                break;
-            case e_validatePart.EVENT_FIELD:
-                if(false===dataTypeCheck.isObject(inputValue[partKey])){
-                    // console.log(`searchparam errir in`)
-                    return validateFormatError.inputValuePartEventValueFormatWrong
-                }
-                break;
-            case e_validatePart.METHOD:
-                //所有枚举值都是字符
-                // if(-1===Object.values(e_method).indexOf(inputValue[partKey].toString())){
-                if(false===dataTypeCheck.isString(inputValue[partKey])){
-                    return validateFormatError.inputValuePartMethodValueFormatWrong
-                }
-                break;
-            default:
-                //理论上不会出现，因为在之前的检查就会被过滤。放在此处只是为了格式完整
-                return validateFormatError.inputValuePartUndefinedPart
-        }
+        let partFormatCheckResult=validatePartValueFormat({part:partKey,partValue:inputValue[partKey]})
+        if(partFormatCheckResult.rc>0){return partFormatCheckResult}
     }
     return rightResult
 }
 
+/*  对每个part的value进行format的验证
+*
+* */
+function validatePartValueFormat({part,partValue}){
+    switch (part){
+        case e_validatePart.CURRENT_PAGE:
+            // console.log(`current page  =========>${JSON.stringify(partValue)}`)
+            // console.log(`current page type =========>${JSON.stringify(typeof partValue)}`)
+            if(false===dataTypeCheck.isStrictInt(partValue)){
+                return validateFormatError.inputValuePartCurrentPageValueFormatWrong
+            }
+            break
+        case e_validatePart.RECORD_ID:
+            if(false===dataTypeCheck.isString(partValue) || false===regex.objectId.test(partValue)) {
+                return validateFormatError.inputValuePartRecordIdValueFormatWrong
+            }
+            break
+        case e_validatePart.RECORD_ID_ARRAY:
+            if(false===dataTypeCheck.isArray(partValue) ){
+                return validateFormatError.inputValuePartRecIdArrValueFormatWrong
+            }
+            break
+        case e_validatePart.RECORD_INFO:
+            if(false===dataTypeCheck.isObject(partValue)){
+                return validateFormatError.inputValuePartRecordInfoValueFormatWrong
+            }
+            break;
+        case e_validatePart.SINGLE_FIELD:
+            if(false===dataTypeCheck.isObject(partValue)){
+                return validateFormatError.inputValuePartSingleFieldValueFormatWrong
+            }
+            break;
+        case e_validatePart.SEARCH_PARAMS:
+            if(false===dataTypeCheck.isObject(partValue)){
+                // console.log(`searchparam errir in`)
+                return validateFormatError.inputValuePartSearchParamsValueFormatWrong
+            }
+            break;
+        case e_validatePart.FILTER_FIELD_VALUE:
+            if(false===dataTypeCheck.isObject(partValue)){
+                // console.log(`searchparam errir in`)
+                return validateFormatError.inputValuePartSearchParamsValueFormatWrong
+            }
+            break;
+        case e_validatePart.EVENT_FIELD:
+            if(false===dataTypeCheck.isObject(partValue)){
+                // console.log(`searchparam errir in`)
+                return validateFormatError.inputValuePartEventValueFormatWrong
+            }
+            break;
+        case e_validatePart.METHOD:
+            //所有枚举值都是字符
+            // if(-1===Object.values(e_method).indexOf(inputValue[partKey].toString())){
+            if(false===dataTypeCheck.isString(partValue)){
+                return validateFormatError.inputValuePartMethodValueFormatWrong
+            }
+            break;
+        default:
+            //理论上不会出现，因为在之前的检查就会被过滤。放在此处只是为了格式完整
+            return validateFormatError.inputValuePartUndefinedPart
+    }
+    return rightResult
+}
 
 
 
@@ -827,6 +827,7 @@ module.exports={
     validateReqBody,//检查req.body.values是否存在
 
     validatePartFormat, //检测整个输入是否为object，此输入中的part的value格式是否正确
+    validatePartValueFormat,//供validatePartFormat调用
 
     // validateCUInputFormat,//调用validatePartFormat，检测create/update 输入值的格式
     

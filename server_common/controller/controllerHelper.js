@@ -292,10 +292,12 @@ function checkMethod({req}){
         methodPart={method:req.body.values[e_part.METHOD]}
     }
 // console.log(`methodPart=====>${JSON.stringify(methodPart)}`)
-    // 此处只检查method
-    result=validateFormat.validatePartFormat(methodPart,expectedPart)
-    if(result.rc>0){return result}
-
+    // 检查method的数据类型（validateFormat中validatePartFormat中METHOD部分 ）
+    let methodCheckResult=validateFormat.validatePartValueFormat({part:e_part.METHOD,partValue:req.body.values[e_part.METHOD]})
+    // console.log(`methodCheckResult=======>${JSON.stringify(methodCheckResult)}`)
+    if(methodCheckResult.rc>0){
+        return methodCheckResult
+    }
     result=validateValue.validateMethodValue(methodPart[e_part.METHOD])
     return result
 }

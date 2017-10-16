@@ -71,7 +71,7 @@ describe('create new article and update, then create new comment: ', async funct
         user1Tmp[e_field.USER.PASSWORD] = testData.user.user2[e_field.USER.PASSWORD]
 
         let condition = {}
-        condition[e_field.USER.ACCOUNT] = testData.user.user2[e_field.USER.ACCOUNT]['value']
+        condition[e_field.USER.ACCOUNT] = testData.user.user2[e_field.USER.ACCOUNT]
         let tmpResult = await common_operation_model.find_returnRecords_async({dbModel: e_dbModel.user, condition: condition})
 
         let value = {}
@@ -95,7 +95,7 @@ describe('create new article and update, then create new comment: ', async funct
     })
     before('get user2 folder', async function () {
         let tmpResult=await db_operation_helper.getUserFolderId_async(testData.user.user2)
-        folder2 = tmpResult['folderId']
+        folder2 = tmpResult
         console.log(`folder2======>${JSON.stringify(folder2)}`)
         // done()
         // return Promise.resolve({rc:0})
@@ -214,7 +214,7 @@ describe('create new article and update, then create new comment: ', async funct
         data.values[e_part.RECORD_ID] = newArticleId
         data.values[e_part.METHOD] = e_method.UPDATE
         data.values[e_part.RECORD_INFO] = {}
-        data.values[e_part.RECORD_INFO][e_field.ARTICLE.HTML_CONTENT] = 'test'
+        data.values[e_part.RECORD_INFO][e_field.ARTICLE.HTML_CONTENT] = 'testtesttesttesttesttest'
         // data.values[e_part.RECORD_INFO][e_field.ARTICLE.HTML_CONTENT]['value'] = 'test'
         console.log(`docvalues====>${JSON.stringify(data.values)}`)
         request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie', [user2Sess]).send(data)
@@ -252,7 +252,7 @@ describe('create new article and update, then create new comment: ', async funct
         data.values[e_part.RECORD_ID] = newArticleId
         data.values[e_part.METHOD] = e_method.UPDATE
         data.values[e_part.RECORD_INFO] = {}
-        data.values[e_part.RECORD_INFO][e_field.ARTICLE.TAGS] = testData.tag.tag1.name
+        data.values[e_part.RECORD_INFO][e_field.ARTICLE.TAGS] = [testData.tag.tag1.name]
         // data.values[e_part.RECORD_INFO][e_field.ARTICLE.TAGS]['value'] =
         console.log(`docvalues====>${JSON.stringify(data.values)}`)
         request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie', [user1Sess]).send(data)
