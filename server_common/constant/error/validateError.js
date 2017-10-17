@@ -47,7 +47,7 @@ const validateFormat={
     inputValuePartMethodValueFormatWrong:{rc:40113,msg:{client:`输入值格式错误`,server:`输入参数中，method的值必须为字符`}},
     inputValuePartCurrentPageValueFormatWrong:{rc:40114,msg:{client:`输入值格式错误`,server:`输入参数中，currentPage的值必须为整数`}},
     inputValuePartCurrentCollValueFormatWrong:{rc:40116,msg:{client:`输入值格式错误`,server:`输入参数中，currentColl的值必须为字符串`}},
-    inputValuePartRecordIdValueFormatWrong:{rc:40118,msg:{client:`输入值格式错误`,server:`输入参数中，recordId的值必须为字符`}},
+    inputValuePartRecordIdValueFormatWrong:{rc:40118,msg:{client:`输入值格式错误`,server:`输入参数中，recordId的值不正确`}},//必须为字符，且为objectId
     inputValuePartFilterFieldValueFormatWrong:{rc:40120,msg:{client:`输入值格式错误`,server:`输入参数中，FilterFieldValue的值必须为对象`}},
     inputValuePartRecIdArrValueFormatWrong:{rc:40122,msg:{client:`输入值格式错误`,server:`输入参数中，recIdArr的值必须为数组`}},
     inputValuePartEventValueFormatWrong:{rc:40122,msg:{client:`输入值格式错误`,server:`输入参数中，event的值必须为对象`}},

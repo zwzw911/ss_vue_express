@@ -43,133 +43,69 @@ const inputRule_API_tester=server_common_file_require.inputRule_API_tester
 
 let userId  //create后存储对应的id，以便后续的update操作
 
-let finalUrl='',baseUrl=''
+let finalUrl,baseUrl='/admin_user/',url
 
 let normalRecord=testData.admin_user.adminUser1
 testData.admin_user.adminUser1[e_field.ADMIN_USER.USER_PRIORITY]=['1']
 
-describe('user format check:', function() {
-    let data = {values: {}},  baseUrl="/admin_user/"
-    let rootSess
+/*
+ * @sess：是否需要sess
+ * @sessErrorRc：但要测试sess的时候，期望产生的错误
+ * @APIUrl:测试使用的URL
+ * @normalRecordInfo:一个正常的输入(document)
+ * @method：测试require的时候，使用哪种method。默认是create
+ * @fieldName：需要对那个field进行require测试
+ * @singleRuleName: field下，某个rule的名称
+ * @collRule: 整个coll的rule
+ * */
+let parameter={
+    sess:undefined,
+    sessErrorRc:undefined,
+    APIUrl:undefined,
+    normalRecordInfo:normalRecord,
+    method:undefined,
+    collRule:browserInputRule[e_coll.ADMIN_USER],
+    app:adminApp,
+}
+describe('dispatch check', async function() {
     before('root admin user login', async function(){
+        url=''
+        finalUrl=baseUrl+url
+        parameter[`APIUrl`]=finalUrl
         /*              清理已有数据              */
         // console.log(`######   delete exist record   ######`)
         // console.log(`correctValueForModel ${JSON.stringify(correctValueForModel)}`)
-        rootSess=await API_helper.adminUserLogin_returnSess_async({userData:testData.admin_user.adminRoot,adminApp:adminApp})
+        parameter.sess=await API_helper.adminUserLogin_returnSess_async({userData:testData.admin_user.adminRoot,adminApp:adminApp})
         // console.log(`rootSess ${JSON.stringify(rootSess)}`)
     });
+    it(`dispatch check for create`,async function(){
+        parameter[`sessErrorRc`]=controllerError.notLoginCantCreateUser.rc
+        parameter[`method`]=e_method.CREATE
+        await inputRule_API_tester.dispatch_partCheck_async(parameter)
+    })
+    it(`dispatch check for update`,async function(){
+        parameter[`sessErrorRc`]=controllerError.notLoginCantUpdateUser.rc
+        parameter[`method`]=e_method.UPDATE
+        await inputRule_API_tester.dispatch_partCheck_async(parameter)
+    })
+    it(`dispatch check for delete`,async function(){
+        parameter[`sessErrorRc`]=controllerError.notLoginCantDeleteUser.rc
+        parameter[`method`]=e_method.DELETE
+        await inputRule_API_tester.dispatch_partCheck_async(parameter)
+    })
+    it(`dispatch check for login`,async function(){
+        delete parameter[`sess`]
+        parameter[`method`]=e_method.MATCH
+        // console.log(`parameter=======>${JSON.stringify(parameter)}`)
+        await inputRule_API_tester.dispatch_partCheck_async(parameter)
+    })
 
-    it('miss part:method', function(done) {
-        // data.values[e_part.RECORD_INFO]={account:{value:'1'}}
-        request(adminApp).post(baseUrl).set('Accept', 'application/json').send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-                // console.log(`res ios ${JSON.stringify(res)}`)
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                // console.log(`${controllerHelperError.methodPartMustExistInDispatcher}`)
-                // assert.deepStrictEqual(parsedRes.rc,99999)
-                // controllerHelperError.methodPartMustExistInDispatcher.rc
-                assert.deepStrictEqual(parsedRes.rc,controllerHelperError.methodPartMustExistInDispatcher.rc)
-                done();
-            });
-    });
-    it('additional part:recordId', function(done) {
-        // data.values[e_part.RECORD_INFO]={account:{value:'1'}}
-        data.values={}
-        data.values[e_part.METHOD]=e_method.CREATE
-        data.values[e_part.RECORD_INFO]={}
-        data.values[e_part.RECORD_ID]=10
-        request(adminApp).post(baseUrl).set('Accept', 'application/json').set('Cookie',[rootSess]).send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-                // console.log(`res ios ${JSON.stringify(res)}`)
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                // console.log(`${controllerHelperError.methodPartMustExistInDispatcher}`)
-                // assert.deepStrictEqual(parsedRes.rc,99999)
-                // controllerHelperError.methodPartMustExistInDispatcher.rc
-                assert.deepStrictEqual(parsedRes.rc,validateError.validateFormat.inputValuePartNumNotExpected.rc)
-                done();
-            });
-    });
-    it('method is unknown value', function(done) {
-        data.values={}
-        data.values[e_part.METHOD]='10'
-        // console.log(`data is ========.${JSON.stringify(data)}`)
-        request(adminApp).post(baseUrl).set('Accept', 'application/json').send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-                // console.log(`res ios ${JSON.stringify(res)}`)
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes is ${JSON.stringify(parsedRes)}`)
-                // assert.deepStrictEqual(parsedRes.rc,99999)
-                // console.log(`${JSON.stringify(validateError)}`)
-                assert.deepStrictEqual(parsedRes.rc,validateError.validateValue.methodValueUndefined.rc)
-                done();
-            });
-    });
-
-    it('not login cant create user', function(done) {
-        // data.values[e_part.RECORD_INFO]={account:{value:'1'}}
-        data={values:{}}
-        data.values[e_part.METHOD]=e_method.CREATE
-        data.values[e_part.RECORD_INFO]=testData.admin_user.adminUser1
-        request(adminApp).post(baseUrl).set('Accept', 'application/json').send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-                // console.log(`res ios ${JSON.stringify(res)}`)
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                // console.log(`${controllerHelperError.methodPartMustExistInDispatcher}`)
-                // assert.deepStrictEqual(parsedRes.rc,99999)
-                // controllerHelperError.methodPartMustExistInDispatcher.rc
-                assert.deepStrictEqual(parsedRes.rc,controllerError.notLoginCantCreateUser.rc)
-                done();
-            });
-    });
-
-    it('recordInfo wrong format', function(done) {
-        // data.values[e_part.RECORD_INFO]={account:{value:'1'}}
-        data={values:{}}
-        data.values[e_part.METHOD]=e_method.CREATE
-        data.values[e_part.RECORD_INFO]=10
-        request(adminApp).post(baseUrl).set('Accept', 'application/json').set('Cookie',[rootSess]).send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-                // console.log(`res ios ${JSON.stringify(res)}`)
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                // console.log(`${controllerHelperError.methodPartMustExistInDispatcher}`)
-                // assert.deepStrictEqual(parsedRes.rc,99999)
-                // controllerHelperError.methodPartMustExistInDispatcher.rc
-                assert.deepStrictEqual(parsedRes.rc,validateError.validateFormat.inputValuePartRecordInfoValueFormatWrong.rc)
-                done();
-            });
-    });
 })
 
 describe('inputRule', async function() {
-    let url = ``, finalUrl = baseUrl + url
-    /*
-    * @sess：是否需要sess
-    * @APIUrl:测试使用的URL
-    * @normalRecordInfo:一个正常的输入(document)
-    * @method：测试require的时候，使用哪种method。默认是create
-    * @fieldName：需要对那个field进行require测试
-    * @singleRuleName: field下，某个rule的名称
-    * @collRule: 整个coll的rule
-    * */
-    let parameter={
-        // sess:rootSess,
-        APIUrl:finalUrl,
-        normalRecordInfo:normalRecord,
-        method:e_method.CREATE,
-        collRule:browserInputRule[e_coll.ADMIN_USER],
-        app:adminApp,
-    }
-
     before('prepare', async function () {
+        url = ``, finalUrl = baseUrl + url
+        parameter[`APIUrl`]=finalUrl
         // console.log(`######   delete exist record   ######`)
         /*              root admin login                    */
         parameter.sess = await API_helper.adminUserLogin_returnSess_async({
@@ -186,12 +122,23 @@ describe('inputRule', async function() {
     });
 
 
-    inputRule_API_tester.ruleCheckAll({
-        parameter:parameter,
-        expectedRuleToBeCheck:[],//[e_serverRuleType.REQUIRE],
-        expectedFieldName:[],//[e_field.ADMIN_USER.USER_PRIORITY]
-    })
 
+    it(`inputRule: CREATE`,async function(){
+        parameter['method']=e_method.CREATE
+        await inputRule_API_tester.ruleCheckAll_async({
+            parameter:parameter,
+            expectedRuleToBeCheck:[],//[e_serverRuleType.REQUIRE],
+            expectedFieldName:[],//[e_field.ADMIN_USER.USER_PRIORITY]
+        })
+        });
+    it(`inputRule: UPDATE`,async function() {
+        parameter['method'] = e_method.UPDATE
+        await inputRule_API_tester.ruleCheckAll_async({
+            parameter: parameter,
+            expectedRuleToBeCheck: [],//[e_serverRuleType.REQUIRE],
+            expectedFieldName: [],//[e_field.ADMIN_USER.USER_PRIORITY]
+        })
+    });
 
 })
 

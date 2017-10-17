@@ -99,7 +99,7 @@ async function dispatcher_async(req){
         // console.log(`match tmpResult ${JSON.stringify(tmpResult)}`)
     }
 
-    return Promise.resolve(tmpResult)
+    return Promise.resolve({rc:0})
 }
 
 

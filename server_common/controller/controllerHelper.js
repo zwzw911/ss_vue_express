@@ -244,7 +244,7 @@ function validatePartValue({req,expectedPart,collName,inputRule,recordInfoBaseRu
             case e_part.SINGLE_FIELD:
                 //获取单个字段的字段名
                 let singleFieldName=Object.keys(req.body.values[e_part.SINGLE_FIELD])[0]
-                let fieldInputValue=req.body.values[e_part.SINGLE_FIELD][singleFieldName]['value']
+                let fieldInputValue=req.body.values[e_part.SINGLE_FIELD][singleFieldName]
                 let fieldInputRule=inputRule[collName][singleFieldName]
                 // console.log(`fieldInputValue ${JSON.stringify(fieldInputValue)}`)
                 // console.log(`fieldInputRule ${JSON.stringify(fieldInputRule)}`)
@@ -393,6 +393,7 @@ function CRUDPreCheck({req,expectedPart,collName,method}){
         })
 
 // console.log(`validatePartValue result =======》 ${JSON.stringify(result)}`)
+
         return result
     // }
 }
@@ -446,7 +447,7 @@ function nonCRUDPreCheck({req,expectPart,collName}){
         // recordInfoBaseRule:recordInfoBaseRule,
         fkConfig: fkConfig,
     })
-
+    console.log(` check result is ${JSON.stringify(result)}`)
     return result
     // }
 }

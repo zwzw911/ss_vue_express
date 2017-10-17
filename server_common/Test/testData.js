@@ -20,7 +20,7 @@ const user={
     user4:{name:'user4',account:'user4@qq.com',password:'654321',userType:e_userType.NORMAL},
 
     user3NewAccount:'wei.ag.zhang@alcate-sbell.com.cn',
-    useNotExistForModel:{name:'userNotExist',account:'13912341234',password:'123456',userType:e_userType.NORMAL},
+    userNotExist:{name:'userNotExist',account:'13912341234',password:'123456',userType:e_userType.NORMAL},
 }
 
 const admin_user={

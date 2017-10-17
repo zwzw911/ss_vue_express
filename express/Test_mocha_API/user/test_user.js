@@ -32,79 +32,23 @@ const controllerError=require('../../server/controller/user/user_logic/user_cont
 
 const objectDeepCopy=server_common_file_require.misc.objectDeepCopy
 
-const test_helper=server_common_file_require.db_operation_helper//require("../API_helper/db_operation_helper")
+const db_operation_helper=server_common_file_require.db_operation_helper//require("../API_helper/db_operation_helper")
 const testData=server_common_file_require.testData//require('../testData')
 const API_helper=server_common_file_require.API_helper//require('../API_helper/API_helper')
+const component_function=server_common_file_require.component_function
 
 let baseUrl="/user/"
 let userId  //create后存储对应的id，以便后续的update操作
 
 
-describe('user format check:', function() {
-    let data = {values: {recordInfo: {}}}, url = ``, finalUrl = baseUrl + url
-    it('miss part method', function(done) {
-        // data.values[e_part.RECORD_INFO]={account:{value:'1'}}
-        request(app).post(finalUrl).set('Accept', 'application/json').send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-                // console.log(`res ios ${JSON.stringify(res)}`)
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                // console.log(`${controllerHelperError.methodPartMustExistInDispatcher}`)
-                // assert.deepStrictEqual(parsedRes.rc,99999)
-                // controllerHelperError.methodPartMustExistInDispatcher.rc
-                assert.deepStrictEqual(parsedRes.rc,controllerHelperError.methodPartMustExistInDispatcher.rc)
-                done();
-            });
-    });
-
-    it('method is unknown value', function(done) {
-        data.values[e_part.METHOD]=10
-        request(app).post(finalUrl).set('Accept', 'application/json').send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-                // console.log(`res ios ${JSON.stringify(res)}`)
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes is ${JSON.stringify(parsedRes)}`)
-                // assert.deepStrictEqual(parsedRes.rc,99999)
-                // console.log(`${JSON.stringify(validateError)}`)
-                assert.deepStrictEqual(parsedRes.rc,validateError.validateFormat.inputValuePartMethodValueFormatWrong.rc)
-                done();
-            });
-    });
-})
 
 
-
-describe('user1 register correct value:', function() {
-    let data={values:{recordInfo:{},method:e_method.CREATE}},url=``,finalUrl=baseUrl+url
-    before('delete exist user1', async function(){
-        /*              清理已有数据              */
-        // console.log(`######   delete exist record   ######`)
-        // console.log(`correctValueForModel ${JSON.stringify(correctValueForModel)}`)
-        await test_helper.deleteUserAndRelatedInfo_async({account:testData.user.user1.account})
-        // done()
-    });
-
-    it('user1 register', function(done) {
-        data.values[e_part.RECORD_INFO]=testData.user.user1//
-        request(app).post(finalUrl).set('Accept', 'application/json').send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,0)
-                // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
-                done();
-            });
-    });
-
-
-})
 
 describe('user1 register unique check:', function() {
     let data = {values: {recordInfo: {}, method: e_method.CREATE}}, url = ``, finalUrl = baseUrl + url
+    before('prepare', async function () {
+        await component_function.reCreateUser_returnSessUserId_async({userData:testData.user.user1,app:app})
+    });
     it('register unique name check fail', function(done) {
         data.values[e_part.RECORD_INFO]=testData.user.user1//
         // console.log(``)
@@ -142,7 +86,7 @@ describe('POST /user/uniqueCheck_async ', function() {
     let data={values:{}},url='uniqueCheck_async',finalUrl=baseUrl+url
 
     it('single field unique name check', function(done) {
-        data.values[e_part.SINGLE_FIELD]={name:testData.user.user1.name.value}//,notExist:{value:123}
+        data.values[e_part.SINGLE_FIELD]={name:testData.user.user1.name}//,notExist:{value:123}
         request(app).post(finalUrl).set('Accept', 'application/json').send(data)
             .end(function(err, res) {
                 // if (err) return done(err);
@@ -156,7 +100,7 @@ describe('POST /user/uniqueCheck_async ', function() {
     });
 
     it('unique account check', function(done) {
-        data.values[e_part.SINGLE_FIELD]={account:testData.user.user1.account.value}//,notExist:{value:123}
+        data.values[e_part.SINGLE_FIELD]={account:testData.user.user1.account}//,notExist:{value:123}
         request(app).post(finalUrl).set('Accept', 'application/json').send(data)
             .end(function(err, res) {
                 // if (err) return done(err);
@@ -205,7 +149,9 @@ describe('user1 login:', function() {
 
 
     it('user not exist', function(done) {
+        // console.log(`testData.user.userNotExist====>${JSON.stringify(testData.user.userNotExist)}`)
         let notExistUserTmp=objectDeepCopy(testData.user.userNotExist)
+        // console.log(`notExistUserTmp====>${JSON.stringify(notExistUserTmp)}`)
         delete notExistUserTmp['name']
         delete notExistUserTmp['userType']
         // console.log(`notExistUserTmp ${JSON.stringify(notExistUserTmp)}`)
@@ -308,6 +254,7 @@ describe('update user： ', function() {
     let sess
     before('user login first before update', async function() {
         sess=await  API_helper.userLogin_returnSess_async({userData:testData.user.user1,app:app})
+        await db_operation_helper.deleteUserAndRelatedInfo_async({account:testData.user.user2.account})
         // console.log(`sess ======>${JSON.stringify(sess)}`)
     })
 /*    after('delete exist create testData.user.user2', async function() {
@@ -530,7 +477,7 @@ describe('update user： ', function() {
     })
 
     after('delete new create user2', async function() {
-        await test_helper.deleteUserAndRelatedInfo_async({account:testData.user.user2ForModel.account})
+        await db_operation_helper.deleteUserAndRelatedInfo_async({account:testData.user.user2.account})
 
     })
 })
@@ -539,15 +486,10 @@ describe('update user： ', function() {
 describe('retrieve password: ', function() {
     let data = {values:{}}, url = '', finalUrl = baseUrl + url,sess
     before('recreate exist user3', async function(){
-        /*              清理已有数据              */
-        // console.log(`######   delete exist record   ######`)
-        // console.log(`correctValueForModel ${JSON.stringify(correctValueForModel)}`)
-        await test_helper.deleteUserAndRelatedInfo_async({account:testData.user.user3.account})
-        // console.log(`######   create exist record   ######`)
-        await API_helper.createUser_async({userData:testData.user.user3,app:app})
-        // console.log(`######   login exist record   ######`)
-        sess=await  API_helper.userLogin_returnSess_async({userData:testData.user.user3,app:app})
-        // done()
+        let userInfo=await component_function.reCreateUser_returnSessUserId_async({userData:testData.user.user3,app:app})
+        // console.log(`userInfo=======>${JSON.stringify(userInfo)}`)
+        sess=userInfo[`sess`]
+        // console.log(`sess=======>${JSON.stringify(sess)}`)
     });
 
 
@@ -555,7 +497,7 @@ describe('retrieve password: ', function() {
         // console.log(`testData.user.user3 ${JSON.stringify(testData.user.user1)}`)
         data.values.method=e_method.UPDATE
         data.values[e_part.RECORD_INFO]={account:testData.user.user3NewAccount,}//,notExist:{value:123}
-        // console.log(`data.values ${JSON.stringify(data.values)}`)
+        console.log(`data.values ${JSON.stringify(data.values)}`)
         // console.log(`sess==============> ${JSON.stringify(sess)}`)
         request.agent(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[sess]).send(data)
             .end(function(err, res) {
@@ -597,7 +539,7 @@ describe('retrieve password: ', function() {
 
 
     after('delete new create testData.user.user3', async function() {
-        await test_helper.deleteUserAndRelatedInfo_async({account:testData.user.user3.account})
+        await db_operation_helper.deleteUserAndRelatedInfo_async({account:testData.user.user3NewAccount})
 
     })
 })

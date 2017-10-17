@@ -184,7 +184,7 @@ async function comment_dispatcher_async(req){
 
     }
 
-    return Promise.resolve(tmpResult)
+    return Promise.resolve({rc:0})
 }
 
 
