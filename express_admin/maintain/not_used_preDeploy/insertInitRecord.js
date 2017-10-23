@@ -39,7 +39,7 @@ let initSetting= {
             [e_field.ADMIN_USER.LAST_SIGN_IN_DATE]:Date.now(),
             [e_field.ADMIN_USER.PASSWORD]:'123456',
             [e_field.ADMIN_USER.USER_PRIORITY]:allAdminPriorityType,
-            [e_field.ADMIN_USER.USER_TYPE]:e_adminUserType.ROOT,
+            [e_field.ADMIN_USER.USER_TYPE]:e_adminUserType.ADMIN_ROOT,
         },
     ],
 }
@@ -48,7 +48,7 @@ async function createRoot(adminUser){
     console.log(`adminUser===>${JSON.stringify(adminUser)}`)
     //删除ROOT用户
     let condition={
-        [e_field.ADMIN_USER.USER_TYPE]:e_adminUserType.ROOT
+        [e_field.ADMIN_USER.USER_TYPE]:e_adminUserType.ADMIN_ROOT
     }
     await common_operation_model.deleteOne_returnRecord_async({dbModel:e_dbModel.admin_user,condition:condition})
 

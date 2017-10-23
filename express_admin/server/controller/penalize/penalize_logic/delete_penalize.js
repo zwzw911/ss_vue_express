@@ -54,7 +54,19 @@ async function deletePenalize_async(req){
     let {userId,userCollName,userType,userPriority}=userInfo
     /*              client数据转换                  */
     let recordToBeDeleted=req.body.values[e_part.RECORD_ID]
-
+    let docValue=req.body.values[e_part.RECORD_INFO]
+    // console.log(`docVlue0 =====>${JSON.stringify(docValue)}`)
+    /*******************************************************************************************/
+    /*                                     specific field check                             */
+    /*******************************************************************************************/
+    //recordinfo中只能并且必须存在单个field:revokeReason
+    if(Object.keys(docValue).length!==1){
+        return Promise.reject(controllerError.deleteRecordInfoFieldNumIncorrect)
+    }
+    if(undefined===docValue[e_field.ADMIN_PENALIZE.REVOKE_REASON]){
+        return Promise.reject(controllerError.missMandatoryFieldRevokeReason)
+    }
+    // console.log(`docVlue======>${JSON.stringify(docValue)}`)
     /*******************************************************************************************/
     /*                                     specific priority check                             */
     /*******************************************************************************************/
@@ -62,9 +74,10 @@ async function deletePenalize_async(req){
     if(userCollName!==e_coll.ADMIN_USER){
         return Promise.reject(controllerError.onlyAdminUserCanRevokePenalize)
     }
+    console.log(`done======>`)
     //用户是否有权撤销处罚
-    let hasDeletePriority=await controllerChecker.ifAdminUserHasExpectedPriority_async({userId:userId,arr_expectedPriority:[e_adminPriorityType.REVOKE_PENALIZE]})
-    console.log(`hasDeletePriority===========>${JSON.stringify(hasDeletePriority)}`)
+    let hasDeletePriority=await controllerChecker.ifAdminUserHasExpectedPriority_async({userPriority:userPriority,arr_expectedPriority:[e_adminPriorityType.REVOKE_PENALIZE]})
+    // console.log(`hasDeletePriority===========>${JSON.stringify(hasDeletePriority)}`)
     if(false===hasDeletePriority){
         return Promise.reject(controllerError.currentUserHasNotPriorityToRevokePenalize)
     }
@@ -72,7 +85,11 @@ async function deletePenalize_async(req){
     /*******************************************************************************************/
     /*                                       logic: delete                                     */
     /*******************************************************************************************/
-    await common_operation_model.update_returnRecord_async({dbModel:e_dbModel.admin_penalize,id:recordToBeDeleted,values:{'dDate':Date.now()}})
+    let updateValue={
+        'dDate':Date.now(),
+        [e_field.ADMIN_PENALIZE.REVOKER_ID]:userId,
+    }
+    await common_operation_model.update_returnRecord_async({dbModel:e_dbModel.admin_penalize,id:recordToBeDeleted,values:updateValue})
     return Promise.resolve({rc:0})
 
 }

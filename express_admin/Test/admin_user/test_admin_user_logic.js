@@ -83,7 +83,7 @@ describe('create user error:', function() {
             });
     });
     it('create root user not allow', function(done) {
-        data.values[e_part.RECORD_INFO]=Object.assign({},testData.admin_user.adminUser1,{[e_field.ADMIN_USER.USER_TYPE]:e_adminUserType.ROOT,[e_field.ADMIN_USER.USER_PRIORITY]:['1']})
+        data.values[e_part.RECORD_INFO]=Object.assign({},testData.admin_user.adminUser1,{[e_field.ADMIN_USER.USER_TYPE]:e_adminUserType.ADMIN_ROOT,[e_field.ADMIN_USER.USER_PRIORITY]:['1']})
         data.values[e_part.METHOD]=e_method.CREATE
         // console.log(`Object.assign(testData.admin_user.adminUser1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]})=========>${JSON.stringify(Object.assign(testData.admin_user.adminUser1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]}))}`)
         // data.values[e_part.RECORD_INFO]=Object.assign(testData.admin_user.adminUser1,{[e_field.ADMIN_USER.USER_PRIORITY]:{value:['1','1']}})

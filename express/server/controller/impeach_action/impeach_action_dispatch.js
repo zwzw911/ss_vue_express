@@ -8,7 +8,12 @@
 const server_common_file_include=require('../../../server_common_file_require')
 
 const nodeEnum=server_common_file_include.nodeEnum
+const mongoEnum=server_common_file_include.mongoEnum
 const controllerHelper=server_common_file_include.controllerHelper
+
+const e_penalizeType=mongoEnum.PenalizeType.DB
+const e_penalizeSubType=mongoEnum.PenalizeSubType.DB
+
 
 const e_part=nodeEnum.ValidatePart
 const e_method=nodeEnum.Method//require('../../constant/enum/node').Method
@@ -19,11 +24,11 @@ const e_method=nodeEnum.Method//require('../../constant/enum/node').Method
 
 
 /*                          controller                          */
-const controllerError=require('./impeach_state_setting/impeach_state_controllerError').controllerError
-const create_async=require('./impeach_state_logic/create_impeach_state').createImpeachState_async
+const controllerError=require('./impeach_action_setting/impeach_action_controllerError').controllerError
+const create_async=require('./impeach_action_logic/create_impeach_action').createImpeachAction_async
 
 
-const controllerSetting=require('./impeach_state_setting/impeach_state_setting').setting
+const controllerSetting=require('./impeach_action_setting/impeach_action_setting').setting
 
 
 
@@ -50,15 +55,16 @@ async function dispatcher_async(req){
                 error:controllerError.notLoginCantChangeState
             }
             penalizeCheck={
-                /*                penalizeType:e_penalizeType.NO_ARTICLE,
-                 penalizeSubType:e_penalizeSubType.CREATE,
-                 penalizeCheckError:controllerError.userInPenalizeNoCommentCreate*/
+                penalizeType:e_penalizeType.NO_IMPEACH,
+                penalizeSubType:e_penalizeSubType.CREATE,
+                penalizeCheckError:controllerError.userInPenalizeNoImpeachCreate
             }
+            // console.log(`penalizeCheck==============>${JSON.stringify(penalizeCheck)}`)
             expectedPart=[e_part.RECORD_INFO]
-            // console.log(`before precheck done=====.`)
+            // console.log(`=====>before precheck done<=====`)
             await controllerHelper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
             //await helper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart,e_field:e_field,e_coll:e_coll,e_internal_field:e_internal_field,maxSearchKeyNum:maxSearchKeyNum,maxSearchPageNum:maxSearchPageNum})
-// console.log(`precheck done=====.`)
+            // console.log(`=====>after precheck done<=====`)
             tmpResult=await create_async(req)
             // console.log(`create  tmpResult ${JSON.stringify(tmpResult)}`)
             break;

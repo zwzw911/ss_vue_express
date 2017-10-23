@@ -61,6 +61,7 @@ let normalRecord={
 /*
  * @sess：是否需要sess
  * @APIUrl:测试使用的URL
+ * @penalizeRelatedInfo: {penalizeType:,penalizeSubType:,penalizedUserData:,penalizedError:,rootSess:,adminApp}
  * @normalRecordInfo:一个正常的输入(document)
  * @method：测试require的时候，使用哪种method。默认是create
  * @singleRuleName: field下，某个rule的名称
@@ -69,6 +70,7 @@ let normalRecord={
 let parameter={
     sess:undefined,
     sessErrorRc:undefined,
+    penalizeRelatedInfo:undefined,
     APIUrl:undefined,
     normalRecordInfo:normalRecord,
     method:undefined,
@@ -147,7 +149,7 @@ describe('inputRule', async function() {
         await inputRule_API_tester.ruleCheckAll_async({
             parameter: parameter,
             expectedRuleToBeCheck: [],//[e_serverRuleType.REQUIRE],
-            expectedFieldName: [],//[e_field.ARTICLE.HTML_CONTENT]
+            expectedFieldName: [e_field.ARTICLE.TAGS],//[e_field.ARTICLE.HTML_CONTENT]
         })
     })
 

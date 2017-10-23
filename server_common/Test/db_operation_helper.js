@@ -74,7 +74,7 @@ async function deleteUserPenalize_async({account}){
 }
 
 async function deleteAllModelRecord_async({}){
-    let skipColl=[e_coll.STORE_PATH,e_coll.CATEGORY,e_coll.RESOURCE_PROFILE,e_coll.ADMIN_USER]
+    let skipColl=[e_coll.STORE_PATH,e_coll.CATEGORY,e_coll.RESOURCE_PROFILE,e_coll.ADMIN_USER,e_coll.ADMIN_SUGAR]
     for(let singleDbModel of dbModelInArray){
         if(-1===skipColl.indexOf(singleDbModel.modelName)){
         //console.log(`model name======>${singleDbModel.modelName}`)

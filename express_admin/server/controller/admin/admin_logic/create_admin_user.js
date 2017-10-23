@@ -64,7 +64,7 @@ async  function createUser_async(req){
     dataConvert.constructCreateCriteria(docValue)
 
     /*              不能通过API创建ROOT           */
-    if(e_adminUserType.ROOT===docValue[e_field.ADMIN_USER.USER_TYPE]){
+    if(e_adminUserType.ADMIN_ROOT===docValue[e_field.ADMIN_USER.USER_TYPE]){
         return Promise.reject(controllerError.cantCreateRootUserByAPI)
     }
     /*              当前用户是否有创建用户的权限      */

@@ -85,7 +85,9 @@ async  function createUser_async(req){
     /*******************************************************************************************/
     /*                                  fk value是否存在                                       */
     /*******************************************************************************************/
+    //在fkConfig中定义的外键检查
     await controllerChecker.ifFkValueExist_async({docValue:docValue,collFkConfig:fkConfig[collName],collFieldChineseName:e_chineseName[collName]})
+    //自定义外键的检查
     /*******************************************************************************************/
     /*                                  enum unique check(enum in array)                       */
     /*******************************************************************************************/

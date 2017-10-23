@@ -9,7 +9,7 @@ const controllerError={
     notLoginCantChangeState:{rc:50900,msg:`尚未登录，无法更改举报状态`},
 
     /*              create                          */
-    notLoginCantCreateUser:{rc:50902,msg:`尚未登录，无法创建新用户`},
+    //notLoginCantCreateUser:{rc:50902,msg:`尚未登录，无法创建新用户`},
     relatedImpeachAlreadyDeleted:{rc:50903,msg:`举报已经被删除，无法更改举报状态`},
     notCreatorOfImpeach:{rc:50904,msg:`非举报创建人，无法更改举报状态`},
     cantCreateSinceNoPreviousState:{rc:50906,msg:`举报没有任何状态记录`},

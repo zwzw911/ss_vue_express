@@ -56,6 +56,7 @@ let normalRecord={
 /*
  * @sess：是否需要sess
  * @sessErrorRc：但要测试sess的时候，期望产生的错误
+ * @penalizeRelatedInfo: {penalizeType:,penalizeSubType:,penalizedUserData:,penalizedError:,rootSess:,adminApp}
  * @APIUrl:测试使用的URL
  * @normalRecordInfo:一个正常的输入(document)
  * @method：测试require的时候，使用哪种method。默认是create
@@ -66,6 +67,7 @@ let normalRecord={
 let parameter={
     sess:undefined,
     sessErrorRc:undefined,
+    penalizeRelatedInfo:undefined,
     APIUrl:undefined,
     normalRecordInfo:normalRecord,
     method:undefined,
@@ -86,7 +88,7 @@ describe('dispatch check', async function() {
         parameter.sess=userInfo[`sess`]
         // console.log(`parameter.sess ${JSON.stringify(parameter.sess)}`)
     });
-    it(`dispatch check for create`,async function(){
+    it(`preCheck:CREATE`,async function(){
         parameter[`sessErrorRc`]=controllerError.userNotLoginCantCreateComment.rc
         parameter[`method`]=e_method.CREATE
         await inputRule_API_tester.dispatch_partCheck_async(parameter)

@@ -24,10 +24,10 @@ const user_friend_group=require('h:/ss_vue_express/server_common/model/mongo/str
 const user_public_group=require('h:/ss_vue_express/server_common/model/mongo/structure/friend/user_public_group.js').collModel
 /*       impeach           */
 const impeach=require('h:/ss_vue_express/server_common/model/mongo/structure/impeach/impeach.js').collModel
+const impeach_action=require('h:/ss_vue_express/server_common/model/mongo/structure/impeach/impeach_action.js').collModel
 const impeach_attachment=require('h:/ss_vue_express/server_common/model/mongo/structure/impeach/impeach_attachment.js').collModel
 const impeach_comment=require('h:/ss_vue_express/server_common/model/mongo/structure/impeach/impeach_comment.js').collModel
 const impeach_image=require('h:/ss_vue_express/server_common/model/mongo/structure/impeach/impeach_image.js').collModel
-const impeach_state=require('h:/ss_vue_express/server_common/model/mongo/structure/impeach/impeach_state.js').collModel
 /*       static           */
 const like_dislike_static=require('h:/ss_vue_express/server_common/model/mongo/structure/static/like_dislike_static.js').collModel
 const resource_profile_static=require('h:/ss_vue_express/server_common/model/mongo/structure/static/resource_profile_static.js').collModel
@@ -66,10 +66,10 @@ module.exports=[
     user_public_group,
     /*       impeach           */
     impeach,
+    impeach_action,
     impeach_attachment,
     impeach_comment,
     impeach_image,
-    impeach_state,
     /*       static           */
     like_dislike_static,
     resource_profile_static,

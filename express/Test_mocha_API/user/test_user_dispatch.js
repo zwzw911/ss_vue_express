@@ -49,6 +49,7 @@ let normalRecord=testData.user.user1
 /*
  * @sess：是否需要sess
  * @APIUrl:测试使用的URL
+ * @penalizeRelatedInfo: {penalizeType:,penalizeSubType:,penalizedUserData:,penalizedError:,rootSess:,adminApp}
  * @normalRecordInfo:一个正常的输入(document)
  * @method：测试require的时候，使用哪种method。默认是create
  * @collRule: 整个coll的rule
@@ -56,6 +57,7 @@ let normalRecord=testData.user.user1
 let parameter={
     sess:undefined,
     APIUrl:undefined,
+    penalizeRelatedInfo:undefined,
     normalRecordInfo:normalRecord,
     method:undefined,
     collRule:browserInputRule[e_coll.USER],

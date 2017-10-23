@@ -31,6 +31,7 @@ const e_penalizeSubType=mongoEnum.PenalizeSubType.DB
 // const e_articleStatus=mongoEnum.ArticleStatus.DB
 const e_impeachState=mongoEnum.ImpeachState.DB
 const e_impeachType=mongoEnum.ImpeachType.DB
+const e_impeachUserAction=mongoEnum.ImpeachUserAction.DB
 // const e_referenceColl=mongoEnum.ImpeachImageReferenceColl.DB
 
 // const e_fileSizeUnit=require('../../constant/enum/node_runtime').FileSizeUnit
@@ -77,22 +78,6 @@ const inputRule=require('../../constant/inputRule/inputRule').inputRule
 
 const regex=server_common_file_require.regex
 
-/*const maxNumber=require('../../constant/config/globalConfiguration').maxNumber
-const miscConfiguration=require('../../constant/config/globalConfiguration').miscConfiguration
-
-const mailAccount=require('../../constant/config/globalConfiguration').mailAccount*/
-
-/*          create article              */
-// const checkUserState=require('../')
-/*         upload user photo         */
-// const gmImage=require('../../function/assist/gmImage')
-// const userPhotoConfiguration=require('../../constant/config/globalConfiguration').uploadFileDefine.user_thumb
-/*const e_gmGetter=require('../../constant/enum/node_runtime').GmGetter
-const e_gmCommand=require('../../constant/enum/node_runtime').GmCommand
-const uploadFile=require('../../function/assist/upload')*/
-
-/*         generate captcha         */
-// const captchaIntervalConfiguration=require('../../constant/config/globalConfiguration').intervalCheckConfiguration.captcha
 
 
 const controllerError={
@@ -149,6 +134,7 @@ async function impeach_dispatcher_async(req,impeachType){
     let userLoginCheck,penalizeCheck,expectedPart
     switch (method){
         case e_method.CREATE: //create
+            // console.log(`create in===========>`)
             /*          create 必须有impeachType（impeach_route中，根据URL设置）           */
             if(undefined===impeachType){
                 return Promise.reject(controllerError.notDefineImpeachType)
@@ -159,11 +145,13 @@ async function impeach_dispatcher_async(req,impeachType){
                 needCheck:true,
                 error:controllerError.userNotLoginCantCreate
             }
+            // console.log(`before penalizeCheck===========>`)
             penalizeCheck={
                 penalizeType:e_penalizeType.NO_IMPEACH,
                 penalizeSubType:e_penalizeSubType.CREATE,
                 penalizeCheckError:controllerError.userInPenalizeNoImpeachCreate
             }
+            // console.log(`penalizeCheck===========>${JSON.stringify(penalizeCheck)}`)
             //此处RECORD_INFO只包含了一个字段：impeachArticle或者(comment)Id。
             // impeachType是由URL决定（是internal的field），需要和其他默认之合并之后，才能进行preCheck_async（否则validate value会fail）
             expectedPart=[e_part.RECORD_INFO]
@@ -182,8 +170,9 @@ async function impeach_dispatcher_async(req,impeachType){
                 contentFieldName:e_field.IMPEACH.CONTENT, //coll中，存储内容的字段名
             }
             // console.log(`req.body.values===========>${JSON.stringify(req.body.values)}`)
-            // console.log(`expectedPart===========>${JSON.stringify(expectedPart)}`)
+            // console.log(`before preCheck_async===============>`)
             tmpResult=await controllerHelper.preCheck_async({req:req,collName:collConfig.collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
+            // console.log(`after preCheck_async===============>`)
 	    //tmpResult=await controllerHelper.preCheck_async({req:req,collName:collConfig.collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart,e_field:e_field,e_coll:e_coll,e_internal_field:e_internal_field,maxSearchKeyNum:maxSearchKeyNum,maxSearchPageNum:maxSearchPageNum})
             // tmpResult=await createContent_async({req:req,collConfig:collConfig,collImageConfig:collImageConfig})
             tmpResult=await createContent_async({req:req,collConfig:collConfig,impeachType:impeachType})
@@ -331,6 +320,8 @@ async  function createContent_async({req,collConfig,impeachType}){
     // console.log(`typeof impeachedRecord[impeachedThingRelatedCollFieldName]=======>${JSON.stringify(typeof impeachedRecord['_id'].toString())}`)
     // console.log(`typeof internalValue[e_field.IMPEACH.IMPEACHED_USER_ID]=======>${JSON.stringify(typeof internalValue[e_field.IMPEACH.IMPEACHED_USER_ID])}`)
 // console.log(`impeached user id=======>${JSON.stringify(internalValue[e_field.IMPEACH.IMPEACHED_USER_ID])}`)
+    internalValue[e_field.IMPEACH.CREATOR_ID]=userId
+    internalValue[e_field.IMPEACH.CURRENT_STATE]=e_impeachState.NEW
 
     if(e_env.DEV===currentEnv && Object.keys(internalValue).length>0){
         let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInputRule:inputRule[collName],collInternalRule:internalInputRule[collName]})
@@ -355,16 +346,16 @@ async  function createContent_async({req,collConfig,impeachType}){
     tmpResult= await common_operation_model.create_returnRecord_async({dbModel:e_dbModel[collName],value:docValue})
 // console.log(`create result is ====>${JSON.stringify(tmpResult)}`)
 
-    //插入关联数据（impeachState=new）
+    //插入关联数据（impeach action=create）
     let impeachStateValue={
-        [e_field.IMPEACH_STATE.IMPEACH_ID]:tmpResult['_id'],
-        [e_field.IMPEACH_STATE.OWNER_ID]:userId,
-        [e_field.IMPEACH_STATE.OWNER_COLL]:e_coll.USER,
-        [e_field.IMPEACH_STATE.STATE]:e_impeachState.NEW,
-        [e_field.IMPEACH_STATE.DEALER_ID]:userId,
-        [e_field.IMPEACH_STATE.DEALER_COLL]:e_coll.USER,
+        [e_field.IMPEACH_ACTION.IMPEACH_ID]:tmpResult['_id'],
+        // [e_field.IMPEACH_STATE.OWNER_ID]:userId,
+        // [e_field.IMPEACH_STATE.OWNER_COLL]:e_coll.USER,
+        [e_field.IMPEACH_ACTION.ACTION]:e_impeachUserAction.CREATE,
+        [e_field.IMPEACH_ACTION.CREATOR_ID]:userId,
+        [e_field.IMPEACH_ACTION.CREATOR_COLL]:e_coll.USER,
     }
-    await common_operation_model.create_returnRecord_async({dbModel:e_dbModel.impeach_state,value:impeachStateValue})
+    await common_operation_model.create_returnRecord_async({dbModel:e_dbModel.impeach_action,value:impeachStateValue})
     return Promise.resolve({rc:0,msg:tmpResult})
 }
 

@@ -8,7 +8,11 @@
 const server_common_file_include=require('../../../server_common_file_require')
 
 const nodeEnum=server_common_file_include.nodeEnum
+const mongoEnum=server_common_file_include.mongoEnum
 const controllerHelper=server_common_file_include.controllerHelper
+
+const e_penalizeType=mongoEnum.PenalizeType.DB
+const e_penalizeSubType=mongoEnum.PenalizeSubType.DB
 
 const e_part=nodeEnum.ValidatePart
 const e_method=nodeEnum.Method//require('../../constant/enum/node').Method
@@ -51,9 +55,9 @@ async function dispatcher_async(req){
                 error:controllerError.notLoginCantCreateUser
             }
             penalizeCheck={
-                /*                penalizeType:e_penalizeType.NO_ARTICLE,
-                 penalizeSubType:e_penalizeSubType.CREATE,
-                 penalizeCheckError:controllerError.userInPenalizeNoCommentCreate*/
+                penalizeType:e_penalizeType.NO_ARTICLE,
+                penalizeSubType:e_penalizeSubType.CREATE,
+                penalizeCheckError:controllerError.userInPenalizeNoCommentCreate
             }
             expectedPart=[e_part.RECORD_INFO]
             // console.log(`before precheck done=====.`)

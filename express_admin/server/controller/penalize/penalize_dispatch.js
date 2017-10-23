@@ -70,10 +70,7 @@ async function dispatcher_async(req){
             break;
         case e_method.SEARCH:// search
             break;
-        case e_method.UPDATE: //update
-            return Promise.reject(controllerError.methodUpdateNotSupport)
-            break;
-        case e_method.DELETE: //delete
+        case e_method.UPDATE: //update delete(revoke)的操作通过update方法完成
             userLoginCheck={
                 needCheck:true,
                 error:controllerError.notLoginCantDeletePenalize
@@ -83,15 +80,19 @@ async function dispatcher_async(req){
                  penalizeSubType:e_penalizeSubType.CREATE,
                  penalizeCheckError:controllerError.userInPenalizeNoCommentCreate*/
             }
-            expectedPart=[e_part.RECORD_ID]
+            expectedPart=[e_part.RECORD_ID,e_part.RECORD_INFO] //RECORD_INFO用来记录delete(revoke)的原因
             // console.log(`before precheck done=====.`)
             await controllerHelper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
             //await helper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart,e_field:e_field,e_coll:e_coll,e_internal_field:e_internal_field,maxSearchKeyNum:maxSearchKeyNum,maxSearchPageNum:maxSearchPageNum})
             // console.log(`after precheck done=====.`)
             tmpResult=await delete_async(req)
+
+            break;
+        case e_method.DELETE: //delete
+            return Promise.reject(controllerError.methodNotSupport)
             break;
         case e_method.MATCH: //match(login_async)
-            return Promise.reject(controllerError.methodMatchNotSupport)
+            return Promise.reject(controllerError.methodNotSupport)
             break;
         default:
             //已经在checkMethod中定义，如果未定义直接报错，此处只是为了代码的完整性

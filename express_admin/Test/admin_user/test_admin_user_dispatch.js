@@ -51,16 +51,16 @@ testData.admin_user.adminUser1[e_field.ADMIN_USER.USER_PRIORITY]=['1']
 /*
  * @sess：是否需要sess
  * @sessErrorRc：但要测试sess的时候，期望产生的错误
+ * @penalizeRelatedInfo: {penalizeType:,penalizeSubType:,penalizedUserData:,penalizedError:,rootSess:,adminApp}
  * @APIUrl:测试使用的URL
  * @normalRecordInfo:一个正常的输入(document)
  * @method：测试require的时候，使用哪种method。默认是create
- * @fieldName：需要对那个field进行require测试
- * @singleRuleName: field下，某个rule的名称
  * @collRule: 整个coll的rule
  * */
 let parameter={
     sess:undefined,
     sessErrorRc:undefined,
+    penalizeRelatedInfo:undefined,
     APIUrl:undefined,
     normalRecordInfo:normalRecord,
     method:undefined,

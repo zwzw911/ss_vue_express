@@ -6,6 +6,7 @@
 
 const request=require('supertest')
 const app=require('../../app')
+const adminApp=require('../../../express_admin/app')
 const assert=require('assert')
 
 const server_common_file_require=require('../../server_common_file_require')
@@ -17,10 +18,16 @@ const e_part=nodeEnum.ValidatePart
 const e_method=nodeEnum.Method
 const e_coll=require('../../server/constant/genEnum/DB_Coll').Coll
 const e_field=require('../../server/constant/genEnum/DB_field').Field
-const e_impeachState=mongoEnum.ImpeachState.DB
+//for fkValue check
+const e_chineseFieldName=require('../../server/constant/genEnum/inputRule_field_chineseName').ChineseName
 
+const e_adminUserType=server_common_file_require.mongoEnum.AdminUserType.DB
+const e_adminPriorityType=server_common_file_require.mongoEnum.AdminPriorityType.DB
+const e_penalizeType=server_common_file_require.mongoEnum.PenalizeType.DB
+const e_penalizeSubType=server_common_file_require.mongoEnum.PenalizeSubType.DB
+const e_impeachState=server_common_file_require.mongoEnum.ImpeachState.DB
 // const common_operation_model=server_common_file_require.common_operation_model
-const e_dbModel=require('../../server/constant/genEnum/dbModel')
+// const dbModel=require('../../server/constant/genEnum/dbModel')
 
 // const inputRule=require('../../server/constant/inputRule/inputRule').inputRule
 const browserInputRule=require('../../server/constant/inputRule/browserInputRule').browserInputRule
@@ -29,65 +36,81 @@ const validateError=server_common_file_require.validateError//require('../../ser
 const controllerHelperError=server_common_file_require.helperError.helper//require('../../server/constant/error/controller/helperError').helper
 const controllerCheckerError=server_common_file_require.helperError.checker
 
-const controllerError=require('../../server/controller/impeach_state/impeach_state_setting/impeach_state_controllerError').controllerError
+const controllerError=require('../../server/controller/impeach_action/impeach_action_setting/impeach_state_controllerError').controllerError
 
 const objectDeepCopy=server_common_file_require.misc.objectDeepCopy
 
-const test_helper= server_common_file_require.db_operation_helper
+const db_operation_helper= server_common_file_require.db_operation_helper
 const testData=server_common_file_require.testData//require('../testData')
 const API_helper=server_common_file_require.API_helper//require('../API_helper/API_helper')
 const component_function=server_common_file_require.component_function
+// const db=require('../db_operation_helper/db_operation_helper')
 
+let  baseUrl="/impeach_state/",finalUrl,url
+let adminRootSess,adminUser1Sess,adminUser2Sess,adminUser3Sess,user1Sess,user1Id,user2Id
 
+let normalRecord={
+    [e_field.IMPEACH_STATE.IMPEACH_ID]:undefined,
+    [e_field.IMPEACH_STATE.STATE]:e_impeachState.NEW,
+    [e_field.IMPEACH_STATE.OWNER_COLL]:undefined,
+    [e_field.IMPEACH_STATE.OWNER_ID]:undefined,
 
-
-let data = {values: {}},  baseUrl="/impeach_state/",finalUrl=''
-let user1Sess,user2Sess,user4Sess,user1Id,user2Id,impeachId1,impeachId2,impeachId4,articleId
-
+}
 /*              create_impeach_state中的错误               */
-describe('create impeach_state error:', function() {
-    finalUrl=baseUrl
-    before('delete user1/2/3 then insert user1/2/3', async function(){
-        /*              普通用户操作             */
-        //重创建user1:测试没有impeach_state的输入
-        let userInfo=await component_function.reCreateUser_returnSessUserId_async({userData:testData.user.user1,app:app})
-        user1Sess=userInfo['sess']
-        //user2:测试第一个impeach_state不为NEW的输入，测试impeach_stete已经结束的输入
-/*        await test_helper.deleteUserAndRelatedInfo_async({account:testData.user.user2ForModel.account})
-        await  API_helper.createUser_async({userData:testData.user.user2,app:app})
-        user2Sess=await  API_helper.userLogin_returnSess_async({userData:testData.user.user2,app:app})
-        user2Id=await test_helper.getUserId_async({userAccount:testData.user.user2ForModel.account})*/
-        let userInfo=await component_function.reCreateUser_returnSessUserId_async({userData:testData.user.user2,app:app})
-        user2Sess=userInfo['sess']
-        user2Id=userInfo['userId']
-        //user4:测试impeach删除的state的输入
-/*        await test_helper.deleteUserAndRelatedInfo_async({account:testData.user.user4ForModel.account})
-        await  API_helper.createUser_async({userData:testData.user.user4,app:app})
-        user4Sess=await  API_helper.userLogin_returnSess_async({userData:testData.user.user4,app:app})*/
-        let userInfo=await component_function.reCreateUser_returnSessUserId_async({userData:testData.user.user4,app:app})
-        user4Sess=userInfo['sess']
-    });
-    before('user1 create article', async function(){
-        /*              普通用户操作             */
-        articleId=await  API_helper.userCreateArticle_returnArticleId_async({userSess:user1Sess,app:app})
-    });
-    before('user1/2/3 create impeach1/2/3 for article', async function(){
-        /*              普通用户操作             */
-        impeachId1=await  API_helper.createImpeachForArticle_returnImpeachId_async({articleId:articleId,userSess:user1Sess,app:app})
-        impeachId2=await  API_helper.createImpeachForArticle_returnImpeachId_async({articleId:articleId,userSess:user2Sess,app:app})
-        impeachId4=await  API_helper.createImpeachForArticle_returnImpeachId_async({articleId:articleId,userSess:user4Sess,app:app})
-        // console.log(`rootSess ${JSON.stringify(rootSess)}`)
+describe('create impeach state', async function() {
+    let data={values:{method:e_method.CREATE}}
+    before('root admin user login', async function(){
+        url=''
+        finalUrl=baseUrl+url
+        // parameter[`APIUrl`]=finalUrl
+        let user1Info =await component_function.reCreateUser_returnSessUserId_async({userData:testData.user.user1,app:app})
+        user1Id=user1Info[`userId`]
+        user1Sess=user1Info[`sess`]
+        // console.log(`user1Sess==========${JSON.stringify(user1Sess)}`)
+        adminRootSess=await API_helper.adminUserLogin_returnSess_async({userData:testData.admin_user.adminRoot,adminApp:adminApp})
+        // parameter['sess']=user1Sess
+        // console.log(`adminRootSess==========${JSON.stringify(adminRootSess)}`)
+        let articledId=await API_helper.createNewArticle_returnArticleId_async({userSess:user1Sess,app:app})
+        let impeachId=await API_helper.createImpeachForArticle_returnImpeachId_async({articleId:articledId,userSess:user1Sess,app:app})
+        normalRecord[e_field.IMPEACH_STATE.IMPEACH_ID]=impeachId
+
+        // console.log(`userId==========${JSON.stringify(user1Id)}`)
+        // console.log(`user1Sess==========${JSON.stringify(user1Sess)}`)
     });
 
-    it('impeachId not exist', function(done) {
+    /*              userType check              */
+    it('userType check', function(done) {
         data.values={}
+        let copyNormalRecord=objectDeepCopy(normalRecord)
+        copyNormalRecord[e_field.IMPEACH_STATE.IMPEACH_ID]="59d446dbbd708b15a4c11ae9"
+        data.values[e_part.RECORD_INFO]=copyNormalRecord
         data.values[e_part.METHOD]=e_method.CREATE
         // console.log(`Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]})=========>${JSON.stringify(Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]}))}`)
-        data.values[e_part.RECORD_INFO]={
-            [e_field.IMPEACH_STATE.IMPEACH_ID]:'59d45aa2ec0c05121c34c27d',
-            [e_field.IMPEACH_STATE.STATE]:e_impeachState.ASSIGN,
-        }
-        // console.log(`data=====>${JSON.stringify(data.values[e_part.RECORD_INFO])}`)
+        // data.values[e_part.RECORD_INFO]=Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:{value:['1','1']}})
+        console.log(`data=====>${JSON.stringify(data.values)}`)
+        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[adminRootSess]).send(data)
+            .end(function(err, res) {
+                // if (err) return done(err);
+                // console.log(`res ios ${JSON.stringify(res)}`)
+                let parsedRes=JSON.parse(res.text)
+                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
+                // assert.deepStrictEqual(parsedRes.rc,99999)
+                assert.deepStrictEqual(parsedRes.rc,controllerCheckerError.userTypeNotExpected.rc)
+                done();
+            });
+    });
+    /*              normal user not allow to input ownerColl/id, ther are input in code            */
+    it('ownerColl/id cant input from client', function(done) {
+        data.values={}
+        let copyNormalRecord=objectDeepCopy(normalRecord)
+        copyNormalRecord[e_field.IMPEACH_STATE.IMPEACH_ID]="59d446dbbd708b15a4c11ae9"
+        copyNormalRecord[e_field.IMPEACH_STATE.OWNER_COLL]=e_coll.USER
+        copyNormalRecord[e_field.IMPEACH_STATE.OWNER_ID]=user1Id
+        data.values[e_part.RECORD_INFO]=copyNormalRecord
+        data.values[e_part.METHOD]=e_method.CREATE
+        // console.log(`Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]})=========>${JSON.stringify(Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]}))}`)
+        // data.values[e_part.RECORD_INFO]=Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:{value:['1','1']}})
+        console.log(`data=====>${JSON.stringify(data.values)}`)
         request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[user1Sess]).send(data)
             .end(function(err, res) {
                 // if (err) return done(err);
@@ -95,10 +118,54 @@ describe('create impeach_state error:', function() {
                 let parsedRes=JSON.parse(res.text)
                 console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
                 // assert.deepStrictEqual(parsedRes.rc,99999)
-                assert.deepStrictEqual(parsedRes.rc,controllerHelperError.fkValueNotExist('impeachId').rc)
+                assert.deepStrictEqual(parsedRes.rc,controllerError.normalUserForbidInputOwnerCollAndId.rc)
                 done();
             });
     });
+    /*              fk exists check            */
+    it('fk:IMPEACH_ID not exists', function(done) {
+        data.values={}
+        let copyNormalRecord=objectDeepCopy(normalRecord)
+        copyNormalRecord[e_field.IMPEACH_STATE.IMPEACH_ID]="59d446dbbd708b15a4c11ae9"
+        data.values[e_part.RECORD_INFO]=copyNormalRecord
+        data.values[e_part.METHOD]=e_method.CREATE
+        // console.log(`Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]})=========>${JSON.stringify(Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]}))}`)
+        // data.values[e_part.RECORD_INFO]=Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:{value:['1','1']}})
+        console.log(`data=====>${JSON.stringify(data.values)}`)
+        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[user1Sess]).send(data)
+            .end(function(err, res) {
+                // if (err) return done(err);
+                // console.log(`res ios ${JSON.stringify(res)}`)
+                let parsedRes=JSON.parse(res.text)
+                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
+                // assert.deepStrictEqual(parsedRes.rc,99999)
+                assert.deepStrictEqual(parsedRes.rc,controllerHelperError.fkValueNotExist(e_chineseFieldName.admin_penalize.punishedId,normalRecord[e_field.ADMIN_PENALIZE.PUNISHED_ID]).rc)
+                done();
+            });
+    });
+    it('fk:ownColl/ownId not exists', function(done) {
+        data.values={}
+        let copyNormalRecord=objectDeepCopy(normalRecord)
+        copyNormalRecord[e_field.IMPEACH_STATE.OWNER_ID]=user1Id
+        copyNormalRecord[e_field.IMPEACH_STATE.OWNER_COLL]=e_coll.ADMIN_USER
+        data.values[e_part.RECORD_INFO]=copyNormalRecord
+        data.values[e_part.METHOD]=e_method.CREATE
+        // console.log(`Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]})=========>${JSON.stringify(Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]}))}`)
+        // data.values[e_part.RECORD_INFO]=Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:{value:['1','1']}})
+        console.log(`data=====>${JSON.stringify(data.values)}`)
+        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[user1Sess]).send(data)
+            .end(function(err, res) {
+                // if (err) return done(err);
+                // console.log(`res ios ${JSON.stringify(res)}`)
+                let parsedRes=JSON.parse(res.text)
+                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
+                // assert.deepStrictEqual(parsedRes.rc,99999)
+                assert.deepStrictEqual(parsedRes.rc,controllerHelperError.fkValueNotExist(e_chineseFieldName.admin_penalize.punishedId,normalRecord[e_field.ADMIN_PENALIZE.PUNISHED_ID]).rc)
+                done();
+            });
+    });
+
+
 
     it('user1 try to change state for impeach2 which not create by user2', function(done) {
         data.values={}
@@ -147,15 +214,15 @@ describe('create impeach_state error:', function() {
             (e)=>{}
         )
 
-/*            .then(
-                (res)=>{
-                    let parsedRes=JSON.parse(res.text)
-                    console.log(`parsedRes =========>${JSON.stringify(parsedRes)}`)
-                    // assert.deepStrictEqual(parsedRes.rc,99999)
-                    assert.deepStrictEqual(parsedRes.rc,controllerError.notCreatorOfImpeach.rc)
-                },
-                (e)=>{console.log(`error is ${JSON.stringify(e)}`)}
-            )*/
+        /*            .then(
+         (res)=>{
+         let parsedRes=JSON.parse(res.text)
+         console.log(`parsedRes =========>${JSON.stringify(parsedRes)}`)
+         // assert.deepStrictEqual(parsedRes.rc,99999)
+         assert.deepStrictEqual(parsedRes.rc,controllerError.notCreatorOfImpeach.rc)
+         },
+         (e)=>{console.log(`error is ${JSON.stringify(e)}`)}
+         )*/
 
     });
 
@@ -203,30 +270,30 @@ describe('create impeach_state error:', function() {
         let condition={[e_field.IMPEACH_STATE.IMPEACH_ID]:impeachId2}
         let changeFieldValue={[e_field.IMPEACH_STATE.STATE]:e_impeachState.ASSIGN}
         e_dbModel.impeach_state.update(condition,changeFieldValue)
-        .then(
-            (v)=>{
-                // console.log(`update result is =======>${JSON.stringify(v)}`)
-                data.values={}
-                data.values[e_part.METHOD]=e_method.CREATE
-                // console.log(`Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]})=========>${JSON.stringify(Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]}))}`)
-                data.values[e_part.RECORD_INFO]={
-                    [e_field.IMPEACH_STATE.IMPEACH_ID]:impeachId2,
-                    [e_field.IMPEACH_STATE.STATE]:e_impeachState.ASSIGN,
-                }
-                // console.log(`data=====>${JSON.stringify(data.values[e_part.RECORD_INFO])}`)
-                request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[user2Sess]).send(data)
-                    .end(function(err, res) {
-                        // if (err) return done(err);
-                        // console.log(`res ios ${JSON.stringify(res)}`)
-                        let parsedRes=JSON.parse(res.text)
-                        console.log(`parsedRes =========>${JSON.stringify(parsedRes)}`)
-                        // assert.deepStrictEqual(parsedRes.rc,99999)
-                        assert.deepStrictEqual(parsedRes.rc,controllerError.firstStateMustBeNew.rc)
-                        done();
-                    });
-            },
-            (e)=>{}
-        )
+            .then(
+                (v)=>{
+                    // console.log(`update result is =======>${JSON.stringify(v)}`)
+                    data.values={}
+                    data.values[e_part.METHOD]=e_method.CREATE
+                    // console.log(`Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]})=========>${JSON.stringify(Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]}))}`)
+                    data.values[e_part.RECORD_INFO]={
+                        [e_field.IMPEACH_STATE.IMPEACH_ID]:impeachId2,
+                        [e_field.IMPEACH_STATE.STATE]:e_impeachState.ASSIGN,
+                    }
+                    // console.log(`data=====>${JSON.stringify(data.values[e_part.RECORD_INFO])}`)
+                    request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[user2Sess]).send(data)
+                        .end(function(err, res) {
+                            // if (err) return done(err);
+                            // console.log(`res ios ${JSON.stringify(res)}`)
+                            let parsedRes=JSON.parse(res.text)
+                            console.log(`parsedRes =========>${JSON.stringify(parsedRes)}`)
+                            // assert.deepStrictEqual(parsedRes.rc,99999)
+                            assert.deepStrictEqual(parsedRes.rc,controllerError.firstStateMustBeNew.rc)
+                            done();
+                        });
+                },
+                (e)=>{}
+            )
     });
 
     it('user4 input state NEW', function(done) {
@@ -299,10 +366,6 @@ describe('create impeach_state error:', function() {
             )
 
     });
+
 })
-
-
-
-
-
 

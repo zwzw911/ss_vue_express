@@ -32,11 +32,18 @@ const helperError=require(`../constant/error/controller/helperError`).helper
 const generateTestData_API=require(`./generateTestData_API`)
 
 const browserInputRule=require(`../constant/inputRule/browserInputRule`)
+
+const API_helper=require(`./API_helper`)
+
 //API返回的结果中，在哪个level取得rc
 const RC_LEVEL={
     COMMON:'COMMON', //result.rc
     FIELD:'FIELD', //result.msg[fieldName].rc
 }
+
+
+
+
 /*  检查input中require的field
 * @sess：是否需要sess
 * @APIUrl:测试使用的URL
@@ -234,7 +241,7 @@ async function sendDataToAPI_compareCommonRc_async({APIUrl,sess,data,expectedErr
 //测试preCHeck中，非rule相关的部分
 async function dispatch_partCheck_async(parameter){
     // let {sess,sessErrorRc,APIUrl,normalRecordInfo,method,fieldName,singleRuleName,collRule,app}=parameter
-    let {sess,sessErrorRc,APIUrl,method,collName,app}=parameter
+    let {sess,sessErrorRc,penalizeRelatedInfo,APIUrl,normalRecordInfo,method,collName,app}=parameter
     let expectedErrorRc,copyOfExpectedParts
     let  data={values:{}}
     //根据method，设定除了method之外的其他part
@@ -281,6 +288,7 @@ async function dispatch_partCheck_async(parameter){
         //故意设置sess为undefined
         await  sendDataToAPI_compareCommonRc_async({APIUrl:APIUrl,data:data,expectedErrorRc:sessErrorRc,app:app})
     }
+
     //5. 缺乏method对应的part
     copyOfExpectedParts=misc.objectDeepCopy(expectedParts)
     //有expectedPart，才检测（miss part）的操作
@@ -297,6 +305,7 @@ async function dispatch_partCheck_async(parameter){
 
     //6. 有多余的part
     copyOfExpectedParts=misc.objectDeepCopy(expectedParts)
+    let additionalPartName
     // console.log(`Object.values[e_part]========>${JSON.stringify(Object.values[e_part])}`)
     //const的对象，不能采用of直接取到值
     for(let singlePart in e_part){
@@ -306,6 +315,7 @@ async function dispatch_partCheck_async(parameter){
         if(singlePartValue!==e_part.METHOD && -1===copyOfExpectedParts.indexOf(singlePartValue)){
             // console.log(`singlePartValue=======>${JSON.stringify(singlePartValue)}`)
             copyOfExpectedParts.push(singlePartValue)
+            additionalPartName=singlePartValue
             break
         }
     }
@@ -316,6 +326,24 @@ async function dispatch_partCheck_async(parameter){
     })
     expectedErrorRc=validateFormatError.inputValuePartNumNotExpected.rc
     await  sendDataToAPI_compareCommonRc_async({APIUrl:APIUrl,sess:sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+    //清除添加的额外part，以便后续的case使用
+    delete data.values[additionalPartName]
+
+    //7. 如果需要检测penalize
+    if(undefined!==penalizeRelatedInfo){
+        //根据penalizeCheck为当前用户创建penalize
+        let penalizeInfo={
+            [e_field.ADMIN_PENALIZE.REASON]:'test for test test test',
+            [e_field.ADMIN_PENALIZE.PENALIZE_TYPE]:penalizeRelatedInfo[`penalizeType`],
+            [e_field.ADMIN_PENALIZE.PENALIZE_SUB_TYPE]:penalizeRelatedInfo[`penalizeSubType`],
+            [e_field.ADMIN_PENALIZE.DURATION]:1,
+        }
+        await API_helper.createPenalize_async({adminUserSess:penalizeRelatedInfo[`rootSess`],penalizeInfo:penalizeInfo,pernalizedUserData:penalizeRelatedInfo[`penalizedUserData`],adminApp:penalizeRelatedInfo[`adminApp`]})
+        // console.log(`data========>${JSON.stringify()}`)
+        data.values[e_part.RECORD_INFO]=normalRecordInfo
+        await  sendDataToAPI_compareCommonRc_async({APIUrl:APIUrl,sess:sess,data:data,expectedErrorRc:penalizeRelatedInfo[`penalizedError`][`rc`],app:app})
+        // await API_helper.deletePenalize_async({adminUserSess:penalizeRelatedInfo[`rootSess`],penalizeInfo:penalizeInfo,pernalizedUserData:penalizeRelatedInfo[`penalizedUserData`],adminApp:penalizeRelatedInfo[`adminApp`]})
+    }
 }
 module.exports={
     // ruleTest_CU_async,

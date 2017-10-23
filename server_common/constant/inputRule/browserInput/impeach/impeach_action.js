@@ -19,7 +19,7 @@ const collNameForFK=require('../../../../constant/enum/collEnum').collNameForFK
 /*              获得 某些设置值            */
 // const maxNumber=require('../../../config/globalConfiguration').maxNumber
 
-const impeach_state= {
+const impeach_action= {
     impeachId: {
         'chineseName': '举报',
         'type': serverDataType.OBJECT_ID,
@@ -28,7 +28,7 @@ const impeach_state= {
         //'arrayMaxLength': {define: maxNumber.impeach.maxImageNumber, error: {rc: 10004}, mongoError: {rc: 20004, msg: `最多插入${maxNumber.impeach.maxImageNumber}个图片`}},
         'format': {define: regex.objectId, error: {rc: 10592}, mongoError: {rc: 20592, msg: '举报必须是objectId'}} //server端使用
     },
-    //处理人
+    //处理人（只能是admin,和impeach中的currentOwnerId冗余）
     ownerId: {
         'chineseName': '处理人',
         'type': serverDataType.OBJECT_ID,
@@ -38,7 +38,7 @@ const impeach_state= {
         'format': {define: regex.objectId, error: {rc: 10596}, mongoError: {rc: 20596, msg: '处理人必须是objectId'}} //server端使用
     },
     //处理人所在coll（通过enum限定可取的coll name）
-    ownerColl: {
+/*    ownerColl: {
         'chineseName': '处理人表',
         'type': serverDataType.STRING,
         'require': {define: false, error: {rc: 10598}, mongoError: {rc: 20598, msg: '分配人不能为空'}},//默认为空对象
@@ -46,15 +46,15 @@ const impeach_state= {
         //'arrayMaxLength': {define: maxNumber.impeach.maxAttachmentNumber, error: {rc: 10004}, mongoError: {rc: 20004, msg: `最多添加${maxNumber.impeach.maxAttachmentNumber}个附件`}},
         'enum':{define:collNameForFK.impeach_state.ownerColl,error:{rc:10092},mongoError:{rc:20092,msg:'受罚子类型不正确'}},//server端使用
         // 'enum': {define: regex.objectId, error: {rc: 10600}, mongoError: {rc: 20600, msg: '分配人必须是objectId'}} //server端使用
-    },
-    state:{
-        'chineseName': '状态',
+    },*/
+    action:{
+        'chineseName': '操作',
         'type': serverDataType.STRING,
-        'require': {define: true, error: {rc: 10598}, mongoError: {rc: 20598, msg: '处理人不能为空'}},//默认为空对象
+        'require': {define: true, error: {rc: 10598}, mongoError: {rc: 20598, msg: '操作不能为空'}},//默认为空对象
         // 'arrayMinLength': {define: 1, error: {rc: 10002}, mongoError: {rc: 20002, msg: '至少设置1个标签'}},
         //'arrayMaxLength': {define: maxNumber.impeach.maxAttachmentNumber, error: {rc: 10004}, mongoError: {rc: 20004, msg: `最多添加${maxNumber.impeach.maxAttachmentNumber}个附件`}},
         // 'format': {define: enumValue.objectId, error: {rc: 10600}, mongoError: {rc: 20600, msg: '处理人必须是objectId'}} //server端使用
-        'enum':{define:enumValue.ImpeachState,error:{rc:10092},mongoError:{rc:20092,msg:'受罚子类型不正确'}},//server端使用
+        'enum':{define:enumValue.ImpeachAllAction,error:{rc:10092},mongoError:{rc:20092,msg:'未知操作'}},//server端使用
     },
 
 
@@ -65,5 +65,5 @@ const impeach_state= {
 }
 
 module.exports={
-    impeach_state,
+    impeach_action,
 }

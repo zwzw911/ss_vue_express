@@ -50,7 +50,7 @@ const fkConfig=server_common_file_require.fkConfig.fkConfig
 //对数值逻辑进行判断（外键是否有对应的记录等）
 //执行db操作并返回结果
 async  function createPenalize_async(req){
-    // console.log(`create user in`)
+    // console.log(` createPenalize_async in`)
     /*******************************************************************************************/
     /*                                          define variant                                 */
     /*******************************************************************************************/
@@ -66,6 +66,9 @@ async  function createPenalize_async(req){
     /*******************************************************************************************/
     //dataConvert.convertCreateUpdateValueToServerFormat(docValue)
     dataConvert.constructCreateCriteria(docValue)
+    // console.log(`before delete revoke reson`)
+    delete docValue[e_field.ADMIN_PENALIZE.REVOKE_REASON] //创建处罚的时候，必须没有处罚原因
+    // console.log(`delete revoke reson`)
     /*******************************************************************************************/
     /*                                       authorization check                               */
     /*******************************************************************************************/
@@ -79,6 +82,23 @@ async  function createPenalize_async(req){
     // console.log(`hasCreatePriority===>${JSON.stringify(hasCreatePriority)}`)
     if(false===hasCreatePriority){
         return Promise.reject(controllerError.currentUserHasNotPriorityToCreatePenalize)
+    }
+    /*******************************************************************************************/
+    /*                            logic priority check                                         */
+    /*******************************************************************************************/
+    //检查用户valid的处罚记录(处罚的用户，处罚类型)，有的话，直接返回（只能有一个有效记录）
+    // let publishedId=
+    let condition={
+        "$or":[{'dDate':{'$exists':false}},{'isExpire':false}],
+        [e_field.ADMIN_PENALIZE.PUNISHED_ID]:docValue[e_field.ADMIN_PENALIZE.PUNISHED_ID],
+        [e_field.ADMIN_PENALIZE.PENALIZE_TYPE]:docValue[e_field.ADMIN_PENALIZE.PENALIZE_TYPE],
+        [e_field.ADMIN_PENALIZE.PENALIZE_SUB_TYPE]:docValue[e_field.ADMIN_PENALIZE.PENALIZE_SUB_TYPE],
+    }//,,
+    // console.log(`condition+++++++++>${JSON.stringify(condition)}`)
+    tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.admin_penalize,condition:condition,selectedFields:'-uDate'})
+    // console.log(`valid penalize result+++++++++>${JSON.stringify(tmpResult)}`)
+    if(tmpResult.length>0){
+        return Promise.reject(controllerError.currentUserHasValidPenalizeRecord)
     }
     /*******************************************************************************************/
     /*                                       resource check                                    */
@@ -132,18 +152,7 @@ async  function createPenalize_async(req){
     // let currentColl=e_coll.USER_SUGAR
     // console.log(`value to be insert is ${JSON.stringify(docValue)}`)
     // let doc=new dbModel[currentColl](values[e_part.RECORD_INFO])
-    /*******************************************************************************************/
-    /*                            logic priority check                                         */
-    /*******************************************************************************************/
-    //检查用户valid的处罚记录，有的话，直接返回（只能有一个有效记录）
-    let publishedId=docValue[e_field.ADMIN_PENALIZE.PUNISHED_ID]
-    let condition={"$or":[{'dDate':{'$exists':false}},{'isExpire':false}],[e_field.ADMIN_PENALIZE.PUNISHED_ID]:publishedId}//,,
-    // console.log(`condition+++++++++>${JSON.stringify(condition)}`)
-    tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.admin_penalize,condition:condition,selectedFields:'-uDate'})
-    // console.log(`valid penalize result+++++++++>${JSON.stringify(tmpResult)}`)
-    if(tmpResult.length>0){
-        return Promise.reject(controllerError.currentUserHasValidPenalizeRecord)
-    }
+
 
     // console.log(`docValue ${JSON.stringify(docValue)}`)
     //用户插入 db

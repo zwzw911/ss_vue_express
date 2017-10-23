@@ -52,6 +52,8 @@ const checker={
     'adminUserPriorityCantBeEmpty':{rc:61002,msg:{client:`待检测的用户权限不能为空`,server:`待检测的用户权限不能为空`}},
     'adminUserCantBeEmpty':{rc:61004,msg:{client:`待检测的用户不能为空`,server:`待检测的用户不能为空`}},
 
+    'userInfoUndefined':{rc:61006,msg:{client:`用户尚未登录`,server:`检测用户类型，但是用户尚未登录`}},
+    'userTypeNotExpected':{rc:61006,msg:{client:`用户类型不正确`,server:`用户类型不正确，无法执行对应的操作`}},
 
     /*          unique check            */
     //collName和fieldName都根据constant/enum/DB_uniqueField而来

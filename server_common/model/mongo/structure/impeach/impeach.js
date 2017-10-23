@@ -71,6 +71,8 @@ const collFieldDefine={
     impeachedCommentId:{type:mongoose.Schema.Types.ObjectId,ref:"article_comment"}, //举报的文档评论
     impeachedUserId:{type:mongoose.Schema.Types.ObjectId,ref:"user"}, //
     creatorId:{type:mongoose.Schema.Types.ObjectId,ref:"user"}, //
+    currentState:{type:String},//enum
+    currentOwnerId:{type:mongoose.Schema.Types.ObjectId,ref:"admin_user"},//只有adminUser开始处理时，才会被设置
     // impeachStatus:{type:String,}, //enum:enumValue.ImpeachStatus       enum， 通过setMongooseBuildInValidator从inputRule中获得对应的enum定义
     cDate:{type:Date,default:Date.now},
     // uDate:{type:Date,default:Date.now},

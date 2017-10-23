@@ -5,9 +5,6 @@
  *
  */
 'use strict'
-//const express=require('express')
-
-
 const request=require('supertest')
 // const adminApp=require('../../express_admin/app')
 // const app=require('../../express/app')
@@ -19,15 +16,19 @@ const nodeEnum=require(`../constant/enum/nodeEnum`)
 const e_part=nodeEnum.ValidatePart
 const e_method=nodeEnum.Method
 const e_field=require('../constant/genEnum/DB_field').Field
-// const e_coll=require('../../server/constant/genEnum/DB_Coll').Coll
+const e_coll=require('../constant/genEnum/DB_Coll').Coll
+const e_dbMoodel=require(`../constant/genEnum/dbModel`)
 
 const objectDeepCopy=require(`../function/assist/misc`).objectDeepCopy
-const test_helper_db_operate=require('./db_operation_helper')
+const db_operation_helper=require('./db_operation_helper')
+const common_operation_model=require(`../model/mongo/operation/common_operation_model`)
 
+const dataConvert=require(`../controller/dataConvert`)
 async function removeExistsRecord_async(){
-    await test_helper_db_operate.deleteAllModelRecord_async({})
+    await db_operation_helper.deleteAllModelRecord_async({})
 }
 
+/****************       USER            *****************/
 async function createUser_async({userData,app}){
     let data={}
     data.values={}
@@ -70,6 +71,7 @@ async function userLogin_returnSess_async({userData,app}){
     })
 }
 
+/****************       ADMIN_USER            *****************/
 async function createAdminUser_async({userData,sess,adminApp}){
     let data={values:{}}
     let url='/admin_user/'
@@ -99,7 +101,7 @@ async function adminUserLogin_returnSess_async({userData,adminApp}){
     delete userData['userType']
     // console.log(`userData =============>${JSON.stringify(userData)}`)
     data.values[e_part.RECORD_INFO]=userData//,notExist:{value:123}
-    // console.log(`data ===>${JSON.stringify(data)}`)
+    // console.log(`adminUser login data ===>${JSON.stringify(data)}`)
     return new Promise(function(resolve,reject){
         request.agent(adminApp).post('/admin_user/').set('Accept', 'application/json').send(data)
             .end(function(err, res) {
@@ -118,31 +120,8 @@ async function adminUserLogin_returnSess_async({userData,adminApp}){
     })
 }
 
-/*/!*          登录用户创建一个新文档
-*   return: articleId
-* *!/
-async function userCreateArticle_returnArticleId_async({userSess,app}){
-    let data={}
-    data.values={}
-    data.values[e_part.METHOD] = e_method.CREATE
-    // console.log(`data.values ===>${JSON.stringify(data.values)}`)
-    return new Promise(function(resolve,reject){
-        request(app).post('/article/').set('Accept', 'application/json').set('Cookie', [userSess]).send(data)
-            .end(function (err, res) {
-                // if (err) return done(err);
-                // console.log(`res ios ${JSON.stringify(res)}`)
-                let parsedRes = JSON.parse(res.text)
-                // console.log(`create article result ==========> ${JSON.stringify(parsedRes)}`)
-                // articleId = parsedRes['msg']['_id']
-                assert.deepStrictEqual(parsedRes.rc, 0)
-                return resolve(parsedRes['msg']['_id'])
-                // assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.require.error.rc)
-                // done();
-            });
-    })
 
-}*/
-
+/****************       IMPEACH            *****************/
 /*
 * @impeachType: article/comment
 * */
@@ -154,7 +133,7 @@ async function createImpeachForArticle_returnImpeachId_async({articleId,userSess
         [e_field.IMPEACH.IMPEACHED_ARTICLE_ID]:articleId,
     }
     data.values[e_part.METHOD] = e_method.CREATE
-    console.log(`createImpeach_async===>data.values ===>${JSON.stringify(data.values)}`)
+    // console.log(`createImpeach_async===>data.values ===>${JSON.stringify(data.values)}`)
     return new Promise(function(resolve,reject){
         request(app).post('/impeach/article').set('Accept', 'application/json').set('Cookie', [userSess]).send(data)
             .end(function (err, res) {
@@ -217,6 +196,7 @@ function updateImpeach({data,userSess,expectRc,done,app}) {
     // })
 }
 
+/****************       ARTICLE            *****************/
 async function createNewArticle_returnArticleId_async({userSess,app}){
     let data={values:{}}
     // data.values={}
@@ -238,6 +218,94 @@ async function createNewArticle_returnArticleId_async({userSess,app}){
                 // done();
             });
     })
+}
+
+
+/****************       PENALIZE            *****************/
+/*
+* @penalizeInfo:{reason:,penalizeType:,penalizeSubype:,duration:}
+* @pernalizedUserData:受处罚的人
+* */
+async function createPenalize_async({adminUserSess,penalizeInfo,pernalizedUserData,adminApp}){
+    let condition={}
+    console.log(`pernalizedUserData========>${JSON.stringify(pernalizedUserData)}`)
+    condition={
+        [e_field.USER.ACCOUNT]:pernalizedUserData[e_field.USER.ACCOUNT]
+    }
+    console.log(`condition========>${JSON.stringify(condition)}`)
+    let userInfo=await common_operation_model.find_returnRecords_async({dbModel:e_dbMoodel[e_coll.USER],condition:condition})
+    // console.log(`tmpResult========>${JSON.stringify(tmpResult)}`)
+    let punishedId=userInfo[0][`_id`]
+    penalizeInfo[e_field.ADMIN_PENALIZE.PUNISHED_ID]=punishedId
+
+    let data={values:{}}
+    // data.values={}
+    console.log(`adminUserSess ===>${JSON.stringify(adminUserSess)}`)
+    // console.log(`data.values ===>${JSON.stringify(data.values)}`)
+    data.values[e_part.METHOD]=e_method.CREATE
+    data.values[e_part.RECORD_INFO]=penalizeInfo
+    // console.log(`data.values ===>${JSON.stringify(data.values)}`)
+    return new Promise(function(resolve,reject){
+        request(adminApp).post('/admin_penalize/').set('Accept', 'application/json').set('Cookie',[adminUserSess]).send(data)
+            .end(function(err, res) {
+                // if (err) return done(err);
+                // console.log(`res ios ${JSON.stringify(res)}`)
+                let parsedRes=JSON.parse(res.text)
+                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
+                // articleId=
+                assert.deepStrictEqual(parsedRes.rc,0)
+                return resolve({rc:0})
+                // assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.require.error.rc)
+                // done();
+            });
+    })
+}
+
+async function deletePenalize_async({adminUserSess,penalizeInfo,pernalizedUserData,adminApp}){
+    //查找同类型为过期的penalizeId，然后通过API撤销
+    // console.log(`deletePenalize_async in`)
+    let condition
+    condition={
+        [e_field.USER.ACCOUNT]:pernalizedUserData[e_field.USER.ACCOUNT]
+    }
+
+    let tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbMoodel[e_coll.USER],condition:condition})
+    // console.log(`tmpResult========>${JSON.stringify(tmpResult)}`)
+    let punishedId=tmpResult[0][`_id`]
+    condition={
+        "$or":[{'dDate':{'$exists':false}},{'isExpire':false}],
+        [e_field.ADMIN_PENALIZE.PUNISHED_ID]:punishedId,
+        [e_field.ADMIN_PENALIZE.PENALIZE_TYPE]:penalizeInfo[e_field.ADMIN_PENALIZE.PENALIZE_TYPE],
+        [e_field.ADMIN_PENALIZE.PENALIZE_SUB_TYPE]:penalizeInfo[e_field.ADMIN_PENALIZE.PENALIZE_SUB_TYPE],
+    }
+    // console.log(`condition========>${JSON.stringify(condition)}`)
+    let activePenalizeRecords=await common_operation_model.find_returnRecords_async({dbModel:e_dbMoodel[e_coll.ADMIN_PENALIZE],condition:condition,selectedFields:"-uDate"})
+    // console.log(`activePenalizeRecords========>${JSON.stringify(activePenalizeRecords)}`)
+    if(activePenalizeRecords.length>0){
+        let data={values:{}}
+        // data.values={}
+        console.log(`adminUserSess of ===>${JSON.stringify(adminUserSess)}`)
+        // console.log(`data.values ===>${JSON.stringify(data.values)}`)
+        data.values[e_part.METHOD]=e_method.UPDATE
+        data.values[e_part.RECORD_ID]=activePenalizeRecords[0][`_id`]
+        data.values[e_part.RECORD_INFO]={[e_field.ADMIN_PENALIZE.REVOKE_REASON]:'test for revoke penalize'}
+        // console.log(`data.values ===>${JSON.stringify(data.values)}`)
+        return new Promise(function(resolve,reject){
+            request(adminApp).post('/admin_penalize/').set('Accept', 'application/json').set('Cookie',[adminUserSess]).send(data)
+                .end(function(err, res) {
+                    // if (err) return done(err);
+                    // console.log(`res ios ${JSON.stringify(res)}`)
+                    let parsedRes=JSON.parse(res.text)
+                    console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
+                    // articleId=
+                    assert.deepStrictEqual(parsedRes.rc,0)
+                    return resolve({rc:0})
+                    // assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.require.error.rc)
+                    // done();
+                });
+        })
+    }
+    return Promise.resolve({rc:0})
 
 }
 module.exports={
@@ -245,6 +313,7 @@ module.exports={
 
     createUser_async,
     userLogin_returnSess_async,
+
     createAdminUser_async,
     adminUserLogin_returnSess_async,
 
@@ -254,4 +323,7 @@ module.exports={
     updateImpeach,
 
     createNewArticle_returnArticleId_async,
+
+    createPenalize_async,
+    deletePenalize_async,
 }

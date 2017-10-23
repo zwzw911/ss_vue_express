@@ -8,8 +8,8 @@ const controllerError={
     /*              dispatch                        */
     notLoginCantCreatePenalize:{rc:51200,msg:`尚未登录，无法处罚用户`},
     notLoginCantDeletePenalize:{rc:51201,msg:`尚未登录，无法撤销处罚`},
-    methodUpdateNotSupport:{rc:51202,msg:`不能更新`},
-    methodMatchNotSupport:{rc:51203,msg:`不能登录`},
+    methodNotSupport:{rc:51202,msg:`未知操作`},
+    // methodMatchNotSupport:{rc:51203,msg:`不能登录`},
     methodUnknown:{rc:51204,msg:`未定义操作`},
     /*              create                          */
     onlyAdminUserCanCreatePenalize:{rc:51210,msg:`管理员才能处罚用户`},
@@ -22,7 +22,8 @@ const controllerError={
     /*              delete_async               */
     onlyAdminUserCanRevokePenalize:{rc:51220,msg:`管理员才能撤销处罚`},
     currentUserHasNotPriorityToRevokePenalize:{rc:512222,msg:`您无权撤销处罚`},
-
+    deleteRecordInfoFieldNumIncorrect:{rc:512223,msg:`输入的数据格式不正确`},
+    missMandatoryFieldRevokeReason:{rc:512224,msg:`必须填写撤销原因`},
     // accountNotExist:{rc:51108,msg:`用户或者密码不正确`},//不能泄露具体信息
     // accountPasswordNotMatch:{rc:50110,msg:`用户或者密码不正确`},
     //

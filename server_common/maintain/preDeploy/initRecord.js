@@ -23,7 +23,7 @@ const admin_user=[
             [e_field.ADMIN_USER.LAST_SIGN_IN_DATE]:Date.now(),
             [e_field.ADMIN_USER.PASSWORD]:'123456',
             [e_field.ADMIN_USER.USER_PRIORITY]:allAdminPriorityType,
-            [e_field.ADMIN_USER.USER_TYPE]:e_adminUserType.ROOT,
+            [e_field.ADMIN_USER.USER_TYPE]:e_adminUserType.ADMIN_ROOT,
         },
     ]
 const storePath= {

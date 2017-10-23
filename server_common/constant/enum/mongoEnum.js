@@ -20,12 +20,12 @@ const ArticleStatus={
 
 const AdminUserType={
     DB:{
-        ROOT:'0',
-        NORMAL:'1',
+        ADMIN_ROOT:'1',
+        ADMIN_NORMAL:'2',
     },
     SHOW:{
-        ROOT:'超级管理员',
-        NORMAL:'管理员',        
+        ADMIN_ROOT:'超级管理员',
+        ADMIN_NORMAL:'管理员',
     }
 
 }
@@ -33,13 +33,26 @@ const AdminUserType={
 const UserType={
     DB:{
 
-        NORMAL:'1',
+        USER_NORMAL:'10',
     },
     SHOW:{
 
-        NORMAL:'普通用户',
+        USER_NORMAL:'普通用户',
     }
+}
 
+//由UserType和AdminUserType合并而成，人工合并，可以直接使用
+const AllUserType={
+    DB:{
+        ADMIN_ROOT:'1',
+        ADMIN_NORMAL:'2',
+        USER_NORMAL:'10',
+    },
+    SHOW:{
+        ADMIN_ROOT:'超级管理员',
+        ADMIN_NORMAL:'管理员',
+        USER_NORMAL:'普通用户',
+    }
 }
 const AdminPriorityType={
     DB:{
@@ -169,63 +182,91 @@ const ImpeachType={
 
 }
 
+const ImpeachAllAction={
+    DB:{
+        CREATE: '1',
+        SUBMIT:'2',
+        REVOKE:'3',
+
+        ASSIGN:'4',
+        ACCEPT:'5',
+        REJECT:'6',
+        FINISH:'7',
+    },
+    SHOW:{
+        CREATE: '创建',
+        SUBMIT:'提交',
+        REVOKE:'撤回',
+
+        ASSIGN:'分配',
+        ACCEPT:'接受',
+        REJECT:'驳回',
+        FINISH:'完成',
+    },
+}
+
+//普通用户可用操作
+const ImpeachUserAction={
+    DB:{
+        CREATE: '1',
+        SUBMIT:'2',
+        REVOKE:'3',
+    },
+    SHOW:{
+        CREATE: '创建',
+        SUBMIT:'提交',
+        REVOKE:'撤回',
+    },
+}
+
+//admin用户可用操作
+const ImpeachAdminAction={
+    DB:{
+        ASSIGN:'4',
+        ACCEPT:'5',
+        REJECT:'6',
+        FINISH:'7',
+    },
+    SHOW:{
+        ASSIGN:'分配',
+        ACCEPT:'接受',
+        REJECT:'驳回',
+        FINISH:'完成',
+    },
+}
+
 const ImpeachState={
     DB:{
         NEW: '1',
-        SUBMIT:'2',
-        REVOKE:'3',
-        ACCEPT:'4',
-        ASSIGN:'5',
-        ONGOING:'6',
-        REJECT:'7',
-        DONE:'8',
 
+        WAIT_ASSIGN:'2',
+        WAIT_HANDLE:'3',
+        ONGOING:'4',
+        DONE:'5',
     },
     SHOW:{
         NEW: '新建',
-        SUBMIT:'提交',
-        REVOKE:'撤回',
-        ACCEPT:'接受',
-        ASSIGN:'分配',
+
+        WAIT_ASSIGN:'等待分配',
+        WAIT_HANDLE:'等待处理',
         ONGOING:'处理中',
-        REJECT:'驳回',
-        DONE:'处理完',
+        DONE:'结束',
 
     },
 }
 
-//发起人和处理人能转换的状态不一致
-const InitiatorImpeachState={
-    DB:{
-        NEW: '1',
-        SUBMIT:'2',
-        RECALL:'8',
-    },
-    SHOW:{
-        NEW: '新建',
-        SUBMIT:'提交',
-        RECALL:'撤回',
-    },
-}
+/*//action和state的匹配关系
+const ImpeachActionMatchState={
+    [ImpeachAllAction.DB.CREATE]:ImpeachState.DB.NEW,
+    [ImpeachAllAction.DB.SUBMIT]:ImpeachState.DB.WAIT_ASSIGN,
+    [ImpeachAllAction.DB.REVOKE]:ImpeachState.DB.NEW,
 
-//处理人能选择的状态
-const HandlerImpeachState={
-    DB:{
-        ACCEPT:'3',
-        ASSIGN:'4',
-        ONGOING:'5',
-        REJECT:'6',
-        DONE:'7',
-    },
-    SHOW:{
-        ACCEPT:'接受',
-        ASSIGN:'分配',
-        ONGOING:'处理中',
-        REJECT:'驳回',
-        DONE:'处理完',
-    },
-}
-
+    [ImpeachAllAction.DB.ASSIGN]:ImpeachState.DB.WAIT_HANDLE,
+    [ImpeachAllAction.DB.ACCEPT]:ImpeachState.DB.ONGOING,
+    [ImpeachAllAction.DB.REJECT]:ImpeachState.DB.DONE,
+    [ImpeachAllAction.DB.FINISH]:ImpeachState.DB.DONE,
+}*/
+// console.log(`${JSON.stringify(ImpeachActionMatchState)}`)
 //impeach和impeach_commnet共用一个coll记录image，为了区分，需要使用额外字段进行区分
 const ImpeachImageReferenceColl={
     DB:{
@@ -321,6 +362,7 @@ module.exports={
     ArticleStatus,
     AdminUserType,
     UserType,
+    AllUserType,
     AdminPriorityType,
     PublicGroupJoinInRule,
     PublicGroupEventType,
@@ -328,9 +370,11 @@ module.exports={
     PenalizeType,
     PenalizeSubType,
     ImpeachType,
+    ImpeachAllAction,
+    ImpeachUserAction,
+    ImpeachAdminAction,
     ImpeachState,
-    InitiatorImpeachState,
-    HandlerImpeachState,
+    // ImpeachActionMatchState,
     ImpeachImageReferenceColl,
     DocStatus,
     AccountType,

@@ -5,11 +5,11 @@
 
 
 /*                      controller setting                */
-const controller_setting=require('../impeach_state_setting/impeach_state_setting').setting
-const controllerError=require('../impeach_state_setting/impeach_state_controllerError').controllerError
-const availableNextState=require(`../impeach_state_setting/impeach_state_setting`).availableNextState
-const endState=require(`../impeach_state_setting/impeach_state_setting`).endState
-const adminPriorityRelatedState=require(`../impeach_state_setting/impeach_state_setting`).adminPriorityRelatedState
+const controller_setting=require('../impeach_action_setting/impeach_action_setting').setting
+const controllerError=require('../impeach_action_setting/impeach_state_controllerError').controllerError
+const availableNextState=require(`./express/server/controller/impeach_action/impeach_action_setting`).availableNextState
+const endState=require(`./express/server/controller/impeach_action/impeach_action_setting`).endState
+const adminPriorityRelatedState=require(`./express/server/controller/impeach_action/impeach_action_setting`).adminPriorityRelatedState
 /*                      specify: genEnum                */
 const e_uniqueField=require('../../../constant/genEnum/DB_uniqueField').UniqueField
 const e_chineseName=require('../../../constant/genEnum/inputRule_field_chineseName').ChineseName

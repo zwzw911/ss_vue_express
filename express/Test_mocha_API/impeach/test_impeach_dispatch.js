@@ -57,6 +57,7 @@ let normalRecord={
 /*
  * @sess：是否需要sess
  * @APIUrl:测试使用的URL
+ * @penalizeRelatedInfo: {penalizeType:,penalizeSubType:,penalizedUserData:,penalizedError:,rootSess:,adminApp}
  * @normalRecordInfo:一个正常的输入(document)
  * @method：测试require的时候，使用哪种method。默认是create
  * @singleRuleName: field下，某个rule的名称
@@ -65,6 +66,7 @@ let normalRecord={
 let parameter={
     sess:undefined,
     APIUrl:undefined,
+    penalizeRelatedInfo:undefined,
     normalRecordInfo:normalRecord,
     method:e_method.UPDATE,//只能测试update，create的话，因为code会自动生成title和content，所以无法测试   //非要测试CREATE，只能测试field e_field.IMPEACH.IMPEACHED_ARTICLE_ID
     collRule:browserInputRule[e_coll.IMPEACH],

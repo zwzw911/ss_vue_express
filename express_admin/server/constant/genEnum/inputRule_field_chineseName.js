@@ -9,7 +9,9 @@ const ChineseName={
         'penalizeType':'受罚类型',
         'penalizeSubType':'受罚子类型',
         'duration':'受罚时长',
+        'revokeReason':'撤销原因',
         'creatorId':'处罚人',
+        'revokerId':'撤销人',
     },
     admin_sugar:{
         'userId':'用户',
@@ -138,6 +140,15 @@ const ChineseName={
         'impeachImagesId':'举报图片',
         'impeachAttachmentsId':'举报附件',
         'impeachCommentsId':'留言',
+        'currentState':'当前状态',
+        'currentOwnerId':'当前处理人',
+    },
+    impeach_action:{
+        'impeachId':'举报',
+        'ownerId':'处理人',
+        'action':'操作',
+        'creatorId':'状态改变人',
+        'creatorColl':'状态改变人表',
     },
     impeach_attachment:{
         'name':'举报附件名称',
@@ -161,14 +172,6 @@ const ChineseName={
         'pathId':'存储路径',
         'sizeInMb':'图片大小',
         'authorId':'图片上传者',
-    },
-    impeach_state:{
-        'impeachId':'举报',
-        'ownerId':'处理人',
-        'ownerColl':'处理人表',
-        'state':'状态',
-        'dealerId':'状态改变人',
-        'dealerColl':'状态改变人表',
     },
     like_dislike_static:{
         'articleId':'文档',

@@ -55,6 +55,7 @@ let normalRecord={
 /*
  * @sess：是否需要sess
  * @APIUrl:测试使用的URL
+ * @penalizeRelatedInfo: {penalizeType:,penalizeSubType:,penalizedUserData:,penalizedError:,rootSess:,adminApp}
  * @normalRecordInfo:一个正常的输入(document)
  * @method：测试require的时候，使用哪种method。默认是create
  * @fieldName：需要对那个field进行require测试
@@ -64,6 +65,7 @@ let normalRecord={
 let parameter={
     sess:undefined,
     APIUrl:undefined,
+    penalizeRelatedInfo:undefined,
     normalRecordInfo:normalRecord,
     method:undefined,
     collRule:browserInputRule[e_coll.LIKE_DISLIKE],

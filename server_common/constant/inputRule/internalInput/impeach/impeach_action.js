@@ -17,7 +17,7 @@ const collNameForFK=require('../../../../constant/enum/collEnum').collNameForFK
 /*              获得 某些设置值            */
 // const maxNumber=require('../../../config/globalConfiguration').maxNumber
 
-const impeach_state= {
+const impeach_action= {
 /*    impeachId: {
         'chineseName': '举报',
         'type': serverDataType.OBJECT_ID,
@@ -27,7 +27,7 @@ const impeach_state= {
         'format': {define: regex.objectId, error: {rc: 10592}, mongoError: {rc: 20592, msg: '举报必须是objectId'}} //server端使用
     },*/
     //处理人
-    dealerId: {
+    creatorId: {
         'chineseName': '状态改变人',
         'type': serverDataType.OBJECT_ID,
         'require': {define: false, error: {rc: 10598}, mongoError: {rc: 20598, msg: '状态改变人不能为空'}},//默认为空对象
@@ -36,7 +36,7 @@ const impeach_state= {
         'format': {define: regex.objectId, error: {rc: 10600}, mongoError: {rc: 20600, msg: '状态改变人必须是objectId'}} //server端使用
     },
     //处理人所在coll（通过enum限定可取的coll name）
-    dealerColl: {
+    creatorColl: {
         'chineseName': '状态改变人表',
         'type': serverDataType.STRING,
         'require': {define: false, error: {rc: 10594}, mongoError: {rc: 20594, msg: '状态改变人表不能为空'}},//默认为空对象
@@ -62,5 +62,5 @@ const impeach_state= {
 }
 
 module.exports={
-    impeach_state,
+    impeach_action,
 }

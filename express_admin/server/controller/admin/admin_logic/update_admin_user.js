@@ -73,7 +73,7 @@ async function updateUser_async(req){
     /*              如果是root，则只有root可以修改自己（specific）              */
     let userToBeUpdate=await common_operation_model.findById_returnRecord_async({dbModel:e_dbModel.admin_user,id:userToBeUpdateId})
     // console.log(`userToBeUpdate=========>${JSON.stringify(userToBeUpdate)}`)
-    if(e_adminUserType.ROOT===userToBeUpdate[e_field.ADMIN_USER.USER_TYPE]){
+    if(e_adminUserType.ADMIN_ROOT===userToBeUpdate[e_field.ADMIN_USER.USER_TYPE]){
         if(userToBeUpdate['_id']!==userId){
             return Promise.reject(controllerError.onlyRootCanUpdateRoot)
         }

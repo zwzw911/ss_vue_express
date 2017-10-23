@@ -3,7 +3,7 @@
     "use strict"
 
 const Field={
-    admin_penalize:['creatorId',],
+    admin_penalize:['creatorId','revokerId',],
     admin_sugar:['userId','sugar',],
     admin_user:['password','docStatus','lastAccountUpdateDate','lastSignInDate',],
     category:[],
@@ -22,11 +22,11 @@ const Field={
     public_group_interaction:['creatorId','deleteById',],
     user_friend_group:[],
     user_public_group:['userId','currentJoinGroup',],
-    impeach:['creatorId','impeachType','impeachedUserId','impeachImagesId','impeachAttachmentsId','impeachCommentsId',],
+    impeach:['creatorId','impeachType','impeachedUserId','impeachImagesId','impeachAttachmentsId','impeachCommentsId','currentState','currentOwnerId',],
+    impeach_action:['creatorId','creatorColl',],
     impeach_attachment:['name','hashName','authorId','sizeInMb','pathId',],
     impeach_comment:['authorId','impeachImagesId','impeachAttachmentsId',],
     impeach_image:['name','hashName','pathId','sizeInMb','authorId',],
-    impeach_state:['dealerId','dealerColl',],
     like_dislike_static:['articleId',],
     resource_profile_static:['userId','resourceProfileId','usedFileNum','usedFileSize',],
     user_resource_profile:[],

@@ -17,6 +17,7 @@ const redisError=require('../server_common/constant/error/redisError.js')
 const systemError=require('../server_common/constant/error/systemError.js')
 const validateError=require('../server_common/constant/error/validateError.js')
 const regex=require('../server_common/constant/regex/regex.js')
+const aglorithm=require('../server_common/controller/aglorithm.js')
 const controllerChecker=require('../server_common/controller/controllerChecker.js')
 const controllerHelper=require('../server_common/controller/controllerHelper.js')
 const dataConvert=require('../server_common/controller/dataConvert.js')
@@ -35,6 +36,7 @@ const validateValue=require('../server_common/function/validateInput/validateVal
 const API_helper=require('../server_common/Test/API_helper.js')
 const component_function=require('../server_common/Test/component_function.js')
 const db_operation_helper=require('../server_common/Test/db_operation_helper.js')
+const generateTestData_API=require('../server_common/Test/generateTestData_API.js')
 const inputRule_API_tester=require('../server_common/Test/inputRule_API_tester.js')
 const testData=require('../server_common/Test/testData.js')
 const common_operation_model=require('../server_common/model/mongo/operation/common_operation_model.js')
@@ -58,6 +60,7 @@ module.exports={
     systemError,
     validateError,
     regex,
+    aglorithm,
     controllerChecker,
     controllerHelper,
     dataConvert,
@@ -76,6 +79,7 @@ module.exports={
     API_helper,
     component_function,
     db_operation_helper,
+    generateTestData_API,
     inputRule_API_tester,
     testData,
     common_operation_model,

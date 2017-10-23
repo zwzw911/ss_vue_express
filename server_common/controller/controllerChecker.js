@@ -14,6 +14,8 @@ const e_chineseName=require('../constant/genEnum/inputRule_field_chineseName').C
 const e_serverRuleType=require('../constant/enum/inputDataRuleType').ServerRuleType
 const e_field=require('../constant/genEnum/DB_field').Field
 const e_adminPriorityType=require('../constant/enum/mongoEnum').AdminPriorityType.DB
+const e_allUserType=require('../constant/enum/mongoEnum').AllUserType.DB
+const e_userInfoField=require(`../constant/enum/nodeRuntimeEnum`).userInfoField
 
 const allAdminPriorityType=require('../constant/genEnum/enumValue').AdminPriorityType
 
@@ -115,7 +117,7 @@ async function ifFieldInDocValueUnique_async({collName,docValue,additionalCheckC
  * return：存在: {rc:0}   不存在：helperError.fkValueNotExist
  * */
 async function ifFkValueExist_async({docValue,collFkConfig,collFieldChineseName}){
-    //console.log(`collFkConfig fields========>${JSON.stringify(Object.keys(collFkConfig))}`)
+    // console.log(`collFkConfig fields========>${JSON.stringify(Object.keys(collFkConfig))}`)
     if(undefined!==collFkConfig){
         //console.log(`collFkConfig fields========>${JSON.stringify(Object.keys(collFkConfig))}`)
         //console.log(`docValue ========>${JSON.stringify(docValue)}`)
@@ -282,15 +284,20 @@ async function ifAdminUserHasExpectedPriority_async({userPriority,arr_expectedPr
     }
     return Promise.resolve(true)
 }
-
-/*async function ifAdminUserHasExpectedPriority({userPriority,arr_expectedPriority}){
-    for(let singleExpectedPriority of arr_expectedPriority){
-        if(-1===userPriority.indexOf(singleExpectedPriority.toString())){
-            return Promise.resolve(false)
-        }
+//判断当前用户的类型是否为期望的
+async function ifExpectedUserType_async({req,arr_expectedUserType}){
+    if(undefined===req.session.userInfo || undefined===req.session.userInfo[e_userInfoField.USER_TYPE]){
+        return Promise.reject(checkerError.userInfoUndefined)
     }
+
+    let currentUserType=req.session.userInfo[e_userInfoField.USER_TYPE]
+
+    if(-1===arr_expectedUserType.indexOf(currentUserType)){
+        return Promise.reject(checkerError.userTypeNotExpected)
+    }
+
     return Promise.resolve(true)
-}*/
+}
 
 
 module.exports={
@@ -304,4 +311,6 @@ module.exports={
     ifEnumHasDuplicateValue,//数组是否可以包含重复值
 
     ifAdminUserHasExpectedPriority_async,
+
+    ifExpectedUserType_async,//判断当前用户的类型是否为期望的
 }

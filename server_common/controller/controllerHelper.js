@@ -633,7 +633,7 @@ async function preCheck_async({req,collName,method,userLoginCheck={needCheck:fal
     //let {maxSearchKeyNum,maxSearchPageNum}=searchSetting
     //let {browserInputRule,internalInputRule,inputRule}=allRule
 // console.log(`preCheck in====>${JSON.stringify(req.body.values)}`)
-    //console.log(`req.session in====>${JSON.stringify(req.session)}`)
+//     console.log(`req.session.userInfo in====>${JSON.stringify(req.session.userInfo)}`)
     /*              检查用户是否登录            */
     let {needCheck,error}=userLoginCheck
     if(true===needCheck){
@@ -657,11 +657,15 @@ async function preCheck_async({req,collName,method,userLoginCheck={needCheck:fal
     /*        检查用户是否被处罚                                 */
     // console.log(`create in with robot check result =======> ${result}`)
     let {penalizeType,penalizeSubType,penalizeCheckError}=penalizeCheck
+    // console.log(`penalizeCheck===============================================>${JSON.stringify(penalizeCheck)}`)
     if(undefined!==req.session.userInfo && undefined!==req.session.userInfo.userId){
+        // console.log(`penalize check in 0 ==========================================>`)
         if(undefined!==penalizeType && undefined!==penalizeSubType){
+            // console.log(`penalize check in 1 ==========================================>`)
             if(undefined===penalizeCheckError){
                 console.log(`error============================>need to check **penalize**, but not supply related error`)
             }
+// console.log(`penalize check in 2 ==========================================>`)
             tmpResult=await ifPenalizeOngoing_async({userId:req.session.userInfo.userId, penalizeType:penalizeType,penalizeSubType:penalizeSubType})
             // console.log(`preCheck_async penalize ongoing check result====>${JSON.stringify(tmpResult)}`)
             // return false
@@ -870,24 +874,27 @@ async function contentDbDeleteNotExistImage_async({content,recordId,collConfig,c
  *
  * */
 async function ifPenalizeOngoing_async({userId, penalizeType,penalizeSubType}){
+    console.log(`ifPenalizeOngoing_async===================================>}`)
     let condition={}
-    /*                  首先检查 penalizeSubType=all的记录，因为all具有最高优先级             */
+    /*                  检查 penalizeSubType=all或者是penalizeSubType，同时penalizeType和userId等于输入参数，且没有超时，且没有被删除的记录             */
     condition[e_field.ADMIN_PENALIZE.PUNISHED_ID]=userId
     condition[e_field.ADMIN_PENALIZE.PENALIZE_TYPE]=penalizeType
-    condition[e_field.ADMIN_PENALIZE.PENALIZE_SUB_TYPE]=e_penalizeSubType.ALL
-    let option={}
+    condition[e_field.ADMIN_PENALIZE.PENALIZE_SUB_TYPE]={"$in":[e_penalizeSubType.ALL,penalizeSubType]}
+    condition["$or"]=[{'dDate':{'$exists':false}},{'isExpire':false}]
+    // condition[`dDate`]={"$exists":false}
+   /* let option={}
     option['limit']=1
-    option['sort']={cDate:-1} //选取最近一个penalize记录
+    option['sort']={cDate:-1} //选取最近一个penalize记录*/
     // condition['ifExpire']=true //这是virtual 方法
-    // console.log(`penalize condition====>${JSON.stringify(condition)}`)
-    let tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.admin_penalize,condition:condition,options:option,selectedFields:'-uDate'})
-    // console.log(`penalize sub type all's result====>${JSON.stringify(tmpResult)}`)
+    // console.log(`penalize condition======================>${JSON.stringify(condition)}`)
+    let activePenalizeRecords=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.admin_penalize,condition:condition,selectedFields:'-uDate'})
+    // console.log(`penalizeresult==========================>${JSON.stringify(activePenalizeRecords)}`)
     //all的处罚记录有效
-    if(tmpResult.length>0 && false===tmpResult[0]['isExpire']){
+    if(activePenalizeRecords.length>0){
         return Promise.resolve(true)
     }
 
-    /*         继续检查penalizeSubType!==ALL的记录              */
+/*    /!*         继续检查penalizeSubType!==ALL的记录              *!/
     if(penalizeSubType!==e_penalizeSubType.ALL){
         condition[e_field.ADMIN_PENALIZE.PENALIZE_SUB_TYPE]=penalizeSubType
         // console.log(`penalize condition for not ALL====>${JSON.stringify(condition)}`)
@@ -897,7 +904,7 @@ async function ifPenalizeOngoing_async({userId, penalizeType,penalizeSubType}){
         if(tmpResult.length>0 && false===tmpResult[0]['isExpire']){
             return Promise.resolve(true)
         }
-    }
+    }*/
 
 
     return Promise.resolve(false)

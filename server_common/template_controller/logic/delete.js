@@ -58,7 +58,7 @@ async function deleteUser_async(req){
     /*******************************************************************************************/
     /*                                     specific priority check                             */
     /*******************************************************************************************/
-    let hasDeletePriority=await controllerChecker.ifAdminUserHasExpectedPriority_async({userId:userId,arr_expectedPriority:[e_adminPriorityType.DELETE_ADMIN_USER]})
+    let hasDeletePriority=await controllerChecker.ifAdminUserHasExpectedPriority_async({userId:userPriority,arr_expectedPriority:[e_adminPriorityType.DELETE_ADMIN_USER]})
     console.log(`hasDeletePriority===========>${JSON.stringify(hasDeletePriority)}`)
     if(false===hasDeletePriority){
         return Promise.reject(controllerError.currentUserHasNotPriorityToDeleteUser)
@@ -66,7 +66,7 @@ async function deleteUser_async(req){
 
     /*              不能删除的root用户（specific）              */
     let userToBeDelete=await common_operation_model.findById_returnRecord_async({dbModel:e_dbModel.admin_user,id:recordToBeDeleted})
-    if(e_adminUserType.ROOT===userToBeDelete[e_field.ADMIN_USER.USER_TYPE]){
+    if(e_adminUserType.ADMIN_ROOT===userToBeDelete[e_field.ADMIN_USER.USER_TYPE]){
         return Promise.reject(controllerError.cantDeleteRootUserByAPI)
     }
 

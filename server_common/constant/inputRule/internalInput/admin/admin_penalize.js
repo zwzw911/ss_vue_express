@@ -16,12 +16,19 @@ const admin_penalize= {
     creatorId: {
         'chineseName': '处罚人',
         'type': serverDataType.OBJECT_ID,
-        'require': {define: true, error: {rc: 10096}, mongoError: {rc: 20096, msg: '处罚人不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        'require': {define: true, error: {rc: 10095}, mongoError: {rc: 20095, msg: '处罚人不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         // 'minLength': {define: 2, error: {rc: 10002}, mongoError: {rc: 20002, msg: '用户名至少2个字符'}},
         // 'maxLength': {define: 20, error: {rc: 10004}, mongoError: {rc: 20004, msg: '用户名的长度不能超过20个字符'}},
-        'format': {define: regex.objectId, error: {rc: 10097}, mongoError: {rc: 20097, msg: '处罚人格式不正确'}} //server端使用
+        'format': {define: regex.objectId, error: {rc: 10096}, mongoError: {rc: 20096, msg: '处罚人格式不正确'}} //server端使用
     },
-
+    revokerId: {
+        'chineseName': '撤销人',
+        'type': serverDataType.OBJECT_ID,
+        'require': {define: false, error: {rc: 10097}, mongoError: {rc: 20097, msg: '撤销人不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        // 'minLength': {define: 2, error: {rc: 10002}, mongoError: {rc: 20002, msg: '用户名至少2个字符'}},
+        // 'maxLength': {define: 20, error: {rc: 10004}, mongoError: {rc: 20004, msg: '用户名的长度不能超过20个字符'}},
+        'format': {define: regex.objectId, error: {rc: 10098}, mongoError: {rc: 20098, msg: '撤销人格式不正确'}} //server端使用
+    },
 
 }
 

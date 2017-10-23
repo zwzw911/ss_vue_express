@@ -26,10 +26,10 @@ const Coll={
     USER_PUBLIC_GROUP:'user_public_group',
     /*       impeach           */
     IMPEACH:'impeach',
+    IMPEACH_ACTION:'impeach_action',
     IMPEACH_ATTACHMENT:'impeach_attachment',
     IMPEACH_COMMENT:'impeach_comment',
     IMPEACH_IMAGE:'impeach_image',
-    IMPEACH_STATE:'impeach_state',
     /*       static           */
     LIKE_DISLIKE_STATIC:'like_dislike_static',
     RESOURCE_PROFILE_STATIC:'resource_profile_static',

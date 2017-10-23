@@ -11,6 +11,8 @@ const Field={
         PENALIZE_TYPE:'penalizeType',
         PENALIZE_SUB_TYPE:'penalizeSubType',
         DURATION:'duration',
+        REVOKE_REASON:'revokeReason',
+        REVOKER_ID:'revokerId',
     },
     CATEGORY:{
         ID:'id',
@@ -144,6 +146,16 @@ const Field={
         IMPEACHED_COMMENT_ID:'impeachedCommentId',
         IMPEACHED_USER_ID:'impeachedUserId',
         CREATOR_ID:'creatorId',
+        CURRENT_STATE:'currentState',
+        CURRENT_OWNER_ID:'currentOwnerId',
+    },
+    IMPEACH_ACTION:{
+        ID:'id',
+        IMPEACH_ID:'impeachId',
+        CREATOR_ID:'creatorId',
+        CREATOR_COLL:'creatorColl',
+        ACTION:'action',
+        OWNER_ID:'ownerId',
     },
     IMPEACH_ATTACHMENT:{
         ID:'id',
@@ -170,15 +182,6 @@ const Field={
         REFERENCE_ID:'referenceId',
         REFERENCE_COLL:'referenceColl',
         AUTHOR_ID:'authorId',
-    },
-    IMPEACH_STATE:{
-        ID:'id',
-        IMPEACH_ID:'impeachId',
-        DEALER_ID:'dealerId',
-        DEALER_COLL:'dealerColl',
-        STATE:'state',
-        OWNER_ID:'ownerId',
-        OWNER_COLL:'ownerColl',
     },
     LIKE_DISLIKE_STATIC:{
         ID:'id',

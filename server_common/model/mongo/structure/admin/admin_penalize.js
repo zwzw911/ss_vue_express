@@ -71,6 +71,8 @@ const collFieldDefine={
     penalizeSubType:{type:String,}, //CRUD和其它
     duration:{type:Number}, //单位：天
 // isExpire:{type:Boolean},//处罚是否结束，通过virtual method判断
+    revokeReason:{type:String,},
+    revokerId:{type:mongoose.Schema.Types.ObjectId,ref:"admin_user"},
     cDate:{type:Date,default:Date.now},
     uDate:{type:Date,default:Date.now},
     dDate:{type:Date},
@@ -98,6 +100,7 @@ collSchema.virtual('isExpire').get(function(){
     if(0===this.duration){
         return false
     }else{
+        console.log(`this.cDate===========>${JSON.stringify(this.cDate)}`)
         return (this.cDate.getTime()+this.duration*86400000)<Date.now()
     }
 

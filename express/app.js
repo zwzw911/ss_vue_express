@@ -91,12 +91,12 @@ app.use(function(req,res,next){
 const user=require('./server/controller/user/user_router').router
 const article=require('./server/controller/article/article_router').router
 const impeach=require('./server/controller/impeach/impeach_router').router
-const impeach_state=require('./server/controller/impeach_state/impeach_state_router').router
+const impeach_action=require('./server/controller/impeach_action/impeach_action_router').router
 
 app.use('/user', user);
 app.use('/article', article);
 app.use('/impeach', impeach);
-app.use('/impeach_state', impeach_state);
+app.use('/impeach_action', impeach_action);
 // app.use('/register/uniqueCheck', register);
 // app.use('/users', users);
 

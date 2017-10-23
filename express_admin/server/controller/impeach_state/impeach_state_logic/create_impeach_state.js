@@ -77,7 +77,10 @@ async  function createImpeachState_async(req){
     /*******************************************************************************************/
     /*                                    fk value是否存在                                     */
     /*******************************************************************************************/
+    //在fkConfig中定义的外键检查
     await controllerChecker.ifFkValueExist_async({docValue:docValue,collFkConfig:fkConfig[collName],collFieldChineseName:e_chineseName[collName]})
+    //自定义外键的检查
+
     /*******************************************************************************************/
     /*                                  enum unique check(enum in array)                       */
     /*******************************************************************************************/
@@ -178,7 +181,7 @@ async  function createImpeachState_async(req){
 
     //如果是REVOKE，则自动将state变成NEW
     if(docValue[e_field.IMPEACH_STATE.STATE]===e_impeachState.REVOKE){
-        docValue[e_field.IMPEACH_STATE.STATE]===e_impeachState.NEW
+        docValue[e_field.IMPEACH_STATE.STATE]=e_impeachState.NEW
     }
 
     //如果输入的状态是最终状态，则OWNER要变成当前用户

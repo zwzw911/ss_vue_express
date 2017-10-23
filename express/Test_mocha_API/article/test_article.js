@@ -6,6 +6,7 @@
 
 const request=require('supertest')
 const app=require('../../app')
+const adminApp=require(`../../../express_admin/app`)
 const assert=require('assert')
 
 const server_common_file_require=require('../../server_common_file_require')
@@ -42,7 +43,7 @@ const component_function=server_common_file_require.component_function
 let baseUrl="/article/"
 let userId  //create后存储对应的id，以便后续的update操作
 
-let sess1,sess2,data={values:{}}
+let sess1,sess2,adminRootSess,data={values:{}}
 
 describe('create new article and update, then create new comment: ', async function() {
     let url = '', finalUrl = baseUrl + url
@@ -52,46 +53,34 @@ describe('create new article and update, then create new comment: ', async funct
         await API_helper.removeExistsRecord_async()
     })
 
-    before('user1 create and login', async function () {
-        let userInfo=await component_function.reCreateUser_returnSessUserId_async({userData:testData.user.user1,app:app})
-        user1Sess=userInfo['sess']
+    before('user1/2 recreate and login', async function () {
+        let user1Info=await component_function.reCreateUser_returnSessUserId_async({userData:testData.user.user1,app:app})
+        user1Sess=user1Info['sess']
+        let user2Info=await component_function.reCreateUser_returnSessUserId_async({userData:testData.user.user2,app:app})
+        user2Sess=user2Info['sess']
         // await API_helper.createUser_async({userData:,app:app})
         // user1Sess=await  API_helper.userLogin_returnSess_async({userData:testData.user.user1,app:app})
     })
-    before('user2 create and login', async function () {
-        let userInfo=await component_function.reCreateUser_returnSessUserId_async({userData:testData.user.user2,app:app})
-        user2Sess=userInfo['sess']
-        // await API_helper.createUser_async({userData:testData.user.user2,app:app})
-        // user2Sess=await  API_helper.userLogin_returnSess_async({userData:testData.user.user2,app:app})
-    })
     before('insert user2 penalize for both article and comment', async function () {
-        // console.log(`testData.user.user1 ${JSON.stringify(testData.user.user1)}`)
-        let user1Tmp = {}
-        user1Tmp[e_field.USER.ACCOUNT] = testData.user.user2[e_field.USER.ACCOUNT]
-        user1Tmp[e_field.USER.PASSWORD] = testData.user.user2[e_field.USER.PASSWORD]
+        let adminRootSess=await API_helper.adminUserLogin_returnSess_async({userData:testData.admin_user.adminRoot,adminApp:adminApp})
+        // console.log(`userInfo==============>${JSON.stringify(userInfo)}`)
+        // =userInfo[`sess`]
 
-        let condition = {}
-        condition[e_field.USER.ACCOUNT] = testData.user.user2[e_field.USER.ACCOUNT]
-        let tmpResult = await common_operation_model.find_returnRecords_async({dbModel: e_dbModel.user, condition: condition})
-
-        let value = {}
-        value[e_field.ADMIN_PENALIZE.PUNISHED_ID] = tmpResult[0]['_id']
-        value[e_field.ADMIN_PENALIZE.CREATOR_ID] = tmpResult[0]['_id']
-        value[e_field.ADMIN_PENALIZE.REASON] = `test user2 penalize`
-        value[e_field.ADMIN_PENALIZE.DURATION] = 1
-
+        let penalizeInfo={}
         //use2 penalize create article
-        value[e_field.ADMIN_PENALIZE.PENALIZE_TYPE] = e_penalizeType.NO_ARTICLE
-        value[e_field.ADMIN_PENALIZE.PENALIZE_SUB_TYPE] = e_penalizeSubType.CREATE
-        await common_operation_model.create_returnRecord_async({dbModel: e_dbModel.admin_penalize, value: value})
+        penalizeInfo[e_field.ADMIN_PENALIZE.REASON] = `test user2 penalize no create article`
+        penalizeInfo[e_field.ADMIN_PENALIZE.DURATION] = 1
+        penalizeInfo[e_field.ADMIN_PENALIZE.PENALIZE_TYPE] = e_penalizeType.NO_ARTICLE
+        penalizeInfo[e_field.ADMIN_PENALIZE.PENALIZE_SUB_TYPE] = e_penalizeSubType.CREATE
+        await API_helper.createPenalize_async({adminUserSess:adminRootSess,penalizeInfo:penalizeInfo,pernalizedUserData:testData.user.user2,adminApp:adminApp})
 
-        //use2 penalize create article
-        value[e_field.ADMIN_PENALIZE.PENALIZE_TYPE] = e_penalizeType.NO_COMMENT
-        value[e_field.ADMIN_PENALIZE.PENALIZE_SUB_TYPE] = e_penalizeSubType.CREATE
-        await common_operation_model.create_returnRecord_async({dbModel: e_dbModel.admin_penalize, value: value})
+        //use2 penalize create comment
+        penalizeInfo[e_field.ADMIN_PENALIZE.REASON] = `test user2 penalize no create comment`
+        penalizeInfo[e_field.ADMIN_PENALIZE.DURATION] = 1
+        penalizeInfo[e_field.ADMIN_PENALIZE.PENALIZE_TYPE] = e_penalizeType.NO_COMMENT
+        penalizeInfo[e_field.ADMIN_PENALIZE.PENALIZE_SUB_TYPE] = e_penalizeSubType.CREATE
+        await API_helper.createPenalize_async({adminUserSess:adminRootSess,penalizeInfo:penalizeInfo,pernalizedUserData:testData.user.user2,adminApp:adminApp})
 
-        // done()
-        // return Promise.resolve({rc:0})
     })
     before('get user2 folder', async function () {
         let tmpResult=await db_operation_helper.getUserFolderId_async(testData.user.user2)
@@ -101,36 +90,6 @@ describe('create new article and update, then create new comment: ', async funct
         // return Promise.resolve({rc:0})
     })
 
-
-    it('new article without sess1', function (done) {
-        // data.values[e_part.RECORD_INFO]={name:{value:'my article'}}
-        data.values[e_part.METHOD] = e_method.CREATE
-        request(app).post(finalUrl).set('Accept', 'application/json').send(data)
-            .end(function (err, res) {
-                // if (err) return done(err);
-                // console.log(`res ios ${JSON.stringify(res)}`)
-                let parsedRes = JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc, controllerError.userNotLoginCantCreate.rc)
-                // assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.require.error.rc)
-                done();
-            });
-    });
-
-    it('new article with additional part', function (done) {
-        data.values[e_part.RECORD_INFO] = {name:'my article'}
-        data.values[e_part.METHOD] = e_method.CREATE
-        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie', [user1Sess]).send(data)
-            .end(function (err, res) {
-                // if (err) return done(err);
-                // console.log(`res ios ${JSON.stringify(res)}`)
-                let parsedRes = JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc, validateError.validateFormat.inputValuePartNumNotExpected.rc)
-                // assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.require.error.rc)
-                done();
-            });
-    });
 
     it('correct article', function (done) {
         delete data.values[e_part.RECORD_INFO]
@@ -151,62 +110,8 @@ describe('create new article and update, then create new comment: ', async funct
             });
     });
 
-    it('update article without sess1', function (done) {
-        data.values = {}
-        data.values[e_part.RECORD_ID] = newArticleId
-        data.values[e_part.METHOD] = e_method.UPDATE
-        data.values[e_part.RECORD_INFO] = {}
-        data.values[e_part.RECORD_INFO][e_field.ARTICLE.HTML_CONTENT] = ''
-        request(app).post(finalUrl).set('Accept', 'application/json').send(data)
-            .end(function (err, res) {
-                // if (err) return done(err);
-                // console.log(`res ios ${JSON.stringify(res)}`)
-                let parsedRes = JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc, controllerError.userNotLoginCantUpdate.rc)
-                // assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.require.error.rc)
-                done();
-            });
-    });
 
-    it('update article with wrong field value', function (done) {
-        data.values = {}
-        data.values[e_part.RECORD_ID] = newArticleId
-        data.values[e_part.METHOD] = e_method.UPDATE
-        data.values[e_part.RECORD_INFO] = {}
-        // data.values[e_part.RECORD_INFO][e_field.ARTICLE.HTML_CONTENT] = {}
-        data.values[e_part.RECORD_INFO][e_field.ARTICLE.HTML_CONTENT] = ''
-        console.log(`docvalues====>${JSON.stringify(data.values)}`)
-        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie', [user1Sess]).send(data)
-            .end(function (err, res) {
-                // if (err) return done(err);
-                // console.log(`res ios ${JSON.stringify(res)}`)
-                let parsedRes = JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.msg[e_field.ARTICLE.HTML_CONTENT]['rc'], browserInputRule.article.htmlContent.require.error.rc)
-                // assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.require.error.rc)
-                done();
-            });
-    });
-    it('update article with not exist field', function (done) {
-        data.values = {}
-        data.values[e_part.RECORD_ID] = newArticleId
-        data.values[e_part.METHOD] = e_method.UPDATE
-        data.values[e_part.RECORD_INFO] = {}
-        // data.values[e_part.RECORD_INFO]['notExist'] = {}
-        data.values[e_part.RECORD_INFO]['notExist'] = ''
-        console.log(`docvalues====>${JSON.stringify(data.values)}`)
-        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie', [user1Sess]).send(data)
-            .end(function (err, res) {
-                // if (err) return done(err);
-                // console.log(`res ios ${JSON.stringify(res)}`)
-                let parsedRes = JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc, validateError.validateFormat.recordInfoFiledRuleNotDefine.rc)
-                // assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.require.error.rc)
-                done();
-            });
-    });
+
 
 
     it('update article not user owner', function (done) {
@@ -247,25 +152,7 @@ describe('create new article and update, then create new comment: ', async funct
                 done();
             });
     });
-    it('update article with tag not exist', function (done) {
-        data.values = {}
-        data.values[e_part.RECORD_ID] = newArticleId
-        data.values[e_part.METHOD] = e_method.UPDATE
-        data.values[e_part.RECORD_INFO] = {}
-        data.values[e_part.RECORD_INFO][e_field.ARTICLE.TAGS] = [testData.tag.tag1.name]
-        // data.values[e_part.RECORD_INFO][e_field.ARTICLE.TAGS]['value'] =
-        console.log(`docvalues====>${JSON.stringify(data.values)}`)
-        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie', [user1Sess]).send(data)
-            .end(function (err, res) {
-                // if (err) return done(err);
-                // console.log(`res ios ${JSON.stringify(res)}`)
-                let parsedRes = JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes['rc'], 0)
-                // assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.require.error.rc)
-                done();
-            });
-    });
+   
     it('update article with non exist folder id', function (done) {
         data.values = {}
         data.values[e_part.RECORD_ID] = newArticleId
