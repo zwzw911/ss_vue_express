@@ -1,15 +1,26 @@
 /**
  * Created by wzhan039 on 2017-07-10.
  * 记录所有coll之间的关联
+ *
+ * @ relatedColl: 外键对应到哪个coll
+ * @ forSelect: select的时候，返回哪个field
+ * @ forSetValue： 设置外键值，对应设置到哪个field
+ * @ validCriteria: 判断外键是否存在的时候，使用的标准（查询条件）
+ *
  */
 
 const e_coll=require('../../constant/genEnum/DB_Coll').Coll
 const e_field=require('../../constant/genEnum/DB_field').Field
+
+const e_articleStatus=require(`../../constant/enum/mongoEnum`).ArticleStatus.DB
+
+
+
 const fkConfig={
     /*          user            */
     [e_coll.SUGAR]:{
         [e_field.SUGAR.USER_ID]:{
-            relatedColl:e_coll.USER,forSelect:`${e_field.USER.NAME}`,forSetValue:[e_field.USER.NAME]
+            relatedColl:e_coll.USER,forSelect:`${e_field.USER.NAME}`,forSetValue:[e_field.USER.NAME],
         }
     },
 
@@ -24,8 +35,9 @@ const fkConfig={
     },
     /*          article_comment     */
     [e_coll.ARTICLE_COMMENT]: {
+        //未被删除，且完成（已经公开）的文档才能发表comment
         [e_field.ARTICLE_COMMENT.ARTICLE_ID]: {
-            relatedColl: e_coll.ARTICLE, forSelect: `${e_field.ARTICLE.NAME}`, forSetValue: [e_field.ARTICLE.NAME]
+            relatedColl: e_coll.ARTICLE, forSelect: `${e_field.ARTICLE.NAME}`, forSetValue: [e_field.ARTICLE.NAME],validCriteria:{'dDate':{$exists:false},[e_field.ARTICLE.STATUS]:e_articleStatus.FINISHED}
         },
     },
     /*          article likeDislike         */
@@ -45,7 +57,9 @@ const fkConfig={
         [e_field.IMPEACH.IMPEACHED_USER_ID]:{
             relatedColl:e_coll.USER,forSelect:`${e_field.USER.NAME}`,forSetValue:[e_field.USER.NAME]
         },
-
+        [e_field.IMPEACH.CURRENT_ADMIN_OWNER_ID]:{
+            relatedColl:e_coll.ADMIN_USER,forSelect:`${e_field.ADMIN_USER.NAME}`,forSetValue:[e_field.ADMIN_USER.NAME]
+        },
 /*        [e_field.IMPEACH.IMPEACH_ATTACHMENTS_ID]:{
             relatedColl:e_coll.IMPEACH_ATTACHMENT,forSelect:`${e_field.IMPEACH_ATTACHMENT.NAME}`,forSetValue:[e_field.IMPEACH_ATTACHMENT.NAME]
         },*/
@@ -57,7 +71,7 @@ const fkConfig={
         },
 
         [e_field.IMPEACH.IMPEACHED_ARTICLE_ID]:{
-            relatedColl:e_coll.ARTICLE,forSelect:`${e_field.ARTICLE.NAME}`,forSetValue:[e_field.ARTICLE.NAME]
+            relatedColl:e_coll.ARTICLE,forSelect:`${e_field.ARTICLE.NAME}`,forSetValue:[e_field.ARTICLE.NAME],validCriteria:{'dDate':{$exists:false},[e_field.ARTICLE.STATUS]:e_articleStatus.FINISHED}
         },
         [e_field.IMPEACH.IMPEACHED_COMMENT_ID]:{
             relatedColl:e_coll.ARTICLE_COMMENT,forSelect:`${e_field.ARTICLE_COMMENT.CONTENT}`,forSetValue:[e_field.ARTICLE_COMMENT.CONTENT]
@@ -99,7 +113,7 @@ const fkConfig={
         [e_field.IMPEACH_ACTION.IMPEACH_ID]:{
             relatedColl:e_coll.IMPEACH,forSelect:`${e_field.IMPEACH.TITLE}`,forSetValue:[e_field.IMPEACH.TITLE]
         },
-        [e_field.IMPEACH_ACTION.OWNER_ID]:{
+        [e_field.IMPEACH_ACTION.ADMIN_OWNER_ID]:{
             relatedColl:e_coll.ADMIN_USER,forSelect:`${e_field.ADMIN_USER.NAME}`,forSetValue:[e_field.ADMIN_USER.NAME]
         },
     },

@@ -5,15 +5,19 @@
 const nodeEnum=require(`../constant/enum/nodeEnum`)
 
 const e_method=nodeEnum.Method
+const e_part=nodeEnum.ValidatePart
 const e_serverRuleType=require(`../constant/enum/inputDataRuleType`).ServerRuleType
 const e_serverDataType=require(`../constant/enum/inputDataRuleType`).ServerDataType
 
 const misc=require(`../function/assist/misc`)
-//为method为DELETE的方法产生测试数据（主要是RECORD_ID的格式）
-function generateTestDataForRecordIdDataType(parameter) {
-    let method=parameter[`method`]
+
+const browserInputRule=require(`../constant/inputRule/browserInputRule`).browserInputRule
+
+//为RECORD_ID产生测试数据(类型测试)
+function generateTestDataForRecordIdDataType() {
+    // let method=parameter[`method`]
     let recordInfos=[]
-    if(method===e_method.DELETE){
+    // if(method===e_method.DELETE){
         recordInfos.push(null)
         recordInfos.push(NaN)
         recordInfos.push(1)
@@ -21,21 +25,21 @@ function generateTestDataForRecordIdDataType(parameter) {
         recordInfos.push(new Date())
         recordInfos.push([])
         recordInfos.push({})
-    }else{
-        console.log(`===============>ERR: ONLY DELETE USED`)
-    }
+    // }else{
+    //     console.log(`===============>ERR: ONLY DELETE USED`)
+    // }
     return recordInfos
 }
 
-//为method为DELETE的方法产生测试数据（主要是RECORD_ID的值）
-function generateTestDataForRecordIdValue(parameter) {
-    let method=parameter[`method`]
+//为RECORD_ID产生测试数据(数据测试)
+function generateTestDataForRecordIdValue() {
+    // let method=parameter[`method`]
     let recordInfos=[]
-    if(method===e_method.DELETE){
+    // if(method===e_method.DELETE){
         recordInfos.push(`1`)
-    }else{
-        console.log(`===============>ERR: ONLY DELETE USED`)
-    }
+    // }else{
+    //     console.log(`===============>ERR: ONLY DELETE USED`)
+    // }
 
     return recordInfos
 }
@@ -45,10 +49,12 @@ function generateTestDataForRecordIdValue(parameter) {
 /************************       recordInfo     **************************/
 /*************************************************************************/
 /*                  根据field的数据类型，产生所有不符合此数据类型的测试数据              */
-function generateTestDataForRecordInfoDataType(parameter) {
+function generateTestDataForRecordInfoDataType({parameter,fieldName}) {
     // console.log(`collRule=========>${JSON.stringify(collRule)}`)
     // let ruleDefine = collRule[fieldName][ruleName]['define']
-    let {normalRecordInfo,fieldName,collRule}=parameter
+    let {sess,sessErrorRc,APIUrl,penalizeRelatedInfo,reqBodyValues,collName,skipParts,app}=parameter
+    let collRule=browserInputRule[collName]
+    let normalRecordInfo=reqBodyValues[e_part.RECORD_INFO]
     // console.log(`normalRecordInfo======>${JSON.stringify(normalRecordInfo)}`)
     let fieldDataType
     if(collRule[fieldName]['type'] instanceof Array){
@@ -134,15 +140,18 @@ function generateTestDataForRecordInfoDataType(parameter) {
 
                     break
                 default:
-                    // console.log(`====>default in<==========`)
-                    valueMatchDataType=null
-                    recordInfos.push(generateTestRecord({fieldValueToBeGenerate:valueMatchDataType,originNormalData:normalRecordInfo,fieldToBeCheck:fieldName}))
-                    valueMatchDataType=undefined
-                    recordInfos.push(generateTestRecord({fieldValueToBeGenerate:valueMatchDataType,originNormalData:normalRecordInfo,fieldToBeCheck:fieldName}))
-                    valueMatchDataType=NaN
+                    // 只有require为true的时候，传入null/undefined才有意义；false时，直接返回0
+                    if(collRule[fieldName][e_serverRuleType.REQUIRE][`define`]===true){
+                        valueMatchDataType=null
+                        recordInfos.push(generateTestRecord({fieldValueToBeGenerate:valueMatchDataType,originNormalData:normalRecordInfo,fieldToBeCheck:fieldName}))
+                        valueMatchDataType=undefined
+                        recordInfos.push(generateTestRecord({fieldValueToBeGenerate:valueMatchDataType,originNormalData:normalRecordInfo,fieldToBeCheck:fieldName}))
+                        valueMatchDataType=NaN
+                    }
+
                 // console.log(`valueMatchDataType============>${JSON.stringify(valueMatchDataType)}`)
             }
-            // console.log(`valueMatchDataType========${JSON.stringify(valueMatchDataType)}`)
+            console.log(`valueMatchDataType========${JSON.stringify(valueMatchDataType)}`)
             recordInfos.push(generateTestRecord({fieldValueToBeGenerate:valueMatchDataType,originNormalData:normalRecordInfo,fieldToBeCheck:fieldName}))
             // console.log(`recordInfos=======>${JSON.stringify(recordInfos)}`)
         }
@@ -224,9 +233,13 @@ function generateTestDataForRecordInfoDataType(parameter) {
  *
  *  return:嵌入到data.values.recordInfo的数据
  * */
-function generateTestDataForRecordInfoValue(parameter){
+function generateTestDataForRecordInfoValue({parameter,fieldName,ruleName}){
     // console.log(`collRule=========>${JSON.stringify(collRule)}`)
-    let {normalRecordInfo,fieldName,singleRuleName:ruleName,collRule,method}=parameter
+    // let {reqBodyValues,collRule,method}=parameter
+    let {sess,sessErrorRc,APIUrl,penalizeRelatedInfo,reqBodyValues,collName,skipParts,app}=parameter
+    let collRule=browserInputRule[collName]
+    let method=reqBodyValues[e_part.METHOD]
+    let normalRecordInfo=reqBodyValues[e_part.RECORD_INFO]
     let ruleDefine=collRule[fieldName][ruleName]['define']
     let fieldDataType=collRule[fieldName]['type']
 
@@ -374,10 +387,14 @@ function generateTestDataForRecordInfoValue(parameter){
     return recordInfos
 }
 
-function generateMiscTestData(parameter) {
+function generateMiscTestDataForRecordInfo(parameter) {
+    // console.log(`parameter=============.${JSON.stringify(parameter)}`)
     let recordInfos=[]
-    let {normalRecordInfo,fieldName,collRule}=parameter
-
+    let {sess,sessErrorRc,APIUrl,penalizeRelatedInfo,reqBodyValues,collName,skipParts,app}=parameter
+    let normalRecordInfo=reqBodyValues[e_part.RECORD_INFO]
+    // console.log(`collName==========>${collName}`)
+    let collRule=browserInputRule[collName]
+    // console.log(`collRule==========>${collRule}`)
     //not exist field
     let copyRecordInfo=misc.objectDeepCopy(normalRecordInfo)
     let fieldNameToBeReplacedByNotExist
@@ -404,7 +421,8 @@ function generateMiscTestData(parameter) {
     return recordInfos
 }
 
-function generateTestRecord({originNormalData,fieldToBeCheck,fieldValueToBeGenerate}){
+function generateTestRecord({fieldValueToBeGenerate,originNormalData,fieldToBeCheck}){
+    console.log(`fieldValueToBeGenerate=========>${JSON.stringify(fieldValueToBeGenerate)}`)
     let dataTypeBasedRecordInfo=misc.objectDeepCopy(originNormalData)
     dataTypeBasedRecordInfo[fieldToBeCheck]=fieldValueToBeGenerate
     return dataTypeBasedRecordInfo
@@ -421,7 +439,7 @@ module.exports={
     generateTestDataForRecordInfoValue,
 
     /*************  misc  *************/
-    generateMiscTestData,
+    generateMiscTestDataForRecordInfo,
 
     /*************  common  *************/
     generateTestRecord,

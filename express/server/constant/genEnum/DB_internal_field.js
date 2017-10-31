@@ -20,7 +20,7 @@ const Field={
     public_group_interaction:['creatorId','deleteById',],
     user_friend_group:[],
     user_public_group:['userId','currentJoinGroup',],
-    impeach:['creatorId','impeachType','impeachedUserId','impeachImagesId','impeachAttachmentsId','impeachCommentsId','currentState','currentOwnerId',],
+    impeach:['creatorId','impeachType','impeachedUserId','impeachImagesId','impeachAttachmentsId','impeachCommentsId','currentState','currentAdminOwnerId',],
     impeach_action:['creatorId','creatorColl',],
     impeach_attachment:['name','hashName','authorId','sizeInMb','pathId',],
     impeach_comment:['authorId','impeachImagesId','impeachAttachmentsId',],

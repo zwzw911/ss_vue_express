@@ -311,6 +311,10 @@ function genFinalReturnResult(rc){
 }
 
 function objectDeepCopy(sourceObj){
+    if(undefined===sourceObj || null===sourceObj){
+        return sourceObj
+    }
+
     return JSON.parse(JSON.stringify(sourceObj))
 }
 

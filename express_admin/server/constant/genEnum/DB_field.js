@@ -162,7 +162,7 @@ const Field={
         IMPEACHED_USER_ID:'impeachedUserId',
         CREATOR_ID:'creatorId',
         CURRENT_STATE:'currentState',
-        CURRENT_OWNER_ID:'currentOwnerId',
+        CURRENT_ADMIN_OWNER_ID:'currentAdminOwnerId',
     },
     IMPEACH_ACTION:{
         ID:'id',
@@ -170,7 +170,7 @@ const Field={
         CREATOR_ID:'creatorId',
         CREATOR_COLL:'creatorColl',
         ACTION:'action',
-        OWNER_ID:'ownerId',
+        ADMIN_OWNER_ID:'adminOwnerId',
     },
     IMPEACH_ATTACHMENT:{
         ID:'id',

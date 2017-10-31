@@ -46,7 +46,7 @@ let storeOption={
     redis:{
         ttl:900,// second,和cookie时间一致
         db:0,//redis的db index
-        prefix:'sess',//默认记录前缀，默认是'sess'
+        // prefix:'sess',//默认记录前缀，默认是'sess:'
 
     },
 }

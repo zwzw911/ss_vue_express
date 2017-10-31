@@ -141,11 +141,11 @@ const ChineseName={
         'impeachAttachmentsId':'举报附件',
         'impeachCommentsId':'留言',
         'currentState':'当前状态',
-        'currentOwnerId':'当前处理人',
+        'currentAdminOwnerId':'当前处理人',
     },
     impeach_action:{
         'impeachId':'举报',
-        'ownerId':'处理人',
+        'adminOwnerId':'处理人',
         'action':'操作',
         'creatorId':'状态改变人',
         'creatorColl':'状态改变人表',

@@ -7,6 +7,8 @@
 const recursiveReadFileIntoArray=require('../function/assist/misc').recursiveReadFileIntoArray
 const recursiveRequireAllFileInDir=require('../function/assist/misc').recursiveRequireAllFileInDir
 
+const currentEnv=require(`../constant/config/appSetting`).currentEnv
+const e_env=require(`../constant/enum/nodeEnum`).Env
 
 /*
 * @serverCommonRelateBaseDir：执行脚本（函数）对server_common的相对路径
@@ -26,6 +28,12 @@ function requireServerCommon(serverCommonRelateBaseDir,absoluteDestFilePath,fina
         `${serverCommonRelateBaseDir}function/`,
         `${serverCommonRelateBaseDir}Test/`,  //包含Test通用数据和API
     ]
+    /*              如果是开发环境，需要把testCaseEnum加入，以便测试case                  */
+    if(currentEnv===e_env.DEV){
+        // console.log(`dev in`)
+        dirArray.push(`${serverCommonRelateBaseDir}constant/testCaseEnum/`)
+        // console.log(`dirArray=========>${JSON.stringify(dirArray)}`)
+    }
 
     /*                  临时patch，captcha需要canvas，等待Node支持图像处理                */
     let skipArray=['awesomeCaptcha.js']
@@ -40,6 +48,7 @@ function requireServerCommon(serverCommonRelateBaseDir,absoluteDestFilePath,fina
     filesArray.push(`${serverCommonRelateBaseDir}model/mongo/fkConfig.js`)
 
     filesArray.push(`${serverCommonRelateBaseDir}maintain/generateFunction/generateMongoEnumKeyValueExchange.js`)
+
 
 
     //把基于执行脚本的相对路径改成基于最终require文件的相对路径

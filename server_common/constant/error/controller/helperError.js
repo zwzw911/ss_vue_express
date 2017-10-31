@@ -15,9 +15,7 @@ const helper={
     fkValueNotExist(chineseFieldName,fieldInputValue){
         return {rc:60005,msg:{client:`${chineseFieldName}不存在`, server:`字段:${chineseFieldName}  的外键值${fieldInputValue}不存在`}}
     },
-/*    fkFileNotExist(coll,field,fkValue,relatedColl){
-        return {rc:60006,msg:{client:`外键不存在`,server:`检查coll ${coll}中的字段${field}，其值${fkValue}在对应的coll ${relatedColl}没有对应的值`}}
-    },*/
+
 
     /*            CRUDPreCheck                        */
     undefinedUserState:{rc:60008,msg:{client:'内部错误',server:'非预定义的用户状态'}},
@@ -26,6 +24,10 @@ const helper={
     /*            dispatcherPreCheck                        */
     methodPartMustExistInDispatcher:{rc:60012,msg:{client:'输入值格式错误',server:'dispatcher中必须有method'}},
 
+    /*            chooseValidAdminUserForImpeach                        */
+    noAnyAdminUserHasDefinedPriority({arr_adminPriority}){
+     return {rc:60013,msg:{client:`暂时没有客服为您处理举报，请稍后再试。`,server:`没有任何管理员拥有对应的处理举报权限：${JSON.stringify(arr_adminPriority)}`}}
+     },
     /*            uploadFileToTmpDir                        */
     uploadFileNameSanityFail:{rc:60014,msg:{client:'文件名称不正确',server:'uploadFileToTmpDir_async函数中，上传的文件名称没有通过sanity测试，可能包含有害内容'}},
 
@@ -41,6 +43,10 @@ const helper={
     /*                  get login info                              */
     userInfoNotInSession:{rc:60022,msg:{client:'内部错误',server:'userInfo未在session中找到'}},
 
+    /*                  XSS check                              */
+    XSSCheckFailed(fieldName){
+        return {rc:60024,msg:{client:'输入有误',server:`字段${fieldName}的内容无法通过XSS检测`}}
+    },
 }
 
 const checker={

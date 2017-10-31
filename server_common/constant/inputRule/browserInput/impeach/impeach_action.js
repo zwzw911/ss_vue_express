@@ -28,8 +28,9 @@ const impeach_action= {
         //'arrayMaxLength': {define: maxNumber.impeach.maxImageNumber, error: {rc: 10004}, mongoError: {rc: 20004, msg: `最多插入${maxNumber.impeach.maxImageNumber}个图片`}},
         'format': {define: regex.objectId, error: {rc: 10592}, mongoError: {rc: 20592, msg: '举报必须是objectId'}} //server端使用
     },
-    //处理人（只能是admin,和impeach中的currentOwnerId冗余）
-    ownerId: {
+    //admin处理人（考虑到分配问题，所以需要放在browser中）.
+    //如果没有设置，说明ownerId为creatorId
+    adminOwnerId: {
         'chineseName': '处理人',
         'type': serverDataType.OBJECT_ID,
         'require': {define: false, error: {rc: 10594}, mongoError: {rc: 20594, msg: '处理人不能为空'}},//默认为空对象

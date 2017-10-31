@@ -16,8 +16,8 @@ const mongoEnum=server_common_file_require.mongoEnum
 
 const genFinalReturnResult=server_common_file_require.misc.genFinalReturnResult
 
-const impeach_logic=require('./impeach_logic')
-const impeachComment_logic=require('./impeachComment_logic')
+// const impeach_logic=require('./impeach_logic')
+const impeachComment_logic=require('./impeachComment_logic_bk')
 // const article_comment_logic=require('./article_comment_logic')
 const impeach_upload_file_logic=require('./impeach_upload_file_logic')
 // const likeDislike_logic=require('./liekDislike_logic')
@@ -25,14 +25,16 @@ const e_uploadFileType=nodeEnum.UploadFileType
 const e_coll=require('../../constant/genEnum/DB_Coll').Coll
 
 const e_impeachType=mongoEnum.ImpeachType.DB
+
+const dispatcher_async=require('./impeach_dispatch').dispatcher_async
 /*        通过method，判断是CRUDM中的那个操作
 *   C: register
 *
 * */
 /*              对于update，使用原始URL            */
-router.post('/',function(req,res,next){
+/*router.post('/',function(req,res,next){
 
-    impeach_logic.impeach_dispatcher_async(req).then(
+    dispatcher_async({req:req}).then(
         (v)=>{
             console.log(`create   impeach for article  success, result:  ${JSON.stringify(v)}`)
             return res.json(v)
@@ -43,13 +45,13 @@ router.post('/',function(req,res,next){
 
         }
     )
-})
+})*/
 
 
 /*             对于create，通过不同的URL，指明impeachedType是article还是comment                     */
 router.post('/article',function(req,res,next){
-
-    impeach_logic.impeach_dispatcher_async(req,e_impeachType.ARTICLE).then(
+// console.log(`req===========>${JSON.stringify(req)}`)
+    dispatcher_async({req:req,impeachType:e_impeachType.ARTICLE}).then(
         (v)=>{
             console.log(`create   impeach for article  success, result:  ${JSON.stringify(v)}`)
             return res.json(v)
@@ -63,7 +65,7 @@ router.post('/article',function(req,res,next){
 })
 router.post('/comment',function(req,res,next){
 
-    impeach_logic.impeach_dispatcher_async(req,e_impeachType.COMMENT).then(
+    dispatcher_async({req:req,impeachType:e_impeachType.COMMENT}).then(
         (v)=>{
             console.log(`create   impeach  for comment success, result:  ${JSON.stringify(v)}`)
             return res.json(v)
@@ -80,7 +82,7 @@ router.post('/comment',function(req,res,next){
 /*              CRUD for impeach comment                */
 router.post('/impeachComment',function(req,res,next){
 
-    impeachComment_logic.impeachComment_dispatcher_async(req).then(
+    impeachComment_logic.impeachComment_dispatcher_async({req:req}).then(
         (v)=>{
             console.log(`create   impeachComment success, result:  ${JSON.stringify(v)}`)
             return res.json(v)
@@ -102,11 +104,11 @@ router.post('/impeachImage',function(req,res,next){
 
     impeach_upload_file_logic.impeachUploadFile_dispatch_async({req:req,uploadFileType:e_uploadFileType.IMAGE,forColl:e_coll.IMPEACH}).then(
         (v)=>{
-            console.log(`articleImage upload  success, result:  ${JSON.stringify(v)}`)
+            console.log(`impeachImage upload  success, result:  ${JSON.stringify(v)}`)
             return res.json(v)
         },
         (err)=>{
-            console.log(`articleImage upload fail: ${JSON.stringify(err)}`)
+            console.log(`impeachImage upload fail: ${JSON.stringify(err)}`)
             return res.json(genFinalReturnResult(err))
 
         }
@@ -116,11 +118,11 @@ router.post('/impeachCommentImage',function(req,res,next){
 
     impeach_upload_file_logic.impeachUploadFile_dispatch_async({req:req,uploadFileType:e_uploadFileType.IMAGE,forColl:e_coll.IMPEACH_COMMENT}).then(
         (v)=>{
-            console.log(`articleImage upload  success, result:  ${JSON.stringify(v)}`)
+            console.log(`impeachCommentImage upload  success, result:  ${JSON.stringify(v)}`)
             return res.json(v)
         },
         (err)=>{
-            console.log(`articleImage upload fail: ${JSON.stringify(err)}`)
+            console.log(`impeachCommentImage upload fail: ${JSON.stringify(err)}`)
             return res.json(genFinalReturnResult(err))
 
         }
@@ -135,11 +137,11 @@ router.post('/impeachAttachment',function(req,res,next){
 
     impeach_upload_file_logic.impeachUploadFile_dispatch_async({req:req,uploadFileType:e_uploadFileType.ATTACHMENT,forColl:e_coll.IMPEACH}).then(
         (v)=>{
-            console.log(`articleAttachment upload success, result:  ${JSON.stringify(v)}`)
+            console.log(`impeachAttachment upload success, result:  ${JSON.stringify(v)}`)
             return res.json(v)
         },
         (err)=>{
-            console.log(`articleAttachment upload fail: ${JSON.stringify(err)}`)
+            console.log(`impeachAttachment upload fail: ${JSON.stringify(err)}`)
             return res.json(genFinalReturnResult(err))
 
         }
@@ -149,11 +151,11 @@ router.post('/impeachCommentAttachment',function(req,res,next){
 
     impeach_upload_file_logic.impeachUploadFile_dispatch_async({req:req,uploadFileType:e_uploadFileType.ATTACHMENT,forColl:e_coll.IMPEACH_COMMENT}).then(
         (v)=>{
-            console.log(`articleAttachment upload success, result:  ${JSON.stringify(v)}`)
+            console.log(`impeachCommentAttachment upload success, result:  ${JSON.stringify(v)}`)
             return res.json(v)
         },
         (err)=>{
-            console.log(`articleAttachment upload fail: ${JSON.stringify(err)}`)
+            console.log(`impeachCommentAttachment upload fail: ${JSON.stringify(err)}`)
             return res.json(genFinalReturnResult(err))
 
         }

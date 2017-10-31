@@ -276,6 +276,7 @@ async function findById_returnRecord_async({dbModel,id,selectedFields='-cDate -u
 
 async function find_returnRecords_async({dbModel,condition,selectedFields='-cDate -uDate -dDate',options={}}){
     // console.log(`find by id :${id}`)
+    // console.log(`find condition==========================>${JSON.stringify(condition)}`)
     let result=await dbModel.find(condition,selectedFields,options)
         .catch(
             function(err){

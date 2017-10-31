@@ -7,7 +7,7 @@
 // const request=require('supertest')
 const app=require('../../app')
 // const assert=require('assert')
-const adminApp=require(`../../../express/app`)
+const adminApp=require(`../../../express_admin/app`)
 
 const server_common_file_require=require('../../server_common_file_require')
 const e_serverRuleType=server_common_file_require.inputDataRuleType.ServerRuleType
@@ -19,8 +19,12 @@ const e_part=nodeEnum.ValidatePart
 const e_method=nodeEnum.Method
 const e_coll=require('../../server/constant/genEnum/DB_Coll').Coll
 const e_field=require('../../server/constant/genEnum/DB_field').Field
-
-const e_articleStatus=server_common_file_require.mongoEnum.ArticleStatus.DB
+const e_impeachAllAction=server_common_file_require.mongoEnum.ImpeachAllAction.DB
+const e_penalizeType=server_common_file_require.mongoEnum.PenalizeType.DB
+const e_penalizeSubType=server_common_file_require.mongoEnum.PenalizeSubType.DB
+const e_parameterPart=server_common_file_require.testCaseEnum.ParameterPart
+const e_skipPart=server_common_file_require.testCaseEnum.SkipPart
+// const e_articleStatus=server_common_file_require.mongoEnum.ArticleStatus.DB
 // const e_penalizeSubType=server_common_file_require.mongoEnum.PenalizeSubType.DB
 
 // const common_operation_model=server_common_file_require.common_operation_model
@@ -32,7 +36,7 @@ const browserInputRule=require('../../server/constant/inputRule/browserInputRule
 const validateError=server_common_file_require.validateError//require('../../server/constant/error/validateError').validateError
 const controllerHelperError=server_common_file_require.helperError.helper//require('../../server/constant/error/controller/helperError').helper
 // const controllerCheckerError=server_common_file_require.helperError.checker
-const controllerError=require('../../server/controller/impeach/impeach_logic').controllerError
+
 
 // const objectDeepCopy=server_common_file_require.misc.objectDeepCopy
 
@@ -44,9 +48,11 @@ const component_function=server_common_file_require.component_function
 
 const initSettingObject=require(`../../server/constant/genEnum/initSettingObject`).iniSettingObject
 // const controllerError=require('../../server/controller/article/liekDislike_logic').controllerError
+
+const controllerError=require('../../server/controller/impeach/impeach_setting/impeach_controllerError').controllerError
 let baseUrl="/impeach/",url,finalUrl
-let data={values:{}}
-let rootSess
+// let data={values:{}}
+// let rootSess
 
 let normalRecord={
     [e_field.IMPEACH.TITLE]:'new impeach',
@@ -56,44 +62,59 @@ let normalRecord={
 
 /*
  * @sess：是否需要sess
+ * @sessErrorRc：测试sess是否存在时，使用的error
  * @APIUrl:测试使用的URL
  * @penalizeRelatedInfo: {penalizeType:,penalizeSubType:,penalizedUserData:,penalizedError:,rootSess:,adminApp}
- * @normalRecordInfo:一个正常的输入(document)
- * @method：测试require的时候，使用哪种method。默认是create
- * @singleRuleName: field下，某个rule的名称
- * @collRule: 整个coll的rule
+ * @reqBodyValues: 各个part。包含recordInfo/recordId/searchParams等
+ * @skipParts：某些特殊情况下，需要skip掉的某些part
+ * @collName: 获得collRule，进行collName的对比等
  * */
 let parameter={
-    sess:undefined,
-    APIUrl:undefined,
-    penalizeRelatedInfo:undefined,
-    normalRecordInfo:normalRecord,
-    method:e_method.UPDATE,//只能测试update，create的话，因为code会自动生成title和content，所以无法测试   //非要测试CREATE，只能测试field e_field.IMPEACH.IMPEACHED_ARTICLE_ID
-    collRule:browserInputRule[e_coll.IMPEACH],
-    app:app,
+    [e_parameterPart.SESS]:undefined,
+    [e_parameterPart.SESS_ERROR_RC]:undefined,
+    [e_parameterPart.API_URL]:undefined,
+    [e_parameterPart.PENALIZE_RELATED_INFO]:{penalizeType:e_penalizeType.NO_IMPEACH,penalizeSubType:e_penalizeSubType.CREATE,penalizedUserData:testData.user.user1,penalizedError:controllerError.userInPenalizeNoImpeachCreate,adminApp:adminApp},
+    [e_parameterPart.REQ_BODY_VALUES]:{[e_part.RECORD_INFO]:normalRecord},
+    [e_parameterPart.COLL_NAME]:e_coll.IMPEACH,
+    [e_parameterPart.SKIP_PARTS]:undefined,
+    [e_parameterPart.APP]:app,
 }
 
 describe('dispatch check', async function() {
+    let recordId
     before('recreate user1 and login', async function(){
         url='article'
         finalUrl=baseUrl+url
         parameter[`APIUrl`]=finalUrl
-        /*              清理已有数据              */
-        // console.log(`######   delete exist record   ######`)
-        // console.log(`correctValueForModel ${JSON.stringify(correctValueForModel)}`)
-        let userInfo=await component_function.reCreateUser_returnSessUserId_async({userData:testData.user.user1,app:app})
-        parameter.sess=userInfo[`sess`]
-        // console.log(`parameter.sess ${JSON.stringify(parameter.sess)}`)
+
+        let result=await component_function.reCreateUser_returnSessUserId_async({userData:testData.user.user1,app:app})
+        // let user1Id=result.userId
+        let user1Sess=result.sess
+        parameter.sess=user1Sess
+        let articleId=await API_helper.createNewArticle_returnArticleId_async({userSess:user1Sess,app:app})
+        normalRecord[e_field.IMPEACH.IMPEACHED_ARTICLE_ID]=articleId
+
+        //for update/delete
+        recordId=await API_helper.createImpeachForArticle_returnImpeachId_async({articleId:articleId,userSess:user1Sess,app:app})
+
+        //for penalize check
+        parameter[e_parameterPart.PENALIZE_RELATED_INFO]['rootSess']=await API_helper.adminUserLogin_returnSess_async({userData:testData.admin_user.adminRoot,adminApp:adminApp})
     });
-    it(`dispatch check for create`,async function(){
-        parameter[`sessErrorRc`]=controllerError.userNotLoginCantCreate.rc
-        parameter[`method`]=e_method.CREATE
+    it(`preCheck for create`,async function(){
+        parameter[e_parameterPart.SESS_ERROR_RC]=controllerError.userNotLoginCantCreate.rc
+        parameter[e_parameterPart.REQ_BODY_VALUES][e_part.METHOD]=e_method.CREATE
+        parameter[e_parameterPart.PENALIZE_RELATED_INFO][`penalizeSubType`]=e_penalizeSubType.CREATE
+        parameter[e_parameterPart.PENALIZE_RELATED_INFO][`penalizedError`]=controllerError.userInPenalizeNoImpeachCreate
         await inputRule_API_tester.dispatch_partCheck_async(parameter)
     })
-    it(`dispatch check for update`,async function(){
-     parameter[`sessErrorRc`]=controllerError.userNotLoginCantUpdate.rc
-     parameter[`method`]=e_method.UPDATE
-     await inputRule_API_tester.dispatch_partCheck_async(parameter)
+    it(`preCheck for update`,async function(){
+        parameter[e_parameterPart.SESS_ERROR_RC]=controllerError.userNotLoginCantUpdate.rc
+        parameter[e_parameterPart.REQ_BODY_VALUES][e_part.METHOD]=e_method.UPDATE
+        parameter[e_parameterPart.PENALIZE_RELATED_INFO][`penalizeSubType`]=e_penalizeSubType.UPDATE
+        parameter[e_parameterPart.PENALIZE_RELATED_INFO][`penalizedError`]=controllerError.userInPenalizeNoImpeachUpdate
+        parameter[e_parameterPart.REQ_BODY_VALUES][e_part.RECORD_ID]=recordId
+        await inputRule_API_tester.dispatch_partCheck_async(parameter)
+        delete parameter[e_parameterPart.REQ_BODY_VALUES][e_part.RECORD_ID]
      })
 /*     it(`dispatch check for delete`,async function(){
      parameter[`sessErrorRc`]=controllerError.notLoginCantDeleteUser.rc
@@ -107,21 +128,57 @@ describe('dispatch check', async function() {
      await inputRule_API_tester.dispatch_partCheck_async(parameter)
      })*/
 
+
+    /*      create只需要检查IMPEACHED_ARTICLE_ID，其余2个field在内部设置，无需检查      */
+    it(`inputRule for create`,async function() {
+        parameter[e_parameterPart.REQ_BODY_VALUES][e_part.METHOD]=e_method.CREATE
+        parameter[e_parameterPart.SKIP_PARTS]=[e_skipPart.RECORD_INFO_MISC]//会自动转换成正确的格式（无错误的字段）
+        await inputRule_API_tester.ruleCheckAll_async({
+            parameter:parameter,
+            expectedRuleToBeCheck:[],//[e_serverRuleType.REQUIRE],
+            expectedFieldName:[],
+            skipRuleToBeCheck:[],
+            skipFieldName:[e_field.IMPEACH.TITLE,e_field.IMPEACH.CONTENT,e_field.IMPEACH.IMPEACHED_COMMENT_ID],//此2个字段是内部设置，无需检查;第三个字段根据URL确定（是否需要skip）
+        })
+    })
+
+    it(`inputRule for update`,async function() {
+        parameter[e_parameterPart.REQ_BODY_VALUES][e_part.METHOD]=e_method.UPDATE
+        parameter[e_parameterPart.REQ_BODY_VALUES][e_part.RECORD_ID]=recordId
+        await inputRule_API_tester.ruleCheckAll_async({
+            parameter:parameter,
+            expectedRuleToBeCheck:[],//[e_serverRuleType.REQUIRE],
+            expectedFieldName:[],//[e_field.ARTICLE_COMMENT.CONTENT]
+        })
+        delete parameter[e_parameterPart.REQ_BODY_VALUES][e_part.RECORD_ID]
+    })
+    it(`inputRule for delete`,async function() {
+        parameter[e_parameterPart.REQ_BODY_VALUES][e_part.METHOD]=e_method.DELETE
+        parameter[e_parameterPart.REQ_BODY_VALUES][e_part.RECORD_ID]=recordId
+        delete parameter[e_parameterPart.REQ_BODY_VALUES][e_part.RECORD_INFO]
+        await inputRule_API_tester.ruleCheckAll_async({
+            parameter:parameter,
+            expectedRuleToBeCheck:[],//[e_serverRuleType.REQUIRE],
+            expectedFieldName:[],//[e_field.ARTICLE_COMMENT.CONTENT]
+        })
+        parameter[e_parameterPart.REQ_BODY_VALUES][e_part.RECORD_INFO]=normalRecord
+        delete parameter[e_parameterPart.REQ_BODY_VALUES][e_part.RECORD_ID]
+    })
 })
 
-describe('inputRule', async function() {
+/*describe('inputRule', async function() {
     before('prepare', async function () {
         url = `article`
         finalUrl = baseUrl + url
         parameter[`APIUrl`]=finalUrl
         // console.log(`######   delete exist record   ######`)
-        /*              root admin login                    */
-/*        parameter.sess = await API_helper.adminUserLogin_returnSess_async({
+        /!*              root admin login                    *!/
+/!*        parameter.sess = await API_helper.adminUserLogin_returnSess_async({
             userData: testData.admin_user.adminRoot,
             adminApp: adminApp
-        })*/
+        })*!/
         // console.log(`testData.user.user1 is=============>${JSON.stringify(testData.user.user1)}`)
-        /*              delete/create/getId  user1                    */
+        /!*              delete/create/getId  user1                    *!/
         let result=await component_function.reCreateUser_returnSessUserId_async({userData:testData.user.user1,app:app})
         let userId=result.userId
         let user1Sess=result.sess
@@ -137,26 +194,8 @@ describe('inputRule', async function() {
         // normalRecord[e_field.IMPEACH_STATE.OWNER_COLL]=e_coll.USER
     });
 
-    /*      create只需要检查IMPEACHED_ARTICLE_ID，其余2个field在内部设置，无需检查      */
-    it(`inputRule: CREATE`,async function() {
-        parameter[`method`]=e_method.CREATE
-        await inputRule_API_tester.ruleCheckAll_async({
-            parameter:parameter,
-            expectedRuleToBeCheck:[],//[e_serverRuleType.REQUIRE],
-            expectedFieldName:[e_field.IMPEACH.IMPEACHED_ARTICLE_ID],//[e_field.ARTICLE_COMMENT.CONTENT]
-        })
-    })
 
-    it(`inputRule: UPDATE`,async function() {
-        parameter[`method`]=e_method.UPDATE
-        await inputRule_API_tester.ruleCheckAll_async({
-            parameter:parameter,
-            expectedRuleToBeCheck:[],//[e_serverRuleType.REQUIRE],
-            expectedFieldName:[],//[e_field.ARTICLE_COMMENT.CONTENT]
-        })
-    })
-
-})
+})*/
 
 
 

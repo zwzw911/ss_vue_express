@@ -128,9 +128,18 @@ async function ifFkValueExist_async({docValue,collFkConfig,collFieldChineseName}
                 let fkFieldValueInObjectId=docValue[singleFkFieldName]
                 let fkFieldRelatedColl=collFkConfig[singleFkFieldName]['relatedColl']
 // console.log(`ifFkValueExist_async===>fkFieldRelatedColl===>${fkFieldRelatedColl}, id=====>${fkFieldValueInObjectId}`)
-                let tmpResult=await  common_operation_model.findById_returnRecord_async({dbModel:e_dbModel[fkFieldRelatedColl],id:fkFieldValueInObjectId})
+                let tmpResult
+                //如果查询外键是否存在，需要额外的条件，需要使用find
+                if(undefined===collFkConfig[singleFkFieldName][`validCriteria`]){
+                    tmpResult=await  common_operation_model.findById_returnRecord_async({dbModel:e_dbModel[fkFieldRelatedColl],id:fkFieldValueInObjectId})
+                }else{
+                    collFkConfig[singleFkFieldName][`validCriteria`]['_id']=fkFieldValueInObjectId
+                    tmpResult=await  common_operation_model.find_returnRecords_async({dbModel:e_dbModel[fkFieldRelatedColl],condition:collFkConfig[singleFkFieldName][`validCriteria`]})
+                }
+                // console.log(`collFkConfig =========>${JSON.stringify(collFkConfig)}`)
+                // console.log(`collFkConfig[singleFkFieldName]['validCriteria'] =========>${JSON.stringify(collFkConfig[singleFkFieldName]['validCriteria'])}`)
                 // console.log(`fk value exit check =========>${JSON.stringify(tmpResult)}`)
-                if(null===tmpResult){
+                if(null===tmpResult || tmpResult.length===0){
                     let chineseName=collFieldChineseName[singleFkFieldName]
                     let fieldInputValue=docValue[singleFkFieldName]
                     return Promise.reject(helperError.fkValueNotExist(chineseName,fieldInputValue))

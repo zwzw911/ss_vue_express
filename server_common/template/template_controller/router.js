@@ -20,7 +20,7 @@ const dispatcher_async=require('./dispatch').dispatcher_async
 router.post('/',function(req,res,next){
 //     console.log(`req in`)
 // console.log(`req is ${JSON.stringify(req.body)}`)
-    dispatcher_async(req).then(
+    dispatcher_async({req:req}).then(
         (v)=>{
             console.log(`create   register   success, result:  ${JSON.stringify(v)}`)
             return res.json(v)

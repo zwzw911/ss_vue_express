@@ -77,8 +77,8 @@ const impeach= {
         // 'enum':{define:Object.values(mongoEnum.ImpeachType.DB),error:{rc:10532},mongoError:{rc:20532,msg:'未知举报的对象'}},//server端使用
         'enum':{define:enumValue.ImpeachState,error:{rc:10566},mongoError:{rc:20566,msg:'未知当前状态'}},//server端使用
     },
-    //currentOwnerId只能是admin（普通用户的话为空）
-    currentOwnerId: {
+    //currentAdminOwnerId只能是admin；如果为空，隐式指明当前owner为creatorId（普通用户）
+    currentAdminOwnerId: {
         'chineseName': '当前处理人',
         'type': serverDataType.OBJECT_ID,
         'require': {define: false, error: {rc: 10568}, mongoError: {rc: 20568, msg: '当前处理人不能为空'}},//默认为空对象

@@ -100,7 +100,7 @@ collSchema.virtual('isExpire').get(function(){
     if(0===this.duration){
         return false
     }else{
-        console.log(`this.cDate===========>${JSON.stringify(this.cDate)}`)
+        // console.log(`this.cDate===========>${JSON.stringify(this.cDate)}`)
         return (this.cDate.getTime()+this.duration*86400000)<Date.now()
     }
 

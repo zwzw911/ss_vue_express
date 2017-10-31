@@ -148,6 +148,27 @@ async function createImpeachForArticle_returnImpeachId_async({articleId,userSess
             });
     })
 }
+
+async function delete_impeach_async({impeachId,userSess,app}){
+    let data={}
+    data.values={}
+    data.values[e_part.RECORD_ID]=impeachId
+
+    data.values[e_part.METHOD] = e_method.DELETE
+    return new Promise(function(resolve,reject){
+        request(app).post('/impeach/article').set('Accept', 'application/json').set('Cookie', [userSess]).send(data)
+            .end(function (err, res) {
+                // if (err) return done(err);
+                console.log(`data.values of delete_impeach_async===========> ${JSON.stringify(data.values)}`)
+                let parsedRes = JSON.parse(res.text)
+                // console.log(`createImpeach_returnImpeachId_async result=========> ${JSON.stringify(parsedRes)}`)
+                assert.deepStrictEqual(parsedRes.rc, 0)
+                return resolve(true)
+                // assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.require.error.rc)
+                // done();
+            });
+    })
+}
 async function createImpeachForComment_returnImpeachId_async({commentId,userSess}) {
     let data={}
     data.values={}
@@ -177,23 +198,23 @@ async function createImpeachForComment_returnImpeachId_async({commentId,userSess
 
 }
 
-function updateImpeach({data,userSess,expectRc,done,app}) {
+async function updateImpeach_async({data,userSess,app}) {
     // console.log(`createImpeach_async===>data.values ===>${JSON.stringify(data.values)}`)
-    // return new Promise(function(resolve,reject){
+    return new Promise(function(resolve,reject){
         request(app).post('/impeach/').set('Accept', 'application/json').set('Cookie', [userSess]).send(data)
             .end(function (err, res) {
-                // if (err) return done(err);
+                if (err) return reject(err);
                 // console.log(`res ios ${JSON.stringify(res)}`)
                 let parsedRes = JSON.parse(res.text)
                 // console.log(`updateImpeach result=========> ${JSON.stringify(parsedRes)}`)
                 // console.log(`expectRc result=========> ${JSON.stringify(expectRc)}`)
                 // assert.deepStrictEqual(parsedRes.rc, 0)
                 // return resolve(parsedRes['msg']['_id'])
-                assert.deepStrictEqual(parsedRes.rc,expectRc)
-                // resolve(0)
-                done();
+                assert.deepStrictEqual(parsedRes.rc,0)
+                return resolve(0)
+                // done();
             });
-    // })
+    })
 }
 
 /****************       ARTICLE            *****************/
@@ -220,7 +241,30 @@ async function createNewArticle_returnArticleId_async({userSess,app}){
     })
 }
 
-
+async function updateArticle_returnArticleId_async({userSess,recordId,values,app}){
+    let data={values:{}}
+    // data.values={}
+    // console.log(`sess1 ===>${JSON.stringify(sess1)}`)
+    // console.log(`data.values ===>${JSON.stringify(data.values)}`)
+    data.values[e_part.RECORD_INFO]=values
+    data.values[e_part.RECORD_ID]=recordId
+    data.values[e_part.METHOD]=e_method.UPDATE
+    // console.log(`data.values ===>${JSON.stringify(data.values)}`)
+    return new Promise(function(resolve,reject){
+        request(app).post('/article/').set('Accept', 'application/json').set('Cookie',[userSess]).send(data)
+            .end(function(err, res) {
+                // if (err) return done(err);
+                // console.log(`res ios ${JSON.stringify(res)}`)
+                let parsedRes=JSON.parse(res.text)
+                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
+                // articleId=
+                assert.deepStrictEqual(parsedRes.rc,0)
+                return resolve(parsedRes)
+                // assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.require.error.rc)
+                // done();
+            });
+    })
+}
 /****************       PENALIZE            *****************/
 /*
 * @penalizeInfo:{reason:,penalizeType:,penalizeSubype:,duration:}
@@ -284,7 +328,7 @@ async function deletePenalize_async({adminUserSess,penalizeInfo,pernalizedUserDa
     if(activePenalizeRecords.length>0){
         let data={values:{}}
         // data.values={}
-        console.log(`adminUserSess of ===>${JSON.stringify(adminUserSess)}`)
+        //console.log(`adminUserSess of ===>${JSON.stringify(adminUserSess)}`)
         // console.log(`data.values ===>${JSON.stringify(data.values)}`)
         data.values[e_part.METHOD]=e_method.UPDATE
         data.values[e_part.RECORD_ID]=activePenalizeRecords[0][`_id`]
@@ -319,10 +363,12 @@ module.exports={
 
     // userCreateArticle_returnArticleId_async,
     createImpeachForArticle_returnImpeachId_async,
+    delete_impeach_async,
     // createImpeachForComment_returnImpeachId_async,
-    updateImpeach,
+    updateImpeach_async,
 
     createNewArticle_returnArticleId_async,
+    updateArticle_returnArticleId_async,
 
     createPenalize_async,
     deletePenalize_async,

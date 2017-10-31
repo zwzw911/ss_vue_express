@@ -85,15 +85,16 @@ function  validatePartFormat (inputValue,expectedParts){
     // console.log(`${__filename}: inputvalue ${JSON.stringify(inputValue)}`)
     //3  遍历inputValue，
     for(let partKey in inputValue){
-        // console.log(`${__filename}: partKey ${JSON.stringify(partKey)}`)
         // console.log(`${__filename}: expectedParts ${JSON.stringify(expectedParts)}`)
         // console.log(`${__filename}: expectedParts.indexOf(partKey) ${JSON.stringify(expectedParts.indexOf(partKey))}`)
         // 3.1 key是否都在expectedParts中
         if(-1===expectedParts.indexOf(partKey)){
             // console.log(`expectedParts part ${JSON.stringify(expectedParts)}`)
-            // console.log(`unknon part ${partKey}`)
+            console.log(`unknon part ${partKey}`)
             return validateFormatError.inputValuePartNotMatch
         }
+    }
+    for(let partKey in inputValue){
         //3.2 每个part的value的类型
         let partFormatCheckResult=validatePartValueFormat({part:partKey,partValue:inputValue[partKey]})
         if(partFormatCheckResult.rc>0){return partFormatCheckResult}

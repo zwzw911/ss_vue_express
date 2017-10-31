@@ -23,6 +23,7 @@ const mongoEnum=require('../constant/enum/mongoEnum')
 const e_storePathUsage=mongoEnum.StorePathUsage.DB
 const e_storePathStatus=mongoEnum.StorePathStatus.DB
 const e_penalizeSubType=mongoEnum.PenalizeSubType.DB
+const e_adminPriorityType=mongoEnum.AdminPriorityType.DB
 
 const nodeRuntimeEnum=require('../constant/enum/nodeRuntimeEnum')
 const e_hashType=nodeRuntimeEnum.HashType
@@ -36,16 +37,6 @@ const e_coll=require('../constant/genEnum/DB_Coll').Coll
 const e_field=require('../constant/genEnum/DB_field').Field
 const e_internal_field=require('../constant/genEnum/DB_internal_field').Field
 
-
-
-
-
-// const e_docStatus=require('../constant/enum/mongoEnum').DocStatus.DB
-// const e_resourceProfileRange=require('../constant/enum/mongoEnum').ResourceProfileRange
-// var miscFunc=require('../../assist/misc')
-// var validate=validateFunc.validate
-// var checkInterval=require('../../assist/misc').checkInterval
-// const paginationSetting=require('../constant/config/globalConfiguration').paginationSetting
 /*                      error               */
 const helperError=require('../constant/error/controller/helperError').helper
 
@@ -326,6 +317,7 @@ function CRUDPreCheck({req,expectedPart,collName,method}){
     delete req.body.values[e_part.METHOD]
 // console.log(`req.body.values ====>${JSON.stringify(req.body.values)}`)
 //     console.log(`expectedPart ====>${JSON.stringify(expectedPart)}`)
+//     console.log(`req.body.values ====>${JSON.stringify(req.body.values)}`)
     result=validateFormat.validatePartFormat(req.body.values,expectedPart)
  // console.log(`validatePartFormat result ====>${JSON.stringify(result)}`)
     if(result.rc>0){return result}
@@ -564,6 +556,24 @@ function setStorePathStatus({originalStorePathRecord, updateValue}){
     }
 }
 
+/*
+* 步骤：
+* 1. 根据权限选择管理员集合
+* 2. 产生一个随机数
+* 3. 随机数和管理员集合数量相乘，向下取整，得到index，并返回对应的record
+* */
+async function chooseProperAdminUser_async({arr_priorityType}){
+    let arr_adminUser=await  common_operation_model.find_returnRecords_async({dbModel:e_dbModel.admin_user,condition:arr_priorityType})
+    // console.log(`arr_adminUser++++++++++>${JSON.stringify(arr_adminUser)}`)
+    let int_adminUserLength=arr_adminUser.length
+    if(0===int_adminUserLength){
+        return Promise.reject(helperError.noAnyAdminUserHasDefinedPriority(arr_priorityType))
+    }
+
+    let idx=Math.floor(int_adminUserLength*Math.random())
+    // console.log(`idx=============>${idx}`)
+    return Promise.resolve(arr_adminUser[idx])
+}
 
 /*  对内部产生的值进行format和value的检测
 *
@@ -764,12 +774,40 @@ async function uploadFileToTmpDir_async({req,uploadTmpDir,maxFileSizeInByte,file
 * @content;要进行检查的content
 * @error；如果检查失败，要返回的错误
 * */
-async function contentXSSCheck_async({content,error}){
+async function contentXSSCheck_async({content,fieldName}){
+    //
     if(sanityHtml(content)!==content){
-        return Promise.reject(error)
+        return Promise.reject(helperError.XSSCheckFailed(fieldName))
     }
 }
 
+/*      对输入的doc中，期望的字段进行XSS检测
+* @docValue:client 输入的字段
+* @collName:告知在那个coll的rule中查找field
+* @expectedXSSCheckField： docValue中期望进行XSS检测的字段名
+* */
+async function inputFieldValueXSSCheck({docValue,collName,expectedXSSCheckField}){
+
+    // console.log(`expectedXSSCheckField========================>${JSON.stringify(expectedXSSCheckField)}`)
+    // console.log(`collName========================>${JSON.stringify(collName)}`)
+    // console.log(`browserInputRule[collName]========================>${JSON.stringify(browserInputRule[collName])}`)
+    for(let singleXssFieldName of expectedXSSCheckField){
+        if(undefined!==docValue[singleXssFieldName] && null!==docValue[singleXssFieldName]){
+            //是array，则要对值遍历检查XSS
+            // console.log(`singleXssFieldName========================>${JSON.stringify(singleXssFieldName)}`)
+            // console.log(`browserInputRule[collName][singleXssFieldName]========================>${JSON.stringify(browserInputRule[collName][singleXssFieldName])}`)
+            // console.log(`browserInputRule[collName][singleXssFieldName][\`type\`] instanceof Array========================>${JSON.stringify(browserInputRule[collName][singleXssFieldName][`type`] instanceof Array)}`)
+            if( browserInputRule[collName][singleXssFieldName][`type`] instanceof Array && docValue[singleXssFieldName].length>0){
+                docValue[singleXssFieldName].forEach(async function(ele){
+                    await contentXSSCheck_async({content:ele,fieldName:singleXssFieldName})
+                })
+            }else{
+                // console.log(`docValue[singleXssFieldName]===================>${JSON.stringify(docValue[singleXssFieldName])}`)
+                await contentXSSCheck_async({content:docValue[singleXssFieldName],fieldName:singleXssFieldName})
+            }
+        }
+    }
+}
 /*/!* content中不能有dataUrl，防止用户传入外部图片*!/
 function removeImageDataUrl({content}){
     return content.replace(regex.imageDataUrl,'')
@@ -874,23 +912,31 @@ async function contentDbDeleteNotExistImage_async({content,recordId,collConfig,c
  *
  * */
 async function ifPenalizeOngoing_async({userId, penalizeType,penalizeSubType}){
-    console.log(`ifPenalizeOngoing_async===================================>}`)
+    // console.log(`ifPenalizeOngoing_async===================================>}`)
     let condition={}
     /*                  检查 penalizeSubType=all或者是penalizeSubType，同时penalizeType和userId等于输入参数，且没有超时，且没有被删除的记录             */
     condition[e_field.ADMIN_PENALIZE.PUNISHED_ID]=userId
     condition[e_field.ADMIN_PENALIZE.PENALIZE_TYPE]=penalizeType
     condition[e_field.ADMIN_PENALIZE.PENALIZE_SUB_TYPE]={"$in":[e_penalizeSubType.ALL,penalizeSubType]}
-    condition["$or"]=[{'dDate':{'$exists':false}},{'isExpire':false}]
-    // condition[`dDate`]={"$exists":false}
-   /* let option={}
+    condition[`dDate`]={"$exists":false}
+    // condition["$or"]=[{'dDate':{'$exists':false}},{'isExpire':false}]
+    // condition[`isExpire`]=false //virtula不能作为查询条件
+    //
+    let option={}
     option['limit']=1
-    option['sort']={cDate:-1} //选取最近一个penalize记录*/
+    option['sort']={cDate:-1} //选取最近一个penalize记录
     // condition['ifExpire']=true //这是virtual 方法
     // console.log(`penalize condition======================>${JSON.stringify(condition)}`)
-    let activePenalizeRecords=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.admin_penalize,condition:condition,selectedFields:'-uDate'})
+    let activePenalizeRecords=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.admin_penalize,condition:condition,selectedFields:'-uDate',options:option})
     // console.log(`penalizeresult==========================>${JSON.stringify(activePenalizeRecords)}`)
-    //all的处罚记录有效
-    if(activePenalizeRecords.length>0){
+    //所有记录都被删除了，直接返回false
+    if(activePenalizeRecords.length===0){
+        return Promise.resolve(false)
+    }
+    //有未被删除的记录，检查第一条记录的isExpire属性
+    if(true===activePenalizeRecords[0][`isExpire`]){
+        return  Promise.resolve(false)
+    }else{
         return Promise.resolve(true)
     }
 
@@ -907,7 +953,7 @@ async function ifPenalizeOngoing_async({userId, penalizeType,penalizeSubType}){
     }*/
 
 
-    return Promise.resolve(false)
+    // return Promise.resolve(false)
 }
 
 /*          根据resourceProfileRange，resourceColl，从预定义的对象中获得对应的fieldName和grougby的设置，统计使用的资源数
@@ -1005,13 +1051,22 @@ async function setLoginUserInfo_async({req,userInfo}){
 }
 
 async function getLoginUserInfo_async({req}){
+    // console.log(`req.session===========》${JSON.stringify(req.session)}`)
+    // console.log(`req.session.userInfo===========.${JSON.stringify(req.session.userInfo)}`)
     if(undefined===req.session || undefined===req.session.userInfo){
         return Promise.reject(helperError.userInfoNotInSession)
     }
     return Promise.resolve(req.session.userInfo)
 }
 
-
+//update中，根据输入的update值和原始的文档进行比较，如果字段的值不变，直接删除。以便见效mongodb更新的数据量
+function deleteNotChangedValue({inputValue,originalValue}){
+    for(let singleFieldName in inputValue){
+        if(inputValue[singleFieldName]===originalValue[singleFieldName]){
+            delete inputValue[singleFieldName]
+        }
+    }
+}
 
 module.exports= {
     inputCommonCheck,//每个请求进来是，都要进行的操作（时间间隔检查等）
@@ -1032,6 +1087,9 @@ module.exports= {
     chooseLastValidResourceProfile_async,//查找最近可用的resourceProfile
     setStorePathStatus,//根据原始storePath和新的usedSize，判断是否需要设置status为read only
 
+    chooseProperAdminUser_async,//根据权限选择合适的adminUser
+    // chooseValidAdminUserForImpeach,
+
     checkInternalValue,//
 
     ifPenalizeOngoing_async,//call by preCheck
@@ -1043,6 +1101,7 @@ module.exports= {
     uploadFileToTmpDir_async,
 
     contentXSSCheck_async,//如果输入的html，要进行XSS检查
+    inputFieldValueXSSCheck,
     // removeImageDataUrl,//删除content中的dataUrl图片，防止未经授权的图片
     contentDbDeleteNotExistImage_async,
 
@@ -1052,6 +1111,8 @@ module.exports= {
 
     setLoginUserInfo_async,
     getLoginUserInfo_async,
+
+    deleteNotChangedValue,
 }
 
 

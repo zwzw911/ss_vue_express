@@ -72,7 +72,7 @@ const collFieldDefine={
     impeachedUserId:{type:mongoose.Schema.Types.ObjectId,ref:"user"}, //
     creatorId:{type:mongoose.Schema.Types.ObjectId,ref:"user"}, //
     currentState:{type:String},//enum
-    currentOwnerId:{type:mongoose.Schema.Types.ObjectId,ref:"admin_user"},//只有adminUser开始处理时，才会被设置
+    currentAdminOwnerId:{type:mongoose.Schema.Types.ObjectId,ref:"admin_user"},//只有adminUser开始处理时，才会被设置Admin;如无设置，隐式说明当前owner是creatorId
     // impeachStatus:{type:String,}, //enum:enumValue.ImpeachStatus       enum， 通过setMongooseBuildInValidator从inputRule中获得对应的enum定义
     cDate:{type:Date,default:Date.now},
     // uDate:{type:Date,default:Date.now},
@@ -108,7 +108,9 @@ const collSchema=new mongoose.Schema(
     collFieldDefine,
     mongoSetting.schemaOptions
 )
-
+/*          复合unique index，一个用户对一个object只能impeach一次          */
+collSchema.index({creatorId: 1, impeachedArticleId: 1}, {unique: true});
+collSchema.index({creatorId: 1, impeachedCommentId: 1}, {unique: true});
 /*const departmentSchema=new mongoose.Schema(
     fieldDefine['department'],
     schemaOptions

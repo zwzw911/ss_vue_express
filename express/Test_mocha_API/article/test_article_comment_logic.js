@@ -31,13 +31,14 @@ const browserInputRule=require('../../server/constant/inputRule/browserInputRule
 const validateError=server_common_file_require.validateError//require('../../server/constant/error/va').validateError
 const helpError=server_common_file_require.helperError.helper//require('../../server/constant/error/controller/helperError').helper
 
-const controllerError=require('../../server/controller/article/article_comment_logic').controllerError
+const controllerError=require('../../server/controller/article/article_comment_setting/article_comment_controllerError').controllerError
 
 // const objectDeepCopy=server_common_file_require.misc.objectDeepCopy
 
 // const test_helper=require("../API_helper/db_operation_helper")
 const testData=server_common_file_require.testData//require('../testData')
 const API_helper=server_common_file_require.API_helper//require('../API_helper/API_helper')
+const component_function=server_common_file_require.component_function
 
 let baseUrl="/article/"
 let userId,user1Sess,user2Sess,adminRootSess  //create后存储对应的id，以便后续的update操作
@@ -51,11 +52,13 @@ describe('create new comment: ', async function() {
 
     let articleId,userId
     before('user1 login correct', async function () {
-        user1Sess=await  API_helper.userLogin_returnSess_async({userData:testData.user.user1,app:app})
-        user2Sess=await  API_helper.userLogin_returnSess_async({userData:testData.user.user2,app:app})
+        let userInfo=await component_function.reCreateUser_returnSessUserId_async({userData:testData.user.user1,app:app})
+        user1Sess=userInfo['sess']
+        userInfo=await component_function.reCreateUser_returnSessUserId_async({userData:testData.user.user2,app:app})
+        user2Sess=userInfo['sess']
     })
 
-    before('insert user2 penalize for both article and comment',async  function() {
+    /*before('insert user2 penalize for both article and comment',async  function() {
         // console.log(`testData.user.user1 ${JSON.stringify(testData.user.user1)}`)
         adminRootSess=await API_helper.adminUserLogin_returnSess_async({userData:testData.admin_user.adminRoot,adminApp:adminApp})
         // console.log(`userInfo==============>${JSON.stringify(userInfo)}`)
@@ -78,31 +81,17 @@ describe('create new comment: ', async function() {
         await API_helper.deletePenalize_async({adminUserSess:adminRootSess,penalizeInfo:penalizeInfo,pernalizedUserData:testData.user.user2,adminApp:adminApp})
         await API_helper.createPenalize_async({adminUserSess:adminRootSess,penalizeInfo:penalizeInfo,pernalizedUserData:testData.user.user2,adminApp:adminApp})
 
-    })
+    })*/
 
     //user1 create new article
     before('user1 correct article', async function() {
-        articleId=await API_helper.createNewArticle_returnArticleId_async({userSess:user1Sess,app:app})
+        articleId=await component_function.createArticle_setToFinish_returnArticleId_async({userSess:user1Sess,app:app})
     });
 
-    /*                              comment                                 */
-    it('create comment without login', function(done) {
-        // url = 'comment'
-        // finalUrl=baseUrl+url
-        data.values={}
-        data.values[e_part.METHOD]=e_method.CREATE
-        // data.values[e_part.RECORD_ID]=articleId
-        request(app).post(finalUrl).set('Accept', 'application/json').send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-                // console.log(`res ios ${JSON.stringify(res)}`)
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes['rc'],controllerError.userNotLoginCantCreateComment.rc)
-                // assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.require.error.rc)
-                done();
-            });
-    });
+
+    /*******************************************************************************************/
+    /*                                  fk value是否存在                                       */
+    /*******************************************************************************************/
     it('user1 create comment with articleId not exist', function(done) {
         // url = 'comment'
         // finalUrl=baseUrl+url
@@ -141,8 +130,8 @@ describe('create new comment: ', async function() {
         data.values[e_part.RECORD_INFO][e_field.ARTICLE_COMMENT.ARTICLE_ID]=articleId
         // data.values[e_part.RECORD_INFO][e_field.ARTICLE_COMMENT.ARTICLE_ID]['value']=
 
-        console.log(`docvalues====>${JSON.stringify(data.values)}`)
-        console.log(`finalUrl====>${JSON.stringify(finalUrl)}`)
+        // console.log(`docvalues====>${JSON.stringify(data.values)}`)
+        // console.log(`finalUrl====>${JSON.stringify(finalUrl)}`)
         request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[user1Sess]).send(data)
             .end(function(err, res) {
                 // if (err) return done(err);
@@ -155,7 +144,7 @@ describe('create new comment: ', async function() {
             });
     });
 
-    it('user2 correct comment with penalize', function(done) {
+    /*it('user2 correct comment with penalize', function(done) {
         // url = 'comment'
         // finalUrl=baseUrl+url
         data.values={}
@@ -178,7 +167,7 @@ describe('create new comment: ', async function() {
                 // assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.require.error.rc)
                 done();
             });
-    });
+    });*/
 
 
 

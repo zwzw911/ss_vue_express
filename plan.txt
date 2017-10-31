@@ -76,4 +76,13 @@
 6. folder/file输入值必须是string，需要检测
 
 
-1. API_test中加入penalize的create/delete API
+1. API_test中加入penalize的create/delete API========>done
+
+1. 检测check penalize过程的查询条件（isExpire可能不适用于查询）
+1. 使用完整版createArticle在test case中
+2. create impeach中，增加复合unique的检查，防止一个用户对同一个object多次提交impeach=========>done
+3. 在impeach的model中，添加复合unique============》done
+4. impeach_action:完成测试
+
+
+

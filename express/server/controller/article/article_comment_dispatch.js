@@ -87,54 +87,22 @@ const inputRule=require('../../constant/inputRule/inputRule').inputRule
 
 
 
-// const mongoError=require('../../constant/error/mongo/mongoError').error
-//
-// const regex=require('../../constant/regex/regex').regex
-//
-// const maxNumber=require('../../constant/config/globalConfiguration').maxNumber
-// const miscConfiguration=require('../../constant/config/globalConfiguration').miscConfiguration
-//
-// const mailAccount=require('../../constant/config/globalConfiguration').mailAccount
-
-/*          create article              */
-// const checkUserState=require('../')
-/*         upload user photo         */
-/*
-const gmImage=require('../../function/assist/gmImage')
-// const userPhotoConfiguration=require('../../constant/config/globalConfiguration').uploadFileDefine.user_thumb
-const e_gmGetter=require('../../constant/enum/node_runtime').GmGetter
-const e_gmCommand=require('../../constant/enum/node_runtime').GmCommand
-const uploadFile=require('../../function/assist/upload')
-
-/!*         generate captcha         *!/
-const captchaIntervalConfiguration=require('../../constant/config/globalConfiguration').intervalCheckConfiguration.captcha
-*/
-
-
-const controllerError={
-    /*          common              */
-/*    fieldAlreadyExist(chineseFieldName,fieldInputValue){
-        switch (fieldName){
-            case e_field.article
-        }
-        return {rc:50200,msg:{client:`${fieldInputValue}已经存在`, server:`字段${chineseFieldName}中，值${fieldInputValue}已经存在`}}},*/
+/*                          controller                          */
+const controllerError=require('./article_comment_setting/article_comment_controllerError').controllerError
+const create_async=require('./article_comment_logic/create_article_comment').createArticleComment_async
+// const update_async=require('./article_logic/update_article').updateArticle_async
+// const delete_async=require('./article_logic/delete_impeach').deleteImpeach_async
+const controllerSetting=require('./article_setting/article_setting').setting
 
 
 
-    /*          create new comment              */
-    userNotLoginCantCreateComment:{rc:50300,msg:`用户尚未登录，无法发表评论`},
-    userInPenalizeNoCommentCreate:{rc:50302,msg:`管理员禁止发表评论`},
-
-
-    // userInPenalizeNoArticleUpdate:{rc:50232,msg:`管理员禁止更新文档`},
-}
 
 
 
 
 
 //对CRUD（输入参数带有method）操作调用对应的函数
-async function comment_dispatcher_async(req){
+async function comment_dispatcher_async({req}){
 
     //检查格式
     // console.log(`req is ${JSON.stringify(req.cookies)}`)
@@ -160,7 +128,7 @@ async function comment_dispatcher_async(req){
                 error:controllerError.userNotLoginCantCreateComment
             }
             penalizeCheck={
-                penalizeType:e_penalizeType.NO_ARTICLE,
+                penalizeType:e_penalizeType.NO_COMMENT,
                 penalizeSubType:e_penalizeSubType.CREATE,
                 penalizeCheckError:controllerError.userInPenalizeNoCommentCreate
             }
@@ -168,7 +136,7 @@ async function comment_dispatcher_async(req){
             await controllerHelper.preCheck_async({req:req,collName,method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
 	    //await controllerHelper.preCheck_async({req:req,collName,method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart,e_field:e_field,e_coll:e_coll,e_internal_field:e_internal_field,maxSearchKeyNum:maxSearchKeyNum,maxSearchPageNum:maxSearchPageNum})
 
-            await createComment_async(req)
+            await create_async({req:req})
 
             break;
         case e_method.SEARCH:// search
@@ -191,7 +159,7 @@ async function comment_dispatcher_async(req){
 
 
 
-async function createComment_async(req){
+/*async function createComment_async(req){
     // console.log(`create comment in =====>`)
     let tmpResult
 
@@ -203,7 +171,7 @@ async function createComment_async(req){
     // let originalArticle
 
 
-    /*              client数据转换                  */
+    /!*              client数据转换                  *!/
     let docValue=req.body.values[e_part.RECORD_INFO]
     //dataConvert.convertCreateUpdateValueToServerFormat(docValue)
     dataConvert.constructUpdateCriteria(docValue,fkConfig[collName])
@@ -212,12 +180,12 @@ async function createComment_async(req){
     // let userId=result.msg[e_field.USER.]
 
 
-    /*              检查外键字段的值是否存在                */
+    /!*              检查外键字段的值是否存在                *!/
     await controllerChecker.ifFkValueExist_async({docValue:docValue,collFkConfig:fkConfig[collName],collFieldChineseName:e_fieldChineseName[collName]})
 
 
 
-    /*              获得internal field，并进行检查                  */
+    /!*              获得internal field，并进行检查                  *!/
     let internalValue={}
     internalValue[e_field.ARTICLE_COMMENT.AUTHOR_ID]=userId
     if(e_env.DEV===currentEnv && Object.keys(internalValue).length>0){
@@ -231,19 +199,19 @@ async function createComment_async(req){
     Object.assign(docValue,internalValue)
 
 // console.log(`combined docValue is ${JSON.stringify(docValue)}`)
-    /*              如果有unique字段，需要预先检查unique(express级别，而不是mongoose级别)            */
+    /!*              如果有unique字段，需要预先检查unique(express级别，而不是mongoose级别)            *!/
     if(undefined!==e_uniqueField[collName] && e_uniqueField[collName].length>0) {
         await controllerChecker.ifFieldInDocValueUnique_async({collName: collName, docValue: docValue})
 	//await controllerHelper.ifFiledInDocValueUnique_async({collName: collName, docValue: docValue,e_uniqueField:e_uniqueField,e_chineseName:e_chineseName})
     }
 
 
-    /*              创建数据            */
+    /!*              创建数据            *!/
     // let articleId=docValue[e_field.ARTICLE_COMMENT.ARTICLE_ID]
     await common_operation_model.create_returnRecord_async({dbModel:e_dbModel[collName],value:docValue})
     // tmpResult=await common_operation_model.update({dbModel:e_dbModel[collName],id:articleId,values:docValue})
     return Promise.resolve({rc:0})
-}
+}*/
 
 
 
@@ -251,5 +219,5 @@ async function createComment_async(req){
 
 module.exports={
     comment_dispatcher_async,
-    controllerError
+    // controllerError
 }

@@ -8,121 +8,57 @@
 
 const fs=require('fs')
 
-const server_common_file_include=require('../../../server_common_file_require')
+const server_common_file_require=require('../../../server_common_file_require')
 
-const nodeEnum=server_common_file_include.nodeEnum
-const nodeRuntimeEnum=server_common_file_include.nodeRuntimeEnum
-const mongoEnum=server_common_file_include.mongoEnum
+const nodeEnum=server_common_file_require.nodeEnum
+const nodeRuntimeEnum=server_common_file_require.nodeRuntimeEnum
+const mongoEnum=server_common_file_require.mongoEnum
 
-const e_part=nodeEnum.ValidatePart
-const e_method=nodeEnum.Method
-const e_uploadFileType=nodeEnum.UploadFileType
-// const e_method=require('../../constant/enum/node').Method
+// const e_userState=require('../../constant/enum/node').UserState
+const e_part=nodeEnum.ValidatePart//require('../../constant/enum/node').ValidatePart
+const e_method=nodeEnum.Method//require('../../constant/enum/node').Method
 
-const e_hashType=nodeRuntimeEnum.HashType
 
-const e_env=nodeEnum.Env
+const e_env=nodeEnum.Env//require('../../constant/enum/node').Env
+// const e_docStatus=require('../../constant/enum/mongo').DocStatus.DB
+const e_penalizeType=server_common_file_require.mongoEnum.PenalizeType.DB
+const e_penalizeSubType=server_common_file_require.mongoEnum.PenalizeSubType.DB
 
-const e_penalizeType=mongoEnum.PenalizeType.DB
-const e_penalizeSubType=mongoEnum.PenalizeSubType.DB
-const e_iniSettingObject=require('../../constant/genEnum/initSettingObject').iniSettingObject
-const e_resourceProfileRange=mongoEnum.ResourceProfileRange.DB
-const e_storePathUsage=mongoEnum.StorePathUsage.DB
 
-const e_fileSizeUnit=nodeRuntimeEnum.FileSizeUnit
-
-const currentEnv=server_common_file_include.appSetting.currentEnv
-const uploadFileDefine=server_common_file_include.globalConfiguration.uploadFileDefine
+const currentEnv=server_common_file_require.appSetting.currentEnv
+// const uploadFileDefine=require('../../constant/config/globalConfiguration').uploadFileDefine
 
 const e_dbModel=require('../../constant/genEnum/dbModel')
-// const fkConfig=server_common_file_include.fkConfig
+const fkConfig=server_common_file_require.fkConfig.fkConfig//require('../../model/mongo/fkConfig').fkConfig
 
 const e_coll=require('../../constant/genEnum/DB_Coll').Coll
 const e_field=require('../../constant/genEnum/DB_field').Field
-
+// const e_internal_field=require('../../constant/genEnum/DB_internal_field').Field
+// const e_uniqueField=require('../../constant/enum/DB_uniqueField').UniqueField
 // const e_inputFieldCheckType=require('../../constant/enum/node').InputFieldCheckType
 
-const controllerHelper=server_common_file_include.controllerHelper
-const common_operation_model=server_common_file_include.common_operation_model
-const hash=server_common_file_include.crypt.hash//require('../../function/assist/crypt').hash
-
-const misc=server_common_file_include.misc//require('../../function/assist/misc')
-// const checkRobot_async=require('../../function/assist/checkRobot').checkRobot_async
-
-
-// const sanityHtml=server_common_file_include.sanityHtml//require('../../function/assist/sanityHtml').sanityHtml
-/*const generateRandomString=require('../../function/assist/misc').generateRandomString
-const sendVerificationCodeByEmail_async=require('../../function/assist/misc').sendVerificationCodeByEmail_async
-const ifUserLogin=require('../../function/assist/misc').ifUserLogin*/
-
-const dataConvert=server_common_file_include.dataConvert
-// const validateCreateRecorderValue=require('../../function/validateInput/validateValue').validateCreateRecorderValue
-// const validateUpdateRecorderValue=require('../../function/validateInput/validateValue').validateUpdateRecorderValue
-// const validateCURecordInfoFormat=require('../../function/validateInput/validateFormat').validateCURecordInfoFormat
-// const browserInputRule=require('../../constant/inputRule/browserInputRule').browserInputRule
-const internalInputRule=require('../../constant/inputRule/internalInputRule').internalInputRule
-const inputRule=require('../../constant/inputRule/inputRule').inputRule
-// const e_fieldChineseName=require('../../constant/enum/inputRule_field_chineseName').ChineseName
-
-
-// const mongoError=server_common_file_include.mongoError//require('../../constant/error/mongo/mongoError').error
-
-// const regex=server_common_file_include.regex//require('../../constant/regex/regex').regex
-
-/*const maxNumber=require('../../constant/config/globalConfiguration').maxNumber
-const miscConfiguration=require('../../constant/config/globalConfiguration').miscConfiguration
-
-const mailAccount=require('../../constant/config/globalConfiguration').mailAccount*/
-
-/*          create article              */
-// const checkUserState=require('../')
-/*         upload user photo         */
-const gmImage=server_common_file_include.gmImage//require('../../function/assist/gmImage')
-// const userPhotoConfiguration=require('../../constant/config/globalConfiguration').uploadFileDefine.user_thumb
-const e_gmGetter=nodeRuntimeEnum.GmGetter
-/*const e_gmCommand=nodeRuntimeEnum.GmCommand
-const uploadFile=require('../../function/assist/upload')*/
-
-/*         generate captcha         */
-//const captchaIntervalConfiguration=require('../../constant/config/globalConfiguration').intervalCheckConfiguration.captcha
-
-
-const controllerError={
-    /*          common              */
-/*    fieldAlreadyExist(chineseFieldName,fieldInputValue){
-        switch (fieldName){
-            case e_field.article
-        }
-        return {rc:50200,msg:{client:`${fieldInputValue}已经存在`, server:`字段${chineseFieldName}中，值${fieldInputValue}已经存在`}}},*/
+const controllerHelper=server_common_file_require.controllerHelper
+const controllerChecker=server_common_file_require.controllerChecker
+const common_operation_model=server_common_file_require.common_operation_model
 
 
 
-    /*          upload article image                */
-    userNotLoginCantCreateArticleImage:{rc:50400,msg:`用户尚未登录，无法插入图片`},
-    undefinedRangeType:{rc:50402,msg:{client:`内部参数错误，请联系管理员`,server:`未定义的rangeType`}},
-    userInPenalizeNoArticleUpdate:{rc:50403,msg:`管理员禁止更新文档`},
 
-    //image 超出 resource_profile
-    articleImageSizeExceed:{rc:50404,msg:{client:`文档图片总容量达到最大值，无法继续添加图片`,server:`文档图片容量达到最大`}},
-    articleImageNumExceed:{rc:50406,msg:{client:`文档图片数量达到最大值，无法继续添加图片`,server:`文档图片数量达到最大`}},
-    //attachment 超出 resource_profile
-    articleAttachmentSizeExceed:{rc:50408,msg:{client:`文档附件总容量达到最大值，无法继续添加附件`,server:`文档附件容量达到最大`}},
-    articleAttachmentNumExceed:{rc:50410,msg:{client:`文档附件数量达到最大值，无法继续添加附件`,server:`文档附件数量达到最大`}},
-    //总量（用户为单位） 超出 resource_profile
-    personalSizeExceed:{rc:50412,msg:{client:`个人空间达到最大值，无法继续添加文件`,server:`个人空间容量达到最大`}},
-    personalFileNumExceed:{rc:50414,msg:{client:`个人文件数量达到最大值，无法继续添加`,server:`个人文件数量达到最大`}},
+const controllerError=require('./article_upload_file_setting/article_upload_file_controllerError').controllerError
+// const create_async=require('./likeDisLike_logic/create_likeDisLike').createLikeDisLike_async
+const update_async=require('./article_upload_file_logic/upload_article_file').uploadArticleFile_async
+// const delete_async=require('./impeach_logic/delete_impeach').deleteImpeach_async
+const controllerSetting=require('./article_upload_file_setting/article_upload_file_setting').setting
 
-    notSupportImageFormat:{rc:50416,msg:`图片格式不支持`},
-    notSupportAttachmentFormat:{rc:50418,msg:`附件格式不支持`},
 
-}
+
 
 
 
 
 //对article image的不同method（其实只有create），进行预检，然后调用逻辑
 async function articleUploadFile_dispatch_async({req,type}){
-    let collName=e_coll.ARTICLE,tmpResult
+    let collName=controllerSetting.MAIN_HANDLED_COLL_NAME,tmpResult
     //检查格式
     // console.log(`req is ${JSON.stringify(req.cookies)}`)
     // console.log(`dispatcher in`)
@@ -147,6 +83,10 @@ async function articleUploadFile_dispatch_async({req,type}){
     let userLoginCheck,penalizeCheck,expectedPart
     switch (method){
         case e_method.CREATE: //create
+            break;
+        case e_method.SEARCH:// search
+            break;
+        case e_method.UPDATE: //update
             userLoginCheck={
                 needCheck:true,
                 error:controllerError.userNotLoginCantCreateArticleImage
@@ -158,14 +98,8 @@ async function articleUploadFile_dispatch_async({req,type}){
             }
             expectedPart=[e_part.RECORD_ID]
             tmpResult=await controllerHelper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
-            tmpResult=await uploadArticleFile_async({req:req,type:type})
-
-
-
-            break;
-        case e_method.SEARCH:// search
-            break;
-        case e_method.UPDATE: //update
+            // console.log(`dispatch preCheck doen`)
+            tmpResult=await update_async({req:req,type:type})
             break;
         case e_method.DELETE: //delete
             break;
@@ -181,7 +115,7 @@ async function articleUploadFile_dispatch_async({req,type}){
 /*
 * type: image还是attachment
 * */
-async function uploadArticleFile_async({req,type}){
+/*async function uploadArticleFile_async({req,type}){
     let tmpResult
 
     let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
@@ -192,7 +126,7 @@ async function uploadArticleFile_async({req,type}){
     let collName=e_coll.ARTICLE
     let fileCollName
 
-    /*              查找id为文档，且作者为userid的记录，找不到说明不是作者，无权修改            */
+    /!*              查找id为文档，且作者为userid的记录，找不到说明不是作者，无权修改            *!/
     let condition={}
     condition['_id']=articleId
     condition[e_field.ARTICLE.AUTHOR_ID]=userId
@@ -203,7 +137,7 @@ async function uploadArticleFile_async({req,type}){
     }
     // originalArticle=misc.objectDeepCopy({},tmpResult.msg[0])
 
-    /*              上传文件存储到临时目录                         */
+    /!*              上传文件存储到临时目录                         *!/
     let maxFileSize
     if(e_uploadFileType.IMAGE===type){
         maxFileSize=uploadFileDefine.article_image.maxSizeInByte
@@ -215,7 +149,7 @@ async function uploadArticleFile_async({req,type}){
     let {originalFilename,path,size}=uploadResult.msg
 
     // console.log(`group start========>`)
-    /*              获得用户当前的所有资源配置，并检查当前占用的资源（磁盘空间）+文件的资源（sizeInMB）后，还小于==>所有<==的资源配置（）                         */
+    /!*              获得用户当前的所有资源配置，并检查当前占用的资源（磁盘空间）+文件的资源（sizeInMB）后，还小于==>所有<==的资源配置（）                         *!/
     let resourceProfileRangeToBeCheck=[e_resourceProfileRange.PER_PERSON,e_resourceProfileRange.PER_ARTICLE]
     //首先检查个人的（范围最大），然后检查article（范围小点的）
     for(let singleResourceProfileRange of resourceProfileRangeToBeCheck){
@@ -224,7 +158,7 @@ async function uploadArticleFile_async({req,type}){
 //console.log(`chosed profile========>${JSON.stringify(tmpResult)}`)
         //只有一条记录，要么是default，要么是VIP
         let currentResourceProfile=misc.objectDeepCopy(tmpResult.msg)
-        /*              计算当前（每个）资源配置是否还够用               */
+        /!*              计算当前（每个）资源配置是否还够用               *!/
         let currentResourceUsage={totalFileNum:0,totalFileSizeInMb:0}
         //设置分组条件
         let match={},group={}
@@ -304,7 +238,7 @@ console.log(`group by article result =====>${JSON.stringify(tmpResult)}`)
     }
 
 
-    /*              文件move到永久存储目录                           */
+    /!*              文件move到永久存储目录                           *!/
     let finalFileName,suffix
     //格式检查
     if(e_uploadFileType.IMAGE===type){
@@ -344,7 +278,7 @@ console.log(`group by article result =====>${JSON.stringify(tmpResult)}`)
     let pathId=tmpResult._id
     fs.renameSync(path,finalPath)
 
-    /*              内部field value检测                            */
+    /!*              内部field value检测                            *!/
     let internalValue={},fieldToBeChanged
     if(e_uploadFileType.IMAGE===type){
         internalValue[e_field.ARTICLE_IMAGE.NAME]=originalFilename
@@ -376,13 +310,13 @@ console.log(`group by article result =====>${JSON.stringify(tmpResult)}`)
     }
 
     //因为都是internal field，直接插入到coll
-    /*              插入记录到article_image            */
+    /!*              插入记录到article_image            *!/
     tmpResult=await common_operation_model.create_returnRecord_async({dbModel:e_dbModel[fileCollName],value:internalValue})
     let fileId=tmpResult._id
-    /*              更新记录到article                  */
+    /!*              更新记录到article                  *!/
     tmpResult=await e_dbModel.article.update({_id:articleId},{$push:{[fieldToBeChanged]:fileId}})
     return Promise.resolve({rc:0})
-}
+}*/
 
 
 
@@ -401,5 +335,5 @@ module.exports={
     // uploadArticleImage_async,
     // uploadArticleFile_async,
 
-    controllerError
+    // controllerError
 }

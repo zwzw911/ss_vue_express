@@ -31,7 +31,7 @@ const browserInputRule=require('../../server/constant/inputRule/browserInputRule
 const validateError=server_common_file_require.validateError//require('../../server/constant/error/validateError').validateError
 const controllerHelpError=server_common_file_require.helperError.helper//require('../../server/constant/error/controller/helperError').helper
 
-const controllerError=require('../../server/controller/article/article_logic').controllerError
+
 
 // const objectDeepCopy=require('../../server/function/assist/misc').objectDeepCopy
 
@@ -40,6 +40,8 @@ const testData=server_common_file_require.testData//require('../testData')
 const API_helper=server_common_file_require.API_helper//require('../API_helper/API_helper')
 const component_function=server_common_file_require.component_function
 
+const controllerError=require('../../server/controller/article/article_setting/article_controllerError').controllerError
+
 let baseUrl="/article/"
 let userId  //create后存储对应的id，以便后续的update操作
 
@@ -47,17 +49,19 @@ let sess1,sess2,adminRootSess,data={values:{}}
 
 describe('create new article and update, then create new comment: ', async function() {
     let url = '', finalUrl = baseUrl + url
-    let user1Sess,user2Sess,user1Id,user2Id,articleId,impeachId,data={values:{}}
-    let newArticleId, folder2
+    let user1Sess,user2Sess,user1Id,user2Id,article1Id,article2Id,impeachId,data={values:{}}
+    let  folder2
     before('remove exists record', async function(){
         await API_helper.removeExistsRecord_async()
     })
 
-    before('user1/2 recreate and login', async function () {
+    before('user1/2 recreate and login; user1 create article1', async function () {
         let user1Info=await component_function.reCreateUser_returnSessUserId_async({userData:testData.user.user1,app:app})
         user1Sess=user1Info['sess']
         let user2Info=await component_function.reCreateUser_returnSessUserId_async({userData:testData.user.user2,app:app})
         user2Sess=user2Info['sess']
+        
+        article1Id=await API_helper.createNewArticle_returnArticleId_async({userSess:user1Sess,app:app})
         // await API_helper.createUser_async({userData:,app:app})
         // user1Sess=await  API_helper.userLogin_returnSess_async({userData:testData.user.user1,app:app})
     })
@@ -90,33 +94,12 @@ describe('create new article and update, then create new comment: ', async funct
         // return Promise.resolve({rc:0})
     })
 
-
-    it('correct article', function (done) {
-        delete data.values[e_part.RECORD_INFO]
-        // console.log(`user1Sess ===>${JSON.stringify(user1Sess)}`)
-        // console.log(`data.values ===>${JSON.stringify(data.values)}`)
-        data.values[e_part.METHOD] = e_method.CREATE
-        // console.log(`data.values ===>${JSON.stringify(data.values)}`)
-        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie', [user1Sess]).send(data)
-            .end(function (err, res) {
-                // if (err) return done(err);
-                console.log(`res ios ${JSON.stringify(res)}`)
-                let parsedRes = JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                newArticleId = parsedRes['msg']['_id']
-                assert.deepStrictEqual(parsedRes.rc, 0)
-                // assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.require.error.rc)
-                done();
-            });
-    });
-
-
-
-
-
-    it('update article not user owner', function (done) {
+    /*******************************************************************************************/
+    /*                                       authorization check                               */
+    /*******************************************************************************************/
+    it('update article1 not user owner', function (done) {
         data.values = {}
-        data.values[e_part.RECORD_ID] = newArticleId
+        data.values[e_part.RECORD_ID] = article1Id
         data.values[e_part.METHOD] = e_method.UPDATE
         data.values[e_part.RECORD_INFO] = {}
         data.values[e_part.RECORD_INFO][e_field.ARTICLE.HTML_CONTENT] = 'testtesttesttesttesttest'
@@ -133,12 +116,12 @@ describe('create new article and update, then create new comment: ', async funct
                 done();
             });
     });
-    it('update article with htmlContent sanity failed', function (done) {
+    it('update without field value changed', function (done) {
         data.values = {}
-        data.values[e_part.RECORD_ID] = newArticleId
+        data.values[e_part.RECORD_ID] = article1Id
         data.values[e_part.METHOD] = e_method.UPDATE
         data.values[e_part.RECORD_INFO] = {}
-        data.values[e_part.RECORD_INFO][e_field.ARTICLE.HTML_CONTENT] =`<script></script>asdf`
+        data.values[e_part.RECORD_INFO][e_field.ARTICLE.HTML_CONTENT] = 'testtesttesttesttesttest'
         // data.values[e_part.RECORD_INFO][e_field.ARTICLE.HTML_CONTENT]['value'] =
         console.log(`docvalues====>${JSON.stringify(data.values)}`)
         request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie', [user1Sess]).send(data)
@@ -147,18 +130,21 @@ describe('create new article and update, then create new comment: ', async funct
                 // console.log(`res ios ${JSON.stringify(res)}`)
                 let parsedRes = JSON.parse(res.text)
                 console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes['rc'], controllerError.htmlContentSanityFailed.rc)
+                assert.deepStrictEqual(parsedRes['rc'], 0)
                 // assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.require.error.rc)
                 done();
             });
     });
-   
+
+    /*******************************************************************************************/
+    /*                                    fk value是否存在                                     */
+    /*******************************************************************************************/
     it('update article with non exist folder id', function (done) {
         data.values = {}
-        data.values[e_part.RECORD_ID] = newArticleId
+        data.values[e_part.RECORD_ID] = article1Id
         data.values[e_part.METHOD] = e_method.UPDATE
         data.values[e_part.RECORD_INFO] = {}
-        data.values[e_part.RECORD_INFO][e_field.ARTICLE.FOLDER_ID] = newArticleId
+        data.values[e_part.RECORD_INFO][e_field.ARTICLE.FOLDER_ID] = article1Id
         // data.values[e_part.RECORD_INFO][e_field.ARTICLE.FOLDER_ID]['value'] =
         console.log(`docvalues====>${JSON.stringify(data.values)}`)
         request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie', [user1Sess]).send(data)
@@ -173,10 +159,10 @@ describe('create new article and update, then create new comment: ', async funct
     });
     it('update article with non exist category id', function (done) {
         data.values = {}
-        data.values[e_part.RECORD_ID] = newArticleId
+        data.values[e_part.RECORD_ID] = article1Id
         data.values[e_part.METHOD] = e_method.UPDATE
         data.values[e_part.RECORD_INFO] = {}
-        data.values[e_part.RECORD_INFO][e_field.ARTICLE.CATEGORY_ID] = newArticleId
+        data.values[e_part.RECORD_INFO][e_field.ARTICLE.CATEGORY_ID] = article1Id
         // data.values[e_part.RECORD_INFO][e_field.ARTICLE.CATEGORY_ID]['value'] =
         console.log(`docvalues====>${JSON.stringify(data.values)}`)
         request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie', [user1Sess]).send(data)
@@ -190,9 +176,31 @@ describe('create new article and update, then create new comment: ', async funct
                 done();
             });
     });
+    /*******************************************************************************************/
+    /*                                       特定字段的处理（检查）                            */
+    /*******************************************************************************************/
+    it('update article with htmlContent sanity failed', function (done) {
+        data.values = {}
+        data.values[e_part.RECORD_ID] = article1Id
+        data.values[e_part.METHOD] = e_method.UPDATE
+        data.values[e_part.RECORD_INFO] = {}
+        data.values[e_part.RECORD_INFO][e_field.ARTICLE.HTML_CONTENT] =`<script></script>asdf`
+        // data.values[e_part.RECORD_INFO][e_field.ARTICLE.HTML_CONTENT]['value'] =
+        console.log(`docvalues====>${JSON.stringify(data.values)}`)
+        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie', [user1Sess]).send(data)
+            .end(function (err, res) {
+                // if (err) return done(err);
+                // console.log(`res ios ${JSON.stringify(res)}`)
+                let parsedRes = JSON.parse(res.text)
+                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
+                assert.deepStrictEqual(parsedRes['rc'], controllerHelpError.XSSCheckFailed(`htmlContent`).rc)
+                // assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.require.error.rc)
+                done();
+            });
+    });
     it('update article with folder not owner', function (done) {
         data.values = {}
-        data.values[e_part.RECORD_ID] = newArticleId
+        data.values[e_part.RECORD_ID] = article1Id
         data.values[e_part.METHOD] = e_method.UPDATE
         data.values[e_part.RECORD_INFO] = {}
         data.values[e_part.RECORD_INFO][e_field.ARTICLE.FOLDER_ID] = folder2
@@ -212,7 +220,7 @@ describe('create new article and update, then create new comment: ', async funct
 
     it('update article content normally', function (done) {
         data.values = {}
-        data.values[e_part.RECORD_ID] = newArticleId
+        data.values[e_part.RECORD_ID] = article1Id
         data.values[e_part.METHOD] = e_method.UPDATE
         data.values[e_part.RECORD_INFO] = {}
         data.values[e_part.RECORD_INFO][e_field.ARTICLE.HTML_CONTENT] = 'update article with attachment exist'

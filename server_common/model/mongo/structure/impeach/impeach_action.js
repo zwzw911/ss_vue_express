@@ -46,7 +46,7 @@ const collFieldDefine={
     creatorId:{type:mongoose.Schema.Types.ObjectId},     //谁对impeach做出了修改
     creatorColl:{type:String},   //做出修改的人位于哪个coll（可能是普通用户，也可能是admin）
     action:{type:String},        //enum
-    ownerId:{type:mongoose.Schema.Types.ObjectId,ref:`admin_user`},            //必定是adminUser。谁是处理者（冗余字段，和impeach中currentOwnerId冗余）
+    adminOwnerId:{type:mongoose.Schema.Types.ObjectId,ref:`admin_user`},            //必定是adminUser。谁是处理者（冗余字段，和impeach中currentOwnerId冗余）.如果为空，隐式说明是creator在处理
     //ownerColl:{type:String},    //处理人是普通还是admin
     cDate:{type:Date,default:Date.now},
     // uDate:{type:Date,default:Date.now},

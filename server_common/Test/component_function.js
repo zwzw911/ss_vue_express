@@ -6,6 +6,8 @@
 
 const API_helper=require('./API_helper')
 const db_operation_helper=require('./db_operation_helper')
+const e_field=require(`../constant/genEnum/DB_field`).Field
+const e_articleStatus=require(`../constant/enum/mongoEnum`).ArticleStatus.DB
 
 async function reCreateUser_returnSessUserId_async({userData,app}){
     //删除用户
@@ -19,6 +21,15 @@ async function reCreateUser_returnSessUserId_async({userData,app}){
     return Promise.resolve({userId:userId,sess:sess})
 }
 
+async function createArticle_setToFinish_returnArticleId_async({userSess,app}){
+    //创建new article
+    let recordId=await API_helper.createNewArticle_returnArticleId_async({userSess:userSess,app:app})
+    //更新到完成状态
+    await API_helper.updateArticle_returnArticleId_async({userSess:userSess,recordId:recordId,values:{[e_field.ARTICLE.STATUS]:e_articleStatus.FINISHED},app:app})
+
+    return Promise.resolve(recordId)
+}
 module.exports={
-    reCreateUser_returnSessUserId_async
+    reCreateUser_returnSessUserId_async,
+    createArticle_setToFinish_returnArticleId_async,
 }

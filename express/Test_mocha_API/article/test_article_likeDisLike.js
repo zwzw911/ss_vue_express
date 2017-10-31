@@ -30,39 +30,41 @@ const browserInputRule=require('../../server/constant/inputRule/browserInputRule
 // const validateError=server_common_file_require.validateError
 const helpError=server_common_file_require.helperError.helper//require('../../server/constant/error/controller/helperError').helper
 
-const contollerError=require('../../server/controller/article/liekDislike_logic').controllerError
+
 
 const objectDeepCopy=server_common_file_require.misc.objectDeepCopy//require('../../server/function/assist/misc').objectDeepCopy
 
 //const test_helper=require("../API_helper/db_operation_helper")
+const db_operation_helper=server_common_file_require.db_operation_helper
 const testData=server_common_file_require.testData//require('../testData')
-const API_helper=server_common_file_require.API_helper
+const API_helper=server_common_file_require.API_helper//require('../API_helper/API_helper')
+const component_function=server_common_file_require.component_function
+
+const controllerError=require('../../server/controller/article/likeDislike_setting/likeDislike_controllerError').controllerError
 
 let baseUrl="/article/"
 let userId  //create后存储对应的id，以便后续的update操作
 
-let sess1,sess2,data={values:{}}
+let user1Sess,sess2,user1Id,user2Id,data={values:{}}
 
 
 describe('create new likeDislike for article ', async function() {
     let url = 'likeDislike', finalUrl = baseUrl + url
 
     let articleId,userId
-    before('user1 login correct', async function () {
-        sess1=await API_helper.userLogin_returnSess_async({userData:testData.user.user1,app:app})
+    before('user1 login correct and get userId', async function () {
+        let user1Info=await component_function.reCreateUser_returnSessUserId_async({userData:testData.user.user1,app:app})
+        user1Sess=user1Info['sess']
+        user1Id=user1Info[`userId`]
     })
-
-    before('get user1 id', async function(){
-        let tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.user,condition:{[e_field.USER.ACCOUNT]:testData.user.user1ForModel[e_field.USER.ACCOUNT]}})
-        // console.log(`tmpResult=====> ${JSON.stringify(tmpResult)}`)
-        userId=tmpResult[0]['_id']
-    });
 
     //create new article
     before('create correct article', async function() {
-        articleId=await API_helper.createNewArticle_returnArticleId_async({userSess:sess1,app:app})
+        articleId=await API_helper.createNewArticle_returnArticleId_async({userSess:user1Sess,app:app})
     });
-
+    /*******************************************************************************************/
+    /*                                    fk value是否存在                                     */
+    /*******************************************************************************************/
     it('articleId not exist', function(done) {
         data.values={}
         // console.log(`finalUrl ===>${JSON.stringify(finalUrl)}`)
@@ -73,7 +75,7 @@ describe('create new likeDislike for article ', async function() {
             [e_field.LIKE_DISLIKE.LIKE]:false,
         }
         // console.log(`data.values ===>${JSON.stringify(data.values)}`)
-        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[sess1]).send(data)
+        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[user1Sess]).send(data)
             .end(function(err, res) {
                 // if (err) return done(err);
                 // console.log(`res ios ${JSON.stringify(res)}`)
@@ -81,49 +83,6 @@ describe('create new likeDislike for article ', async function() {
                 console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
                 // articleId=parsedRes['msg']['_id']
                 assert.deepStrictEqual(parsedRes.rc,helpError.fkValueNotExist().rc)
-                // assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.require.error.rc)
-                done();
-            });
-    });
-
-/*    it('userId not exist(modify in likeDislike_logic)', function(done) {
-        data.values={}
-        console.log(`finalUrl ===>${JSON.stringify(finalUrl)}`)
-        // console.log(`data.values ===>${JSON.stringify(data.values)}`)
-        data.values[e_part.METHOD]=e_method.CREATE
-        data.values[e_part.RECORD_INFO]={[e_field.LIKE_DISLIKE.ARTICLE_ID]:{value:articleId},[e_field.LIKE_DISLIKE.LIKE]:{value:false}}
-        // console.log(`data.values ===>${JSON.stringify(data.values)}`)
-        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[sess1]).send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-                // console.log(`res ios ${JSON.stringify(res)}`)
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                // articleId=parsedRes['msg']['_id']
-                assert.deepStrictEqual(parsedRes.rc,helpError.fkValueNotExist().rc)
-                // assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.require.error.rc)
-                done();
-            });
-    });*/
-
-    it('field is not boolean', function(done) {
-        data.values={}
-        console.log(`finalUrl ===>${JSON.stringify(finalUrl)}`)
-        // console.log(`data.values ===>${JSON.stringify(data.values)}`)
-        data.values[e_part.METHOD]=e_method.CREATE
-        data.values[e_part.RECORD_INFO]={
-            [e_field.LIKE_DISLIKE.ARTICLE_ID]:articleId,
-            [e_field.LIKE_DISLIKE.LIKE]:'true',
-        }
-        // console.log(`data.values ===>${JSON.stringify(data.values)}`)
-        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[sess1]).send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-                // console.log(`res ios ${JSON.stringify(res)}`)
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                // articleId=parsedRes['msg']['_id']
-                assert.deepStrictEqual(parsedRes.rc,99999)
                 // assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.require.error.rc)
                 done();
             });
@@ -131,7 +90,7 @@ describe('create new likeDislike for article ', async function() {
 
     it('correct like', function(done) {
         data.values={}
-        console.log(`finalUrl ===>${JSON.stringify(finalUrl)}`)
+        // console.log(`finalUrl ===>${JSON.stringify(finalUrl)}`)
         // console.log(`data.values ===>${JSON.stringify(data.values)}`)
         data.values[e_part.METHOD]=e_method.CREATE
         data.values[e_part.RECORD_INFO]={
@@ -139,7 +98,7 @@ describe('create new likeDislike for article ', async function() {
             [e_field.LIKE_DISLIKE.LIKE]:true,
         }
         // console.log(`data.values ===>${JSON.stringify(data.values)}`)
-        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[sess1]).send(data)
+        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[user1Sess]).send(data)
             .end(function(err, res) {
                 // if (err) return done(err);
                 // console.log(`res ios ${JSON.stringify(res)}`)
@@ -154,7 +113,7 @@ describe('create new likeDislike for article ', async function() {
 
     it('try like(dislike) again', function(done) {
         data.values={}
-        console.log(`finalUrl ===>${JSON.stringify(finalUrl)}`)
+        // console.log(`finalUrl ===>${JSON.stringify(finalUrl)}`)
         // console.log(`data.values ===>${JSON.stringify(data.values)}`)
         data.values[e_part.METHOD]=e_method.CREATE
         data.values[e_part.RECORD_INFO]={
@@ -162,14 +121,14 @@ describe('create new likeDislike for article ', async function() {
             [e_field.LIKE_DISLIKE.LIKE]:true,
         }
         // console.log(`data.values ===>${JSON.stringify(data.values)}`)
-        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[sess1]).send(data)
+        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[user1Sess]).send(data)
             .end(function(err, res) {
                 // if (err) return done(err);
                 // console.log(`res ios ${JSON.stringify(res)}`)
                 let parsedRes=JSON.parse(res.text)
                 console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
                 // articleId=parsedRes['msg']['_id']
-                assert.deepStrictEqual(parsedRes.rc,contollerError.alreadyLikeDislike.rc)
+                assert.deepStrictEqual(parsedRes.rc,controllerError.alreadyLikeDislike.rc)
                 // assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.require.error.rc)
                 done();
             });

@@ -10,6 +10,7 @@ const inputDataRuleType=require('../server_common/constant/enum/inputDataRuleTyp
 const mongoEnum=require('../server_common/constant/enum/mongoEnum.js')
 const nodeEnum=require('../server_common/constant/enum/nodeEnum.js')
 const nodeRuntimeEnum=require('../server_common/constant/enum/nodeRuntimeEnum.js')
+const not_used_compoundUniqueField=require('../server_common/constant/enum/not_used_compoundUniqueField.js')
 const assistError=require('../server_common/constant/error/assistError.js')
 const helperError=require('../server_common/constant/error/controller/helperError.js')
 const mongoError=require('../server_common/constant/error/mongo/mongoError.js')
@@ -17,7 +18,6 @@ const redisError=require('../server_common/constant/error/redisError.js')
 const systemError=require('../server_common/constant/error/systemError.js')
 const validateError=require('../server_common/constant/error/validateError.js')
 const regex=require('../server_common/constant/regex/regex.js')
-const aglorithm=require('../server_common/controller/aglorithm.js')
 const controllerChecker=require('../server_common/controller/controllerChecker.js')
 const controllerHelper=require('../server_common/controller/controllerHelper.js')
 const dataConvert=require('../server_common/controller/dataConvert.js')
@@ -38,7 +38,9 @@ const component_function=require('../server_common/Test/component_function.js')
 const db_operation_helper=require('../server_common/Test/db_operation_helper.js')
 const generateTestData_API=require('../server_common/Test/generateTestData_API.js')
 const inputRule_API_tester=require('../server_common/Test/inputRule_API_tester.js')
+const misc_helper=require('../server_common/Test/misc_helper.js')
 const testData=require('../server_common/Test/testData.js')
+const testCaseEnum=require('../server_common/constant/testCaseEnum/testCaseEnum.js')
 const common_operation_model=require('../server_common/model/mongo/operation/common_operation_model.js')
 const common_operation_document=require('../server_common/model/mongo/operation/common_operation_document.js')
 const fkConfig=require('../server_common/model/mongo/fkConfig.js')
@@ -53,6 +55,7 @@ module.exports={
     mongoEnum,
     nodeEnum,
     nodeRuntimeEnum,
+    not_used_compoundUniqueField,
     assistError,
     helperError,
     mongoError,
@@ -60,7 +63,6 @@ module.exports={
     systemError,
     validateError,
     regex,
-    aglorithm,
     controllerChecker,
     controllerHelper,
     dataConvert,
@@ -81,7 +83,9 @@ module.exports={
     db_operation_helper,
     generateTestData_API,
     inputRule_API_tester,
+    misc_helper,
     testData,
+    testCaseEnum,
     common_operation_model,
     common_operation_document,
     fkConfig,

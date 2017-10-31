@@ -38,7 +38,7 @@ const controllerError=require('../../server/controller/impeach/impeach_upload_fi
 // const test_helper=require("../API_helper/db_operation_helper")
 const testData=server_common_file_require.testData//require('../testData')
 const API_helper=server_common_file_require.API_helper//require('../API_helper/API_helper')
-
+const component_function=server_common_file_require.component_function
 const calcResourceConfig=require('../../server/constant/config/calcResourceConfig')
 
 /*************************************************************/
@@ -52,18 +52,16 @@ describe('impeachUploadFile_dispatch_async ', async function() {
     })
 
     before('user1 && user2 register', async function() {
-        await API_helper.createUser_async({userData:testData.user.user1})
-        await API_helper.createUser_async({userData:testData.user.user2})
+        let userInfo=await component_function.reCreateUser_returnSessUserId_async({userData:testData.user.user1,app:app})
+        user1Sess=userInfo['sess']
+        userInfo=await component_function.reCreateUser_returnSessUserId_async({userData:testData.user.user2,app:app})
+        user2Sess=userInfo['sess']
     });
 
-    //异步返回promise，无需done
-    before('user1 && user2 login correct', async function() {
-        user1Sess=await  API_helper.userLogin_returnSess_async({userData:testData.user.user1})
-        user2Sess=await  API_helper.userLogin_returnSess_async({userData:testData.user.user2})
-    })
+
 
     before('user1 create article', async function () {
-        articleId=await API_helper.userCreateArticle_returnArticleId_async({userSess:user1Sess})
+        articleId=await component_function.createArticle_setToFinish_returnArticleId_async({userSess:user1Sess,app:app})
 
     });
 
@@ -75,12 +73,12 @@ describe('impeachUploadFile_dispatch_async ', async function() {
 
 
     before('user2 create impeach', async function () {
-        impeachId=await API_helper.createImpeachForArticle_returnImpeachId_async({articleId:articleId,userSess:user2Sess})
+        impeachId=await API_helper.createImpeachForArticle_returnImpeachId_async({articleId:articleId,userSess:user2Sess,app:app})
     });
 
-    it("user2 upload image for impeach",function(){
+    it("user2 upload image for impeach",function(done){
 
-        request(app).post('/impeachImage/').field('name','file')
+        request(app).post('/impeach/impeachImage/').field('name','file')
         // .attach('file','H:/ss_vue_express/培训结果1.png')
             .attach('file','H:/ss_vue_express/test_data/impeach_image.png')
             // .attach('file','H:/ss_vue_express/gm_test.png')

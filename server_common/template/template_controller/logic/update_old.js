@@ -63,7 +63,7 @@ async function updateUser_async(req){
     let {userId,userCollName,userType,userPriority}=userInfo
 
     let docValue=req.body.values[e_part.RECORD_INFO]
-    let userToBeUpdateId=req.body.values[e_part.RECORD_ID]
+    let recordId=req.body.values[e_part.RECORD_ID]
     /*******************************************************************************************/
     /*                                     参数转为server格式                                  */
     /*******************************************************************************************/
@@ -75,15 +75,6 @@ async function updateUser_async(req){
     /*******************************************************************************************/
     /*                                       authorization check                               */
     /*******************************************************************************************/
-
-    /*******************************************************************************************/
-    /*                                       resource check                                    */
-    /*******************************************************************************************/
-
-
-
-    // let tmpResult=await common_operation_model.findById({dbModel:dbModel[e_coll.USER],id:objectId})
-    // let userId=tmpResult.msg[e_field.USER.]
     /*******************************************************************************************/
     /*                                     specific priority check                             */
     /*******************************************************************************************/
@@ -92,31 +83,13 @@ async function updateUser_async(req){
         return Promise.reject(controllerError.currentUserHasNotPriorityToUpdateUser)
     }
     /*              如果是root，则只有root可以修改自己（specific）              */
-    let userToBeUpdate=await common_operation_model.findById_returnRecord_async({dbModel:e_dbModel.admin_user,id:userToBeUpdateId})
+    let userToBeUpdate=await common_operation_model.findById_returnRecord_async({dbModel:e_dbModel.admin_user,id:recordId})
     if(e_adminUserType.ADMIN_ROOT===userToBeUpdate[e_field.ADMIN_USER.USER_TYPE]){
         if(userToBeUpdate['_id']!==userId){
             return Promise.reject(controllerError.onlyRootCanUpdateRoot)
         }
 
     }
-    /*******************************************************************************************/
-    /*                                    fk value是否存在                                     */
-    /*******************************************************************************************/
-    //在fkConfig中定义的外键检查
-    await controllerChecker.ifFkValueExist_async({docValue:docValue,collFkConfig:fkConfig[collName],collFieldChineseName:e_chineseName[collName]})
-    //自定义外键的检查
-    /*******************************************************************************************/
-    /*                                  enum unique check(enum in array)                       */
-    /*******************************************************************************************/
-    // console.log(`browserInputRule[collName]==========> ${JSON.stringify(browserInputRule[collName])}`)
-    // console.log(`docValue==========> ${JSON.stringify(docValue)}`)
-    tmpResult=controllerChecker.ifEnumHasDuplicateValue({collValue:docValue,collRule:browserInputRule[collName]})
-    // console.log(`duplicate check result ==========> ${JSON.stringify(tmpResult)}`)
-    if(tmpResult.rc>0){
-        return Promise.reject(tmpResult)
-    }
-
-
     /*******************************************************************************************/
     /*                                  删除value重复的field                                   */
     /*******************************************************************************************/
@@ -151,18 +124,55 @@ async function updateUser_async(req){
     }
     // console.log(`updateUser after compare with origin value ${JSON.stringify(docValue)}`)
     // console.log(`originUserInfo value ${JSON.stringify(originUserInfo)}`)
-    for(let singleFieldName in docValue){
-        if(docValue[singleFieldName]===originUserInfo[singleFieldName]){
-            delete docValue[singleFieldName]
-        }
+    /*******************************************************************************************/
+    /*                              remove not change field                                    */
+    /*******************************************************************************************/
+    controllerHelper.deleteNotChangedValue({inputValue:docValue,originalValue:originUserInfo})
+    /*******************************************************************************************/
+    /*                          delete field cant be update from client                        */
+    /*******************************************************************************************/
+    //以下字段，CREATE是client输入，但是update时候，无法更改，所以需要删除
+/*    let notAllowUpdateFields=[e_field.IMPEACH.IMPEACHED_ARTICLE_ID,e_field.IMPEACH.IMPEACHED_COMMENT_ID,e_field.IMPEACH.CURRENT_STATE]
+    for(let singleNotAllowUpdateField of notAllowUpdateFields){
+        delete docValue[singleNotAllowUpdateField]
+    }*/
+    /*******************************************************************************************/
+    /*                          check field number after delete                                */
+    /*******************************************************************************************/
+    //如果删除完 值没有变化 和 不能更改的字段后，docValue为空，则无需任何修改，直接返回0
+    if(0===Object.keys(docValue).length){
+        return {rc:0}
+    }
+    /*******************************************************************************************/
+    /*                                       resource check                                    */
+    /*******************************************************************************************/
+
+
+
+    // let tmpResult=await common_operation_model.findById({dbModel:dbModel[e_coll.USER],id:objectId})
+    // let userId=tmpResult.msg[e_field.USER.]
+
+    /*******************************************************************************************/
+    /*                                    fk value是否存在                                     */
+    /*******************************************************************************************/
+    //在fkConfig中定义的外键检查
+    await controllerChecker.ifFkValueExist_async({docValue:docValue,collFkConfig:fkConfig[collName],collFieldChineseName:e_chineseName[collName]})
+    //自定义外键的检查
+    /*******************************************************************************************/
+    /*                                  enum unique check(enum in array)                       */
+    /*******************************************************************************************/
+    // console.log(`browserInputRule[collName]==========> ${JSON.stringify(browserInputRule[collName])}`)
+    // console.log(`docValue==========> ${JSON.stringify(docValue)}`)
+    tmpResult=controllerChecker.ifEnumHasDuplicateValue({collValue:docValue,collRule:browserInputRule[collName]})
+    // console.log(`duplicate check result ==========> ${JSON.stringify(tmpResult)}`)
+    if(tmpResult.rc>0){
+        return Promise.reject(tmpResult)
     }
 
     // console.log(`updateUser after compare with origin value ${JSON.stringify(docValue)}`)
 
 
-    if(0===Object.keys(docValue).length){
-        return {rc:0}
-    }
+
     // console.log(`after check =========>${JSON.stringify(docValue)}`)
     // console.log(`collName =========>${JSON.stringify(collName)}`)
     /*******************************************************************************************/

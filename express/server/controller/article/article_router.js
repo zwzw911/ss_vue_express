@@ -16,19 +16,25 @@ const server_common_file_require=require('../../../server_common_file_require')
 const nodeEnum=server_common_file_require.nodeEnum
 const genFinalReturnResult=server_common_file_require.misc.genFinalReturnResult
 //require('../../../../server_common/function/assist/misc').genFinalReturnResult
-const article_logic=require('./article_logic')
-const article_comment_logic=require('./article_comment_logic')
-const article_upload_file_logic=require('./article_upload_file_logic')
-const likeDislike_logic=require('./liekDislike_logic')
+// const article_logic=require('./article_logic')
+// const article_comment_logic=require('./article_comment_logic')
+// const article_upload_file_logic=require('./article_upload_file_logic')
+// const likeDislike_logic=require('./liekDislike_logic')
 
 const e_uploadFileType=nodeEnum.UploadFileType
+
+
+const article_dispatcher_async=require('./article_dispatch').article_dispatcher_async
+const article_comment_dispatch_async=require('./article_comment_dispatch').comment_dispatcher_async
+const article_likeDislike_dispatcher_async=require(`./liekDislike_dispatch`).article_likeDislike_dispatcher_async
+const articleUploadFile_dispatch_async=require(`./article_upload_file_dispatch`).articleUploadFile_dispatch_async
 /*        通过method，判断是CRUDM中的那个操作
 *   C: register
 *   M: match(login)
 * */
 router.post('/',function(req,res,next){
 
-    article_logic.article_dispatcher_async(req).then(
+    article_dispatcher_async(req).then(
         (v)=>{
             console.log(`create   article   success, result:  ${JSON.stringify(v)}`)
             return res.json(v)
@@ -46,7 +52,7 @@ router.post('/',function(req,res,next){
  * */
 router.post('/comment',function(req,res,next){
 
-    article_comment_logic.comment_dispatcher_async(req).then(
+    article_comment_dispatch_async({req:req}).then(
         (v)=>{
             console.log(`comment   success, result:  ${JSON.stringify(v)}`)
             return res.json(v)
@@ -61,7 +67,7 @@ router.post('/comment',function(req,res,next){
 /*              上传文件                */
 router.post('/articleImage',function(req,res,next){
 
-    article_upload_file_logic.articleUploadFile_dispatch_async({req:req,type:e_uploadFileType.IMAGE}).then(
+    articleUploadFile_dispatch_async({req:req,type:e_uploadFileType.IMAGE}).then(
         (v)=>{
             console.log(`articleImage upload  success, result:  ${JSON.stringify(v)}`)
             return res.json(v)
@@ -76,7 +82,7 @@ router.post('/articleImage',function(req,res,next){
 
 router.post('/articleAttachment',function(req,res,next){
 
-    article_upload_file_logic.articleUploadFile_dispatch_async({req:req,type:e_uploadFileType.ATTACHMENT}).then(
+    articleUploadFile_dispatch_async({req:req,type:e_uploadFileType.ATTACHMENT}).then(
         (v)=>{
             console.log(`articleAttachment upload success, result:  ${JSON.stringify(v)}`)
             return res.json(v)
@@ -93,7 +99,7 @@ router.post('/articleAttachment',function(req,res,next){
 /*                  article like_dislike    */
 router.post('/likeDislike',function(req,res,next){
 
-    likeDislike_logic.article_likeDislike_dispatcher_async({req:req}).then(
+    article_likeDislike_dispatcher_async({req:req}).then(
         (v)=>{
             console.log(`likeDislike success, result:  ${JSON.stringify(v)}`)
             return res.json(v)
