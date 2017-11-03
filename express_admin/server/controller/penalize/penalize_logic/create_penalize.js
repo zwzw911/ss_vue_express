@@ -32,6 +32,7 @@ const e_part=nodeEnum.ValidatePart
 
 const e_docStatus=mongoEnum.DocStatus.DB
 const e_adminPriorityType=mongoEnum.AdminPriorityType.DB
+const e_allUserType=mongoEnum.AllUserType.DB
 
 /*                      server common：function                                       */
 const dataConvert=server_common_file_require.dataConvert
@@ -73,10 +74,7 @@ async  function createPenalize_async(req){
     /*                                       authorization check                               */
     /*******************************************************************************************/
     //检测当前用户是否为adminUser
-    if(userCollName!==e_coll.ADMIN_USER){
-        return Promise.reject(controllerError.onlyAdminUserCanCreatePenalize)
-    }
-    // console.log(`admin check done===>`)
+    await controllerChecker.ifExpectedUserType_async({req:req,arr_expectedUserType:[e_allUserType.ADMIN_ROOT,e_allUserType.ADMIN_NORMAL]})
     //当前adminUser是否有权限实施（create）处罚
     let hasCreatePriority=await controllerChecker.ifAdminUserHasExpectedPriority_async({userPriority:userPriority,arr_expectedPriority:[e_adminPriorityType.PENALIZE_USER]})
     // console.log(`hasCreatePriority===>${JSON.stringify(hasCreatePriority)}`)
@@ -84,32 +82,37 @@ async  function createPenalize_async(req){
         return Promise.reject(controllerError.currentUserHasNotPriorityToCreatePenalize)
     }
     /*******************************************************************************************/
-    /*                            logic priority check                                         */
-    /*******************************************************************************************/
-    //检查用户valid的处罚记录(处罚的用户，处罚类型)，有的话，直接返回（只能有一个有效记录）
-    // let publishedId=
-    let condition={
-        "$or":[{'dDate':{'$exists':false}},{'isExpire':false}],
-        [e_field.ADMIN_PENALIZE.PUNISHED_ID]:docValue[e_field.ADMIN_PENALIZE.PUNISHED_ID],
-        [e_field.ADMIN_PENALIZE.PENALIZE_TYPE]:docValue[e_field.ADMIN_PENALIZE.PENALIZE_TYPE],
-        [e_field.ADMIN_PENALIZE.PENALIZE_SUB_TYPE]:docValue[e_field.ADMIN_PENALIZE.PENALIZE_SUB_TYPE],
-    }//,,
-    // console.log(`condition+++++++++>${JSON.stringify(condition)}`)
-    tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.admin_penalize,condition:condition,selectedFields:'-uDate'})
-    // console.log(`valid penalize result+++++++++>${JSON.stringify(tmpResult)}`)
-    if(tmpResult.length>0){
-        return Promise.reject(controllerError.currentUserHasValidPenalizeRecord)
-    }
-    /*******************************************************************************************/
-    /*                                       resource check                                    */
-    /*******************************************************************************************/
-    /*******************************************************************************************/
     /*                                  fk value是否存在                                       */
     /*******************************************************************************************/
     // console.log(`docValue===> ${JSON.stringify(docValue)}`)
     // console.log(`fkConfig[collName]===> ${JSON.stringify(fkConfig[collName])}`)
     // console.log(`e_chineseName[collName]===> ${JSON.stringify(e_chineseName[collName])}`)
     await controllerChecker.ifFkValueExist_async({docValue:docValue,collFkConfig:fkConfig[collName],collFieldChineseName:e_chineseName[collName]})
+    /*******************************************************************************************/
+    /*                            logic priority check                                         */
+    /*******************************************************************************************/
+    //检查用户valid的处罚记录(处罚的用户，处罚类型)，有的话，直接返回（只能有一个有效记录）
+    // valid的条件
+/*    let condition={
+        // "$or":[{'dDate':{'$exists':false}},{'isExpire':false}],
+        "$or":[{[e_field.ADMIN_PENALIZE.DURATION]:0},{'endDate':{'$gt':Date.now()}}],
+        //未被删除，同时也未到期或者duration=0（永久未到期），才能视为valid的penalize
+        'dDate':{'$exists':false},
+        // [e_field.ADMIN_PENALIZE.END_DATE]:{'$lt':Date.now()},
+        [e_field.ADMIN_PENALIZE.PUNISHED_ID]:docValue[e_field.ADMIN_PENALIZE.PUNISHED_ID],
+        [e_field.ADMIN_PENALIZE.PENALIZE_TYPE]:docValue[e_field.ADMIN_PENALIZE.PENALIZE_TYPE],
+        [e_field.ADMIN_PENALIZE.PENALIZE_SUB_TYPE]:docValue[e_field.ADMIN_PENALIZE.PENALIZE_SUB_TYPE],
+    }*///,,
+    // console.log(`docValue+++++++++>${JSON.stringify(docValue)}`)
+    tmpResult=await controllerChecker.ifPenalizeOngoing_async({userId:docValue[e_field.ADMIN_PENALIZE.PUNISHED_ID],penalizeType:docValue[e_field.ADMIN_PENALIZE.PENALIZE_TYPE],penalizeSubType:docValue[e_field.ADMIN_PENALIZE.PENALIZE_SUB_TYPE]})
+    // console.log(`valid penalize result+++++++++>${JSON.stringify(tmpResult)}`)
+    if(true===tmpResult){
+        return Promise.reject(controllerError.currentUserHasValidPenalizeRecord)
+    }
+    /*******************************************************************************************/
+    /*                                       resource check                                    */
+    /*******************************************************************************************/
+
     /*******************************************************************************************/
     /*                                  enum unique check(enum in array)                       */
     /*******************************************************************************************/
@@ -139,6 +142,9 @@ async  function createPenalize_async(req){
     // console.log(`before hash is ${JSON.stringify(docValue)}`)
     let internalValue={}
     internalValue[e_field.ADMIN_PENALIZE.CREATOR_ID]=userId
+    if(0!==docValue[e_field.ADMIN_PENALIZE.DURATION]){
+        internalValue[e_field.ADMIN_PENALIZE.END_DATE]=Date.now()+docValue[e_field.ADMIN_PENALIZE.DURATION]*24*3600*1000
+    }
 
     if(e_env.DEV===currentEnv){
         let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInputRule:inputRule[collName],collInternalRule:internalInputRule[collName]})
@@ -158,7 +164,7 @@ async  function createPenalize_async(req){
     //用户插入 db
     let userCreateTmpResult= await common_operation_model.create_returnRecord_async({dbModel:e_dbModel.admin_penalize,value:docValue})
     // console.log(`user created  ==========> ${JSON.stringify(userCreateTmpResult)}`)
-    return Promise.resolve({rc:0})
+    return Promise.resolve({rc:0,msg:userCreateTmpResult})
 }
 
 module.exports={

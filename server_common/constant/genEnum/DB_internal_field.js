@@ -3,7 +3,7 @@
     "use strict"
 
 const Field={
-    admin_penalize:['creatorId','revokerId',],
+    admin_penalize:['creatorId','revokerId','endDate',],
     admin_sugar:['userId','sugar',],
     admin_user:['password','docStatus','lastAccountUpdateDate','lastSignInDate',],
     category:[],

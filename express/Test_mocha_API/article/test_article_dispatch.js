@@ -85,7 +85,7 @@ let parameter={
     [e_parameterPart.APP]:app,
 }
 
-describe('dispatch check', async function() {
+describe('dispatch check for article: ', async function() {
     let recordId
     before('recreate user1 and login', async function(){
         url=''
@@ -159,6 +159,8 @@ describe('dispatch check', async function() {
             parameter:parameter,
             expectedRuleToBeCheck:[],//[e_serverRuleType.REQUIRE],
             expectedFieldName:[],//[e_field.ARTICLE_COMMENT.CONTENT]
+            skipRuleToBeCheck:[],
+            skipFieldName:[],//此2个字段是内部设置，无需检查;第三个字段根据URL确定（是否需要skip）
         })
         delete parameter[e_parameterPart.REQ_BODY_VALUES][e_part.RECORD_ID]
     })

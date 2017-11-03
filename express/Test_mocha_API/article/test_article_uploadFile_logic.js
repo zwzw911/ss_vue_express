@@ -52,7 +52,7 @@ let user1Sess,user2Sess,data={values:{}}
 
 
 
-describe('article upload file logic', async function() {
+describe('logic check for upload:', async function() {
     let url=`articleImage`,finalUrl
 
     let articleId

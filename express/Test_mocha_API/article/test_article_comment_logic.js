@@ -45,7 +45,7 @@ let userId,user1Sess,user2Sess,adminRootSess  //create后存储对应的id，以
 
 let data={values:{}}
 
-describe('create new comment: ', async function() {
+describe('logic check for article comment : ', async function() {
     let url,finalUrl
     url='comment'
     finalUrl=baseUrl+url
@@ -58,30 +58,6 @@ describe('create new comment: ', async function() {
         user2Sess=userInfo['sess']
     })
 
-    /*before('insert user2 penalize for both article and comment',async  function() {
-        // console.log(`testData.user.user1 ${JSON.stringify(testData.user.user1)}`)
-        adminRootSess=await API_helper.adminUserLogin_returnSess_async({userData:testData.admin_user.adminRoot,adminApp:adminApp})
-        // console.log(`userInfo==============>${JSON.stringify(userInfo)}`)
-        // =userInfo[`sess`]
-
-        let penalizeInfo={}
-        //use2 penalize create article
-        penalizeInfo[e_field.ADMIN_PENALIZE.REASON] = `test user2 penalize no create article`
-        penalizeInfo[e_field.ADMIN_PENALIZE.DURATION] = 1
-        penalizeInfo[e_field.ADMIN_PENALIZE.PENALIZE_TYPE] = e_penalizeType.NO_ARTICLE
-        penalizeInfo[e_field.ADMIN_PENALIZE.PENALIZE_SUB_TYPE] = e_penalizeSubType.CREATE
-        await API_helper.deletePenalize_async({adminUserSess:adminRootSess,penalizeInfo:penalizeInfo,pernalizedUserData:testData.user.user2,adminApp:adminApp})
-        await API_helper.createPenalize_async({adminUserSess:adminRootSess,penalizeInfo:penalizeInfo,pernalizedUserData:testData.user.user2,adminApp:adminApp})
-
-        //use2 penalize create comment
-        penalizeInfo[e_field.ADMIN_PENALIZE.REASON] = `test user2 penalize no create comment`
-        penalizeInfo[e_field.ADMIN_PENALIZE.DURATION] = 1
-        penalizeInfo[e_field.ADMIN_PENALIZE.PENALIZE_TYPE] = e_penalizeType.NO_COMMENT
-        penalizeInfo[e_field.ADMIN_PENALIZE.PENALIZE_SUB_TYPE] = e_penalizeSubType.CREATE
-        await API_helper.deletePenalize_async({adminUserSess:adminRootSess,penalizeInfo:penalizeInfo,pernalizedUserData:testData.user.user2,adminApp:adminApp})
-        await API_helper.createPenalize_async({adminUserSess:adminRootSess,penalizeInfo:penalizeInfo,pernalizedUserData:testData.user.user2,adminApp:adminApp})
-
-    })*/
 
     //user1 create new article
     before('user1 correct article', async function() {

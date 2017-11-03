@@ -91,7 +91,7 @@ async function article_dispatcher_async(req){
 
     //检查格式
     // console.log(`req is ${JSON.stringify(req.cookies)}`)
-    // console.log(`dispatcher in`)
+    console.log(`dispatcher in`)
     // console.log(`req.body.values ${JSON.stringify(req.body.values)}`)
     let collName=controllerSetting.MAIN_HANDLED_COLL_NAME,tmpResult
 
@@ -118,9 +118,11 @@ async function article_dispatcher_async(req){
             }
             expectedPart=[]
             /*          新建文档无需任何输入参数，需要内部自动产生            */
-
-            tmpResult=await controllerHelper.preCheck_async({req:req,collName,method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart,}) //e_field:e_field,e_coll:e_coll,e_internal_field:e_internal_field,maxSearchKeyNum:maxSearchKeyNum,maxSearchPageNum:maxSearchPageNum
-
+            // console.log(`userLoginCheck===========>${JSON.stringify(userLoginCheck)}`)
+            // console.log(`penalizeCheck===========>${JSON.stringify(penalizeCheck)}`)
+            // console.log(`create preCheck before`)
+            tmpResult=await controllerHelper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart,}) //e_field:e_field,e_coll:e_coll,e_internal_field:e_internal_field,maxSearchKeyNum:maxSearchKeyNum,maxSearchPageNum:maxSearchPageNum
+            // console.log(`create preCheck after`)
             tmpResult=await create_async({req:req})
 
             break;
@@ -138,7 +140,7 @@ async function article_dispatcher_async(req){
             }
             expectedPart=[e_part.RECORD_INFO,e_part.RECORD_ID]
             // console.log(`update article=========>${JSON.stringify(req.body.values)}`)
-            tmpResult=await controllerHelper.preCheck_async({req:req,collName,method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})//,e_field:e_field,e_coll:e_coll,e_internal_field:e_internal_field,maxSearchKeyNum:maxSearchKeyNum,maxSearchPageNum:maxSearchPageNum})
+            tmpResult=await controllerHelper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})//,e_field:e_field,e_coll:e_coll,e_internal_field:e_internal_field,maxSearchKeyNum:maxSearchKeyNum,maxSearchPageNum:maxSearchPageNum})
 // console.log(`article update precheck result======>${JSON.stringify(tmpResult)}`)
 
             /*      执行逻辑                */

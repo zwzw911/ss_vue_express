@@ -13,6 +13,8 @@ const validateFormat=require('../function/validateInput/validateFormat')
 const validateValue=require('../function/validateInput/validateValue')
 const dataConvert=require('./dataConvert')
 const misc=require('../function/assist/misc')
+const ifPenalizeOngoing_async=require(`./controllerChecker`).ifPenalizeOngoing_async
+
 
 const nodeEnum=require('../constant/enum/nodeEnum')
 const e_part=nodeEnum.ValidatePart
@@ -331,7 +333,9 @@ function CRUDPreCheck({req,expectedPart,collName,method}){
             case e_method.CREATE:
                 recordInfoBaseRule=e_inputFieldCheckType.BASE_INPUT_RULE
                 break;
-            case e_method.DELETE:
+            case e_method.DELETE: //delete带recordInfo，检测规则和update一样
+                recordInfoBaseRule=e_inputFieldCheckType.BASE_INPUT
+                break;
                 break;
             case e_method.SEARCH:
                 break;
@@ -907,54 +911,7 @@ async function contentDbDeleteNotExistImage_async({content,recordId,collConfig,c
     return Promise.resolve(content)
 }
 
-/*用户(userId)是否被禁止做某事（penalizeType）
- * 查找admin_penalize中最后一条penalize记录，体重的ifExpire是否为true
- *
- * */
-async function ifPenalizeOngoing_async({userId, penalizeType,penalizeSubType}){
-    // console.log(`ifPenalizeOngoing_async===================================>}`)
-    let condition={}
-    /*                  检查 penalizeSubType=all或者是penalizeSubType，同时penalizeType和userId等于输入参数，且没有超时，且没有被删除的记录             */
-    condition[e_field.ADMIN_PENALIZE.PUNISHED_ID]=userId
-    condition[e_field.ADMIN_PENALIZE.PENALIZE_TYPE]=penalizeType
-    condition[e_field.ADMIN_PENALIZE.PENALIZE_SUB_TYPE]={"$in":[e_penalizeSubType.ALL,penalizeSubType]}
-    condition[`dDate`]={"$exists":false}
-    // condition["$or"]=[{'dDate':{'$exists':false}},{'isExpire':false}]
-    // condition[`isExpire`]=false //virtula不能作为查询条件
-    //
-    let option={}
-    option['limit']=1
-    option['sort']={cDate:-1} //选取最近一个penalize记录
-    // condition['ifExpire']=true //这是virtual 方法
-    // console.log(`penalize condition======================>${JSON.stringify(condition)}`)
-    let activePenalizeRecords=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.admin_penalize,condition:condition,selectedFields:'-uDate',options:option})
-    // console.log(`penalizeresult==========================>${JSON.stringify(activePenalizeRecords)}`)
-    //所有记录都被删除了，直接返回false
-    if(activePenalizeRecords.length===0){
-        return Promise.resolve(false)
-    }
-    //有未被删除的记录，检查第一条记录的isExpire属性
-    if(true===activePenalizeRecords[0][`isExpire`]){
-        return  Promise.resolve(false)
-    }else{
-        return Promise.resolve(true)
-    }
 
-/*    /!*         继续检查penalizeSubType!==ALL的记录              *!/
-    if(penalizeSubType!==e_penalizeSubType.ALL){
-        condition[e_field.ADMIN_PENALIZE.PENALIZE_SUB_TYPE]=penalizeSubType
-        // console.log(`penalize condition for not ALL====>${JSON.stringify(condition)}`)
-        let tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.admin_penalize,condition:condition,options:option,selectedFields:'-uDate'})
-        // console.log(`penalize sub type not ALL result====>${JSON.stringify(tmpResult)}`)
-        //CRUD（非ALL）的处罚记录有效
-        if(tmpResult.length>0 && false===tmpResult[0]['isExpire']){
-            return Promise.resolve(true)
-        }
-    }*/
-
-
-    // return Promise.resolve(false)
-}
 
 /*          根据resourceProfileRange，resourceColl，从预定义的对象中获得对应的fieldName和grougby的设置，统计使用的资源数
 * @resourceProfileRange: PER_PERSON/PER_ARTICLE/PER_IMPEACH，此函数只是作为key，从fieldsValueToFilterGroup获得对应的groupby字段设置
@@ -1092,7 +1049,7 @@ module.exports= {
 
     checkInternalValue,//
 
-    ifPenalizeOngoing_async,//call by preCheck
+
     // ifFkValueExist_async_old,
 
     deleteInternalField,//检查client端输入的值（recordInfo），如果其中包含了internalField，直接删除

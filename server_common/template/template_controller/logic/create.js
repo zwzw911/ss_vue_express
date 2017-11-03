@@ -39,6 +39,7 @@ const e_docStatus=mongoEnum.DocStatus.DB
 const e_impeachType=mongoEnum.ImpeachType.DB
 const e_impeachUserAction=mongoEnum.ImpeachUserAction.DB
 const e_impeachState=mongoEnum.ImpeachState.DB
+const e_allUserType=mongoEnum.AllUserType.DB
 
 /*                      server common：function                                       */
 const dataConvert=server_common_file_require.dataConvert
@@ -80,9 +81,13 @@ async  function createImpeach_async({req,impeachType}){
     /*******************************************************************************************/
     dataConvert.constructCreateCriteria(docValue)
     /*******************************************************************************************/
-    /*                                     用户类型检查                                        */
+    /*                                     用户类型和权限检测                                  */
     /*******************************************************************************************/
-    // await controllerChecker.ifExpectedUserType_async({req:req,arr_expectedUserType:[e_allUserType.USER_NORMAL]})
+    await controllerChecker.ifExpectedUserType_async({req:req,arr_expectedUserType:[e_allUserType.USER_NORMAL]})
+    let hasCreatePriority=await controllerChecker.ifAdminUserHasExpectedPriority_async({userPriority:userPriority,arr_expectedPriority:[e_adminPriorityType.CREATE_ADMIN_USER]})
+    if(false===hasCreatePriority){
+        return Promise.reject(controllerError.currentUserHasNotPriorityToCreateUser)
+    }
     /*******************************************************************************************/
     /*                                       authorization check                               */
     /*******************************************************************************************/

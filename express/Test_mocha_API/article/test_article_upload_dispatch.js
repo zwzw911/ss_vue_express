@@ -80,7 +80,7 @@ let parameter={
     [e_parameterPart.APP]:app,
 }
 
-describe('dispatch check', async function() {
+describe('dispatch check for upload ', async function() {
     let recordId
     before('recreate user1 and login', async function(){
         url='articleImage'  //上传图片

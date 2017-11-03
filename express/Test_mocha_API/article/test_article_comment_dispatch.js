@@ -80,7 +80,7 @@ let parameter={
     [e_parameterPart.APP]:app,
 }
 
-describe('dispatch check', async function() {
+describe('dispatch check for article comment:', async function() {
     before('recreate user1 and login', async function(){
         url='comment'
         finalUrl=baseUrl+url
@@ -103,6 +103,7 @@ describe('dispatch check', async function() {
         parameter[e_parameterPart.PENALIZE_RELATED_INFO]['rootSess']=await API_helper.adminUserLogin_returnSess_async({userData:testData.admin_user.adminRoot,adminApp:adminApp})
     });
     it(`preCheck for create`,async function(){
+
         parameter[e_parameterPart.SESS_ERROR_RC]=controllerError.userNotLoginCantCreateComment.rc
         parameter[e_parameterPart.REQ_BODY_VALUES][e_part.METHOD]=e_method.CREATE
         parameter[e_parameterPart.PENALIZE_RELATED_INFO][`penalizeSubType`]=e_penalizeSubType.CREATE
@@ -175,6 +176,8 @@ describe('inputRule', async function() {
             parameter: parameter,
             expectedRuleToBeCheck: [],//[e_serverRuleType.REQUIRE],
             expectedFieldName: [],//[e_field.ARTICLE_COMMENT.CONTENT]
+            skipRuleToBeCheck:[],
+            skipFieldName:[],//此2个字段是内部设置，无需检查;第三个字段根据URL确定（是否需要skip）
         })
     })
 })

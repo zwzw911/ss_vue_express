@@ -55,7 +55,7 @@ let baseUrl="/impeach_action/",finalUrl,url
 let normalRecord={
     [e_field.IMPEACH_ACTION.IMPEACH_ID]:undefined,
     [e_field.IMPEACH_ACTION.ACTION]:e_impeachAllAction.SUBMIT,
-    [e_field.IMPEACH_ACTION.OWNER_ID]:undefined,
+    [e_field.IMPEACH_ACTION.CURRENT_ADMIN_OWNER_ID]:undefined,
     // [e_field.IMPEACH_ACTION.OWNER_ID]:undefined,
 
 }

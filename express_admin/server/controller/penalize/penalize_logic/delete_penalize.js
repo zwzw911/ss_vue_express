@@ -24,6 +24,7 @@ const e_adminUserType=mongoEnum.AdminUserType.DB
 const e_adminPriorityType=mongoEnum.AdminPriorityType.DB
 const e_part=nodeEnum.ValidatePart
 const e_env=nodeEnum.Env
+const e_allUserType=mongoEnum.AllUserType.DB
 
 /*                      server common：function                                       */
 const controllerHelper=server_common_file_require.controllerHelper
@@ -38,10 +39,7 @@ const hash=server_common_file_require.crypt.hash
 const currentEnv=server_common_file_require.appSetting.currentEnv
 // const e_accountType=server_common_file_require.mongoEnum.AccountType.DB
 
-/*
- * 更新用户资料
- * 1. 需要对比req中的userId和session中的id是否一致
- * */
+//实际复用 update的dispatch，因为除了recordId还需要额外的recordInfo
 async function deletePenalize_async(req){
     // console.log(`deleteUser_async in`)
     // console.log(`req.session ${JSON.stringify(req.session)}`)
@@ -56,6 +54,17 @@ async function deletePenalize_async(req){
     let recordToBeDeleted=req.body.values[e_part.RECORD_ID]
     let docValue=req.body.values[e_part.RECORD_INFO]
     // console.log(`docVlue0 =====>${JSON.stringify(docValue)}`)
+
+    /*******************************************************************************************/
+    /*                                       authorization check                               */
+    /*******************************************************************************************/
+    //检测当前用户是否为adminUser
+    await controllerChecker.ifExpectedUserType_async({req:req,arr_expectedUserType:[e_allUserType.ADMIN_NORMAL,e_allUserType.ADMIN_ROOT]})
+    let hasCreatePriority=await controllerChecker.ifAdminUserHasExpectedPriority_async({userPriority:userPriority,arr_expectedPriority:[e_adminPriorityType.REVOKE_PENALIZE]})
+    // console.log(`hasCreatePriority===>${JSON.stringify(hasCreatePriority)}`)
+    if(false===hasCreatePriority){
+        return Promise.reject(controllerError.currentUserHasNotPriorityToRevokePenalize)
+    }
     /*******************************************************************************************/
     /*                                     specific field check                             */
     /*******************************************************************************************/
@@ -71,16 +80,16 @@ async function deletePenalize_async(req){
     /*                                     specific priority check                             */
     /*******************************************************************************************/
     //用户是否为admin
-    if(userCollName!==e_coll.ADMIN_USER){
+/*    if(userCollName!==e_coll.ADMIN_USER){
         return Promise.reject(controllerError.onlyAdminUserCanRevokePenalize)
-    }
-    console.log(`done======>`)
+    }*/
+/*    console.log(`done======>`)
     //用户是否有权撤销处罚
     let hasDeletePriority=await controllerChecker.ifAdminUserHasExpectedPriority_async({userPriority:userPriority,arr_expectedPriority:[e_adminPriorityType.REVOKE_PENALIZE]})
     // console.log(`hasDeletePriority===========>${JSON.stringify(hasDeletePriority)}`)
     if(false===hasDeletePriority){
         return Promise.reject(controllerError.currentUserHasNotPriorityToRevokePenalize)
-    }
+    }*/
 
     /*******************************************************************************************/
     /*                                       logic: delete                                     */

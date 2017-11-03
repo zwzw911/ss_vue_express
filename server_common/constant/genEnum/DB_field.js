@@ -11,6 +11,7 @@ const Field={
         PENALIZE_TYPE:'penalizeType',
         PENALIZE_SUB_TYPE:'penalizeSubType',
         DURATION:'duration',
+        END_DATE:'endDate',
         REVOKE_REASON:'revokeReason',
         REVOKER_ID:'revokerId',
     },

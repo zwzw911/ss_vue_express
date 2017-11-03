@@ -151,7 +151,7 @@ function generateTestDataForRecordInfoDataType({parameter,fieldName}) {
 
                 // console.log(`valueMatchDataType============>${JSON.stringify(valueMatchDataType)}`)
             }
-            console.log(`valueMatchDataType========${JSON.stringify(valueMatchDataType)}`)
+            // console.log(`valueMatchDataType========${JSON.stringify(valueMatchDataType)}`)
             recordInfos.push(generateTestRecord({fieldValueToBeGenerate:valueMatchDataType,originNormalData:normalRecordInfo,fieldToBeCheck:fieldName}))
             // console.log(`recordInfos=======>${JSON.stringify(recordInfos)}`)
         }
@@ -422,7 +422,7 @@ function generateMiscTestDataForRecordInfo(parameter) {
 }
 
 function generateTestRecord({fieldValueToBeGenerate,originNormalData,fieldToBeCheck}){
-    console.log(`fieldValueToBeGenerate=========>${JSON.stringify(fieldValueToBeGenerate)}`)
+    // console.log(`fieldValueToBeGenerate=========>${JSON.stringify(fieldValueToBeGenerate)}`)
     let dataTypeBasedRecordInfo=misc.objectDeepCopy(originNormalData)
     dataTypeBasedRecordInfo[fieldToBeCheck]=fieldValueToBeGenerate
     return dataTypeBasedRecordInfo

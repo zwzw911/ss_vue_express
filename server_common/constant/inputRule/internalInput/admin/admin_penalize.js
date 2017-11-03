@@ -29,6 +29,15 @@ const admin_penalize= {
         // 'maxLength': {define: 20, error: {rc: 10004}, mongoError: {rc: 20004, msg: '用户名的长度不能超过20个字符'}},
         'format': {define: regex.objectId, error: {rc: 10098}, mongoError: {rc: 20098, msg: '撤销人格式不正确'}} //server端使用
     },
+    //CU的时候，自动根据duration计算（因为isExpire不支持查询，所以添加此字段作为查询条件）
+    endDate:{
+        'chineseName': '处罚结束日期',
+        'type': serverDataType.DATE,
+        'require': {define: false, error: {rc: 10099}, mongoError: {rc: 20099, msg: '处罚结束日期不能为空'}},//duration=0的时候，无需设置endDate
+        // 'minLength': {define: 2, error: {rc: 10002}, mongoError: {rc: 20002, msg: '用户名至少2个字符'}},
+        // 'maxLength': {define: 20, error: {rc: 10004}, mongoError: {rc: 20004, msg: '用户名的长度不能超过20个字符'}},
+        //'format': {define: regex.objectId, error: {rc: 10098}, mongoError: {rc: 20098, msg: '撤销人格式不正确'}} //server端使用
+    },
 
 }
 

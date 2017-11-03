@@ -29,7 +29,21 @@ async function createArticle_setToFinish_returnArticleId_async({userSess,app}){
 
     return Promise.resolve(recordId)
 }
+
+async function reCreateAdminUser_returnSessUserId_async({userData,rootSess,adminApp}){
+    //删除用户
+    await db_operation_helper.deleteAdminUserAndRelatedInfo_async(userData.name)
+
+    //建立用户
+    await API_helper.createAdminUser_async({userData:userData,sess:rootSess,adminApp:adminApp})
+    //获得userId
+    let userId=await db_operation_helper.getAdminUserId_async({userName:userData.name})
+    //登录获得sess
+    let sess=await API_helper.adminUserLogin_returnSess_async({userData:userData,adminApp:adminApp})
+    return Promise.resolve({userId:userId,sess:sess})
+}
 module.exports={
     reCreateUser_returnSessUserId_async,
     createArticle_setToFinish_returnArticleId_async,
+    reCreateAdminUser_returnSessUserId_async,
 }

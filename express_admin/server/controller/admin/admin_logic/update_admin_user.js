@@ -124,7 +124,7 @@ async function updateUser_async(req){
 //console.log(`sugar=====> ${JSON.stringify(sugar)}`)
 //         console.log(`password value =====> ${JSON.stringify(docValue[e_field.USER.PASSWORD])}`)
 //         console.log(`mix value =====> ${docValue[e_field.USER.PASSWORD]}${sugar}`)
-        let hashPasswordTmpResult=hash(`${docValue[e_field.ADMIN_USER.PASSWORD]}${sugar}`,e_hashType.SHA256)
+        let hashPasswordTmpResult=hash(`${docValue[e_field.ADMIN_USER.PASSWORD]}${sugar}`,e_hashType.SHA512)
         if(hashPasswordTmpResult.rc>0){
             return Promise.reject(hashPasswordTmpResult)
         }

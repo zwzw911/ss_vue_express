@@ -92,6 +92,7 @@ async function dispatcher_async(req){
                                 penalizeSubType:e_penalizeSubType.CREATE,
                                 penalizeCheckError:controllerError.userInPenalizeNoCommentCreate*/
             }
+            //update的时候，userId直接保存在session中，无需通过client传入
             expectedPart=[e_part.RECORD_INFO]
             // console.log(`before precheck done=====.`)
             await controllerHelper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})

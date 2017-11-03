@@ -33,7 +33,7 @@ async function createUser_async({userData,app}){
     let data={}
     data.values={}
     data.values[e_part.RECORD_INFO]=userData
-console.log(`userDate for create user==============>${JSON.stringify(userData)}`)
+// console.log(`userDate for create user==============>${JSON.stringify(userData)}`)
     data.values.method=e_method.CREATE
     return new Promise(function(resolve,reject){
         request(app).post('/user/').set('Accept', 'application/json').send(data)
@@ -84,7 +84,7 @@ async function createAdminUser_async({userData,sess,adminApp}){
         request(adminApp).post(url).set('Accept', 'application/json').set('Cookie',[sess]).send(data)
             .end(function(err, res) {
                 let parsedRes=JSON.parse(res.text)
-                // console.log(`created user =========> ${JSON.stringify(parsedRes)}`)
+                console.log(`createAdminUser_async result =========> ${JSON.stringify(parsedRes)}`)
                 assert.deepStrictEqual(parsedRes.rc,0)
                 return resolve({rc:0})
             });
@@ -95,12 +95,14 @@ async function createAdminUser_async({userData,sess,adminApp}){
 //返回一个promise，那么无需done
 //userData:{name:{value:xxx},password:{value:yyyyy}}
 async function adminUserLogin_returnSess_async({userData,adminApp}){
+    // console.log(`adminUserLogin_returnSess_async userData =============>${JSON.stringify(userData)}`)
     let data={}
     data.values={}
     data.values.method=e_method.MATCH
-    delete userData['userType']
-    // console.log(`userData =============>${JSON.stringify(userData)}`)
-    data.values[e_part.RECORD_INFO]=userData//,notExist:{value:123}
+    let userDataCopy=objectDeepCopy(userData)
+    delete userDataCopy['userType']
+    delete userDataCopy[e_field.ADMIN_USER.USER_PRIORITY]
+    data.values[e_part.RECORD_INFO]=userDataCopy//,notExist:{value:123}
     // console.log(`adminUser login data ===>${JSON.stringify(data)}`)
     return new Promise(function(resolve,reject){
         request.agent(adminApp).post('/admin_user/').set('Accept', 'application/json').send(data)
@@ -268,13 +270,13 @@ async function updateArticle_returnArticleId_async({userSess,recordId,values,app
 /****************       PENALIZE            *****************/
 /*
 * @penalizeInfo:{reason:,penalizeType:,penalizeSubype:,duration:}
-* @pernalizedUserData:受处罚的人
+* @penalizedUserData:受处罚的人
 * */
-async function createPenalize_async({adminUserSess,penalizeInfo,pernalizedUserData,adminApp}){
+async function createPenalize_returnPenalizeId_async({adminUserSess,penalizeInfo,penalizedUserData,adminApp}){
     let condition={}
-    console.log(`pernalizedUserData========>${JSON.stringify(pernalizedUserData)}`)
+    console.log(`penalizedUserData========>${JSON.stringify(penalizedUserData)}`)
     condition={
-        [e_field.USER.ACCOUNT]:pernalizedUserData[e_field.USER.ACCOUNT]
+        [e_field.USER.ACCOUNT]:penalizedUserData[e_field.USER.ACCOUNT]
     }
     console.log(`condition========>${JSON.stringify(condition)}`)
     let userInfo=await common_operation_model.find_returnRecords_async({dbModel:e_dbMoodel[e_coll.USER],condition:condition})
@@ -284,7 +286,7 @@ async function createPenalize_async({adminUserSess,penalizeInfo,pernalizedUserDa
 
     let data={values:{}}
     // data.values={}
-    console.log(`adminUserSess ===>${JSON.stringify(adminUserSess)}`)
+    // console.log(`adminUserSess ===>${JSON.stringify(adminUserSess)}`)
     // console.log(`data.values ===>${JSON.stringify(data.values)}`)
     data.values[e_part.METHOD]=e_method.CREATE
     data.values[e_part.RECORD_INFO]=penalizeInfo
@@ -293,31 +295,35 @@ async function createPenalize_async({adminUserSess,penalizeInfo,pernalizedUserDa
         request(adminApp).post('/admin_penalize/').set('Accept', 'application/json').set('Cookie',[adminUserSess]).send(data)
             .end(function(err, res) {
                 // if (err) return done(err);
-                // console.log(`res ios ${JSON.stringify(res)}`)
+
                 let parsedRes=JSON.parse(res.text)
+                console.log(`parsedRes ios ${JSON.stringify(parsedRes)}`)
                 console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
                 // articleId=
                 assert.deepStrictEqual(parsedRes.rc,0)
-                return resolve({rc:0})
+                return resolve(parsedRes.msg['_id'])
                 // assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.require.error.rc)
                 // done();
             });
     })
 }
 
-async function deletePenalize_async({adminUserSess,penalizeInfo,pernalizedUserData,adminApp}){
+async function deletePenalize_async({adminUserSess,penalizeInfo,penalizedUserData,adminApp}){
     //查找同类型为过期的penalizeId，然后通过API撤销
     // console.log(`deletePenalize_async in`)
     let condition
     condition={
-        [e_field.USER.ACCOUNT]:pernalizedUserData[e_field.USER.ACCOUNT]
+        [e_field.USER.ACCOUNT]:penalizedUserData[e_field.USER.ACCOUNT]
     }
 
     let tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbMoodel[e_coll.USER],condition:condition})
     // console.log(`tmpResult========>${JSON.stringify(tmpResult)}`)
+    //查找active的penalize
     let punishedId=tmpResult[0][`_id`]
     condition={
-        "$or":[{'dDate':{'$exists':false}},{'isExpire':false}],
+        "$or":[{[e_field.ADMIN_PENALIZE.DURATION]:0},{'endDate':{'$gt':Date.now()}}],
+        //未被删除，同时也未到期或者duration=0（永久未到期），才能视为valid的penalize
+        'dDate':{'$exists':false},
         [e_field.ADMIN_PENALIZE.PUNISHED_ID]:punishedId,
         [e_field.ADMIN_PENALIZE.PENALIZE_TYPE]:penalizeInfo[e_field.ADMIN_PENALIZE.PENALIZE_TYPE],
         [e_field.ADMIN_PENALIZE.PENALIZE_SUB_TYPE]:penalizeInfo[e_field.ADMIN_PENALIZE.PENALIZE_SUB_TYPE],
@@ -330,7 +336,7 @@ async function deletePenalize_async({adminUserSess,penalizeInfo,pernalizedUserDa
         // data.values={}
         //console.log(`adminUserSess of ===>${JSON.stringify(adminUserSess)}`)
         // console.log(`data.values ===>${JSON.stringify(data.values)}`)
-        data.values[e_part.METHOD]=e_method.UPDATE
+        data.values[e_part.METHOD]=e_method.DELETE
         data.values[e_part.RECORD_ID]=activePenalizeRecords[0][`_id`]
         data.values[e_part.RECORD_INFO]={[e_field.ADMIN_PENALIZE.REVOKE_REASON]:'test for revoke penalize'}
         // console.log(`data.values ===>${JSON.stringify(data.values)}`)
@@ -350,7 +356,34 @@ async function deletePenalize_async({adminUserSess,penalizeInfo,pernalizedUserDa
         })
     }
     return Promise.resolve({rc:0})
+}
 
+async function deletePenalizeById_async({adminUserSess,penalizeId,adminApp}){
+
+        let data={values:{}}
+        // data.values={}
+        //console.log(`adminUserSess of ===>${JSON.stringify(adminUserSess)}`)
+        // console.log(`data.values ===>${JSON.stringify(data.values)}`)
+        data.values[e_part.METHOD]=e_method.DELETE
+        data.values[e_part.RECORD_ID]=penalizeId
+        data.values[e_part.RECORD_INFO]={[e_field.ADMIN_PENALIZE.REVOKE_REASON]:'test for revoke penalize by id'}
+        // console.log(`data.values ===>${JSON.stringify(data.values)}`)
+        return new Promise(function(resolve,reject){
+            request(adminApp).post('/admin_penalize/').set('Accept', 'application/json').set('Cookie',[adminUserSess]).send(data)
+                .end(function(err, res) {
+                    // if (err) return done(err);
+                    // console.log(`res ios ${JSON.stringify(res)}`)
+                    let parsedRes=JSON.parse(res.text)
+                    console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
+                    // articleId=
+                    assert.deepStrictEqual(parsedRes.rc,0)
+                    return resolve({rc:0})
+                    // assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.require.error.rc)
+                    // done();
+                });
+        })
+
+    // return Promise.resolve({rc:0})
 }
 module.exports={
     removeExistsRecord_async,
@@ -370,6 +403,7 @@ module.exports={
     createNewArticle_returnArticleId_async,
     updateArticle_returnArticleId_async,
 
-    createPenalize_async,
+    createPenalize_returnPenalizeId_async,
     deletePenalize_async,
+    deletePenalizeById_async,
 }

@@ -12,6 +12,7 @@ const ChineseName={
         'revokeReason':'撤销原因',
         'creatorId':'处罚人',
         'revokerId':'撤销人',
+        'endDate':'处罚结束日期',
     },
     admin_sugar:{
         'userId':'用户',

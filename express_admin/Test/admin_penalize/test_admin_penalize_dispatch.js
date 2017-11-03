@@ -19,9 +19,12 @@ const e_part=nodeEnum.ValidatePart
 const e_method=nodeEnum.Method
 const e_coll=require('../../server/constant/genEnum/DB_Coll').Coll
 const e_field=require('../../server/constant/genEnum/DB_field').Field
+const e_dbModel=require('../../server/constant/genEnum/dbModel')
 
 const e_penalizeType=server_common_file_require.mongoEnum.PenalizeType.DB
 const e_penalizeSubType=server_common_file_require.mongoEnum.PenalizeSubType.DB
+const e_parameterPart=server_common_file_require.testCaseEnum.ParameterPart
+const e_skipPart=server_common_file_require.testCaseEnum.SkipPart
 
 // const common_operation_model=server_common_file_require.common_operation_model
 // const dbModel=require('../../server/constant/genEnum/dbModel')
@@ -44,7 +47,7 @@ const component_function=server_common_file_require.component_function
 
 // const controllerError=require('../../server/controller/penalize/penalize_setting/penalize_controllerError').controllerError
 let baseUrl="/admin_penalize/",finalUrl,url
-
+let recordId
 let normalRecord={
     [e_field.ADMIN_PENALIZE.PUNISHED_ID]:'asdf', //创建user后直接获得id后填入
     [e_field.ADMIN_PENALIZE.DURATION]:5,
@@ -53,45 +56,50 @@ let normalRecord={
     [e_field.ADMIN_PENALIZE.PENALIZE_SUB_TYPE]:e_penalizeSubType.CREATE,
 }
 
+
 /*
  * @sess：是否需要sess
- * @sessErrorRc：但要测试sess的时候，期望产生的错误
- * @penalizeRelatedInfo: {penalizeType:,penalizeSubType:,penalizedUserData:,penalizedError:,rootSess:,adminApp}
+ * @sessErrorRc：测试sess是否存在时，使用的error
  * @APIUrl:测试使用的URL
- * @normalRecordInfo:一个正常的输入(document)
- * @method：测试require的时候，使用哪种method。默认是create
- * @collRule: 整个coll的rule
+ * @penalizeRelatedInfo: {penalizeType:,penalizeSubType:,penalizedUserData:,penalizedError:,rootSess:,adminApp}
+ * @reqBodyValues: 各个part。包含recordInfo/recordId/searchParams等
+ * @skipParts：某些特殊情况下，需要skip掉的某些part
+ * @collName: 获得collRule，进行collName的对比等
  * */
 let parameter={
-    sess:undefined,
-    sessErrorRc:undefined,
-    penalizeRelatedInfo:undefined,
-    APIUrl:undefined,
-    normalRecordInfo:normalRecord,
-    method:undefined,
-    collRule:browserInputRule[e_coll.ADMIN_PENALIZE],
-    app:adminApp,
+    [e_parameterPart.SESS]:undefined,
+    [e_parameterPart.SESS_ERROR_RC]:undefined,
+    [e_parameterPart.API_URL]:undefined,
+    [e_parameterPart.PENALIZE_RELATED_INFO]:undefined,//{penalizeType:undefined,penalizeSubType:undefined,penalizedUserData:undefined,penalizedError:undefined,adminApp:adminApp},
+    [e_parameterPart.REQ_BODY_VALUES]:{[e_part.RECORD_INFO]:normalRecord},
+    [e_parameterPart.COLL_NAME]:e_coll.ADMIN_PENALIZE,
+    [e_parameterPart.SKIP_PARTS]:undefined,
+    [e_parameterPart.APP]:adminApp,
 }
 
-describe('dispatch check for penalize', function() {
+
+describe('preCheck check for penalize', function() {
 
     before('root admin user login', async function(){
         url=''
         finalUrl=baseUrl+url
         parameter[`APIUrl`]=finalUrl
-        /*              清理已有数据              */
-        // console.log(`######   delete exist record   ######`)
-        // console.log(`correctValueForModel ${JSON.stringify(correctValueForModel)}`)
-        parameter['sess']=await API_helper.adminUserLogin_returnSess_async({userData:{
-            [e_field.ADMIN_USER.NAME]:testData.admin_user.adminRoot.name,
-            [e_field.ADMIN_USER.PASSWORD]:testData.admin_user.adminRoot.password,
-        },adminApp:adminApp})
-        // console.log(`rootSess ${JSON.stringify(rootSess)}`)
+
+        let rootSess=await API_helper.adminUserLogin_returnSess_async({userData:testData.admin_user.adminRoot,adminApp:adminApp})
+        parameter[e_parameterPart.SESS]=rootSess
+
+        //首先清空所有penalize
+        await db_operation_helper.deleteCollRecords_async({arr_dbModel:[e_dbModel.admin_penalize]})
+        //for update/delete
+        recordId=await API_helper.createPenalize_returnPenalizeId_async({adminUserSess:rootSess,penalizeInfo:normalRecord,penalizedUserData:testData.user.user1,adminApp:adminApp})
     });
 
-    it(`dispatch check for create`,async function(){
-        parameter[`sessErrorRc`]=controllerError.notLoginCantCreatePenalize.rc
-        parameter[`method`]=e_method.CREATE
+
+    it(`preCheck for create`,async function(){
+        parameter[e_parameterPart.SESS_ERROR_RC]=controllerError.notLoginCantCreatePenalize.rc
+        parameter[e_parameterPart.REQ_BODY_VALUES][e_part.METHOD]=e_method.CREATE
+        // parameter[e_parameterPart.PENALIZE_RELATED_INFO][`penalizeSubType`]=undefined
+        // parameter[e_parameterPart.PENALIZE_RELATED_INFO][`penalizedError`]=undefined
         await inputRule_API_tester.dispatch_partCheck_async(parameter)
     })
     /*    it(`dispatch check for update`,async function(){
@@ -99,9 +107,15 @@ describe('dispatch check for penalize', function() {
      parameter[`method`]=e_method.UPDATE
      await inputRule_API_tester.dispatch_partCheck_async(parameter)
      })*/
-    it(`dispatch check for delete`,async function(){
-        parameter[`sessErrorRc`]=controllerError.notLoginCantDeletePenalize.rc
-        parameter[`method`]=e_method.DELETE
+    it(`preCheck for delete`,async function(){
+
+        // parameter[`sessErrorRc`]=controllerError.notLoginCantDeletePenalize.rc
+        // parameter[`method`]=e_method.DELETE
+        parameter[e_parameterPart.SESS_ERROR_RC]=controllerError.notLoginCantDeletePenalize.rc
+        parameter[e_parameterPart.REQ_BODY_VALUES][e_part.METHOD]=e_method.DELETE
+        parameter[e_parameterPart.REQ_BODY_VALUES][e_part.RECORD_ID]=recordId
+        // parameter[e_parameterPart.PENALIZE_RELATED_INFO][`penalizeSubType`]=undefined
+        // parameter[e_parameterPart.PENALIZE_RELATED_INFO][`penalizedError`]=undefined
         await inputRule_API_tester.dispatch_partCheck_async(parameter)
     })
 
@@ -134,20 +148,24 @@ describe('inputRule', async function() {
     });
 
 
-    it(`CREATE`,async function(){
+    it(`inputRule for create`,async function(){
         parameter[`method`]=e_method.CREATE
         await inputRule_API_tester.ruleCheckAll_async({
             parameter:parameter,
             expectedRuleToBeCheck:[],//[e_serverRuleType.REQUIRE],
             expectedFieldName:[],//[e_field.ADMIN_PENALIZE.PUNISHED_ID]
+            skipRuleToBeCheck:[],
+            skipFieldName:[],//此2个字段是内部设置，无需检查;第三个字段根据URL确定（是否需要skip）
         })
     })
-    it(`DELETE`,async function(){
+    it(`inputRule for delete`,async function(){
         parameter[`method`]=e_method.DELETE
         await inputRule_API_tester.ruleCheckAll_async({
             parameter:parameter,
             expectedRuleToBeCheck:[],//[e_serverRuleType.REQUIRE],
             expectedFieldName:[],//[e_field.ADMIN_PENALIZE.PUNISHED_ID]
+            skipRuleToBeCheck:[],
+            skipFieldName:[],//此2个字段是内部设置，无需检查;第三个字段根据URL确定（是否需要skip）
         })
     })
 })

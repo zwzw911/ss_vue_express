@@ -48,7 +48,7 @@ let userId  //create后存储对应的id，以便后续的update操作
 let user1Sess,sess2,user1Id,user2Id,data={values:{}}
 
 
-describe('create new likeDislike for article ', async function() {
+describe('logic check for like dislike ', async function() {
     let url = 'likeDislike', finalUrl = baseUrl + url
 
     let articleId,userId

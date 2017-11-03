@@ -19,11 +19,11 @@ const e_method=nodeEnum.Method//require('../../constant/enum/node').Method
 
 
 /*                          controller                          */
-const controllerError=require('./impeach_state_setting/impeach_state_controllerError').controllerError
-const create_async=require('./impeach_state_logic/create_impeach_state').createImpeachState_async
+const controllerError=require('./impeach_action_setting/impeach_action_controllerError').controllerError
+const create_async=require('./impeach_action_logic/create_impeach_action').createImpeachAction_async
 
 
-const controllerSetting=require('./impeach_state_setting/impeach_state_setting').setting
+const controllerSetting=require('./impeach_action_setting/impeach_action_setting').setting
 
 
 
@@ -75,7 +75,7 @@ async function dispatcher_async(req){
         // console.log(`match tmpResult ${JSON.stringify(tmpResult)}`)
     }
 
-    return Promise.resolve({rc:0})
+    return Promise.resolve(tmpResult)
 }
 
 

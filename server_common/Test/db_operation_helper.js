@@ -113,6 +113,16 @@ async function deleteMany_async({dbModel,condition}){
     })
 }
 
+async function deleteCollRecords_async({arr_dbModel}){
+    for(let singleDbModel of arr_dbModel){
+        await singleDbModel.remove({}).catch(
+            function(err){
+                return Promise.reject(err)
+            }
+        )
+    }
+
+}
 async function create_article_async({userId,categoryId}){
     tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.folder,condition:{[e_field.FOLDER.AUTHOR_ID]:userId}})
     //console.log(`pathid========>${JSON.stringify(article)}`)
@@ -139,7 +149,7 @@ async function create_impeach_for_article_async({userId,articleId,impeached_user
         [e_field.IMPEACH.CONTENT]:'test impeach',
         [e_field.IMPEACH.IMPEACHED_ARTICLE_ID]:articleId,
         [e_field.IMPEACH.IMPEACH_TYPE]:e_impeachType.ARTICLE,
-        [e_field.IMPEACH.IMPEACH_STATUS]:e_impeachState.ONGOING,
+        [e_field.IMPEACH.CURRENT_STATE]:e_impeachState.ONGOING,
         [e_field.IMPEACH.IMPEACHED_USER_ID]:impeached_userId,
     }
     let tmpResult=await common_operation_model.create_returnRecord_async({dbModel:e_dbModel.impeach,value:impeach})
@@ -206,6 +216,7 @@ module.exports={
     deleteUserPenalize_async,
     deleteAllModelRecord_async,
     deleteMany_async,
+    deleteCollRecords_async,
 
     create_user_async,
     create_article_async,

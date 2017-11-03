@@ -74,7 +74,7 @@ let parameter={
     [e_parameterPart.APP]:app,
 }
 
-describe('dispatch check', async function() {
+describe('dispatch check for like dislike', async function() {
     before('recreate user1 and login', async function(){
         url='likeDislike'
         finalUrl=baseUrl+url

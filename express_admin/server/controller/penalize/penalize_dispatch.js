@@ -70,7 +70,11 @@ async function dispatcher_async(req){
             break;
         case e_method.SEARCH:// search
             break;
-        case e_method.UPDATE: //update delete(revoke)的操作通过update方法完成
+        case e_method.UPDATE:
+            return Promise.reject(controllerError.methodNotSupport)
+
+            break;
+        case e_method.DELETE: //delete
             userLoginCheck={
                 needCheck:true,
                 error:controllerError.notLoginCantDeletePenalize
@@ -88,9 +92,6 @@ async function dispatcher_async(req){
             tmpResult=await delete_async(req)
 
             break;
-        case e_method.DELETE: //delete
-            return Promise.reject(controllerError.methodNotSupport)
-            break;
         case e_method.MATCH: //match(login_async)
             return Promise.reject(controllerError.methodNotSupport)
             break;
@@ -100,7 +101,7 @@ async function dispatcher_async(req){
         // console.log(`match tmpResult ${JSON.stringify(tmpResult)}`)
     }
 
-    return Promise.resolve({rc:0})
+    return Promise.resolve(tmpResult)
 }
 
 

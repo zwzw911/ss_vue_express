@@ -16,6 +16,7 @@ const e_part=nodeEnum.ValidatePart
 const e_method=nodeEnum.Method
 const e_coll=require('../constant/genEnum/DB_Coll').Coll
 const e_field=require('../constant/genEnum/DB_field').Field
+const e_dbModel=require('../constant/genEnum/dbModel')
 const e_skipPart=require(`../constant/testCaseEnum/testCaseEnum`).SkipPart
 
 const misc=require(`../function/assist/misc`)
@@ -36,7 +37,7 @@ const generateTestData_API=require(`./generateTestData_API`)
 const browserInputRule=require(`../constant/inputRule/browserInputRule`).browserInputRule
 
 const API_helper=require(`./API_helper`)
-
+const db_operation_helper=require(`./db_operation_helper`)
 //API返回的结果中，在哪个level取得rc
 const RC_LEVEL={
     COMMON:'COMMON', //result.rc
@@ -139,6 +140,8 @@ async function ruleCheckAll_async({parameter,expectedRuleToBeCheck,expectedField
                 parameter.singleRuleName='undefined'*/
 // console.log( `4th reqBodyValues========${JSON.stringify(reqBodyValues)}`)
                 let testDataForDataTypeCheck=generateTestData_API.generateTestDataForRecordInfoDataType({parameter:parameter,fieldName:singleFieldName})
+                // console.log(`testDataForDataTypeCheck===========>${JSON.stringify(testDataForDataTypeCheck)}`)
+                // console.log(`reqBodyValues===========>${JSON.stringify(reqBodyValues)}`)
                 await RECORD_INFO_TEST_async({parameter:parameter,fieldName:singleFieldName,generatedTestData:testDataForDataTypeCheck,expectedErrorRc:validateValueError.CUDTypeWrong.rc,rcLevel:RC_LEVEL.FIELD})
                 console.log(`==========================================================================`)
                 console.log(`======= CU: ${[singleFieldName]}=>${`undefined`} dataType test end    ====`)
@@ -262,6 +265,8 @@ async function sendDataToAPI_compareFieldRc_async({APIUrl,sess,data,expectedErro
                 console.log(`data.values===========>${JSON.stringify(data.values)}`)
                 console.log(`parsedRes  ===========>${JSON.stringify(parsedRes)}`)
                 assert.deepStrictEqual(parsedRes.rc, 99999)
+                console.log(   `parsedRes.msg============>${JSON.stringify(parsedRes.msg)}`)
+                console.log(   `fieldName============>${JSON.stringify(fieldName)}`)
                 assert.deepStrictEqual(parsedRes.msg[fieldName].rc, expectedErrorRc)
                 return resolve(true)
             });
@@ -323,7 +328,13 @@ async function dispatch_partCheck_async(parameter){
 
             break;
         case e_method.DELETE:
-            expectedParts=[e_part.RECORD_ID]
+            //删除penalize的时候，除了提供recordId，还需要recordInfo提供REASON
+            if(collName===e_coll.ADMIN_PENALIZE){
+                expectedParts=[e_part.RECORD_ID,e_part.RECORD_INFO]
+            }else{
+                expectedParts=[e_part.RECORD_ID]
+            }
+
             break;
         case e_method.MATCH:
             expectedParts=[e_part.RECORD_INFO]
@@ -405,7 +416,7 @@ async function dispatch_partCheck_async(parameter){
             }
         }
 
-        console.log(`data===========>${JSON.stringify(data)}`)
+        // console.log(`data===========>${JSON.stringify(data)}`)
         expectedErrorRc=validateFormatError.inputValuePartNotMatch.rc
         await  sendDataToAPI_compareCommonRc_async({APIUrl:APIUrl,sess:sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
         // }
@@ -441,10 +452,12 @@ async function dispatch_partCheck_async(parameter){
     delete data.values[additionalPartName]
 
     console.log(`==========================================================================`)
-    console.log(`====                           8th start                         =========`)
+    console.log(`====                        8th start: penalize check            =========`)
     console.log(`==========================================================================`)
     //8. 如果需要检测penalize
     if(undefined!==penalizeRelatedInfo){
+        //首先清空所有penalize
+        await db_operation_helper.deleteCollRecords_async({arr_dbModel:[e_dbModel.admin_penalize]})
         //且method和penalizeSubType一致（例如，设置了对）
         // if(penalizeRelatedInfo[`penalizeSubType`]=e_penalizeSubType.ALL ||)
         //根据penalizeCheck为当前用户创建penalize
@@ -454,12 +467,12 @@ async function dispatch_partCheck_async(parameter){
             [e_field.ADMIN_PENALIZE.PENALIZE_SUB_TYPE]:penalizeRelatedInfo[`penalizeSubType`],
             [e_field.ADMIN_PENALIZE.DURATION]:1,
         }
-        await API_helper.createPenalize_async({adminUserSess:penalizeRelatedInfo[`rootSess`],penalizeInfo:penalizeInfo,pernalizedUserData:penalizeRelatedInfo[`penalizedUserData`],adminApp:penalizeRelatedInfo[`adminApp`]})
+        await API_helper.createPenalize_returnPenalizeId_async({adminUserSess:penalizeRelatedInfo[`rootSess`],penalizeInfo:penalizeInfo,penalizedUserData:penalizeRelatedInfo[`penalizedUserData`],adminApp:penalizeRelatedInfo[`adminApp`]})
         // console.log(`data========>${JSON.stringify()}`)
 
         data.values[e_part.RECORD_INFO]=normalRecordInfo
         await  sendDataToAPI_compareCommonRc_async({APIUrl:APIUrl,sess:sess,data:data,expectedErrorRc:penalizeRelatedInfo[`penalizedError`][`rc`],app:app})
-        await API_helper.deletePenalize_async({adminUserSess:penalizeRelatedInfo[`rootSess`],penalizeInfo:penalizeInfo,pernalizedUserData:penalizeRelatedInfo[`penalizedUserData`],adminApp:penalizeRelatedInfo[`adminApp`]})
+        await API_helper.deletePenalize_async({adminUserSess:penalizeRelatedInfo[`rootSess`],penalizeInfo:penalizeInfo,penalizedUserData:penalizeRelatedInfo[`penalizedUserData`],adminApp:penalizeRelatedInfo[`adminApp`]})
     }
 
     console.log(`==========================================================================`)
@@ -469,6 +482,16 @@ async function dispatch_partCheck_async(parameter){
     for(let singleExpectedPart of expectedParts){
         switch (singleExpectedPart){
             case e_part.RECORD_ID:
+                data.values=reqBodyValues
+                // data.values[e_part.METHOD]=method
+                //delete penalize的时候，recordInfo只能包含REASON一个field
+                if(method===e_method.DELETE && collName===e_coll.ADMIN_PENALIZE){
+                    data.values[e_part.RECORD_INFO]={
+                        [e_field.ADMIN_PENALIZE.REVOKE_REASON]:'revoke reason is not defined'
+                    }
+                }
+
+
                 data.values[e_part.RECORD_ID]=1
                 await  sendDataToAPI_compareCommonRc_async({APIUrl:APIUrl,sess:sess,data:data,expectedErrorRc:validateFormatError.inputValuePartRecordIdValueFormatWrong.rc,app:app})
 

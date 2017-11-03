@@ -27,7 +27,7 @@ const admin_user={
     adminRoot:{name:'root',password:'123456',userType:e_adminUserType.ADMIN_ROOT},
     adminUser1:{name:'adminUser1',password:'123456',userType:e_adminUserType.ADMIN_NORMAL},
     adminUser2:{name:'adminUser2',password:'654321',userType:e_adminUserType.ADMIN_NORMAL},
-    adminUser3:{name:'adminUser2',password:'654321',userType:e_adminUserType.ADMIN_NORMAL},
+    adminUser3:{name:'adminUser3',password:'654321',userType:e_adminUserType.ADMIN_NORMAL},
     // useNotExistForModel:{name:'test',password:'123456',userType:e_adminUserType.NORMAL},
 }
 

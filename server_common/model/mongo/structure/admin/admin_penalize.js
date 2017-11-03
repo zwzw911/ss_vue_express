@@ -70,9 +70,11 @@ const collFieldDefine={
     penalizeType:{type:String,}, //enum只能支持string，不支持Number
     penalizeSubType:{type:String,}, //CRUD和其它
     duration:{type:Number}, //单位：天
+    endDate:{type:Date}, //CU的时候自动更改
 // isExpire:{type:Boolean},//处罚是否结束，通过virtual method判断
     revokeReason:{type:String,},
     revokerId:{type:mongoose.Schema.Types.ObjectId,ref:"admin_user"},
+
     cDate:{type:Date,default:Date.now},
     uDate:{type:Date,default:Date.now},
     dDate:{type:Date},

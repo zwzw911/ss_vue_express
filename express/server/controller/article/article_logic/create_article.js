@@ -55,6 +55,7 @@ const fkConfig=server_common_file_require.fkConfig.fkConfig
 
 /*              新article无任何输入，所有的值都是内部产生                */
 async  function createArticle_async({req}){
+    console.log(`createArticle_async in`)
     /*******************************************************************************************/
     /*                                          define variant                                 */
     /*******************************************************************************************/

@@ -78,11 +78,15 @@
 
 1. API_test中加入penalize的create/delete API========>done
 
-1. 检测check penalize过程的查询条件（isExpire可能不适用于查询）
+1. 检测check penalize过程的查询条件（isExpire可能不适用于查询）======>done
 1. 使用完整版createArticle在test case中
 2. create impeach中，增加复合unique的检查，防止一个用户对同一个object多次提交impeach=========>done
 3. 在impeach的model中，添加复合unique============》done
-4. impeach_action:完成测试
+4. impeach_action:完成测试===========>done
 
+1. 所有的dispatch返回tmpResult（logic的返回值，即由logic来控制API最终的返回值形式，某些操作，例如create，需要返回创建的数据给client）
+2. API_test中，createPenalize-async需要返回penalizeId，以便deletePenalize操作======>done
+
+1. express_admin中，impeach_state改成impeach_action
 
 

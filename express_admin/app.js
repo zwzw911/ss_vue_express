@@ -95,7 +95,7 @@ const penalize=require('./server/controller/penalize/penalize_router').router
 const impeach=require('./server/controller/impeach/impeach_router').router*/
 
 app.use('/admin_user', user);
-app.use('/impeach_state', impeach_state);
+app.use('/impeach_action', impeach_state);
 app.use('/admin_penalize', penalize);
 /*app.use('/article', article);
 app.use('/impeach', impeach);*/

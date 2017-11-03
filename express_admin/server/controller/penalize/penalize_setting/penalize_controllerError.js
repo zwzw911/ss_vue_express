@@ -21,9 +21,9 @@ const controllerError={
     // fieldNotSupport:{rc:50104,msg:`字段名称不正确`},
     /*              delete_async               */
     onlyAdminUserCanRevokePenalize:{rc:51220,msg:`管理员才能撤销处罚`},
-    currentUserHasNotPriorityToRevokePenalize:{rc:512222,msg:`您无权撤销处罚`},
-    deleteRecordInfoFieldNumIncorrect:{rc:512223,msg:`输入的数据格式不正确`},
-    missMandatoryFieldRevokeReason:{rc:512224,msg:`必须填写撤销原因`},
+    currentUserHasNotPriorityToRevokePenalize:{rc:51222,msg:`您无权撤销处罚`},
+    deleteRecordInfoFieldNumIncorrect:{rc:51223,msg:`输入的数据格式不正确`},
+    missMandatoryFieldRevokeReason:{rc:51224,msg:`必须填写撤销原因`},
     // accountNotExist:{rc:51108,msg:`用户或者密码不正确`},//不能泄露具体信息
     // accountPasswordNotMatch:{rc:50110,msg:`用户或者密码不正确`},
     //

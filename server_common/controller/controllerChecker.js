@@ -308,6 +308,30 @@ async function ifExpectedUserType_async({req,arr_expectedUserType}){
     return Promise.resolve(true)
 }
 
+/*用户(userId)是否被禁止做某事（penalizeType）
+ * 查找admin_penalize中最后一条penalize记录，体重的ifExpire是否为true
+ *
+ * */
+async function ifPenalizeOngoing_async({userId, penalizeType,penalizeSubType}){
+    let condition={
+        // "$or":[{'dDate':{'$exists':false}},{'isExpire':false}],
+        "$or":[{[e_field.ADMIN_PENALIZE.DURATION]:0},{'endDate':{'$gt':Date.now()}}],
+        //未被删除，同时也未到期或者duration=0（永久未到期），才能视为valid的penalize
+        'dDate':{'$exists':false},
+        // [e_field.ADMIN_PENALIZE.END_DATE]:{'$lt':Date.now()},
+        [e_field.ADMIN_PENALIZE.PUNISHED_ID]:userId,
+        [e_field.ADMIN_PENALIZE.PENALIZE_TYPE]:penalizeType,
+        [e_field.ADMIN_PENALIZE.PENALIZE_SUB_TYPE]:penalizeSubType,
+    }//,,
+    let activePenalizeRecords=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.admin_penalize,condition:condition,selectedFields:'-uDate'})
+    // console.log(`activePenalizeRecords===========>${JSON.stringify(activePenalizeRecords)}`)
+    if(activePenalizeRecords.length>0){
+        return Promise.resolve(true)
+    }else{
+        return Promise.resolve(false)
+    }
+
+}
 
 module.exports={
     // ifFieldValueExistInColl_async,// 检测字段值是否已经在db中存在
@@ -322,4 +346,6 @@ module.exports={
     ifAdminUserHasExpectedPriority_async,
 
     ifExpectedUserType_async,//判断当前用户的类型是否为期望的
+
+    ifPenalizeOngoing_async,
 }

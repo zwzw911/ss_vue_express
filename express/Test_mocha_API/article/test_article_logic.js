@@ -47,7 +47,7 @@ let userId  //create后存储对应的id，以便后续的update操作
 
 let sess1,sess2,adminRootSess,data={values:{}}
 
-describe('create new article and update, then create new comment: ', async function() {
+describe('logic check for article: ', async function() {
     let url = '', finalUrl = baseUrl + url
     let user1Sess,user2Sess,user1Id,user2Id,article1Id,article2Id,impeachId,data={values:{}}
     let  folder2
@@ -76,14 +76,14 @@ describe('create new article and update, then create new comment: ', async funct
         penalizeInfo[e_field.ADMIN_PENALIZE.DURATION] = 1
         penalizeInfo[e_field.ADMIN_PENALIZE.PENALIZE_TYPE] = e_penalizeType.NO_ARTICLE
         penalizeInfo[e_field.ADMIN_PENALIZE.PENALIZE_SUB_TYPE] = e_penalizeSubType.CREATE
-        await API_helper.createPenalize_async({adminUserSess:adminRootSess,penalizeInfo:penalizeInfo,pernalizedUserData:testData.user.user2,adminApp:adminApp})
+        await API_helper.createPenalize_returnPenalizeId_async({adminUserSess:adminRootSess,penalizeInfo:penalizeInfo,penalizedUserData:testData.user.user2,adminApp:adminApp})
 
         //use2 penalize create comment
         penalizeInfo[e_field.ADMIN_PENALIZE.REASON] = `test user2 penalize no create comment`
         penalizeInfo[e_field.ADMIN_PENALIZE.DURATION] = 1
         penalizeInfo[e_field.ADMIN_PENALIZE.PENALIZE_TYPE] = e_penalizeType.NO_COMMENT
         penalizeInfo[e_field.ADMIN_PENALIZE.PENALIZE_SUB_TYPE] = e_penalizeSubType.CREATE
-        await API_helper.createPenalize_async({adminUserSess:adminRootSess,penalizeInfo:penalizeInfo,pernalizedUserData:testData.user.user2,adminApp:adminApp})
+        await API_helper.createPenalize_returnPenalizeId_async({adminUserSess:adminRootSess,penalizeInfo:penalizeInfo,penalizedUserData:testData.user.user2,adminApp:adminApp})
 
     })
     before('get user2 folder', async function () {

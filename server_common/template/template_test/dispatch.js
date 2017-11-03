@@ -22,6 +22,7 @@ const e_field=require('../../server/constant/genEnum/DB_field').Field
 
 const e_impeachState=server_common_file_require.mongoEnum.ImpeachState.DB
 const e_impeachAllAction=server_common_file_require.mongoEnum.ImpeachAllAction.DB
+
 const e_penalizeType=server_common_file_require.mongoEnum.PenalizeType.DB
 const e_penalizeSubType=server_common_file_require.mongoEnum.PenalizeSubType.DB
 const e_parameterPart=server_common_file_require.testCaseEnum.ParameterPart
@@ -51,7 +52,7 @@ const component_function=server_common_file_require.component_function
 // const controllerError=require('../../server/controller/penalize/penalize_setting/penalize_controllerError').controllerError
 let rootSess
 let baseUrl="/impeach_action/",finalUrl,url
-
+let recordId //当有update/delete的时候，需要真实的recordid，来pass recordId的最后一个case（正确通过）
 let normalRecord={
     [e_field.IMPEACH_ACTION.IMPEACH_ID]:undefined,
     [e_field.IMPEACH_ACTION.ACTION]:e_impeachAllAction.SUBMIT,
@@ -108,7 +109,7 @@ describe('dispatch', function() {
         }
         await API_helper.createPenalize_async({adminUserSess:rootSess,penalizeInfo:penalizeInfo,pernalizedUserData:testData.user.user1,adminApp:adminApp})
     })*/
-    it(`preCheck:CREATE`,async function(){
+    it(`preCheck for create`,async function(){
         parameter[e_parameterPart.SESS_ERROR_RC]=controllerError.notLoginCantChangeState.rc
         parameter[e_parameterPart.REQ_BODY_VALUES][e_part.METHOD]=e_method.CREATE
         parameter[e_parameterPart.PENALIZE_RELATED_INFO][`penalizeSubType`]=e_penalizeSubType.CREATE
@@ -117,18 +118,30 @@ describe('dispatch', function() {
         // parameter[`method`]=e_method.CREATE
         await inputRule_API_tester.dispatch_partCheck_async(parameter)
     })
-    /*    it(`dispatch check for update`,async function(){
-     parameter[`sessErrorRc`]=controllerError.notLoginCantUpdateUser.rc
-     parameter[`method`]=e_method.UPDATE
-     await inputRule_API_tester.dispatch_partCheck_async(parameter)
-     })*/
-/*    it(`dispatch check for delete`,async function(){
-        parameter[`sessErrorRc`]=controllerError.notLoginCantDeletePenalize.rc
-        parameter[`method`]=e_method.DELETE
+    it(`preCheck for update`,async function(){
+        parameter[e_parameterPart.SESS_ERROR_RC]=controllerError.userNotLoginCantUpdate.rc
+        parameter[e_parameterPart.REQ_BODY_VALUES][e_part.METHOD]=e_method.UPDATE
+        parameter[e_parameterPart.PENALIZE_RELATED_INFO][`penalizeSubType`]=e_penalizeSubType.UPDATE
+        parameter[e_parameterPart.PENALIZE_RELATED_INFO][`penalizedError`]=controllerError.userInPenalizeNoImpeachUpdate
+        parameter[e_parameterPart.REQ_BODY_VALUES][e_part.RECORD_ID]=recordId
         await inputRule_API_tester.dispatch_partCheck_async(parameter)
-    })*/
+        delete parameter[e_parameterPart.REQ_BODY_VALUES][e_part.RECORD_ID]
+    })
+    it(`preCheck for delete`,async function(){
+        // parameter[`sessErrorRc`]=controllerError.notLoginCantDeletePenalize.rc
+        // parameter[`method`]=e_method.DELETE
+        parameter[e_parameterPart.SESS_ERROR_RC]=controllerError.notLoginCantDeletePenalize.rc
+        parameter[e_parameterPart.REQ_BODY_VALUES][e_part.METHOD]=e_method.DELETE
+        parameter[e_parameterPart.REQ_BODY_VALUES][e_part.RECORD_ID]='59f882b8a260a901c0b34597'
+        // parameter[e_parameterPart.PENALIZE_RELATED_INFO][`penalizeSubType`]=undefined
+        // parameter[e_parameterPart.PENALIZE_RELATED_INFO][`penalizedError`]=undefined
+        await inputRule_API_tester.dispatch_partCheck_async(parameter)
+    })
 
-    it(`inputRule:CREATE`,async function(){
+
+
+
+    it(`inputRule fro create`,async function(){
         parameter[`method`]=e_method.CREATE
         await inputRule_API_tester.ruleCheckAll_async({
             parameter:parameter,
