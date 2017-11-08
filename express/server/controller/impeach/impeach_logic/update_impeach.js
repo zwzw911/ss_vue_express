@@ -1,5 +1,7 @@
 /**
  * Created by ada on 2017/9/1.
+ *
+ * 用户为提交的时候，可以进行update的操作
  */
 'use strict'
 /*                      controller setting                */
@@ -69,6 +71,14 @@ async function updateImpeach_async({req}){
     dataConvert.constructUpdateCriteria(docValue,fkConfig[collName])
     // console.log(`docValue after constructUpdateCriteria============>${JSON.stringify(docValue)}`)
     /*******************************************************************************************/
+    /*                          delete field cant be update from client                        */
+    /*******************************************************************************************/
+    //以下字段，CREATE是client输入，但是update时候，无法更改，所以需要删除
+    let notAllowUpdateFields=[e_field.IMPEACH.IMPEACHED_ARTICLE_ID,e_field.IMPEACH.IMPEACHED_COMMENT_ID,e_field.IMPEACH.CURRENT_STATE]
+    for(let singleNotAllowUpdateField of notAllowUpdateFields){
+        delete docValue[singleNotAllowUpdateField]
+    }
+    /*******************************************************************************************/
     /*                                       authorization check                               */
     /*******************************************************************************************/
     //当前要改更的举报是当前用户所创
@@ -84,14 +94,7 @@ async function updateImpeach_async({req}){
     }
     let originalDoc=misc.objectDeepCopy({},tmpResult[0])
 
-    /*******************************************************************************************/
-    /*                          delete field cant be update from client                        */
-    /*******************************************************************************************/
-    //以下字段，CREATE是client输入，但是update时候，无法更改，所以需要删除
-    let notAllowUpdateFields=[e_field.IMPEACH.IMPEACHED_ARTICLE_ID,e_field.IMPEACH.IMPEACHED_COMMENT_ID,e_field.IMPEACH.CURRENT_STATE]
-    for(let singleNotAllowUpdateField of notAllowUpdateFields){
-        delete docValue[singleNotAllowUpdateField]
-    }
+
     /*******************************************************************************************/
     /*                              remove not change field                                    */
     /*******************************************************************************************/
@@ -158,6 +161,18 @@ async function updateImpeach_async({req}){
             collConfig:collConfig,
             collImageConfig:collImageConfig,
         })
+    }
+
+    //impeachType是否为预定义的一种
+    if(-1===Object.values(enumValue.ImpeachType).indexOf(impeachType)){
+        return Promise.reject(controllerError.unknownImpeachType)
+    }
+    //
+    if(undefined===docValue[e_field.IMPEACH.IMPEACHED_ARTICLE_ID] && undefined===docValue[e_field.IMPEACH.IMPEACHED_COMMENT_ID]){
+        return Promise.reject(controllerError.noImpeachedObject)
+    }
+    if(undefined!==docValue[e_field.IMPEACH.IMPEACHED_ARTICLE_ID] && undefined!==docValue[e_field.IMPEACH.IMPEACHED_COMMENT_ID]){
+        return Promise.reject(controllerError.noImpeachedObject)
     }
     /*******************************************************************************************/
     /*                                  field value duplicate check                            */

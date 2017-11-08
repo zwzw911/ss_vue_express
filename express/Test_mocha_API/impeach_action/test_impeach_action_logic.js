@@ -87,7 +87,7 @@ describe('create impeach action', async function() {
 
 
         let articledId2=await component_function.createArticle_setToFinish_returnArticleId_async({userSess:user2Sess,app:app})
-        console.log(`articledId2================>${articledId2}`)
+        // console.log(`articledId2================>${articledId2}`)
         impeachId2=await API_helper.createImpeachForArticle_returnImpeachId_async({articleId:articledId2,userSess:user2Sess,app:app})
         await API_helper.delete_impeach_async({impeachId:impeachId2,userSess:user2Sess,app:app})
         // console.log(`userId==========${JSON.stringify(user1Id)}`)

@@ -10,7 +10,7 @@ const controllerError=require('../impeach_setting/impeach_controllerError').cont
 /*                      specify: genEnum                */
 // const e_uniqueField=require('../../../constant/genEnum/DB_uniqueField').UniqueField
 // const e_chineseName=require('../../../constant/genEnum/inputRule_field_chineseName').ChineseName
-// const e_coll=require('../../../constant/genEnum/DB_Coll').Coll
+const e_coll=require('../../../constant/genEnum/DB_Coll').Coll
 const e_field=require('../../../constant/genEnum/DB_field').Field
 const e_dbModel=require('../../../constant/genEnum/dbModel')
 // const e_iniSettingObject=require('../../../constant/genEnum/initSettingObject').iniSettingObject
@@ -20,7 +20,9 @@ const server_common_file_require=require('../../../../server_common_file_require
 
 const nodeEnum=server_common_file_require.nodeEnum
 const mongoEnum=server_common_file_require.mongoEnum
-// const e_adminUserType=mongoEnum.AdminUserType.DB
+const e_impeachAdminAction=mongoEnum.ImpeachAdminAction.DB
+
+const enumValue=require(`../../../constant/genEnum/enumValue`)
 // const e_adminPriorityType=mongoEnum.AdminPriorityType.DB
 const e_part=nodeEnum.ValidatePart
 // const e_env=nodeEnum.Env
@@ -66,7 +68,15 @@ async function deleteImpeach_async({req:req}){
     tmpResult=await  common_operation_model.find_returnRecords_async({dbModel:e_dbModel[collName],condition:condition})
     // console.log(`tmpResult ==========>${JSON.stringify(tmpResult)}`)
     if(tmpResult.length!==1){
-        return Promise.reject(controllerError.notAuthorized)
+        return Promise.reject(controllerError.notCreatorCantDeleteImpeach)
+    }
+    //举报必须没有admin参与，否则无法删除
+    condition={}
+    condition[e_field.IMPEACH_ACTION.IMPEACH_ID]=recordId
+    condition[e_field.IMPEACH_ACTION.ACTION]={'$in':enumValue.ImpeachAdminAction}
+    tmpResult=await  common_operation_model.find_returnRecords_async({dbModel:e_dbModel[e_coll.IMPEACH_ACTION],condition:condition})
+    if(tmpResult.length>0){
+        return Promise.reject(controllerError.impeachAlreadyHandledByAdmin)
     }
     /*******************************************************************************************/
     /*                                       state         check                               */
@@ -77,7 +87,11 @@ async function deleteImpeach_async({req:req}){
     /*******************************************************************************************/
     /*                                  db operation                                           */
     /*******************************************************************************************/
-    await common_operation_model.update_returnRecord_async({dbModel:e_dbModel[collName],id:recordId,values:{'dDate':Date.now()}})
+    //未被提交过的impeach会被连同action一起删除（因为为提交的impeach无保存价值）
+    //物理删除impeach
+    await common_operation_model.findByIdAndRemove_async({dbModel:e_dbModel[collName],id:recordId})
+    //物理删除impeach_action
+    await common_operation_model.deleteMany_async({dbModel:e_dbModel.impeach_action,condition:{[e_field.IMPEACH_ACTION.IMPEACH_ID]:recordId}})
     return Promise.resolve({rc:0})
 
 }

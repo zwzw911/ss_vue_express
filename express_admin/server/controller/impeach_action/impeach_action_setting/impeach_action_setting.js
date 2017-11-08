@@ -39,6 +39,13 @@ const adminPriorityRelatedAction={
     [e_adminPriorityType.IMPEACH_DEAL]:[e_impeachAdminAction.ACCEPT,e_impeachAdminAction.FINISH,e_impeachAdminAction.REJECT]
 }
 
+//admin用户可用的操作需要的权限（便于代码中进行判断）
+const adminActionNeededPriority={
+    [e_impeachAdminAction.FINISH]:[e_adminPriorityType.IMPEACH_DEAL],
+    [e_impeachAdminAction.ASSIGN]:[e_adminPriorityType.ASSIGN],
+    [e_impeachAdminAction.REJECT]:[e_adminPriorityType.IMPEACH_DEAL],
+    [e_impeachAdminAction.ACCEPT]:[e_adminPriorityType.IMPEACH_DEAL],
+}
 //action和state的匹配关系
 const impeachActionMatchState={
     [e_impeachAllAction.CREATE]:e_impeachState.NEW,
@@ -58,6 +65,7 @@ module.exports={
     adminPriorityRelatedAction,
     availableNextUserAction,
     availableNextAdminAction,
+    adminActionNeededPriority,
     impeachActionMatchState,
 }
 // console.log(`${JSON.stringify(setting)}`)

@@ -19,6 +19,8 @@ const e_userInfoField=require(`../constant/enum/nodeRuntimeEnum`).userInfoField
 
 const allAdminPriorityType=require('../constant/genEnum/enumValue').AdminPriorityType
 
+const compound_unique_field_config=require(`../model/mongo/compound_unique_field_config`).compound_unique_field_config
+
 const checkerError=require('../constant/error/controller/helperError').checker
 
 const misc=require('../function/assist/misc')
@@ -78,6 +80,7 @@ async function ifSingleFieldFkValueExist_async({fkFieldValue,relatedCollName,fkF
 /**********************    used         ******************************/
 /*************************************************************************/
 //additionalCheckCondition: {key,value}
+//对传入的docValue中的每个字段进行unique的检测
 async function ifFieldInDocValueUnique_async({collName,docValue,additionalCheckCondition}){
     // if(undefined!==e_uniqueField[collName] &&  e_uniqueField[collName].length>0){
     //     console.log(`ifFieldInDocValueUnique_async in=========>}`)
@@ -109,7 +112,54 @@ async function ifFieldInDocValueUnique_async({collName,docValue,additionalCheckC
     return Promise.resolve({rc:0})
 }
 
-/*
+/*          复合字段是否为unique
+//因为可能需要返回存在的记录做进一步的处理，所以不能简单的返回true/false，而是{rc,msg}的格式，且全部为resolve，防止reject直接跳出
+* @collName:对那个coll进行复合字段的unique检测
+* @docValue：待检测的数据
+*
+* return：如果已经存在重复记录：如果重复记录数>1，报错；如果=1,返回存在的记录（以便后续操作）；没有重复记录，返回false
+* */
+async function ifCompoundFiledUnique_returnExistRecord_async({collName,docValue}){
+    //coll有对应的复合字段配置，才进行unique的检测
+    if(undefined!==compound_unique_field_config[collName]){
+        let collConfig=compound_unique_field_config[collName]
+        // console.log(`collConfig===========>${JSON.stringify(collConfig)}`)
+        for(let singleCompoundFieldName in collConfig){
+            let singleCompound=collConfig[singleCompoundFieldName]
+            console.log(`singleCompound===========>${JSON.stringify(singleCompound)}`)
+            let condition={},allCompoundFiledAvailable=true
+            //检测复合字段的每个字段都有值
+            for(let singleField of singleCompound){
+                //复合字段中，如果某个字段，在docValue没有设置值，直接忽略
+                //因为在mongo中，某个字段不需要值，直接unset，而不是设成null等，所以如果传入的带检测值有空字段，直接忽略unqique检测
+                console.log(`docValue[${singleField}] ===========>${JSON.stringify(docValue[singleField] )}`)
+                if(undefined===docValue[singleField] || null===docValue[singleField]){
+                    allCompoundFiledAvailable=false
+                    break
+                }
+                //只需要获得docValue中复合字段的值
+                condition[singleField]=docValue[singleField]
+            }
+            //检查单个compound field是否unique
+            if(true===allCompoundFiledAvailable){
+                console.log(`compound condition=============>${JSON.stringify(condition)}`)
+                console.log(`collName=============>${JSON.stringify(collName)}`)
+                let results=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel[collName],condition:condition})
+                console.log(`compound result=============>${JSON.stringify(results)}`)
+                if(results.length>1){
+                    return Promise.reject( checkerError.compoundFieldHasMultipleDuplicateRecord({collName:collName,arr_compoundField:Object.keys(condition)}))
+                }
+                if(results.length===1){
+                    return Promise.resolve(results)
+                }
+            }
+
+        }
+        return Promise.resolve(true)
+    }
+
+}
+/*      检测外键是否存在
  * @docValue；待检测的记录
  * @collFkConfig:当前coll对应的fk配置，用来查找field的fk关系（对应到哪个coll）
  * @collFieldChineseName:如果外键不存在，报错是需要指明的字段的chineseName
@@ -348,4 +398,6 @@ module.exports={
     ifExpectedUserType_async,//判断当前用户的类型是否为期望的
 
     ifPenalizeOngoing_async,
+
+    ifCompoundFiledUnique_returnExistRecord_async,
 }

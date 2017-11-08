@@ -6,7 +6,7 @@
 
 const controllerError={
     /*                 dispatch                     */
-    notLoginCantChangeState:{rc:50900,msg:`尚未登录，无法更改举报状态`},
+    notLoginCantChangeAction:{rc:50900,msg:`尚未登录，无法更改举报状态`},
     userInPenalizeNoImpeachCreate:{rc:50902,msg:`用户被处罚，无法操作举报`},
     /*              create(for user)                          */
     relatedImpeachAlreadyDeleted:{rc:50904,msg:`举报已经被删除，无法更改举报状态`},

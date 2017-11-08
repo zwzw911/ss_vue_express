@@ -567,8 +567,13 @@ function setStorePathStatus({originalStorePathRecord, updateValue}){
 * 3. 随机数和管理员集合数量相乘，向下取整，得到index，并返回对应的record
 * */
 async function chooseProperAdminUser_async({arr_priorityType}){
-    let arr_adminUser=await  common_operation_model.find_returnRecords_async({dbModel:e_dbModel.admin_user,condition:arr_priorityType})
+    let condition={
+        [e_field.ADMIN_USER.USER_PRIORITY]:{'$all':arr_priorityType}
+    }
+    // console.log(`condition++++++++++>${JSON.stringify(condition)}`)
+    let arr_adminUser=await  common_operation_model.find_returnRecords_async({dbModel:e_dbModel.admin_user,condition:condition})
     // console.log(`arr_adminUser++++++++++>${JSON.stringify(arr_adminUser)}`)
+    // console.log(`arr_priorityType++++++++++>${JSON.stringify(arr_priorityType)}`)
     let int_adminUserLength=arr_adminUser.length
     if(0===int_adminUserLength){
         return Promise.reject(helperError.noAnyAdminUserHasDefinedPriority(arr_priorityType))
@@ -576,6 +581,8 @@ async function chooseProperAdminUser_async({arr_priorityType}){
 
     let idx=Math.floor(int_adminUserLength*Math.random())
     // console.log(`idx=============>${idx}`)
+    // console.log(`arr_adminUser[idx]=============>${arr_adminUser[idx]}`)
+
     return Promise.resolve(arr_adminUser[idx])
 }
 

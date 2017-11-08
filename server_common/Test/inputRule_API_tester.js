@@ -340,7 +340,7 @@ async function dispatch_partCheck_async(parameter){
             expectedParts=[e_part.RECORD_INFO]
             break;
     }
-
+    console.log(`expectedParts=============>${JSON.stringify(expectedParts)}`)
     //1. 没有method
     console.log(`==========================================================================`)
     console.log(`====                   1st start: No method                      =========`)
@@ -376,6 +376,7 @@ async function dispatch_partCheck_async(parameter){
     console.log(`====                           5th start: miss part              =========`)
     console.log(`==========================================================================`)
     //5. 缺乏method对应的part
+    console.log(`expectedParts=============>${JSON.stringify(expectedParts)}`)
     copyOfExpectedParts=misc.objectDeepCopy(expectedParts)
     //有expectedPart，才检测（miss part）的操作
     if(copyOfExpectedParts.length>0){

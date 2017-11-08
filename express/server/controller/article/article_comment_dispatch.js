@@ -159,59 +159,6 @@ async function comment_dispatcher_async({req}){
 
 
 
-/*async function createComment_async(req){
-    // console.log(`create comment in =====>`)
-    let tmpResult
-
-    let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
-    let userId=userInfo.userId
-
-    // let articleId=req.body.values[e_part.RECORD_ID]
-    let collName=e_coll.ARTICLE_COMMENT
-    // let originalArticle
-
-
-    /!*              client数据转换                  *!/
-    let docValue=req.body.values[e_part.RECORD_INFO]
-    //dataConvert.convertCreateUpdateValueToServerFormat(docValue)
-    dataConvert.constructUpdateCriteria(docValue,fkConfig[collName])
-
-    // let result=await common_operation_model.findById({dbModel:dbModel[e_coll.USER],id:objectId})
-    // let userId=result.msg[e_field.USER.]
-
-
-    /!*              检查外键字段的值是否存在                *!/
-    await controllerChecker.ifFkValueExist_async({docValue:docValue,collFkConfig:fkConfig[collName],collFieldChineseName:e_fieldChineseName[collName]})
-
-
-
-    /!*              获得internal field，并进行检查                  *!/
-    let internalValue={}
-    internalValue[e_field.ARTICLE_COMMENT.AUTHOR_ID]=userId
-    if(e_env.DEV===currentEnv && Object.keys(internalValue).length>0){
-        let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInputRule:inputRule[collName],collInternalRule:internalInputRule[collName]})
-        // console.log(`internalValue check result====>   ${JSON.stringify(tmpResult)}`)
-        if(tmpResult.rc>0){
-            return Promise.reject(tmpResult)
-        }
-    }
-    //internal加入docValue
-    Object.assign(docValue,internalValue)
-
-// console.log(`combined docValue is ${JSON.stringify(docValue)}`)
-    /!*              如果有unique字段，需要预先检查unique(express级别，而不是mongoose级别)            *!/
-    if(undefined!==e_uniqueField[collName] && e_uniqueField[collName].length>0) {
-        await controllerChecker.ifFieldInDocValueUnique_async({collName: collName, docValue: docValue})
-	//await controllerHelper.ifFiledInDocValueUnique_async({collName: collName, docValue: docValue,e_uniqueField:e_uniqueField,e_chineseName:e_chineseName})
-    }
-
-
-    /!*              创建数据            *!/
-    // let articleId=docValue[e_field.ARTICLE_COMMENT.ARTICLE_ID]
-    await common_operation_model.create_returnRecord_async({dbModel:e_dbModel[collName],value:docValue})
-    // tmpResult=await common_operation_model.update({dbModel:e_dbModel[collName],id:articleId,values:docValue})
-    return Promise.resolve({rc:0})
-}*/
 
 
 

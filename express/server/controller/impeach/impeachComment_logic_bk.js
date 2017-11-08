@@ -14,9 +14,9 @@ const nodeRuntimeEnum=server_common_file_require.nodeRuntimeEnum
 const mongoEnum=server_common_file_require.mongoEnum
 
 /*
-const maxSearchKeyNum=require('../../../constant/config/globalConfiguration').searchSetting.maxKeyNum
-const maxSearchPageNum=require('../../../constant/config/globalConfiguration').searchMaxPage.readName
-*/
+ const maxSearchKeyNum=require('../../../constant/config/globalConfiguration').searchSetting.maxKeyNum
+ const maxSearchPageNum=require('../../../constant/config/globalConfiguration').searchMaxPage.readName
+ */
 
 // const e_userState=require('../../constant/enum/node').UserState
 const e_part=nodeEnum.ValidatePart
@@ -63,13 +63,13 @@ const misc=server_common_file_require.misc
 
 const sanityHtml=server_common_file_require.sanityHtml
 /*const generateRandomString=require('../../function/assist/misc').generateRandomString
-const sendVerificationCodeByEmail_async=require('../../function/assist/misc').sendVerificationCodeByEmail_async
-const ifUserLogin=require('../../function/assist/misc').ifUserLogin*/
+ const sendVerificationCodeByEmail_async=require('../../function/assist/misc').sendVerificationCodeByEmail_async
+ const ifUserLogin=require('../../function/assist/misc').ifUserLogin*/
 
 const dataConvert=server_common_file_require.dataConvert
 /*const validateCreateRecorderValue=require('../../function/validateInput/validateValue').validateCreateRecorderValue
-const validateUpdateRecorderValue=require('../../function/validateInput/validateValue').validateUpdateRecorderValue
-const validateCURecordInfoFormat=require('../../function/validateInput/validateFormat').validateCURecordInfoFormat*/
+ const validateUpdateRecorderValue=require('../../function/validateInput/validateValue').validateUpdateRecorderValue
+ const validateCURecordInfoFormat=require('../../function/validateInput/validateFormat').validateCURecordInfoFormat*/
 // const browserInputRule=require('../../constant/inputRule/browserInputRule').browserInputRule
 const internalInputRule=require('../../constant/inputRule/internalInputRule').internalInputRule
 const inputRule=require('../../constant/inputRule/inputRule').inputRule
@@ -86,11 +86,11 @@ const e_fieldChineseName=require('../../constant/genEnum/inputRule_field_chinese
 
 const controllerError={
     /*          common              */
-/*    fieldAlreadyExist(chineseFieldName,fieldInputValue){
-        switch (fieldName){
-            case e_field.article
-        }
-        return {rc:50200,msg:{client:`${fieldInputValue}已经存在`, server:`字段${chineseFieldName}中，值${fieldInputValue}已经存在`}}},*/
+    /*    fieldAlreadyExist(chineseFieldName,fieldInputValue){
+     switch (fieldName){
+     case e_field.article
+     }
+     return {rc:50200,msg:{client:`${fieldInputValue}已经存在`, server:`字段${chineseFieldName}中，值${fieldInputValue}已经存在`}}},*/
 
     /*          create new impeach              */
     // notDefineImpeachType:{rc:50701,msg:`举报类型未设置`},
@@ -151,7 +151,7 @@ async function impeachComment_dispatcher_async(req){
                 contentFieldName:e_field.IMPEACH.CONTENT, //coll中，存储内容的字段名
             }
             tmpResult=await controllerHelper.preCheck_async({req:req,collName:collConfig.collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
-	    //tmpResult=await controllerHelper.preCheck_async({req:req,collName:collConfig.collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart,e_field:e_field,e_coll:e_coll,e_internal_field:e_internal_field,maxSearchKeyNum:maxSearchKeyNum,maxSearchPageNum:maxSearchPageNum})
+            //tmpResult=await controllerHelper.preCheck_async({req:req,collName:collConfig.collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart,e_field:e_field,e_coll:e_coll,e_internal_field:e_internal_field,maxSearchKeyNum:maxSearchKeyNum,maxSearchPageNum:maxSearchPageNum})
             // tmpResult=await createContent_async({req:req,collConfig:collConfig,collImageConfig:collImageConfig})
             tmpResult=await createContent_async({req:req,collConfig:collConfig})
             break;
@@ -189,7 +189,7 @@ async function impeachComment_dispatcher_async(req){
             expectedPart=[e_part.RECORD_INFO,e_part.RECORD_ID]
 
             tmpResult=await controllerHelper.preCheck_async({req:req,collName:collConfig.collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
-	    //tmpResult=await controllerHelper.preCheck_async({req:req,collName:collConfig.collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart,e_field:e_field,e_coll:e_coll,e_internal_field:e_internal_field,maxSearchKeyNum:maxSearchKeyNum,maxSearchPageNum:maxSearchPageNum})
+            //tmpResult=await controllerHelper.preCheck_async({req:req,collName:collConfig.collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart,e_field:e_field,e_coll:e_coll,e_internal_field:e_internal_field,maxSearchKeyNum:maxSearchKeyNum,maxSearchPageNum:maxSearchPageNum})
 // console.log(`collImageConfig======>${JSON.stringify(collImageConfig)}`)
 
 
@@ -202,7 +202,7 @@ async function impeachComment_dispatcher_async(req){
         case e_method.MATCH: //match(login_async)
 
     }
-    
+
     return Promise.resolve(tmpResult)
 }
 
@@ -210,10 +210,10 @@ async function impeachComment_dispatcher_async(req){
 
 
 /*          必须新产生一个默认document，以便提供objectId，这样用户插入图片的时候，就可以使用此objectId作为外键了
-            新content无任何输入，所有的值都是内部产生
-* @defaultDocValue: 在后台创建一个默认记录，以便image或者content得到对应的id，进行操作
-* @collConfig:主要用在update，create中只是用了其中的collName
-* */
+ 新content无任何输入，所有的值都是内部产生
+ * @defaultDocValue: 在后台创建一个默认记录，以便image或者content得到对应的id，进行操作
+ * @collConfig:主要用在update，create中只是用了其中的collName
+ * */
 async  function createContent_async({req,collConfig}){
     let tmpResult,docValue,collName
     let userInfo=controllerHelper.getUserInfo({req:req})
@@ -237,10 +237,10 @@ async  function createContent_async({req,collConfig}){
         await controllerHelper.contentXSSCheck_async({content:content,error:controllerError.contentSanityFailed})
         //content中图片和db中的图片比较，决定是否要删除content中DOM，以及是否要删除db中的记录
         /*
-        create中因为没有recordId，所以无法执行contentDbDeleteNotExistImage_async
-        同时，create中content为初始化内容，无image，也不必要执行contentDbDeleteNotExistImage_async
-        docValue[contentFieldName]=await controllerHelper.contentDbDeleteNotExistImage_async({content:content,recordId:recordId,collConfig:collConfig,collImageConfig:collImageConfig})
-        */
+         create中因为没有recordId，所以无法执行contentDbDeleteNotExistImage_async
+         同时，create中content为初始化内容，无image，也不必要执行contentDbDeleteNotExistImage_async
+         docValue[contentFieldName]=await controllerHelper.contentDbDeleteNotExistImage_async({content:content,recordId:recordId,collConfig:collConfig,collImageConfig:collImageConfig})
+         */
     }
 // console.log(`contentXSSCheck_async done`)
 
@@ -302,10 +302,10 @@ async  function createContent_async({req,collConfig}){
     /*              检查外键字段的值是否存在(fkConfig中存在的)                */
     await controllerChecker.ifFkValueExist_async({docValue:docValue,collFkConfig:fkConfig[collName],collFieldChineseName:e_fieldChineseName[collName]})
 
-     /*              如果有unique字段，需要预先检查unique(express级别，而不是mongoose级别)            */
+    /*              如果有unique字段，需要预先检查unique(express级别，而不是mongoose级别)            */
     if(undefined!==e_uniqueField[collName] && e_uniqueField[collName].length>0) {
         await controllerChecker.ifFieldInDocValueUnique_async({collName: collName, docValue: docValue})
-	//await controllerHelper.ifFiledInDocValueUnique_async({collName: collName, docValue: docValue,e_uniqueField:e_uniqueField,e_chineseName:e_chineseName})
+        //await controllerHelper.ifFiledInDocValueUnique_async({collName: collName, docValue: docValue,e_uniqueField:e_uniqueField,e_chineseName:e_chineseName})
     }
 
     //new article插入db
@@ -317,12 +317,12 @@ async  function createContent_async({req,collConfig}){
 
 
 /*
-* 更新文档(不包含图片和附件)
-* 1. 需要当前用户是否有权修改文档（为文档作者）
-* 2. 需要检查html中的image是否在磁盘上存在
-* 3. 检查tag(传入为字符)是否存在，不存在，在coll tag中新建记录，最终用objectId替换字符
-* 4. 检查是否选择了folder（输入为objectId），如果选择了，folder是否为当前用户所有
-* */
+ * 更新文档(不包含图片和附件)
+ * 1. 需要当前用户是否有权修改文档（为文档作者）
+ * 2. 需要检查html中的image是否在磁盘上存在
+ * 3. 检查tag(传入为字符)是否存在，不存在，在coll tag中新建记录，最终用objectId替换字符
+ * 4. 检查是否选择了folder（输入为objectId），如果选择了，folder是否为当前用户所有
+ * */
 async function updateContent_async({req,collConfig,collImageConfig}){
     // console.log(`update article in========>`)
 
@@ -398,9 +398,9 @@ async function updateContent_async({req,collConfig,collImageConfig}){
 
     /*              获得internal field，并进行检查                  */
     let internalValue={}
-/*    if(undefined!==docValue[e_field.ARTICLE.TAGS_ID]){
-        internalValue[e_field.ARTICLE.TAGS_ID]=docValue[e_field.ARTICLE.TAGS_ID]
-    }*/
+    /*    if(undefined!==docValue[e_field.ARTICLE.TAGS_ID]){
+     internalValue[e_field.ARTICLE.TAGS_ID]=docValue[e_field.ARTICLE.TAGS_ID]
+     }*/
     if(e_env.DEV===currentEnv && Object.keys(internalValue).length>0){
         let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInputRule:inputRule[collName],collInternalRule:internalInputRule[e_coll.ARTICLE]})
         if(tmpResult.rc>0){

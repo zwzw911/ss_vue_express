@@ -10,11 +10,11 @@
 const controller_setting=require('../impeach_action_setting/impeach_action_setting').setting
 const controllerError=require('../impeach_action_setting/impeach_action_controllerError').controllerError
 const availableNextUserAction=require(`../impeach_action_setting/impeach_action_setting`).availableNextUserAction
-// const availableNextAdminAction=require(`../impeach_action_setting/impeach_action_setting`).availableNextAdminAction
+const availableNextAdminAction=require(`../impeach_action_setting/impeach_action_setting`).availableNextAdminAction
 const endState=require(`../impeach_action_setting/impeach_action_setting`).endState
 const adminPriorityRelatedAction=require(`../impeach_action_setting/impeach_action_setting`).adminPriorityRelatedAction
 const impeachActionMatchState=require(`../impeach_action_setting/impeach_action_setting`).impeachActionMatchState
-
+const adminActionNeededPrioritye=require(`../impeach_action_setting/impeach_action_setting`).adminActionNeededPriority
 /*                      specify: genEnum                */
 const e_uniqueField=require('../../../constant/genEnum/DB_uniqueField').UniqueField
 const e_chineseName=require('../../../constant/genEnum/inputRule_field_chineseName').ChineseName
@@ -38,7 +38,7 @@ const e_env=nodeEnum.Env
 const e_part=nodeEnum.ValidatePart
 // const e_userInfoField=nodeRuntimeEnum.userInfoField
 const e_impeachState=mongoEnum.ImpeachState.DB
-const e_impeachUserAction=mongoEnum.ImpeachUserAction.DB
+const e_impeachAdminAction=mongoEnum.ImpeachAdminAction.DB
 const e_impeachAllAction=mongoEnum.ImpeachAllAction.DB
 const e_allUserType=mongoEnum.AllUserType.DB
 const e_adminPriorityType=mongoEnum.AdminPriorityType.DB
@@ -79,13 +79,13 @@ async  function createImpeachAction_async(req){
     /*******************************************************************************************/
     /*                                     用户类型检查                                        */
     /*******************************************************************************************/
-    await controllerChecker.ifExpectedUserType_async({req:req,arr_expectedUserType:[e_allUserType.USER_NORMAL]})
+    await controllerChecker.ifExpectedUserType_async({req:req,arr_expectedUserType:[e_allUserType.ADMIN_NORMAL,e_allUserType.ADMIN_ROOT]})
     /*******************************************************************************************/
     /*                         传入的action是否为此类型用户可以操作                            */
     /*******************************************************************************************/
     //ACTION要兼顾user和adminUser，所以需要在logic中再次细分action是否属于user/adminUser
-    if(-1===enumValue.ImpeachUserAction.indexOf(docValue[e_field.IMPEACH_ACTION.ACTION])){
-        return Promise.reject(controllerError.invalidActionForUser)
+    if(-1===enumValue.ImpeachAdminAction.indexOf(docValue[e_field.IMPEACH_ACTION.ACTION])){
+        return Promise.reject(controllerError.invalidActionForAdminUser)
     }
     /*******************************************************************************************/
     /*                                     参数转为server格式                                  */
@@ -97,22 +97,19 @@ async  function createImpeachAction_async(req){
     /*******************************************************************************************/
 
     /**********************************************************************************************************************************/
-    /* *****************************************         特殊字段检查       ***********************************************/
+    /* *****************************************         ACTION是否有对应的priority支持       ***********************************************/
     /**********************************************************************************************************************************/
-    //操作不能为CREATE
-    if(e_impeachUserAction.CREATE=== docValue[e_field.IMPEACH_ACTION.ACTION]){
-        return Promise.reject(controllerError.forbidActionForUser)
+    //根据ACTION获得对应的权限
+    let matchPriority=adminActionNeededPrioritye[docValue[e_field.IMPEACH_ACTION.ACTION]]
+    if(undefined===matchPriority){
+    return  Promise.reject(controllerError.actionNoRelatedPriority)
     }
-    //adminOwnerId只能由admin设置
-    if(undefined!==docValue[e_field.IMPEACH_ACTION.ADMIN_OWNER_ID]){
-        return Promise.reject(controllerError.forbidInputOwnerId)
+
+    //adminOwnerId必须设置（即使REJECT/FINISH, 如此说明此impeach不再普通用户手中？）
+    if(undefined===docValue[e_field.IMPEACH_ACTION.ADMIN_OWNER_ID]){
+        return Promise.reject(controllerError.ownerIdMustExists)
     }
-    //submit的时候，才需要选定一个admin；其他的user操作，都无需admin_owner_id（隐式使用creatorId）
-    // console.log(`before pre deal docValue=======>${JSON.stringify(docValue)}`)
-    if(docValue[e_field.IMPEACH_ACTION.ACTION]===e_impeachUserAction.SUBMIT){
-        let validAdminUser=controllerHelper.chooseProperAdminUser_async({arr_priorityType:[e_adminPriorityType.IMPEACH_ASSIGN]})
-        docValue[e_field.IMPEACH_ACTION.ADMIN_OWNER_ID]=validAdminUser['_id']
-    }
+
 
     /*******************************************************************************************/
     /*                                    fk value是否存在                                     */
@@ -128,26 +125,32 @@ async  function createImpeachAction_async(req){
     impeachId=docValue[e_field.IMPEACH_ACTION.IMPEACH_ID]
     condition={[e_field.IMPEACH_ACTION.IMPEACH_ID]:impeachId}
     let options={sort:{'cDate':-1}}//
-    console.log(`condition =============>${JSON.stringify(condition)}`)
+    // console.log(`condition =============>${JSON.stringify(condition)}`)
     impeachStateRecords=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.impeach_action,condition:condition,options:options})
-    console.log(`impeachStateRecords =============>${JSON.stringify(impeachStateRecords)}`)
-    //如果没有任何action，要手动添加一个CREATE。同时无需更改impeach的state
+    // console.log(`impeachStateRecords =============>${JSON.stringify(impeachStateRecords)}`)
+    //如果没有任何action，返回错误
     if(impeachStateRecords.length===0){
-        let value={
-            [e_field.IMPEACH_ACTION.IMPEACH_ID]:impeachId,
-            // [e_field.IMPEACH_ACTION.ACTION]:e_impeachUserAction.CREATE,
-            [e_field.IMPEACH_ACTION.CREATOR_ID]:userId,
-            [e_field.IMPEACH_ACTION.CREATOR_COLL]:userCollName,
-        }
-        await  common_operation_model.create_returnRecord_async({dbModel:e_dbModel.impeach_action,value:value})
+        return Promise.reject(controllerError.noPreviousActionRecords)
     }
-    //根据最近一个action的记录，判断输入action是否OK
+    //
+    //根据最近一个action的记录，判断1. adminUserOwnerId是否为当前用户  2. 输入action是否OK
     lastImpeachAction=impeachStateRecords[0][e_field.IMPEACH_ACTION.ACTION]
+    // console.log(`impeachStateRecords[0][e_field.IMPEACH_ACTION.ADMIN_OWNER_ID]=======================>${JSON.stringify(impeachStateRecords[0][e_field.IMPEACH_ACTION.ADMIN_OWNER_ID])}`)
+    // console.log(`userId=======================>${JSON.stringify(userId)}`)
+    // console.log(`typeof impeachStateRecords[0][e_field.IMPEACH_ACTION.ADMIN_OWNER_ID]===========>${JSON.stringify(typeof impeachStateRecords[0][e_field.IMPEACH_ACTION.ADMIN_OWNER_ID])}`)
+    // console.log(`typeof impeachStateRecords[0][e_field.IMPEACH_ACTION.ADMIN_OWNER_ID]===========>${JSON.stringify(typeof impeachStateRecords[0][e_field.IMPEACH_ACTION.ADMIN_OWNER_ID].toString())}`)
+    // console.log(`typeof userId===========>${JSON.stringify(typeof userId)}`)
+    if(impeachStateRecords[0][e_field.IMPEACH_ACTION.ADMIN_OWNER_ID].toString()!==userId){
+        return Promise.reject(controllerError.forbidToTakeActionForCurrentImpeach)
+    }
+    // console.log(`availableNextUserAction==========>${JSON.stringify(availableNextUserAction)}`)
+    // console.log(`availableNextUserAction[lastImpeachAction]==========>${JSON.stringify(availableNextUserAction[lastImpeachAction])}`)
+    // console.log(`docValue[e_field.IMPEACH_ACTION.ACTION]============>${JSON.stringify(docValue[e_field.IMPEACH_ACTION.ACTION])}`)
     //当前用户类型在当前ACTION下没有下一个ACTION，或者输入的action不在availableAction的范围内， 说明当前输入的ACTION是错误的
-    if(undefined===availableNextUserAction[lastImpeachAction] || -1===availableNextUserAction[lastImpeachAction].indexOf(docValue[e_field.IMPEACH_ACTION.ACTION])){
+    if(undefined===availableNextAdminAction[lastImpeachAction] || -1===availableNextAdminAction[lastImpeachAction].indexOf(docValue[e_field.IMPEACH_ACTION.ACTION])){
         return Promise.reject(controllerError.invalidActionBaseOnCurrentAction)
     }
-    console.log(`after special field check docValue=======>${JSON.stringify(docValue)}`)
+    // console.log(`after special field check docValue=======>${JSON.stringify(docValue)}`)
 
     /*******************************************************************************************/
     /*                                  enum unique check(enum in array)                       */
@@ -162,26 +165,28 @@ async  function createImpeachAction_async(req){
     /*******************************************************************************************/
     /*                                       authorization check                               */
     /*******************************************************************************************/
-    //检查impeach 1. 是否为删除 2. 是否为结束（DONE（finish/reject）） 3. 是否为当前普通用户所创
+    //检查impeach 1. 是否为删除 2. 是否为结束（DONE（finish/reject））
     impeachId=docValue[e_field.IMPEACH_ACTION.IMPEACH_ID]
     //impeach为删除，则无法更改state（由ifFkValueExist_async确保impeachId是存在的)
     impeachDoc=await common_operation_model.findById_returnRecord_async({dbModel:e_dbModel.impeach,id:impeachId,selectedFields:'-cDate'})
-    // console.log(`impeachDoc=============>${JSON.stringify(impeachDoc)}`)
+    // 1. impeach已经删除
     if(undefined!==impeachDoc['dDate']){
         return Promise.reject(controllerError.relatedImpeachAlreadyDeleted)
     }
+    //2. impeach已经结束
     if(undefined!==impeachDoc[e_field.IMPEACH.CURRENT_STATE] && -1!==endState.indexOf(impeachDoc[e_field.IMPEACH.CURRENT_STATE])){
         return Promise.reject(controllerError.impeachAlreadyDone)
     }
+
     //根据impeachId判断对应的impeach是否为其所创
     // console.log(`impeachId===========>${JSON.stringify(impeachId)}`)
-    impeachCreator=impeachDoc[e_field.IMPEACH.CREATOR_ID]
-    // console.log(`impeachCreator===========>${JSON.stringify(impeachCreator)}`)
-    // console.log(`userId===========>${JSON.stringify(userId)}`)
-    // onsole.log(`impeachCreator!==userId`)
-    if(impeachCreator.toString()!==userId){
-        return Promise.reject(controllerError.notCreatorOfImpeach)
-    }
+    // impeachCreator=impeachDoc[e_field.IMPEACH.CREATOR_ID]
+    // // console.log(`impeachCreator===========>${JSON.stringify(impeachCreator)}`)
+    // // console.log(`userId===========>${JSON.stringify(userId)}`)
+    // // onsole.log(`impeachCreator!==userId`)
+    // if(impeachCreator.toString()!==userId){
+    //     return Promise.reject(controllerError.notCreatorOfImpeach)
+    // }
 
 
 
@@ -194,14 +199,16 @@ async  function createImpeachAction_async(req){
     /*                                       resource check                                    */
     /*******************************************************************************************/
 
-console.log(`createUser_async docValue===> ${JSON.stringify(docValue)}`)
+// console.log(`createUser_async docValue===> ${JSON.stringify(docValue)}`)
     /*******************************************************************************************/
     /*                                          unique check                                   */
     /*******************************************************************************************/
+    //单字段的unique check
     if(undefined!==e_uniqueField[collName] &&  e_uniqueField[collName].length>0) {
-        let additionalCheckCondition={[e_field.ADMIN_USER.DOC_STATUS]:e_docStatus.DONE}
+        let additionalCheckCondition//={[e_field.ADMIN_USER.DOC_STATUS]:e_docStatus.DONE}
         await controllerChecker.ifFieldInDocValueUnique_async({collName: collName, docValue: docValue,additionalCheckCondition:additionalCheckCondition})
     }
+
 
     /*******************************************************************************************/
     /*                         添加internal field，然后检查                                    */
@@ -219,7 +226,7 @@ console.log(`createUser_async docValue===> ${JSON.stringify(docValue)}`)
         }
     }
     Object.assign(docValue,internalValue)
-    console.log(`internal check  is ${JSON.stringify(docValue)}`)
+    // console.log(`internal check  is ${JSON.stringify(docValue)}`)
     // let currentColl=e_coll.USER_SUGAR
     // console.log(`value to be insert is ${JSON.stringify(docValue)}`)
     // let doc=new dbModel[currentColl](values[e_part.RECORD_INFO])
@@ -229,15 +236,16 @@ console.log(`createUser_async docValue===> ${JSON.stringify(docValue)}`)
     //根据action获得对应的state，更新到impeach（如果是submit，需要自动选择合适的screener）
     let currentAction=docValue[e_field.IMPEACH_ACTION.ACTION]
     let docValueForUpdateImpeach={
-        [e_field.IMPEACH.CURRENT_STATE]:impeachActionMatchState[currentAction]
+        [e_field.IMPEACH.CURRENT_STATE]:impeachActionMatchState[currentAction],
+        [e_field.IMPEACH.CURRENT_ADMIN_OWNER_ID]:docValue[e_field.IMPEACH_ACTION.ADMIN_OWNER_ID]
     }
-/*    if(e_impeachUserAction.CREATE===currentAction || e_impeachUserAction.REVOKE===currentAction){
+/*    if(e_impeachAdminAction.CREATE===currentAction || e_impeachAdminAction.REVOKE===currentAction){
         docValueForUpdateImpeach[e_field.IMPEACH.CURRENT_ADMIN_OWNER_ID]=null
     }*/
-    if(e_impeachUserAction.SUBMIT===currentAction ){
+/*    if(e_impeachAdminAction.SUBMIT===currentAction ){
         // let adminUser=await controllerHelper.chooseProperAdminUser_async({arr_priorityType:[e_adminPriorityType.IMPEACH_ASSIGN]})
         docValueForUpdateImpeach[e_field.IMPEACH_ACTION.CURRENT_ADMIN_OWNER_ID]=docValue[e_field.IMPEACH_ACTION.ADMIN_OWNER_ID]
-    }
+    }*/
     //action插入 db
      await common_operation_model.create_returnRecord_async({dbModel:e_dbModel.impeach_action,value:docValue})
     //state更新到impeach

@@ -66,7 +66,7 @@ const collFieldDefine={
     impeachImagesId:{type:[mongoose.Schema.Types.ObjectId],ref:'impeach_image',validate:[impeachImage_arrayMaxLengthValidator]},
     impeachAttachmentsId:{type:[mongoose.Schema.Types.ObjectId],ref:'impeach_attachment',validate:[impeachAttachment_arrayMaxLengthValidator]},
     impeachCommentsId:{type:[mongoose.Schema.Types.ObjectId],ref:'impeach_comment',validate:[impeachComment_arrayMaxLengthValidator]},
-    impeachType:{type:String,},//enum:enumValue.ImpeachType，article/comment
+    impeachType:{type:String,},//enum:enumValue.ImpeachType，article/comment. 通过URL，在dispatch中进行内部设置
     impeachedArticleId:{type:mongoose.Schema.Types.ObjectId,ref:"article"}, //
     impeachedCommentId:{type:mongoose.Schema.Types.ObjectId,ref:"article_comment"}, //举报的文档评论
     impeachedUserId:{type:mongoose.Schema.Types.ObjectId,ref:"user"}, //

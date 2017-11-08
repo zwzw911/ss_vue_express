@@ -59,6 +59,7 @@ async function dispatcher_async({req,impeachType}){
                 penalizeSubType:e_penalizeSubType.CREATE,
                 penalizeCheckError:controllerError.userInPenalizeNoImpeachCreate
             }
+            // console.log(`userLoginChecke of impeach=====>${JSON.stringify(userLoginCheck)}`)
             //此处RECORD_INFO只包含了一个字段：impeachArticle或者(comment)Id。
             // impeachType是由URL决定（是internal的field），需要和其他默认之合并之后，才能进行preCheck_async（否则validate value会fail）
             expectedPart=[e_part.RECORD_INFO]

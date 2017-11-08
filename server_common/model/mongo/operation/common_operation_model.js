@@ -315,6 +315,26 @@ async function findByIdAndUpdate_returnRecord_async({dbModel,id,updateFieldsValu
     }*/
 }
 
+async function findByIdAndRemove_async({dbModel,id,deleteOption}){
+    // console.log(`find by id :${id}`)
+    let result=await dbModel.findByIdAndRemove(id,deleteOption)
+        .catch(
+            function(err){
+                // console.log(`findbyid errr is ${JSON.stringify(err)}`)
+                // console.log(`converted err is ${JSON.stringify(mongooseErrorHandler(mongooseOpEnum.findById,err))}`)
+                return Promise.reject(mongooseErrorHandler(err))
+            })
+    // let finalResult=result.toObject()
+    // delete finalResult.__v
+    // console.log(`findbyid result is ${JSON.stringify(result)}`)
+    return Promise.resolve(result)
+    /*    if(returnResult){
+     return Promise.resolve({rc:0,msg:result})
+     }else{
+     return Promise.resolve({rc:0})
+     }*/
+}
+
 async function findOneAndUpdate_returnRecord_async({dbModel,condition,updateFieldsValue,updateOption}){
     // console.log(`find by id :${id}`)
     let result=await dbModel.findOneAndUpdate(condition,updateFieldsValue,updateOption)
@@ -585,6 +605,7 @@ module.exports= {
     findById_returnRecord_async,
     find_returnRecords_async,
     findByIdAndUpdate_returnRecord_async,
+    findByIdAndRemove_async,
     findOneAndUpdate_returnRecord_async,
     countRec_returnNumber_async,
     // count,

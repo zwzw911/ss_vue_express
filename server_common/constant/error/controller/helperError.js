@@ -47,6 +47,7 @@ const helper={
     XSSCheckFailed(fieldName){
         return {rc:60024,msg:{client:'输入有误',server:`字段${fieldName}的内容无法通过XSS检测`}}
     },
+
 }
 
 const checker={
@@ -146,6 +147,11 @@ const checker={
 
         }
         return {rc:0}
+    },
+
+    /*          compound field unique check                 */
+    compoundFieldHasMultipleDuplicateRecord({collName,arr_compoundField}){
+        return {rc:61200,msg:{client:`内部错误，请联系管理员`,server:`表${collName}的复合字段${arr_compoundField.join('+')}存在多个重复记录`}}
     },
 }
 

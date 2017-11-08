@@ -108,19 +108,26 @@ async  function createImpeachAction_async(req){
         return Promise.reject(controllerError.forbidInputOwnerId)
     }
     //submit的时候，才需要选定一个admin；其他的user操作，都无需admin_owner_id（隐式使用creatorId）
-    // console.log(`before pre deal docValue=======>${JSON.stringify(docValue)}`)
+    // console.log(`docValue=======>${JSON.stringify(docValue)}`)
     if(docValue[e_field.IMPEACH_ACTION.ACTION]===e_impeachUserAction.SUBMIT){
-        let validAdminUser=controllerHelper.chooseProperAdminUser_async({arr_priorityType:[e_adminPriorityType.IMPEACH_ASSIGN]})
+        // console.log(`submit in=======>`)
+        let validAdminUser=await controllerHelper.chooseProperAdminUser_async({arr_priorityType:[e_adminPriorityType.IMPEACH_ASSIGN]})
+        // console.log(`submit admin=======>${JSON.stringify(validAdminUser)}`)
+        // console.log(`validAdminUser['_id']============>${JSON.stringify(validAdminUser['_id'])}`)
+        // console.log(` e_field.IMPEACH_ACTION.ADMIN_OWNER_ID]============>${JSON.stringify(e_field.IMPEACH_ACTION.ADMIN_OWNER_ID)}`)
+        // console.log(`docValue[e_field.IMPEACH_ACTION.ADMIN_OWNER_ID]================>${JSON.stringify(docValue[e_field.IMPEACH_ACTION.ADMIN_OWNER_ID])}`)
         docValue[e_field.IMPEACH_ACTION.ADMIN_OWNER_ID]=validAdminUser['_id']
+        // console.log(`docValue[e_field.IMPEACH_ACTION.ADMIN_OWNER_ID]================>${JSON.stringify(docValue[e_field.IMPEACH_ACTION.ADMIN_OWNER_ID])}`)
+        // console.log(`docValue after choose =================>${JSON.stringify(docValue)}`)
     }
-
+    // console.log(`chooseProperAdminUser_async done=============>`)
     /*******************************************************************************************/
     /*                                    fk value是否存在                                     */
     /*******************************************************************************************/
     if(undefined!==fkConfig[collName]){
         await controllerChecker.ifFkValueExist_async({docValue:docValue,collFkConfig:fkConfig[collName],collFieldChineseName:e_chineseName[collName]})
     }
-
+// console.log(`fkcheck done=============>`)
     /**********************************************************************************************************************************/
     /* *****************************************         特殊字段检查(cont)       ***********************************************/
     /**********************************************************************************************************************************/
@@ -128,9 +135,9 @@ async  function createImpeachAction_async(req){
     impeachId=docValue[e_field.IMPEACH_ACTION.IMPEACH_ID]
     condition={[e_field.IMPEACH_ACTION.IMPEACH_ID]:impeachId}
     let options={sort:{'cDate':-1}}//
-    console.log(`condition =============>${JSON.stringify(condition)}`)
+    // console.log(`condition =============>${JSON.stringify(condition)}`)
     impeachStateRecords=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.impeach_action,condition:condition,options:options})
-    console.log(`impeachStateRecords =============>${JSON.stringify(impeachStateRecords)}`)
+    // console.log(`impeachStateRecords =============>${JSON.stringify(impeachStateRecords)}`)
     //如果没有任何action，要手动添加一个CREATE。同时无需更改impeach的state
     if(impeachStateRecords.length===0){
         let value={
@@ -147,7 +154,7 @@ async  function createImpeachAction_async(req){
     if(undefined===availableNextUserAction[lastImpeachAction] || -1===availableNextUserAction[lastImpeachAction].indexOf(docValue[e_field.IMPEACH_ACTION.ACTION])){
         return Promise.reject(controllerError.invalidActionBaseOnCurrentAction)
     }
-    console.log(`after special field check docValue=======>${JSON.stringify(docValue)}`)
+    // console.log(`after special field check docValue=======>${JSON.stringify(docValue)}`)
 
     /*******************************************************************************************/
     /*                                  enum unique check(enum in array)                       */
@@ -194,12 +201,12 @@ async  function createImpeachAction_async(req){
     /*                                       resource check                                    */
     /*******************************************************************************************/
 
-console.log(`createUser_async docValue===> ${JSON.stringify(docValue)}`)
+// console.log(`createUser_async docValue===> ${JSON.stringify(docValue)}`)
     /*******************************************************************************************/
     /*                                          unique check                                   */
     /*******************************************************************************************/
     if(undefined!==e_uniqueField[collName] &&  e_uniqueField[collName].length>0) {
-        let additionalCheckCondition={[e_field.ADMIN_USER.DOC_STATUS]:e_docStatus.DONE}
+        // let additionalCheckCondition={[e_field.ADMIN_USER.DOC_STATUS]:e_docStatus.DONE}
         await controllerChecker.ifFieldInDocValueUnique_async({collName: collName, docValue: docValue,additionalCheckCondition:additionalCheckCondition})
     }
 
@@ -219,7 +226,7 @@ console.log(`createUser_async docValue===> ${JSON.stringify(docValue)}`)
         }
     }
     Object.assign(docValue,internalValue)
-    console.log(`internal check  is ${JSON.stringify(docValue)}`)
+    // console.log(`internal check  is ${JSON.stringify(docValue)}`)
     // let currentColl=e_coll.USER_SUGAR
     // console.log(`value to be insert is ${JSON.stringify(docValue)}`)
     // let doc=new dbModel[currentColl](values[e_part.RECORD_INFO])
@@ -239,6 +246,7 @@ console.log(`createUser_async docValue===> ${JSON.stringify(docValue)}`)
         docValueForUpdateImpeach[e_field.IMPEACH_ACTION.CURRENT_ADMIN_OWNER_ID]=docValue[e_field.IMPEACH_ACTION.ADMIN_OWNER_ID]
     }
     //action插入 db
+    // console.log(`docValue=================>${JSON.stringify(docValue)}`)
      await common_operation_model.create_returnRecord_async({dbModel:e_dbModel.impeach_action,value:docValue})
     //state更新到impeach
     await  common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel.impeach,id:impeachId,updateFieldsValue:docValueForUpdateImpeach})

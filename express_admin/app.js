@@ -89,13 +89,13 @@ app.use(function(req,res,next){
 
 /*              require file                */
 const user=require('./server/controller/admin/admin_router').router
-const impeach_state=require('./server/controller/impeach_state/impeach_state_router').router
+const impeach_action=require('./server/controller/impeach_action/impeach_action_router').router
 const penalize=require('./server/controller/penalize/penalize_router').router
 /*const article=require('./server/controller/article/article_router').router
 const impeach=require('./server/controller/impeach/impeach_router').router*/
 
 app.use('/admin_user', user);
-app.use('/impeach_action', impeach_state);
+app.use('/impeach_action', impeach_action);
 app.use('/admin_penalize', penalize);
 /*app.use('/article', article);
 app.use('/impeach', impeach);*/

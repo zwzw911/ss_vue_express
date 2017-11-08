@@ -54,7 +54,9 @@ const misc_helper=server_common_file_require.misc_helper
 const controllerError=require('../../server/controller/impeach_action/impeach_action_setting/impeach_action_controllerError').controllerError
 
 let  baseUrl="/impeach_action/",finalUrl,url
-let adminRootSess,adminUser1Sess,adminUser2Sess,adminUser3Sess,adminRootId,user1Sess,user2Sess,user1Id,user2Id
+let adminUser1Info,adminUser2Info,adminUser3Info,adminUser1Id,adminUser2Id,adminUser3Id,adminUser1Sess,adminUser2Sess,adminUser3Sess,adminUser1Data,adminUser2Data,adminUser3Data
+let user1Info,user2Info,user3Info,user1Id,user2Id,user3Id,user1Sess,user2Sess,user3Sess,user1Data,user2Data,user3Data
+let adminRootSess,adminRootId,data={values:{}}
 
 let normalRecord={
     [e_field.IMPEACH_ACTION.IMPEACH_ID]:undefined,

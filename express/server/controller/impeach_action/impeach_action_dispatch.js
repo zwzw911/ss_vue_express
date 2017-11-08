@@ -52,7 +52,7 @@ async function dispatcher_async(req){
             // console.log(`create in`)
             userLoginCheck={
                 needCheck:true,
-                error:controllerError.notLoginCantChangeState
+                error:controllerError.notLoginCantChangeAction
             }
             penalizeCheck={
                 penalizeType:e_penalizeType.NO_IMPEACH,

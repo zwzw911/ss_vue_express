@@ -385,6 +385,24 @@ async function deletePenalizeById_async({adminUserSess,penalizeId,adminApp}){
 
     // return Promise.resolve({rc:0})
 }
+
+//普通或者admin用户提交action
+//impeachActionInfo:{}
+async function createImpeachAction_async({sess,impeachActionInfo,app}){
+    let data={values:{}}
+    data.values[e_part.METHOD]=e_method.CREATE
+    data.values[e_part.RECORD_INFO]=impeachActionInfo
+    return new Promise(function(resolve,reject){
+        request(app).post('/impeach_action/').set('Accept', 'application/json').set('Cookie',[sess]).send(data)
+            .end(function(err, res) {
+                let parsedRes=JSON.parse(res.text)
+                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
+                assert.deepStrictEqual(parsedRes.rc,0)
+                return resolve({rc:0})
+            });
+    })
+
+}
 module.exports={
     removeExistsRecord_async,
 
@@ -406,4 +424,7 @@ module.exports={
     createPenalize_returnPenalizeId_async,
     deletePenalize_async,
     deletePenalizeById_async,
+
+
+    createImpeachAction_async,
 }

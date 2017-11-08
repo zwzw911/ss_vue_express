@@ -59,7 +59,7 @@ const fkConfig=server_common_file_require.fkConfig.fkConfig
 //对数值逻辑进行判断（外键是否有对应的记录等）
 //执行db操作并返回结果
 async  function createImpeach_async({req,impeachType}){
-    // console.log(`create impeach in`)
+    console.log(`create impeach in`)
     /*******************************************************************************************/
     /*                                          define variant                                 */
     /*******************************************************************************************/
@@ -86,14 +86,40 @@ async  function createImpeach_async({req,impeachType}){
     /*******************************************************************************************/
     /*                                       resource check                                    */
     /*******************************************************************************************/
+    /*******************************************************************************************/
+    /*                                       特定字段的处理（检查）                            */
+    /*******************************************************************************************/
+/*    //content内容进行XSS检测
+    let contentFieldName=e_field.IMPEACH.CONTENT
+    if(undefined!==docValue[contentFieldName]){
+        let content=docValue[contentFieldName]
+        //XSS检查
+        await controllerHelper.contentXSSCheck_async({content:content,fieldName:contentFieldName})
+        //content中图片和db中的图片比较，决定是否要删除content中DOM，以及是否要删除db中的记录
+        /!*
+         create中因为没有recordId，所以无法执行contentDbDeleteNotExistImage_async
+         同时，create中content为初始化内容，无image，也不必要执行contentDbDeleteNotExistImage_async
+         docValue[contentFieldName]=await controllerHelper.contentDbDeleteNotExistImage_async({content:content,recordId:recordId,collConfig:collConfig,collImageConfig:collImageConfig})
+         *!/
+    }*/
 
-
-
+    //impeachType是否为预定义的一种
+    if(-1===Object.values(enumValue.ImpeachType).indexOf(impeachType)){
+        return Promise.reject(controllerError.unknownImpeachType)
+    }
+//IMPEACHED_ARTICLE_ID/IMPEACHED_COMMENT_ID2者只能有一个存在
+/*    if(undefined===docValue[e_field.IMPEACH.IMPEACHED_ARTICLE_ID] && undefined===docValue[e_field.IMPEACH.IMPEACHED_COMMENT_ID]){
+        return Promise.reject(controllerError.noImpeachedObject)
+    }
+    if(undefined!==docValue[e_field.IMPEACH.IMPEACHED_ARTICLE_ID] && undefined!==docValue[e_field.IMPEACH.IMPEACHED_COMMENT_ID]){
+        return Promise.reject(controllerError.noImpeachedObject)
+    }*/
     /*******************************************************************************************/
     /*                                  fk value是否存在                                       */
     /*******************************************************************************************/
     //在fkConfig中定义的外键检查
-    // console.log(`docValue================>${JSON.stringify(docValue)}`)
+    // console.log(`docValue for fk check ================>${JSON.stringify(docValue)}`)
+    // console.log(`fkConfig[collName] for fk check ================>${JSON.stringify(fkConfig[collName])}`)
     await controllerChecker.ifFkValueExist_async({docValue:docValue,collFkConfig:fkConfig[collName],collFieldChineseName:e_chineseName[collName]})
     // console.log(`2`)
     //自定义外键的检查
@@ -117,7 +143,7 @@ async  function createImpeach_async({req,impeachType}){
         // await controllerChecker.ifFieldInDocValueUnique_async({collName: collName, docValue: docValue,additionalCheckCondition:additionalCheckCondition})
         await controllerChecker.ifFieldInDocValueUnique_async({collName: collName, docValue: docValue})
     }
-    //复合unique index检查(用户是否对此文档/评论进行过impeach)
+    /*//复合unique index检查(用户是否对此文档/评论进行过impeach)
     let condition={}
     condition[e_field.IMPEACH.CREATOR_ID]=userId
     let oneOfTwoFields=[e_field.IMPEACH.IMPEACHED_ARTICLE_ID,e_field.IMPEACH.IMPEACHED_COMMENT_ID]
@@ -134,32 +160,17 @@ async  function createImpeach_async({req,impeachType}){
                 }
             }
         }
-    }
+    }*/
+
+
+
+
+
 
 // console.log(`compound index check done`)
 
 // console.log(`ifFieldInDocValueUnique_async done===>`)
-    /*******************************************************************************************/
-    /*                                       特定字段的处理（检查）                            */
-    /*******************************************************************************************/
-    //content内容进行XSS检测
-    let contentFieldName=e_field.IMPEACH.CONTENT
-    if(undefined!==docValue[contentFieldName]){
-        let content=docValue[contentFieldName]
-        //XSS检查
-        await controllerHelper.contentXSSCheck_async({content:content,fieldName:contentFieldName})
-        //content中图片和db中的图片比较，决定是否要删除content中DOM，以及是否要删除db中的记录
-        /*
-         create中因为没有recordId，所以无法执行contentDbDeleteNotExistImage_async
-         同时，create中content为初始化内容，无image，也不必要执行contentDbDeleteNotExistImage_async
-         docValue[contentFieldName]=await controllerHelper.contentDbDeleteNotExistImage_async({content:content,recordId:recordId,collConfig:collConfig,collImageConfig:collImageConfig})
-         */
-    }
-    // console.log(`XSS done`)
-    //impeachType是否为预定义的一种
-    if(-1===Object.values(enumValue.ImpeachType).indexOf(impeachType)){
-        return Promise.reject(controllerError.unknownImpeachType)
-    }
+
     // console.log(`preDefined type done`)
     /*******************************************************************************************/
     /*                         添加internal field，然后检查                                    */
@@ -213,7 +224,32 @@ async  function createImpeach_async({req,impeachType}){
     }
     Object.assign(docValue,internalValue)
     // console.log(`docValue==============>${JSON.stringify(docValue)}`)
-
+    /*******************************************************************************************/
+    /*                    复合字段unique check（需要internal field完成后）                     */
+    /*******************************************************************************************/
+    // console.log(`collName===================>${JSON.stringify(collName)}`)
+    console.log(`docValue===================>${JSON.stringify(docValue)}`)
+    //复合字段的unique check
+    //如果用户删除了之前impeach，实施的是物理删除，所以不会有重复
+    //如果检测到重复，那就是真正的重复（已有的记录正在被admin处理，或者已经处理结束）
+    let compoundUniqueCheckResult=await controllerChecker.ifCompoundFiledUnique_returnExistRecord_async({collName:collName,docValue:docValue})
+    console.log(`compound field check result===================>${JSON.stringify(compoundUniqueCheckResult)}`)
+    //复合字段唯一返回true或者已有的doc
+    //有重复值，且重复记录数为1（大于1，已经直接reject）
+    if(true!==compoundUniqueCheckResult){
+        if(undefined!==docValue[e_field.IMPEACH.IMPEACHED_ARTICLE_ID]){
+            return Promise.reject(controllerError.articleAlreadyImpeached)
+        }
+        if(undefined!==docValue[e_field.IMPEACH.IMPEACHED_COMMENT_ID]){
+            return Promise.reject(controllerError.articleCommentAlreadyImpeached)
+        }
+        /*//如果是已经delete，则直接将此doc设成可用，而不是再创建新记录（防止用户恶意删除后再次创建）
+         tmpResult[0][`cDate`]=Date.now()
+         tmpResult[0][`$unset`]={'dDate':''}
+         // console.log(`compound field check result===================>${JSON.stringify(tmpResult)}`)
+         //删除关联IMPEACH_ACTION操作,并新创一个CREATE
+         await common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel[e_coll.IMPEACH_ACTION],id:tmpResult[0][`_id`],updateFieldsValue,updateOption})*/
+    }
     /*******************************************************************************************/
     /*                                  db operation                                           */
     /*******************************************************************************************/
