@@ -4,9 +4,12 @@
 'use strict'
 
 const fs=require('fs')
+const absolutePath=require('../server_common_file_require').appSetting.absolutePath
+
 const genCollFieldEnum=require('../../server_common/maintain/runAllGen').genAllForNormal
-let localAbsolutePath=`h:/ss_vue_express/express/`
-let serverCommonAbsolutePath=`h:/ss_vue_express/server_common/`
+
+let localAbsolutePath=absolutePath.express//`f:/U_backup/ss_vue_express/express/`
+let serverCommonAbsolutePath=absolutePath.server_common//`f:/U_backup/ss_vue_express/server_common/`
 
 let absoluteDestDirForInputRule=`${localAbsolutePath}server/constant/inputRule/`
 let absoluteDestDirForEnum=`${localAbsolutePath}server/constant/genEnum/`

@@ -1,4 +1,4 @@
-/*    gene by H:\ss_vue_express\server_common\function\assist\misc.js     */ 
+/*    gene by F:\U_backup\ss_vue_express\server_common\function\assist\misc.js     */ 
  
 "use strict"
 

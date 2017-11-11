@@ -3,14 +3,19 @@
  */
 'use strict'
 const fs=require('fs')
-const runAllGenForCommon=require('h:/ss_vue_express/server_common/maintain/runAllGen').genAllForAdmin
+const absolutePath=require('../server_common_file_require').appSetting.absolutePath
 
-let absoluteDestDirForInputRule=`h:/ss_vue_express/express_admin/server/constant/inputRule/`
-let absoluteDestDirForEnum=`h:/ss_vue_express/express_admin/server/constant/genEnum/`
-let absoluteDestDirForMongoEnumValue=`h:/ss_vue_express/express_admin/server/constant/genEnum/`
-let modelCollRootDir='h:/ss_vue_express/server_common/model/mongo/structure/' //原始的mongoose的schema定义
-let inputRuleBaseDir='h:/ss_vue_express/server_common/constant/inputRule/'   //原始的rule定义
-let mongoEnumDir='h:/ss_vue_express/server_common/constant/enum/'  //原始的enum定义的目录
+let localAbsolutePath=absolutePath.express_admin//`f:/U_backup/ss_vue_express/express_admin/`
+let serverCommonAbsolutePath=absolutePath.server_common//`f:/U_backup/ss_vue_express/server_common/`
+
+const runAllGenForCommon=require(`${serverCommonAbsolutePath}maintain/runAllGen`).genAllForAdmin
+
+let absoluteDestDirForInputRule=`${localAbsolutePath}server/constant/inputRule/`
+let absoluteDestDirForEnum=`${localAbsolutePath}server/constant/genEnum/`
+let absoluteDestDirForMongoEnumValue=`${localAbsolutePath}server/constant/genEnum/`
+let modelCollRootDir=`${serverCommonAbsolutePath}model/mongo/structure/` //原始的mongoose的schema定义
+let inputRuleBaseDir=`${serverCommonAbsolutePath}constant/inputRule/`   //原始的rule定义
+let mongoEnumDir=`${serverCommonAbsolutePath}constant/enum/`  //原始的enum定义的目录
 
 runAllGenForCommon(absoluteDestDirForInputRule,absoluteDestDirForEnum,absoluteDestDirForMongoEnumValue,modelCollRootDir,inputRuleBaseDir,mongoEnumDir)
 

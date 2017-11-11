@@ -228,12 +228,12 @@ async  function createImpeach_async({req,impeachType}){
     /*                    复合字段unique check（需要internal field完成后）                     */
     /*******************************************************************************************/
     // console.log(`collName===================>${JSON.stringify(collName)}`)
-    console.log(`docValue===================>${JSON.stringify(docValue)}`)
+    // console.log(`docValue===================>${JSON.stringify(docValue)}`)
     //复合字段的unique check
     //如果用户删除了之前impeach，实施的是物理删除，所以不会有重复
     //如果检测到重复，那就是真正的重复（已有的记录正在被admin处理，或者已经处理结束）
     let compoundUniqueCheckResult=await controllerChecker.ifCompoundFiledUnique_returnExistRecord_async({collName:collName,docValue:docValue})
-    console.log(`compound field check result===================>${JSON.stringify(compoundUniqueCheckResult)}`)
+    // console.log(`compound field check result===================>${JSON.stringify(compoundUniqueCheckResult)}`)
     //复合字段唯一返回true或者已有的doc
     //有重复值，且重复记录数为1（大于1，已经直接reject）
     if(true!==compoundUniqueCheckResult){

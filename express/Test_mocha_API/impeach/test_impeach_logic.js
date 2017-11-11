@@ -139,6 +139,7 @@ describe('impeach for create', async function() {
         data.values={}
         data.values[e_part.RECORD_INFO]={
             [e_field.IMPEACH.IMPEACHED_ARTICLE_ID]:articleId2,
+            [e_field.IMPEACH.CONTENT]:`asdfasdfasdfasdfasdfasdf`,
         }
         data.values[e_part.RECORD_ID]=impeachId
         data.values[e_part.METHOD]=e_method.UPDATE
@@ -151,7 +152,22 @@ describe('impeach for create', async function() {
             });
     });
 
-
+    it('user1 update impeach1 with wrong url', function (done) {
+        data.values={}
+        data.values[e_part.RECORD_INFO]={
+            [e_field.IMPEACH.IMPEACHED_ARTICLE_ID]:articleId2,
+            [e_field.IMPEACH.CONTENT]:`asdfasdfasdfasdfasdfasdf`,
+        }
+        data.values[e_part.RECORD_ID]=impeachId
+        data.values[e_part.METHOD]=e_method.UPDATE
+        request(app).post('/impeach/comment').set('Accept', 'application/json').set('Cookie', [user1Sess]).send(data)
+            .end(function (err, res) {
+                let parsedRes = JSON.parse(res.text)
+                // console.log(`createImpeach_returnImpeachId_async result=========> ${JSON.stringify(parsedRes)}`)
+                assert.deepStrictEqual(parsedRes.rc, 0)
+                done();
+            });
+    });
     it('user1 update impeach with field value contain xss', function (done) {
         data.values={}
         data.values[e_part.RECORD_INFO]={

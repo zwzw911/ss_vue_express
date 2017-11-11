@@ -126,13 +126,14 @@ async function ifCompoundFiledUnique_returnExistRecord_async({collName,docValue}
         // console.log(`collConfig===========>${JSON.stringify(collConfig)}`)
         for(let singleCompoundFieldName in collConfig){
             let singleCompound=collConfig[singleCompoundFieldName]
-            console.log(`singleCompound===========>${JSON.stringify(singleCompound)}`)
+            // console.log(`singleCompound===========>${JSON.stringify(singleCompound)}`)
             let condition={},allCompoundFiledAvailable=true
             //检测复合字段的每个字段都有值
             for(let singleField of singleCompound){
                 //复合字段中，如果某个字段，在docValue没有设置值，直接忽略
                 //因为在mongo中，某个字段不需要值，直接unset，而不是设成null等，所以如果传入的带检测值有空字段，直接忽略unqique检测
-                console.log(`docValue[${singleField}] ===========>${JSON.stringify(docValue[singleField] )}`)
+                // console.log(`docValue[${singleField}] ===========>${JSON.stringify(docValue[singleField] )}`)
+                // console.log(`typeof docValue[${singleField}] ===========>${JSON.stringify(typeof docValue[singleField] )}`)
                 if(undefined===docValue[singleField] || null===docValue[singleField]){
                     allCompoundFiledAvailable=false
                     break
@@ -142,10 +143,10 @@ async function ifCompoundFiledUnique_returnExistRecord_async({collName,docValue}
             }
             //检查单个compound field是否unique
             if(true===allCompoundFiledAvailable){
-                console.log(`compound condition=============>${JSON.stringify(condition)}`)
-                console.log(`collName=============>${JSON.stringify(collName)}`)
+                // console.log(`compound condition=============>${JSON.stringify(condition)}`)
+                // console.log(`collName=============>${JSON.stringify(collName)}`)
                 let results=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel[collName],condition:condition})
-                console.log(`compound result=============>${JSON.stringify(results)}`)
+                // console.log(`compound result=============>${JSON.stringify(results)}`)
                 if(results.length>1){
                     return Promise.reject( checkerError.compoundFieldHasMultipleDuplicateRecord({collName:collName,arr_compoundField:Object.keys(condition)}))
                 }
@@ -170,7 +171,7 @@ async function ifFkValueExist_async({docValue,collFkConfig,collFieldChineseName}
     // console.log(`collFkConfig fields========>${JSON.stringify(Object.keys(collFkConfig))}`)
     if(undefined!==collFkConfig){
         //console.log(`collFkConfig fields========>${JSON.stringify(Object.keys(collFkConfig))}`)
-        //console.log(`docValue ========>${JSON.stringify(docValue)}`)
+        // console.log(`docValue ========>${JSON.stringify(docValue)}`)
         for(let singleFkFieldName in collFkConfig){
             // console.log(`singleFkFieldName=======>${singleFkFieldName}`)
             // console.log(`docValue[singleFkFieldName]===============>${JSON.stringify(docValue[singleFkFieldName])}`)

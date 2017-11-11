@@ -12,6 +12,7 @@ const e_adminUserType=mongoEnum.AdminUserType.DB
 // const e_accountType=require('../server/constant/enum/mongo').AccountType.DB
 // const e_field=require('../server/constant/enum/DB_field').Field
 
+const absolutePath=require(`../constant/config/appSetting`).absolutePath
 
 const user={
     user1:{name:'user1',account:'15912345678',password:'123456',userType:e_userType.USER_NORMAL},
@@ -34,11 +35,11 @@ const admin_user={
 
 const impeach_image={
 
-    image2:{},
+    image1:`${absolutePath.image_for_test}impeach_image.png`,
+/*    image2:{},
     image3:{},
-    image4:{},
     image5:{},
-    image6:{},
+    image4:{},*/
 }
 
 const tag={
@@ -50,4 +51,5 @@ module.exports={
     user,
     tag,
     admin_user,
+    impeach_image,
 }

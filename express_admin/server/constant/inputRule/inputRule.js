@@ -1,4 +1,4 @@
-/*    gene by h:\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js     */ 
+/*    gene by f:\U_backup\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js     */ 
  
     "use strict"
 

@@ -8,9 +8,9 @@ const request=require('supertest')
 const app=require('../../app')
 const assert=require('assert')
 
-const server_common_file_require=require('../../server_common_file_require')
-const nodeEnum=server_common_file_require.nodeEnum
-const mongoEnum=server_common_file_require.mongoEnum
+// const server_common_file_require=require('../../server_common_file_require')
+const nodeEnum=require(`../../constant/enum/nodeEnum`)
+const mongoEnum=require(`../../constant/enum/mongoEnum`)
 
 const e_part=nodeEnum.ValidatePart
 const e_method=nodeEnum.Method
@@ -24,14 +24,14 @@ const e_resourceType=nodeEnum.ResourceType
 
 const e_impeachType=mongoEnum.ImpeachType.DB
 
-const common_operation_model=server_common_file_require.common_operation_model
-const e_dbModel=require('../../server/constant/genEnum/dbModel')
-const dbModelInArray=require('../../server/constant/genEnum/dbModelInArray')
+const common_operation_model=require(`../../model/mongo/operation/common_operation_model`)
+const e_dbModel=require('../../constant/genEnum/dbModel')
+const dbModelInArray=require('../../constant/genEnum/dbModelInArray')
 
-const inputRule=require('../../server/constant/inputRule/inputRule').inputRule
-const browserInputRule=require('../../server/constant/inputRule/browserInputRule').browserInputRule
+const inputRule=require('../../constant/inputRule/inputRule').inputRule
+const browserInputRule=require('../../constant/inputRule/browserInputRule').browserInputRule
 
-const validateError=server_common_file_require.validateError//require('../../server/constant/error/validateError').validateError
+const validateError=require('../../server/constant/error/validateError').validateError
 // const helpError=require('../../server/constant/error/controller/helperError').helper
 
 // const contollerError=require('../../server/controller/article/article_logic').controllerError
@@ -39,17 +39,17 @@ const validateError=server_common_file_require.validateError//require('../../ser
 // const objectDeepCopy=require('../../server/function/assist/misc').objectDeepCopy
 //
 // const test_helper=require("../API_helper/db_operation_helper")
-const testData=require('../testData')
-const helper=server_common_file_require.controllerHelper//require('../../server/controller/helper')
-const controllerChecker=server_common_file_require.controllerChecker
+const testData=require('../../Test/testData')
+const helper=require(`../../controller/controllerHelper`)//require('../../server/controller/helper')
+const controllerChecker=require(`../../controller/controllerChecker`)
 
-const db_operation_helper=require('../API_helper/db_operation_helper')
+const db_operation_helper=require('../../Test/db_operation_helper')
 
-const initSettingObject=require('../../server/constant/genEnum/initSettingObject').iniSettingObject
+const initSettingObject=require('../../constant/genEnum/initSettingObject').iniSettingObject
 
-const API_helper=require('../API_helper/API_helper')
+const API_helper=require('../../Test/API_helper')
 
-const calcResourceConfig=require('../../server/constant/config/calcResourceConfig')
+const calcResourceConfig=require('../../constant/config/calcResourceConfig')
 
 let tmpResult
 
@@ -96,14 +96,14 @@ describe('help=>calcExistResource_async ', async function() {
     });
 
     before('get user1 && user2 id', async function(){
-        user1Id=await db_operation_helper.getUserId_async({userAccount:testData.user.user1ForModel.account})
+        user1Id=await db_operation_helper.getUserId_async({userAccount:testData.user.user1.account})
         // tmpResult=await common_operation_model.find({dbModel:e_dbModel.user,condition:{account:testData.user.user2ForModel.account}})
-        user2Id=await db_operation_helper.getUserId_async({userAccount:testData.user.user2ForModel.account})
+        user2Id=await db_operation_helper.getUserId_async({userAccount:testData.user.user2.account})
     })
 
 
     before('user2 create impeach', async function () {
-        impeachId=await API_helper.createImpeach_returnImpeachId_async({impeachType:e_impeachType.ARTICLE,articleId:articleId,userSess:user2Sess})
+        impeachId=await API_helper.createImpeachForArticle_returnImpeachId_async({impeachType:e_impeachType.ARTICLE,articleId:articleId,userSess:user2Sess})
     });
 
     //2个函数紧密相关
@@ -233,14 +233,14 @@ describe('help=>contentDbDeleteNotExistImage_async ', async function() {
     });
 
     before('get user1 && user2 id', async function () {
-        user1Id = await db_operation_helper.getUserId_async({userAccount: testData.user.user1ForModel.account})
+        user1Id = await db_operation_helper.getUserId_async({userAccount: testData.user.user1.account})
         // tmpResult=await common_operation_model.find({dbModel:e_dbModel.user,condition:{account:testData.user.user2ForModel.account}})
-        user2Id = await db_operation_helper.getUserId_async({userAccount: testData.user.user2ForModel.account})
+        user2Id = await db_operation_helper.getUserId_async({userAccount: testData.user.user2.account})
     })
 
 
     before('user2 create impeach', async function () {
-        impeachId = await API_helper.createImpeach_returnImpeachId_async({
+        impeachId = await API_helper.createImpeachForArticle_returnImpeachId_async({
             impeachType: e_impeachType.ARTICLE,
             articleId: articleId,
             userSess: user2Sess

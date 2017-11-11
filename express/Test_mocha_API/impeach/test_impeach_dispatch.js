@@ -91,7 +91,7 @@ describe('dispatch check', async function() {
         // let user1Id=result.userId
         let user1Sess=result.sess
         parameter.sess=user1Sess
-        let articleId=await API_helper.createNewArticle_returnArticleId_async({userSess:user1Sess,app:app})
+        let articleId=await component_function.createArticle_setToFinish_returnArticleId_async({userSess:user1Sess,app:app})
         normalRecord[e_field.IMPEACH.IMPEACHED_ARTICLE_ID]=articleId
 
         //for update/delete

@@ -41,6 +41,7 @@ const API_helper=server_common_file_require.API_helper//require('../API_helper/A
 const component_function=server_common_file_require.component_function
 const calcResourceConfig=require('../../server/constant/config/calcResourceConfig')
 
+
 /*************************************************************/
 /************** cant test cause supertest not support attach and senddata at the same time   *****************/
 /*************************************************************/
@@ -80,7 +81,8 @@ describe('impeachUploadFile_dispatch_async ', async function() {
 
         request(app).post('/impeach/impeachImage/').field('name','file')
         // .attach('file','H:/ss_vue_express/培训结果1.png')
-            .attach('file','H:/ss_vue_express/test_data/impeach_image.png')
+        //     .attach('file','H:/ss_vue_express/test_data/impeach_image.png')
+            .attach('file',`${testData.impeach_image.image1}`)
             // .attach('file','H:/ss_vue_express/gm_test.png')
             .set('Cookie',[user2Sess])//.send(data)
             .end(function(err, res) {

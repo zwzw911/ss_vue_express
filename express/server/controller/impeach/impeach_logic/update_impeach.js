@@ -14,6 +14,7 @@ const e_chineseName=require('../../../constant/genEnum/inputRule_field_chineseNa
 const e_coll=require('../../../constant/genEnum/DB_Coll').Coll
 const e_field=require('../../../constant/genEnum/DB_field').Field
 const e_dbModel=require('../../../constant/genEnum/dbModel')
+const enumValue=require(`../../../constant/genEnum/enumValue`)
 const e_iniSettingObject=require('../../../constant/genEnum/initSettingObject').iniSettingObject
 const inputRule=require('../../../constant/inputRule/inputRule').inputRule
 const internalInputRule=require('../../../constant/inputRule/internalInputRule').internalInputRule
@@ -164,16 +165,18 @@ async function updateImpeach_async({req}){
     }
 
     //impeachType是否为预定义的一种
-    if(-1===Object.values(enumValue.ImpeachType).indexOf(impeachType)){
+
+/*    if(-1===Object.values(enumValue.ImpeachType).indexOf(impeachType)){
         return Promise.reject(controllerError.unknownImpeachType)
-    }
+    }*/
     //
-    if(undefined===docValue[e_field.IMPEACH.IMPEACHED_ARTICLE_ID] && undefined===docValue[e_field.IMPEACH.IMPEACHED_COMMENT_ID]){
+    // console.log(`docValue XXXXXXXXXXXXX=================>${JSON.stringify(docValue)}`)
+/*    if(undefined===docValue[e_field.IMPEACH.IMPEACHED_ARTICLE_ID] && undefined===docValue[e_field.IMPEACH.IMPEACHED_COMMENT_ID]){
         return Promise.reject(controllerError.noImpeachedObject)
     }
     if(undefined!==docValue[e_field.IMPEACH.IMPEACHED_ARTICLE_ID] && undefined!==docValue[e_field.IMPEACH.IMPEACHED_COMMENT_ID]){
         return Promise.reject(controllerError.noImpeachedObject)
-    }
+    }*/
     /*******************************************************************************************/
     /*                                  field value duplicate check                            */
     /*******************************************************************************************/

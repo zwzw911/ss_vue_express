@@ -186,7 +186,23 @@ console.log(`tmpResult============>${JSON.stringify(tmpResult)}`)
         await controllerChecker.ifFieldInDocValueUnique_async({collName: collName, docValue: docValue})
         //await controllerHelper.ifFiledInDocValueUnique_async({collName: collName, docValue: docValue,e_uniqueField:e_uniqueField,e_chineseName:e_chineseName})
     }
-
+    /*******************************************************************************************/
+    /*                    复合字段unique check（需要internal field完成后）                     */
+    /*******************************************************************************************/
+    //根据compound_unique_field_config中的设置，进行唯一查询
+    //如果不唯一，返回已经存在的记录，以便进一步处理
+    let compoundUniqueCheckResult=await controllerChecker.ifCompoundFiledUnique_returnExistRecord_async({collName:collName,docValue:docValue})
+    // console.log(`compound field check result===================>${JSON.stringify(compoundUniqueCheckResult)}`)
+    //复合字段唯一返回true或者已有的doc
+    //有重复值，且重复记录数为1（大于1，已经直接reject）
+    if(true!==compoundUniqueCheckResult){
+        if(undefined!==docValue[e_field.IMPEACH.IMPEACHED_ARTICLE_ID]){
+            return Promise.reject(controllerError.articleAlreadyImpeached)
+        }
+        if(undefined!==docValue[e_field.IMPEACH.IMPEACHED_COMMENT_ID]){
+            return Promise.reject(controllerError.articleCommentAlreadyImpeached)
+        }
+    }
     /*******************************************************************************************/
     /*                                  db operation                                           */
     /*******************************************************************************************/
