@@ -53,21 +53,21 @@ async function reCreateAdminUser_returnSessUserId_async({userData,rootSess,admin
 }
 
 
-async function reCreateAdminRoot_async({adminRoorData}){
-    let adminUser=objectDeepCopy(adminRoorData)
+async function reCreateAdminRoot_async({adminRootData}){
+    let adminUser=objectDeepCopy(adminRootData)
 
     //删除用户
-    await db_operation_helper.deleteAdminUserAndRelatedInfo_async(adminUser.name)
+    await db_operation_helper.deleteAdminUserAndRelatedInfo_async(adminRootData.name)
 
     //创建数据
-    let hashResult=generateSugarAndHashPassword({ifUser:false,ifAdminUser:true,password:adminUser[e_field.ADMIN_USER.PASSWORD]})
+    let hashResult=generateSugarAndHashPassword({ifUser:false,ifAdminUser:true,password:adminRootData[e_field.ADMIN_USER.PASSWORD]})
     let sugar=hashResult.msg['sugar']
-    adminUser[e_field.ADMIN_USER.PASSWORD]=hashResult.msg['hashedPassword']
-    adminUser[e_field.ADMIN_USER.DOC_STATUS]=e_docStatus.DONE
-    adminUser[e_field.ADMIN_USER.LAST_SIGN_IN_DATE]=Date.now()
-    adminUser[e_field.ADMIN_USER.LAST_ACCOUNT_UPDATE_DATE]=Date.now()
+    adminRootData[e_field.ADMIN_USER.PASSWORD]=hashResult.msg['hashedPassword']
+    adminRootData[e_field.ADMIN_USER.DOC_STATUS]=e_docStatus.DONE
+    adminRootData[e_field.ADMIN_USER.LAST_SIGN_IN_DATE]=Date.now()
+    adminRootData[e_field.ADMIN_USER.LAST_ACCOUNT_UPDATE_DATE]=Date.now()
 
-    let userResult=await common_operation_model.create_returnRecord_async({dbModel:e_dbModel.admin_user,value:adminUser})
+    let userResult=await common_operation_model.create_returnRecord_async({dbModel:e_dbModel.admin_user,value:adminRootData})
     let userId=userResult['_id']
 
     let sugarResult=await  common_operation_model.create_returnRecord_async(({dbModel:e_dbModel.admin_sugar,value:{sugar:sugar,[e_field.ADMIN_SUGAR.USER_ID]:userId}}))

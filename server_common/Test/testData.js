@@ -47,9 +47,12 @@ const tag={
     tag2:{name:'tag2'}
 }
 
+const unExistObjectId="5a0d2a219dce0948b4933234"
+
 module.exports={
     user,
     tag,
     admin_user,
     impeach_image,
+    unExistObjectId,
 }

@@ -49,10 +49,10 @@ const generalCookieSetting={
 }
 
 const absolutePath={
-    'express':'f:/U_backup/ss_vue_express/express/',
-    'express_admin':`f:/U_backup/ss_vue_express/express_admin/`,
-    'server_common':'f:/U_backup/ss_vue_express/server_common/',
-    'image_for_test':`f:/U_backup/ss_vue_express/test_data/`,
+    'express':'D:/ss_vue_express/express/',
+    'express_admin':`D:/ss_vue_express/express_admin/`,
+    'server_common':'D:/ss_vue_express/server_common/',
+    'image_for_test':`D:/ss_vue_express/test_data/`,
 }
 module.exports={
     currentEnv,

@@ -100,9 +100,17 @@ async  function createImpeachAction_async(req){
     /* *****************************************         ACTION是否有对应的priority支持       ***********************************************/
     /**********************************************************************************************************************************/
     //根据ACTION获得对应的权限
+    // console.log(`docValue[e_field.IMPEACH_ACTION.ACTION]==============>${JSON.stringify(docValue[e_field.IMPEACH_ACTION.ACTION])}`)
     let matchPriority=adminActionNeededPrioritye[docValue[e_field.IMPEACH_ACTION.ACTION]]
+    // console.log(`adminActionNeededPrioritye=======================>${JSON.stringify(adminActionNeededPrioritye)}`)
+    // console.log(`matchPriority=======================>${JSON.stringify(matchPriority)}`)
     if(undefined===matchPriority){
-    return  Promise.reject(controllerError.actionNoRelatedPriority)
+        return  Promise.reject(controllerError.actionNoRelatedPriority)
+    }
+    //当前用户是否具有此权限
+    let adminUserHasPriority=await controllerChecker.ifAdminUserHasExpectedPriority_async({userPriority:matchPriority,arr_expectedPriority:userPriority})
+    if(false===adminUserHasPriority){
+        return  Promise.reject(controllerError.userHasNoPriorityToThisOption)
     }
 
     //adminOwnerId必须设置（即使REJECT/FINISH, 如此说明此impeach不再普通用户手中？）
@@ -165,28 +173,25 @@ async  function createImpeachAction_async(req){
     /*******************************************************************************************/
     /*                                       authorization check                               */
     /*******************************************************************************************/
-    //检查impeach 1. 是否为删除 2. 是否为结束（DONE（finish/reject））
+    /*
+    *   以下检测可以省略，因为
+    *   impeach已经删除(如果已经删除，在fkValue check中就会报错)
+    *   impeach已经结束（会在action check）
+    * */
+   /* //检查impeach 1. 是否为删除 2. 是否为结束（DONE（finish/reject））
     impeachId=docValue[e_field.IMPEACH_ACTION.IMPEACH_ID]
     //impeach为删除，则无法更改state（由ifFkValueExist_async确保impeachId是存在的)
     impeachDoc=await common_operation_model.findById_returnRecord_async({dbModel:e_dbModel.impeach,id:impeachId,selectedFields:'-cDate'})
-    // 1. impeach已经删除
+    // 1. impeach已经删除(如果已经删除，在fkValue check中就会报错)
     if(undefined!==impeachDoc['dDate']){
         return Promise.reject(controllerError.relatedImpeachAlreadyDeleted)
     }
-    //2. impeach已经结束
+    //2. impeach已经结束（会在action check）
     if(undefined!==impeachDoc[e_field.IMPEACH.CURRENT_STATE] && -1!==endState.indexOf(impeachDoc[e_field.IMPEACH.CURRENT_STATE])){
         return Promise.reject(controllerError.impeachAlreadyDone)
-    }
+    }*/
 
-    //根据impeachId判断对应的impeach是否为其所创
-    // console.log(`impeachId===========>${JSON.stringify(impeachId)}`)
-    // impeachCreator=impeachDoc[e_field.IMPEACH.CREATOR_ID]
-    // // console.log(`impeachCreator===========>${JSON.stringify(impeachCreator)}`)
-    // // console.log(`userId===========>${JSON.stringify(userId)}`)
-    // // onsole.log(`impeachCreator!==userId`)
-    // if(impeachCreator.toString()!==userId){
-    //     return Promise.reject(controllerError.notCreatorOfImpeach)
-    // }
+
 
 
 

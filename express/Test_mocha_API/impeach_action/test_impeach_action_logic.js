@@ -40,7 +40,7 @@ const browserInputRule=require('../../server/constant/inputRule/browserInputRule
 const validateError=server_common_file_require.validateError//require('../../server/constant/error/validateError').validateError
 const controllerHelperError=server_common_file_require.helperError.helper//require('../../server/constant/error/controller/helperError').helper
 const controllerCheckerError=server_common_file_require.helperError.checker
-
+const helperError=server_common_file_require.helperError.helper
 // const common_operation_model=server_common_file_require.common_operation_model
 
 const objectDeepCopy=server_common_file_require.misc.objectDeepCopy
@@ -70,6 +70,7 @@ describe('create impeach action', async function() {
         url=''
         finalUrl=baseUrl+url
         // parameter[`APIUrl`]=finalUrl
+        /*                      reCreate user1/2 then login                     */
         let user1Info =await component_function.reCreateUser_returnSessUserId_async({userData:testData.user.user1,app:app})
         user1Id=user1Info[`userId`]
         user1Sess=user1Info[`sess`]
@@ -78,6 +79,7 @@ describe('create impeach action', async function() {
         user2Id=user2Info[`userId`]
         user2Sess=user2Info[`sess`]
 
+        /*                      reCreate user1/2 then login                     */
         adminRootSess=await API_helper.adminUserLogin_returnSess_async({userData:testData.admin_user.adminRoot,adminApp:adminApp})
         adminRootId=db_operation_helper.getAdminUserId_async({userName:testData.admin_user.adminRoot.name})
 
@@ -174,7 +176,7 @@ describe('create impeach action', async function() {
             [e_field.IMPEACH_ACTION.IMPEACH_ID]:impeachId2,
             [e_field.IMPEACH_ACTION.ACTION]:e_impeachUserAction.SUBMIT,
         }
-        await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user2Sess,data:data,expectedErrorRc:controllerError.relatedImpeachAlreadyDeleted.rc,app:app})
+        await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user2Sess,data:data,expectedErrorRc:helperError.fkValueNotExist(e_chineseFieldName.impeach.title,impeachId2).rc,app:app})
     });
 
     it('user1 try to change action for impeach which already done', async function() {

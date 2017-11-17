@@ -10,6 +10,7 @@ const controllerError={
     // userInPenalizeNoImpeachCreate:{rc:51202,msg:`用户被处罚，无法操作举报`},
     /*              create(for user)                          */
     actionNoRelatedPriority:{rc:51204,msg:{client:`操作错误，请联系管理员`,server:`操作没有对应的权限`}},
+    userHasNoPriorityToThisOption:{rc:51204,msg:{client:`操作错误，请联系管理员`,server:`用户无权进行当前操作`}},
     ownerIdMustExists:{rc:51206,msg:{client:`未指定举报处理人`,server:`必须指定举报的下一个处理人`}},
     noPreviousActionRecords:{rc:51208,msg:{client:`操作记录出错，请联系管理员`,server:`adminUser进行操作的时候，必须已经存在user所做的操作记录`}},
     relatedImpeachAlreadyDeleted:{rc:51204,msg:`举报已经被删除，无法更改举报状态`},

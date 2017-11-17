@@ -109,7 +109,7 @@ describe('dispatch', function() {
         await API_helper.createPenalize_async({adminUserSess:rootSess,penalizeInfo:penalizeInfo,pernalizedUserData:testData.user.user1,adminApp:adminApp})
     })*/
     it(`preCheck:CREATE`,async function(){
-        parameter[e_parameterPart.SESS_ERROR_RC]=controllerError.notLoginCantChangeState.rc
+        parameter[e_parameterPart.SESS_ERROR_RC]=controllerError.notLoginCantChangeAction.rc
         parameter[e_parameterPart.REQ_BODY_VALUES][e_part.METHOD]=e_method.CREATE
         parameter[e_parameterPart.PENALIZE_RELATED_INFO][`penalizeSubType`]=e_penalizeSubType.CREATE
         parameter[e_parameterPart.PENALIZE_RELATED_INFO][`penalizedError`]=controllerError.userInPenalizeNoImpeachCreate

@@ -358,6 +358,22 @@ const ResourceProfileType={
 }
 
 
+/*
+ *  在某些coll中，需要预先在后台建立一个默认的记录，以便获得ObjectId，用作插入图片作者附件（图片或者附件除了在coll中有field记录，还需要一个单独的表存储，方便计算数量和size）
+ *  因此在client，用户点击“新建”，其实在server静默的创建一个新的记录
+ *  为了防止用户“新建”后，却不提交，造成无效记录，添加一个字段，用来记录 记录状态，以便进行相应的处理
+ * */
+const DocumentStatus={
+    DB:{
+        NEW:'1',
+        COMMIT:'2',
+
+    },
+    SHOW:{
+        NEW:'新建记录，但未提交',
+        COMMIT:'新建记录，已经提交',
+    },
+}
 module.exports={
     ArticleStatus,
     AdminUserType,
@@ -382,4 +398,5 @@ module.exports={
     StorePathStatus,
     ResourceProfileRange,
     ResourceProfileType,
+    DocumentStatus,
 }

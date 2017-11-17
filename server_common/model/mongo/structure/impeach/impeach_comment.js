@@ -56,10 +56,12 @@ const impeachCommentAttachment_arrayMaxLengthValidator={
 
 const collFieldDefine={
     authorId:{type:mongoose.Schema.Types.ObjectId,ref:"user"}, //普通用户发起举报
+    adminAuthorId:{type:mongoose.Schema.Types.ObjectId,ref:"adminUser"},
     impeachId:{type:mongoose.Schema.Types.ObjectId,ref:"impeach"},
     content:{type:String,},
     impeachImagesId:{type:[mongoose.Schema.Types.ObjectId],ref:'impeach_image',validate:[impeachCommentImage_arrayMaxLengthValidator]},
     impeachAttachmentsId:{type:[mongoose.Schema.Types.ObjectId],ref:'impeach_attachment',validate:[impeachCommentAttachment_arrayMaxLengthValidator]},
+    documentStatus:{type:String},//enum
     cDate:{type:Date,default:Date.now},
     //uDate:{type:Date,default:Date.now},//评论无法更改
     // dDate:{type:Date},  //只能由admin删除

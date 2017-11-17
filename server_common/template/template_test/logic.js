@@ -40,7 +40,7 @@ const browserInputRule=require('../../server/constant/inputRule/browserInputRule
 const validateError=server_common_file_require.validateError//require('../../server/constant/error/validateError').validateError
 const controllerHelperError=server_common_file_require.helperError.helper//require('../../server/constant/error/controller/helperError').helper
 const controllerCheckerError=server_common_file_require.helperError.checker
-
+const helperError=server_common_file_require.helperError.helper
 // const common_operation_model=server_common_file_require.common_operation_model
 
 const objectDeepCopy=server_common_file_require.misc.objectDeepCopy
