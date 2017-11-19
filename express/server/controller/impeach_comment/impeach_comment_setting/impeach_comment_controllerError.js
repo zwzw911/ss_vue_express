@@ -5,26 +5,39 @@
 
 
 const controllerError={
+
+    /*              dispatch                           */
+    //create
+    notLoginCantCreateImpeachComment:{rc:51000,msg:`尚未登录，无法对举报进行评论`},
+    currentUserForbidToCreateImpeachComment:{rc:51004,msg:`您被禁止对举报进行评论`},
+    //update
+    notLoginCantUpdateImpeachComment:{rc:51001,msg:`尚未登录，无法更新举报评论`},
+    currentUserForbidToUpdateImpeachComment:{rc:51005,msg:`您被禁止对举报评论进行更新`},
+
+
     /*              create                          */
+    // impeachNotExistCantCreateComment:{rc:51005,msg:`举报不存在`},
+    notImpeachCreatorCantCreateComment:{rc:51005,msg:`无权对他人举报进行评论`},
 
-    notLoginCantCreateUser:{rc:51000,msg:`尚未登录，无法创建新用户`},
-    notLoginCantUpdateUser:{rc:51001,msg:`尚未登录，无法更新用户`},
-    notLoginCantDeleteUser:{rc:51002,msg:`尚未登录，无法删除用户`},
-    notLoginCantSearchUser:{rc:51002,msg:`尚未登录，无法搜索用户`},
-    currentUserHasNotPriorityToCreateUser:{rc:51004,msg:`当前用户无权创建新用户`},
-    currentUserHasNotPriorityToUpdateUser:{rc:51005,msg:`当前用户无权更新用户`},
-    currentUserHasNotPriorityToDeleteUser:{rc:51006,msg:`当前用户无权删除用户`},
-    currentUserHasNotPriorityToSearchUser:{rc:51007,msg:`当前用户无权搜索用户`},
+    /*              update                          */
+    notImpeachCreatorCantUpdateComment:{rc:51005,msg:`无权对他人举报进行评论`},
 
-    cantCreateRootUserByAPI:{rc:51010,msg:'无法创建root用户'},
-    cantDeleteRootUserByAPI:{rc:51011,msg:'无法删除root用户'},
-    onlyRootCanUpdateRoot:{rc:51012,msg:'无法更新root用户'},
-    // nameAlreadyExists:{rc:50100,msg:`用户名已经存在`}, //key名字必须固定为 field+AlreadyExists
-    // accountAlreadyExists:{rc:50102,msg:`账号已经存在`},
-    // fieldNotSupport:{rc:50104,msg:`字段名称不正确`},
-    /*              login_async               */
-    loginFieldNumNotExpected:{rc:51105,msg:`输入字段字段数量不正确`},
-    loginMandatoryFieldNotExist(fieldName){return {rc:51106,msg:`缺少字段${fieldName}`}},
+
+    // notLoginCantDeleteUser:{rc:51002,msg:`尚未登录，无法删除用户`},
+    // notLoginCantSearchUser:{rc:51002,msg:`尚未登录，无法搜索用户`},
+    //
+    // currentUserHasNotPriorityToDeleteUser:{rc:51006,msg:`当前用户无权删除用户`},
+    // currentUserHasNotPriorityToSearchUser:{rc:51007,msg:`当前用户无权搜索用户`},
+    //
+    // cantCreateRootUserByAPI:{rc:51010,msg:'无法创建root用户'},
+    // cantDeleteRootUserByAPI:{rc:51011,msg:'无法删除root用户'},
+    // onlyRootCanUpdateRoot:{rc:51012,msg:'无法更新root用户'},
+    // // nameAlreadyExists:{rc:50100,msg:`用户名已经存在`}, //key名字必须固定为 field+AlreadyExists
+    // // accountAlreadyExists:{rc:50102,msg:`账号已经存在`},
+    // // fieldNotSupport:{rc:50104,msg:`字段名称不正确`},
+    // /*              login_async               */
+    // loginFieldNumNotExpected:{rc:51105,msg:`输入字段字段数量不正确`},
+    // loginMandatoryFieldNotExist(fieldName){return {rc:51106,msg:`缺少字段${fieldName}`}},
 
     /*accountNotExist:{rc:51108,msg:`用户或者密码不正确`},//不能泄露具体信息
     accountPasswordNotMatch:{rc:50110,msg:`用户或者密码不正确`},

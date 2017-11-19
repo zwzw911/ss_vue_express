@@ -162,8 +162,10 @@ const ChineseName={
         'impeachId':'举报',
         'content':'评论内容',
         'authorId':'评论作者',
+        'adminAuthorId':'评论作者',
         'impeachImagesId':'评论图片',
         'impeachAttachmentsId':'评论附件',
+        'documentStatus':'记录状态',
     },
     impeach_image:{
         'referenceId':'举报对象',

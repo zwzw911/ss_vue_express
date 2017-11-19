@@ -23,6 +23,7 @@ const StorePathUsage=["1","2","3","4","5",]
 const StorePathStatus=["1","2",] 
 const ResourceProfileRange=["1","2","3","4",] 
 const ResourceProfileType=["1","2",] 
+const DocumentStatus=["1","2",] 
 module.exports={
     ArticleStatus,
     AdminUserType,
@@ -46,4 +47,5 @@ module.exports={
     StorePathStatus,
     ResourceProfileRange,
     ResourceProfileType,
+    DocumentStatus,
 }

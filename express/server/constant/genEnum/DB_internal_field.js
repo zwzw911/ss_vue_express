@@ -23,7 +23,7 @@ const Field={
     impeach:['creatorId','impeachType','impeachedUserId','impeachImagesId','impeachAttachmentsId','impeachCommentsId','currentState','currentAdminOwnerId',],
     impeach_action:['creatorId','creatorColl',],
     impeach_attachment:['name','hashName','authorId','sizeInMb','pathId',],
-    impeach_comment:['authorId','impeachImagesId','impeachAttachmentsId',],
+    impeach_comment:['authorId','adminAuthorId','impeachImagesId','impeachAttachmentsId','documentStatus',],
     impeach_image:['name','hashName','pathId','sizeInMb','authorId',],
     like_dislike_static:['articleId',],
     resource_profile_static:['userId','resourceProfileId','usedFileNum','usedFileSize',],

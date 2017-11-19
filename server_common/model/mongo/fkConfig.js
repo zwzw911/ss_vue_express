@@ -13,7 +13,7 @@ const e_coll=require('../../constant/genEnum/DB_Coll').Coll
 const e_field=require('../../constant/genEnum/DB_field').Field
 
 const e_articleStatus=require(`../../constant/enum/mongoEnum`).ArticleStatus.DB
-
+const e_impeachState=require(`../../constant/enum/mongoEnum`).ImpeachState.DB
 
 
 const fkConfig={
@@ -72,6 +72,7 @@ const fkConfig={
 
         [e_field.IMPEACH.IMPEACHED_ARTICLE_ID]:{
             relatedColl:e_coll.ARTICLE,forSelect:`${e_field.ARTICLE.NAME}`,forSetValue:[e_field.ARTICLE.NAME],validCriteria:{'dDate':{$exists:false},[e_field.ARTICLE.STATUS]:e_articleStatus.FINISHED}
+            // "$or":[{[e_field.ADMIN_PENALIZE.DURATION]:0},{'endDate':{'$gt':Date.now()}}],
         },
         [e_field.IMPEACH.IMPEACHED_COMMENT_ID]:{
             relatedColl:e_coll.ARTICLE_COMMENT,forSelect:`${e_field.ARTICLE_COMMENT.CONTENT}`,forSetValue:[e_field.ARTICLE_COMMENT.CONTENT]
@@ -94,8 +95,11 @@ const fkConfig={
         [e_field.IMPEACH_COMMENT.AUTHOR_ID]:{
             relatedColl:e_coll.USER,forSelect:`${e_field.USER.NAME}`,forSetValue:[e_field.USER.NAME]
         },
+        [e_field.IMPEACH_COMMENT.ADMIN_AUTHOR_ID]:{
+            relatedColl:e_coll.ADMIN_USER,forSelect:`${e_field.ADMIN_USER.NAME}`,forSetValue:[e_field.ADMIN_USER.NAME]
+        },
         [e_field.IMPEACH_COMMENT.IMPEACH_ID]:{
-            relatedColl:e_coll.IMPEACH,forSelect:`${e_field.IMPEACH.TITLE}`,forSetValue:[e_field.IMPEACH.TITLE]
+            relatedColl:e_coll.IMPEACH,forSelect:`${e_field.IMPEACH.TITLE}`,forSetValue:[e_field.IMPEACH.TITLE],validCriteria:{'dDate':{$exists:false},[e_field.IMPEACH.CURRENT_STATE]:{"$ne":e_impeachState.DONE}}
         },
         [e_field.IMPEACH_COMMENT.IMPEACH_IMAGES_ID]:{
             relatedColl:e_coll.IMPEACH_IMAGE,forSelect:`${e_field.IMPEACH_IMAGE.NAME}`,forSetValue:[e_field.IMPEACH_IMAGE.NAME]

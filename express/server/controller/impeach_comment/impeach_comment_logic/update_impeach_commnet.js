@@ -3,8 +3,8 @@
  */
 'use strict'
 /*                      controller setting                */
-const controller_setting=require('../impeach_setting/impeach_setting').setting
-const controllerError=require('../impeach_setting/impeach_controllerError').controllerError
+const controller_setting=require('../impeach_comment_setting/impeach_comment_setting').setting
+const controllerError=require('../impeach_comment_setting/impeach_comment_controllerError').controllerError
 
 /*                      specify: genEnum                */
 const e_uniqueField=require('../../../constant/genEnum/DB_uniqueField').UniqueField
@@ -48,8 +48,8 @@ const regex=server_common_file_require.regex.regex
 const currentEnv=server_common_file_require.appSetting.currentEnv
 const fkConfig=server_common_file_require.fkConfig.fkConfig
 
-async function updateImpeach_async({req}){
-    console.log(`updateUser_async in`)
+async function updateImpeachComment_async({req}){
+    // console.log(`updateUser_async in`)
     // console.log(`req.session ${JSON.stringify(req.session)}`)
     /*******************************************************************************************/
     /*                                          define variant                                 */
@@ -69,39 +69,47 @@ async function updateImpeach_async({req}){
     dataConvert.constructUpdateCriteria(docValue,fkConfig[collName])
     // console.log(`docValue after constructUpdateCriteria============>${JSON.stringify(docValue)}`)
     /*******************************************************************************************/
+    /*                                    fk value是否存在                                     */
+    /*******************************************************************************************/
+    //在fkConfig中定义的外键检查;外键对应的impeach是 没有删除，且没有结束的impeach(fkConfig中设置查询条件)
+    if(undefined!==fkConfig[collName]) {
+        await controllerChecker.ifFkValueExist_async({
+            docValue: docValue,
+            collFkConfig: fkConfig[collName],
+            collFieldChineseName: e_chineseName[collName]
+        })
+    }
+    //自定义外键的检查
+    /*******************************************************************************************/
     /*                                       authorization check                               */
     /*******************************************************************************************/
-    //当前要改更的举报是当前用户所创
-    let condition={}
-    condition['_id']=recordId
-    condition[e_field.IMPEACH.CREATOR_ID]=userId
-    condition['dDate']={$exists:false}
-    tmpResult=await  common_operation_model.find_returnRecords_async({dbModel:e_dbModel[collName],condition:condition})
-console.log(`tmpResult============>${JSON.stringify(tmpResult)}`)
-    if(tmpResult.length!==1){
-        return Promise.reject(controllerError.notAuthorized)
+    //当前要改更的举报评论对应的impeach是当前用户所创
+    //当前用户必须是impeach的创建人
+    tmpResult=await controllerChecker.ifCurrentUserCreatorOfImpeach_async({userId:userId,impeachId:docValue[e_field.IMPEACH_COMMENT.IMPEACH_ID]})
+    if(false===tmpResult){
+        return Promise.reject(controllerError.notImpeachCreatorCantUpdateComment)
     }
-    let originalDoc=misc.objectDeepCopy({},tmpResult[0])
 
     /*******************************************************************************************/
     /*                          delete field cant be update from client                        */
     /*******************************************************************************************/
     //以下字段，CREATE是client输入，但是update时候，无法更改，所以需要删除
-    let notAllowUpdateFields=[e_field.IMPEACH.IMPEACHED_ARTICLE_ID,e_field.IMPEACH.IMPEACHED_COMMENT_ID,e_field.IMPEACH.CURRENT_STATE]
+    let notAllowUpdateFields=[e_field.IMPEACH_COMMENT.IMPEACH_ID]
     for(let singleNotAllowUpdateField of notAllowUpdateFields){
         delete docValue[singleNotAllowUpdateField]
     }
     /*******************************************************************************************/
     /*                              remove not change field                                    */
     /*******************************************************************************************/
-    controllerHelper.deleteNotChangedValue({inputValue:docValue,originalValue:originalDoc})
+    //此处只允许修改content，所以无需在进行处理（1个字段什么的，直接update就可以了）
+    // controllerHelper.deleteNotChangedValue({inputValue:docValue,originalValue:originalDoc})
     /*******************************************************************************************/
     /*                          check field number after delete                                */
     /*******************************************************************************************/
     //如果删除完 值没有变化 和 不能更改的字段后，docValue为空，则无需任何修改，直接返回0
-    if(0===Object.keys(docValue).length){
+/*    if(0===Object.keys(docValue).length){
         return {rc:0}
-    }
+    }*/
     /*******************************************************************************************/
     /*                                       resource check                                    */
     /*******************************************************************************************/
@@ -112,12 +120,7 @@ console.log(`tmpResult============>${JSON.stringify(tmpResult)}`)
     /*                                     specific priority check                             */
     /*******************************************************************************************/
 
-    /*******************************************************************************************/
-    /*                                    fk value是否存在                                     */
-    /*******************************************************************************************/
-    //在fkConfig中定义的外键检查
-    await controllerChecker.ifFkValueExist_async({docValue:docValue,collFkConfig:fkConfig[collName],collFieldChineseName:e_chineseName[collName]})
-    //自定义外键的检查
+
     /*******************************************************************************************/
     /*                                  enum unique check(enum in array)                       */
     /*******************************************************************************************/
@@ -132,33 +135,37 @@ console.log(`tmpResult============>${JSON.stringify(tmpResult)}`)
     /*******************************************************************************************/
     /*                                       特定字段的处理（检查）                            */
     /*******************************************************************************************/
-    let XssCheckField=[e_field.IMPEACH.TITLE,e_field.IMPEACH.CONTENT]
+    let XssCheckField=[e_field.IMPEACH_COMMENT.CONTENT]
     await controllerHelper.inputFieldValueXSSCheck({docValue:docValue,collName:collName,expectedXSSCheckField:XssCheckField})
 
     //如果content存在，XSS和图片检测
-    if(undefined!==docValue[e_field.IMPEACH.CONTENT]){
-        let content=docValue[e_field.IMPEACH.CONTENT]
-        // let content=docValue[e_field.IMPEACH.CONTENT]
-        // await controllerHelper.contentXSSCheck_async({content:content,fieldName:e_field.IMPEACH.CONTENT})
+    let contentContainImage=[e_field.IMPEACH_COMMENT.CONTENT]
+    for(let singleContent of contentContainImage){
+        if(undefined!==docValue[singleContent]){
+            let content=docValue[singleContent]
+            // let content=docValue[e_field.IMPEACH.CONTENT]
+            // await controllerHelper.contentXSSCheck_async({content:content,fieldName:e_field.IMPEACH.CONTENT})
 
-        let collConfig={
-            collName:e_coll.IMPEACH,  //存储内容（包含图片DOM）的coll名字
-            fkFieldName:e_field.IMPEACH.IMPEACH_IMAGES_ID,//coll中，存储图片objectId的字段名
-            contentFieldName:e_field.IMPEACH.CONTENT, //coll中，存储内容的字段名
-            ownerFieldName:e_field.IMPEACH.CREATOR_ID,// coll中，作者的字段名
+            let collConfig={
+                collName:e_coll.IMPEACH_COMMENT,  //存储内容（包含图片DOM）的coll名字
+                fkFieldName:e_field.IMPEACH_COMMENT.IMPEACH_IMAGES_ID,//coll中，存储图片objectId的字段名
+                contentFieldName:e_field.IMPEACH_COMMENT.CONTENT, //coll中，存储内容的字段名
+                ownerFieldName:e_field.IMPEACH_COMMENT.AUTHOR_ID,// coll中，作者的字段名
+            }
+            let collImageConfig={
+                collName:e_coll.IMPEACH_IMAGE,//实际存储图片的coll名
+                fkFieldName:e_field.IMPEACH_IMAGE.REFERENCE_ID, //字段名，记录图片存储在那个coll中
+                imageHashFieldName:e_field.IMPEACH_IMAGE.HASH_NAME //记录图片hash名字的字段名
+            }
+            docValue[e_field.IMPEACH.CONTENT]=await controllerHelper.contentDbDeleteNotExistImage_async({
+                content:content,
+                recordId:recordId,
+                collConfig:collConfig,
+                collImageConfig:collImageConfig,
+            })
         }
-        let collImageConfig={
-            collName:e_coll.IMPEACH_IMAGE,//实际存储图片的coll名
-            fkFieldName:e_field.IMPEACH_IMAGE.REFERENCE_ID, //字段名，记录图片存储在那个coll中
-            imageHashFieldName:e_field.IMPEACH_IMAGE.HASH_NAME //记录图片hash名字的字段名
-        }
-        docValue[e_field.IMPEACH.CONTENT]=await controllerHelper.contentDbDeleteNotExistImage_async({
-            content:content,
-            recordId:recordId,
-            collConfig:collConfig,
-            collImageConfig:collImageConfig,
-        })
     }
+
     /*******************************************************************************************/
     /*                                  field value duplicate check                            */
     /*******************************************************************************************/
@@ -170,25 +177,25 @@ console.log(`tmpResult============>${JSON.stringify(tmpResult)}`)
     /*******************************************************************************************/
     /*                         添加internal field，然后检查                                    */
     /*******************************************************************************************/
-    let internalValue={}
-    if(e_env.DEV===currentEnv && Object.keys(internalValue).length>0){
+    // let internalValue={}
+/*    if(e_env.DEV===currentEnv && Object.keys(internalValue).length>0){
         let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInputRule:inputRule[collName],collInternalRule:internalInputRule[e_coll.ARTICLE]})
         if(tmpResult.rc>0){
             return Promise.reject(tmpResult)
         }
-    }
+    }*/
     //因为internalValue只是进行了转换，而不是新增，所以无需ObjectDeepCopy
-    Object.assign(docValue,internalValue)
-    /*******************************************************************************************/
-    /*                                          unique check                                   */
-    /*******************************************************************************************/
+    // Object.assign(docValue,internalValue)
+   /* /!*******************************************************************************************!/
+    /!*                                          unique check                                   *!/
+    /!*******************************************************************************************!/
     if(undefined!==e_uniqueField[collName] && e_uniqueField[collName].length>0) {
         await controllerChecker.ifFieldInDocValueUnique_async({collName: collName, docValue: docValue})
         //await controllerHelper.ifFiledInDocValueUnique_async({collName: collName, docValue: docValue,e_uniqueField:e_uniqueField,e_chineseName:e_chineseName})
     }
-    /*******************************************************************************************/
-    /*                    复合字段unique check（需要internal field完成后）                     */
-    /*******************************************************************************************/
+    /!*******************************************************************************************!/
+    /!*                    复合字段unique check（需要internal field完成后）                     *!/
+    /!*******************************************************************************************!/
     //根据compound_unique_field_config中的设置，进行唯一查询
     //如果不唯一，返回已经存在的记录，以便进一步处理
     let compoundUniqueCheckResult=await controllerChecker.ifCompoundFiledUnique_returnExistRecord_async({collName:collName,docValue:docValue})
@@ -202,7 +209,7 @@ console.log(`tmpResult============>${JSON.stringify(tmpResult)}`)
         if(undefined!==docValue[e_field.IMPEACH.IMPEACHED_COMMENT_ID]){
             return Promise.reject(controllerError.articleCommentAlreadyImpeached)
         }
-    }
+    }*/
     /*******************************************************************************************/
     /*                                  db operation                                           */
     /*******************************************************************************************/
@@ -214,5 +221,5 @@ console.log(`tmpResult============>${JSON.stringify(tmpResult)}`)
 }
 
 module.exports={
-    updateImpeach_async,
+    updateImpeachComment_async,
 }

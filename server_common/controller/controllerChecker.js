@@ -384,6 +384,24 @@ async function ifPenalizeOngoing_async({userId, penalizeType,penalizeSubType}){
 
 }
 
+
+
+/*                          logic   check                   */
+//当前普通用户是否为impeach的创建人
+async function ifCurrentUserCreatorOfImpeach_async({userId, impeachId}){
+    let tmpResult
+    //当前用户必须是impeach的创建人
+    tmpResult=await  common_operation_model.findById_returnRecord_async({dbModel:e_dbModel.impeach,id:impeachId,selectedFields:`${[e_field.IMPEACH.CREATOR_ID]}`})
+//理论上不会出现null，因为之前已经fk check，此处只是为了万一
+/*    if(null===tmpResult){
+        return Promise.reject(controllerError.impeachNotExistCantCreateComment)
+    }*/
+    if(tmpResult[e_field.IMPEACH.CREATOR_ID].toString()!==userId){
+        return Promise.resolve(false)
+    }
+    return Promise.resolve(true)
+}
+
 module.exports={
     // ifFieldValueExistInColl_async,// 检测字段值是否已经在db中存在
     ifSingleFieldFkValueExist_async,
@@ -401,4 +419,7 @@ module.exports={
     ifPenalizeOngoing_async,
 
     ifCompoundFiledUnique_returnExistRecord_async,
+
+    /*              logic check         */
+    ifCurrentUserCreatorOfImpeach_async,
 }

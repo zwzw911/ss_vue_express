@@ -184,10 +184,12 @@ const Field={
     IMPEACH_COMMENT:{
         ID:'id',
         AUTHOR_ID:'authorId',
+        ADMIN_AUTHOR_ID:'adminAuthorId',
         IMPEACH_ID:'impeachId',
         CONTENT:'content',
         IMPEACH_IMAGES_ID:'impeachImagesId',
         IMPEACH_ATTACHMENTS_ID:'impeachAttachmentsId',
+        DOCUMENT_STATUS:'documentStatus',
     },
     IMPEACH_IMAGE:{
         ID:'id',

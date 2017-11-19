@@ -469,6 +469,18 @@ async function search_returnRecords_async ({dbModel,populateOpt,searchParams,pag
 }
 
 
+async function count_async({dbModel,condition}) {
+    return new Promise(function (resolve, reject) {
+        dbModel.count(condition, function (err, count) {
+            if (err) {
+// console.log(`deleteArrayFieldValue_async err========>${JSON.stringify(err)}`)
+                return reject(mongooseErrorHandler(err))
+            }
+            return resolve(count)
+        })
+    })
+}
+
 async function calcPagination({dbModel,searchParams,pageSize,pageLength,currentPage}){
     //console.log(   `searchParams is ${JSON.stringify(searchParams)}`)
     //console.log(   `pageSize is ${JSON.stringify(pageSize)}`)
@@ -608,7 +620,7 @@ module.exports= {
     findByIdAndRemove_async,
     findOneAndUpdate_returnRecord_async,
     countRec_returnNumber_async,
-    // count,
+    count_async,
     search_returnRecords_async,
     calcPagination,//将pagination的功能从search中单独分离出来，以便给search的create复用
     /*      static      */

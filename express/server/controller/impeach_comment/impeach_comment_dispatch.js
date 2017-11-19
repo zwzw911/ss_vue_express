@@ -22,13 +22,13 @@ const e_coll=require(`../../constant/genEnum/DB_Coll`).Coll
 
 
 /*                          controller                          */
-const controllerError=require('./impeach_setting/impeach_controllerError').controllerError
-const create_async=require('./impeach_logic/create_impeach').createImpeach_async
-const update_async=require('./impeach_logic/update_impeach').updateImpeach_async
-const delete_async=require('./impeach_logic/delete_impeach').deleteImpeach_async
-const controllerSetting=require('./impeach_setting/impeach_setting').setting
+const controllerError=require('./impeach_comment_setting/impeach_comment_controllerError').controllerError
+const create_async=require('./impeach_comment_logic/create_impeach_comment').createImpeachComment_async
+const update_async=require('./impeach_comment_logic/update_impeach_commnet').updateImpeachComment_async
+// const delete_async=require('./impeach_comment_logic/delete_impeach').deleteImpeach_async
+const controllerSetting=require('./impeach_comment_setting/impeach_comment_setting').setting
 
-async function dispatcher_async({req,impeachType}){
+async function dispatcher_async({req}){
     //检查格式
     let collName=controllerSetting.MAIN_HANDLED_COLL_NAME,tmpResult//,collConfig={},collImageConfig={}
 
@@ -44,59 +44,45 @@ async function dispatcher_async({req,impeachType}){
     let userLoginCheck,penalizeCheck,expectedPart
     switch (method){
         case e_method.CREATE: //create
-            /*          create 必须有impeachType（impeach_route中，根据URL设置）           */
-            if(undefined===impeachType){
-                return Promise.reject(controllerError.notDefineImpeachType)
-            }
-
             userLoginCheck={
                 needCheck:true,
-                error:controllerError.userNotLoginCantCreate
+                error:controllerError.notLoginCantCreateImpeachComment
             }
-
             penalizeCheck={
-                penalizeType:e_penalizeType.NO_IMPEACH,
+                penalizeType:e_penalizeType.NO_IMPEACH_COMMENT,
                 penalizeSubType:e_penalizeSubType.CREATE,
-                penalizeCheckError:controllerError.userInPenalizeNoImpeachCreate
+                penalizeCheckError:controllerError.currentUserForbidToCreateImpeachComment
             }
-            //此处RECORD_INFO只包含了一个字段：impeachArticle或者(comment)Id。
+            //此处RECORD_INFO只包含了一个字段：impeachId。
             // impeachType是由URL决定（是internal的field），需要和其他默认之合并之后，才能进行preCheck_async（否则validate value会fail）
             expectedPart=[e_part.RECORD_INFO]
-            //recordInfo存在的情况下，才试图从中获得impeachArticle/CommentId，组成新纪录;否则，直接在preCheck中报错
+            //recordInfo存在的情况下，才试图产生其他默认字段，组成新纪录;否则，直接在preCheck中报错
             if(undefined!==req.body.values[e_part.RECORD_INFO]){
                 //默认值模拟client端格式，以便直接进行validate value的测试
                 let defaultDocValue={}
-                defaultDocValue[e_field.IMPEACH.TITLE]='新举报'
-                defaultDocValue[e_field.IMPEACH.CONTENT]='对文档/评论的内容进行举报'
-                //被举报的只能是article或者comment之一
-                let articleOrCommentField=[e_field.IMPEACH.IMPEACHED_ARTICLE_ID,e_field.IMPEACH.IMPEACHED_COMMENT_ID]
-                for(let singleFieldName of articleOrCommentField){
-                    if(undefined!==req.body.values[e_part.RECORD_INFO][singleFieldName]){
-                        defaultDocValue[singleFieldName]=req.body.values[e_part.RECORD_INFO][singleFieldName]
-                        break;
-                    }
-                }
+                defaultDocValue[e_field.IMPEACH_COMMENT.CONTENT]='创建新举报评论，请至少输入15个字符'
+
                 //用内部产生的default取代client的输入
-                req.body.values[e_part.RECORD_INFO]=defaultDocValue
+                req.body.values[e_part.RECORD_INFO]=Object.assign(req.body.values[e_part.RECORD_INFO],defaultDocValue)
             }
             // console.log(`before preCheck_async===============>`)
             tmpResult=await controllerHelper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
             // console.log(`after preCheck_async===============>`)
             //tmpResult=await controllerHelper.preCheck_async({req:req,collName:collConfig.collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart,e_field:e_field,e_coll:e_coll,e_internal_field:e_internal_field,maxSearchKeyNum:maxSearchKeyNum,maxSearchPageNum:maxSearchPageNum})
             // tmpResult=await createContent_async({req:req,collConfig:collConfig,collImageConfig:collImageConfig})
-            tmpResult=await create_async({req:req,impeachType:impeachType})
+            tmpResult=await create_async({req:req})
             break;
         case e_method.SEARCH:// search
             break;
         case e_method.UPDATE: //update
             userLoginCheck={
                 needCheck:true,
-                error:controllerError.userNotLoginCantUpdate
+                error:controllerError.notLoginCantUpdateImpeachComment
             }
             penalizeCheck={
                 penalizeType:e_penalizeType.NO_IMPEACH,
                 penalizeSubType:e_penalizeSubType.UPDATE,
-                penalizeCheckError:controllerError.userInPenalizeNoImpeachUpdate
+                penalizeCheckError:controllerError.currentUserForbidToUpdateImpeachComment
             }
 
             expectedPart=[e_part.RECORD_INFO,e_part.RECORD_ID]

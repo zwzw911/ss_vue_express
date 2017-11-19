@@ -859,7 +859,7 @@ async function contentDbDeleteNotExistImage_async({content,recordId,collConfig,c
                 continue
             }
 
-            //获得md5图片名称：对象   md5：DOM   方便直接删除content
+            //获得本站 md5图片名称，用对象表示，格式=>md5：DOM   方便直接删除content
             validMd5ImageNameInContent[tmpMatchResult[1]]=singleImageDOM
 
         }
@@ -867,7 +867,7 @@ async function contentDbDeleteNotExistImage_async({content,recordId,collConfig,c
 
 // console.log(`afte r delete not own image==============>${JSON.stringify(content)}`)
     /*          检查md5是否在collImage中存在            */
-    //获得当前article/impeach的所有image记录
+    //获得当前article/impeach/impeachComment的所有image记录
     let imageSearchCondition={}
     imageSearchCondition[collImageConfig.fkFieldName]=recordId
     // console.log(`collImageConfig.collName ====${JSON.stringify(collImageConfig.collName)}`)

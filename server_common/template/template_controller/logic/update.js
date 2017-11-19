@@ -49,7 +49,7 @@ const currentEnv=server_common_file_require.appSetting.currentEnv
 const fkConfig=server_common_file_require.fkConfig.fkConfig
 
 async function updateImpeach_async({req}){
-    console.log(`updateUser_async in`)
+    // console.log(`updateUser_async in`)
     // console.log(`req.session ${JSON.stringify(req.session)}`)
     /*******************************************************************************************/
     /*                                          define variant                                 */
@@ -77,7 +77,7 @@ async function updateImpeach_async({req}){
     condition[e_field.IMPEACH.CREATOR_ID]=userId
     condition['dDate']={$exists:false}
     tmpResult=await  common_operation_model.find_returnRecords_async({dbModel:e_dbModel[collName],condition:condition})
-console.log(`tmpResult============>${JSON.stringify(tmpResult)}`)
+// console.log(`tmpResult============>${JSON.stringify(tmpResult)}`)
     if(tmpResult.length!==1){
         return Promise.reject(controllerError.notAuthorized)
     }
@@ -115,8 +115,10 @@ console.log(`tmpResult============>${JSON.stringify(tmpResult)}`)
     /*******************************************************************************************/
     /*                                    fk value是否存在                                     */
     /*******************************************************************************************/
-    //在fkConfig中定义的外键检查
-    await controllerChecker.ifFkValueExist_async({docValue:docValue,collFkConfig:fkConfig[collName],collFieldChineseName:e_chineseName[collName]})
+    //在fkConfig中定义的外键检查(fkConfig中设置查询条件)
+    if(undefined!==fkConfig[collName]){
+        await controllerChecker.ifFkValueExist_async({docValue:docValue,collFkConfig:fkConfig[collName],collFieldChineseName:e_chineseName[collName]})
+    }
     //自定义外键的检查
     /*******************************************************************************************/
     /*                                  enum unique check(enum in array)                       */

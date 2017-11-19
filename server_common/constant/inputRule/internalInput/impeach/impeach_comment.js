@@ -58,7 +58,7 @@ const impeach_comment= {
         'require': {define: true, error: {rc: 10586}, mongoError: {rc: 20586, msg: '记录状态不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         // 'arrayMinLength': {define: 1, error: {rc: 10002}, mongoError: {rc: 20002, msg: '至少设置1个标签'}},
         // 'arrayMaxLength': {define: maxNumber.impeachAttachment.maxAttachmentNumber, error: {rc: 10582}, mongoError: {rc: 20582, msg: `评论中最多添加${maxNumber.impeachAttachment.maxAttachmentNumber}个附件`}},
-        'enum':{define:enumValue.DocStatus,error:{rc:10588},mongoError:{rc:20588,msg:'document状态不是预定义的值'}} //加密密码采用sha256，减少CPU负荷
+        'enum':{define:enumValue.DocumentStatus,error:{rc:10588},mongoError:{rc:20588,msg:'document状态不是预定义的值'}} //加密密码采用sha256，减少CPU负荷
     },
 }
 

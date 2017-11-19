@@ -401,8 +401,26 @@ async function createImpeachAction_async({sess,impeachActionInfo,app}){
                 return resolve({rc:0})
             });
     })
-
 }
+
+/*              impeach_comment             */
+async function createImpeachComment_returnId_async({sess,impeachId,app}){
+    let data={values:{}}
+    data.values[e_part.METHOD]=e_method.CREATE
+    data.values[e_part.RECORD_INFO]={[e_field.IMPEACH_COMMENT.IMPEACH_ID]:impeachId}
+    return new Promise(function(resolve,reject){
+        request(app).post('/impeach_comment/').set('Accept', 'application/json').set('Cookie',[sess]).send(data)
+            .end(function(err, res) {
+                let parsedRes=JSON.parse(res.text)
+                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
+                assert.deepStrictEqual(parsedRes.rc,0)
+                return resolve(parsedRes.msg[`_id`])
+            });
+    })
+}
+
+
+
 module.exports={
     removeExistsRecord_async,
 
@@ -427,4 +445,6 @@ module.exports={
 
 
     createImpeachAction_async,
+
+    createImpeachComment_returnId_async,
 }

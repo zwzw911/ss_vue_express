@@ -64,7 +64,7 @@ async  function createImpeach_async({req,impeachType}){
     /*******************************************************************************************/
     /*                                          define variant                                 */
     /*******************************************************************************************/
-    let tmpResult
+    let tmpResult,condition
     let collName=controller_setting.MAIN_HANDLED_COLL_NAME
 /*    let docValue={
         [e_field.IMPEACH.TITLE]:'新举报',
@@ -101,7 +101,7 @@ async  function createImpeach_async({req,impeachType}){
     /*******************************************************************************************/
     /*                                  fk value是否存在                                       */
     /*******************************************************************************************/
-    //在fkConfig中定义的外键检查
+    //在fkConfig中定义的外键检查(fkConfig中设置查询条件)
     if(undefined!==fkConfig[collName]) {
         await controllerChecker.ifFkValueExist_async({
             docValue: docValue,
@@ -135,7 +135,20 @@ async  function createImpeach_async({req,impeachType}){
     // console.log(`========================>unique check<--------------------------`)
     // console.log(`3`)
 // console.log(`ifFieldInDocValueUnique_async done===>`)
-
+    /*******************************************************************************************/
+    /*                              检查是否有为完成的doc，以便复用                            */
+    /*******************************************************************************************/
+    //当前用户，对此impeach是否有未完成的impeachComment
+    condition={
+        [e_field.IMPEACH_COMMENT.IMPEACH_ID]:docValue[e_field.IMPEACH_COMMENT.IMPEACH_ID],
+        [e_field.IMPEACH_COMMENT.DOCUMENT_STATUS]:e_documentStatus.NEW,
+        [e_field.IMPEACH_COMMENT.AUTHOR_ID]:userId,
+    }
+    tmpResult=await  common_operation_model.find_returnRecords_async({dbModel:e_dbModel.impeach_comment,condition:condition})
+    //如果有未完成的impeachComment,直接使用
+    if(tmpResult.length>0){
+        return Promise.resolve({rc:0,msg:tmpResult[0][`_id`]})
+    }
     /*******************************************************************************************/
     /*                                       特定字段的处理（检查）                            */
     /*******************************************************************************************/

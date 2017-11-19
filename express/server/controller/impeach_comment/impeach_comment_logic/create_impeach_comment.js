@@ -5,8 +5,8 @@
 
 
 /*                      controller setting                */
-const controller_setting=require('../impeach_setting/impeach_setting').setting
-const controllerError=require('../impeach_setting/impeach_controllerError').controllerError
+const controller_setting=require('../impeach_comment_setting/impeach_comment_setting').setting
+const controllerError=require('../impeach_comment_setting/impeach_comment_controllerError').controllerError
 
 /*                      specify: genEnum                */
 const e_uniqueField=require('../../../constant/genEnum/DB_uniqueField').UniqueField
@@ -35,7 +35,7 @@ const e_part=nodeEnum.ValidatePart
 // const e_hashType=nodeRuntimeEnum.
 
 const e_accountType=mongoEnum.AccountType.DB
-const e_docStatus=mongoEnum.DocStatus.DB
+const e_documentStatus=mongoEnum.DocumentStatus.DB
 const e_impeachType=mongoEnum.ImpeachType.DB
 const e_impeachUserAction=mongoEnum.ImpeachUserAction.DB
 const e_impeachState=mongoEnum.ImpeachState.DB
@@ -59,12 +59,12 @@ const fkConfig=server_common_file_require.fkConfig.fkConfig
 //对内部产生的值进行检测（开发时使用，上线后为了减低负荷，无需使用）
 //对数值逻辑进行判断（外键是否有对应的记录等）
 //执行db操作并返回结果
-async  function createImpeach_async({req,impeachType}){
+async  function createImpeachComment_async({req}){
     // console.log(`create impeach in`)
     /*******************************************************************************************/
     /*                                          define variant                                 */
     /*******************************************************************************************/
-    let tmpResult
+    let tmpResult,condition
     let collName=controller_setting.MAIN_HANDLED_COLL_NAME
 /*    let docValue={
         [e_field.IMPEACH.TITLE]:'新举报',
@@ -76,6 +76,7 @@ async  function createImpeach_async({req,impeachType}){
     let {userId,userCollName,userType,userPriority}=userInfo
 // console.log(`docValue===> ${JSON.stringify(docValue)}`)
 // console.log(`userInfo===> ${JSON.stringify(userInfo)}`)
+
     /*******************************************************************************************/
     /*                                     参数转为server格式                                  */
     /*******************************************************************************************/
@@ -83,25 +84,10 @@ async  function createImpeach_async({req,impeachType}){
     /*******************************************************************************************/
     /*                                     用户类型和权限检测                                  */
     /*******************************************************************************************/
-    await controllerChecker.ifExpectedUserType_async({req:req,arr_expectedUserType:[e_allUserType.USER_NORMAL]})
-    let hasCreatePriority=await controllerChecker.ifAdminUserHasExpectedPriority_async({userPriority:userPriority,arr_expectedPriority:[e_adminPriorityType.CREATE_ADMIN_USER]})
-    if(false===hasCreatePriority){
-        return Promise.reject(controllerError.currentUserHasNotPriorityToCreateUser)
-    }
-    /*******************************************************************************************/
-    /*                                       authorization check                               */
-    /*******************************************************************************************/
-
-    /*******************************************************************************************/
-    /*                                       resource check                                    */
-    /*******************************************************************************************/
-
-
-
     /*******************************************************************************************/
     /*                                  fk value是否存在                                       */
     /*******************************************************************************************/
-    //在fkConfig中定义的外键检查
+    //在fkConfig中定义的外键检查;外键对应的impeach是没有删除，且没有结束的impeach（fkConfig中设置查询条件）
     if(undefined!==fkConfig[collName]) {
         await controllerChecker.ifFkValueExist_async({
             docValue: docValue,
@@ -109,8 +95,34 @@ async  function createImpeach_async({req,impeachType}){
             collFieldChineseName: e_chineseName[collName]
         })
     }
-    // console.log(`========================>fk value done<--------------------------`)
-    //自定义外键的检查
+
+    /*******************************************************************************************/
+    /*                                       authorization check                               */
+    /*******************************************************************************************/
+    //当前用户必须是impeach的创建人
+    tmpResult=await controllerChecker.ifCurrentUserCreatorOfImpeach_async({userId:userId,impeachId:docValue[e_field.IMPEACH_COMMENT.IMPEACH_ID]})
+    if(false===tmpResult){
+        return Promise.reject(controllerError.notImpeachCreatorCantCreateComment)
+    }
+
+    /*******************************************************************************************/
+    /*                              检查是否有为完成的doc，以便复用                            */
+    /*******************************************************************************************/
+    //当前用户，对此impeach是否有未完成的impeachComment
+    condition={
+        [e_field.IMPEACH_COMMENT.IMPEACH_ID]:docValue[e_field.IMPEACH_COMMENT.IMPEACH_ID],
+        [e_field.IMPEACH_COMMENT.DOCUMENT_STATUS]:e_documentStatus.NEW,
+        [e_field.IMPEACH_COMMENT.AUTHOR_ID]:userId,
+    }
+    tmpResult=await  common_operation_model.find_returnRecords_async({dbModel:e_dbModel.impeach_comment,condition:condition})
+    //如果有未完成的impeachComment,直接使用
+    if(tmpResult.length>0){
+        return Promise.resolve({rc:0,msg:tmpResult[0][`_id`]})
+    }
+    /*******************************************************************************************/
+    /*                                       resource check                                    */
+    /*******************************************************************************************/
+
     /*******************************************************************************************/
     /*                                  enum unique check(enum in array)                       */
     /*******************************************************************************************/
@@ -140,57 +152,19 @@ async  function createImpeach_async({req,impeachType}){
     /*                                       特定字段的处理（检查）                            */
     /*******************************************************************************************/
     //content内容进行XSS检测
-    let XssCheckField=[e_field.IMPEACH.TITLE,e_field.IMPEACH.CONTENT]
+    let XssCheckField=[e_field.IMPEACH_COMMENT.CONTENT]
     await controllerHelper.inputFieldValueXSSCheck({docValue:docValue,collName:collName,expectedXSSCheckField:XssCheckField})
 
-    // console.log(`4`)
-    //impeachType是否为预定义的一种
-    if(-1===Object.values(enumValue.ImpeachType).indexOf(impeachType)){
-        return Promise.reject(controllerError.unknownImpeachType)
-    }
+
     // console.log(`========================>special check done<--------------------------`)
     /*******************************************************************************************/
     /*                         添加internal field，然后检查                                    */
     /*******************************************************************************************/
     // console.log(`before hash is ${JSON.stringify(docValue)}`)
     let internalValue={}
-    internalValue[e_field.IMPEACH.IMPEACH_TYPE]=impeachType
-    internalValue[e_field.IMPEACH.CREATOR_ID]=userId
-    //根据被举报的类型（文档还是评论）获得其作者ID
-    let impeachedThingId //articleId/comment的id
-    let impeachedThingFieldName //impeach中，id位于（article/comment）的那个coll
-    let impeachedThingRelatedColl //id对应哪个coll，以便从中获得userId
-    let impeachedThingRelatedCollFieldName //id对应哪个coll，其中哪个字段代表userId
-    switch (impeachType){
-        case e_impeachType.ARTICLE:
-            impeachedThingRelatedColl=e_coll.ARTICLE
-            impeachedThingRelatedCollFieldName=e_field.ARTICLE.AUTHOR_ID
+    internalValue[e_field.IMPEACH_COMMENT.DOCUMENT_STATUS]=e_documentStatus.NEW
+    internalValue[e_field.IMPEACH_COMMENT.AUTHOR_ID]=userId
 
-            impeachedThingFieldName=e_field.IMPEACH.IMPEACHED_ARTICLE_ID
-            break;
-        case e_impeachType.COMMENT:
-            impeachedThingRelatedColl=e_coll.ARTICLE_COMMENT
-            impeachedThingRelatedCollFieldName=e_field.ARTICLE_COMMENT.AUTHOR_ID
-
-            impeachedThingFieldName=e_field.IMPEACH.IMPEACHED_COMMENT_ID
-            break;
-        default:
-            return Promise.reject(controllerError.unknownImpeachType)
-
-    }
-    impeachedThingId=docValue[impeachedThingFieldName]
-    let impeachedRecord=await  common_operation_model.findById_returnRecord_async({dbModel:e_dbModel[impeachedThingRelatedColl],id:impeachedThingId})
-    // console.log(`impeachedRecord==========>${JSON.stringify(impeachedRecord)}`)
-    if(null===impeachedRecord){
-        return Promise.reject(controllerError.impeachObjectNotExist)
-    }
-    // console.log(`impeachedRecord[impeachedThingRelatedCollFieldName]==》${impeachedRecord[impeachedThingRelatedCollFieldName]}`)
-    // console.log(`impeachedRecord[impeachedThingRelatedCollFieldName]==》${impeachedRecord[impeachedThingRelatedCollFieldName].toString()}`)
-    internalValue[e_field.IMPEACH.IMPEACHED_USER_ID]=impeachedRecord[impeachedThingRelatedCollFieldName].toString()    //返回mongoose文档，其中每个字段的值都是object，需要手工转换，以便通过OBJECT_ID的测试（字符）
-
-    internalValue[e_field.IMPEACH.CREATOR_ID]=userId
-    internalValue[e_field.IMPEACH.CURRENT_STATE]=e_impeachState.NEW
-    // console.log(`7`)
     /*              对内部产生的值进行检测（开发时使用，上线后为了减低负荷，无需使用）           */
     if(e_env.DEV===currentEnv){
         let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInputRule:inputRule[collName],collInternalRule:internalInputRule[collName]})
@@ -204,40 +178,16 @@ async  function createImpeach_async({req,impeachType}){
     /*******************************************************************************************/
     /*                    复合字段unique check（需要internal field完成后）                     */
     /*******************************************************************************************/
-    //根据compound_unique_field_config中的设置，进行唯一查询
-    //如果不唯一，返回已经存在的记录，以便进一步处理
-    let compoundUniqueCheckResult=await controllerChecker.ifCompoundFiledUnique_returnExistRecord_async({collName:collName,docValue:docValue})
-    // console.log(`compound field check result===================>${JSON.stringify(compoundUniqueCheckResult)}`)
-    //复合字段唯一返回true或者已有的doc
-    //有重复值，且重复记录数为1（大于1，已经直接reject）
-    if(true!==compoundUniqueCheckResult){
-        if(undefined!==docValue[e_field.IMPEACH.IMPEACHED_ARTICLE_ID]){
-            return Promise.reject(controllerError.articleAlreadyImpeached)
-        }
-        if(undefined!==docValue[e_field.IMPEACH.IMPEACHED_COMMENT_ID]){
-            return Promise.reject(controllerError.articleCommentAlreadyImpeached)
-        }
-    }
+
     /*******************************************************************************************/
     /*                                  db operation                                           */
     /*******************************************************************************************/
     //new impeach插入db
     tmpResult= await common_operation_model.create_returnRecord_async({dbModel:e_dbModel[collName],value:docValue})
-// console.log(`create result is ====>${JSON.stringify(tmpResult)}`)
 
-    //插入关联数据（impeach action=create）
-    let impeachStateValue={
-        [e_field.IMPEACH_ACTION.IMPEACH_ID]:tmpResult['_id'],
-        // [e_field.IMPEACH_STATE.OWNER_ID]:userId,
-        // [e_field.IMPEACH_STATE.OWNER_COLL]:e_coll.USER,
-        [e_field.IMPEACH_ACTION.ACTION]:e_impeachUserAction.CREATE,
-        [e_field.IMPEACH_ACTION.CREATOR_ID]:userId,
-        [e_field.IMPEACH_ACTION.CREATOR_COLL]:e_coll.USER,
-    }
-    await common_operation_model.create_returnRecord_async({dbModel:e_dbModel.impeach_action,value:impeachStateValue})
     return Promise.resolve({rc:0,msg:tmpResult})
 }
 
 module.exports={
-    createImpeach_async,
+    createImpeachComment_async,
 }
