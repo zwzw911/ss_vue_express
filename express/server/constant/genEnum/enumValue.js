@@ -21,7 +21,8 @@ const DocStatus=["1","2","3",]
 const AccountType=["1","2",] 
 const StorePathUsage=["1","2","3","4","5",] 
 const StorePathStatus=["1","2",] 
-const ResourceProfileRange=["1","2","3","4",] 
+const ResourceType=["1","2","3","4",] 
+const ResourceProfileRange=["1","2","3","5","7",] 
 const ResourceProfileType=["1","2",] 
 const DocumentStatus=["1","2",] 
 module.exports={
@@ -45,6 +46,7 @@ module.exports={
     AccountType,
     StorePathUsage,
     StorePathStatus,
+    ResourceType,
     ResourceProfileRange,
     ResourceProfileType,
     DocumentStatus,

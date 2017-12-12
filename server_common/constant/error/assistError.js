@@ -110,8 +110,8 @@ const misc={
 
 //40900~41000
 const awesomeCaptcha={
-    unknownHashType:{rc:40400,msg:`未知hash类型`},
-    unknownCryptType:{rc:40402,msg:`未知加密类型`},
+    unknownHashType:{rc:40900,msg:`未知hash类型`},
+    unknownCryptType:{rc:40902,msg:`未知加密类型`},
 }
 
 

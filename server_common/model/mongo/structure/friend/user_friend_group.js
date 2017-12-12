@@ -49,8 +49,8 @@ const friendsInGroup_arrayMaxLengthValidator={
 }
 
 const collFieldDefine={
-    name:{type:String,},
-    userId:{type:mongoose.Schema.Types.ObjectId,ref:"user"}, //
+    friendGroupName:{type:String,},
+    ownerUserId:{type:mongoose.Schema.Types.ObjectId,ref:"user"}, //
     friendsInGroup:{type:[mongoose.Schema.Types.ObjectId],ref:'user',validate:[friendsInGroup_arrayMaxLengthValidator]},
     cDate:{type:Date,default:Date.now},
     uDate:{type:Date,default:Date.now},

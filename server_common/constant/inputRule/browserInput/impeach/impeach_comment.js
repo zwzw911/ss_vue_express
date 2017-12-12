@@ -25,7 +25,7 @@ const impeach_comment= {
     content: {
         'chineseName': '评论内容',
         'type': serverDataType.STRING,
-        'require': {define: true, error: {rc: 10564}, mongoError: {rc: 20564, msg: '评论内容不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        'require': {define: false, error: {rc: 10564}, mongoError: {rc: 20564, msg: '评论内容不能为空'}},//create的时候是server内定的，所以设为false
         'minLength': {define: 15, error: {rc: 10566}, mongoError: {rc: 20566, msg: '评论内容至少15个字符'}},
         'maxLength': {define: 140, error: {rc: 10568}, mongoError: {rc: 20568, msg: '评论内容不能超过140个字符'}},
         // 'format': {define: regex.folderFileName, error: {rc: 10005}, mongoError: {rc: 30005, msg: '评论内容必须由1-255个字符组成'}} //server端使用

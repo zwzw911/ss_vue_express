@@ -37,6 +37,8 @@ const testData=server_common_file_require.testData//require('../testData')
 const API_helper=server_common_file_require.API_helper//require('../API_helper/API_helper')
 const component_function=server_common_file_require.component_function
 
+const image_path_for_test=server_common_file_require.appSetting.absolutePath.image_path_for_test
+
 let baseUrl="/user/"
 let userId  //create后存储对应的id，以便后续的update操作
 
@@ -295,12 +297,14 @@ describe('update user： ', function() {
         // data.values.method=e_method.UPDATE
         // data.values[e_part.RECORD_INFO]={account:{value:testData.user.user1.account.value},name:{value:'anotherName'}}//,notExist:{value:123}
         // console.log(`data.values ${JSON.stringify(data.values)}`)
-        // console.log(`sess ${JSON.stringify(sess)}`)
+        // console.log(`image_path_for_test======> ${JSON.stringify(image_path_for_test)}`)
         request(app).post(finalUrl).field('name','file')
             // .attach('file','H:/ss_vue_express/培训结果1.png')
-            .attach('file','H:/ss_vue_express/test_data/gm_test.png')
+            .attach('file',`${image_path_for_test}gm_test.png`)
             // .attach('file','H:/ss_vue_express/gm_test.png')
-            .set('Cookie',[sess])//.send(data)
+            .set('Cookie',[sess])
+            // .send(data)
+            .set('Accept', 'application/json')
             .end(function(err, res) {
                 // if (err) return done(err);
                 // console.log(`res ${JSON.stringify(res['header']['set-cookie']['connect.sid'])}`)
@@ -320,7 +324,7 @@ describe('update user： ', function() {
         // console.log(`sess ${JSON.stringify(sess)}`)
         request(app).post(finalUrl).field('name','file')
         // .attach('file','H:/ss_vue_express/培训结果1.png')
-            .attach('file','H:/ss_vue_express/test_data/无标题.jpg')
+            .attach('file',`${image_path_for_test}无标题.jpg`)
             // .attach('file','H:/ss_vue_express/gm_test.png')
             .set('Cookie',[sess])//.send(data)
             .end(function(err, res) {

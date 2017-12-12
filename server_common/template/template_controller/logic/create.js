@@ -77,10 +77,6 @@ async  function createImpeach_async({req,impeachType}){
 // console.log(`docValue===> ${JSON.stringify(docValue)}`)
 // console.log(`userInfo===> ${JSON.stringify(userInfo)}`)
     /*******************************************************************************************/
-    /*                                     参数转为server格式                                  */
-    /*******************************************************************************************/
-    dataConvert.constructCreateCriteria(docValue)
-    /*******************************************************************************************/
     /*                                     用户类型和权限检测                                  */
     /*******************************************************************************************/
     await controllerChecker.ifExpectedUserType_async({req:req,arr_expectedUserType:[e_allUserType.USER_NORMAL]})
@@ -88,6 +84,11 @@ async  function createImpeach_async({req,impeachType}){
     if(false===hasCreatePriority){
         return Promise.reject(controllerError.currentUserHasNotPriorityToCreateUser)
     }
+    /*******************************************************************************************/
+    /*                                     参数转为server格式                                  */
+    /*******************************************************************************************/
+    dataConvert.constructCreateCriteria(docValue)
+
     /*******************************************************************************************/
     /*                                       authorization check                               */
     /*******************************************************************************************/

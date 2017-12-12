@@ -27,9 +27,9 @@ const e_part=nodeEnum.ValidatePart
 
 /*                      server common：function                                       */
 const controllerHelper=server_common_file_require.controllerHelper
-// const controllerChecker=server_common_file_require.controllerChecker
+const controllerChecker=server_common_file_require.controllerChecker
 const common_operation_model=server_common_file_require.common_operation_model
-// const misc=server_common_file_require.misc
+const misc=server_common_file_require.misc
 // const miscConfiguration=server_common_file_require.globalConfiguration.misc
 // const maxNumber=server_common_file_require.globalConfiguration.maxNumber
 // const fkConfig=server_common_file_require.fkConfig
@@ -42,7 +42,7 @@ const common_operation_model=server_common_file_require.common_operation_model
  * 更新用户资料
  * 1. 需要对比req中的userId和session中的id是否一致
  * */
-async function deleteImpeach_async(req){
+async function deleteImpeach_async({req}){
     // console.log(`deleteImpeach_async in`)
     // console.log(`req.session ${JSON.stringify(req.session)}`)
     // console.log(`data.body==============>${JSON.stringify(req.body)}`)
@@ -58,14 +58,11 @@ async function deleteImpeach_async(req){
     /*                                       authorization check                               */
     /*******************************************************************************************/
     //作者本身才能删除举报
-    let condition={}
-    condition['_id']=recordId
-    condition[e_field.IMPEACH.CREATOR_ID]=userId
-    condition['dDate']={$exists:false}
-    tmpResult=await  common_operation_model.find_returnRecords_async({dbModel:e_dbModel[collName],condition:condition})
-    if(tmpResult.length!==1){
+    tmpResult=await controllerChecker.ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({dbModel:e_dbModel[collName],recordId:recordId,ownerFieldName:e_field.IMPEACH.CREATOR_ID,ownerFieldValue:userId,additionalCondition:undefined})
+    if(false===tmpResult){
         return Promise.reject(controllerError.notAuthorized)
     }
+    // let originalDoc=misc.objectDeepCopy(tmpResult)
 
     /*******************************************************************************************/
     /*                                  db operation                                           */

@@ -703,7 +703,7 @@ async function uploadPhoto_async(req){
     // console.log(`inst ====>${JSON.stringify(inst)}`)
     tmpResult=await gmImage.getImageProperty_async(inst,e_gmGetter.SIZE)
     // console.log(`size ====>${JSON.stringify(tmpResult)}`)
-    if(tmpResult.msg.width>userPhotoConfiguration.maxWidth || tmpResult.msg.height>userPhotoConfiguration.maxHeight){
+    if(tmpResult.width>userPhotoConfiguration.maxWidth || tmpResult.height>userPhotoConfiguration.maxHeight){
         fs.unlinkSync(originalFilename)
         return Promise.reject(controllerError.imageSizeInvalid)
     }
@@ -717,7 +717,7 @@ async function uploadPhoto_async(req){
     //格式不同，直接转换到指定位置
     tmpResult=await gmImage.getImageProperty_async(inst,e_gmGetter.FORMAT)
     // console.log(`tmpResult ==== ${JSON.stringify(tmpResult)}`)
-    if(-1===userPhotoConfiguration.imageType.indexOf(tmpResult.msg)){
+    if(-1===userPhotoConfiguration.imageType.indexOf(tmpResult)){
         // console.log(`in ==== in}`)
         await gmImage.gmCommand_async(inst,e_gmCommand.CONVERT_FILE_TYPE,finalPath)
     }

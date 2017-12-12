@@ -32,7 +32,7 @@ const impeach_comment=require('D:/ss_vue_express/server_common/model/mongo/struc
 const impeach_image=require('D:/ss_vue_express/server_common/model/mongo/structure/impeach/impeach_image.js').collModel
 /*       static           */
 const like_dislike_static=require('D:/ss_vue_express/server_common/model/mongo/structure/static/like_dislike_static.js').collModel
-const resource_profile_static=require('D:/ss_vue_express/server_common/model/mongo/structure/static/resource_profile_static.js').collModel
+const user_resource_static=require('D:/ss_vue_express/server_common/model/mongo/structure/static/user_resource_static.js').collModel
 /*       user           */
 const user_resource_profile=require('D:/ss_vue_express/server_common/model/mongo/structure/user/user_resource_profile.js').collModel
 /*       user_behavior           */
@@ -75,7 +75,7 @@ module.exports={
     impeach_image,
     /*       static           */
     like_dislike_static,
-    resource_profile_static,
+    user_resource_static,
     /*       user           */
     user_resource_profile,
     /*       user_behavior           */

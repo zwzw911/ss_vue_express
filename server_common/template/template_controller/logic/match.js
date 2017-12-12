@@ -47,7 +47,7 @@ const e_dbModel=require('../../../constant/genEnum/dbModel')
 const controllerError=require('../admin_setting/admin_user_controllerError').controllerError
 
 
-async function login_async(req){
+async function login_async({req}){
     /*                              logic                                   */
     /*              略有不同，需要确定字段有且只有账号和密码                */
     // let usedColl=e_coll.USER

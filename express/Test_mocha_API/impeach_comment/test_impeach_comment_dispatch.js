@@ -83,7 +83,7 @@ let parameter={
     [e_parameterPart.API_URL]:undefined,
     [e_parameterPart.PENALIZE_RELATED_INFO]:{penalizeType:e_penalizeType.NO_IMPEACH,penalizeSubType:e_penalizeSubType.CREATE,penalizedUserData:testData.user.user1,penalizedError:controllerError.userInPenalizeNoImpeachCreate,adminApp:adminApp},
     [e_parameterPart.REQ_BODY_VALUES]:{[e_part.RECORD_INFO]:normalRecord},
-    [e_parameterPart.COLL_NAME]:e_coll.IMPEACH_ACTION,
+    [e_parameterPart.COLL_NAME]:e_coll.IMPEACH_COMMENT,
     [e_parameterPart.SKIP_PARTS]:undefined,
     [e_parameterPart.APP]:app,
 }
@@ -99,12 +99,22 @@ describe('dispatch', function() {
         parameter['sess']=user1Sess
         let articledId=await component_function.createArticle_setToFinish_returnArticleId_async({userSess:user1Sess,app:app})
         impeachId=await API_helper.createImpeachForArticle_returnImpeachId_async({articleId:articledId,userSess:user1Sess,app:app})
+
         normalRecord[e_field.IMPEACH_COMMENT.IMPEACH_ID]=impeachId
+        // console.log(`impeachId==========>${impeachId}`)
+        recordId= await  API_helper.createImpeachComment_returnId_async({sess:user1Sess,impeachId:impeachId,app:app})
+        // console.log(`recordId==========>${recordId}`)
         // normalRecord[e_field.IMPEACH_ACTION.OWNER_COLL]=e_coll.USER
         // normalRecord[e_field.IMPEACH_ACTION.OWNER_ID]=userId  //普通用户无需输入OWNERID
 
-        // rootSess=await API_helper.adminUserLogin_returnSess_async({userData:testData.admin_user.adminRoot,adminApp:adminApp})
-        // parameter[`penalizeRelatedInfo`][`rootSess`]=rootSess
+        //设置penalize相关信息
+        rootSess=await API_helper.adminUserLogin_returnSess_async({userData:testData.admin_user.adminRoot,adminApp:adminApp})
+        parameter[`penalizeRelatedInfo`][`rootSess`]=rootSess
+
+
+        console.log(`==============================================================`)
+        console.log(`=================    before all done      ====================`)
+        console.log(`==============================================================`)
     });
 
 /*    it(`penalize check`,async function(){
@@ -122,6 +132,7 @@ describe('dispatch', function() {
         parameter[e_parameterPart.REQ_BODY_VALUES][e_part.METHOD]=e_method.CREATE
         parameter[e_parameterPart.PENALIZE_RELATED_INFO][`penalizeType`]=e_penalizeType.NO_IMPEACH_COMMENT
         parameter[e_parameterPart.PENALIZE_RELATED_INFO][`penalizeSubType`]=e_penalizeSubType.CREATE
+        parameter[e_parameterPart.PENALIZE_RELATED_INFO][`penalizedUserData`]=testData.user.user1
         parameter[e_parameterPart.PENALIZE_RELATED_INFO][`penalizedError`]=controllerError.currentUserForbidToCreateImpeachComment
         // parameter[`sessErrorRc`]=controllerError.notLoginCantChangeState.rc
         // parameter[`method`]=e_method.CREATE
@@ -132,8 +143,10 @@ describe('dispatch', function() {
         parameter[e_parameterPart.REQ_BODY_VALUES][e_part.METHOD]=e_method.UPDATE
         parameter[e_parameterPart.PENALIZE_RELATED_INFO][`penalizeType`]=e_penalizeType.NO_IMPEACH_COMMENT
         parameter[e_parameterPart.PENALIZE_RELATED_INFO][`penalizeSubType`]=e_penalizeSubType.UPDATE
+        parameter[e_parameterPart.PENALIZE_RELATED_INFO][`penalizedUserData`]=testData.user.user1
         parameter[e_parameterPart.PENALIZE_RELATED_INFO][`penalizedError`]=controllerError.currentUserForbidToUpdateImpeachComment
-        recordId=await  API_helper.createImpeachComment_returnId_async({sess:user1Sess,impeachId:impeachId,app:app})
+
+        // console.log(`recordId==========>${recordId}`)
         parameter[e_parameterPart.REQ_BODY_VALUES][e_part.RECORD_ID]=recordId
         await inputRule_API_tester.dispatch_partCheck_async(parameter)
         delete parameter[e_parameterPart.REQ_BODY_VALUES][e_part.RECORD_ID]
@@ -152,8 +165,19 @@ describe('dispatch', function() {
 
 
 
-/*    it(`inputRule fro create`,async function(){
-        parameter[`method`]=e_method.CREATE
+    it(`inputRule for create`,async function(){
+        parameter[e_parameterPart.REQ_BODY_VALUES][e_part.METHOD]=e_method.CREATE
+        // console.log(`inputRule for create in`)
+        await inputRule_API_tester.ruleCheckAll_async({
+            parameter:parameter,
+            expectedRuleToBeCheck:[],//[e_serverRuleType.REQUIRE],
+            expectedFieldName:[],
+            skipRuleToBeCheck:[],
+            skipFieldName:[e_field.IMPEACH_COMMENT.CONTENT],//此字段是内部设置，无需检查;
+        })
+    })
+    it(`inputRule for update`,async function(){
+        parameter[e_parameterPart.REQ_BODY_VALUES][e_part.METHOD]=e_method.UPDATE
         await inputRule_API_tester.ruleCheckAll_async({
             parameter:parameter,
             expectedRuleToBeCheck:[],//[e_serverRuleType.REQUIRE],
@@ -161,8 +185,7 @@ describe('dispatch', function() {
             skipRuleToBeCheck:[],
             skipFieldName:[],//此2个字段是内部设置，无需检查;第三个字段根据URL确定（是否需要skip）
         })
-    })*/
-
+    })
 })
 
 

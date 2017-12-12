@@ -89,6 +89,7 @@ const Method={
     UPDATE:'2',//2  'update'
     DELETE:'3', //3 'delete'
     MATCH:'4',// 4 用于确定输入记录是否和db中的匹配（例如登录）
+    UPLOAD:'5',//5 上传文件（图片，附件等）
 }
 
 const InputFieldCheckType={
@@ -101,10 +102,34 @@ const UploadFileType={
     ATTACHMENT:'attachment'
 }
 
-//和uploadFileType一样，但是为了在计算resource不产生confuse，使用新名称
-const ResourceType={
-    IMAGE:'image',
-    ATTACHMENT:'attachment'
+
+
+//上传image，是对impeach还是impeachComment（因为使用了同一个函数处理，所以需要区分）
+/*const UploadForImpeachOrComment={
+    IMPEACH:'impeach',
+    IMPEACH_COMMENT:'impeach_comment',
+}*/
+
+//field name和resourceProfile中的字段名称一致
+const ResourceFieldName={
+    TOTAL_FILE_SIZE_IN_MB:'totalSizeInMb',
+    MAX_FILE_NUM:'maxFileNum',
+}
+
+//为不同的resourceType/resourceRange设置calcResourceConfig的时候，使用的字段
+const ResourceConfigFieldName={
+    COLL_NAME:'collName',//确定在那个coll中使用group进行实时统计
+    RESOURCE_TYPE:`resourceType`, //resourceType，便于group后直接比较，写入db（如果group和db中不一致）
+    DB_MODEL:'dbModel',//使用哪个dbModel，和collName有一定的冗余性
+    RAW_DOC_FILTER:`rawDocFilter`,//其实就是match，但是是对原始数据进行过滤的match（match还可以做group后记录的过滤）
+    RAW_DOC_GROUP:`rawDocGroup`,//其实就是group，对原始数据进行group
+}
+//上传文件 属性 的 字段名称
+const UploadFileDefinitionFieldName={
+    MAX_SIZE_IN_BYTE:'maxSizeInByte',
+    MAX_SIZE_IN_MB:'maxSizeInMB',
+    MAX_WIDTH:'maxWidth',//如果是图片，图片的宽度
+    MAX_HEIGHT:'maxHeight',//如果是图片，图片的宽度
 }
 module.exports={
     RandomStringType,
@@ -119,6 +144,10 @@ module.exports={
     Method,
     InputFieldCheckType,
     UploadFileType,
-    ResourceType,
+    // ResourceType,
+    //UploadForImpeachOrComment,//上传image，是对impeach还是impeachComment（因为使用了同一个函数处理，所以需要区分）
     // StorePathUsage,
+    ResourceConfigFieldName,
+    ResourceFieldName,
+    UploadFileDefinitionFieldName,
 }

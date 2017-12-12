@@ -60,6 +60,7 @@ describe('impeach for create', async function() {
         articleId=await component_function.createArticle_setToFinish_returnArticleId_async({userSess:user1Sess,app:app})
         // console.log(`==============>createArticle_setToFinish_async end`)
         articleId2=await API_helper.createNewArticle_returnArticleId_async({userSess:user1Sess,app:app})
+        // articleId2=await component_function.createArticle_setToFinish_returnArticleId_async({userSess:user2Sess,app:app})
     })
 
 

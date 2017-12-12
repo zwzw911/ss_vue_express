@@ -19,20 +19,30 @@ const controllerError={
     userInPenalizeNoArticleUpdate:{rc:50403,msg:`管理员禁止更新文档`},
 
     /*          logic                   */
-    notArticleAuthorCantInsertFile:{rc:50404,msg:{client:`无权插入图片或者附件`,server:`非文档作者，无权插入图片或者附件`}},
+    notArticleAuthorCantUploadImage:{rc:50404,msg:{client:`无权插入图片或者附件`,server:`非文档作者，无权插入图片或者附件`}},
+    notArticleAuthorCantUploadAttachment:{rc:50406,msg:{client:`无权插入图片或者附件`,server:`非文档作者，无权插入图片或者附件`}},
+    /*          upload image        */
+    imageFormatNotSupport:{rc:50407,msg:`只支持JPG/PNG格式的图片`},
+    imageResolutionNotSupport:{rc:50408,msg:`图片分辨率过高`},
 
     //image 超出 resource_profile
-    articleImageSizeExceed:{rc:50405,msg:{client:`文档图片总容量达到最大值，无法继续添加图片`,server:`文档图片容量达到最大`}},
-    articleImageNumExceed:{rc:50406,msg:{client:`文档图片数量达到最大值，无法继续添加图片`,server:`文档图片数量达到最大`}},
+    articleImageSizeExceed:{rc:50412,msg:{client:`文档图片总容量达到最大值，无法继续添加图片`,server:`文档图片容量达到最大`}},
+    articleImageNumExceed:{rc:50414,msg:{client:`文档图片数量达到最大值，无法继续添加图片`,server:`文档图片数量达到最大`}},
     //attachment 超出 resource_profile
-    articleAttachmentSizeExceed:{rc:50408,msg:{client:`文档附件总容量达到最大值，无法继续添加附件`,server:`文档附件容量达到最大`}},
-    articleAttachmentNumExceed:{rc:50410,msg:{client:`文档附件数量达到最大值，无法继续添加附件`,server:`文档附件数量达到最大`}},
+/*    articleAttachmentSizeExceed:{rc:50408,msg:{client:`文档附件总容量达到最大值，无法继续添加附件`,server:`文档附件容量达到最大`}},
+    articleAttachmentNumExceed:{rc:50410,msg:{client:`文档附件数量达到最大值，无法继续添加附件`,server:`文档附件数量达到最大`}},*/
+    /*          upload attachment       */
+    attachmentFormatIncorrect:{rc:504016,msg:`附件格式不正确`},
+    attachmentFormatNotSupport:{rc:50418,msg:`附件格式不支持`},
+    articleAttachmentSizeExceed:{rc:50412,msg:{client:`文档附件总容量达到最大值，无法继续添加图片`,server:`文档附件容量达到最大`}},
+    articleAttachmentNumExceed:{rc:50414,msg:{client:`文档附件数量达到最大值，无法继续添加图片`,server:`文档附件数量达到最大`}},
+
     //总量（用户为单位） 超出 resource_profile
     personalSizeExceed:{rc:50412,msg:{client:`个人空间达到最大值，无法继续添加文件`,server:`个人空间容量达到最大`}},
     personalFileNumExceed:{rc:50414,msg:{client:`个人文件数量达到最大值，无法继续添加`,server:`个人文件数量达到最大`}},
 
-    notSupportImageFormat:{rc:50416,msg:`图片格式不支持`},
-    notSupportAttachmentFormat:{rc:50418,msg:`附件格式不支持`},
+    // notSupportImageFormat:{rc:50416,msg:`图片格式不支持`},
+
 
 }
 

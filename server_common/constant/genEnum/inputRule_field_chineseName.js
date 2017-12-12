@@ -122,9 +122,9 @@ const ChineseName={
         'deleteById':'删除者',
     },
     user_friend_group:{
-        'name':'朋友分组',
-        'userId':'用户',
+        'friendGroupName':'朋友分组名',
         'friendsInGroup':'好友分组',
+        'ownerUserId':'用户',
     },
     user_public_group:{
         'userId':'用户',
@@ -179,11 +179,7 @@ const ChineseName={
     like_dislike_static:{
         'articleId':'文档',
     },
-    resource_profile_static:{
-        'userId':'用户',
-        'resourceProfileId':'资源设定',
-        'usedFileNum':'已创建文件数量',
-        'usedFileSize':'已使用磁盘空间',
+    user_resource_static:{
     },
     sugar:{
     },

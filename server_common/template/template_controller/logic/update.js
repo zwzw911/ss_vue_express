@@ -34,7 +34,7 @@ const e_accountType=mongoEnum.AccountType.DB
 const e_docStatus=mongoEnum.DocStatus.DB
 const e_adminUserType=mongoEnum.AdminUserType.DB
 const e_adminPriorityType=mongoEnum.AdminPriorityType.DB
-
+const e_allUserType=mongoEnum.AllUserType.DB
 /*                      server common：function                                       */
 const dataConvert=server_common_file_require.dataConvert
 const controllerHelper=server_common_file_require.controllerHelper
@@ -64,25 +64,28 @@ async function updateImpeach_async({req}){
     // console.log(`docValue============>${JSON.stringify(docValue)}`)
     // console.log(`recordId============>${JSON.stringify(recordId)}`)
     /*******************************************************************************************/
+    /*                                     用户类型和权限检测                                  */
+    /*******************************************************************************************/
+    await controllerChecker.ifExpectedUserType_async({req:req,arr_expectedUserType:[e_allUserType.USER_NORMAL]})
+    let hasCreatePriority=await controllerChecker.ifAdminUserHasExpectedPriority_async({userPriority:userPriority,arr_expectedPriority:[e_adminPriorityType.CREATE_ADMIN_USER]})
+    if(false===hasCreatePriority){
+        return Promise.reject(controllerError.currentUserHasNotPriorityToCreateUser)
+    }
+    /*******************************************************************************************/
     /*                                     参数过滤                                           */
     /*******************************************************************************************/
     dataConvert.constructUpdateCriteria(docValue,fkConfig[collName])
     // console.log(`docValue after constructUpdateCriteria============>${JSON.stringify(docValue)}`)
+
     /*******************************************************************************************/
     /*                                       authorization check                               */
     /*******************************************************************************************/
-    //当前要改更的举报是当前用户所创
-    let condition={}
-    condition['_id']=recordId
-    condition[e_field.IMPEACH.CREATOR_ID]=userId
-    condition['dDate']={$exists:false}
-    tmpResult=await  common_operation_model.find_returnRecords_async({dbModel:e_dbModel[collName],condition:condition})
-// console.log(`tmpResult============>${JSON.stringify(tmpResult)}`)
-    if(tmpResult.length!==1){
-        return Promise.reject(controllerError.notAuthorized)
+    //当前用户必须是impeach comment的创建人，且impeach comment未被删除
+    tmpResult=await controllerChecker.ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({dbModel:e_dbModel.impeach_comment,recordId:recordId,ownerFieldName:e_field.IMPEACH_COMMENT.AUTHOR_ID,ownerFieldValue:userId,additionalCondition:undefined})
+    if(false===tmpResult){
+        return Promise.reject(controllerError.notImpeachCreatorCantUpdateComment)
     }
-    let originalDoc=misc.objectDeepCopy({},tmpResult[0])
-
+    let originalDoc=misc.objectDeepCopy(tmpResult)
     /*******************************************************************************************/
     /*                          delete field cant be update from client                        */
     /*******************************************************************************************/

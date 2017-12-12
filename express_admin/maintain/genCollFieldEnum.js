@@ -13,6 +13,7 @@ const runAllGenForCommon=require(`${serverCommonAbsolutePath}maintain/runAllGen`
 let absoluteDestDirForInputRule=`${localAbsolutePath}server/constant/inputRule/`
 let absoluteDestDirForEnum=`${localAbsolutePath}server/constant/genEnum/`
 let absoluteDestDirForMongoEnumValue=`${localAbsolutePath}server/constant/genEnum/`
+
 let modelCollRootDir=`${serverCommonAbsolutePath}model/mongo/structure/` //原始的mongoose的schema定义
 let inputRuleBaseDir=`${serverCommonAbsolutePath}constant/inputRule/`   //原始的rule定义
 let mongoEnumDir=`${serverCommonAbsolutePath}constant/enum/`  //原始的enum定义的目录
@@ -20,7 +21,7 @@ let mongoEnumDir=`${serverCommonAbsolutePath}constant/enum/`  //原始的enum定
 runAllGenForCommon(absoluteDestDirForInputRule,absoluteDestDirForEnum,absoluteDestDirForMongoEnumValue,modelCollRootDir,inputRuleBaseDir,mongoEnumDir)
 
 
-let getInitSettingIdFilePath='./preDeploy/getInitSettingId'
+let getInitSettingIdFilePath=`${serverCommonAbsolutePath}maintain/preDeploy/getInitSettingId.js`
 if(fs.existsSync(getInitSettingIdFilePath)){
     const getInitSettingObjectId=require(getInitSettingIdFilePath).writeInitSettingEnum_async
     getInitSettingObjectId(absoluteDestDirForEnum).then(

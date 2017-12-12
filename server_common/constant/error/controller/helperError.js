@@ -48,6 +48,12 @@ const helper={
         return {rc:60024,msg:{client:'输入有误',server:`字段${fieldName}的内容无法通过XSS检测`}}
     },
 
+    /*                  calc exist resource                              */
+    missParameter(parameterName){
+        return {rc:60026,msg:{client:'输入有误',server:`缺少参数${parameterName}`}}
+    },
+
+    cantFindResourceFileOrNumNotMatch:{rc:60028,msg:{'client':"内部错误，请联系管理员",server:`查询得到的资源配置数量和代码中定义的不一致`}},
 }
 
 const checker={
@@ -153,6 +159,11 @@ const checker={
     compoundFieldHasMultipleDuplicateRecord({collName,arr_compoundField}){
         return {rc:61200,msg:{client:`内部错误，请联系管理员`,server:`表${collName}的复合字段${arr_compoundField.join('+')}存在多个重复记录`}}
     },
+
+    /*      ifFileSuffixMatchContentType_async          */
+    uploadFileHasNoSuffix:{rc:61202,msg:{client:`上传文件没有后缀，无法区分文件类型`}},
+
+
 }
 
 /*admin_user:["name",],

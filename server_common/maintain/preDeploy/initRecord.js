@@ -4,6 +4,8 @@
  */
 'use strict'
 
+const image_path_for_test=require(`../../constant/config/appSetting`).absolutePath.image_path_for_test
+
 const allAdminPriorityType=require('../../constant/genEnum/enumValue').AdminPriorityType
 const mongoEnum=require(`../../constant/enum/mongoEnum`)//server_common_file_require.mongoEnum
 const e_storePathUsage=mongoEnum.StorePathUsage.DB
@@ -31,7 +33,7 @@ const storePath= {
             tmpUploadDir: [
                 {
                     [e_field.STORE_PATH.NAME]: 'upload_tmp_dir',
-                    [e_field.STORE_PATH.PATH]: 'H:/ss_vue_express/test_data/tmp/',
+                    [e_field.STORE_PATH.PATH]: `${image_path_for_test}tmp/`,
                     [e_field.STORE_PATH.USAGE]:e_storePathUsage.UPLOAD_TMP,
                     [e_field.STORE_PATH.STATUS]:e_storePathStatus.READ_WRITE,
                     [e_field.STORE_PATH.SIZE_IN_KB]:10*1000,
@@ -45,7 +47,7 @@ const storePath= {
             USER_PHOTO: [
                 {
                     [e_field.STORE_PATH.NAME]: 'userPhotoStorePath1',
-                    [e_field.STORE_PATH.PATH]: 'H:/ss_vue_express/test_data/userPhoto/dest/',
+                    [e_field.STORE_PATH.PATH]: `${image_path_for_test}userPhoto/dest/`,
                     [e_field.STORE_PATH.USAGE]:e_storePathUsage.USER_PHOTO,
                     [e_field.STORE_PATH.STATUS]:e_storePathStatus.READ_WRITE,
                     [e_field.STORE_PATH.SIZE_IN_KB]:10*1000,
@@ -55,7 +57,7 @@ const storePath= {
                 },
                 {
                     [e_field.STORE_PATH.NAME]: 'userPhotoStorePath2',
-                    [e_field.STORE_PATH.PATH]: 'H:/ss_vue_express/test_data/userPhoto/dest1/',
+                    [e_field.STORE_PATH.PATH]: `${image_path_for_test}userPhoto/dest1/`,
                     [e_field.STORE_PATH.USAGE]:e_storePathUsage.USER_PHOTO,
                     [e_field.STORE_PATH.STATUS]:e_storePathStatus.READ_WRITE,
                     [e_field.STORE_PATH.SIZE_IN_KB]:10*1000,
@@ -69,7 +71,7 @@ const storePath= {
             ARTICLE_INNER_IMAGE: [
                 {
                     [e_field.STORE_PATH.NAME]: 'articleImage1',
-                    [e_field.STORE_PATH.PATH]: 'H:/ss_vue_express/test_data/article_image/',
+                    [e_field.STORE_PATH.PATH]: `${image_path_for_test}article_image/`,
                     [e_field.STORE_PATH.USAGE]:e_storePathUsage.ARTICLE_INNER_IMAGE,
                     [e_field.STORE_PATH.STATUS]:e_storePathStatus.READ_WRITE,
                     [e_field.STORE_PATH.SIZE_IN_KB]:10*1000,
@@ -81,7 +83,7 @@ const storePath= {
             ARTICLE_INNER_ATTACHMENT: [
                 {
                     [e_field.STORE_PATH.NAME]: 'articleAttachment1',
-                    [e_field.STORE_PATH.PATH]: 'H:/ss_vue_express/test_data/article_attachment/',
+                    [e_field.STORE_PATH.PATH]: `${image_path_for_test}article_attachment/`,
                     [e_field.STORE_PATH.USAGE]:e_storePathUsage.ARTICLE_INNER_ATTACHMENT,
                     [e_field.STORE_PATH.STATUS]:e_storePathStatus.READ_WRITE,
                     [e_field.STORE_PATH.SIZE_IN_KB]:10*1000,
@@ -95,7 +97,7 @@ const storePath= {
             IMPEACH_IMAGE:[
                 {
                     [e_field.STORE_PATH.NAME]: 'impeachImage1',
-                    [e_field.STORE_PATH.PATH]: 'H:/ss_vue_express/test_data/impeach_image/',
+                    [e_field.STORE_PATH.PATH]: `${image_path_for_test}impeach_image/`,
                     [e_field.STORE_PATH.USAGE]:e_storePathUsage.IMPEACH_IMAGE,
                     [e_field.STORE_PATH.STATUS]:e_storePathStatus.READ_WRITE,
                     [e_field.STORE_PATH.SIZE_IN_KB]:10*1000,
@@ -112,50 +114,65 @@ const category= {
         LTE_A: 'LTE_A',
     }
 const resource_profile= [
-        {
-            [e_field.RESOURCE_PROFILE.NAME]:"普通用户文档资源设定",
-            [e_field.RESOURCE_PROFILE.RANGE]:e_resourceProfileRange.PER_ARTICLE,
-            [e_field.RESOURCE_PROFILE.TYPE]:e_resourceProfileType.DEFAULT,
-            [e_field.RESOURCE_PROFILE.MAX_FILE_NUM]:10,
-            [e_field.RESOURCE_PROFILE.TOTAL_FILE_SIZE_IN_MB]:20, //假设每个文件大小为2M
-        },
-        {
-            [e_field.RESOURCE_PROFILE.NAME]:"普通用户总体资源设定",
-            [e_field.RESOURCE_PROFILE.RANGE]:e_resourceProfileRange.PER_PERSON,
-            [e_field.RESOURCE_PROFILE.TYPE]:e_resourceProfileType.DEFAULT,
-            [e_field.RESOURCE_PROFILE.MAX_FILE_NUM]:1000,
-            [e_field.RESOURCE_PROFILE.TOTAL_FILE_SIZE_IN_MB]:2000, //假设每个文件大小为2M
-        },
-        {
-            [e_field.RESOURCE_PROFILE.NAME]:"升级用户文档资源设定",
-            [e_field.RESOURCE_PROFILE.RANGE]:e_resourceProfileRange.PER_ARTICLE,
-            [e_field.RESOURCE_PROFILE.TYPE]:e_resourceProfileType.ADVANCED,
-            [e_field.RESOURCE_PROFILE.MAX_FILE_NUM]:100,
-            [e_field.RESOURCE_PROFILE.TOTAL_FILE_SIZE_IN_MB]:200, //假设每个文件大小为200M
-        },
-        {
-            [e_field.RESOURCE_PROFILE.NAME]:"升级用户总体资源设定",
-            [e_field.RESOURCE_PROFILE.RANGE]:e_resourceProfileRange.PER_PERSON,
-            [e_field.RESOURCE_PROFILE.TYPE]:e_resourceProfileType.ADVANCED,
-            [e_field.RESOURCE_PROFILE.MAX_FILE_NUM]:1000,
-            [e_field.RESOURCE_PROFILE.TOTAL_FILE_SIZE_IN_MB]:2000, //假设每个文件大小为2000M
-        },
+    {
+        [e_field.RESOURCE_PROFILE.NAME]:"普通用户单个文档图片资源设定",
+        [e_field.RESOURCE_PROFILE.RANGE]:e_resourceProfileRange.IMAGE_PER_ARTICLE,
+        [e_field.RESOURCE_PROFILE.TYPE]:e_resourceProfileType.DEFAULT,
+        [e_field.RESOURCE_PROFILE.MAX_FILE_NUM]:10,
+        [e_field.RESOURCE_PROFILE.TOTAL_FILE_SIZE_IN_MB]:20, //假设每个文件大小为2M
+    },
+    {
+        [e_field.RESOURCE_PROFILE.NAME]:"普通用户单个文档附件资源设定",
+        [e_field.RESOURCE_PROFILE.RANGE]:e_resourceProfileRange.ATTACHMENT_PER_ARTICLE,
+        [e_field.RESOURCE_PROFILE.TYPE]:e_resourceProfileType.DEFAULT,
+        [e_field.RESOURCE_PROFILE.MAX_FILE_NUM]:5,
+        [e_field.RESOURCE_PROFILE.TOTAL_FILE_SIZE_IN_MB]:100, //假设每个文件大小为20M
+    },
+    {
+        [e_field.RESOURCE_PROFILE.NAME]:"普通用户所有文档资源设定",
+        [e_field.RESOURCE_PROFILE.RANGE]:e_resourceProfileRange.WHOLE_RESOURCE_PER_PERSON_FOR_ALL_ARTICLE,
+        [e_field.RESOURCE_PROFILE.TYPE]:e_resourceProfileType.DEFAULT,
+        [e_field.RESOURCE_PROFILE.MAX_FILE_NUM]:1000,
+        [e_field.RESOURCE_PROFILE.TOTAL_FILE_SIZE_IN_MB]:1000,
+    },
+    {
+        [e_field.RESOURCE_PROFILE.NAME]:"升级用户单个文档图片设定",
+        [e_field.RESOURCE_PROFILE.RANGE]:e_resourceProfileRange.IMAGE_PER_ARTICLE,
+        [e_field.RESOURCE_PROFILE.TYPE]:e_resourceProfileType.ADVANCED,
+        [e_field.RESOURCE_PROFILE.MAX_FILE_NUM]:20,
+        [e_field.RESOURCE_PROFILE.TOTAL_FILE_SIZE_IN_MB]:40, //假设每个文件大小为200M
+    },
+    {
+        [e_field.RESOURCE_PROFILE.NAME]:"升级用户单个文档附件设定",
+        [e_field.RESOURCE_PROFILE.RANGE]:e_resourceProfileRange.ATTACHMENT_PER_ARTICLE,
+        [e_field.RESOURCE_PROFILE.TYPE]:e_resourceProfileType.ADVANCED,
+        [e_field.RESOURCE_PROFILE.MAX_FILE_NUM]:10,
+        [e_field.RESOURCE_PROFILE.TOTAL_FILE_SIZE_IN_MB]:200, //假设每个文件大小为20M
+    },
+    {
+        [e_field.RESOURCE_PROFILE.NAME]:"升级用户总体资源设定",
+        [e_field.RESOURCE_PROFILE.RANGE]:e_resourceProfileRange.WHOLE_RESOURCE_PER_PERSON_FOR_ALL_ARTICLE,
+        [e_field.RESOURCE_PROFILE.TYPE]:e_resourceProfileType.ADVANCED,
+        [e_field.RESOURCE_PROFILE.MAX_FILE_NUM]:2000,
+        [e_field.RESOURCE_PROFILE.TOTAL_FILE_SIZE_IN_MB]:2000, //假设每个文件大小为20M
+    },
 
-        {
-            [e_field.RESOURCE_PROFILE.NAME]:"用户举报资源设定",
-            [e_field.RESOURCE_PROFILE.RANGE]:e_resourceProfileRange.PER_IMPEACH_OR_COMMENT,
-            [e_field.RESOURCE_PROFILE.TYPE]:e_resourceProfileType.DEFAULT,
-            [e_field.RESOURCE_PROFILE.MAX_FILE_NUM]:10,
-            [e_field.RESOURCE_PROFILE.TOTAL_FILE_SIZE_IN_MB]:20, //假设每个文件大小为2M
-        },
-        {
-            [e_field.RESOURCE_PROFILE.NAME]:"用户举报总体资源设定", //假设一次举报中，用户总共进行了10次（发起，回复）的操作，每个操作10文件，20M
-            [e_field.RESOURCE_PROFILE.RANGE]:e_resourceProfileRange.PER_PERSON_IN_IMPEACH,
-            [e_field.RESOURCE_PROFILE.TYPE]:e_resourceProfileType.DEFAULT,
-            [e_field.RESOURCE_PROFILE.MAX_FILE_NUM]:100,
-            [e_field.RESOURCE_PROFILE.TOTAL_FILE_SIZE_IN_MB]:200, //假设每个文件大小为2M
-        },
-    ]
+
+    {
+        [e_field.RESOURCE_PROFILE.NAME]:"单个举报资源设定",
+        [e_field.RESOURCE_PROFILE.RANGE]:e_resourceProfileRange.IMAGE_PER_IMPEACH_OR_COMMENT,
+        [e_field.RESOURCE_PROFILE.TYPE]:e_resourceProfileType.DEFAULT,
+        [e_field.RESOURCE_PROFILE.MAX_FILE_NUM]:10,
+        [e_field.RESOURCE_PROFILE.TOTAL_FILE_SIZE_IN_MB]:20, //假设每个文件大小为2M
+    },
+    {
+        [e_field.RESOURCE_PROFILE.NAME]:"用户举报总体资源设定", //假设一次举报中，用户总共进行了10次（发起，回复）的操作，每个操作10文件，20M
+        [e_field.RESOURCE_PROFILE.RANGE]:e_resourceProfileRange.IMAGE_PER_PERSON_FOR_WHOLE_IMPEACH,
+        [e_field.RESOURCE_PROFILE.TYPE]:e_resourceProfileType.DEFAULT,
+        [e_field.RESOURCE_PROFILE.MAX_FILE_NUM]:100,
+        [e_field.RESOURCE_PROFILE.TOTAL_FILE_SIZE_IN_MB]:200, //假设每个文件大小为2M
+    },
+]
 
 
 module.exports={

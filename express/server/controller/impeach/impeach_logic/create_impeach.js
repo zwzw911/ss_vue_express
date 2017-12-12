@@ -202,6 +202,7 @@ async  function createImpeach_async({req,impeachType}){
 
     }
     impeachedThingId=docValue[impeachedThingFieldName]
+    // console.log(`impeachedThingId=================>${impeachedThingId}`)
     let impeachedRecord=await  common_operation_model.findById_returnRecord_async({dbModel:e_dbModel[impeachedThingRelatedColl],id:impeachedThingId})
     // console.log(`impeachedRecord==========>${JSON.stringify(impeachedRecord)}`)
     if(null===impeachedRecord){

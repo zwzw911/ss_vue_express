@@ -28,9 +28,11 @@ const mongoEnum=server_common_file_require.mongoEnum
 const e_env=nodeEnum.Env
 const e_part=nodeEnum.ValidatePart
 
-// const e_hashType=nodeRuntimeEnum.HashType
-
+//上传文件的定义
+const e_resourceFieldName=nodeEnum.ResourceFieldName
 const e_uploadFileType=nodeEnum.UploadFileType
+const e_uploadFileDefinitionFieldName=nodeEnum.UploadFileDefinitionFieldName
+
 // const e_resourceProfileRange=nodeEnum.Resource
 const e_fileSizeUnit=nodeRuntimeEnum.FileSizeUnit
 
@@ -104,24 +106,62 @@ async function uploadArticleFile_async({req,type}){
     /*******************************************************************************************/
 
     /*******************************************************************************************/
-    /*                          获得上传文件的信息                                */
+    /*                          获得上传文件的信息并判断 文件是否valid                         */
     /*******************************************************************************************/
     let maxFileSize
     if(e_uploadFileType.IMAGE===type){
-        maxFileSize=uploadFileDefine.article_image.maxSizeInByte
+        maxFileSize=uploadFileDefine[e_coll.ARTICLE_IMAGE][e_uploadFileDefinitionFieldName.MAX_SIZE_IN_BYTE]
     }
     if(e_uploadFileType.ATTACHMENT===type){
-        maxFileSize=uploadFileDefine.article_attachment.maxSizeInByte
+        maxFileSize=uploadFileDefine[e_coll.ARTICLE_ATTACHMENT][e_uploadFileDefinitionFieldName.MAX_SIZE_IN_BYTE]
     }
     let uploadResult=await controllerHelper.uploadFileToTmpDir_async({req:req, uploadTmpDir:e_iniSettingObject.store_path.UPLOAD_TMP.upload_tmp_dir.path, maxFileSize:maxFileSize,fileSizeUnit:e_fileSizeUnit.MB})
-    let {originalFilename,path,size}=uploadResult.msg
+    let {originalFilename,path,size}=uploadResult
+
+
+    //判断图片格式是否允许
+    let suffix
+    if(e_uploadFileType.IMAGE===type){
+        let gmInst=gmImage.initImage({originalFilename})
+        suffix=await gmImage.getImageProperty_async(gmInst,e_gmGetter.FORMAT)
+        if(-1===uploadFileDefine.common.imageType.indexOf(suffix)){
+            fs.unlink(path)
+            return Promise.reject(controllerError.imageFormatNotSupport)
+        }
+
+        //判断图片的长，宽，是否符合
+        let wh=await gmImage.getImageProperty_async(gmInst,e_gmGetter.SIZE)
+        if(wh.width > uploadFileDefine[e_coll.article_image][e_uploadFileDefinitionFieldName.MAX_WIDTH]
+            || wh.height > uploadFileDefine[e_coll.article_image][e_uploadFileDefinitionFieldName.MAX_HEIGHT]
+        ){
+            return Promise.reject(controllerError.imageResolutionNotSupport)
+        }
+    }
+
+    //判断附件格式是否支持
+    if(e_uploadFileType.ATTACHMENT===type){
+        tmpResult=await controllerChecker.ifFileSuffixMatchContentType_returnSuffixOrFalse_async({uploadFileResult:uploadResult})
+        if(false===tmpResult){
+            return Promise.reject(controllerError.attachmentFormatIncorrect)
+        }
+        suffix=tmpResult
+        //判断格式是否valid，否，报错=》删除=》推出
+        if(-1===uploadFileDefine.common.attachmentType.indexOf(suffix)){
+            fs.unlink(path)
+            return Promise.reject(controllerError.notSupportAttachmentFormat)
+        }
+    }
+
+
+
 
     // console.log(`get upload fild info  =====>${JSON.stringify(uploadResult)}`)
     /*******************************************************************************************/
     /*                                       resource check                                    */
     /*******************************************************************************************/
     /*              获得用户当前的所有资源配置，并检查当前占用的资源（磁盘空间）+文件的资源（sizeInMB）后，还小于==>所有<==的资源配置（）                         */
-    let resourceProfileRangeToBeCheck=[e_resourceProfileRange.PER_PERSON,e_resourceProfileRange.PER_ARTICLE]
+    if()
+    let resourceProfileRangeToBeCheck=[e_resourceProfileRange.,e_resourceProfileRange.PER_ARTICLE]
     //首先检查个人的（范围最大），然后检查article（范围小点的）
     for(let singleResourceProfileRange of resourceProfileRangeToBeCheck){
         tmpResult=await controllerHelper.chooseLastValidResourceProfile_async({resourceProfileRange:singleResourceProfileRange,userId:userId})
@@ -228,28 +268,10 @@ async function uploadArticleFile_async({req,type}){
     }
 // console.log(`rexource check done ======================`)
     /*              文件move到永久存储目录                           */
-    let finalFileName,suffix
+    let finalFileName
     //格式检查
-    if(e_uploadFileType.IMAGE===type){
-        //通过gm获得格式
-        let gmInst=gmImage.initImage({originalFilename})
-        tmpResult=await gmImage.getImageProperty_async(gmInst,e_gmGetter.FORMAT)
-        suffix=tmpResult.msg
-        //判断格式是否valid，否，报错=》删除=》推出
-        if(-1===uploadFileDefine.common.imageType.indexOf(suffix)){
-            fs.unlink(path)
-            return Promise.reject(controllerError.notSupportImageFormat)
-        }
-    }
-    if(e_uploadFileType.ATTACHMENT===type){
-        let tmp=originalFilename.split('.')
-        suffix=tmp[tmp.length-1]
-        //判断格式是否valid，否，报错=》删除=》推出
-        if(-1===uploadFileDefine.common.attachmentType.indexOf(suffix)){
-            fs.unlink(path)
-            return Promise.reject(controllerError.notSupportAttachmentFormat)
-        }
-    }
+
+
     //对原始文件名进行md5化，然后加上suffix
     let md5NameWithoutSuffix=hash(`${originalFilename}${Date.now()}`,e_hashType.MD5)
     finalFileName=`${md5NameWithoutSuffix.msg}.${suffix.toLowerCase()}`

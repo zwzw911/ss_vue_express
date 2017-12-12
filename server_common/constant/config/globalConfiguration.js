@@ -16,6 +16,7 @@ const e_coll=require('../genEnum/DB_Coll').Coll
 const e_serverDataType=require('../enum/inputDataRuleType').ServerDataType
 const e_uploadFileType=require('../enum/nodeEnum').UploadFileType
 
+const e_uploadFileDefinitionFieldName=require(`../enum/nodeEnum`).UploadFileDefinitionFieldName
 const regex=require('../regex/regex').regex
 
 
@@ -165,10 +166,15 @@ const maxNumber={
     },
     user:{
         maxUsedAccountNum:10,//最多记录10个历史账号
-    }
+    },
 
 }
 
+//日常维护参数
+const  daily={
+    resource_maxDailyCheckUserNum:10000,//daily check每天最多
+    resource_dailyCheckPeriod:7,//7天一个周期，对用户进行resource check
+}
 const mailOption={
     qq:{
         port:465,
@@ -211,52 +217,54 @@ const uploadFileDefine={
 
     },
     article_image:{
-        maxSizeInByte:2*1024*1024, //byte
-        maxSizeInMB:2, //byte
-        maxWidth:750,//最宽750px，超过自动缩减
-        maxHeight:600,//最高600px，超过自动缩减
+        [e_uploadFileDefinitionFieldName.MAX_SIZE_IN_BYTE]:2*1024*1024, //byte
+        [e_uploadFileDefinitionFieldName.MAX_SIZE_IN_MB]:2, //byte
+        [e_uploadFileDefinitionFieldName.MAX_WIDTH]:750,//最宽750px，超过自动缩减
+        [e_uploadFileDefinitionFieldName.MAX_HEIGHT]:600,//最高600px，超过自动缩减
     },
     article_attachment:{
-        maxSizeInByte:10*1024*1024, //byte
-        maxSizeInMB:10, //byte
+        [e_uploadFileDefinitionFieldName.MAX_SIZE_IN_BYTE]:10*1024*1024, //byte
+        [e_uploadFileDefinitionFieldName.MAX_SIZE_IN_MB]:10, //byte
     },
     user_thumb:{
-        maxSizeInByte:400*1024,// in byte
-        maxHeight:10000,//px
-        maxWidth:10000,//px
+        [e_uploadFileDefinitionFieldName.MAX_SIZE_IN_BYTE]:400*1024,// in byte
+        [e_uploadFileDefinitionFieldName.MAX_HEIGHT]:10000,//px
+        [e_uploadFileDefinitionFieldName.MAX_WIDTH]:10000,//px
         imageType:['PNG'],
         // saveDir:'H:/ss_vue_express/test_data/userPhoto/dest/',
         // tmpSaveDir:'H:/ss_vue_express/test_data/tmp/'
     },
     [e_coll.IMPEACH]:{
         [e_uploadFileType.IMAGE]:{
-            maxSizeInByte:2*1024*1024, //byte
-            maxSizeInMB:2, //byte
+            [e_uploadFileDefinitionFieldName.MAX_SIZE_IN_BYTE]:2*1024*1024, //byte
+            [e_uploadFileDefinitionFieldName.MAX_SIZE_IN_MB]:2,
         },
         [e_uploadFileType.ATTACHMENT]:{
-            maxSizeInByte:10*1024*1024, //byte
-            maxSizeInMB:10, //byte
+            [e_uploadFileDefinitionFieldName.MAX_SIZE_IN_BYTE]:10*1024*1024, //byte
+            [e_uploadFileDefinitionFieldName.MAX_SIZE_IN_MB]:10, 
         }
     },
 
     [e_coll.IMPEACH_COMMENT]:{
         [e_uploadFileType.IMAGE]:{
-            maxSizeInByte:2*1024*1024, //byte
-            maxSizeInMB:2, //byte
+            [e_uploadFileDefinitionFieldName.MAX_SIZE_IN_BYTE]:2*1024*1024, //byte
+            [e_uploadFileDefinitionFieldName.MAX_SIZE_IN_MB]:2, //byte
+            [e_uploadFileDefinitionFieldName.MAX_WIDTH]:900,
+            [e_uploadFileDefinitionFieldName.MAX_HEIGHT]:700,
         },
         [e_uploadFileType.ATTACHMENT]:{
-            maxSizeInByte:10*1024*1024, //byte
-            maxSizeInMB:10, //byte
+            [e_uploadFileDefinitionFieldName.MAX_SIZE_IN_BYTE]:10*1024*1024, //byte
+            [e_uploadFileDefinitionFieldName.MAX_SIZE_IN_MB]:10, //byte
         },
     },
 
 }
 
-// console.log(`uploadFileDefine====>${JSON.stringify(uploadFileDefine.impeach.attachment.maxSizeInMB)}`)
+// console.log(`uploadFileDefine====>${JSON.stringify(uploadFileDefine.impeach.attachment.[e_uploadFileDefinitionFieldName.MAX_SIZE_IN_MB])}`)
 const gm={
 /*    inner_image:{
-        maxWidth:750,//最宽750px，超过自动缩减
-        maxHeight:600,//最高600px，超过自动缩减
+        [e_uploadFileDefinitionFieldName.MAX_WIDTH]:750,//最宽750px，超过自动缩减
+        [e_uploadFileDefinitionFieldName.MAX_HEIGHT]:600,//最高600px，超过自动缩减
         maxSize:1000,//图片size最大1M
     },*/
 /*    user_thumbnail:{
@@ -596,6 +604,7 @@ module.exports={
     searchMaxPage,//search时，最大的页码
     uploadFileDefine,
     maxNumber,
+    daily,
     gm,
     intervalCheckConfiguration,
     miscConfiguration,

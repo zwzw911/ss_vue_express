@@ -58,6 +58,8 @@ let adminUser1Info,adminUser2Info,adminUser3Info,adminUser1Id,adminUser2Id,admin
 let user1Info,user2Info,user3Info,user1Id,user2Id,user3Id,user1Sess,user2Sess,user3Sess,user1Data,user2Data,user3Data
 let adminRootSess,adminRootId,data={values:{}}
 
+let recordId,expectedErrorRc
+
 let normalRecord={
     [e_field.IMPEACH_ACTION.IMPEACH_ID]:undefined,
     [e_field.IMPEACH_ACTION.ACTION]:e_impeachUserAction.SUBMIT,
@@ -66,7 +68,7 @@ let normalRecord={
 
 /*              create_impeach_state中的错误               */
 describe('create impeach action', async function() {
-    let data={values:{method:e_method.CREATE}}
+    data={values:{method:e_method.CREATE}}
     let impeachId,impeachId2
     before('user1/2  login and create article and impeach', async function(){
         url=''
@@ -92,25 +94,37 @@ describe('create impeach action', async function() {
         console.log(`articledId2================>${articledId2}`)
         impeachId2=await API_helper.createImpeachForArticle_returnImpeachId_async({articleId:articledId2,userSess:user2Sess,app:app})
         await API_helper.delete_impeach_async({impeachId:impeachId2,userSess:user2Sess,app:app})
-        // console.log(`userId==========${JSON.stringify(user1Id)}`)
-        // console.log(`user1Sess==========${JSON.stringify(user1Sess)}`)
+        console.log(`==============================================================`)
+        console.log(`=================    before all done      ====================`)
+        console.log(`==============================================================`)
     });
 
     /*              userType check              */
-
     it('userType check, admin not allow for submit', async function() {
         data.values={}
         data.values[e_part.RECORD_INFO]=normalRecord
         data.values[e_part.METHOD]=e_method.CREATE
-        await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:adminRootSess,data:data,expectedErrorRc:controllerCheckerError.userTypeNotExpected.rc,app:app})
+        expectedErrorRc=controllerCheckerError.userTypeNotExpected.rc
+        await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:adminRootSess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+    });
 
+    /*              authorization check            */
+    it('authorization check: user2 not creator try to add impeach comment', async function() {
+        data.values={}
+        data.values[e_part.RECORD_INFO]=normalRecord
+        data.values[e_part.METHOD]=e_method.CREATE
+
+        expectedErrorRc=controllerError.notImpeachCreatorCantCreateComment.rc
+        await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user2Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
     });
     it('admin action not allow for user', async function() {
         data.values={}
         normalRecord[e_field.IMPEACH_ACTION.ACTION]=e_impeachAdminAction.ASSIGN
         data.values[e_part.RECORD_INFO]=normalRecord
         data.values[e_part.METHOD]=e_method.CREATE
-        await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:controllerError.invalidActionForUser.rc,app:app})
+
+        expectedErrorRc=controllerError.invalidActionForUser.rc
+        await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
         normalRecord[e_field.IMPEACH_ACTION.ACTION]=e_impeachUserAction.SUBMIT
     });
     it('action create not allow ', async function() {
@@ -118,105 +132,25 @@ describe('create impeach action', async function() {
         normalRecord[e_field.IMPEACH_ACTION.ACTION]=e_impeachUserAction.CREATE
         data.values[e_part.RECORD_INFO]=normalRecord
         data.values[e_part.METHOD]=e_method.CREATE
-        await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:controllerError.forbidActionForUser.rc,app:app})
-        normalRecord[e_field.IMPEACH_ACTION.ACTION]=e_impeachUserAction.SUBMIT
-    });
-    /*              normal user not allow to input ownerColl/id, ther are input in code            */
-    it('ownerId input from client is forbid', async function() {
-        data.values={}
-        let copyNormalRecord=objectDeepCopy(normalRecord)
-        // copyNormalRecord[e_field.IMPEACH_STATE.IMPEACH_ID]="59d446dbbd708b15a4c11ae9"
-        // copyNormalRecord[e_field.IMPEACH_STATE.OWNER_COLL]=e_coll.USER
-        copyNormalRecord[e_field.IMPEACH_ACTION.ADMIN_OWNER_ID]=user1Id
-        data.values[e_part.RECORD_INFO]=copyNormalRecord
-        data.values[e_part.METHOD]=e_method.CREATE
-        // console.log(`Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]})=========>${JSON.stringify(Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]}))}`)
-        // data.values[e_part.RECORD_INFO]=Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:{value:['1','1']}})
-        await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:controllerError.forbidInputOwnerId.rc,app:app})
 
-    });
-    it('revoke not allow for new create impeach', async function() {
-        data.values={}
-        normalRecord[e_field.IMPEACH_ACTION.ACTION]=e_impeachUserAction.REVOKE
-        data.values[e_part.RECORD_INFO]=normalRecord
-        data.values[e_part.METHOD]=e_method.CREATE
-        await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:controllerError.invalidActionBaseOnCurrentAction.rc,app:app})
+        expectedErrorRc=controllerError.forbidActionForUser.rc
+        await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
         normalRecord[e_field.IMPEACH_ACTION.ACTION]=e_impeachUserAction.SUBMIT
     });
+
     /*              fk exists check            */
     it('fk:IMPEACH_ID not exists', async function() {
         data.values={}
         let copyNormalRecord=objectDeepCopy(normalRecord)
-        copyNormalRecord[e_field.IMPEACH_ACTION.IMPEACH_ID]="59d446dbbd708b15a4c11ae9"
+        copyNormalRecord[e_field.IMPEACH_ACTION.IMPEACH_ID]=testData.unExistObjectId
         data.values[e_part.RECORD_INFO]=copyNormalRecord
         data.values[e_part.METHOD]=e_method.CREATE
-        // console.log(`Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]})=========>${JSON.stringify(Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]}))}`)
-        // data.values[e_part.RECORD_INFO]=Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:{value:['1','1']}})
-        // console.log(`data=====>${JSON.stringify(data.values)}`)
-        let expectedErrorRc=controllerHelperError.fkValueNotExist(e_chineseFieldName.impeach_action.impeachId,normalRecord[e_field.IMPEACH_ACTION.IMPEACH_ID]).rc
+
+        expectedErrorRc=controllerHelperError.fkValueNotExist(e_chineseFieldName.impeach_action.impeachId,normalRecord[e_field.IMPEACH_ACTION.IMPEACH_ID]).rc
         await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
-       /* request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[user1Sess]).send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-                // console.log(`res ios ${JSON.stringify(res)}`)
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                // assert.deepStrictEqual(parsedRes.rc,99999)
-                assert.deepStrictEqual(parsedRes.rc,controllerHelperError.fkValueNotExist(e_chineseFieldName.admin_penalize.punishedId,normalRecord[e_field.ADMIN_PENALIZE.PUNISHED_ID]).rc)
-                done();
-            });*/
     });
 
-    it('user2 try to change action for impeach2 which already deleted', async function() {
-        data.values={}
-        data.values[e_part.METHOD]=e_method.CREATE
-        // console.log(`Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]})=========>${JSON.stringify(Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]}))}`)
-        data.values[e_part.RECORD_INFO]={
-            [e_field.IMPEACH_ACTION.IMPEACH_ID]:impeachId2,
-            [e_field.IMPEACH_ACTION.ACTION]:e_impeachUserAction.SUBMIT,
-        }
-        await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user2Sess,data:data,expectedErrorRc:controllerError.relatedImpeachAlreadyDeleted.rc,app:app})
-    });
 
-    it('user1 try to change action for impeach which already done', async function() {
-        let doc={
-            [e_field.IMPEACH.CURRENT_STATE]:e_impeachState.DONE,
-            // [e_field.IMPEACH_ACTION.CREATOR_COLL]:e_coll.ADMIN_USER,
-            // [e_field.IMPEACH_ACTION.IMPEACH_ID]:impeachId,
-            // [e_field.IMPEACH_ACTION.ACTION]:e_impeachAdminAction.FINISH,
-            // [e_field.IMPEACH_ACTION.]:impeachId,
-        }
-        await common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel[e_coll.IMPEACH],id:impeachId,updateFieldsValue:doc})
-
-        data.values={}
-        data.values[e_part.METHOD]=e_method.CREATE
-        // console.log(`Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]})=========>${JSON.stringify(Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]}))}`)
-        data.values[e_part.RECORD_INFO]={
-            [e_field.IMPEACH_ACTION.IMPEACH_ID]:impeachId,
-            [e_field.IMPEACH_ACTION.ACTION]:e_impeachUserAction.SUBMIT,
-        }
-        await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:controllerError.impeachAlreadyDone.rc,app:app})
-
-        doc={
-            [e_field.IMPEACH.CURRENT_STATE]:e_impeachState.NEW,
-            // [e_field.IMPEACH_ACTION.CREATOR_COLL]:e_coll.ADMIN_USER,
-            // [e_field.IMPEACH_ACTION.IMPEACH_ID]:impeachId,
-            // [e_field.IMPEACH_ACTION.ACTION]:e_impeachAdminAction.FINISH,
-            // [e_field.IMPEACH_ACTION.]:impeachId,
-        }
-        await common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel[e_coll.IMPEACH],id:impeachId,updateFieldsValue:doc})
-    });
-    it('user2 try to change action for impeach which create by user1', async function() {
-        data.values={}
-        data.values[e_part.METHOD]=e_method.CREATE
-        // console.log(`Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]})=========>${JSON.stringify(Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]}))}`)
-        data.values[e_part.RECORD_INFO]={
-            [e_field.IMPEACH_ACTION.IMPEACH_ID]:impeachId,
-            [e_field.IMPEACH_ACTION.ACTION]:e_impeachUserAction.SUBMIT,
-        }
-        await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user2Sess,data:data,expectedErrorRc:controllerError.notCreatorOfImpeach.rc,app:app})
-
-    });
 
 
 

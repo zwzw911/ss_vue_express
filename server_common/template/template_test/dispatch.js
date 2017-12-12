@@ -39,7 +39,7 @@ const browserInputRule=require('../../server/constant/inputRule/browserInputRule
 const validateError=server_common_file_require.validateError//require('../../server/constant/error/validateError').validateError
 const controllerHelperError=server_common_file_require.helperError.helper//require('../../server/constant/error/controller/helperError').helper
 // const controllerCheckerError=server_common_file_require.helperError.checker
-const controllerError=require('../../server/controller/impeach_action/impeach_action_setting/impeach_action_controllerError').controllerError
+
 
 // const objectDeepCopy=server_common_file_require.misc.objectDeepCopy
 
@@ -52,6 +52,7 @@ const component_function=server_common_file_require.component_function
 // const controllerError=require('../../server/controller/penalize/penalize_setting/penalize_controllerError').controllerError
 let rootSess
 let baseUrl="/impeach_action/",finalUrl,url
+const controllerError=require('../../server/controller/impeach_action/impeach_action_setting/impeach_action_controllerError').controllerError
 let recordId //当有update/delete的时候，需要真实的recordid，来pass recordId的最后一个case（正确通过）
 let normalRecord={
     [e_field.IMPEACH_ACTION.IMPEACH_ID]:undefined,
@@ -103,8 +104,13 @@ describe('dispatch', function() {
         // normalRecord[e_field.IMPEACH_ACTION.OWNER_COLL]=e_coll.USER
         // normalRecord[e_field.IMPEACH_ACTION.OWNER_ID]=userId  //普通用户无需输入OWNERID
 
+        //设置penalize相关信息
         rootSess=await API_helper.adminUserLogin_returnSess_async({userData:testData.admin_user.adminRoot,adminApp:adminApp})
         parameter[`penalizeRelatedInfo`][`rootSess`]=rootSess
+
+        console.log(`==============================================================`)
+        console.log(`=================    before all done      ====================`)
+        console.log(`==============================================================`)
     });
 
 /*    it(`penalize check`,async function(){
@@ -120,8 +126,10 @@ describe('dispatch', function() {
     it(`preCheck for create`,async function(){
         parameter[e_parameterPart.SESS_ERROR_RC]=controllerError.notLoginCantChangeState.rc
         parameter[e_parameterPart.REQ_BODY_VALUES][e_part.METHOD]=e_method.CREATE
+        parameter[e_parameterPart.PENALIZE_RELATED_INFO][`penalizeType`]=e_penalizeType.NO_IMPEACH_COMMENT
         parameter[e_parameterPart.PENALIZE_RELATED_INFO][`penalizeSubType`]=e_penalizeSubType.CREATE
-        parameter[e_parameterPart.PENALIZE_RELATED_INFO][`penalizedError`]=controllerError.userInPenalizeNoImpeachCreate
+        parameter[e_parameterPart.PENALIZE_RELATED_INFO][`penalizedUserData`]=testData.user.user1
+        parameter[e_parameterPart.PENALIZE_RELATED_INFO][`penalizedError`]=controllerError.currentUserForbidToCreateImpeachComment
         // parameter[`sessErrorRc`]=controllerError.notLoginCantChangeState.rc
         // parameter[`method`]=e_method.CREATE
         await inputRule_API_tester.dispatch_partCheck_async(parameter)
@@ -129,8 +137,10 @@ describe('dispatch', function() {
     it(`preCheck for update`,async function(){
         parameter[e_parameterPart.SESS_ERROR_RC]=controllerError.userNotLoginCantUpdate.rc
         parameter[e_parameterPart.REQ_BODY_VALUES][e_part.METHOD]=e_method.UPDATE
+        parameter[e_parameterPart.PENALIZE_RELATED_INFO][`penalizeType`]=e_penalizeType.NO_IMPEACH_COMMENT
         parameter[e_parameterPart.PENALIZE_RELATED_INFO][`penalizeSubType`]=e_penalizeSubType.UPDATE
-        parameter[e_parameterPart.PENALIZE_RELATED_INFO][`penalizedError`]=controllerError.userInPenalizeNoImpeachUpdate
+        parameter[e_parameterPart.PENALIZE_RELATED_INFO][`penalizedUserData`]=testData.user.user1
+        parameter[e_parameterPart.PENALIZE_RELATED_INFO][`penalizedError`]=controllerError.currentUserForbidToCreateImpeachComment
         parameter[e_parameterPart.REQ_BODY_VALUES][e_part.RECORD_ID]=recordId
         await inputRule_API_tester.dispatch_partCheck_async(parameter)
         delete parameter[e_parameterPart.REQ_BODY_VALUES][e_part.RECORD_ID]
@@ -149,8 +159,8 @@ describe('dispatch', function() {
 
 
 
-    it(`inputRule fro create`,async function(){
-        parameter[`method`]=e_method.CREATE
+    it(`inputRule for create`,async function(){
+        parameter[e_parameterPart.REQ_BODY_VALUES][e_part.METHOD]=e_method.CREATE
         await inputRule_API_tester.ruleCheckAll_async({
             parameter:parameter,
             expectedRuleToBeCheck:[],//[e_serverRuleType.REQUIRE],

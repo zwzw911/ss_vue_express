@@ -4,6 +4,7 @@
  */
 'use strict'
 
+const mime=require(`mime`)
 const helperError=require('../constant/error/controller/helperError').helper
 
 const e_dbModel=require('../constant/genEnum/dbModel')
@@ -175,6 +176,7 @@ async function ifFkValueExist_async({docValue,collFkConfig,collFieldChineseName}
         for(let singleFkFieldName in collFkConfig){
             // console.log(`singleFkFieldName=======>${singleFkFieldName}`)
             // console.log(`docValue[singleFkFieldName]===============>${JSON.stringify(docValue[singleFkFieldName])}`)
+            //外键值不空，才进行是否存在的检测
             if(undefined!==docValue[singleFkFieldName]){
                 let fkFieldValueInObjectId=docValue[singleFkFieldName]
                 let fkFieldRelatedColl=collFkConfig[singleFkFieldName]['relatedColl']
@@ -384,7 +386,32 @@ async function ifPenalizeOngoing_async({userId, penalizeType,penalizeSubType}){
 
 }
 
+/*  指定的用户是否为当前record的拥有者（创建者），被删除的记录不检查
+* ownerFieldName:判断是否为recordId 拥有者（创建者）的字段
+* ownerFieldValue：ownerFieldName对应的值
+* additionalCondition: 判断的额外条件。一般是{'dDate':{$exists:false}}
+*
+* return: 如果recordId对应的记录的拥有者（创建者）当前用户，返回record，以便后续做field value是否变更的比较；否则返回false
+* */
+async function ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({dbModel,recordId,ownerFieldName, ownerFieldValue,additionalCondition}){
+    let tmpResult,condition
+    //当前用户必须是impeach的创建人
+    condition={
+        [ownerFieldName]:ownerFieldValue,
+        '_id':recordId,
+        'dDate':{$exists:false},//未被删除的记录
+    }
+    if(undefined!==additionalCondition){
+        Object.assign(condition,additionalCondition)
+    }
+    tmpResult=await  common_operation_model.find_returnRecords_async({dbModel:dbModel,condition:condition})
+    if(tmpResult.length===1){
+        return Promise.resolve(tmpResult[0])
+    }else{
+        return Promise.resolve(false)
+    }
 
+}
 
 /*                          logic   check                   */
 //当前普通用户是否为impeach的创建人
@@ -402,12 +429,49 @@ async function ifCurrentUserCreatorOfImpeach_async({userId, impeachId}){
     return Promise.resolve(true)
 }
 
-module.exports={
+/*      根据文件的后缀名和上传文件的content/type，判断是否一致，为之后的判断文件是否可以上传做准备
+        ===============            这种判断方法并不保险，因为header也可能被伪造            ===============
+* uploadFileResult: 上传文件后返回的信息，如下
+*  {
+        "fieldName": "file",
+        "originalFilename": "config_rrh.txt",
+         "path": "D:\\IBeA1IEaGEgODfxlT7YIQB7I.txt",
+         "headers": {
+             "content-disposition": "form-data; name=\"file\"; filename=\"config_rrh.txt\"",
+            "content-type": "text/plain"
+         },
+        "size": 325
+ }
+*
+* return : suffix/false
+* */
+async function ifFileSuffixMatchContentType_returnSuffixOrFalse_async({uploadFileResult}){
+    let originalFilename=uploadFileResult[`originalFilename`]
+    let contentType=uploadFileResult[`headers`][`content-type`]
+
+    //检查后缀名是否存在
+    let tmp=originalFilename.split('.')
+    if(tmp.length<2){
+        return Promise.reject(helperError.uploadFileHasNoSuffix)
+    }
+    let suffix=tmp.pop()
+
+    //根据content-type获得对应的后缀
+    let matchedSuffix=mime.extension(contentType)
+    if(-1===matchedSuffix.indexOf(suffix)){
+        return Promise.resolve(false)
+    }else{
+        return Promise.resolve(suffix)
+    }
+}
+
+module.exports= {
     // ifFieldValueExistInColl_async,// 检测字段值是否已经在db中存在
-    ifSingleFieldFkValueExist_async,
+    ifSingleFieldFkValueExist_async, //根据coll中的2个字段（外键和外键对应coll），动态确定外键是否在指定的coll中存在
+    ifFkValueExist_async,//外键定义固定（外键在那个coll中固定）
 
     ifFieldInDocValueUnique_async,//未使用ifFieldValueExistInColl_async，直接使用find方法对整个输入的字段进行unique检测
-    ifFkValueExist_async,
+
     ifResourceStillValid_async, //直接计算（db）中已有的resource是否超出profile的定义
     ifNewFileLeadExceed_async,  //db中已有resource+上传文件，是否超出profile定义
     ifEnumHasDuplicateValue,//数组是否可以包含重复值
@@ -420,6 +484,10 @@ module.exports={
 
     ifCompoundFiledUnique_returnExistRecord_async,
 
+    ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async,
+
     /*              logic check         */
     ifCurrentUserCreatorOfImpeach_async,
+
+    ifFileSuffixMatchContentType_returnSuffixOrFalse_async,
 }

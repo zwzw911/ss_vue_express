@@ -84,6 +84,7 @@ async  function createImpeachComment_async({req}){
     /*******************************************************************************************/
     /*                                     用户类型和权限检测                                  */
     /*******************************************************************************************/
+    await controllerChecker.ifExpectedUserType_async({req:req,arr_expectedUserType:[e_allUserType.USER_NORMAL]})
     /*******************************************************************************************/
     /*                                  fk value是否存在                                       */
     /*******************************************************************************************/
@@ -96,15 +97,22 @@ async  function createImpeachComment_async({req}){
         })
     }
 
+
     /*******************************************************************************************/
     /*                                       authorization check                               */
     /*******************************************************************************************/
     //当前用户必须是impeach的创建人
-    tmpResult=await controllerChecker.ifCurrentUserCreatorOfImpeach_async({userId:userId,impeachId:docValue[e_field.IMPEACH_COMMENT.IMPEACH_ID]})
+    tmpResult=await controllerChecker.ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({dbModel:e_dbModel.impeach,recordId:docValue[e_field.IMPEACH_COMMENT.IMPEACH_ID],ownerFieldName:[e_field.IMPEACH.CREATOR_ID],ownerFieldValue:userId,})
     if(false===tmpResult){
         return Promise.reject(controllerError.notImpeachCreatorCantCreateComment)
     }
-
+    /*******************************************************************************************/
+    /*                                  logic part1                                            */
+    /*******************************************************************************************/
+    //impeach是否处于submit之后的状态（即非 revoke和new状态：revoke由fkCheck检查，所以只要检查非new即可）
+    if(tmpResult[e_field.IMPEACH.CURRENT_STATE]===e_impeachState.NEW){
+        return Promise.reject(controllerError.impeachNotSubmitNoNeedToAddComment)
+    }
     /*******************************************************************************************/
     /*                              检查是否有为完成的doc，以便复用                            */
     /*******************************************************************************************/
@@ -185,7 +193,7 @@ async  function createImpeachComment_async({req}){
     //new impeach插入db
     tmpResult= await common_operation_model.create_returnRecord_async({dbModel:e_dbModel[collName],value:docValue})
 
-    return Promise.resolve({rc:0,msg:tmpResult})
+    return Promise.resolve({rc:0,msg:tmpResult[`_id`]})
 }
 
 module.exports={

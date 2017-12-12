@@ -37,7 +37,7 @@ const e_accountType=mongoEnum.AccountType.DB
 const e_docStatus=mongoEnum.DocStatus.DB
 const e_adminUserType=mongoEnum.AdminUserType.DB
 const e_adminPriorityType=mongoEnum.AdminPriorityType.DB
-
+const e_resourceType=mongoEnum.ResourceType.DB
 /*                      server common：function                                       */
 const dataConvert=server_common_file_require.dataConvert
 const controllerHelper=server_common_file_require.controllerHelper
@@ -83,7 +83,7 @@ async function updateImpeach_async({req}){
     /*                                       authorization check                               */
     /*******************************************************************************************/
     //当前要改更的举报是当前用户所创
-    let condition={}
+/*    let condition={}
     condition['_id']=recordId
     condition[e_field.IMPEACH.CREATOR_ID]=userId
     condition['dDate']={$exists:false}
@@ -93,9 +93,14 @@ async function updateImpeach_async({req}){
     if(tmpResult.length!==1){
         return Promise.reject(controllerError.notAuthorized)
     }
-    let originalDoc=misc.objectDeepCopy({},tmpResult[0])
+    let originalDoc=misc.objectDeepCopy({},tmpResult[0])*/
 
-
+    //当前用户必须是impeach comment的创建人，且impeach comment未被删除
+    tmpResult=await controllerChecker.ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({dbModel:e_dbModel[collName],recordId:recordId,ownerFieldName:e_field.IMPEACH.CREATOR_ID,ownerFieldValue:userId,additionalCondition:undefined})
+    if(false===tmpResult){
+        return Promise.reject(controllerError.notAuthorized)
+    }
+    let originalDoc=misc.objectDeepCopy(tmpResult)
     /*******************************************************************************************/
     /*                              remove not change field                                    */
     /*******************************************************************************************/
@@ -120,7 +125,7 @@ async function updateImpeach_async({req}){
     /*******************************************************************************************/
     /*                                    fk value是否存在                                     */
     /*******************************************************************************************/
-    //在fkConfig中定义的外键检查
+    //在fkConfig中定义的外键检查(外键对应的coll固定)
     await controllerChecker.ifFkValueExist_async({docValue:docValue,collFkConfig:fkConfig[collName],collFieldChineseName:e_chineseName[collName]})
     //自定义外键的检查
     /*******************************************************************************************/
@@ -154,13 +159,16 @@ async function updateImpeach_async({req}){
         let collImageConfig={
             collName:e_coll.IMPEACH_IMAGE,//实际存储图片的coll名
             fkFieldName:e_field.IMPEACH_IMAGE.REFERENCE_ID, //字段名，记录图片存储在那个coll中
-            imageHashFieldName:e_field.IMPEACH_IMAGE.HASH_NAME //记录图片hash名字的字段名
+            sizeFieldName:e_field.IMPEACH_IMAGE.SIZE_IN_MB,//字段名，记录图片的size存储在那个field中，以便需要的话，对user_resource_static更新
+            imageHashFieldName:e_field.IMPEACH_IMAGE.HASH_NAME, //记录图片hash名字的字段名
+            storePathPopulateOpt:[{path:e_field.IMPEACH_IMAGE.PATH_ID,select:e_field.STORE_PATH.PATH}], //需要storePath，以便执行fs.unlink
         }
         docValue[e_field.IMPEACH.CONTENT]=await controllerHelper.contentDbDeleteNotExistImage_async({
             content:content,
             recordId:recordId,
             collConfig:collConfig,
             collImageConfig:collImageConfig,
+            resourceType:e_resourceType.IMPEACH_COMMENT_IMAGE,//设置user_resource_static中resourceType字段，如果undefined，说明无需设置user_resource_static
         })
     }
 

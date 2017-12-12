@@ -285,7 +285,7 @@ async function uploadImpeachFile_async({req,uploadFileType,forColl}) {
         maxFileSize: maxFileSize,
         fileSizeUnit: e_fileSizeUnit.MB
     })
-    let {originalFilename, path, size} = uploadResult.msg
+    let {originalFilename, path, size} = uploadResult
 
 
     let fileInfo={size:size,path:path}
@@ -299,8 +299,7 @@ async function uploadImpeachFile_async({req,uploadFileType,forColl}) {
     if(e_uploadFileType.IMAGE===uploadFileType){
         //通过gm获得格式
         let gmInst=gmImage.initImage({originalFilename})
-        tmpResult=await gmImage.getImageProperty_async(gmInst,e_gmGetter.FORMAT)
-        suffix=tmpResult.msg
+        suffix=await gmImage.getImageProperty_async(gmInst,e_gmGetter.FORMAT)
         //判断格式是否valid，否，报错=》删除=》推出
         if(-1===uploadFileDefine.common.imageType.indexOf(suffix)){
             fs.unlink(path)

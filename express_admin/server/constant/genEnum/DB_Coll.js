@@ -32,7 +32,7 @@ const Coll={
     IMPEACH_IMAGE:'impeach_image',
     /*       static           */
     LIKE_DISLIKE_STATIC:'like_dislike_static',
-    RESOURCE_PROFILE_STATIC:'resource_profile_static',
+    USER_RESOURCE_STATIC:'user_resource_static',
     /*       user           */
     USER_RESOURCE_PROFILE:'user_resource_profile',
     /*       user_behavior           */

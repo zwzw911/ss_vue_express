@@ -2,7 +2,7 @@
  * Created by ada on 2017/7/26.
  * 在正式部署之前，需要预先设定一些值（例如，user_thumb存放路径，文档分类信息等）
  *
- * 被genCollFieldEnum调用
+ * 被express/express_admin的genCollFieldEnum调用，server_common没有使用，但是为了照顾test/db_operation_helper中的格式，还是需要产生
  */
 'use strict'
 // const server_common_file_require=require('../../../express/server_common_file_require')
@@ -16,7 +16,7 @@ const e_resourceProfileRange=mongoEnum.ResourceProfileRange
 const e_dbModel=require('../../../express/server/constant/genEnum/dbModel')
 const e_coll=require('../../../express/server/constant/genEnum/DB_Coll').Coll
 const e_field=require('../../../express/server/constant/genEnum/DB_field').Field
-const generateMongoEnumKeyValueExchange=require(`../generateFunction/generateMongoEnumKeyValueExchange`)//server_common_file_require.generateMongoEnumKeyValueExchange
+const generateMongoEnumKeyValueExchange=require(`../generateFunction/generateMongoEnumKeyValueExchange`).genMongoEnumKVExchange//server_common_file_require.generateMongoEnumKeyValueExchange
 
 
 const fs=require('fs')
@@ -31,6 +31,7 @@ const fs=require('fs')
 /*             store path 还需要路径         */
 async function generateInitSettingEnum_async(){
     let mongoEnumKVExchange=generateMongoEnumKeyValueExchange()
+    // console.log(`mongoEnumKVExchange===>${JSON.stringify(mongoEnumKVExchange)}`)
     let tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.store_path,condition:{}})
     // console.log(`all store path===>${tmpResult}`)
     let result={}
@@ -81,7 +82,7 @@ async function generateInitSettingEnum_async(){
         result[e_coll.RESOURCE_PROFILE][typeInKey][name]=objectId
     }
 // console.log(`e_coll.RESOURCE_PROFILE extract result =========> ${JSON.stringify(result[e_coll.RESOURCE_PROFILE])}`)
-    // console.log(`result is -====>${JSON.stringify(result)}`)
+//     console.log(`result is -====>${JSON.stringify(result)}`)
     return Promise.resolve(result)
 }
 
@@ -93,7 +94,7 @@ async function writeInitSettingEnum_async(destFileDir){
     convertedEnum+=`${description}${indent}${useStrict}`
     convertedEnum+=`const iniSettingObject={\r\n`
     let exp='module.exports={\r\n'
-
+    // console.log(`atart generateInitSettingEnum_async====>`)
     let initSettingEnum=await generateInitSettingEnum_async()
 
     let str=JSON.stringify(initSettingEnum)

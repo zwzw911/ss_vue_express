@@ -13,15 +13,15 @@ let serverCommonAbsolutePath=absolutePath.server_common//`f:/U_backup/ss_vue_exp
 
 let absoluteDestDirForInputRule=`${localAbsolutePath}server/constant/inputRule/`
 let absoluteDestDirForEnum=`${localAbsolutePath}server/constant/genEnum/`
-let absoluteDestDirForSettingObjectId=`${localAbsolutePath}server/constant/genEnum/`
+let absoluteDestDirForMongoEnumValue=`${localAbsolutePath}server/constant/genEnum/`
 
 let modelCollRootDir=`${serverCommonAbsolutePath}model/mongo/structure/`
 let inputRuleBaseDir=`${serverCommonAbsolutePath}constant/inputRule/`   //原始的rule定义
 let mongoEnumDir=`${serverCommonAbsolutePath}constant/enum/` //原始的enum定义的目录
 
-genCollFieldEnum(absoluteDestDirForInputRule,absoluteDestDirForEnum,absoluteDestDirForSettingObjectId,modelCollRootDir,inputRuleBaseDir,mongoEnumDir)
+genCollFieldEnum(absoluteDestDirForInputRule,absoluteDestDirForEnum,absoluteDestDirForMongoEnumValue,modelCollRootDir,inputRuleBaseDir,mongoEnumDir)
 
-let getInitSettingIdFilePath=`${serverCommonAbsolutePath}maintain/preDeploy/getInitSettingId`
+let getInitSettingIdFilePath=`${serverCommonAbsolutePath}maintain/preDeploy/getInitSettingId.js`
 if(fs.existsSync(getInitSettingIdFilePath)){
     const getInitSettingObjectId=require(getInitSettingIdFilePath).writeInitSettingEnum_async
     getInitSettingObjectId(absoluteDestDirForEnum).then(

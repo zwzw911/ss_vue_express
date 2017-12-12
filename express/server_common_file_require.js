@@ -4,6 +4,7 @@
 
 const appSetting=require('../server_common/constant/config/appSetting.js')
 const globalConfiguration=require('../server_common/constant/config/globalConfiguration.js')
+const calcResourceConfig=require('../server_common/constant/define/calcResourceConfig.js')
 const nodeDefine=require('../server_common/constant/define/nodeDefine.js')
 const collEnum=require('../server_common/constant/enum/collEnum.js')
 const inputDataRuleType=require('../server_common/constant/enum/inputDataRuleType.js')
@@ -13,6 +14,7 @@ const nodeRuntimeEnum=require('../server_common/constant/enum/nodeRuntimeEnum.js
 const not_used_compoundUniqueField=require('../server_common/constant/enum/not_used_compoundUniqueField.js')
 const assistError=require('../server_common/constant/error/assistError.js')
 const helperError=require('../server_common/constant/error/controller/helperError.js')
+const maintainError=require('../server_common/constant/error/maintainError.js')
 const mongoError=require('../server_common/constant/error/mongo/mongoError.js')
 const redisError=require('../server_common/constant/error/redisError.js')
 const systemError=require('../server_common/constant/error/systemError.js')
@@ -49,6 +51,7 @@ const generateMongoEnumKeyValueExchange=require('../server_common/maintain/gener
 module.exports={
     appSetting,
     globalConfiguration,
+    calcResourceConfig,
     nodeDefine,
     collEnum,
     inputDataRuleType,
@@ -58,6 +61,7 @@ module.exports={
     not_used_compoundUniqueField,
     assistError,
     helperError,
+    maintainError,
     mongoError,
     redisError,
     systemError,

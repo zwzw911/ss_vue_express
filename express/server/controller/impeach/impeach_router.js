@@ -17,9 +17,9 @@ const mongoEnum=server_common_file_require.mongoEnum
 const genFinalReturnResult=server_common_file_require.misc.genFinalReturnResult
 
 // const impeach_logic=require('./impeach_logic')
-const impeachComment_logic=require('./impeachComment_logic_bk')
+// const impeachComment_logic=require('./impeachComment_logic_bk')
 // const article_comment_logic=require('./article_comment_logic')
-const impeach_upload_file_logic=require('./impeach_upload_file_logic')
+const upload_impeach_image=require('./impeach_logic/upload_impeach_image').uploadImpeachCommentFile_async
 // const likeDislike_logic=require('./liekDislike_logic')
 const e_uploadFileType=nodeEnum.UploadFileType
 const e_coll=require('../../constant/genEnum/DB_Coll').Coll
@@ -79,7 +79,7 @@ router.post('/comment',function(req,res,next){
 })
 
 
-/*              CRUD for impeach comment                */
+/*/!*              CRUD for impeach comment                *!/
 router.post('/impeachComment',function(req,res,next){
 
     impeachComment_logic.impeachComment_dispatcher_async({req:req}).then(
@@ -93,7 +93,7 @@ router.post('/impeachComment',function(req,res,next){
 
         }
     )
-})
+})*/
 
 
 /*              上传文件                */
@@ -102,7 +102,7 @@ router.post('/impeachComment',function(req,res,next){
 * */
 router.post('/impeachImage',function(req,res,next){
 
-    impeach_upload_file_logic.impeachUploadFile_dispatch_async({req:req,uploadFileType:e_uploadFileType.IMAGE,forColl:e_coll.IMPEACH}).then(
+    upload_impeach_image({req:req}).then(
         (v)=>{
             console.log(`impeachImage upload  success, result:  ${JSON.stringify(v)}`)
             return res.json(v)
@@ -114,7 +114,7 @@ router.post('/impeachImage',function(req,res,next){
         }
     )
 })
-router.post('/impeachCommentImage',function(req,res,next){
+/*router.post('/impeachCommentImage',function(req,res,next){
 
     impeach_upload_file_logic.impeachUploadFile_dispatch_async({req:req,uploadFileType:e_uploadFileType.IMAGE,forColl:e_coll.IMPEACH_COMMENT}).then(
         (v)=>{
@@ -127,13 +127,13 @@ router.post('/impeachCommentImage',function(req,res,next){
 
         }
     )
-})
+})*/
 
 
 
 
 
-router.post('/impeachAttachment',function(req,res,next){
+/*router.post('/impeachAttachment',function(req,res,next){
 
     impeach_upload_file_logic.impeachUploadFile_dispatch_async({req:req,uploadFileType:e_uploadFileType.ATTACHMENT,forColl:e_coll.IMPEACH}).then(
         (v)=>{
@@ -160,7 +160,7 @@ router.post('/impeachCommentAttachment',function(req,res,next){
 
         }
     )
-})
+})*/
 
 
 

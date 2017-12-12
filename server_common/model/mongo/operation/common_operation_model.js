@@ -274,16 +274,28 @@ async function findById_returnRecord_async({dbModel,id,selectedFields='-cDate -u
 }
 
 
-async function find_returnRecords_async({dbModel,condition,selectedFields='-cDate -uDate -dDate',options={}}){
+async function find_returnRecords_async({dbModel,condition,selectedFields='-cDate -uDate -dDate',options={},populateOpt}){
     // console.log(`find by id :${id}`)
     // console.log(`find condition==========================>${JSON.stringify(condition)}`)
-    let result=await dbModel.find(condition,selectedFields,options)
-        .catch(
-            function(err){
-                // console.log(`find errr is ${JSON.stringify(err)}`)
-                // console.log(`converted err is ${JSON.stringify(mongooseErrorHandler(mongooseOpEnum.findById,err))}`)
-                return Promise.reject(mongooseErrorHandler(err))
-            })
+    let result
+    if(undefined===populateOpt){
+        result=await dbModel.find(condition,selectedFields,options)
+            .catch(
+                function(err){
+                    // console.log(`find errr is ${JSON.stringify(err)}`)
+                    // console.log(`converted err is ${JSON.stringify(mongooseErrorHandler(mongooseOpEnum.findById,err))}`)
+                    return Promise.reject(mongooseErrorHandler(err))
+                })
+    }else{
+        result=await dbModel.find(condition,selectedFields,options).populate(populateOpt)
+            .catch(
+                function(err){
+                    // console.log(`find errr is ${JSON.stringify(err)}`)
+                    // console.log(`converted err is ${JSON.stringify(mongooseErrorHandler(mongooseOpEnum.findById,err))}`)
+                    return Promise.reject(mongooseErrorHandler(err))
+                })
+    }
+
     // let finalResult=result.toObject()
     // delete finalResult.__v
     // console.log(`findbyid result is ${JSON.stringify(result)}`)
@@ -575,7 +587,7 @@ async function group_async({dbModel,match,project,group,sort}){
         params.push({$match:match})
     }
     if(undefined!==project){
-        params.push({$project:match})
+        params.push({$project:project})
     }
     if(undefined!==group){
         params.push({$group:group})

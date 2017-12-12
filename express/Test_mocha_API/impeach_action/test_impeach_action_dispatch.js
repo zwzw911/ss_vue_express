@@ -128,8 +128,8 @@ describe('dispatch', function() {
         await inputRule_API_tester.dispatch_partCheck_async(parameter)
     })*/
 
-    it(`inputRule:CREATE`,async function(){
-        parameter[`method`]=e_method.CREATE
+    it(`inputRule for create`,async function(){
+        parameter[e_parameterPart.REQ_BODY_VALUES][e_part.METHOD]=e_method.CREATE
         await inputRule_API_tester.ruleCheckAll_async({
             parameter:parameter,
             expectedRuleToBeCheck:[],//[e_serverRuleType.REQUIRE],

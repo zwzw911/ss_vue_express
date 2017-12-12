@@ -108,7 +108,7 @@ async  function createImpeachAction_async(req){
         return  Promise.reject(controllerError.actionNoRelatedPriority)
     }
     //当前用户是否具有此权限
-    let adminUserHasPriority=await controllerChecker.ifAdminUserHasExpectedPriority_async({userPriority:matchPriority,arr_expectedPriority:userPriority})
+    let adminUserHasPriority=await controllerChecker.ifAdminUserHasExpectedPriority_async({userPriority:userPriority,arr_expectedPriority:matchPriority})
     if(false===adminUserHasPriority){
         return  Promise.reject(controllerError.userHasNoPriorityToThisOption)
     }

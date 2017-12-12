@@ -414,7 +414,7 @@ async function createImpeachComment_returnId_async({sess,impeachId,app}){
                 let parsedRes=JSON.parse(res.text)
                 console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
                 assert.deepStrictEqual(parsedRes.rc,0)
-                return resolve(parsedRes.msg[`_id`])
+                return resolve(parsedRes.msg)
             });
     })
 }

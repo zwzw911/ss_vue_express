@@ -471,7 +471,12 @@ async function dispatch_partCheck_async(parameter){
         await API_helper.createPenalize_returnPenalizeId_async({adminUserSess:penalizeRelatedInfo[`rootSess`],penalizeInfo:penalizeInfo,penalizedUserData:penalizeRelatedInfo[`penalizedUserData`],adminApp:penalizeRelatedInfo[`adminApp`]})
         // console.log(`data========>${JSON.stringify()}`)
 
-        data.values[e_part.RECORD_INFO]=normalRecordInfo
+        if(undefined!==normalRecordInfo){
+            data.values[e_part.RECORD_INFO]=normalRecordInfo
+        }
+        if(undefined!==recordId){
+            data.values[e_part.RECORD_ID]=recordId
+        }
         await  sendDataToAPI_compareCommonRc_async({APIUrl:APIUrl,sess:sess,data:data,expectedErrorRc:penalizeRelatedInfo[`penalizedError`][`rc`],app:app})
         await API_helper.deletePenalize_async({adminUserSess:penalizeRelatedInfo[`rootSess`],penalizeInfo:penalizeInfo,penalizedUserData:penalizeRelatedInfo[`penalizedUserData`],adminApp:penalizeRelatedInfo[`adminApp`]})
     }

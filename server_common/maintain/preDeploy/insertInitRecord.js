@@ -65,6 +65,7 @@ async function resourceProfile(){
 //init use category
     for(let singleItem of resourceProfileRecord){
         resourceProfileDocs.push(singleItem)
+        // console.log(`singleItem。range====》${JSON.stringify(singleItem.range)}`)
     }
 
     // console.log(`resourceProfileDocs====》${JSON.stringify(resourceProfileDocs)}`)

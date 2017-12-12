@@ -138,7 +138,9 @@ const PenalizeType={
         NO_TOPIC:'2',
         NO_LIKE_DISLIKE:'3',
         NO_IMPEACH:'4',
+
         NO_IMPEACH_COMMENT:'5',
+        // NO_IMPEACH_COMMENT_IMAGE:'6',
     },
     SHOW:{
         NO_ARTICLE: '禁止文档',
@@ -331,18 +333,42 @@ const StorePathStatus={
 
 }
 
+//和uploadFileType一样，但是为了在计算resource不产生confuse，使用新名称
+const ResourceType={
+    DB:{
+        ARTICLE_IMAGE:'1',
+        ARTICLE_ATTACHMENT:'2',
+        IMPEACH_COMMENT_IMAGE:'3',
+        IMPEACH_COMMENT_ATTACHMENT:'4',},
+
+    SHOW:{
+        ARTICLE_IMAGE:'文档图片',
+        ARTICLE_ATTACHMENT:'文档附件',
+        IMPEACH_COMMENT_IMAGE:'评论图片',
+        IMPEACH_COMMENT_ATTACHMENT:'评论附件',},
+
+}
+
 const ResourceProfileRange={
     DB:{
-        PER_ARTICLE:'1',
-        PER_PERSON:'2',
-        PER_IMPEACH_OR_COMMENT:'3',
-        PER_PERSON_IN_IMPEACH:'4',
+        IMAGE_PER_ARTICLE:'1',  //每个文档的图片
+        ATTACHMENT_PER_ARTICLE:'2', //每个文档的附件
+
+        WHOLE_RESOURCE_PER_PERSON_FOR_ALL_ARTICLE:'3', //用户总共的空间
+        // ATTACHMENT_PER_PERSON_FOR_ALL_ARTICLE:'4',//每个用户对所有文档的附件
+
+        IMAGE_PER_IMPEACH_OR_COMMENT:'5', //每个impeach或者comment的图片
+        IMAGE_PER_PERSON_FOR_WHOLE_IMPEACH:'7', //每个用户，在整个impeach和comment的图片
     },
     SHOW:{
-        PER_ARTICLE:'文档',//对文档起作用
-        PER_PERSON:'用户',//对用户起作用
-        PER_IMPEACH_OR_COMMENT:'3', //举报或者举报出路
-        PER_PERSON_IN_IMPEACH:'4',  //整个举报中
+        IMAGE_PER_ARTICLE:'文档图片',//对文档起作用
+        ATTACHMENT_PER_ARTICLE:'文档附件',
+        WHOLE_RESOURCE_PER_PERSON_FOR_ALL_ARTICLE:'用户文档所有资源',
+        // ATTACHMENT_PER_PERSON_FOR_ALL_ARTICLE:'用户文档附件',//对用户起作用
+
+        IMAGE_PER_IMPEACH_OR_COMMENT:'举报（或者评论）图片', //举报或者举报评论
+        // IMAGE_PER_COMMENT:'举报图片', //举报或者举报出路
+        IMAGE_PER_PERSON_FOR_WHOLE_IMPEACH:'举报中的用户',  //整个举报中，每个用户
     },
 }
 const ResourceProfileType={
@@ -396,6 +422,7 @@ module.exports={
     AccountType,
     StorePathUsage,
     StorePathStatus,
+    ResourceType,
     ResourceProfileRange,
     ResourceProfileType,
     DocumentStatus,

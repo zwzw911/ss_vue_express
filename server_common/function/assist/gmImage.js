@@ -54,7 +54,7 @@ const getImageProperty_async=function (gmInst,propertyType){
                     if(err){
                         return reject(imageErrorDefine.format)
                     }else{
-                        return resolve({rc:0,msg:result})
+                        return resolve(result)
                     }
 
                 })
@@ -75,7 +75,7 @@ const getImageProperty_async=function (gmInst,propertyType){
                         return reject(imageErrorDefine.size)
                     }else{
 
-                        return resolve({rc:0,msg:result})
+                        return resolve(result)
                     }
 
                 })
@@ -88,7 +88,7 @@ const getImageProperty_async=function (gmInst,propertyType){
                     if(err){
                         return reject(imageErrorDefine.ORIENTATION)
                     }else{
-                        return resolve({rc:0,msg:result})
+                        return resolve(result)
                     }
 
                 })
@@ -101,7 +101,7 @@ const getImageProperty_async=function (gmInst,propertyType){
                     if(err){
                         return reject(imageErrorDefine.depth)
                     }else{
-                        return resolve({rc:0,msg:result})
+                        return resolve(result)
                     }
 
                 })
@@ -114,7 +114,7 @@ const getImageProperty_async=function (gmInst,propertyType){
                     if(err){
                         return reject(imageErrorDefine.color)
                     }else{
-                        return resolve({rc:0,msg:result})
+                        return resolve(result)
                     }
 
                 })
@@ -127,7 +127,7 @@ const getImageProperty_async=function (gmInst,propertyType){
                     if(err){
                         return reject(imageErrorDefine.res)
                     }else{
-                        return resolve({rc:0,msg:result})
+                        return resolve(result)
                     }
 
                 })
@@ -152,7 +152,7 @@ const getImageProperty_async=function (gmInst,propertyType){
                             return reject(imageErrorDefine.parseFileSizeNum)
                         }
                         // console.log(`get result ${JSON.stringify(result)}`)
-                        return resolve({rc:0,msg:{sizeNum:parseResult[1],sizeUnit:parseResult[2]}})
+                        return resolve({sizeNum:parseResult[1],sizeUnit:parseResult[2]})
                         // return Promise.resolve({rc:0,msg:result})
                     }
 
@@ -166,7 +166,7 @@ const getImageProperty_async=function (gmInst,propertyType){
                     if(err){
                         return reject(imageErrorDefine.identify)
                     }else{
-                        return resolve({rc:0,msg:result})
+                        return resolve(result)
                     }
 
                 })

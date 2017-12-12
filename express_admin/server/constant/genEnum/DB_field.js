@@ -141,8 +141,8 @@ const Field={
     },
     USER_FRIEND_GROUP:{
         ID:'id',
-        NAME:'name',
-        USER_ID:'userId',
+        FRIEND_GROUP_NAME:'friendGroupName',
+        OWNER_USER_ID:'ownerUserId',
         FRIENDS_IN_GROUP:'friendsInGroup',
     },
     USER_PUBLIC_GROUP:{
@@ -207,12 +207,14 @@ const Field={
         LIKE_TOTAL_NUM:'likeTotalNum',
         DISLIKE_TOTAL_NUM:'dislikeTotalNum',
     },
-    RESOURCE_PROFILE_STATIC:{
+    USER_RESOURCE_STATIC:{
         ID:'id',
         USER_ID:'userId',
-        RESOURCE_PROFILE_ID:'resourceProfileId',
-        USED_FILE_NUM:'usedFileNum',
-        USED_FILE_SIZE:'usedFileSize',
+        RESOURCE_TYPE:'resourceType',
+        UPLOADED_FILE_NUM:'uploadedFileNum',
+        UPLOADED_FILE_SIZE_IN_MB:'uploadedFileSizeInMb',
+        DAILY_CHECK_DATE:'dailyCheckDate',
+        DAILY_UPDATE_DATE:'dailyUpdateDate',
     },
     USER_RESOURCE_PROFILE:{
         ID:'id',

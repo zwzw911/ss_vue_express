@@ -87,6 +87,15 @@
 1. 所有的dispatch返回tmpResult（logic的返回值，即由logic来控制API最终的返回值形式，某些操作，例如create，需要返回创建的数据给client）
 2. API_test中，createPenalize-async需要返回penalizeId，以便deletePenalize操作======>done
 
-1. express_admin中，impeach_state改成impeach_action
+1. express_admin中，impeach_state改成impeach_action=======>done
 
 
+1. 创建普通用户时，同时需要在user_resource_static中创建2个记录（image & attachment）========>done
+2. 上传/删除文件，需要同时修改user_resource_static中的记录======>done
+3. daily中，需要有函数，通过group方式获得实时数据，和user_resource_static中的数据比较，不同则更新===>done
+
+4. 外键通过字段判定的coll，需要独立的函数判断fk？=======>已有，ifSingleFieldFkValueExist_async
+
+
+1. genColl 完成==========>done
+2. 上传文件测试是否可以传递参数（supertest）

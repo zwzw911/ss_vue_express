@@ -23,7 +23,7 @@ const e_env=nodeEnum.Env//require('../../constant/enum/node').Env
 // const e_docStatus=require('../../constant/enum/mongo').DocStatus.DB
 const e_penalizeType=server_common_file_require.mongoEnum.PenalizeType.DB
 const e_penalizeSubType=server_common_file_require.mongoEnum.PenalizeSubType.DB
-
+const e_uploadFileType=nodeEnum.UploadFileType
 
 const currentEnv=server_common_file_require.appSetting.currentEnv
 // const uploadFileDefine=require('../../constant/config/globalConfiguration').uploadFileDefine
@@ -46,7 +46,8 @@ const common_operation_model=server_common_file_require.common_operation_model
 
 const controllerError=require('./article_upload_file_setting/article_upload_file_controllerError').controllerError
 // const create_async=require('./likeDisLike_logic/create_likeDisLike').createLikeDisLike_async
-const update_async=require('./article_upload_file_logic/upload_article_file').uploadArticleFile_async
+const update_uploadArticleImage_async=require('./article_upload_file_logic/upload_article_image').uploadArticleImage_async
+const update_uploadArticleAttachment_async=require('./article_upload_file_logic/upload_article_attachment').uploadArticleAttachment_async
 // const delete_async=require('./impeach_logic/delete_impeach').deleteImpeach_async
 const controllerSetting=require('./article_upload_file_setting/article_upload_file_setting').setting
 
@@ -99,7 +100,12 @@ async function articleUploadFile_dispatch_async({req,type}){
             expectedPart=[e_part.RECORD_ID]
             tmpResult=await controllerHelper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
             // console.log(`dispatch preCheck doen`)
-            tmpResult=await update_async({req:req,type:type})
+            if(type===e_uploadFileType.IMAGE){
+                tmpResult=await update_uploadArticleImage_async({req:req})
+            }
+            if(type===e_uploadFileType.ATTACHMENT){
+                tmpResult=await update_uploadArticleAttachment_async({req:req})
+            }
             break;
         case e_method.DELETE: //delete
             break;

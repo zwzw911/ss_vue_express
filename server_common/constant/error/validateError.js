@@ -170,7 +170,7 @@ const validateValue={
     unknownRuleType:{rc:40352,msg:'未知rule类型'},
 
     /*              method              */
-    methodValueUndefined:{rc:40240,msg:{client:'输入值格式错误',server:'method的值不是预定义的值之一'}},
+    methodValueUndefined:{rc:40354,msg:{client:'输入值格式错误',server:'method的值不是预定义的值之一'}},
 }
 
 

@@ -34,6 +34,7 @@ const e_storePathUsage=mongoEnum.StorePathUsage
 const e_gmCommand=nodeRuntimeEnum.GmCommand
 const e_gmGetter=nodeRuntimeEnum.GmGetter
 const e_env=nodeEnum.Env
+const e_uploadFileDefinitionFieldName=nodeEnum.UploadFileDefinitionFieldName
 
 const e_hashType=server_common_file_require.nodeRuntimeEnum.HashType
 const e_docStatus=mongoEnum.DocStatus.DB
@@ -58,7 +59,7 @@ const controllerError=require('./user_controllerError').controllerError
 const hash=server_common_file_require.crypt.hash
 /*                      检查用户名/账号的唯一性                           */
 async  function  uniqueCheck_async(req) {
-    console.log(`unique check values =========> ${JSON.stringify(req.body.values)} `)
+    // console.log(`unique check values =========> ${JSON.stringify(req.body.values)} `)
 
     let collName=e_coll.USER
 
@@ -198,7 +199,8 @@ async function retrievePassword_async(req){
 
 async function uploadPhoto_async(req){
     /*             检查用户是否在更新 自己 的头像           */
-    // console.log(`uploadPhoto_async in`)
+    console.log(`uploadPhoto_async in`)
+    console.log(`uploadPhoto_async req.body====>${JSON.stringify(req.param)}`)
     let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
     let userId=userInfo.userId
     /*    if(req.session.userId!==userId){
@@ -214,7 +216,7 @@ async function uploadPhoto_async(req){
     tmpResult=await controllerHelper.uploadFileToTmpDir_async({req:req,uploadTmpDir:e_iniSettingObject.store_path.UPLOAD_TMP.upload_tmp_dir.path,maxFileSizeInByte:userPhotoConfiguration.maxSizeInByte,fileSizeUnit:e_fileSizeUnit.KB})
 // console.log(`after upload photo result ========> ${JSON.stringify(tmpResult)}`)
     // let path=tmpResult.msg['filePath']
-    let {originalFilename,path,size}=tmpResult.msg
+    let {originalFilename,path,size}=tmpResult
     // console.log(`file path ========> ${JSON.stringify(path)}`)
     // console.log(`multipart size===${size}`)
 
@@ -223,7 +225,7 @@ async function uploadPhoto_async(req){
     // console.log(`inst ====>${JSON.stringify(inst)}`)
     tmpResult=await gmImage.getImageProperty_async(inst,e_gmGetter.SIZE)
 // console.log(`gm size ====>${JSON.stringify(tmpResult)}`)
-    if(tmpResult.msg.width>userPhotoConfiguration.maxWidth || tmpResult.msg.height>userPhotoConfiguration.maxHeight){
+    if(tmpResult.width>userPhotoConfiguration.maxWidth || tmpResult.height>userPhotoConfiguration.maxHeight){
         fs.unlinkSync(path)
         return Promise.reject(controllerError.imageSizeInvalid)
     }
@@ -250,13 +252,13 @@ async function uploadPhoto_async(req){
     //格式不同，直接转换到指定位置
     tmpResult=await gmImage.getImageProperty_async(inst,e_gmGetter.FORMAT)
     // console.log(`tmpResult ==== ${JSON.stringify(tmpResult)}`)
-    if(-1===userPhotoConfiguration.imageType.indexOf(tmpResult.msg)){
+    if(-1===userPhotoConfiguration.imageType.indexOf(tmpResult)){
         // console.log(`path ==== ${path}`)
         await gmImage.gmCommand_async(inst,e_gmCommand.CONVERT_FILE_TYPE,finalPath)
         let newInst=gmImage.initImage(finalPath)
         // console.log(`finalPath ====》 ${finalPath}`)
         tmpResult=await  gmImage.getImageProperty_async(newInst,e_gmGetter.FILE_SIZE)
-        let tmpSize=tmpResult.msg.sizeNum,tmpUnit=tmpResult.msg.sizeUnit
+        let tmpSize=tmpResult.sizeNum,tmpUnit=tmpResult.sizeUnit
 
         tmpResult=misc.convertFileSize({num:tmpSize,unit:tmpUnit,newUnit:e_fileSizeUnit.KB})
         size=tmpResult.msg

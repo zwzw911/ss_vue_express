@@ -19,6 +19,8 @@ const internalInputRule=require('../../../constant/inputRule/internalInputRule')
 /*                      server common                                           */
 const server_common_file_include=require('../../../../server_common_file_require')
 const nodeEnum=server_common_file_include.nodeEnum
+const mongoEnum=server_common_file_include.mongoEnum
+
 /*                      server common：function                                       */
 const dataConvert=server_common_file_include.dataConvert
 const controllerHelper=server_common_file_include.controllerHelper
@@ -27,11 +29,13 @@ const common_operation_model=server_common_file_include.common_operation_model
 const misc=server_common_file_include.misc
 const hash=server_common_file_include.crypt.hash
 /*                      server common：enum                                       */
-const e_accountType=server_common_file_include.mongoEnum.AccountType.DB
-const e_docStatus=server_common_file_include.mongoEnum.DocStatus.DB
+const e_accountType=mongoEnum.AccountType.DB
+const e_docStatus=mongoEnum.DocStatus.DB
 const e_env=nodeEnum.Env
-const e_part=server_common_file_include.nodeEnum.ValidatePart
+const e_part=nodeEnum.ValidatePart
 const e_hashType=server_common_file_include.nodeRuntimeEnum.HashType
+
+const e_resourceType=mongoEnum.ResourceType.DB
 /*                      server common：other                                       */
 const regex=server_common_file_include.regex.regex
 const currentEnv=server_common_file_include.appSetting.currentEnv
@@ -152,6 +156,7 @@ async  function createUser_async(req){
     // console.log(`sugarValue ${JSON.stringify(sugarValue)}`)
     await common_operation_model.create_returnRecord_async({dbModel:e_dbModel.folder,value:folderValue})
 
+    //对关联表user_resource_profile进行insert操作,插入默认资源设置
     let userResourceProfile=[]
     // console.log(`e_iniSettingObject.resource_profile.DEFAULT==========>${JSON.stringify(e_iniSettingObject.resource_profile.DEFAULT)}`)
     for(let defaultResourceProfile of Object.values(e_iniSettingObject.resource_profile.DEFAULT)){
@@ -164,21 +169,27 @@ async  function createUser_async(req){
         tmp[e_field.USER_RESOURCE_PROFILE.DURATION]=0
         userResourceProfile.push(tmp)
     }
-    /*    /!*                  以下是测试数据                         *!/
-     for(let defaultResourceProfile of Object.values(e_iniSettingObject.resource_profile.ADVANCED)){
-     // for(let resourceProfileId)
-     // console.log(`defaultResourceProfile==========>${JSON.stringify(defaultResourceProfile)}`)
-     let tmp={}
-     tmp[e_field.USER_RESOURCE_PROFILE.USER_ID]=userCreateTmpResult.msg._id
-     // console.log(`defaultResourceProfile==========>${JSON.stringify(defaultResourceProfile)}`)
-     tmp[e_field.USER_RESOURCE_PROFILE.RESOURCE_PROFILE_ID]=defaultResourceProfile
-     tmp[e_field.USER_RESOURCE_PROFILE.DURATION]=30
-     userResourceProfile.push(tmp)
-     }*/
-
-
-    // console.log(`userResourceProfile ${JSON.stringify(userResourceProfile)}`)
     await common_operation_model.insertMany_returnRecord_async({dbModel:e_dbModel.user_resource_profile,docs:userResourceProfile})
+
+    //对关联表user_resource_static进行insert操作，为article_image和article_attachment插入fileNum和size为0 的记录
+    let userResourceStaticValue=[
+        {
+            [e_field.USER_RESOURCE_STATIC.USER_ID]:userCreateTmpResult._id,
+            [e_field.USER_RESOURCE_STATIC.RESOURCE_TYPE]:e_resourceType.ARTICLE_IMAGE,
+            [e_field.USER_RESOURCE_STATIC.UPLOADED_FILE_NUM]:0,
+            [e_field.USER_RESOURCE_STATIC.UPLOADED_FILE_SIZE_IN_MB]:0,
+        },
+        {
+            [e_field.USER_RESOURCE_STATIC.USER_ID]:userCreateTmpResult._id,
+            [e_field.USER_RESOURCE_STATIC.RESOURCE_TYPE]:e_resourceType.ARTICLE_ATTACHMENT,
+            [e_field.USER_RESOURCE_STATIC.UPLOADED_FILE_NUM]:0,
+            [e_field.USER_RESOURCE_STATIC.UPLOADED_FILE_SIZE_IN_MB]:0,
+        },
+        ]
+    // console.log(`sugarValue ${JSON.stringify(sugarValue)}`)
+    await common_operation_model.insertMany_returnRecord_async({dbModel:e_dbModel.user_resource_static,docs:userResourceStaticValue})
+
+
 
 
 // return false

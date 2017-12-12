@@ -34,6 +34,7 @@ const e_accountType=mongoEnum.AccountType.DB
 const e_docStatus=mongoEnum.DocStatus.DB
 const e_adminUserType=mongoEnum.AdminUserType.DB
 const e_adminPriorityType=mongoEnum.AdminPriorityType.DB
+const e_resourceType=mongoEnum.ResourceType.DB
 
 /*                      server common：function                                       */
 const dataConvert=server_common_file_require.dataConvert
@@ -147,12 +148,15 @@ async function updateArticle_async({req}){
             fkFieldName:e_field.ARTICLE.ARTICLE_IMAGES_ID,//coll中，存储图片objectId的字段名
             contentFieldName:e_field.ARTICLE.HTML_CONTENT, //coll中，存储内容的字段名
             ownerFieldName:e_field.ARTICLE.AUTHOR_ID,// coll中，作者的字段名
+
         }
 
         let collImageConfig={
             collName:e_coll.ARTICLE_IMAGE,//实际存储图片的coll名
             fkFieldName:e_field.ARTICLE_IMAGE.ARTICLE_ID, //字段名，记录图片存储在那个coll中
-            imageHashFieldName:e_field.ARTICLE_IMAGE.HASH_NAME //记录图片hash名字的字段名
+            sizeFieldName:e_field.ARTICLE_IMAGE.SIZE_IN_MB,//字段名，记录图片的size存储在那个field中，以便需要的话，对user_resource_static更新
+            imageHashFieldName:e_field.ARTICLE_IMAGE.HASH_NAME, //记录图片hash名字的字段名
+            storePathPopulateOpt:[{path:e_field.ARTICLE_IMAGE.PATH_ID,select:e_field.STORE_PATH.PATH}], //需要storePath，以便执行fs.unlink
         }
         // console.log(`0.1`)
         docValue[e_field.IMPEACH.CONTENT]=await controllerHelper.contentDbDeleteNotExistImage_async({
@@ -160,6 +164,7 @@ async function updateArticle_async({req}){
             recordId:recordId,
             collConfig:collConfig,
             collImageConfig:collImageConfig,
+            resourceType:e_resourceType.ARTICLE_IMAGE, //控制是否需要对user_resource_static进行更新时，使用的resourceType，可以为undefined
         })
     }
     // console.log(`1`)

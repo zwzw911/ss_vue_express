@@ -20,12 +20,16 @@ const nodeEnum=require('../constant/enum/nodeEnum')
 const e_part=nodeEnum.ValidatePart
 const e_inputFieldCheckType=nodeEnum.InputFieldCheckType
 const e_method=nodeEnum.Method
+const e_resourceFieldName=nodeEnum.ResourceFieldName
 
 const mongoEnum=require('../constant/enum/mongoEnum')
 const e_storePathUsage=mongoEnum.StorePathUsage.DB
 const e_storePathStatus=mongoEnum.StorePathStatus.DB
 const e_penalizeSubType=mongoEnum.PenalizeSubType.DB
 const e_adminPriorityType=mongoEnum.AdminPriorityType.DB
+const e_resourceProfileRange=mongoEnum.ResourceProfileRange.DB
+const e_userType=mongoEnum.UserType.DB
+const e_resourceType=mongoEnum.ResourceType.DB
 
 const nodeRuntimeEnum=require('../constant/enum/nodeRuntimeEnum')
 const e_hashType=nodeRuntimeEnum.HashType
@@ -39,6 +43,8 @@ const e_coll=require('../constant/genEnum/DB_Coll').Coll
 const e_field=require('../constant/genEnum/DB_field').Field
 const e_internal_field=require('../constant/genEnum/DB_internal_field').Field
 
+
+const calcResourceCriteria=require(`../constant/define/calcResourceConfig`).calcResourceCriteria
 /*                      error               */
 const helperError=require('../constant/error/controller/helperError').helper
 
@@ -60,7 +66,7 @@ const fkConfig=require('../model/mongo/fkConfig').fkConfig
 const handleSystemError=require('../function/assist/system').handleSystemError
 const systemError=require('../constant/error/systemError').systemError
 
-const e_iniSettingObject=require('../constant/genEnum/initSettingObject').iniSettingObject
+// const e_iniSettingObject=require('../constant/genEnum/initSettingObject').iniSettingObject
 const uploadFile=require('../function/assist/upload')
 const convertFileSize=require('../function/assist/misc').convertFileSize
 const sanityHtml=require('../function/assist/sanityHtml').sanityHtml
@@ -483,68 +489,7 @@ async function chooseStorePath_async({usage}){
 }
 
 
-/*  根据profileRange和userId，选择最近一个active的resourceProfile
- * @ resourceProfileRange: perArticle/perPerson
- *
- * return: 返回合适的记录
- * */
-async function chooseLastValidResourceProfile_async({resourceProfileRange,userId}){
-    // console.log(`chooseLastValidResourceProfile_async in ===========>`)
-    let resourceProfileIdInUse,tmpResult,condition={},options={}
-    //根据resourceProfileRange，查找对应的resource_profile的objectID
-    condition[e_field.RESOURCE_PROFILE.RANGE]=resourceProfileRange
-    tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.resource_profile,condition:condition})
-    // console.log(`resourceProfileRange result ===========>${JSON.stringify(tmpResult)}`)
-    if(0===tmpResult.length){
-        handleSystemError({error:systemError.noDefinedResourceProfile})
-        return Promise.reject(systemError.noDefinedResourceProfile)
-    }
-let resourceProfileIfMatchRange=[]
-    for(let singleRecord of tmpResult){
-        // console.log(`singleRecord result ===========>${JSON.stringify(singleRecord)}`)
-        resourceProfileIfMatchRange.push(singleRecord[e_field.RESOURCE_PROFILE.ID])
-    }
-    // console.log(`resourceProfileIfMatchRange result ===========>${JSON.stringify(resourceProfileIfMatchRange)}`)
-    //根据resource_profile_id和userId，在user_resource_profile中查找
 
-    condition={}
-    condition[e_field.USER_RESOURCE_PROFILE.DURATION]={$gt:0}
-    condition[e_field.USER_RESOURCE_PROFILE.USER_ID]=userId
-    condition[e_field.USER_RESOURCE_PROFILE.RESOURCE_PROFILE_ID]={$in:resourceProfileIfMatchRange}
-    options['sort']={'cDate':-1}
-    options['limit']=1
-    // console.log(`condition result ===========>${JSON.stringify(condition)}`)
-    // console.log(`options result ===========>${JSON.stringify(options)}`)
-    //selectedFields必须包含cDate，否则无法执行virtual方法
-    let selectedFields=`${e_field.USER_RESOURCE_PROFILE.RESOURCE_PROFILE_ID} ${e_field.USER_RESOURCE_PROFILE.DURATION} cDate`
-    tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.user_resource_profile,condition:condition,options:options,selectedFields:selectedFields})
-// console.log(`duration>0 result ===========>${JSON.stringify(tmpResult)}`)
-    //1. duration>0的最近一条记录（是否active）
-    if(tmpResult.length>0){
-        if(true===tmpResult[0]['isActive']){
-            resourceProfileIdInUse=tmpResult[0][e_field.USER_RESOURCE_PROFILE.RESOURCE_PROFILE_ID]
-        }
-    }
-    //如果duration》0的记录没有找到，或者找到但是已经超期
-    if(undefined===resourceProfileIdInUse){
-        //如果duration>0的resource_profile没有找到，那么查找duration=0（无时间限制）的记录
-        condition[e_field.USER_RESOURCE_PROFILE.DURATION]={$eq:0}
-        tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.user_resource_profile,condition:condition,selectedFields:selectedFields})
-        // console.log(`duration===0 result ===========>${JSON.stringify(tmpResult)}`)
-        if(tmpResult.length===0){
-            handleSystemError({error:systemError.userNoDefaultResourceProfile})
-            return Promise.reject(systemError.userNoDefaultResourceProfile)
-        }
-
-        resourceProfileIdInUse=tmpResult[0][e_field.USER_RESOURCE_PROFILE.RESOURCE_PROFILE_ID]
-    }
-
-    // console.log(`choose resourceProfileIdInUse===========>${JSON.stringify(resourceProfileIdInUse)}`)
-    // 将resource_profile_id转换成resource_profile
-    tmpResult=await common_operation_model.findById_returnRecord_async({dbModel:e_dbModel.resource_profile,id:resourceProfileIdInUse})
-    // console.log(`active resource_profile===========>${JSON.stringify(tmpResult.msg)}`)
-    return Promise.resolve(tmpResult)
-}
 
 /*  不用virtual method，因为如果使用virtual，需要引用mongo enum文件
 * @originalStorePathRecord: 原始的storePath记录
@@ -734,11 +679,14 @@ async function preCheck_async({req,collName,method,userLoginCheck={needCheck:fal
 
 
 /*      使用multiPart获得并保存上传的文件
+*
+* @maxFileSizeInByte:提供被multipart使用，限制最大文件size
+* @fileSizeUnit; 最终size被转换成的单位
 * return： 返回文件原始名称和size
 * */
 async function uploadFileToTmpDir_async({req,uploadTmpDir,maxFileSizeInByte,fileSizeUnit=e_fileSizeUnit.MB}){
     let tmpResult
-    console.log(`uploadTmpDir ${uploadTmpDir}`)
+    // console.log(`uploadTmpDir ${uploadTmpDir}`)
     // console.log(`maxFileSizeInByte ${maxFileSizeInByte}`)
     // console.log(`fileSizeUnit ${fileSizeUnit}`)
     /*              设置multiPart参数           */
@@ -776,7 +724,7 @@ async function uploadFileToTmpDir_async({req,uploadTmpDir,maxFileSizeInByte,file
         return Promise.reject(tmpResult)
     }
     // console.log(`convert size===${tmpResult}`) //byte
-    return Promise.resolve({rc:0,msg:{originalFilename:originalFilename,path:path,size:tmpResult.msg}})
+    return Promise.resolve({originalFilename:originalFilename,path:path,size:tmpResult.msg})
     // uploadedFileSizeInKb=tmpResult.msg
 }
 
@@ -833,11 +781,11 @@ function removeImageDataUrl({content}){
  *              {collName:article, fkFieldName:e_field.ARTICLE.innerAttachmentId}
 * @collImageName：对象content中，image存储在那个coll，格式同collConfig。 fkFieldName：字段名，此image存储在哪个article/image中
 *               {collName:e_coll.INNER_IMAGE, fkFieldName:e_field.INNER_IMAGE.articleId}
-*
+*@resourceType:如果需要对user_resource_static进行更新，需要设置resourceType
 *
 * return: 处理过的content，删除了dataUrl，和content中存在，但是db中没有的IMG DOM
 * */
-async function contentDbDeleteNotExistImage_async({content,recordId,collConfig,collImageConfig}){
+async function contentDbDeleteNotExistImage_async({content,recordId,collConfig,collImageConfig,resourceType}){
     let tmpResult,validMd5ImageNameInContent={}
     //获得所有<img/>DOM
     let innerImageInContent=content.match(regex.imageDOM)
@@ -872,23 +820,25 @@ async function contentDbDeleteNotExistImage_async({content,recordId,collConfig,c
     imageSearchCondition[collImageConfig.fkFieldName]=recordId
     // console.log(`collImageConfig.collName ====${JSON.stringify(collImageConfig.collName)}`)
     // console.log(`imageSearchCondition ====${JSON.stringify(imageSearchCondition)}`)
-    tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel[collImageConfig.collName],condition:imageSearchCondition})
+
+    let imageRecordInDB=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel[collImageConfig.collName],condition:imageSearchCondition,populateOpt:collImageConfig.storePathPopulateOpt})
 // console.log(   `tmpresult is ===============>${JSON.stringify(tmpResult)}`)
     //对比db和content中的image
     //db中没有任何image信息，则把content中所有image DOM删除
-    if(tmpResult.length===0){
+    if(imageRecordInDB.length===0){
         // let convertedContent=
         // console.log(   `convert result  is ===============>${JSON.stringify(convertedContent)}`)
         return Promise.resolve(content.replace(regex.imageDOM,''))
     }
     //以db为基准,db中有image，进行比较。如果db中的记录，在content中不存在，说明image已经被删除，那么清理db
-    let deletedImageId=[],deletedImageMd5Name=[],notDeletedMd5Name=[]
-    for(let singleRecord of tmpResult){
+    let deletedImageId=[],deletedImageMd5Name=[],notDeletedMd5Name=[],deletedImageRecord=[]//记录content中删除的image，用于fs.unlink删除文件，已经更新user_resource_static
+    for(let singleRecord of imageRecordInDB){
         let md5Name=singleRecord[collImageConfig.imageHashFieldName]
 
         if(-1===Object.keys(validMd5ImageNameInContent).indexOf(md5Name)){
             deletedImageId.push(singleRecord['_id'])
             deletedImageMd5Name.push(md5Name)
+            deletedImageRecord.push(singleRecord)
             continue
         }
 
@@ -906,6 +856,25 @@ async function contentDbDeleteNotExistImage_async({content,recordId,collConfig,c
         await  common_operation_model.deleteMany_async({dbModel:e_dbModel[collImageConfig.collName],condition:conditionForImageColl})
 
         await  common_operation_model.deleteArrayFieldValue_async({dbModel:e_dbModel[collConfig.collName],condition:conditionForReferenceColl,arrayFieldName:collConfig.fkFieldName,arrayFieldValue:deletedImageId})
+        let deletedFileNum=0,deletedFileSize=0
+        for(let singleDeletedImageRecord of deletedImageRecord){
+            fs.unlink(singleDeletedImageRecord[collImageConfig.storePathPopulateOpt[0][`path`]][collImageConfig.storePathPopulateOpt[0][`select`]])
+            deletedFileNum+=1
+            deletedFileSize+=singleDeletedImageRecord[collImageConfig.sizeFieldName]
+        }
+        //更改user_resource_static
+        if(undefined!==resourceType){
+            await e_dbModel.user_resource_static.update({
+                [e_field.USER_RESOURCE_STATIC.USER_ID]:userId,
+                [e_field.USER_RESOURCE_STATIC.RESOURCE_TYPE]:resourceType
+            },{
+                $inc:{
+                    [e_field.USER_RESOURCE_STATIC.UPLOADED_FILE_NUM]:-deletedFileNum,
+                    [e_field.USER_RESOURCE_STATIC.UPLOADED_FILE_SIZE_IN_MB]:-deletedFileSize,
+                }
+            })
+        }
+
     }
 
     //以content的image为基准，如果db中没有，直接从content中删除
@@ -920,15 +889,15 @@ async function contentDbDeleteNotExistImage_async({content,recordId,collConfig,c
 
 
 
-/*          根据resourceProfileRange，resourceColl，从预定义的对象中获得对应的fieldName和grougby的设置，统计使用的资源数
+/*/!*          根据resourceProfileRange，resourceColl，从预定义的对象中获得对应的fieldName和grougby的设置，统计使用的资源数
 * @resourceProfileRange: PER_PERSON/PER_ARTICLE/PER_IMPEACH，此函数只是作为key，从fieldsValueToFilterGroup获得对应的groupby字段设置
 * @resourceFileFieldName: 实际储存文件的（单个）coll（IMAGE/ATTACHMENT）所需要的字段名定义
 * @fieldsValueToFilterGroup： 实际储存文件的（单个）coll中，PER_PERSON/PER_ARTICLE/PER_IMPEACH组合，设定的group过滤字段+参数
 *
 * return：对象，当前resourceColl下资源的统计（size，type）
-* */
+* *!/
 async function calcExistResource_async({resourceProfileRange,resourceFileFieldName,fieldsValueToFilterGroup}){
-    /*              计算当前（每个）资源总数               */
+    /!*              计算当前（每个）资源总数               *!/
     //设置分组条件
     // console.log(`fieldsValueToFilterGroup =================> ${JSON.stringify(fieldsValueToFilterGroup)}`)
     let fileCollName = resourceFileFieldName['fileCollName']
@@ -942,8 +911,6 @@ async function calcExistResource_async({resourceProfileRange,resourceFileFieldNa
         match[singleFilterKey]=dataConvert.convertToObjectId(match[singleFilterKey])
     }
     // match['dDate']={$exists:0}  //file未被删除
-
-
     //从fieldsFilterGroupReallyUse抽取出groupby的字段
     let groupByFields={}
 // console.log(`befroe set ===========> ${JSON.stringify(groupByFields)}`)
@@ -967,10 +934,63 @@ async function calcExistResource_async({resourceProfileRange,resourceFileFieldNa
         totalFileNum:tmpResult.msg[0].totalFileNum,
     }
     return Promise.resolve(result)
+}*/
 
 
+/*          根据resourceProfileRange，从e_resourceProfileRange获得对应的fieldName和grougby的设置，统计使用的资源数
+ * @resourceProfileRange: IMAGE_PER_PERSON等，作为e_resourceProfileRange的key，获得对应的group/match设置
+ * @userId/articleId/impeachId/impeachCommentId: 作为match的条件
+ *
+ * return：对象，当前resourceColl下资源的统计（size，type）
+ * */
+async function calcExistResource_async({resourceProfileRange,userId,articleId,impeach_comment_id,arr_impeach_and_comment_id}){
+    /*          检查对应的参数是否都存在            */
+
+    switch (resourceProfileRange) {
+        case e_resourceProfileRange.IMAGE_PER_ARTICLE:
+            if(undefined===articleId || null===articleId){return Promise.reject(helperError.missParameter(`articleId`))}
+            break;
+        case e_resourceProfileRange.ATTACHMENT_PER_ARTICLE:
+            if(undefined===articleId || null===articleId){return Promise.reject(helperError.missParameter(`articleId`))}
+            break;
+        case e_resourceProfileRange.WHOLE_RESOURCE_PER_PERSON_FOR_ALL_ARTICLE:
+            if(undefined===userId || null===userId){return Promise.reject(helperError.missParameter(`userId`))}
+            break;
+/*        case e_resourceProfileRange.ATTACHMENT_PER_PERSON_FOR_ALL_ARTICLE:
+            if(undefined===userId || null===userId){return Promise.reject(helperError.missParameter(`userId`))}
+            break;*/
+        case e_resourceProfileRange.IMAGE_PER_IMPEACH_OR_COMMENT:
+            if(undefined===impeach_comment_id || null===impeach_comment_id){return Promise.reject(helperError.missParameter(`impeach_comment_id`))}
+            break;
+/*        case e_resourceProfileRange.IMAGE_PER_COMMENT:
+            // if(undefined===impeachCommentId || null===impeachCommentId){return Promise.reject(helperError.missParameter(`impeachCommentId`))}
+            break;*/
+        case e_resourceProfileRange.IMAGE_PER_PERSON_FOR_WHOLE_IMPEACH:
+            if(undefined===userId || null===userId){return Promise.reject(helperError.missParameter(`userId`))}
+            if(undefined===arr_impeach_and_comment_id || null===arr_impeach_and_comment_id){return Promise.reject(helperError.missParameter(`arr_impeach_and_comment_id`))}
+            break;
+        default:
+            return Promise.reject(helperError.missParameter('resourceProfileRange'))
+    }
+
+    let calcResourceConfig=calcResourceCriteria[resourceProfileRange]
+    let calcResult={
+        [e_resourceFieldName.TOTAL_FILE_SIZE_IN_MB]:0,
+        [e_resourceFieldName.MAX_FILE_NUM]:0
+    }
+    //calcResourceConfig都是数组（因为某些resourceRange可能需要多次查询，例如WHOLE_RESOURCE_PER_PERSON_FOR_ALL_ARTICLE，需要同时计算所有的image和attachment）
+    for(let singleCalcResourceCriteria of calcResourceConfig){
+        let tmpResult = await common_operation_model.group_async({
+            dbModel: e_dbModel[singleCalcResourceCriteria[`collName`]],
+            match: singleCalcResourceCriteria[`match`],
+            group: singleCalcResourceCriteria[`group`],
+        })
+        calcResult[e_resourceFieldName.TOTAL_FILE_SIZE_IN_MB]+=tmpResult.msg[0][e_resourceFieldName.TOTAL_FILE_SIZE_IN_MB]
+        calcResult[e_resourceFieldName.MAX_FILE_NUM]+=tmpResult.msg[0][e_resourceFieldName.MAX_FILE_NUM]
+    }
+
+    return Promise.resolve(calcResult)
 }
-
 /*                  根据用户的类型（普通用户，还是管理员用户），生成sugar，并hash输入的密码                        */
 function generateSugarAndHashPassword({ifAdminUser,ifUser,password}){
     let randomStringLength,hashType
@@ -1032,6 +1052,88 @@ function deleteNotChangedValue({inputValue,originalValue}){
     }
 }
 
+/*  根据profileRange和userId，为普通用户，选择最近一个active的resourceProfile。
+ * @ resourceProfileRange: perArticle/perPerson
+ *
+ * return: 返回合适的记录
+ * */
+async function chooseLastValidResourceProfile_async({resourceProfileRange,userId}){
+    // console.log(`chooseLastValidResourceProfile_async in ===========>`)
+    let resourceProfileIdInUse,tmpResult,condition={},options={}
+    //根据resourceProfileRange，查找对应的resource_profile的objectID
+    condition[e_field.RESOURCE_PROFILE.RANGE]=resourceProfileRange
+    tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.resource_profile,condition:condition})
+    // console.log(`resourceProfileRange result ===========>${JSON.stringify(tmpResult)}`)
+    if(0===tmpResult.length){
+        handleSystemError({error:systemError.noDefinedResourceProfile})
+        return Promise.reject(systemError.noDefinedResourceProfile)
+    }
+    let resourceProfileIfMatchRange=[]
+    for(let singleRecord of tmpResult){
+        // console.log(`singleRecord result ===========>${JSON.stringify(singleRecord)}`)
+        resourceProfileIfMatchRange.push(singleRecord[e_field.RESOURCE_PROFILE.ID])
+    }
+    // console.log(`resourceProfileIfMatchRange result ===========>${JSON.stringify(resourceProfileIfMatchRange)}`)
+    //根据resource_profile_id和userId，在user_resource_profile中查找
+
+    //获取用户最新的resource_profile设置
+    condition={}
+    condition[e_field.USER_RESOURCE_PROFILE.DURATION]={$gt:0}
+    condition[e_field.USER_RESOURCE_PROFILE.USER_ID]=userId
+    condition[e_field.USER_RESOURCE_PROFILE.RESOURCE_PROFILE_ID]={$in:resourceProfileIfMatchRange}
+    options['sort']={'cDate':-1}
+    options['limit']=1
+    // console.log(`condition result ===========>${JSON.stringify(condition)}`)
+    // console.log(`options result ===========>${JSON.stringify(options)}`)
+    //selectedFields必须包含cDate，否则无法执行virtual方法
+    let selectedFields=`${e_field.USER_RESOURCE_PROFILE.RESOURCE_PROFILE_ID} ${e_field.USER_RESOURCE_PROFILE.DURATION} cDate`
+    tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.user_resource_profile,condition:condition,options:options,selectedFields:selectedFields})
+// console.log(`duration>0 result ===========>${JSON.stringify(tmpResult)}`)
+    //1. duration>0的最近一条记录（是否active）
+    if(tmpResult.length>0){
+        if(true===tmpResult[0]['isActive']){
+            resourceProfileIdInUse=tmpResult[0][e_field.USER_RESOURCE_PROFILE.RESOURCE_PROFILE_ID]
+        }
+    }
+    //如果duration》0的记录没有找到，或者找到但是已经超期
+    if(undefined===resourceProfileIdInUse){
+        //如果duration>0的resource_profile没有找到，那么查找duration=0（无时间限制）的记录
+        condition[e_field.USER_RESOURCE_PROFILE.DURATION]={$eq:0}
+        tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.user_resource_profile,condition:condition,selectedFields:selectedFields})
+        // console.log(`duration===0 result ===========>${JSON.stringify(tmpResult)}`)
+        if(tmpResult.length===0){
+            handleSystemError({error:systemError.userNoDefaultResourceProfile})
+            return Promise.reject(systemError.userNoDefaultResourceProfile)
+        }
+
+        resourceProfileIdInUse=tmpResult[0][e_field.USER_RESOURCE_PROFILE.RESOURCE_PROFILE_ID]
+    }
+
+    // console.log(`choose resourceProfileIdInUse===========>${JSON.stringify(resourceProfileIdInUse)}`)
+    // 将resource_profile_id转换成resource_profile
+    tmpResult=await common_operation_model.findById_returnRecord_async({dbModel:e_dbModel.resource_profile,id:resourceProfileIdInUse})
+    // console.log(`active resource_profile===========>${JSON.stringify(tmpResult.msg)}`)
+    return Promise.resolve(tmpResult)
+}
+
+/*  根据传入的resourceProfileRange,直接在admin的resource_profile 中查找到对应的记录。适用于common的resource查询
+* @arr_resourceProfileRange:数组，要查询的resourceRange
+* */
+async function findResourceProfileRecords_async({arr_resourceProfileRange}){
+    let condition={"$or":[]}
+    for(let singleResourceProfileRange of arr_resourceProfileRange){
+        condition.push({[e_field.RESOURCE_PROFILE.RANGE]:singleResourceProfileRange})
+    }
+    condition['dDate']={"$exists":false}
+    let resourceResult=common_operation_model.find_returnRecords_async({dbModel:e_dbModel.resource_profile,condition:condition})
+    if(null===resourceResult || arr_resourceProfileRange.length!==resourceResult.length){
+        return Promise.reject(helperError.cantFindResourceFileOrNumNotMatch)
+    }
+
+    return Promise.resolve(resourceResult)
+}
+
+
 module.exports= {
     inputCommonCheck,//每个请求进来是，都要进行的操作（时间间隔检查等）
     validatePartValueFormat,
@@ -1077,6 +1179,8 @@ module.exports= {
     getLoginUserInfo_async,
 
     deleteNotChangedValue,
+
+    findResourceProfileRecords_async,
 }
 
 

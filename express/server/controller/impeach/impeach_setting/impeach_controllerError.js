@@ -39,6 +39,18 @@ const controllerError={
     userInPenalizeNoImpeachDelete:{rc:50620,msg:`管理员禁止删除举报`},
     notCreatorCantDeleteImpeach:{rc:50622,msg:`非举报创建者，无权删除举报`},
     impeachAlreadyHandledByAdmin:{rc:50624,msg:`举报曾被管理员处理中，无法删除`},
+
+    /*              upload                          */
+    notImpeachCreatorCantUploadFile:{rc:50626,msg:`无权为他人举报评论上传文件`},
+    cantUploadImageForNonNewImpeach:{rc:50727,msg:`无法上传图片`},//hacker error
+    imageFormatNotSupport:{rc:50628,msg:`只支持JPG/PNG格式的图片`},
+    imageResolutionNotSupport:{rc:50629,msg:`图片的分辨率过高`},
+
+    resourceRangeNotExpected:{rc:50630,msg:{'client':"内部错误，请联系管理员",server:`非期望的resourceRange`}},
+    ImpeachImageNumExceed:{rc:50632,msg:{'client':"举报中插入的图片数量过多，请删除部分图片后再试"}},
+    ImpeachImageSizeExceed:{rc:50633,msg:{'client':"举报中插入的图片过大,请删除部分图片后再试"}},
+    wholeImpeachImageNumExceed:{rc:50634,msg:{'client':"您在整个举报已经举报对话中插入的图片数量过多，无法继续添加"}},
+    wholeImpeachImageSizeExceed:{rc:50636,msg:{'client':"您在整个举报已经举报对话中插入的图片尺寸过大，无法继续添加"}},
 }
 
 module.exports={

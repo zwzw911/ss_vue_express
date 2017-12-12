@@ -8,21 +8,36 @@ const controllerError={
 
     /*              dispatch                           */
     //create
-    notLoginCantCreateImpeachComment:{rc:51000,msg:`尚未登录，无法对举报进行评论`},
-    currentUserForbidToCreateImpeachComment:{rc:51004,msg:`您被禁止对举报进行评论`},
+    notLoginCantCreateImpeachComment:{rc:50700,msg:`尚未登录，无法对举报进行评论`},
+    currentUserForbidToCreateImpeachComment:{rc:50702,msg:`您被禁止对举报进行评论`},
     //update
-    notLoginCantUpdateImpeachComment:{rc:51001,msg:`尚未登录，无法更新举报评论`},
-    currentUserForbidToUpdateImpeachComment:{rc:51005,msg:`您被禁止对举报评论进行更新`},
-
-
+    notLoginCantUpdateImpeachComment:{rc:50704,msg:`尚未登录，无法更新举报评论`},
+    currentUserForbidToUpdateImpeachComment:{rc:50706,msg:`您被禁止对举报评论进行更新`},
+    //upload
+    notLoginCantUploadFileForImpeachComment:{rc:50707,msg:`尚未登录，无法为举报评论添加文件`},
     /*              create                          */
     // impeachNotExistCantCreateComment:{rc:51005,msg:`举报不存在`},
-    notImpeachCreatorCantCreateComment:{rc:51005,msg:`无权对他人举报进行评论`},
+    notImpeachCreatorCantCreateComment:{rc:50708,msg:`无权对他人举报进行评论`},
+    impeachNotSubmitNoNeedToAddComment:{rc:50709,msg:`举报尚未提交，请直接修改举报`},
 
     /*              update                          */
-    notImpeachCreatorCantUpdateComment:{rc:51005,msg:`无权对他人举报进行评论`},
+    impeachCommentNotExist:{rc:50710,msg:`举报评论不存在`},
+    notImpeachCreatorCantUpdateComment:{rc:50712,msg:`无权更改他人举报评论`},
+    impeachCommentAlreadyCommitCantBeUpdate:{rc:50714,msg:`举报评论无法被修改`},
 
 
+    /*              upload                          */
+    notImpeachCommentCreatorCantUploadFile:{rc:50716,msg:`无权为他人举报评论上传文件`},
+    cantUploadImageForNonNewImpeachComment:{rc:50717,msg:`无法修改已经提交的举报`},//hacker error
+
+    imageFormatNotSupport:{rc:50718,msg:`只支持JPG/PNG格式的图片`},
+    imageResolutionNotSupport:{rc:50719,msg:`图片的分辨率过高`},
+
+    resourceRangeNotExpected:{rc:50720,msg:{'client':"内部错误，请联系管理员",server:`非期望的resourceRange`}},
+    impeachCommentImageNumExceed:{rc:50722,msg:{'client':"举报对话中插入的图片数量过多，请删除部分图片后再试"}},
+    impeachCommentImageSizeExceed:{rc:50723,msg:{'client':"举报对话中插入的图片过大,请删除部分图片后再试"}},
+    wholeImpeachImageNumExceed:{rc:50724,msg:{'client':"您在整个举报已经举报对话中插入的图片数量过多，无法继续添加"}},
+    wholeImpeachImageSizeExceed:{rc:50726,msg:{'client':"您在整个举报已经举报对话中插入的图片尺寸过大，无法继续添加"}},
     // notLoginCantDeleteUser:{rc:51002,msg:`尚未登录，无法删除用户`},
     // notLoginCantSearchUser:{rc:51002,msg:`尚未登录，无法搜索用户`},
     //

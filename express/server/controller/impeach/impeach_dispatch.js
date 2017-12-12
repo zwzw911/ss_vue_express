@@ -9,6 +9,8 @@ const nodeEnum=server_common_file_require.nodeEnum
 const mongoEnum=server_common_file_require.mongoEnum
 const controllerHelper=server_common_file_require.controllerHelper
 
+const e_uploadFileType=nodeEnum.UploadFileType
+
 const e_penalizeType=mongoEnum.PenalizeType.DB
 const e_penalizeSubType=mongoEnum.PenalizeSubType.DB
 
@@ -26,6 +28,7 @@ const controllerError=require('./impeach_setting/impeach_controllerError').contr
 const create_async=require('./impeach_logic/create_impeach').createImpeach_async
 const update_async=require('./impeach_logic/update_impeach').updateImpeach_async
 const delete_async=require('./impeach_logic/delete_impeach').deleteImpeach_async
+const uploadImage_async=require('./impeach_logic/upload_impeach_image').uploadImpeachCommentFile_async
 const controllerSetting=require('./impeach_setting/impeach_setting').setting
 
 async function dispatcher_async({req,impeachType}){
@@ -127,7 +130,25 @@ async function dispatcher_async({req,impeachType}){
             tmpResult=await delete_async({req:req})
             break;
         case e_method.MATCH: //match(login_async)
+            break;
+        case e_method.UPLOAD:
+            userLoginCheck={
+                needCheck:true,
+                error:controllerError.notLoginCantUploadFileForImpeachComment
+            }
+            penalizeCheck={
+                // penalizeType:e_penalizeType.NO_IMPEACH_COMMENT,
+                // penalizeSubType:e_penalizeSubType.CREATE,
+                // penalizeCheckError:controllerError.currentUserForbidToCreateImpeachComment
+            }
 
+            expectedPart=[e_part.RECORD_ID]
+            tmpResult=await controllerHelper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
+            if(type===e_uploadFileType.IMAGE){
+                tmpResult=await uploadImage_async({req:req})
+            }
+
+            break;
     }
 
     return Promise.resolve(tmpResult)
