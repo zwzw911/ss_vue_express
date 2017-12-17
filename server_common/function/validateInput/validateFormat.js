@@ -20,8 +20,8 @@ const rightResult={rc:0}
 const e_validatePart=require('../../constant/enum/nodeEnum').ValidatePart
 const e_keyForSearchParams=require('../../constant/enum/nodeEnum').KeyForSearchParams
 const e_method=require('../../constant/enum/nodeEnum').Method
-const arr_editSubField=require('../../constant/define/nodeDefine').SUB_FIELD
-const arr_eventField=require('../../constant/define/nodeDefine').EVENT_FIELD
+const arr_editSubField=require('../../constant/genEnum/nodeEnumValue').SubField
+const arr_eventField=require('../../constant/genEnum/nodeEnumValue').EventField
 const regex=require(`../../constant/regex/regex`).regex
 //检测req.body.values是否存在且为object
 function validateReqBody(reqBody){
@@ -734,9 +734,13 @@ function validateStaticSearchParamsFormat(searchParams,inputRules){
 }*/
 
 /*               用于对mixed或者array进行操作
+ @inputValue：对象。{fieldName:{from:,to:,eleArrar},fieldName2:{from:,to:,eleArray}}
+ @browseInputRule: 对应的coll rule
  * 1. value是否为object
- * 2. value中键值的数量是否为2～3之间（from/to必须有一个）
- * 3. value中键值的名称是否validate
+ * 2. singleField是否有对应的rule
+ * 2. singleField的类型是否为数组或者mix
+ * 2. singleField value中键值的数量是否为2～3之间（from/to必须有一个）
+ * 3. singleField value中键值的名称是否validate
  * 4. 如果键数量为2，From/to 必须2者有其一
  *
 *   v:{
@@ -745,30 +749,49 @@ function validateStaticSearchParamsFormat(searchParams,inputRules){
 *       eleArray: 一般array都是外键，所以值为objectId
 *       }
                     */
-function validateEditSubFieldFormat(v){
+function validateEditSubFieldFormat({inputValue,browseInputRule}){
     // const SUB_FIELD=['from','to','eleArray']
 
     //1. 是否为object
-    if(false===dataTypeCheck.isObject(v)){
+    if(false===dataTypeCheck.isObject(inputValue)){
         return validateFormatError.editSubFieldMustBeObject
     }
-    //2 v中的字段数量是否正常
-    let vKeyLength=Object.keys(v).length
-    if(2>vKeyLength || 3<vKeyLength){
-        return validateFormatError.editSubFieldKeyNumberWrong
-    }
-    //3 v中每个字段名是否为预定义
-    for(let singleKey in v){
-        if(-1===arr_editSubField.indexOf(singleKey)){
-            return validateFormatError.editSubFieldKeyNameWrong
+
+    for(let singleFieldName in inputValue){
+        //每个字段是否有对应的rule
+        if(undefined===browseInputRule[singleFieldName]){
+            return validateFormatError.editSubFieldNoRelatedRule
+        }
+
+        let singleFieldValue=inputValue[singleFieldName]
+        //字段值必须是对象{eleArray:,from:,to:,}
+        if(false===dataTypeCheck.isObject(singleFieldValue)){
+            return validateFormatError.editSubFieldDataTypeIncorrect
+        }
+
+        //2 fieldValue中的字段数量是否正常(2~3个)
+        let vKeyLength=Object.keys(singleFieldValue).length
+        if(2>vKeyLength || 3<vKeyLength){
+            return validateFormatError.editSubFieldKeyNumberWrong
+        }
+        //3 fieldValue中每个字段名是否为预定义
+        for(let singleKey in singleFieldValue){
+            if(-1===arr_editSubField.indexOf(singleKey)){
+                return validateFormatError.editSubFieldKeyNameWrong
+            }
+        }
+        //4 eleArray必须存在
+        if(undefined===singleFieldValue['eleArray']){
+            return validateFormatError.eleArrayNotDefine
+        }
+        //5 如果fieldValue中键数量为2，From/to 必须2者有其一
+        if(2===vKeyLength){
+            if(true==='from' in singleFieldValue && true==='to' in singleFieldValue){
+                return validateFormatError.editSubFieldFromOrToExistOne
+            }
         }
     }
-    //4 如果v中键数量为2，From/to 必须2者有其一
-    if(2===vKeyLength){
-        if(true==='from' in v && true==='to' in v){
-            return validateFormatError.editSubFieldFromOrToExistOne
-        }
-    }
+
 
     return rightResult
 }

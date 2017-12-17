@@ -24,6 +24,8 @@ const SkipPart={
     RECORD_INFO_FIELD_RULE:`recordInfo_field_rule`,//inputRule测试时，略过field rule部分的检测
 
     RECORD_ID:`recordId`,
+
+    EDIT_SUB_FIELD:'editSubField',
 }
 
 module.exports={

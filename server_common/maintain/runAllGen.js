@@ -74,6 +74,11 @@ function _genForGeneral_part1(absoluteDestDirForInputRule,absoluteDestDirForEnum
         generateMongoEnum(mongoEnumDir,`${absoluteDestDirForMongoEnumValue}enumValue.js`)
     }
 
+    console.log(`start generateNodeEnum`)
+    // console.log(`mongoEnumDir: ${mongoEnumDir}`)
+    // console.log(`absoluteDestDirForMongoEnumValue: ${absoluteDestDirForMongoEnumValue}`)
+    const generateMongoEnum=require('./generateFunction/generateNodeEnum').writeResult
+    generateMongoEnum(mongoEnumDir,`${absoluteDestDirForMongoEnumValue}nodeEnumValue.js`)
 
     console.log(`part1 done`)
 }

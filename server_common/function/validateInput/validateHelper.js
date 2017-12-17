@@ -200,14 +200,17 @@ const dataTypeCheck= {
         return parsedValue > 0
     },
     isFolder(path) {
-        return fs.statSync(path).isDirectory()
+        return fs.existsSync(path) && fs.statSync(path).isDirectory()
     },
 
     isFile(file) {
-        return fs.statSync(file).isFile()
+        return fs.existsSync(file) && fs.statSync(file).isFile()
     },
     isBoolean(value){
         return (typeof value === 'boolean')
+    },
+    isObjectId(value){
+        return this.isString(value) && regex.objectId.test(value)
     }
 }
 
@@ -226,14 +229,14 @@ function valueTypeCheck(value, type){
             return dataTypeCheck.isArray(value)
         case serverDataType.OBJECT:
             return dataTypeCheck.isObject(value)
-            return true
+            // return true
         case serverDataType.OBJECT_ID://在validateValue中通过format进行判断
             return dataTypeCheck.isString(value)
-            return true
-        case serverDataType.FILE: //必须是string，且存在，才能判断
-            return (dataTypeCheck.isString(value) && valueMatchRuleDefineCheck.isFileFolderExist(value) && dataTypeCheck.isFile(value));
+            // return true
+        case serverDataType.FILE: //必须是string，，才能判断
+            return (dataTypeCheck.isString(value) && dataTypeCheck.isFile(value));
         case serverDataType.FOLDER:
-            return (dataTypeCheck.isString(value) && valueMatchRuleDefineCheck.isFileFolderExist(value) && dataTypeCheck.isFolder(value))
+            return (dataTypeCheck.isString(value) && dataTypeCheck.isFolder(value))
         case serverDataType.NUMBER:
             return dataTypeCheck.isStrictNumber(value)
         case serverDataType.BOOLEAN:
@@ -598,93 +601,83 @@ const genInputError=function(fieldRule,currentSingleRule){
 }
 /*
  *   值是否满足对应的rule
+ *   @ruleType: serverRuleType的一种（require，format，min/max，minLength/maxLength/exactlength，不包括arrayMin/MaxLength）
+ *   @fieldValue：待检查的值
+ *   @ruleDefine： rule的定义
+ *   return：true=满足；false=不满足
  */
-const valueMatchRuleDefineCheck={
+function valueMatchRuleDefineCheck({ruleType,fieldValue,ruleDefine}){
 
-    //只处理当require为true
-    require(fieldValue,requireDefine=true){
-        // console.log(`dataTypeCheck.isSetValue(fieldValue) ${dataTypeCheck.isSetValue(fieldValue)}`)
-        // console.log(`!dataTypeCheck.isEmpty(fieldValue)) ${!dataTypeCheck.isEmpty(fieldValue)}`)
-        return dataTypeCheck.isSetValue(fieldValue) && !dataTypeCheck.isEmpty(fieldValue) //防止输入空字符/object/array等
-        // console.log(`field value fieldValueSetFlag ${JSON.stringify(fieldValueSetFlag)}`)
-        // console.log(`requireDefine ${JSON.stringify(requireDefine)}`)
-        // let requireFlag=fieldRule[e_serverRuleType.REQUIRE]['define']
-        
-
-        
-    },
-    exceedMaxLength(value, maxLength) {
-        // console.log( `exceed enter`)
-        //length属性只能在数字/字符/数组上执行
-        //其实只有float/number/int和string/array才有maxLength（在rule中定义）
-        if(false===dataTypeCheck.isArray(value) && false===dataTypeCheck.isStrictInt(value) && false===dataTypeCheck.isStrictFloat(value) && false===dataTypeCheck.isStrictNumber(value) && false===dataTypeCheck.isString(value)){
-            // console.log( `exceed:type wrong`)
+    switch (ruleType){
+        case serverRuleType.REQUIRE:
+            if(false===ruleDefine){
+                return true
+            }
+            return dataTypeCheck.isSetValue(fieldValue) && !dataTypeCheck.isEmpty(fieldValue) //防止输入空字符/object/array等
+        case serverRuleType.MAX_LENGTH:
+            //只有数组，数字和字符才能进行MAX_LENGTH的检测
+            if(false===dataTypeCheck.isArray(fieldValue) && false===dataTypeCheck.isStrictInt(fieldValue) && false===dataTypeCheck.isStrictFloat(fieldValue) && false===dataTypeCheck.isStrictNumber(fieldValue) && false===dataTypeCheck.isString(fieldValue)){
+                // console.log( `exceed:type wrong`)
+                return false
+            }
+            //数字需要转换成字符才能执行length
+            //float如下情况会自动转换  123.0===>123
+            if(true===dataTypeCheck.isStrictFloat(fieldValue) || true===dataTypeCheck.isStrictInt(fieldValue) || true===dataTypeCheck.isStrictNumber(fieldValue)){
+                // console.log( `exceed:type number`)
+                return fieldValue.toString().length <= ruleDefine
+            }
+            // console.log(`exceed function. value is ${value},define is ${maxLength}`)
+            return fieldValue.length <= ruleDefine
+        case serverRuleType.MIN_LENGTH:
+            //只有数组，数字和字符才能进行MAX_LENGTH的检测
+            if(false===dataTypeCheck.isArray(fieldValue) && false===dataTypeCheck.isStrictInt(fieldValue) && false===dataTypeCheck.isStrictFloat(fieldValue) && false===dataTypeCheck.isStrictNumber(fieldValue) && false===dataTypeCheck.isString(fieldValue)){
+                // console.log( `exceed:type wrong`)
+                return false
+            }
+            //数字需要转换成字符才能执行length
+            //float如下情况会自动转换  123.0===>123
+            if(true===dataTypeCheck.isStrictFloat(fieldValue) || true===dataTypeCheck.isStrictInt(fieldValue) || true===dataTypeCheck.isStrictNumber(fieldValue)){
+                // console.log( `exceed:type number`)
+                return fieldValue.toString().length >= ruleDefine
+            }
+            // console.log(`exceed function. value is ${value},define is ${maxLength}`)
+            return fieldValue.length >= ruleDefine
+        case serverRuleType.EXACT_LENGTH:
+            //只有数组，数字和字符才能进行MAX_LENGTH的检测
+            if(false===dataTypeCheck.isArray(fieldValue) && false===dataTypeCheck.isStrictInt(fieldValue) && false===dataTypeCheck.isStrictFloat(fieldValue) && false===dataTypeCheck.isStrictNumber(fieldValue) && false===dataTypeCheck.isString(fieldValue)){
+                // console.log( `exceed:type wrong`)
+                return false
+            }
+            //数字需要转换成字符才能执行length
+            //float如下情况会自动转换  123.0===>123
+            if(true===dataTypeCheck.isStrictFloat(fieldValue) || true===dataTypeCheck.isStrictInt(fieldValue) || true===dataTypeCheck.isStrictNumber(fieldValue)){
+                // console.log( `exceed:type number`)
+                return fieldValue.toString().length === ruleDefine
+            }
+            // console.log(`exceed function. value is ${value},define is ${maxLength}`)
+            return fieldValue.length === ruleDefine
+        case serverRuleType.FORMAT:
+            return ruleDefine.test(fieldValue)
+        case serverRuleType.ENUM:
+            return -1!==ruleDefine.indexOf(fieldValue)
+        case serverRuleType.MAX:
+            return parseFloat(fieldValue) <= parseFloat(ruleDefine)
+        case serverRuleType.MIN:
+            return parseFloat(fieldValue) >= parseFloat(ruleDefine)
+        default:
             return false
-        }
-        //数字需要转换成字符才能执行length
-        //float如下情况会自动转换  123.0===>123
-        if(true===dataTypeCheck.isStrictFloat(value) || true===dataTypeCheck.isStrictInt(value) || true===dataTypeCheck.isStrictNumber(value)){
-            // console.log( `exceed:type number`)
-            return value.toString().length > maxLength
-        }
-        // console.log(`exceed function. value is ${value},define is ${maxLength}`)
-        return value.length > maxLength
-    },
+    }
 
-    exceedMinLength(value, minLength) {
-        //其实只有float/number/int和string/array才有maxLength（在rule中定义）
-        if(false===dataTypeCheck.isArray(value) && false===dataTypeCheck.isStrictInt(value) && false===dataTypeCheck.isStrictFloat(value) && false===dataTypeCheck.isStrictNumber(value) && false===dataTypeCheck.isString(value)){
-            return false
-        }
-        //数字需要转换成字符才能执行length
-        //float如下情况会自动转换  123.0===>123
-        if(true===dataTypeCheck.isStrictFloat(value) || true===dataTypeCheck.isStrictInt(value) || true===dataTypeCheck.isStrictNumber(value)){
-            return value.toString().length < minLength
-        }
-        return value.length < minLength
-    },
 
-    exactLength(value, exactLength) {
-        if(false===dataTypeCheck.isArray(value) && false===dataTypeCheck.isStrictInt(value) && false===dataTypeCheck.isStrictFloat(value) && false===dataTypeCheck.isStrictNumber(value) && false===dataTypeCheck.isString(value)){
-            return false
-        }
-        //数字需要转换成字符才能执行length
-        //float如下情况会自动转换  123.0===>123
-        if(true===dataTypeCheck.isStrictFloat(value) || true===dataTypeCheck.isStrictInt(value) || true===dataTypeCheck.isStrictNumber(value)){
-            return value.toString().length === exactLength
-        }
-        return value.length === exactLength
-    },
 
-    //广义比较，包括null和undefined的比较
-    /*          equalTo 改在client执行*/
-/*    equalTo(value, equalToValue) {
-        //return (false===dataTypeCheck.isEmpty(value) && value===equalToValue)
-        if(value instanceof Date && equalToValue instanceof Date){
-            return value.toLocaleString()===equalToValue.toLocaleString()
-        }
-        return value === equalToValue
+
+
+
+/*    isFileFolderExist(value) {
+        return
     },*/
-
-    format(value, format) {
-        return format.test(value)
-    },
-
-    enum(value,define){
-        return -1!==define.indexOf(value)
-    },
-    //以下函数只能支持数值，必须由调用者确保参数的类型
-    exceedMax(value, definedValue) {
-        return parseFloat(value) > parseFloat(definedValue)
-    },
-    exceedMin(value, definedValue) {
-        return parseFloat(value) < parseFloat(definedValue)
-    },
-
-    isFileFolderExist(value) {
-        return fs.existsSync(value)
-    },
 }
+
 
 module.exports={
     dataTypeCheck,
@@ -692,5 +685,6 @@ module.exports={
     ruleFormatCheck,
     genInputError,
     valueMatchRuleDefineCheck,
+
 
 }

@@ -101,8 +101,11 @@ const validateFormat={
 
 
     editSubFieldMustBeObject:{rc:40198,msg:{client:`输入值格式不正确`,server:`更新子字段的值必须是object`}},
-    editSubFieldKeyNumberWrong:{rc:40200,msg:{client:`输入值格式不正确`,server:`更新子字段中键值的数量不正确`}},
+    editSubFieldNoRelatedRule:{rc:40199,msg:{client:`输入值格式不正确`,server:`更新子字段的没有对应的rule`}},
+    editSubFieldDataTypeIncorrect:{rc:40200,msg:{client:`输入值格式不正确`,server:`更新子字段的字段值必须是array或者mix`}},
+    editSubFieldKeyNumberWrong:{rc:40201,msg:{client:`输入值格式不正确`,server:`更新子字段中键值的数量不正确`}},
     editSubFieldKeyNameWrong:{rc:40202,msg:{client:`输入值格式不正确`,server:`更新子字段中键值的名称不是预定义`}},
+    eleArrayNotDefine:{rc:40203,msg:'eleArray必须有值'},
     editSubFieldFromOrToExistOne:{rc:40204,msg:{client:`输入值格式不正确`,server:`更新子字段中from或者to字段，必须2者选1`}},
 
 
@@ -153,12 +156,14 @@ const validateValue={
     recIdArrValueEleShouldString:{rc:40324,msg:'recIdArr中每个元素必须是字符'},
     recIdArrValueEleShouldObjectId:{rc:40326,msg:'recIdArr中每个元素必须是objectId'},
     /*              validateEditSubFieldValue           */
+    arrayMaxLengthUndefined:{rc:40327,msg:{client:`内部错误`,server:`rule中没有定义arrayMaxLength属性`}},
     fromMustBeObjectId:{rc:40328,msg:'from的值必须是objectId'},
     toMustBeObjectId:{rc:40330,msg:'to的值必须是objectId'},
-    eleArrayNotDefine:{rc:40332,msg:'eleArray必须有值'},
+
     eleArrayMustBeArray:{rc:40334,msg:'eleArray必须是数组'},
     eleArrayCantEmpty:{rc:40336,msg:'eleArray不能为空'},
-    eleArrayMustContainObjectId:{rc:40340,msg:'eleArray中元素必须是objectId'},
+    eleArrayEleNumExceed:{rc:40337,msg:'eleArray中元素过多'},
+    eleArrayDataTypeWrong:{rc:40338,msg:'eleArray中元素格式不正确'},
     /*              validateEventValue          */
     valueNotSet(fieldName){return {rc:40342,msg:`${fieldName}的值未定义`}},
     eventIdNotValid:{rc:40344,msg:`事件未定义`},

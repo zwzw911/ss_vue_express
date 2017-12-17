@@ -21,7 +21,7 @@ const e_part=nodeEnum.ValidatePart
 const e_inputFieldCheckType=nodeEnum.InputFieldCheckType
 const e_method=nodeEnum.Method
 const e_resourceFieldName=nodeEnum.ResourceFieldName
-
+const e_partValueToVarName=nodeEnum.PartValueToVarName
 const mongoEnum=require('../constant/enum/mongoEnum')
 const e_storePathUsage=mongoEnum.StorePathUsage.DB
 const e_storePathStatus=mongoEnum.StorePathStatus.DB
@@ -171,7 +171,7 @@ function validatePartValueFormat({req,expectedPart,collName,fkConfig,inputRule})
 /*  在inputCommonCheck后执行，确保所有part都存在，且值的数据类型正确
 * @req:需要检查的part的值
 * @expectedPart:需要检查的part
-* @inputRule:如果需要检查的part中有RECORD_INFO/FILTER_VALUE/SEARCH_PARAMS，需要inputRule，可能只有一个coll，也有可能多个个coll（如果有外键，需要把外键对应的Rule加入）
+* @inputRule:如果需要检查的part中有RECORD_INFO/FILTER_VALUE/SEARCH_PARAMS，需要inputRule，可能只有一个coll，也有可能多个coll（如果有外键，需要把外键对应的Rule加入）
 * @recordInfoBaseRule：如果需要对part RECORD_INFO的value进行检查，是以rule为base进行检查（创建新纪录），还是以inputValue为base（modify）
 * */
 function validatePartValue({req,expectedPart,collName,inputRule,recordInfoBaseRule,fkConfig}){
@@ -228,7 +228,6 @@ function validatePartValue({req,expectedPart,collName,inputRule,recordInfoBaseRu
                     //     break;
                     default:
                         return helperError.undefinedBaseRuleType
-                        break;
                 }
                 // console.log(`record nfo result ===================> ${JSON.stringify(checkPartValueResult)}`)
                 for(let singleField in checkPartValueResult){
@@ -254,6 +253,7 @@ function validatePartValue({req,expectedPart,collName,inputRule,recordInfoBaseRu
                 }
                 break;
             case e_part.EDIT_SUB_FIELD:
+                validateValue.validateEditSubFieldValue({inputValue:req.body.values[e_part.EDIT_SUB_FIELD],browseInputRule:inputRule})
                 break;
             case e_part.METHOD://直接在validatePartFormat完成了format和value的check
                 break
@@ -341,7 +341,6 @@ function CRUDPreCheck({req,expectedPart,collName,method}){
                 break;
             case e_method.DELETE: //delete带recordInfo，检测规则和update一样
                 recordInfoBaseRule=e_inputFieldCheckType.BASE_INPUT
-                break;
                 break;
             case e_method.SEARCH:
                 break;
@@ -1133,7 +1132,38 @@ async function findResourceProfileRecords_async({arr_resourceProfileRange}){
     return Promise.resolve(resourceResult)
 }
 
+/*  对于某些可有可无的part（例如EDIT_SUB_FIELD），如果req中有对应的值，那么加入到expectedPart进行检查
+*   @req
+*   @arr_optionalPart: 需要检测的可有可无的part
+*   @arr_expectedPart：如果optionalPart在req中存在，push进去
+* */
+function pushOptionalPartIntoExpectedPart_noReturn({req,arr_optionalPart,arr_expectedPart}){
+    //arr_optionalPart没有设置
+    if(undefined===arr_optionalPart || 0===arr_optionalPart.length){
+        return
+    }
+    //如果arr_optionalPart中的part在req中有值，则此part被push到arr_expectedPart
+    for(let singleOptionalPart of arr_optionalPart){
+        if(undefined!==req.body.values[singleOptionalPart] && null!==req.body.values[singleOptionalPart]){
+            arr_expectedPart.push(singleOptionalPart)
+        }
+    }
+}
 
+/*  将arr_expectedPart中part的value从req中提取出来，直接返回
+*
+*
+* */
+function getPartValue({req,arr_expectedPart}){
+    let result={}
+    for(let singlePart of arr_expectedPart){
+        if(undefined!==req.body.values[singlePart]){
+            result[e_partValueToVarName[singlePart]]=req.body.values[singlePart]
+        }
+    }
+
+    return result
+}
 module.exports= {
     inputCommonCheck,//每个请求进来是，都要进行的操作（时间间隔检查等）
     validatePartValueFormat,
@@ -1181,6 +1211,10 @@ module.exports= {
     deleteNotChangedValue,
 
     findResourceProfileRecords_async,
+
+    pushOptionalPartIntoExpectedPart_noReturn,
+
+    getPartValue,
 }
 
 

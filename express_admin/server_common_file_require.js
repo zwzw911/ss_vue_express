@@ -5,7 +5,6 @@
 const appSetting=require('../server_common/constant/config/appSetting.js')
 const globalConfiguration=require('../server_common/constant/config/globalConfiguration.js')
 const calcResourceConfig=require('../server_common/constant/define/calcResourceConfig.js')
-const nodeDefine=require('../server_common/constant/define/nodeDefine.js')
 const collEnum=require('../server_common/constant/enum/collEnum.js')
 const inputDataRuleType=require('../server_common/constant/enum/inputDataRuleType.js')
 const mongoEnum=require('../server_common/constant/enum/mongoEnum.js')
@@ -52,7 +51,6 @@ module.exports={
     appSetting,
     globalConfiguration,
     calcResourceConfig,
-    nodeDefine,
     collEnum,
     inputDataRuleType,
     mongoEnum,

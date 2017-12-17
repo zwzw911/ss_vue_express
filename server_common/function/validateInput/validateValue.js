@@ -17,6 +17,7 @@ const validateHelper=require('./validateHelper')
 const dataTypeCheck=validateHelper.dataTypeCheck
 const genInputError=validateHelper.genInputError
 const valueMatchRuleDefineCheck=validateHelper.valueMatchRuleDefineCheck
+// const ruleTypeMatchRuleDefineCheck=validateHelper.ruleTypeMatchRuleDefineCheck
 const valueTypeCheck=validateHelper.valueTypeCheck
 
 const validateError=require('../../constant/error/validateError')
@@ -203,7 +204,7 @@ function validateSingleRecorderFieldValue(fieldValue,fieldRule){
     // 如果require为true
     if(true===fieldRule[e_serverRuleType.REQUIRE]['define']){
         // console.log(`field ${chineseName} requier check ${valueMatchRuleDefineCheck.require(fieldValue)}`)
-        if(false===valueMatchRuleDefineCheck.require(fieldValue)){
+        if(false===valueMatchRuleDefineCheck({ruleType:e_serverRuleType.REQUIRE,fieldValue:fieldValue,ruleDefine:true})){
             return genInputError(fieldRule,e_serverRuleType.REQUIRE)
         }
     }
@@ -272,7 +273,7 @@ function validateSingleRecorderFieldValue(fieldValue,fieldRule){
     if(fieldRule[e_serverRuleType.FORMAT] && fieldRule[e_serverRuleType.FORMAT]['define']){
         let formatDefine=fieldRule[e_serverRuleType.FORMAT]['define']
         // console.log(`formatDefine is ${JSON.stringify(formatDefine)}`)
-        if(false===valueMatchRuleDefineCheck.format(fieldValue,formatDefine)){
+        if(false===valueMatchRuleDefineCheck({ruleType:e_serverRuleType.FORMAT,fieldValue:fieldValue,ruleDefine:formatDefine})){
             // rc['rc']=fieldRule[e_serverRuleType.FORMAT]['error']['rc']
             // rc['msg']=genInputError(fieldRule,e_serverRuleType.FORMAT)
             // return rc
@@ -293,7 +294,7 @@ function validateSingleRecorderFieldValue(fieldValue,fieldRule){
     if(fieldRule[e_serverRuleType.MAX_LENGTH] && fieldRule[e_serverRuleType.MAX_LENGTH]['define']){
         let maxLengthDefine=fieldRule[e_serverRuleType.MAX_LENGTH]['define']
         // console.log(`maxLength: define ${maxLengthDefine}, value ${currentItemValue}`)
-        if(true===valueMatchRuleDefineCheck.exceedMaxLength(fieldValue,maxLengthDefine)){
+        if(false===valueMatchRuleDefineCheck({ruleType:e_serverRuleType.MAX_LENGTH,fieldValue:fieldValue,ruleDefine:maxLengthDefine})){
             // rc['rc']=fieldRule[e_serverRuleType.MAX_LENGTH]['error']['rc']
             // rc['msg']=genInputError(fieldRule,e_serverRuleType.MAX_LENGTH)
             // return rc
@@ -306,7 +307,7 @@ function validateSingleRecorderFieldValue(fieldValue,fieldRule){
     if(fieldRule[e_serverRuleType.ENUM] && fieldRule[e_serverRuleType.ENUM]['define']){
         // console.log(`enum in`)
         let enumDefine=fieldRule[e_serverRuleType.ENUM]['define']
-        if(false===valueMatchRuleDefineCheck.enum(fieldValue,enumDefine)){
+        if(false===valueMatchRuleDefineCheck({ruleType:e_serverRuleType.ENUM,fieldValue:fieldValue,ruleDefine:enumDefine})){
             // console.log(`enum check fialed`)
             // rc['rc']=fieldRule[e_serverRuleType.ENUM]['error']['rc']
             // rc['msg']=genInputError(fieldRule,e_serverRuleType.ENUM)
@@ -336,7 +337,7 @@ function validateSingleRecorderFieldValue(fieldValue,fieldRule){
                 // console.log(`fieldRule of MIN_LENGTH============>${JSON.stringify(fieldRule)}`)
                 // console.log(`fieldValue of MIN_LENGTH============>${JSON.stringify(fieldValue)}`)
                 // console.log(`ruleDefine of MIN_LENGTH============>${JSON.stringify(ruleDefine)}`)
-                if(true===valueMatchRuleDefineCheck.exceedMinLength(fieldValue,ruleDefine)){
+                if(false===valueMatchRuleDefineCheck({ruleType:e_serverRuleType.MIN_LENGTH,fieldValue:fieldValue,ruleDefine:ruleDefine})){
                     // rc['rc']=fieldRule[singleItemRuleName]['error']['rc']
                     // rc['msg']=genInputError(fieldRule,e_serverRuleType.MIN_LENGTH)
                     // return rc
@@ -345,7 +346,7 @@ function validateSingleRecorderFieldValue(fieldValue,fieldRule){
                 }
                 break;
             case e_serverRuleType.EXACT_LENGTH:
-                if(false===valueMatchRuleDefineCheck.exactLength(fieldValue,ruleDefine)){
+                if(false===valueMatchRuleDefineCheck({ruleType:e_serverRuleType.EXACT_LENGTH,fieldValue:fieldValue,ruleDefine:ruleDefine})){
                     // rc['rc']=fieldRule[singleItemRuleName]['error']['rc']
                     // rc['msg']=genInputError(fieldRule,e_serverRuleType.EXACT_LENGTH)
                     // return rc
@@ -353,7 +354,7 @@ function validateSingleRecorderFieldValue(fieldValue,fieldRule){
                 }
                 break;
             case e_serverRuleType.MAX:
-                if(true===valueMatchRuleDefineCheck.exceedMax(fieldValue,ruleDefine)){
+                if(false===valueMatchRuleDefineCheck({ruleType:e_serverRuleType.MAX,fieldValue:fieldValue,ruleDefine:ruleDefine})){
                     // rc['rc']=fieldRule[singleItemRuleName]['error']['rc']
                     // rc['msg']=genInputError(fieldRule,e_serverRuleType.MAX)
                     return genInputError(fieldRule,e_serverRuleType.MAX)
@@ -361,7 +362,7 @@ function validateSingleRecorderFieldValue(fieldValue,fieldRule){
                 break;
             case e_serverRuleType.MIN:
                 // console.log(`min fieldvalue is ${fieldValue}, rule defind is ${ruleDefine}`)
-                if(true===valueMatchRuleDefineCheck.exceedMin(fieldValue,ruleDefine)){
+                if(false===valueMatchRuleDefineCheck({ruleType:e_serverRuleType.MIN,fieldValue:fieldValue,ruleDefine:ruleDefine})){
                     // rc['rc']=fieldRule[singleItemRuleName]['error']['rc']
                     // rc['msg']=genInputError(fieldRule,e_serverRuleType.MIN)
                     return genInputError(fieldRule,e_serverRuleType.MIN)
@@ -583,7 +584,7 @@ function _validateSingleSearchValue(searchValue,fieldRule){
     // console.log(`current rule is ${JSON.stringify(currentItemRule)}`)
     if(fieldRule[e_serverRuleType.FORMAT] && fieldRule[e_serverRuleType.FORMAT]['define']){
         let formatDefine=fieldRule[e_serverRuleType.FORMAT]['define']
-        if(false===valueMatchRuleDefineCheck.format(searchValue,formatDefine)){
+        if(false===valueMatchRuleDefineCheck({ruleType:e_serverRuleType.FORMAT,fieldValue:searchValue,ruleDefine:formatDefine})){
             rc['rc']=fieldRule[e_serverRuleType.FORMAT]['error']['rc']
             rc['msg']=genInputError(fieldRule,e_serverRuleType.FORMAT)
             return rc
@@ -593,7 +594,7 @@ function _validateSingleSearchValue(searchValue,fieldRule){
     //3.3 如果有maxLength，先检测maxLength，错误删除
     if(fieldRule[e_serverRuleType.MAX_LENGTH] && fieldRule[e_serverRuleType.MAX_LENGTH]['define']){
         let ruleDefine=fieldRule[e_serverRuleType.MAX_LENGTH]['define']
-        if(true===valueMatchRuleDefineCheck.exceedMaxLength(searchValue,ruleDefine)){
+        if(false===valueMatchRuleDefineCheck({ruleType:e_serverRuleType.MAX_LENGTH,fieldValue:searchValue,ruleDefine:ruleDefine})){
             // console.log(`fieldRule is ${JSON.stringify(fieldRule)}`)
             rc['rc']=fieldRule[e_serverRuleType.MAX_LENGTH]['error']['rc']
             rc['msg']=genInputError(fieldRule,e_serverRuleType.MAX_LENGTH)
@@ -607,7 +608,7 @@ function _validateSingleSearchValue(searchValue,fieldRule){
     //3.4 如果是enum，错误返回
     if(fieldRule[e_serverRuleType.ENUM] && fieldRule[e_serverRuleType.ENUM]['define']){
         let enumDefine=fieldRule[e_serverRuleType.ENUM]['define']
-        if(false===valueMatchRuleDefineCheck.enum(searchValue,enumDefine)){
+        if(false===valueMatchRuleDefineCheck({ruleType:e_serverRuleType.ENUM,fieldValue:searchValue,ruleDefine:enumDefine})){
             rc['rc']=fieldRule[e_serverRuleType.ENUM]['error']['rc']
             rc['msg']=genInputError(fieldRule,e_serverRuleType.ENUM)
             return rc
@@ -782,10 +783,10 @@ function validateRecIdArr(value,maxLength){
     return rc
 }
 
-/*        格式固定，所以无需inputRule
+/*/!*        格式固定，所以无需inputRule
 * 1. from/to的值为objectId
 * 2. eleArray的值类型为array，且其中每个元素的值为object_id
-* */
+* *!/
 function validateEditSubFieldValue(v){
 
     if(true==='from' in v){
@@ -822,8 +823,87 @@ function validateEditSubFieldValue(v){
     }
 
     return rightResult
-}
+}*/
 
+/*        根据rule，对输入的值进行格式检查
+ * @inputValue：对象。{fieldName:{from:,to:,eleArrar},fieldName2:{from:,to:,eleArray}}
+ * 1. from/to的值类型必须为objectId
+ * 2. eleArray的值类型为array，且其中每个元素的值根据field的类型决定，一般为objecId
+ * */
+function validateEditSubFieldValue({inputValue,browseInputRule}){
+
+    for(let singleFieldName in inputValue){
+        // console.log(`browseCollRule[singleFieldName]['type'] +++++${JSON.stringify(browseInputRule[singleFieldName]['type'])}`)
+        //由format check保证rule必定是存在的
+        let singleFieldRule=browseInputRule[singleFieldName]
+        let fieldDataType=singleFieldRule['type'][0]  //type是[ObjectId]这样的格式
+        // console.log(`browseInputRule[singleFieldName]['arrayMaxLength']=========>${JSON.stringify(browseInputRule[singleFieldName][`arrayMaxLength`])}`)
+        if(undefined===singleFieldRule[`arrayMaxLength`] || undefined===singleFieldRule[`arrayMaxLength`][`define`]){
+            return validateValueError.arrayMaxLengthUndefined
+        }
+        let fieldArrayMaxLength=singleFieldRule[`arrayMaxLength`][`define`]
+        // console.log(`browseInputRule[singleFieldName]['arrayMaxLength']=========>${JSON.stringify(browseInputRule[singleFieldName][`arrayMaxLength`])}`)
+        let fieldValue=inputValue[singleFieldName]
+
+
+
+        //首先检测from/to，以便出错立刻返回（节省检测eleArray的资源）
+        if(true==='from' in fieldValue){
+            if(false===dataTypeCheck.isObjectId(fieldValue['from'])){
+                return validateValueError.fromMustBeObjectId
+            }
+        }
+
+        if(true==='to' in fieldValue){
+            if(false===dataTypeCheck.isObjectId(fieldValue['to'])){
+                return validateValueError.toMustBeObjectId
+            }
+        }
+        //然后检测eleArray
+        //1. 必须是数组
+        //1. 数量，不能超过字段arrMaxLength
+        //2. 每个元素类型必须正确
+
+        if(false===dataTypeCheck.isArray(fieldValue['eleArray'])){
+            return validateValueError.eleArrayMustBeArray
+        }
+
+        //如果eleArray为空，报错（空数据意味着没有操作对象，那就根本不应该传送editSubField这个part）
+        if(0===fieldValue['eleArray'].length){
+            return validateValueError.eleArrayCantEmpty
+        }
+        // console.log(`fieldArrayMaxLength=====>${fieldArrayMaxLength}`)
+        // console.log(`fieldValue['eleArray'].length=====>${fieldValue['eleArray'].length}`)
+        if(fieldArrayMaxLength<fieldValue['eleArray'].length){
+            return validateValueError.eleArrayEleNumExceed
+        }
+        //eleArray中每个元素符合rule中数据类型的定义，且要符合rule的定义
+        for(let singleEle of fieldValue['eleArray']){
+            //数据类型检测
+            if(false===valueTypeCheck(singleEle,fieldDataType)){
+                return validateValueError.eleArrayDataTypeWrong
+            }
+            //数据类型检测通过，且为objectId，则无需继续进行rule的check
+            if(fieldDataType===e_serverDataType.OBJECT_ID){
+                continue
+            }
+            //rule check(ARRAY_MAX_LENGTH和ARRAY_MIN_LENGTH在format check中完成)
+            let singleRuleDefine,ruleCheckFunc
+            //可以检测的rule
+            let validRule=[e_serverRuleType.FORMAT,e_serverRuleType.MIN_LENGTH,e_serverRuleType.MAX_LENGTH,e_serverRuleType.MIN,e_serverRuleType.MAX,e_serverRuleType.EXACT_LENGTH,e_serverRuleType.ENUM]
+            for(let singleValidRule of validRule){
+                if(undefined!==singleFieldRule[singleValidRule]){
+                    singleRuleDefine=singleFieldRule[singleValidRule][`define`]
+                    if(false===valueMatchRuleDefineCheck({ruleType:singleValidRule,ruleDefine:singleRuleDefine,fieldValue:singleEle})){
+                        return genInputError(singleFieldRule,singleValidRule)
+                    }
+                }
+            }
+        }
+    }
+
+    return rightResult
+}
 /*          由server内部生成，所以无需inputRule
 * 0. 所有字段必须赋值
 * 1. eventId是否在enum的指定范围内

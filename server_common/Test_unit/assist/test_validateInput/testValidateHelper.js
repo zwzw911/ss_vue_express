@@ -9,6 +9,7 @@ const validateHelperError=require('../../../constant/error/validateError').valid
 /*          for generateRandomString test       */
 const regex=require('../../../constant/regex/regex').regex
 const serverDataType=require('../../../constant/enum/inputDataRuleType').ServerDataType
+const serverRuleType=require('../../../constant/enum/inputDataRuleType').ServerRuleType
 //var randomStringTypeEnum=require('../../server/define/enum/node').node.randomStringType
 const moment=require('moment')
 
@@ -466,67 +467,98 @@ describe('valueMatchRuleDefineCheck', function() {
     /*          exceedMin/MaxLength exactLength(common part)         */
     it(`object not allow to test length`,function(done){
         value={}
-        assert.deepStrictEqual(func.exceedMinLength(value,1),false)
+        assert.deepStrictEqual(func({ruleType:serverRuleType.MAX_LENGTH,fieldValue:value,ruleDefine:1}),false)
         done();
     })
-    it(`date not allow to test length`,function(done){
+    it(`date allow to test length`,function(done){
         value=Date.now()
-        assert.deepStrictEqual(func.exceedMinLength(value,1),false)
+        // console.log(`value==>${JSON.stringify(value)}`)
+        assert.deepStrictEqual(func({ruleType:serverRuleType.MIN_LENGTH,fieldValue:value,ruleDefine:1}),true)
         done();
     })
 
     it(`float: min/max/exact`,function(done){
         value=123.0 //js内部会当作123处理
-        assert.deepStrictEqual(func.exceedMinLength(value,3),false)
+        assert.deepStrictEqual(func({ruleType:serverRuleType.MIN_LENGTH,fieldValue:value,ruleDefine:3}),true)
+        assert.deepStrictEqual(func({ruleType:serverRuleType.MIN_LENGTH,fieldValue:value,ruleDefine:6}),false)
+        assert.deepStrictEqual(func({ruleType:serverRuleType.MAX_LENGTH,fieldValue:value,ruleDefine:2}),false)
+        assert.deepStrictEqual(func({ruleType:serverRuleType.MAX_LENGTH,fieldValue:value,ruleDefine:3}),true)
+        assert.deepStrictEqual(func({ruleType:serverRuleType.EXACT_LENGTH,fieldValue:value,ruleDefine:3}),true)
+        assert.deepStrictEqual(func({ruleType:serverRuleType.EXACT_LENGTH,fieldValue:value,ruleDefine:5}),false)
+
+
+/*        assert.deepStrictEqual(func.exceedMinLength(value,3),false)
         assert.deepStrictEqual(func.exceedMinLength(value,6),true)
         assert.deepStrictEqual(func.exceedMaxLength(value,2),true)
         assert.deepStrictEqual(func.exceedMaxLength(value,3),false)
         assert.deepStrictEqual(func.exactLength(value,3),true)
-        assert.deepStrictEqual(func.exactLength(value,5),false)
+        assert.deepStrictEqual(func.exactLength(value,5),false)*/
         done();
     })
     it(`string: min/max/exact`,function(done){
         value='123.0'
-        assert.deepStrictEqual(func.exceedMinLength(value,5),false)
+        assert.deepStrictEqual(func({ruleType:serverRuleType.MIN_LENGTH,fieldValue:value,ruleDefine:5}),true)
+        assert.deepStrictEqual(func({ruleType:serverRuleType.MIN_LENGTH,fieldValue:value,ruleDefine:6}),false)
+        assert.deepStrictEqual(func({ruleType:serverRuleType.MAX_LENGTH,fieldValue:value,ruleDefine:5}),true)
+        assert.deepStrictEqual(func({ruleType:serverRuleType.MAX_LENGTH,fieldValue:value,ruleDefine:4}),false)
+        assert.deepStrictEqual(func({ruleType:serverRuleType.EXACT_LENGTH,fieldValue:value,ruleDefine:5}),true)
+        assert.deepStrictEqual(func({ruleType:serverRuleType.EXACT_LENGTH,fieldValue:value,ruleDefine:4}),false)
+
+
+/*        assert.deepStrictEqual(func.exceedMinLength(value,5),false)
         assert.deepStrictEqual(func.exceedMinLength(value,6),true)
         assert.deepStrictEqual(func.exceedMaxLength(value,5),false)
         assert.deepStrictEqual(func.exceedMaxLength(value,4),true)
         assert.deepStrictEqual(func.exactLength(value,5),true)
-        assert.deepStrictEqual(func.exactLength(value,4),false)
+        assert.deepStrictEqual(func.exactLength(value,4),false)*/
         done();
     })
     it(`int: min/max/exact`,function(done){
         value=123
-        assert.deepStrictEqual(func.exceedMinLength(value,3),false)
+        assert.deepStrictEqual(func({ruleType:serverRuleType.MIN_LENGTH,fieldValue:value,ruleDefine:3}),true)
+        assert.deepStrictEqual(func({ruleType:serverRuleType.MIN_LENGTH,fieldValue:value,ruleDefine:4}),false)
+        assert.deepStrictEqual(func({ruleType:serverRuleType.MAX_LENGTH,fieldValue:value,ruleDefine:2}),false)
+        assert.deepStrictEqual(func({ruleType:serverRuleType.MAX_LENGTH,fieldValue:value,ruleDefine:3}),true)
+        assert.deepStrictEqual(func({ruleType:serverRuleType.EXACT_LENGTH,fieldValue:value,ruleDefine:3}),true)
+        assert.deepStrictEqual(func({ruleType:serverRuleType.EXACT_LENGTH,fieldValue:value,ruleDefine:4}),false)
+
+/*        assert.deepStrictEqual(func.exceedMinLength(value,3),false)
         assert.deepStrictEqual(func.exceedMinLength(value,4),true)
         assert.deepStrictEqual(func.exceedMaxLength(value,2),true)
         assert.deepStrictEqual(func.exceedMaxLength(value,3),false)
         assert.deepStrictEqual(func.exactLength(value,3),true)
-        assert.deepStrictEqual(func.exactLength(value,4),false)
+        assert.deepStrictEqual(func.exactLength(value,4),false)*/
         done();
     })
     it(`array: min/max/exact`,function(done){
         value=[1,2,3]
-        assert.deepStrictEqual(func.exceedMinLength(value,3),false)
+        assert.deepStrictEqual(func({ruleType:serverRuleType.MIN_LENGTH,fieldValue:value,ruleDefine:3}),true)
+        assert.deepStrictEqual(func({ruleType:serverRuleType.MIN_LENGTH,fieldValue:value,ruleDefine:4}),false)
+        assert.deepStrictEqual(func({ruleType:serverRuleType.MAX_LENGTH,fieldValue:value,ruleDefine:2}),false)
+        assert.deepStrictEqual(func({ruleType:serverRuleType.MAX_LENGTH,fieldValue:value,ruleDefine:3}),true)
+        assert.deepStrictEqual(func({ruleType:serverRuleType.EXACT_LENGTH,fieldValue:value,ruleDefine:3}),true)
+        assert.deepStrictEqual(func({ruleType:serverRuleType.EXACT_LENGTH,fieldValue:value,ruleDefine:4}),false)
+
+/*        assert.deepStrictEqual(func.exceedMinLength(value,3),false)
         assert.deepStrictEqual(func.exceedMinLength(value,4),true)
         assert.deepStrictEqual(func.exceedMaxLength(value,2),true)
         assert.deepStrictEqual(func.exceedMaxLength(value,3),false)
         assert.deepStrictEqual(func.exactLength(value,3),true)
-        assert.deepStrictEqual(func.exactLength(value,4),false)
+        assert.deepStrictEqual(func.exactLength(value,4),false)*/
         done();
     })
 
     /*          max/min         */
     it(`number min/max`,function(done){
         value=1234.0
-        assert.deepStrictEqual(func.exceedMax(value,1235),false)
-        assert.deepStrictEqual(func.exceedMax(value,1233),true)
-        assert.deepStrictEqual(func.exceedMin(value,1233),false)
-        assert.deepStrictEqual(func.exceedMin(value,1236),true)
+        assert.deepStrictEqual(func({ruleType:serverRuleType.MAX,fieldValue:value,ruleDefine:1235}),true)
+        assert.deepStrictEqual(func({ruleType:serverRuleType.MAX,fieldValue:value,ruleDefine:1233}),false)
+        assert.deepStrictEqual(func({ruleType:serverRuleType.MIN,fieldValue:value,ruleDefine:1233}),true)
+        assert.deepStrictEqual(func({ruleType:serverRuleType.MIN,fieldValue:value,ruleDefine:1236}),false)
         done();
     })
     /*          file/folder exist         */
-    it(`number min/max`,function(done){
+/*    it(`number min/max`,function(done){
         value="C:/Windows/"
         assert.deepStrictEqual(func.isFileFolderExist(value),true)
         value="C:/Windows/win.ini"
@@ -536,7 +568,7 @@ describe('valueMatchRuleDefineCheck', function() {
         value="C:/Windows/win.inisssss"
         assert.deepStrictEqual(func.isFileFolderExist(value),false)
         done();
-    })
+    })*/
 })
 
 

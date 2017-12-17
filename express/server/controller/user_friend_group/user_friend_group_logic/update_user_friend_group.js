@@ -27,6 +27,7 @@ const mongoEnum=server_common_file_require.mongoEnum
 
 const e_env=nodeEnum.Env
 const e_part=nodeEnum.ValidatePart
+const e_partValueToVarName=nodeEnum.PartValueToVarName
 
 const e_hashType=nodeRuntimeEnum.HashType
 
@@ -48,7 +49,7 @@ const regex=server_common_file_require.regex.regex
 const currentEnv=server_common_file_require.appSetting.currentEnv
 const fkConfig=server_common_file_require.fkConfig.fkConfig
 
-async function updateUserFriendGroup_async({req}){
+async function updateUserFriendGroup_async({req,expectedPart}){
     // console.log(`updateUser_async in`)
     // console.log(`req.session ${JSON.stringify(req.session)}`)
     /*******************************************************************************************/
@@ -59,8 +60,9 @@ async function updateUserFriendGroup_async({req}){
     let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
     let {userId,userCollName,userType,userPriority}=userInfo
     // console.log(`userInfo============>${JSON.stringify(userInfo)}`)
-    let docValue=req.body.values[e_part.RECORD_INFO]
-    let recordId=req.body.values[e_part.RECORD_ID]
+    let {docValue,recordId,subFieldValue}=controllerHelper.getPartValue({req:req,arr_expectedPart:expectedPart})
+    // let docValue=req.body.values[e_part.RECORD_INFO]
+    // let recordId=req.body.values[e_part.RECORD_ID]
     // console.log(`docValue============>${JSON.stringify(docValue)}`)
     // console.log(`recordId============>${JSON.stringify(recordId)}`)
     /*******************************************************************************************/

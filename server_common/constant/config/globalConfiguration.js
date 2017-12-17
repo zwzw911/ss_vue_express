@@ -592,6 +592,10 @@ const defaultSetting= {
     }
 }
 
+const userGroupFriend={
+    maxUserPerGroup:100,//每个好友分组，最多容纳的好友数量
+    maxUserFriendGroupNum:10,//每个用户最多拥有10个好友分组（包括默认的分组：我的好友）
+}
 module.exports={
 	defaultSetting,
 	// mongoSetting,/*               转移到model/model定义中了   */
@@ -610,5 +614,6 @@ module.exports={
     miscConfiguration,
     mailOption,
     mailAccount,
+    userGroupFriend,
 }
 

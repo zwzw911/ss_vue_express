@@ -131,6 +131,29 @@ const UploadFileDefinitionFieldName={
     MAX_WIDTH:'maxWidth',//如果是图片，图片的宽度
     MAX_HEIGHT:'maxHeight',//如果是图片，图片的宽度
 }
+
+const EventField={
+    EVENT_ID:'eventId',
+    SOURCE_ID:'sourceId',
+    TARGET_ID:'targetId',
+    STATUS:'status',
+    C_DATE:'cDate',
+}
+
+//对mongo中array或者nested进行操作
+const SubField={
+    FROM:'from',
+    TO:'to',
+    ELE_ARRAY:'eleArray'
+}
+
+//req中part的值，一般赋给哪个变量
+const PartValueToVarName={
+    [ValidatePart.EDIT_SUB_FIELD]:'subFieldValue',
+    [ValidatePart.RECORD_ID]:'recordId',
+    [ValidatePart.RECORD_INFO]:'docValue',
+}
+
 module.exports={
     RandomStringType,
     UserState,
@@ -150,4 +173,9 @@ module.exports={
     ResourceConfigFieldName,
     ResourceFieldName,
     UploadFileDefinitionFieldName,
+
+    EventField,
+    SubField,
+
+    PartValueToVarName,
 }

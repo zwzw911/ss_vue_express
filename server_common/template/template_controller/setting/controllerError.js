@@ -7,16 +7,19 @@
 const controllerError={
     /*              dispatch                           */
     //create
-    notLoginCantCreateImpeachComment:{rc:51000,msg:`尚未登录，无法对举报进行评论`},
-    currentUserForbidToCreateImpeachComment:{rc:51004,msg:`您被禁止对举报进行评论`},
+    notLoginCantCreateUserFriendGroup:{rc:51700,msg:`尚未登录，无法创建好友分组`},
+    currentUserForbidToCreateUserFriendGroup:{rc:51702,msg:`您被禁止创建好友分组`},
     //update
-    notLoginCantUpdateImpeachComment:{rc:51001,msg:`尚未登录，无法更新举报评论`},
-    currentUserForbidToUpdateImpeachComment:{rc:51005,msg:`您被禁止对举报评论进行更新`},
-
+    notLoginCantUpdateUserFriendGroup:{rc:51704,msg:`尚未登录，无法更新好友分组`},
+    currentUserForbidToUpdateUserFriendGroup:{rc:51706,msg:`您被禁止对好友分组更新`},
+    //delete
+    notLoginCantDeleteUserFriendGroup:{rc:51708,msg:`尚未登录，无法删除好友分组`},
+    currentUserForbidToDeleteUserFriendGroup:{rc:51710,msg:`您被禁止删除好友分组`},
+    //08～20预留给其他method
     /*              logic                           */
     //create
     // impeachNotExistCantCreateComment:{rc:51005,msg:`举报不存在`},
-    notImpeachCreatorCantCreateComment:{rc:51005,msg:`无权对他人举报进行评论`},
+    notImpeachCreatorCantCreateComment:{rc:51020,msg:`无权对他人举报进行评论`},
 
     // update
     notImpeachCreatorCantUpdateComment:{rc:51005,msg:`无权对他人举报进行评论`},

@@ -560,51 +560,100 @@ describe('validateFilterFieldValue', function() {
 /***************************************************************************/
 describe('validateEditSubFieldValue', function() {
     let func = testModule.validateEditSubFieldValue
-    let result, value
-//1 from not objectId
-    it(`editSubField key from must be objectId `,function(done){
-        value={from:undefined}
-        assert.deepStrictEqual(func(value).rc,validateValueError.fromMustBeObjectId.rc)
-        done()
-    })
-    //2 to not objectId
-    it(`editSubField key to must be objectId `,function(done){
-        value={to:undefined}
-        assert.deepStrictEqual(func(value).rc,validateValueError.toMustBeObjectId.rc)
+    let result, value, rule={f1:{
+        'type': [e_serverDataType.OBJECT_ID],
+        // 'arrayMaxLength': {define: 100, error: {rc: 10422}, mongoError: {rc: 20422, msg: `好友分组最多包含100个好友`}},
+    }}
+    //1 field rule not define arrayMaxLength
+    it(`editSubField field rule not define arrayMaxLength`,function(done){
+        value={f1:{from:1,eleArray:[]}}
+        assert.deepStrictEqual(func({inputValue:value,browseInputRule:rule}).rc,validateValueError.arrayMaxLengthUndefined.rc)
+        rule={f1:{
+            'type': [e_serverDataType.OBJECT_ID],
+            'arrayMaxLength': {define: 2, error: {rc: 10422}, mongoError: {rc: 20422, msg: `好友分组最多包含2个好友`}},
+        }}
         done()
     })
 
+//1 from not objectId
+    it(`editSubField from value undefined must be objectId `,function(done){
+        value={f1:{from:undefined}}
+        assert.deepStrictEqual(func({inputValue:value,browseInputRule:rule}).rc,validateValueError.fromMustBeObjectId.rc)
+        done()
+    })
+    it(`editSubField from value number must be objectId `,function(done){
+        value={f1:{from:123456789012345678901234}}
+        assert.deepStrictEqual(func({inputValue:value,browseInputRule:rule}).rc,validateValueError.fromMustBeObjectId.rc)
+        done()
+    })
+    //2 to not objectId
+    it(`editSubField to undefined must be objectId `,function(done){
+        value={f1:{to:undefined}}
+        assert.deepStrictEqual(func({inputValue:value,browseInputRule:rule}).rc,validateValueError.toMustBeObjectId.rc)
+        done()
+    })
+    it(`editSubField to number must be objectId `,function(done){
+        value={f1:{to:123456789012345678901234}}
+        assert.deepStrictEqual(func({inputValue:value,browseInputRule:rule}).rc,validateValueError.toMustBeObjectId.rc)
+        done()
+    })
+
+
     //3 eleArray not array
     it(`editSubField key eleArray must be array`,function(done){
-        value={eleArray:undefined}
-        assert.deepStrictEqual(func(value).rc,validateValueError.eleArrayNotDefine.rc)
+        value={f1:{eleArray:undefined}}
+        assert.deepStrictEqual(func({inputValue:value,browseInputRule:rule}).rc,validateValueError.eleArrayMustBeArray.rc)
         done()
     })
 
     //4 eleArray not array
     it(`editSubField key eleArray must be array`,function(done){
-        value={eleArray:{}}
-        assert.deepStrictEqual(func(value).rc,validateValueError.eleArrayMustBeArray.rc)
-        done()
-    })
-
-    //5 eleArray中每个元素必须是objectId
-    it(`editSubField key eleArray element must be objectId`,function(done){
-        value={eleArray:[1,2,3]}
-        assert.deepStrictEqual(func(value).rc,validateValueError.eleArrayMustContainObjectId.rc)
+        value={f1:{eleArray:{}}}
+        assert.deepStrictEqual(func({inputValue:value,browseInputRule:rule}).rc,validateValueError.eleArrayMustBeArray.rc)
         done()
     })
     //6 eleArray不能为空
     it(`editSubField key eleArray cant be empty array`,function(done){
-        value={eleArray:[]}
-        assert.deepStrictEqual(func(value).rc,validateValueError.eleArrayCantEmpty.rc)
+        value={f1:{eleArray:[]}}
+        assert.deepStrictEqual(func({inputValue:value,browseInputRule:rule}).rc,validateValueError.eleArrayCantEmpty.rc)
+        done()
+    })
+    // eleArray元素数量超过maxArrayMax
+    it(`editSubField key eleArray length exceed maxArrayMax`,function(done){
+        value={f1:{eleArray:[1,2,3]}}
+        assert.deepStrictEqual(func({inputValue:value,browseInputRule:rule}).rc,validateValueError.eleArrayEleNumExceed.rc)
+        done()
+    })
+    //5 eleArray中每个元素必须和rule中匹配
+    it(`editSubField key eleArray element must match rule type`,function(done){
+        value={f1:{eleArray:[1]}}
+        assert.deepStrictEqual(func({inputValue:value,browseInputRule:rule}).rc,validateValueError.eleArrayDataTypeWrong.rc)
         done()
     })
 
+
     //7 right result
     it(`editSubField key eleArray cant be empty array`,function(done){
-        value={eleArray:['58c0c32486e5a6d02657303f']}
-        assert.deepStrictEqual(func(value).rc,0)
+        value={f1:{eleArray:['58c0c32486e5a6d02657303f']}}
+        assert.deepStrictEqual(func({inputValue:value,browseInputRule:rule}).rc,0)
+
+        done()
+    })
+
+
+    it(`editSubField key eleArray element not match rule`,function(done){
+
+        rule={f1:{
+                'type': [e_serverDataType.INT],
+                'arrayMaxLength': {define: 2, error: {rc: 10422}, mongoError: {rc: 20422, msg: `好友分组最多包含2个好友`}},
+                [e_serverRuleType.MIN]:{define: 2, error: {rc: 10422}, mongoError: {rc: 20422, msg: `好友分组最多包含2个好友`}},
+                [e_serverRuleType.MAX]:{define: 4, error: {rc: 104232}, mongoError: {rc: 20423, msg: `好友分组最多包含2个好友`}},
+            }}
+
+        value={f1:{eleArray:[1]}}
+        assert.deepStrictEqual(func({inputValue:value,browseInputRule:rule}).rc,rule.f1[e_serverRuleType.MIN][`error`][`rc`])
+        value={f1:{eleArray:[5]}}
+        assert.deepStrictEqual(func({inputValue:value,browseInputRule:rule}).rc,rule.f1[e_serverRuleType.MAX][`error`][`rc`])
         done()
     })
 })

@@ -608,46 +608,66 @@ describe('validateFilterFieldValueFormat', function() {
 describe('validateEditSubFieldFormat', function() {
     let func=testModule.validateEditSubFieldFormat
     let value
-
+    let rule={}
     //1     value is undefined
     it(`edit sub field value is undefined, not object`,function(done){
-        assert.deepStrictEqual(func(value).rc,validateFormatError.editSubFieldMustBeObject.rc)
+        assert.deepStrictEqual(func({inputValue:value,browseInputRule:rule}).rc,validateFormatError.editSubFieldMustBeObject.rc)
         done()
     })
     //2      value is array
     it(`edit sub field value is array, not object`,function(done){
         value=[]
-        assert.deepStrictEqual(func(value).rc,validateFormatError.editSubFieldMustBeObject.rc)
+        assert.deepStrictEqual(func({inputValue:value,browseInputRule:rule}).rc,validateFormatError.editSubFieldMustBeObject.rc)
+        done()
+    })
+    //1     field no related rule
+    it(`edit sub field field no related rule`,function(done){
+        value={f1:undefined}
+        assert.deepStrictEqual(func({inputValue:value,browseInputRule:rule}).rc,validateFormatError.editSubFieldNoRelatedRule.rc)
+        done()
+    })
+    //1     field value not object
+    it(`edit sub field field value not object`,function(done){
+        value={f1:[]}
+        rule={f1:{}}
+        assert.deepStrictEqual(func({inputValue:value,browseInputRule:rule}).rc,validateFormatError.editSubFieldDataTypeIncorrect.rc)
         done()
     })
     //3      key number less than 2
     it(`edit sub field value key number must 2`,function(done){
-        value={k1:undefined}
-        assert.deepStrictEqual(func(value).rc,validateFormatError.editSubFieldKeyNumberWrong.rc)
+        value={f1:{}}
+        assert.deepStrictEqual(func({inputValue:value,browseInputRule:rule}).rc,validateFormatError.editSubFieldKeyNumberWrong.rc)
         done()
     })
     //4      key number larger than 3
     it(`edit sub field value key number must 2`,function(done){
-        value={k1:undefined,k2:undefined,k3:undefined,k4:undefined,}
-        assert.deepStrictEqual(func(value).rc,validateFormatError.editSubFieldKeyNumberWrong.rc)
+        value={f1:{k1:1,k2:2,k3:3,k4:4}}
+        assert.deepStrictEqual(func({inputValue:value,browseInputRule:rule}).rc,validateFormatError.editSubFieldKeyNumberWrong.rc)
         done()
     })
     //5      key not validate
     it(`edit sub field value key not predefined`,function(done){
-        value={from:undefined,to:undefined,k3:undefined}
-        assert.deepStrictEqual(func(value).rc,validateFormatError.editSubFieldKeyNameWrong.rc)
+        value={f1:{from:undefined,to:undefined,k3:undefined}}
+        assert.deepStrictEqual(func({inputValue:value,browseInputRule:rule}).rc,validateFormatError.editSubFieldKeyNameWrong.rc)
         done()
     })
-    //6      只有2个key，那么from/to 2者有其1
+    //5      key eleArray must exist
+    it(`edit sub field value eleArray must exist`,function(done){
+        value={f1:{from:undefined,to:undefined}}
+        assert.deepStrictEqual(func({inputValue:value,browseInputRule:rule}).rc,validateFormatError.eleArrayNotDefine.rc)
+        done()
+    })
+    //无法测试，被上面的case覆盖
+/*    //6      只有2个key，那么from/to 2者有其1
     it(`edit sub field value key number is 2, from or to exist`,function(done){
-        value={from:undefined,to:undefined}
-        assert.deepStrictEqual(func(value).rc,validateFormatError.editSubFieldFromOrToExistOne.rc)
+        value={f1:{from:undefined,eleArray:1}}
+        assert.deepStrictEqual(func({inputValue:value,browseInputRule:rule}).rc,validateFormatError.editSubFieldFromOrToExistOne.rc)
         done()
-    })
+    })*/
     //7    right result
     it(`right result`,function(done){
-        value={from:undefined,eleArray:undefined}
-        assert.deepStrictEqual(func(value).rc,0)
+        value={f1:{from:undefined,eleArray:1}}
+        assert.deepStrictEqual(func({inputValue:value,browseInputRule:rule}).rc,0)
         done()
     })
 

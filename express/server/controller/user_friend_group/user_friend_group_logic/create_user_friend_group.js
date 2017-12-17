@@ -54,22 +54,15 @@ const regex=server_common_file_require.regex.regex
 const currentEnv=server_common_file_require.appSetting.currentEnv
 const fkConfig=server_common_file_require.fkConfig.fkConfig
 
-
-//添加内部产生的值（hash password）
-//对内部产生的值进行检测（开发时使用，上线后为了减低负荷，无需使用）
-//对数值逻辑进行判断（外键是否有对应的记录等）
-//执行db操作并返回结果
-async  function createUserFriendGroup_async({req,impeachType}){
+/*                      configuration                                               */
+const userGroupFriend_Configuration=server_common_file_require.globalConfiguration.userGroupFriend
+async  function createUserFriendGroup_async({req}){
     // console.log(`create impeach in`)
     /*******************************************************************************************/
     /*                                          define variant                                 */
     /*******************************************************************************************/
     let tmpResult,condition
     let collName=controller_setting.MAIN_HANDLED_COLL_NAME
-/*    let docValue={
-        [e_field.IMPEACH.TITLE]:'新举报',
-        [e_field.IMPEACH.CONTENT]:'对文档/评论的内容进行举报',
-    }*/
     let docValue=req.body.values[e_part.RECORD_INFO]
     let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
     // console.log(`userInfo===> ${JSON.stringify(userInfo)}`)
@@ -79,11 +72,6 @@ async  function createUserFriendGroup_async({req,impeachType}){
     /*******************************************************************************************/
     /*                                     用户类型和权限检测                                  */
     /*******************************************************************************************/
-    await controllerChecker.ifExpectedUserType_async({req:req,arr_expectedUserType:[e_allUserType.USER_NORMAL]})
-    let hasCreatePriority=await controllerChecker.ifAdminUserHasExpectedPriority_async({userPriority:userPriority,arr_expectedPriority:[e_adminPriorityType.CREATE_ADMIN_USER]})
-    if(false===hasCreatePriority){
-        return Promise.reject(controllerError.currentUserHasNotPriorityToCreateUser)
-    }
     /*******************************************************************************************/
     /*                                     参数转为server格式                                  */
     /*******************************************************************************************/
@@ -97,8 +85,16 @@ async  function createUserFriendGroup_async({req,impeachType}){
     /*                                       resource check                                    */
     /*******************************************************************************************/
 
-
-
+    /*******************************************************************************************/
+    /*                                       limitation check                                  */
+    /*******************************************************************************************/
+    condition={
+        [e_field.USER_FRIEND_GROUP.OWNER_USER_ID]:userId,
+    }
+    let existUserFriendGroupNum=await common_operation_model.count_async({dbModel:e_dbModel.user_friend_group,condition:condition})
+    if(existUserFriendGroupNum>userGroupFriend_Configuration.maxUserFriendGroupNum){
+        return Promise.reject(controllerError.reachMaxUserFriendGroupNum)
+    }
     /*******************************************************************************************/
     /*                                  fk value是否存在                                       */
     /*******************************************************************************************/
@@ -128,48 +124,36 @@ async  function createUserFriendGroup_async({req,impeachType}){
     /*******************************************************************************************/
     /*                 因为name是unique，所以要检查用户名是否存在(unique check)                */
     /*******************************************************************************************/
-    if(undefined!==e_uniqueField[collName] &&  e_uniqueField[collName].length>0) {
-        // let additionalCheckCondition={[e_field.ADMIN_USER.DOC_STATUS]:e_docStatus.DONE}
-        // await controllerChecker.ifFieldInDocValueUnique_async({collName: collName, docValue: docValue,additionalCheckCondition:additionalCheckCondition})
-        await controllerChecker.ifFieldInDocValueUnique_async({collName: collName, docValue: docValue})
+    //此处unique是对用户，而非对整个coll
+    condition={
+        [e_field.USER_FRIEND_GROUP.OWNER_USER_ID]:userId,
+        [e_field.USER_FRIEND_GROUP.FRIEND_GROUP_NAME]:docValue[e_field.USER_FRIEND_GROUP.FRIEND_GROUP_NAME]
     }
-    // console.log(`========================>unique check<--------------------------`)
-    // console.log(`3`)
-// console.log(`ifFieldInDocValueUnique_async done===>`)
+    tmpResult=await common_operation_model.count_async({dbModel:e_dbModel.user_friend_group,condition:condition})
+    if(tmpResult>0){
+        return Promise.reject(controllerError.groupNameAlreadyExist)
+    }
+
     /*******************************************************************************************/
     /*                              检查是否有为完成的doc，以便复用                            */
     /*******************************************************************************************/
-    //当前用户，对此impeach是否有未完成的impeachComment
-    condition={
-        [e_field.IMPEACH_COMMENT.IMPEACH_ID]:docValue[e_field.IMPEACH_COMMENT.IMPEACH_ID],
-        [e_field.IMPEACH_COMMENT.DOCUMENT_STATUS]:e_documentStatus.NEW,
-        [e_field.IMPEACH_COMMENT.AUTHOR_ID]:userId,
-    }
-    tmpResult=await  common_operation_model.find_returnRecords_async({dbModel:e_dbModel.impeach_comment,condition:condition})
-    //如果有未完成的impeachComment,直接使用
-    if(tmpResult.length>0){
-        return Promise.resolve({rc:0,msg:tmpResult[0][`_id`]})
-    }
+
     /*******************************************************************************************/
     /*                                       特定字段的处理（检查）                            */
     /*******************************************************************************************/
     //content内容进行XSS检测
-    let XssCheckField=[e_field.IMPEACH.TITLE,e_field.IMPEACH.CONTENT]
+    let XssCheckField=[e_field.USER_FRIEND_GROUP.FRIEND_GROUP_NAME]
     await controllerHelper.inputFieldValueXSSCheck({docValue:docValue,collName:collName,expectedXSSCheckField:XssCheckField})
 
-    // console.log(`4`)
-    //impeachType是否为预定义的一种
-    if(-1===Object.values(enumValue.ImpeachType).indexOf(impeachType)){
-        return Promise.reject(controllerError.unknownImpeachType)
-    }
+
     // console.log(`========================>special check done<--------------------------`)
     /*******************************************************************************************/
     /*                         添加internal field，然后检查                                    */
     /*******************************************************************************************/
     // console.log(`before hash is ${JSON.stringify(docValue)}`)
     let internalValue={}
-    internalValue[e_field.IMPEACH.IMPEACH_TYPE]=impeachType
-    internalValue[e_field.IMPEACH.CREATOR_ID]=userId
+    // internalValue[e_field.USER_FRIEND_GROUP.]=impeachType
+    internalValue[e_field.USER_FRIEND_GROUP.OWNER_USER_ID]=userId
     //根据被举报的类型（文档还是评论）获得其作者ID
     let impeachedThingId //articleId/comment的id
     let impeachedThingFieldName //impeach中，id位于（article/comment）的那个coll

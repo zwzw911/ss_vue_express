@@ -140,7 +140,8 @@ const PenalizeType={
         NO_IMPEACH:'4',
 
         NO_IMPEACH_COMMENT:'5',
-        // NO_IMPEACH_COMMENT_IMAGE:'6',
+        //user_friend_group
+        NO_USER_FRIEND_GROUP:'7',
     },
     SHOW:{
         NO_ARTICLE: '禁止文档',
@@ -149,6 +150,8 @@ const PenalizeType={
         NO_LIKE_DISLIKE:'禁止踩赞',
         NO_IMPEACH:'禁止举报',
         NO_IMPEACH_COMMENT:'禁止评论举报',
+        //user_friend_group
+        NO_USER_FRIEND_GROUP:'禁止好友分组',
     },
 
 }
