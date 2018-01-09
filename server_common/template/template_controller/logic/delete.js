@@ -2,6 +2,8 @@
  * Created by ada on 2017/9/1.
  */
 'use strict'
+const ap=require(`awesomeprint`)
+
 /*                      controller setting                */
 const controller_setting=require('../admin_setting/admin_setting').setting
 const controllerError=require('../admin_setting/admin_user_controllerError').controllerError
@@ -24,7 +26,7 @@ const mongoEnum=server_common_file_require.mongoEnum
 // const e_adminPriorityType=mongoEnum.AdminPriorityType.DB
 const e_part=nodeEnum.ValidatePart
 // const e_env=nodeEnum.Env
-
+const e_allUserType=mongoEnum.AllUserType.DB
 /*                      server common：function                                       */
 const controllerHelper=server_common_file_require.controllerHelper
 const controllerChecker=server_common_file_require.controllerChecker
@@ -55,10 +57,25 @@ async function deleteImpeach_async({req}){
     /*              client数据转换                  */
     let recordId=req.body.values[e_part.RECORD_ID]
     /*******************************************************************************************/
+    /*                                     用户类型和权限检测                                  */
+    /*******************************************************************************************/
+    await controllerChecker.ifExpectedUserType_async({req:req,arr_expectedUserType:[e_allUserType.USER_NORMAL]})
+
+    let hasCreatePriority=await controllerChecker.ifAdminUserHasExpectedPriority_async({userPriority:userPriority,arr_expectedPriority:[e_adminPriorityType.CREATE_ADMIN_USER]})
+    if(false===hasCreatePriority){
+        return Promise.reject(controllerError.currentUserHasNotPriorityToCreateUser)
+    }
+    /*******************************************************************************************/
     /*                                       authorization check                               */
     /*******************************************************************************************/
     //作者本身才能删除举报
-    tmpResult=await controllerChecker.ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({dbModel:e_dbModel[collName],recordId:recordId,ownerFieldName:e_field.IMPEACH.CREATOR_ID,ownerFieldValue:userId,additionalCondition:undefined})
+    tmpResult=await controllerChecker.ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({
+        dbModel:e_dbModel[collName],
+        recordId:recordId,
+        ownerFieldName:e_field.IMPEACH.CREATOR_ID,
+        ownerFieldValue:userId,
+        additionalCondition:undefined
+    })
     if(false===tmpResult){
         return Promise.reject(controllerError.notAuthorized)
     }

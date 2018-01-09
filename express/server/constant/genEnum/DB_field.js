@@ -93,6 +93,12 @@ const Field={
         ID:'id',
         NAME:'name',
     },
+    ADD_FRIEND:{
+        ID:'id',
+        ORIGINATOR:'originator',
+        RECEIVER:'receiver',
+        STATUS:'status',
+    },
     MEMBER_PENALIZE:{
         ID:'id',
         CREATOR_ID:'creatorId',
@@ -105,8 +111,8 @@ const Field={
         ID:'id',
         NAME:'name',
         CREATOR_ID:'creatorId',
-        MEMBER_ID:'memberId',
-        ADMIN_ID:'adminId',
+        MEMBERS_ID:'membersId',
+        ADMINS_ID:'adminsId',
         JOIN_IN_RULE:'joinInRule',
     },
     PUBLIC_GROUP_EVENT:{

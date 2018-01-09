@@ -69,7 +69,9 @@ const regex={
     //   "format":{"define":"/^[0-9a-f]{24}$/","error":{"rc":10092}   ====> format":{"define":/^[0-9a-f]{24}$/,"error":{"rc":10092}
     //   "format":{"define":"/^data:image\\/(png|jpg|jpeg);base64,/"  ====> "format":{"define":/^data:image\/(png|jpg|jpeg);base64,/
     removeDoubleQuotes:/("format":\{"define"\:)("\/)(.+?)(\/",)"/g,  //    '$1/$3/,"'
-    removeDoubleSlash:/\\{2}/g//    // '\\'  正则toString后，一个\会变成2个\\，需要变回去
+    removeDoubleSlash:/\\{2}/g,    // '\\'  正则toString后，一个\会变成2个\\，需要变回去
+
+    moduleExports:/module\.exports={\s*(.+)\r\n}/,
 }
 
 module.exports= {

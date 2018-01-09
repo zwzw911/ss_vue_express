@@ -2,6 +2,8 @@
  * Created by ada on 2017/9/1.
  */
 'use strict'
+const ap=require(`awesomeprint`)
+
 /*                      controller setting                */
 const controller_setting=require('../impeach_setting/impeach_setting').setting
 const controllerError=require('../impeach_setting/impeach_controllerError').controllerError

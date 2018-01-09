@@ -36,7 +36,7 @@ const mongoEnum=server_common_file_require.mongoEnum
 
 const e_env=nodeEnum.Env
 const e_part=nodeEnum.ValidatePart
-// const e_userInfoField=nodeRuntimeEnum.userInfoField
+// const e_userInfoField=nodeRuntimeEnum.UserInfoField
 const e_impeachState=mongoEnum.ImpeachState.DB
 const e_impeachAdminAction=mongoEnum.ImpeachAdminAction.DB
 const e_impeachAllAction=mongoEnum.ImpeachAllAction.DB

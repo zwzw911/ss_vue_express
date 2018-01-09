@@ -12,6 +12,8 @@ const  mongoose = require('mongoose') //用于将objectId转换
 const dataTypeCheck=require('../function/validateInput/validateHelper').dataTypeCheck
 const dataType=require('../constant/enum/inputDataRuleType').ServerDataType
 const compOp=require('../constant/enum/nodeEnum').CompOp
+
+const e_subField=require(`../constant/enum/nodeEnum`).SubField
 // const inputRules=require('../constant/validateRule/inputRule').inputRule //genNativeSearchCondition
 /*将前端传入的search value转换成mongodb对应的select condition（如此方便在mongodb中直接使用，来进行调试）。
  *  返回一个object {field；{condition}}
@@ -238,6 +240,151 @@ const addSubFieldKeyValue=function(obj){
 function convertToObjectId(str){
     return mongoose.Types.ObjectId(str)
 }
+
+
+/*  将editSubField的整个part值，转换成NOSQL语句（使用findByIdAndUpdate）
+* @editSubFieldValue: 整个part的值
+*
+* return: undefined或者Object，以form/to的id为key，其下根据from/to设置$addToSet或者$pullAll
+* //其下2个key：fromNoSql/toNoSql，都是object，键为from/to对应的objectId，值为$addToSet或者$pullAll(2者只能选一个)
+* result:{
+*   id1:{
+*       $addToSet:{
+*           field1:{
+*               $each:[]
+*           },
+*           field2:{
+*               $each:[]
+*           }
+*       },
+*   }
+*   id2:{
+*       $pullAll:{
+*           field1:[],
+*           field2:[],
+*       },
+*   }
+* }
+* */
+function convertEditSubFieldValueToNoSql({editSubFieldValue}){
+    let result
+    for(let singleFieldName in editSubFieldValue) {
+        let singleFieldValue
+        // console.log(`singleFieldName===>${JSON.stringify(singleFieldName)}`)
+        if (undefined !== editSubFieldValue[singleFieldName]) {
+            singleFieldValue = editSubFieldValue[singleFieldName]
+        }
+        // console.log(`singleFieldValue===>${JSON.stringify(singleFieldValue)}`)
+        //如果from/to同时存在，且值一致，无需操作
+        if (undefined !== singleFieldValue[e_subField.FROM] && undefined !== singleFieldValue[e_subField.TO] && singleFieldValue[e_subField.FROM] === singleFieldValue[e_subField.TO]) {
+            continue
+        }
+        //设置key（id）
+        if (undefined !== singleFieldValue[e_subField.TO]) {
+            let toRecordId = singleFieldValue[e_subField.TO]
+            let eleValue = singleFieldValue[e_subField.ELE_ARRAY]
+
+            if (undefined === result) {
+                result = {}
+            }
+            if (undefined === result[toRecordId]) {
+                result[toRecordId] = {}
+            }
+            if (undefined === result[toRecordId]['$addToSet']) {
+                result[toRecordId]['$addToSet'] = {}
+            }
+            if (undefined === result[toRecordId]['$addToSet'][singleFieldName]) {
+                result[toRecordId]['$addToSet'][singleFieldName] = {}
+            }
+            if (undefined === result[toRecordId]['$addToSet'][singleFieldName]["$each"]) {
+                result[toRecordId]['$addToSet'][singleFieldName]["$each"] = eleValue
+            } else {
+                result[toRecordId]['$addToSet'][singleFieldName]["$each"] = result[toRecordId]['$addToSet'][singleFieldName]["$each"].concat(eleValue)
+            }
+        }
+        //设置key（id）
+        if (undefined !== singleFieldValue[e_subField.FROM]) {
+            let fromRecordId = singleFieldValue[e_subField.FROM]
+            let eleValue = singleFieldValue[e_subField.ELE_ARRAY]
+
+            if (undefined === result) {
+                result = {}
+            }
+            if (undefined === result[fromRecordId]) {
+                result[fromRecordId] = {}
+            }
+            if (undefined === result[fromRecordId]['$pullAll']) {
+                result[fromRecordId]['$pullAll'] = {}
+            }
+            if (undefined === result[fromRecordId]['$pullAll'][singleFieldName]) {
+                result[fromRecordId]['$pullAll'][singleFieldName] = eleValue
+            } else {
+                result[fromRecordId]['$pullAll'][singleFieldName] = result[fromRecordId]['$pullAll'][singleFieldName].concat(eleValue)
+            }
+            /*          if(undefined===result[singleFieldValue[e_subField.FROM]]['$addToSet'][singleFieldName]["$each"]) {
+             result[singleFieldValue[e_subField.FROM]]['$addToSet'][singleFieldName]["$each"] = singleFieldValue[e_subField.ELE_ARRAY]
+             }else{
+
+             }*/
+        }
+    }
+           /* console.log(`fromNoSql===>${JSON.stringify(fromNoSql)}`)
+            //设置findByIdAndUpdate中的id
+            if(undefined===fromNoSql[`id`]){
+                fromNoSql[`id`]=singleFieldValue[e_subField.FROM]
+            }
+            //设置findByIdAndUpdate中的operation
+            if(undefined===fromNoSql[`operation`]){
+                fromNoSql[`operation`]={}
+            }
+            // ($pullAll)
+            if(undefined===fromNoSql[`operation`][`$pullAll`]){
+                fromNoSql[`operation`][`$pullAll`]={}
+            }
+            //设置字段
+            if(undefined===fromNoSql[`operation`][`$pullAll`][singleFieldName]){
+                fromNoSql[`operation`][`$pullAll`][singleFieldName]=[]
+            }
+            fromNoSql[`operation`][`$pullAll`][singleFieldName]=fromNoSql[`operation`][`$pullAll`][singleFieldName].concat(singleFieldValue[e_subField.ELE_ARRAY])
+        }
+        //to有值(增加)
+        if(undefined!==singleFieldValue[e_subField.TO]){
+            if(undefined===toNoSql){
+                toNoSql={}
+            }
+            //设置findByIdAndUpdate中的id
+            if(undefined===toNoSql[`id`]){
+                toNoSql[`id`]=singleFieldValue[e_subField.TO]
+            }
+            //设置findByIdAndUpdate中的operation
+            if(undefined===toNoSql[`operation`]){
+                toNoSql[`operation`]={}
+            }
+            // ($addToSet)
+            if(undefined===toNoSql[`operation`][`$addToSet`]){
+                toNoSql[`operation`][`$addToSet`]={}
+            }
+            //设置字段
+            if(undefined===toNoSql[`operation`][`$addToSet`][singleFieldName]){
+                toNoSql[`operation`][`$addToSet`][singleFieldName]={}
+            }
+            //设置字段的$each
+            if(undefined===toNoSql[`operation`][`$addToSet`][singleFieldName][`$each`]){
+                toNoSql[`operation`][`$addToSet`][singleFieldName][`$each`]=[]
+            }
+            toNoSql[`operation`][`$addToSet`][singleFieldName][`$each`]=toNoSql[`operation`][`$addToSet`][singleFieldName][`$each`].concat(singleFieldValue[e_subField.ELE_ARRAY])
+        }
+    }
+
+    let result={fromNoSql,toNoSql}
+    if(undefined===result[`fromNoSql`]){
+        delete result[`fromNoSql`]
+    }
+    if(undefined===result[`toNoSql`]){
+        delete result[`toNoSql`]
+    }*/
+    return result
+}
 module.exports={
     genNativeSearchCondition,
     convertCreateUpdateValueToServerFormat,
@@ -249,4 +396,6 @@ module.exports={
     addSubFieldKeyValue,
 
     convertToObjectId,
+
+    convertEditSubFieldValueToNoSql,
 }

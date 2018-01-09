@@ -5,7 +5,7 @@
 
 
 // const dbModel=require('../../structure/admin/admin_user').collModel
-
+const ap=require(`awesomeprint`)
 
 const mongooseErrorHandler=require('../../../constant/error/mongo/mongoError').mongooseErrorHandler
 
@@ -34,7 +34,7 @@ async function create_returnRecord_async({dbModel,value}){
     let doc=new dbModel(value)
     let result=await doc.save(doc)
         .catch((err)=>{
-        console.log(`create err is ${JSON.stringify(err)}`)
+        // console.log(`create err is ${JSON.stringify(err)}`)
         //1. mongoose返回的是reject，只能通过catch捕获
         //     2. 捕获后，通过reject在await中返回。因为reject后，此错误会在async/await直接传递到最外层，所以需要returnResult对错误处理
             return Promise.reject(mongooseErrorHandler(err))
@@ -56,9 +56,10 @@ async function create_returnRecord_async({dbModel,value}){
 
 async function insertMany_returnRecord_async({dbModel,docs}){
 //使用Promise方式，以便catch可能的错误
+//     ap.print('docs',docs)
     /*          原本使用insertMany，输入参数是数据，返回结果也是数据         */
     let result=await dbModel.insertMany(docs).catch((err)=>{
-     console.log(`model err is ${JSON.stringify(err)}`)
+     // console.log(`model err is ${JSON.stringify(err)}`)
         return  Promise.reject(mongooseErrorHandler(mongooseOpEnum.insertMany,err))
      })
      //result.name=undefined
@@ -279,6 +280,7 @@ async function find_returnRecords_async({dbModel,condition,selectedFields='-cDat
     // console.log(`find condition==========================>${JSON.stringify(condition)}`)
     let result
     if(undefined===populateOpt){
+        // ap.print('populateOpt undefined')
         result=await dbModel.find(condition,selectedFields,options)
             .catch(
                 function(err){
@@ -287,6 +289,7 @@ async function find_returnRecords_async({dbModel,condition,selectedFields='-cDat
                     return Promise.reject(mongooseErrorHandler(err))
                 })
     }else{
+        // ap.print('populateOpt defined')
         result=await dbModel.find(condition,selectedFields,options).populate(populateOpt)
             .catch(
                 function(err){
@@ -485,7 +488,7 @@ async function count_async({dbModel,condition}) {
     return new Promise(function (resolve, reject) {
         dbModel.count(condition, function (err, count) {
             if (err) {
-// console.log(`deleteArrayFieldValue_async err========>${JSON.stringify(err)}`)
+// console.log(`count_async err========>${JSON.stringify(err)}`)
                 return reject(mongooseErrorHandler(err))
             }
             return resolve(count)

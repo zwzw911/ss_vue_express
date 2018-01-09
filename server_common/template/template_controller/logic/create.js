@@ -3,6 +3,7 @@
  */
 'use strict'
 
+const ap=require(`awesomeprint`)
 
 /*                      controller setting                */
 const controller_setting=require('../impeach_setting/impeach_setting').setting
@@ -54,6 +55,7 @@ const regex=server_common_file_require.regex.regex
 const currentEnv=server_common_file_require.appSetting.currentEnv
 const fkConfig=server_common_file_require.fkConfig.fkConfig
 
+const globalConfiguration=server_common_file_require.globalConfiguration
 
 //添加内部产生的值（hash password）
 //对内部产生的值进行检测（开发时使用，上线后为了减低负荷，无需使用）
@@ -80,6 +82,7 @@ async  function createImpeach_async({req,impeachType}){
     /*                                     用户类型和权限检测                                  */
     /*******************************************************************************************/
     await controllerChecker.ifExpectedUserType_async({req:req,arr_expectedUserType:[e_allUserType.USER_NORMAL]})
+
     let hasCreatePriority=await controllerChecker.ifAdminUserHasExpectedPriority_async({userPriority:userPriority,arr_expectedPriority:[e_adminPriorityType.CREATE_ADMIN_USER]})
     if(false===hasCreatePriority){
         return Promise.reject(controllerError.currentUserHasNotPriorityToCreateUser)
@@ -96,7 +99,18 @@ async  function createImpeach_async({req,impeachType}){
     /*******************************************************************************************/
     /*                                       resource check                                    */
     /*******************************************************************************************/
-
+    /*******************************************************************************************/
+    /*                                       limitation check                                  */
+    /*******************************************************************************************/
+    condition={
+        [e_field.USER_FRIEND_GROUP.OWNER_USER_ID]:userId,
+    }
+    let existUserFriendGroupNum=await common_operation_model.count_async({dbModel:e_dbModel.user_friend_group,condition:condition})
+    // ap.print('existUserFriendGroupNum',existUserFriendGroupNum)
+    // ap.print('userGroupFriend_Configuration.maxUserFriendGroupNum',userGroupFriend_Configuration.max.maxUserFriendGroupNum)
+    if(existUserFriendGroupNum>=userGroupFriend_Configuration.max.maxUserFriendGroupNum){
+        return Promise.reject(controllerError.reachMaxUserFriendGroupNum)
+    }
 
 
     /*******************************************************************************************/

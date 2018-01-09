@@ -6,6 +6,7 @@
  */
 'use strict'
 const fs=require('fs')
+const ap=require('awesomeprint')
 
 // const server_common_file_require=require('../')
 const validateHelper=require('../function/validateInput/validateHelper')
@@ -22,6 +23,9 @@ const e_inputFieldCheckType=nodeEnum.InputFieldCheckType
 const e_method=nodeEnum.Method
 const e_resourceFieldName=nodeEnum.ResourceFieldName
 const e_partValueToVarName=nodeEnum.PartValueToVarName
+const e_subField=nodeEnum.SubField
+const e_findEleInArray=nodeEnum.FindEleInArray
+
 const mongoEnum=require('../constant/enum/mongoEnum')
 const e_storePathUsage=mongoEnum.StorePathUsage.DB
 const e_storePathStatus=mongoEnum.StorePathStatus.DB
@@ -34,9 +38,10 @@ const e_resourceType=mongoEnum.ResourceType.DB
 const nodeRuntimeEnum=require('../constant/enum/nodeRuntimeEnum')
 const e_hashType=nodeRuntimeEnum.HashType
 const e_fileSizeUnit=nodeRuntimeEnum.FileSizeUnit
-const e_userInfoField=nodeRuntimeEnum.userInfoField
+const e_userInfoField=nodeRuntimeEnum.UserInfoField
 
-
+const e_serverDataType=require(`../constant/enum/inputDataRuleType`).ServerDataType
+const e_serverRuleType=require(`../constant/enum/inputDataRuleType`).ServerRuleType
 
 const e_dbModel=require('../constant/genEnum/dbModel')
 const e_coll=require('../constant/genEnum/DB_Coll').Coll
@@ -50,6 +55,7 @@ const helperError=require('../constant/error/controller/helperError').helper
 
 
 const common_operation_model=require('../model/mongo/operation/common_operation_model')
+const common_operation_helper=require('../model/mongo/operation/common_operation_helper')
 
 const checkUserState=require('../function/assist/misc').checkUserState
 const hash=require('../function/assist/crypt').hash
@@ -73,6 +79,33 @@ const sanityHtml=require('../function/assist/sanityHtml').sanityHtml
 
 const regex=require('../constant/regex/regex').regex
 const currentAppSetting=require('../constant/config/appSetting').currentAppSetting
+
+/*  根据findType，在req中检测是否存在optionPart中定义的part
+* @req
+* @optionPart；候选的part，是否在req中存在
+* @findType：optionPart中，多少part必须在req中
+* @expectedPart: 指定的part加入到expectedPart中，进行下一步检测
+* */
+function checkOptionPartExist({req,optionPart,findType,expectedPart}){
+    let result=false
+    let reqValue=req.body.values
+    switch (findType){
+        case e_findEleInArray.AT_LEAST_ONE:
+            //至少一个，最多全部
+            for(let singlePartName of optionPart){
+                if(undefined!==reqValue[singlePartName]){
+                    expectedPart.push(singlePartName)
+                    result=true
+                }
+            }
+            break;
+        default:
+    }
+    if(false===result){
+        return helperError.optionPartCheckFail
+    }
+    return {rc:0}
+}
 
 //1. 对输入（inputValue）进行整体检查；对expectedPart进行检查（part是否正确，part值类型是否正确）
 // 只用于nonCRUDCheck。CRUDCHeck中，验证步骤被拆散
@@ -145,8 +178,10 @@ function validatePartValueFormat({req,expectedPart,collName,fkConfig,inputRule})
             case e_part.METHOD://直接在validatePartFormat完成了format和value的check
                     break
             case e_part.EDIT_SUB_FIELD:
-                checkPartFormatResult=validateFormat.validateEditSubFieldFormat(req.body.values[e_part.FILTER_FIELD_VALUE])
-                // console.log(   `checkFilterFieldValueResult check result is  ${JSON.stringify(checkFilterFieldValueResult)}`)
+                // ap.print('EDIT_SUB_FIELD in')
+                // ap.print('req.body.values[e_part.EDIT_SUB_FIELD] in',req.body.values[e_part.EDIT_SUB_FIELD]),
+                checkPartFormatResult=validateFormat.validateEditSubFieldFormat({inputValue:req.body.values[e_part.EDIT_SUB_FIELD],browseInputRule:browserInputRule[collName]})
+                // console.log(   `checkFilterFieldValueResult check result is  ${JSON.stringify(checkPartFormatResult)}`)
                 if(checkPartFormatResult.rc>0){
                     return checkPartFormatResult
                 }
@@ -176,6 +211,7 @@ function validatePartValueFormat({req,expectedPart,collName,fkConfig,inputRule})
 * */
 function validatePartValue({req,expectedPart,collName,inputRule,recordInfoBaseRule,fkConfig}){
 // console.log(`validatePartValue in ===============>`)
+//     ap.print('expectedPart',expectedPart)
     let checkPartValueResult
     for(let singlePart of expectedPart){
         switch (singlePart){
@@ -253,7 +289,11 @@ function validatePartValue({req,expectedPart,collName,inputRule,recordInfoBaseRu
                 }
                 break;
             case e_part.EDIT_SUB_FIELD:
-                validateValue.validateEditSubFieldValue({inputValue:req.body.values[e_part.EDIT_SUB_FIELD],browseInputRule:inputRule})
+                checkPartValueResult=validateValue.validateEditSubFieldValue({inputValue:req.body.values[e_part.EDIT_SUB_FIELD],browseInputRule:browserInputRule[collName]})
+                // ap.print('checkPartValueResult',checkPartValueResult)
+                if(checkPartValueResult.rc>0){
+                    return checkPartValueResult
+                }
                 break;
             case e_part.METHOD://直接在validatePartFormat完成了format和value的check
                 break
@@ -1164,7 +1204,186 @@ function getPartValue({req,arr_expectedPart}){
 
     return result
 }
+
+/*          检测singleEditSubFieldValue中的from/to：1.是否存在，2. 对应的owner是否为当前用户
+* @convertedNoSql; 通过dataConvert.convertEditSubFieldValueToNoSql转换后的数据，合并了form/to的id，可以减少db处理
+* @fromToAdditionCondition：查找from/to需要的额外条件
+* @collNam: from/to 所在的coll
+* @recordOwnerFieldName： from/to所在coll中，记录owner的field
+* @userId： 当前用户userId
+* @error: 发生错误对应的error
+* */
+async function checkEditSubFieldFromTo_async({convertedNoSql,fromToAdditionCondition,collName,recordOwnerFieldName,userId,error}){
+    // let collFkConfig
+    let tmpResult
+    // for(let singleFieldName in editSubFieldValue){
+    // let fromRecord,toRecord
+    let condition
+    // ap.print('convertedNoSql',convertedNoSql)
+    for(let singleRecordId in convertedNoSql){
+        ap.print('singleRecordId',singleRecordId)
+        condition={"dDate":{$exists:false},"_id":singleRecordId}
+        if(undefined!==fromToAdditionCondition){
+            condition=Object.assign(condition,fromToAdditionCondition)
+        }
+        tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel[collName],condition:condition})
+        if(1!==tmpResult.length){
+            return Promise.reject(error.fromToRecordIdNotExists)
+        }
+
+        // ap.print('tmpResult',tmpResult)
+        // ap.print('tmpResult[0][recordOwnerFieldName]',tmpResult[0][recordOwnerFieldName])
+        // ap.print('userId',userId)
+        if(tmpResult[0][recordOwnerFieldName].toString()!==userId){
+            return Promise.reject(error.notOwnFromToRecordId)
+        }
+    }
+
+    return Promise.resolve()
+
+}
+/*async function checkEditSubFieldFromTo_async({singleEditSubFieldValue,fromToAdditionCondition,collName,recordOwnerFieldName,userId,error}){
+    // let collFkConfig
+    let tmpResult
+    // for(let singleFieldName in editSubFieldValue){
+    let fromRecord,toRecord
+    let condition
+    //检测from recordId是否存在，且是否为当前用户所有
+    if(undefined!==singleEditSubFieldValue[e_subField.FROM]){
+        condition={"dDate":{$exists:false},"_id":singleEditSubFieldValue[e_subField.FROM]}
+        if(undefined!==fromToAdditionCondition){
+            condition=Object.assign(condition,fromToAdditionCondition)
+        }
+        fromRecord=common_operation_model.find_returnRecords_async({dbModel:e_dbModel[collName],condition:condition})
+        //因为condition限定了_id，所以结果只能为0或者1
+        if(1!==fromRecord.length){
+            return Promise.reject(error.fromRecordIdNotExists)
+        }
+        if(fromRecord[0][recordOwnerFieldName]!==userId){
+            return Promise.reject(error.notOwnFromRecordId)
+        }
+    }
+
+        //检测to recordId是否存在，且是否为当前用户所有
+    if(undefined!==singleEditSubFieldValue[e_subField.TO]){
+        condition={"dDate":{$exists:false},"_id":singleEditSubFieldValue[e_subField.TO]}
+        if(undefined!==fromToAdditionCondition){
+            condition=Object.assign(condition,fromToAdditionCondition)
+        }
+        toRecord=common_operation_model.find_returnRecords_async({dbModel:e_dbModel[collName],condition:condition})
+        //因为condition限定了_id，所以结果只能为0或者1
+        if(1!==toRecord.length){
+            return Promise.reject(error.toRecordIdNotExists)
+        }
+        if(toRecord[0][recordOwnerFieldName]!==userId){
+            return Promise.reject(error.notOwnToRecordId)
+        }
+    }
+
+    return Promise.resolve()
+
+}*/
+
+
+/*    检测singleEditSubFieldValue中的eleArray：如果是objectId  1.fk是否存在，2. eleArray中元素数量符合字段定义的数量（预见） 3.元素没有重复  4. To如果存在，add后满足数量要求否  5. eleArray中每个记录是否存在  6.（额外）其中每个记录，用户是否有权操作
+* @singleEditSubFieldValue:part中某个字段的值
+* @collName: from/to 所在的coll
+* @fieldName: from/to对应的字段
+* @fkRecordOwnerFieldName: 直接从fkConfig中获取
+* @eleAdditionalCondition: 检测eleArray是否存在，需要的额外条件
+* @userId:当前用户id
+* */
+async function checkEditSubFieldEleArray_async({singleEditSubFieldValue,eleAdditionalCondition,collName,fieldName,userId}){
+    //如果eleArray是objectId，需要检测
+    // 1. fkConfig是否存在
+    // 2. eleArray中元素数量符合字段定义的数量（预检）
+    // 3. 元素没有重复
+    // 4. To如果存在，满足数量要求否
+    // 5. eleArray中每个记录是否存在
+    // 6. （额外）其中每个记录，用户是否有权操作
+
+    let condition,tmpResult
+    // ap.print('browserInputRule[collName][fieldName][`type`][0]',browserInputRule[collName][fieldName][`type`][0])
+    if(browserInputRule[collName][fieldName][`type`][0]===e_serverDataType.OBJECT_ID ){
+        //1. fkConfig是否存在
+        if(undefined===fkConfig[collName][fieldName]){
+            return Promise.reject(helperError.fkConfigUndefined)
+        }
+        //获得eleArray的field对应的collName，以及ownerFieldName
+        // ap.print('fkConfig[collName][fieldName]',fkConfig[collName][fieldName])
+        let fkCollName=fkConfig[collName][fieldName][`relatedColl`]
+        // ap.print('fkCollName',fkCollName)
+        // let fkRecordOwnerFieldName=
+        // ap.print('fkRecordOwnerFieldName',fkRecordOwnerFieldName)
+        //获得要转移（加入）的数量
+        let eleArrayLength=singleEditSubFieldValue[e_subField.ELE_ARRAY].length
+        //获得rule定义的最大arrayLength
+        let ruleDefineArrayMaxLength=browserInputRule[collName][fieldName][e_serverRuleType.ARRAY_MAX_LENGTH]['define']
+// ap.print('eleArrayLength',eleArrayLength)
+        // 2. eleArray中元素数量符合字段定义的数量（预检）
+        if(eleArrayLength>ruleDefineArrayMaxLength){
+            return Promise.reject(helperError.eleArrayLengthExceed)
+        }
+
+        //3. 元素没有重复
+        if(true===misc.ifArrayHasDuplicate(singleEditSubFieldValue[e_subField.ELE_ARRAY])){
+            return Promise.reject(helperError.eleArrayContainDuplicateEle)
+        }
+        // ap.print('misc.ifArrayHasDuplicate(singleEditSubFieldValue[e_subField.ELE_ARRAY]',misc.ifArrayHasDuplicate(singleEditSubFieldValue[e_subField.ELE_ARRAY]))
+        //4. 如果有to，需要测算对应recordId的容量是否够
+        tmpResult=await common_operation_model.findById_returnRecord_async({dbModel:e_dbModel[collName],id:singleEditSubFieldValue[e_subField.TO]})
+        //需要预防from/to对应的id不存在（eleArray先于from/to进行检测）
+        if(null===tmpResult){
+            return Promise.reject(helperError.toIdNotExist)
+        }
+
+        //相加之后和rule中定义数量比较
+        // ap.print('eleArrayLength',eleArrayLength)
+        // ap.print('tmpResult[fieldName].length',tmpResult[fieldName].length)
+        // ap.print('ruleDefineArrayMaxLength',ruleDefineArrayMaxLength)
+        if(eleArrayLength+tmpResult[fieldName].length>ruleDefineArrayMaxLength){
+            return Promise.reject(helperError.toRecordNotEnoughRoom)
+        }
+        // ap.print('de[]')
+        // 5. eleArray中每个记录是否存在
+        condition={'dDate':{$exists:false}}
+        if(undefined!==eleAdditionalCondition){
+            condition=Object.assign(condition,eleAdditionalCondition)
+        }
+
+        for(let singleEle of singleEditSubFieldValue[e_subField.ELE_ARRAY]){
+            // 5. eleArray中每个记录是否存在
+            condition['_id']=singleEle
+            // ap.print('condition',condition)
+            tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel[fkCollName],condition:condition})
+            if(1!==tmpResult.length){
+                return Promise.reject(helperError.eleArrayRecordIdNotExists)
+            }
+            // ap.print('tmpResult',tmpResult)
+/*                if(undefined!==fkConfig[collName][fieldName][`fkCollOwnerField`]){
+                return Promise.reject(helperError.fkConfigNotDefineOwnerField)
+            }*/
+            //6. （额外）其中每个记录，用户是否有权操作
+            //如果fk中有定义，才需要检测权限
+            // ap.print('fkCollName[collName][fkCollName][`fkCollOwnerField`]',fkConfig[collName][fieldName][`fkCollOwnerField`])
+            if(undefined!==fkConfig[collName][fieldName][`fkCollOwnerField`]){
+                let fkRecordOwnerFieldName=fkConfig[collName][fieldName][`fkCollOwnerField`]
+                if(tmpResult[0][fkRecordOwnerFieldName]!==userId){
+                    return Promise.reject(helperError.notOwnerOfEleArray)
+                }
+            }
+            // if(false===tmpResult){}
+        }
+
+
+    }else{
+        return Promise.reject(helperError.eleArrayNotObjectId)
+    }
+
+    return Promise.resolve({rc:0})
+}
 module.exports= {
+    checkOptionPartExist,//检查option中那些part是存在
     inputCommonCheck,//每个请求进来是，都要进行的操作（时间间隔检查等）
     validatePartValueFormat,
     validatePartValue,//对每个part的值进行检查
@@ -1215,6 +1434,9 @@ module.exports= {
     pushOptionalPartIntoExpectedPart_noReturn,
 
     getPartValue,
+
+    checkEditSubFieldFromTo_async,//判断editSubField中from/to的值
+    checkEditSubFieldEleArray_async, //判断editSubField中eleArray的值
 }
 
 

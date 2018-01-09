@@ -18,7 +18,7 @@ const common_operation_model=server_common_file_include.common_operation_model
 
 const e_part=nodeEnum.ValidatePart
 const e_hashType=nodeRuntimeEnum.HashType
-const e_userInfoField=nodeRuntimeEnum.userInfoField
+const e_userInfoField=nodeRuntimeEnum.UserInfoField
 const hash=server_common_file_include.crypt.hash
 // const e_randomStringType=nodeEnum.RandomStringType
 // const e_userState=nodeEnum.UserState

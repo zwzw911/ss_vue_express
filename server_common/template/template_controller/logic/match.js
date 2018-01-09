@@ -2,6 +2,8 @@
  * Created by wzhan039 on 2017/9/1.
  */
 'use strict'
+const ap=require(`awesomeprint`)
+
 /*                      controller setting                */
 const controller_setting=require('../admin_setting/admin_setting').setting
 

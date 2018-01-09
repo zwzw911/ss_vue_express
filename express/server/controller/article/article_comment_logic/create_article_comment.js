@@ -116,7 +116,7 @@ async  function createArticleComment_async({req}){
     /*******************************************************************************************/
     tmpResult= await common_operation_model.create_returnRecord_async({dbModel:e_dbModel[collName],value:docValue})
     // console.log(`create result is ====>${JSON.stringify(tmpResult)}`)
-    console.log(`db op done=========>`)
+    // console.log(`db op done=========>`)
     return Promise.resolve({rc:0,msg:tmpResult})
 }
 

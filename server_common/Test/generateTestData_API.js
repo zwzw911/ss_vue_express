@@ -2,6 +2,8 @@
  * Created by wzhan039 on 2017/10/17.
  */
 'use strict'
+const ap=require('awesomeprint')
+
 const nodeEnum=require(`../constant/enum/nodeEnum`)
 
 const e_method=nodeEnum.Method
@@ -259,11 +261,17 @@ function generateTestDataForRecordInfoValue({parameter,fieldName,ruleName}){
 
     switch (ruleName){
         case e_serverRuleType.REQUIRE:
-            //
+            //防止产生空recordInfo，需要在recordInfo中填入一个字段
+/*            for(let singleFieldName in collName){
+                if(singleFieldName!==fieldName){
+
+                }
+            }*/
             if(true===ruleDefine ){//&&
                 //字段未定义
                 //只有CREATE的时候，才能测试删除require字段的测试（update的时候，require字段为undefined，则会忽略此字段的检测）
                 if(method===e_method.CREATE){
+                    // ap.print('normalRecordInfo',normalRecordInfo)
                     recordInfos.push(generateTestRecord({fieldValueToBeGenerate:undefined,originNormalData:normalRecordInfo,fieldToBeCheck:fieldName}))
                 }
                 recordInfos.push(generateTestRecord({fieldValueToBeGenerate:null,originNormalData:normalRecordInfo,fieldToBeCheck:fieldName}))

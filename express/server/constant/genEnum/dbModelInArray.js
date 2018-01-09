@@ -16,6 +16,7 @@ const folder=require('D:/ss_vue_express/server_common/model/mongo/structure/arti
 const like_dislike=require('D:/ss_vue_express/server_common/model/mongo/structure/article/like_dislike.js').collModel
 const tag=require('D:/ss_vue_express/server_common/model/mongo/structure/article/tag.js').collModel
 /*       friend           */
+const add_friend=require('D:/ss_vue_express/server_common/model/mongo/structure/friend/add_friend.js').collModel
 const member_penalize=require('D:/ss_vue_express/server_common/model/mongo/structure/friend/member_penalize.js').collModel
 const public_group=require('D:/ss_vue_express/server_common/model/mongo/structure/friend/public_group.js').collModel
 const public_group_event=require('D:/ss_vue_express/server_common/model/mongo/structure/friend/public_group_event.js').collModel
@@ -58,6 +59,7 @@ module.exports=[
     like_dislike,
     tag,
     /*       friend           */
+    add_friend,
     member_penalize,
     public_group,
     public_group_event,

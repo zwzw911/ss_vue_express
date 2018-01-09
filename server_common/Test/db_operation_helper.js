@@ -42,6 +42,10 @@ async function deleteUserAndRelatedInfo_async({account}){
         await common_operation_model.deleteOne_returnRecord_async({dbModel:e_dbModel.user_friend_group,condition:{userId:userId}})
         await common_operation_model.deleteOne_returnRecord_async({dbModel:e_dbModel.folder,condition:{authorId:userId}})
         await common_operation_model.deleteOne_returnRecord_async({dbModel:e_dbModel.user_resource_profile,condition:{userId:userId}})
+        //删除所有添加朋友
+        await common_operation_model.deleteMany_async({dbModel:e_dbModel.add_friend,condition:{[e_field.ADD_FRIEND.ORIGINATOR]:userId}})
+        //删除所有好友分组（以及其中的朋友）
+        await common_operation_model.deleteMany_async({dbModel:e_dbModel.user_friend_group,condition:{[e_field.USER_FRIEND_GROUP.OWNER_USER_ID]:userId}})
     }
 
 }
@@ -179,6 +183,13 @@ async function getAdminUserId_async({userName}) {
     return Promise.resolve(tmpResult[0]['_id'])
 }
 
+async function getGroupId_async({userId,groupName}) {
+    // console.log(`userName===================================>${JSON.stringify(userName)}`)
+    tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.user_friend_group,condition:{[e_field.USER_FRIEND_GROUP.OWNER_USER_ID]:userId,[e_field.USER_FRIEND_GROUP.FRIEND_GROUP_NAME]:groupName}})
+    // console.log(`user1Id result===================================>${JSON.stringify(tmpResult)}`)
+    return Promise.resolve(tmpResult[0]['_id'])
+}
+
 async function getUserFolderId_async(userData){
     // let user1Tmp = {}
     // user1Tmp[e_field.USER.ACCOUNT] = testData.user.user2[e_field.USER.ACCOUNT]
@@ -223,6 +234,7 @@ module.exports={
     create_impeach_for_article_async,
     // createImageForImpeach_ReturnImageId_async,
     createImageForImpeach_ReturnAllRecord_async,
+    getGroupId_async,
     getUserId_async,
     getAdminUserId_async,
 

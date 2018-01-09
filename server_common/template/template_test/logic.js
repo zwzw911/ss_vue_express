@@ -3,6 +3,10 @@
  */
 'use strict'
 
+const controllerError=require('../../server/controller/impeach_action/impeach_action_setting/impeach_action_controllerError').controllerError
+let  baseUrl="/impeach_action/",finalUrl,url
+
+const ap=require(`awesomeprint`)
 
 const request=require('supertest')
 const app=require('../../app')
@@ -51,14 +55,13 @@ const API_helper=server_common_file_require.API_helper//require('../API_helper/A
 const component_function=server_common_file_require.component_function
 const misc_helper=server_common_file_require.misc_helper
 
-const controllerError=require('../../server/controller/impeach_action/impeach_action_setting/impeach_action_controllerError').controllerError
-
-let  baseUrl="/impeach_action/",finalUrl,url
+let globalConfiguration=server_common_file_require.globalConfiguration
 let adminUser1Info,adminUser2Info,adminUser3Info,adminUser1Id,adminUser2Id,adminUser3Id,adminUser1Sess,adminUser2Sess,adminUser3Sess,adminUser1Data,adminUser2Data,adminUser3Data
 let user1Info,user2Info,user3Info,user1Id,user2Id,user3Id,user1Sess,user2Sess,user3Sess,user1Data,user2Data,user3Data
+let userData,tmpResult,copyNormalRecord
 let adminRootSess,adminRootId,data={values:{}}
 
-let recordId,expectedErrorRc
+let recordId1,recordId2,recordId3,expectedErrorRc
 
 let normalRecord={
     [e_field.IMPEACH_ACTION.IMPEACH_ID]:undefined,
@@ -99,9 +102,13 @@ describe('create impeach action', async function() {
         console.log(`==============================================================`)
     });
 
-    /*              userType check              */
-    it('userType check, admin not allow for submit', async function() {
+    /****************************************/
+    /*              create                  */
+    /****************************************/
+    // userType check
+    it('userType check, admin not allow for create', async function() {
         data.values={}
+        copyNormalRecord=objectDeepCopy(normalRecord)
         data.values[e_part.RECORD_INFO]=normalRecord
         data.values[e_part.METHOD]=e_method.CREATE
         expectedErrorRc=controllerCheckerError.userTypeNotExpected.rc
@@ -141,7 +148,7 @@ describe('create impeach action', async function() {
     /*              fk exists check            */
     it('fk:IMPEACH_ID not exists', async function() {
         data.values={}
-        let copyNormalRecord=objectDeepCopy(normalRecord)
+        copyNormalRecord=objectDeepCopy(normalRecord)
         copyNormalRecord[e_field.IMPEACH_ACTION.IMPEACH_ID]=testData.unExistObjectId
         data.values[e_part.RECORD_INFO]=copyNormalRecord
         data.values[e_part.METHOD]=e_method.CREATE

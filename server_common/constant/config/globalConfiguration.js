@@ -593,8 +593,35 @@ const defaultSetting= {
 }
 
 const userGroupFriend={
-    maxUserPerGroup:100,//每个好友分组，最多容纳的好友数量
-    maxUserFriendGroupNum:10,//每个用户最多拥有10个好友分组（包括默认的分组：我的好友）
+    max:{
+        maxUserPerGroup:100,//每个好友分组，最多容纳的好友数量
+        maxUserFriendGroupNum:10,//每个用户最多拥有10个好友分组（包括默认的分组：我的好友）
+
+        maxUserPerDefaultGroup:200,//默认的组：我的好友/黑名单，最大能容纳的用户数
+    },
+    defaultGroupName:{
+        enumFormat:{
+            MyFriend:`我的好友`,
+            BlackList:`黑名单`
+        },
+        enumValue:[`我的好友`,`黑名单`]
+    },
+}
+
+const PublicGroup={
+    max:{
+        maxUserPerGroup:100,//每个群，最多容纳的成员数量
+        maxPublicGroupNumber:10,//每个用户最多创建的群数量
+
+        // maxUserPerDefaultGroup:200,//默认的组：我的好友/黑名单，最大能容纳的用户数
+    },
+    // defaultGroupName:{
+    //     enumFormat:{
+    //         MyFriend:`我的好友`,
+    //         BlackList:`黑名单`
+    //     },
+    //     enumValue:[`我的好友`,`黑名单`]
+    // },
 }
 module.exports={
 	defaultSetting,
@@ -615,5 +642,6 @@ module.exports={
     mailOption,
     mailAccount,
     userGroupFriend,
+    PublicGroup,
 }
 

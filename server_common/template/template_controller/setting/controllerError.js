@@ -8,13 +8,13 @@ const controllerError={
     /*              dispatch                           */
     //create
     notLoginCantCreateUserFriendGroup:{rc:51700,msg:`尚未登录，无法创建好友分组`},
-    currentUserForbidToCreateUserFriendGroup:{rc:51702,msg:`您被禁止创建好友分组`},
+    inPenalizeCreateUserFriendGroup:{rc:51702,msg:`您被禁止创建好友分组`},
     //update
     notLoginCantUpdateUserFriendGroup:{rc:51704,msg:`尚未登录，无法更新好友分组`},
-    currentUserForbidToUpdateUserFriendGroup:{rc:51706,msg:`您被禁止对好友分组更新`},
+    inPenalizeUpdateUserFriendGroup:{rc:51706,msg:`您被禁止对好友分组更新`},
     //delete
     notLoginCantDeleteUserFriendGroup:{rc:51708,msg:`尚未登录，无法删除好友分组`},
-    currentUserForbidToDeleteUserFriendGroup:{rc:51710,msg:`您被禁止删除好友分组`},
+    inPenalizeDeleteUserFriendGroup:{rc:51710,msg:`您被禁止删除好友分组`},
     //08～20预留给其他method
     /*              logic                           */
     //create
@@ -23,6 +23,8 @@ const controllerError={
 
     // update
     notImpeachCreatorCantUpdateComment:{rc:51005,msg:`无权对他人举报进行评论`},
+    forbidUpdateFieldExist(fieldName){return {rc:51006,msg:{client:`输入错误`,server:`字段${fieldName}不允许被用户更新`}}},
+    notAllowUpdateDefaultRecord:{rc:51742,msg:'无法更改默认记录'},
 
     //upload
     notImpeachCreatorCantUploadFile:{rc:50716,msg:`无权为他人举报评论上传文件`},

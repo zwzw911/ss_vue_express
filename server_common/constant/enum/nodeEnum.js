@@ -154,6 +154,16 @@ const PartValueToVarName={
     [ValidatePart.RECORD_INFO]:'docValue',
 }
 
+//update可以分成普通update（普通字段，或者加上array字段），和subField的update（只能是值为array的字段）
+const UpdateType={
+    NORMAL:'normal',
+    SUB_FIELD:'subField',
+}
+
+//确定一个array中，元素存在的 类型
+const FindEleInArray={
+    AT_LEAST_ONE:'atLeastOne',//指定的option中，至少存在一个指定元素（或者全部存在）
+}
 module.exports={
     RandomStringType,
     UserState,
@@ -178,4 +188,8 @@ module.exports={
     SubField,
 
     PartValueToVarName,
+    UpdateType,
+
+    FindEleInArray,
+
 }

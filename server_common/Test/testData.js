@@ -49,10 +49,17 @@ const tag={
 
 const unExistObjectId="5a0d2a219dce0948b4933234"
 
+const randomObject={
+    objectId1:'5a2f50bd0410d020fc69e9fe',
+    objectId2:'5a2f50bd0410d020fc69e9ff',
+    objectId3:'5a2f50bd0410d020fc69e9fc',
+    objectId4:'5a2f50bd0410d020fc69e9fd',
+}
 module.exports={
     user,
     tag,
     admin_user,
     impeach_image,
     unExistObjectId,
+    randomObject,
 }

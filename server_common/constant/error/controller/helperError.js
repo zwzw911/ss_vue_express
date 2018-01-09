@@ -4,8 +4,10 @@
 'use strict'
 
 const helper={
+    /*              checkOptionPartExist            */
+    optionPartCheckFail:{rc:60000,msg:{client:'输入数据错误',server:'req中，没有optionPart定义的part值'}},
     /*              validatePartFormat              */
-    unknownPartInFormatCheck:{rc:60000,msg:{client:'输入数据错误',server:'输入数据中有未知的part'}},
+    unknownPartInFormatCheck:{rc:60001,msg:{client:'输入数据错误',server:'输入数据中有未知的part'}},
 
     /*              validatePartValue              */
     undefinedBaseRuleType:{rc:60002,msg:{client:'参数错误',server:'非预定义的baseType'}},
@@ -54,6 +56,19 @@ const helper={
     },
 
     cantFindResourceFileOrNumNotMatch:{rc:60028,msg:{'client':"内部错误，请联系管理员",server:`查询得到的资源配置数量和代码中定义的不一致`}},
+
+    /*                  checkEditSubFieldValue_async                    */
+    // fromRecordIdNotExists:{rc:60030,msg:{'client':"数据不存在，无法操作",server:`editSubField中，from所指的记录不存在`}},
+    // toRecordIdNotExists:{rc:60032,msg:{'client':"数据不存在，无法操作",server:`editSubField中，to所指的记录不存在`}},
+    fkConfigUndefined:{rc:60030,msg:{'client':"内部错误，请联系管理员",server:`eleArray数据类型为objectId，但是没有对应的fkConfig`}},
+    eleArrayLengthExceed:{rc:60031,msg:{'client':"要移动数据过多",server:`eleArray中包含的元素数量，超过字段array_max_length中定义`}},
+    eleArrayContainDuplicateEle:{rc:60032,msg:{'client':"要移动数据有重复值",server:`eleArray中有重复数据`}},
+    toIdNotExist:{rc:60033,msg:{'client':"数据错误",server:`to的id没有对应的记录`}},
+    toRecordNotEnoughRoom:{rc:60034,msg:{'client':"要移动数据过多",server:`to对应的记录，无法容纳eleArray中的数据`}},
+    eleArrayRecordIdNotExists:{rc:60035,msg:{'client':"数据不存在，无法操作",server:`editSubField中，eleArray所指的记录部分或者全部不存在`}},
+    // fkConfigNotDefineOwnerField:{rc:60035,msg:{'client':"内部错误，请联系管理员",server:`fkConfig中，没有为ELE_ARRAY对应的coll，定义对应的owner的字段名称`}},
+    notOwnerOfEleArray:{rc:60036,msg:{'client':"无权移动数据",server:`editSubField中，用户不是eleArray中数据的拥有者，无权移动`}},
+    eleArrayNotObjectId:{rc:60040,msg:{'client':"内部错误，请联系管理员",server:`eleArray数据类型不是objectId，需要controllerHelper->checkEditSubFieldValue_async添加新代码处理`}},
 }
 
 const checker={

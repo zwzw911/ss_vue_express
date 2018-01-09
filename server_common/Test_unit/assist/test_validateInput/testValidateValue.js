@@ -564,9 +564,29 @@ describe('validateEditSubFieldValue', function() {
         'type': [e_serverDataType.OBJECT_ID],
         // 'arrayMaxLength': {define: 100, error: {rc: 10422}, mongoError: {rc: 20422, msg: `好友分组最多包含100个好友`}},
     }}
+
+    it(`editSubField rule data type not array`,function(done){
+        rule={f1:{
+            'type': e_serverDataType.INT,
+            'arrayMaxLength': {define: 2, error: {rc: 10422}, mongoError: {rc: 20422, msg: `好友分组最多包含2个好友`}},
+            // [e_serverRuleType.MIN]:{define: 2, error: {rc: 10422}, mongoError: {rc: 20422, msg: `好友分组最多包含2个好友`}},
+            // [e_serverRuleType.MAX]:{define: 4, error: {rc: 104232}, mongoError: {rc: 20423, msg: `好友分组最多包含2个好友`}},
+        }}
+
+        value={f1:{eleArray:[3]}}
+        assert.deepStrictEqual(func({inputValue:value,browseInputRule:rule}).rc,validateValueError.fieldDataTypeNotArray.rc)
+        // value={f1:{eleArray:[5]}}
+        // assert.deepStrictEqual(func({inputValue:value,browseInputRule:rule}).rc,rule.f1[e_serverRuleType.MAX][`error`][`rc`])
+        done()
+    })
+
     //1 field rule not define arrayMaxLength
     it(`editSubField field rule not define arrayMaxLength`,function(done){
         value={f1:{from:1,eleArray:[]}}
+        rule={f1:{
+            'type': [e_serverDataType.OBJECT_ID],
+            // 'arrayMaxLength': {define: 100, error: {rc: 10422}, mongoError: {rc: 20422, msg: `好友分组最多包含100个好友`}},
+        }}
         assert.deepStrictEqual(func({inputValue:value,browseInputRule:rule}).rc,validateValueError.arrayMaxLengthUndefined.rc)
         rule={f1:{
             'type': [e_serverDataType.OBJECT_ID],
@@ -656,5 +676,7 @@ describe('validateEditSubFieldValue', function() {
         assert.deepStrictEqual(func({inputValue:value,browseInputRule:rule}).rc,rule.f1[e_serverRuleType.MAX][`error`][`rc`])
         done()
     })
+
+
 })
 

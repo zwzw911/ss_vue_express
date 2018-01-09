@@ -827,6 +827,7 @@ function validateEditSubFieldValue(v){
 
 /*        根据rule，对输入的值进行格式检查
  * @inputValue：对象。{fieldName:{from:,to:,eleArrar},fieldName2:{from:,to:,eleArray}}
+ * 0. rule中，对应的值类型必须是数组
  * 1. from/to的值类型必须为objectId
  * 2. eleArray的值类型为array，且其中每个元素的值根据field的类型决定，一般为objecId
  * */
@@ -836,7 +837,11 @@ function validateEditSubFieldValue({inputValue,browseInputRule}){
         // console.log(`browseCollRule[singleFieldName]['type'] +++++${JSON.stringify(browseInputRule[singleFieldName]['type'])}`)
         //由format check保证rule必定是存在的
         let singleFieldRule=browseInputRule[singleFieldName]
-        let fieldDataType=singleFieldRule['type'][0]  //type是[ObjectId]这样的格式
+        if(false===dataTypeCheck.isArray(singleFieldRule['type'])){
+            return validateValueError.fieldDataTypeNotArray
+        }
+        let fieldDataType=singleFieldRule['type'][0]  //type是[ObjectId]这样的格式，如果是其他非数组格式，会返回第一个字符（而不是undefined）
+
         // console.log(`browseInputRule[singleFieldName]['arrayMaxLength']=========>${JSON.stringify(browseInputRule[singleFieldName][`arrayMaxLength`])}`)
         if(undefined===singleFieldRule[`arrayMaxLength`] || undefined===singleFieldRule[`arrayMaxLength`][`define`]){
             return validateValueError.arrayMaxLengthUndefined
@@ -880,9 +885,13 @@ function validateEditSubFieldValue({inputValue,browseInputRule}){
         //eleArray中每个元素符合rule中数据类型的定义，且要符合rule的定义
         for(let singleEle of fieldValue['eleArray']){
             //数据类型检测
-            if(false===valueTypeCheck(singleEle,fieldDataType)){
+            let valueTypeCheckResult=valueTypeCheck(singleEle,fieldDataType)
+            if(false===valueTypeCheckResult){
                 return validateValueError.eleArrayDataTypeWrong
             }
+/*            if(0<valueTypeCheckResult.rc){
+                return valueTypeCheckResult
+            }*/
             //数据类型检测通过，且为objectId，则无需继续进行rule的check
             if(fieldDataType===e_serverDataType.OBJECT_ID){
                 continue

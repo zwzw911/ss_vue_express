@@ -43,6 +43,7 @@ function requireServerCommon(serverCommonRelateBaseDir,absoluteDestFilePath,fina
 
     /*              patch; 2个model+1个配置文件+1个maintain文件                 */
     filesArray.push(`${serverCommonRelateBaseDir}model/mongo/operation/common_operation_model.js`)
+    filesArray.push(`${serverCommonRelateBaseDir}model/mongo/operation/common_operation_helper.js`)
     filesArray.push(`${serverCommonRelateBaseDir}model/mongo/operation/common_operation_document.js`)
 
     filesArray.push(`${serverCommonRelateBaseDir}model/mongo/fkConfig.js`)

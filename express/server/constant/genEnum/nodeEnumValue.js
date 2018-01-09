@@ -17,7 +17,9 @@ const ResourceFieldName=["totalSizeInMb","maxFileNum",]
 const UploadFileDefinitionFieldName=["maxSizeInByte","maxSizeInMB","maxWidth","maxHeight",] 
 const EventField=["eventId","sourceId","targetId","status","cDate",] 
 const SubField=["from","to","eleArray",] 
-const partValueToVarName=["subFieldValue","recordId","docValue",] 
+const PartValueToVarName=["subFieldValue","recordId","docValue",] 
+const UpdateType=["normal","subField",] 
+const FindEleInArray=["atLeastOne",] 
 module.exports={
     RandomStringType,
     UserState,
@@ -35,5 +37,7 @@ module.exports={
     UploadFileDefinitionFieldName,
     EventField,
     SubField,
-    partValueToVarName,
+    PartValueToVarName,
+    UpdateType,
+    FindEleInArray,
 }

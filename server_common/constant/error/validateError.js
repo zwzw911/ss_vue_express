@@ -51,6 +51,7 @@ const validateFormat={
     inputValuePartFilterFieldValueFormatWrong:{rc:40120,msg:{client:`输入值格式错误`,server:`输入参数中，FilterFieldValue的值必须为对象`}},
     inputValuePartRecIdArrValueFormatWrong:{rc:40122,msg:{client:`输入值格式错误`,server:`输入参数中，recIdArr的值必须为数组`}},
     inputValuePartEventValueFormatWrong:{rc:40122,msg:{client:`输入值格式错误`,server:`输入参数中，event的值必须为对象`}},
+    inputValuePartEditSubFieldValueFormatWrong:{rc:40123,msg:{client:`输入值格式错误`,server:`输入参数中，editSubField的值必须为对象`}},
     inputValuePartUndefinedPart:{rc:40124,msg:{client:`输入值格式错误`,server:`输入参数中，part未定义`}},
 
     recordInfoCantEmpty:{rc:40126,msg:{client:'输入值格式错误',server:'recorderInfo不能为空'}},//在validatePart已经检测为object，次数检测为空object
@@ -156,8 +157,9 @@ const validateValue={
     recIdArrValueEleShouldString:{rc:40324,msg:'recIdArr中每个元素必须是字符'},
     recIdArrValueEleShouldObjectId:{rc:40326,msg:'recIdArr中每个元素必须是objectId'},
     /*              validateEditSubFieldValue           */
-    arrayMaxLengthUndefined:{rc:40327,msg:{client:`内部错误`,server:`rule中没有定义arrayMaxLength属性`}},
-    fromMustBeObjectId:{rc:40328,msg:'from的值必须是objectId'},
+    fieldDataTypeNotArray:{rc:40327,msg:{client:`内部错误`,server:`rule中字段的数据类型不是数组`}},
+    arrayMaxLengthUndefined:{rc:40328,msg:{client:`内部错误`,server:`rule中没有定义arrayMaxLength属性`}},
+    fromMustBeObjectId:{rc:40329,msg:'from的值必须是objectId'},
     toMustBeObjectId:{rc:40330,msg:'to的值必须是objectId'},
 
     eleArrayMustBeArray:{rc:40334,msg:'eleArray必须是数组'},

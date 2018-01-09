@@ -9,7 +9,7 @@ const AdminPriorityType=["1","2","3","10","11","12","20","21",]
 const PublicGroupJoinInRule=["0","1",] 
 const PublicGroupEventType=["0","1","2","3","4","5",] 
 const EventStatus=["0","1","2",] 
-const PenalizeType=["0","1","2","3","4","5","7",] 
+const PenalizeType=["0","1","2","3","4","5","7","8","9",] 
 const PenalizeSubType=["1","2","3","4","9",] 
 const ImpeachType=["0","1",] 
 const ImpeachAllAction=["1","2","3","4","5","6","7",] 
@@ -25,6 +25,7 @@ const ResourceType=["1","2","3","4",]
 const ResourceProfileRange=["1","2","3","5","7",] 
 const ResourceProfileType=["1","2",] 
 const DocumentStatus=["1","2",] 
+const AddFriendStatus=["1","2","3",] 
 module.exports={
     ArticleStatus,
     AdminUserType,
@@ -50,4 +51,5 @@ module.exports={
     ResourceProfileRange,
     ResourceProfileType,
     DocumentStatus,
+    AddFriendStatus,
 }

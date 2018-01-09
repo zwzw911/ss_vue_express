@@ -94,6 +94,11 @@ const ChineseName={
     tag:{
         'name':'标签名称',
     },
+    add_friend:{
+        'receiver':'添加的好友',
+        'status':'当前请求所处状态',
+        'originator':'发起人',
+    },
     member_penalize:{
         'publicGroupId':'群',
         'memberId':'成员',
@@ -103,8 +108,8 @@ const ChineseName={
     },
     public_group:{
         'name':'群名称',
-        'memberId':'群成员',
-        'adminId':'群管理员',
+        'membersId':'群成员',
+        'adminsId':'群管理员',
         'joinInRule':'新成员加入规则',
         'creatorId':'群创建者',
     },

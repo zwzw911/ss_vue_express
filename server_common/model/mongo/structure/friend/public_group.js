@@ -44,8 +44,8 @@ const collFieldDefine={
     name:{type:String,unique:true},
     //account:{type:String,unique:true}, //email或者手机号
     creatorId:{type:mongoose.Schema.Types.ObjectId,ref:"user"},
-    memberId:{type:[mongoose.Schema.Types.ObjectId],ref:"user"},
-    adminId:{type:[mongoose.Schema.Types.ObjectId],ref:"user"},//creatorId必在其中
+    membersId:{type:[mongoose.Schema.Types.ObjectId],ref:"user"},
+    adminsId:{type:[mongoose.Schema.Types.ObjectId],ref:"user"},//creatorId必在其中
     joinInRule:{type:String,},//enum:enumValue.PublicGroupJoinInRule
     cDate:{type:Date,default:Date.now},
     uDate:{type:Date,default:Date.now},

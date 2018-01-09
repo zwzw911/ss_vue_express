@@ -3,6 +3,7 @@
  * 通过API测试inputRule
  */
 'use strict'
+const ap=require(`awesomeprint`)
 
 const request=require('supertest')
 const assert=require('assert')
@@ -275,7 +276,7 @@ async function sendDataToAPI_compareFieldRc_async({APIUrl,sess,data,expectedErro
 
 async function sendDataToAPI_compareCommonRc_async({APIUrl,sess,data,expectedErrorRc,app}){
     return new Promise(function(resolve,reject){
-
+// ap.print(`sess`,sess)
         request(app).post(APIUrl).set('Accept', 'application/json').set('Cookie', [sess]).send(data)
             .end(function (err, res) {
                 if (err) return reject(err);
@@ -477,6 +478,7 @@ async function dispatch_partCheck_async(parameter){
         if(undefined!==recordId){
             data.values[e_part.RECORD_ID]=recordId
         }
+        // ap.print(`data`,data)
         await  sendDataToAPI_compareCommonRc_async({APIUrl:APIUrl,sess:sess,data:data,expectedErrorRc:penalizeRelatedInfo[`penalizedError`][`rc`],app:app})
         await API_helper.deletePenalize_async({adminUserSess:penalizeRelatedInfo[`rootSess`],penalizeInfo:penalizeInfo,penalizedUserData:penalizeRelatedInfo[`penalizedUserData`],adminApp:penalizeRelatedInfo[`adminApp`]})
     }

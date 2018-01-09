@@ -4,6 +4,7 @@
 'use strict'
 
 const fs=require('fs')
+const ap=require(`awesomeprint`)
 
 const inputRule=require('../../../constant/inputRule/inputRule').inputRule
 const internalInputRule=require('../../../constant/inputRule/internalInputRule').internalInputRule

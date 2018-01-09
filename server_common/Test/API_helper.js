@@ -10,6 +10,7 @@ const request=require('supertest')
 // const app=require('../../express/app')
 const assert=require('assert')
 
+const ap=require(`awesomeprint`)
 // const server_common_file_require=require('../../express_admin/server_common_file_require')
 const nodeEnum=require(`../constant/enum/nodeEnum`)
 
@@ -39,7 +40,7 @@ async function createUser_async({userData,app}){
         request(app).post('/user/').set('Accept', 'application/json').send(data)
             .end(function(err, res) {
                 let parsedRes=JSON.parse(res.text)
-                // console.log(`created user =========> ${JSON.stringify(parsedRes)}`)
+                console.log(`created user =========> ${JSON.stringify(parsedRes)}`)
                 assert.deepStrictEqual(parsedRes.rc,0)
                 return resolve({rc:0})
             });
@@ -412,7 +413,7 @@ async function createImpeachComment_returnId_async({sess,impeachId,app}){
         request(app).post('/impeach_comment/').set('Accept', 'application/json').set('Cookie',[sess]).send(data)
             .end(function(err, res) {
                 let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
+                // console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
                 assert.deepStrictEqual(parsedRes.rc,0)
                 return resolve(parsedRes.msg)
             });
@@ -420,6 +421,88 @@ async function createImpeachComment_returnId_async({sess,impeachId,app}){
 }
 
 
+/****************       CREATE ADD_FRIEND            *****************/
+async function createAddFriend_returnRecord_async({userData,sess,app}){
+    let data={values:{}}
+    let url='/add_friend/'
+    data.values[e_part.RECORD_INFO]=userData
+// console.log(`userDate==============>${JSON.stringify(userData)}`)
+    data.values[e_part.METHOD]=e_method.CREATE
+    // console.log(`data.values==============>${JSON.stringify(data.values)}`)
+    return new Promise(function(resolve,reject){
+        request(app).post(url).set('Accept', 'application/json').set('Cookie',[sess]).send(data)
+            .end(function(err, res) {
+                let parsedRes=JSON.parse(res.text)
+                // console.log(`createAddFriend_async result =========> ${JSON.stringify(parsedRes)}`)
+                // ap.print(`parsedRes.msg`,parsedRes.msg)
+                assert.deepStrictEqual(parsedRes.rc,0)
+                return resolve(parsedRes.msg)
+            });
+    })
+}
+
+//userData只能有一个字段status
+async function updateAddFriend_returnRecord_async({userData,recordId,sess,app}){
+    let data={values:{}}
+    let url='/add_friend/'
+    data.values[e_part.RECORD_INFO]=userData
+    data.values[e_part.RECORD_ID]=recordId
+    // ap.print('data.values[e_part.RECORD_INFO]',data.values[e_part.RECORD_INFO])
+    data.values[e_part.METHOD]=e_method.UPDATE
+    // console.log(`data.values==============>${JSON.stringify(data.values)}`)
+    return new Promise(function(resolve,reject){
+        request(app).post(url).set('Accept', 'application/json').set('Cookie',[sess]).send(data)
+            .end(function(err, res) {
+                let parsedRes=JSON.parse(res.text)
+                // console.log(`createAddFriend_async result =========> ${JSON.stringify(parsedRes)}`)
+                // ap.print(`parsedRes.msg`,parsedRes.msg)
+                assert.deepStrictEqual(parsedRes.rc,0)
+                return resolve(parsedRes.msg)
+            });
+    })
+}
+
+/****************       CREATE USER_FRIEND_GROUP            *****************/
+async function createUserFriendGroup_returnRecord_async({userData,sess,app}){
+    let data={values:{}}
+    let url='/user_friend_group/'
+    data.values[e_part.RECORD_INFO]=userData
+// console.log(`userDate==============>${JSON.stringify(userData)}`)
+    data.values[e_part.METHOD]=e_method.CREATE
+    // console.log(`data.values==============>${JSON.stringify(data.values)}`)
+    return new Promise(function(resolve,reject){
+        request(app).post(url).set('Accept', 'application/json').set('Cookie',[sess]).send(data)
+            .end(function(err, res) {
+                let parsedRes=JSON.parse(res.text)
+                // console.log(`createAddFriend_async result =========> ${JSON.stringify(parsedRes)}`)
+                // ap.print(`parsedRes.msg`,parsedRes.msg)
+                assert.deepStrictEqual(parsedRes.rc,0)
+                return resolve(parsedRes.msg)
+            });
+    })
+}
+
+//userData只能有一个字段status
+async function updateUserFriendGroup_returnRecord_async({userDataForRecordInfo,recordId,userDataForEditSubField,sess,app}){
+    let data={values:{}}
+    let url='/user_friend_group/'
+    data.values[e_part.RECORD_INFO]=userDataForRecordInfo
+    data.values[e_part.RECORD_ID]=recordId
+    data.values[e_part.EDIT_SUB_FIELD]=userDataForEditSubField
+    // ap.print('data.values[e_part.RECORD_INFO]',data.values[e_part.RECORD_INFO])
+    data.values[e_part.METHOD]=e_method.UPDATE
+    console.log(`data.values==============>${JSON.stringify(data.values)}`)
+    return new Promise(function(resolve,reject){
+        request(app).post(url).set('Accept', 'application/json').set('Cookie',[sess]).send(data)
+            .end(function(err, res) {
+                let parsedRes=JSON.parse(res.text)
+                // console.log(`createAddFriend_async result =========> ${JSON.stringify(parsedRes)}`)
+                // ap.print(`parsedRes.msg`,parsedRes.msg)
+                assert.deepStrictEqual(parsedRes.rc,0)
+                return resolve(parsedRes.msg)
+            });
+    })
+}
 
 module.exports={
     removeExistsRecord_async,
@@ -447,4 +530,10 @@ module.exports={
     createImpeachAction_async,
 
     createImpeachComment_returnId_async,
+
+    createAddFriend_returnRecord_async,
+    updateAddFriend_returnRecord_async,
+
+    createUserFriendGroup_returnRecord_async,
+    updateUserFriendGroup_returnRecord_async,
 }

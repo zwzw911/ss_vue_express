@@ -4,6 +4,7 @@
 'use strict'
 
 const mongooseErrorHandler=require('../../../constant/error/mongo/mongoError').mongooseErrorHandler
+const common_operation_model=require('../../../model/mongo/operation/common_operation_model')
 // const dbModel=require('../dbModel')
 /*
 *
@@ -13,15 +14,15 @@ const mongooseErrorHandler=require('../../../constant/error/mongo/mongoError').m
     , { path: 'notes', options: { limit: 10 }, model: 'override' }
   ]
 * */
-function populateSingleDoc_async (singleDoc,populateOpt,populatedFields){
+async function populateSingleDoc_async (singleDoc,populateOpt){
     // console.log(`singleDoc is ===>${JSON.stringify(singleDoc)}`)
     // console.log(`populateOpt is ===>${JSON.stringify(populateOpt)}`)
     return new Promise(function(resolve,reject){
         // console.log(`populateSingleDoc in `)
         let populateFlag=false
         // let createdResult=singleDoc
-        for(let singlePopulatedField of populatedFields){
-            if(singleDoc[singlePopulatedField]){
+        for(let singlePopulatedField of populateOpt){
+            if(singleDoc[singlePopulatedField[`path`]]){
                 populateFlag=true
                 break;
             }
@@ -52,8 +53,17 @@ function populateSingleDoc_async (singleDoc,populateOpt,populatedFields){
 
 }
 
-
+async function ifRecordIdExists_returnBool_async({arr_recordId,collName,additionalCondition}){
+    let condition={dDate:{'$exists':false},'_id':{$in:arr_recordId}} //记录未被删除，且id位于arr_recordId
+    //有额外的查询条件，加入
+    if(undefined!==additionalCondition){
+        condition=Object.assign(condition,additionalCondition)
+    }
+    let tmpResult=await common_operation_model.count_async({dbModel:e_dbModel[collName],condition:condition})
+    return Promise.resolve(tmpResult===arr_recordId.length)
+}
 
 module.exports={
     populateSingleDoc_async,
+    ifRecordIdExists_returnBool_async,
 }

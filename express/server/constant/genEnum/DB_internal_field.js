@@ -14,6 +14,7 @@ const Field={
     folder:['authorId',],
     like_dislike:['authorId',],
     tag:[],
+    add_friend:['originator',],
     member_penalize:['creatorId',],
     public_group:['creatorId',],
     public_group_event:['sourceId',],

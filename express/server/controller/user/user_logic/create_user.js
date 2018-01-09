@@ -4,7 +4,7 @@
 'use strict'
 
 // const controllerError=require('./user_controllerError').controllerError
-
+const ap=require(`awesomeprint`)
 /*                      specify: genEnum                */
 const e_uniqueField=require('../../../constant/genEnum/DB_uniqueField').UniqueField
 // const e_chineseName=require('../../../constant/genEnum/inputRule_field_chineseName').ChineseName
@@ -17,29 +17,30 @@ const inputRule=require('../../../constant/inputRule/inputRule').inputRule
 const internalInputRule=require('../../../constant/inputRule/internalInputRule').internalInputRule
 
 /*                      server common                                           */
-const server_common_file_include=require('../../../../server_common_file_require')
-const nodeEnum=server_common_file_include.nodeEnum
-const mongoEnum=server_common_file_include.mongoEnum
+const server_common_file_require=require('../../../../server_common_file_require')
+const nodeEnum=server_common_file_require.nodeEnum
+const mongoEnum=server_common_file_require.mongoEnum
 
 /*                      server common：function                                       */
-const dataConvert=server_common_file_include.dataConvert
-const controllerHelper=server_common_file_include.controllerHelper
-const controllerChecker=server_common_file_include.controllerChecker
-const common_operation_model=server_common_file_include.common_operation_model
-const misc=server_common_file_include.misc
-const hash=server_common_file_include.crypt.hash
+const dataConvert=server_common_file_require.dataConvert
+const controllerHelper=server_common_file_require.controllerHelper
+const controllerChecker=server_common_file_require.controllerChecker
+const common_operation_model=server_common_file_require.common_operation_model
+const misc=server_common_file_require.misc
+const hash=server_common_file_require.crypt.hash
 /*                      server common：enum                                       */
 const e_accountType=mongoEnum.AccountType.DB
 const e_docStatus=mongoEnum.DocStatus.DB
 const e_env=nodeEnum.Env
 const e_part=nodeEnum.ValidatePart
-const e_hashType=server_common_file_include.nodeRuntimeEnum.HashType
+const e_hashType=server_common_file_require.nodeRuntimeEnum.HashType
 
 const e_resourceType=mongoEnum.ResourceType.DB
 /*                      server common：other                                       */
-const regex=server_common_file_include.regex.regex
-const currentEnv=server_common_file_include.appSetting.currentEnv
+const regex=server_common_file_require.regex.regex
+const currentEnv=server_common_file_require.appSetting.currentEnv
 
+const globalConfiguration=server_common_file_require.globalConfiguration
 
 //添加内部产生的值（hash password）
 //对内部产生的值进行检测（开发时使用，上线后为了减低负荷，无需使用）
@@ -146,9 +147,22 @@ async  function createUser_async(req){
 
 
     //对关联表user_friend_group进行insert操作
-    let userFriendGroupValue={userId:userCreateTmpResult._id,name:'我的朋友',friendsInGroup:[]}
-    // console.log(`sugarValue ${JSON.stringify(sugarValue)}`)
-    await common_operation_model.create_returnRecord_async({dbModel:e_dbModel.user_friend_group,value:userFriendGroupValue})
+    let defaultGroupName=globalConfiguration.userGroupFriend.defaultGroupName.enumFormat
+    let userFriendGroupValue=[
+        {
+            [e_field.USER_FRIEND_GROUP.OWNER_USER_ID]:userCreateTmpResult._id,
+            [e_field.USER_FRIEND_GROUP.FRIEND_GROUP_NAME]:defaultGroupName.MyFriend,
+            [e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP]:[]
+        },
+        {
+            [e_field.USER_FRIEND_GROUP.OWNER_USER_ID]:userCreateTmpResult._id,
+            [e_field.USER_FRIEND_GROUP.FRIEND_GROUP_NAME]:defaultGroupName.BlackList,
+            [e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP]:[]
+        }
+    ]
+    // ap.print('userFriendGroupValue',userFriendGroupValue)
+    await common_operation_model.insertMany_returnRecord_async({dbModel:e_dbModel.user_friend_group,docs:userFriendGroupValue})
+    // await common_operation_model.create_returnRecord_async({dbModel:e_dbModel.user_friend_group,value:userFriendGroupValue})
     // console.log(`tmpResult is ${JSON.stringify(tmpResult)}`)
 
     //对关联表folder进行insert操作

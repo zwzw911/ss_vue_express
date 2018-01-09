@@ -42,25 +42,33 @@ const ServerDataType={
 
 //rule定义中，除了了ruleType之外的字段
 //和ruleType同样的理由而不能使用Symbol
-const OtherORuleFiledName={
+const OtherRuleFiledName={
     CHINESE_NAME:'chineseName',
     // default:'chineseName',
     DATA_TYPE:'type',
+    APPLY_RANGE:'apply_range',    //确定字段应用在哪种CRUD的操作上（以便确定该字段是否应该出现在输入中）
 }
 
+const ApplyRange={
+    CREATE:'create',
+    UPDATE_SCALAR:'update_scalar',//适用recordInfo
+    UPDATE_ARRAY:'update_array',//适用editSubFiel
+}
 //input对应的rule(client)，根据server获得，排除（exactLength/Format/eauqlTo): 不在client使用format（正则）
 /*
  * client使用iview的Form进行验证（async-validator），所以无需自定cilentRule了
  * */
-const ruleTypeInRuleDefine={
-    require:'require',
-    maxLength:'maxLength',
-    minLength:'minLength',
+const RuleFiledName={
+    REQUIRE:'require',
+    MAX_LENGTH:'maxLength',
+    MIN_LENGTH:'minLength',
+    ARRAY_MIN_LENGTH:'arrayMinLength',
+    ARRAY_MAX_LENGTH:'arrayMaxLength',
     //exactLength:'exactLength',
-    min:'min',
-    max:'max',
-    'enum':'enum',
-    format:'format',
+    MIN:'min',
+    MAX:'max',
+    ENUM:'enum',
+    FORMAT:'format',
      // equalTo:'equalTo',
 }
 
@@ -115,16 +123,28 @@ let serverRuleTypeMatchMongooseRule={
     format:'match',
     'enum':'enum',
 }
+
+
+/*
+const RequireType={
+    REQUIRE_ENABLE_CREATE:'create',
+    REQUIRE_ENABLE_UPDATE:'update',
+    REQUIRE_ENABLE_BOTH:'both',
+    REQUIRE_DISABLE_BOTH:'none',
+}
+*/
+
 module.exports={
     ServerDataType,
     ServerRuleType,
     //clientRule,
-    OtherORuleFiledName,
-    ruleTypeInRuleDefine,
+    OtherRuleFiledName,
+    RuleFiledName,
     ClientDataType,
     ClientRuleType,
 
 
     serverRuleTypeMatchMongooseRule,
-    // validatePart,
+    ApplyRange,
+    // RequireType,
 }

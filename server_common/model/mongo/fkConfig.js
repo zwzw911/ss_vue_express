@@ -6,7 +6,7 @@
  * @ forSelect: select的时候，返回哪个field
  * @ forSetValue： 设置外键值，对应设置到哪个field
  * @ validCriteria: 判断外键是否存在的时候，使用的标准（查询条件）
- *
+ * @ fkCollOwnerField: 在检测edit_sub_field的时候，如果eleArray为object，那么如果要检查其对应的record是否可以被当前用户操作，需要其中一个字段来比较(relatedColl+fkCollOwnerField)
  */
 
 const e_coll=require('../../constant/genEnum/DB_Coll').Coll
@@ -128,6 +128,29 @@ const fkConfig={
     [e_coll.ADMIN_PENALIZE]:{
         [e_field.ADMIN_PENALIZE.CREATOR_ID]:{relatedColl:e_coll.ADMIN_USER,forSelect:`${e_field.ADMIN_USER.NAME}`,forSetValue:[e_field.ADMIN_USER.NAME]},
         [e_field.ADMIN_PENALIZE.PUNISHED_ID]:{relatedColl:e_coll.USER,forSelect:`${e_field.USER.NAME}`,forSetValue:[e_field.USER.NAME]},
+    },
+    /****************************************************************/
+    /****************       user friend group      *****************/
+    /****************************************************************/
+    [e_coll.USER_FRIEND_GROUP]:{
+        [e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP]:{relatedColl:e_coll.USER,forSelect:`${e_field.USER.NAME}`,forSetValue:[e_field.USER.NAME],validCriteria:undefined,fkCollOwnerField:undefined},
+        // [e_field.ADMIN_PENALIZE.PUNISHED_ID]:{relatedColl:e_coll.USER,forSelect:`${e_field.USER.NAME}`,forSetValue:[e_field.USER.NAME]},
+    },
+
+    /****************************************************************/
+    /****************           ADD  FRIEND        *****************/
+    /****************************************************************/
+    [e_coll.ADD_FRIEND]:{
+        [e_field.ADD_FRIEND.RECEIVER]:{relatedColl:e_coll.USER,forSelect:`${e_field.USER.NAME}`,forSetValue:[e_field.USER.NAME],validCriteria:undefined,fkCollOwnerField:undefined}
+    },
+
+    /****************************************************************/
+    /****************          PUBLIC GROUP        *****************/
+    /****************************************************************/
+    [e_coll.PUBLIC_GROUP]:{
+        [e_field.PUBLIC_GROUP.CREATOR_ID]:{relatedColl:e_coll.USER,forSelect:`${e_field.USER.NAME}`,forSetValue:[e_field.USER.NAME],validCriteria:undefined,fkCollOwnerField:undefined},
+        [e_field.PUBLIC_GROUP.ADMINS_ID]:{relatedColl:e_coll.USER,forSelect:`${e_field.USER.NAME}`,forSetValue:[e_field.USER.NAME],validCriteria:undefined,fkCollOwnerField:undefined},
+        [e_field.PUBLIC_GROUP.MEMBERS_ID]:{relatedColl:e_coll.USER,forSelect:`${e_field.USER.NAME}`,forSetValue:[e_field.USER.NAME],validCriteria:undefined,fkCollOwnerField:undefined}
     }
 }
 

@@ -142,6 +142,12 @@ const PenalizeType={
         NO_IMPEACH_COMMENT:'5',
         //user_friend_group
         NO_USER_FRIEND_GROUP:'7',
+
+        //add_friend
+        NO_ADD_FRIEND:'8',
+
+        //public_group
+        NO_PUBLIC_GROUP:'9',
     },
     SHOW:{
         NO_ARTICLE: '禁止文档',
@@ -152,6 +158,12 @@ const PenalizeType={
         NO_IMPEACH_COMMENT:'禁止评论举报',
         //user_friend_group
         NO_USER_FRIEND_GROUP:'禁止好友分组',
+
+        //add_friend
+        NO_ADD_FRIEND:'禁止添加好友',
+
+        //public_group
+        NO_PUBLIC_GROUP:'禁止创建群',
     },
 
 }
@@ -403,6 +415,21 @@ const DocumentStatus={
         COMMIT:'新建记录，已经提交',
     },
 }
+
+/*  发出添加朋友请求后，请求的状态
+ */
+const AddFriendStatus={
+    DB:{
+        UNTREATED:'1',
+        ACCEPT:'2',
+        REJECT:'3',
+    },
+    SHOW:{
+        UNTREATED:'尚未处理',
+        ACCEPT:'接受',
+        REJECT:'拒绝',
+    },
+}
 module.exports={
     ArticleStatus,
     AdminUserType,
@@ -429,4 +456,5 @@ module.exports={
     ResourceProfileRange,
     ResourceProfileType,
     DocumentStatus,
+    AddFriendStatus,
 }

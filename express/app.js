@@ -93,14 +93,18 @@ const article=require('./server/controller/article/article_router').router
 const impeach=require('./server/controller/impeach/impeach_router').router
 const impeach_action=require('./server/controller/impeach_action/impeach_action_router').router
 const impeach_comment=require('./server/controller/impeach_comment/impeach_comment_router').router
+const add_friend=require('./server/controller/add_friend/add_friend_router').router
 const user_friend_group=require('./server/controller/user_friend_group/user_friend_group_router').router
+const public_group=require('./server/controller/public_group/public_group_router').router
 
 app.use('/user', user);
 app.use('/article', article);
 app.use('/impeach', impeach);
 app.use('/impeach_action', impeach_action);
 app.use('/impeach_comment', impeach_comment);
+app.use('/add_friend', add_friend);
 app.use('/user_friend_group', user_friend_group);
+app.use('/public_group', public_group);
 // app.use('/register/uniqueCheck', register);
 // app.use('/users', users);
 

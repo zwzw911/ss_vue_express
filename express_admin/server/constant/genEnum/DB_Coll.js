@@ -18,6 +18,7 @@ const Coll={
     LIKE_DISLIKE:'like_dislike',
     TAG:'tag',
     /*       friend           */
+    ADD_FRIEND:'add_friend',
     MEMBER_PENALIZE:'member_penalize',
     PUBLIC_GROUP:'public_group',
     PUBLIC_GROUP_EVENT:'public_group_event',

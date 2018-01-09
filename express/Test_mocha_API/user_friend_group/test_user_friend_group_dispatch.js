@@ -3,6 +3,9 @@
  */
 'use strict'
 
+const controllerError=require('../../server/controller/user_friend_group/user_friend_group_setting/user_friend_group_controllerError').controllerError
+let baseUrl="/user_friend_group/",finalUrl,url
+
 
 // const request=require('supertest')
 const app=require('../../app')
@@ -39,7 +42,7 @@ const browserInputRule=require('../../server/constant/inputRule/browserInputRule
 const validateError=server_common_file_require.validateError//require('../../server/constant/error/validateError').validateError
 const controllerHelperError=server_common_file_require.helperError.helper//require('../../server/constant/error/controller/helperError').helper
 // const controllerCheckerError=server_common_file_require.helperError.checker
-
+const globalConfiguration=server_common_file_require.globalConfiguration
 
 // const objectDeepCopy=server_common_file_require.misc.objectDeepCopy
 
@@ -50,14 +53,14 @@ const inputRule_API_tester=server_common_file_require.inputRule_API_tester
 const component_function=server_common_file_require.component_function
 
 // const controllerError=require('../../server/controller/penalize/penalize_setting/penalize_controllerError').controllerError
-const controllerError=require('../../server/controller/user_friend_group/user_friend_group_setting/user_friend_group_controllerError').controllerError
+
 let rootSess
-let baseUrl="/user_friend_group/",finalUrl,url
+
 let recordId //当有update/delete的时候，需要真实的recordid，来pass recordId的最后一个case（正确通过）
 let normalRecord={
-    [e_field.IMPEACH_ACTION.IMPEACH_ID]:undefined,
-    [e_field.IMPEACH_ACTION.ACTION]:e_impeachAllAction.SUBMIT,
-    [e_field.IMPEACH_ACTION.OWNER_ID]:undefined,
+    [e_field.USER_FRIEND_GROUP.OWNER_USER_ID]:undefined,
+    [e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP]:undefined,
+    [e_field.USER_FRIEND_GROUP.FRIEND_GROUP_NAME]:undefined,
     // [e_field.IMPEACH_ACTION.OWNER_ID]:undefined,
 
 }
@@ -81,9 +84,9 @@ let parameter={
     [e_parameterPart.SESS]:undefined,
     [e_parameterPart.SESS_ERROR_RC]:undefined,
     [e_parameterPart.API_URL]:undefined,
-    [e_parameterPart.PENALIZE_RELATED_INFO]:{penalizeType:e_penalizeType.NO_IMPEACH,penalizeSubType:e_penalizeSubType.CREATE,penalizedUserData:testData.user.user1,penalizedError:controllerError.userInPenalizeNoImpeachCreate,adminApp:adminApp},
+    [e_parameterPart.PENALIZE_RELATED_INFO]:{penalizeType:e_penalizeType.NO_USER_FRIEND_GROUP,penalizeSubType:e_penalizeSubType.CREATE,penalizedUserData:testData.user.user1,penalizedError:controllerError.inPenalizeCantCreateUserFriendGroup,adminApp:adminApp},
     [e_parameterPart.REQ_BODY_VALUES]:{[e_part.RECORD_INFO]:normalRecord},
-    [e_parameterPart.COLL_NAME]:e_coll.IMPEACH_ACTION,
+    [e_parameterPart.COLL_NAME]:e_coll.USER_FRIEND_GROUP,
     [e_parameterPart.SKIP_PARTS]:undefined,
     [e_parameterPart.APP]:app,
 }
@@ -98,9 +101,9 @@ describe('dispatch', function() {
         user1Id=user1Info[`userId`]
         user1Sess=user1Info[`sess`]
         parameter['sess']=user1Sess
-        let articledId=await component_function.createArticle_setToFinish_returnArticleId_async({userSess:user1Sess,app:app})
+/*        let articledId=await component_function.createArticle_setToFinish_returnArticleId_async({userSess:user1Sess,app:app})
         let impeachId=await API_helper.createImpeachForArticle_returnImpeachId_async({articleId:articledId,userSess:user1Sess,app:app})
-        normalRecord[e_field.IMPEACH_ACTION.IMPEACH_ID]=impeachId
+        normalRecord[e_field.IMPEACH_ACTION.IMPEACH_ID]=impeachId*/
         // normalRecord[e_field.IMPEACH_ACTION.OWNER_COLL]=e_coll.USER
         // normalRecord[e_field.IMPEACH_ACTION.OWNER_ID]=userId  //普通用户无需输入OWNERID
 
@@ -124,28 +127,34 @@ describe('dispatch', function() {
         await API_helper.createPenalize_async({adminUserSess:rootSess,penalizeInfo:penalizeInfo,pernalizedUserData:testData.user.user1,adminApp:adminApp})
     })*/
     it(`preCheck for create`,async function(){
-        parameter[e_parameterPart.SESS_ERROR_RC]=controllerError.notLoginCantChangeState.rc
+        normalRecord={[e_field.USER_FRIEND_GROUP.FRIEND_GROUP_NAME]:'新的分组'}
+        parameter[e_parameterPart.SESS_ERROR_RC]=controllerError.notLoginCantCreateUserFriendGroup.rc
         parameter[e_parameterPart.REQ_BODY_VALUES][e_part.METHOD]=e_method.CREATE
-        parameter[e_parameterPart.PENALIZE_RELATED_INFO][`penalizeType`]=e_penalizeType.NO_IMPEACH_COMMENT
+        parameter[e_parameterPart.PENALIZE_RELATED_INFO][`penalizeType`]=e_penalizeType.NO_USER_FRIEND_GROUP
         parameter[e_parameterPart.PENALIZE_RELATED_INFO][`penalizeSubType`]=e_penalizeSubType.CREATE
         parameter[e_parameterPart.PENALIZE_RELATED_INFO][`penalizedUserData`]=testData.user.user1
-        parameter[e_parameterPart.PENALIZE_RELATED_INFO][`penalizedError`]=controllerError.currentUserForbidToCreateImpeachComment
+        parameter[e_parameterPart.PENALIZE_RELATED_INFO][`penalizedError`]=controllerError.inPenalizeCantCreateUserFriendGroup
         // parameter[`sessErrorRc`]=controllerError.notLoginCantChangeState.rc
         // parameter[`method`]=e_method.CREATE
         await inputRule_API_tester.dispatch_partCheck_async(parameter)
     })
     it(`preCheck for update`,async function(){
-        parameter[e_parameterPart.SESS_ERROR_RC]=controllerError.userNotLoginCantUpdate.rc
+        let defaultGroupName=globalConfiguration.userGroupFriend.defaultGroupName.enumFormat
+        recordId=await db_operation_helper.getGroupId_async({userId:user1Id,groupName:defaultGroupName.MyFriend})
+
+        normalRecord={[e_field.USER_FRIEND_GROUP.FRIEND_GROUP_NAME]:'新的分组'}
+        parameter[e_parameterPart.REQ_BODY_VALUES][e_parameterPart.REQ_BODY_VALUES]=normalRecord
+        parameter[e_parameterPart.SESS_ERROR_RC]=controllerError.notLoginCantUpdateUserFriendGroup.rc
         parameter[e_parameterPart.REQ_BODY_VALUES][e_part.METHOD]=e_method.UPDATE
-        parameter[e_parameterPart.PENALIZE_RELATED_INFO][`penalizeType`]=e_penalizeType.NO_IMPEACH_COMMENT
+        parameter[e_parameterPart.PENALIZE_RELATED_INFO][`penalizeType`]=e_penalizeType.NO_USER_FRIEND_GROUP
         parameter[e_parameterPart.PENALIZE_RELATED_INFO][`penalizeSubType`]=e_penalizeSubType.UPDATE
         parameter[e_parameterPart.PENALIZE_RELATED_INFO][`penalizedUserData`]=testData.user.user1
-        parameter[e_parameterPart.PENALIZE_RELATED_INFO][`penalizedError`]=controllerError.currentUserForbidToCreateImpeachComment
+        parameter[e_parameterPart.PENALIZE_RELATED_INFO][`penalizedError`]=controllerError.inPenalizeCantUpdateUserFriendGroup
         parameter[e_parameterPart.REQ_BODY_VALUES][e_part.RECORD_ID]=recordId
         await inputRule_API_tester.dispatch_partCheck_async(parameter)
         delete parameter[e_parameterPart.REQ_BODY_VALUES][e_part.RECORD_ID]
     })
-    it(`preCheck for delete`,async function(){
+/*    it(`preCheck for delete`,async function(){
         // parameter[`sessErrorRc`]=controllerError.notLoginCantDeletePenalize.rc
         // parameter[`method`]=e_method.DELETE
         parameter[e_parameterPart.SESS_ERROR_RC]=controllerError.notLoginCantDeletePenalize.rc
@@ -154,7 +163,7 @@ describe('dispatch', function() {
         // parameter[e_parameterPart.PENALIZE_RELATED_INFO][`penalizeSubType`]=undefined
         // parameter[e_parameterPart.PENALIZE_RELATED_INFO][`penalizedError`]=undefined
         await inputRule_API_tester.dispatch_partCheck_async(parameter)
-    })
+    })*/
 
 
 

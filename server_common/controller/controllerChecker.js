@@ -3,12 +3,14 @@
  * 所有执行  是否  功能的函数的集合
  */
 'use strict'
+const ap=require('awesomeprint')
 
 const mime=require(`mime`)
 const helperError=require('../constant/error/controller/helperError').helper
 
 const e_dbModel=require('../constant/genEnum/dbModel')
 const common_operation_model=require('../model/mongo/operation/common_operation_model')
+const common_operation_helper=require('../model/mongo/operation/common_operation_helper')
 
 const e_uniqueField=require('../constant/genEnum/DB_uniqueField').UniqueField
 const e_chineseName=require('../constant/genEnum/inputRule_field_chineseName').ChineseName
@@ -16,7 +18,9 @@ const e_serverRuleType=require('../constant/enum/inputDataRuleType').ServerRuleT
 const e_field=require('../constant/genEnum/DB_field').Field
 const e_adminPriorityType=require('../constant/enum/mongoEnum').AdminPriorityType.DB
 const e_allUserType=require('../constant/enum/mongoEnum').AllUserType.DB
-const e_userInfoField=require(`../constant/enum/nodeRuntimeEnum`).userInfoField
+
+const e_userInfoField=require(`../constant/enum/nodeRuntimeEnum`).UserInfoField
+const e_subField=require(`../constant/enum/nodeEnum`).SubField
 
 const allAdminPriorityType=require('../constant/genEnum/enumValue').AdminPriorityType
 
@@ -25,6 +29,8 @@ const compound_unique_field_config=require(`../model/mongo/compound_unique_field
 const checkerError=require('../constant/error/controller/helperError').checker
 
 const misc=require('../function/assist/misc')
+
+const fkConfig=require('../model/mongo/fkConfig').fkConfig
 
 async function ifRoot_async({userName:userName}){
     // let condition={[e_fi]}
@@ -130,6 +136,7 @@ async function ifCompoundFiledUnique_returnExistRecord_async({collName,docValue}
             // console.log(`singleCompound===========>${JSON.stringify(singleCompound)}`)
             let condition={},allCompoundFiledAvailable=true
             //检测复合字段的每个字段都有值
+            // let singleCompoundFields=Object.keys(singleCompound)
             for(let singleField of singleCompound){
                 //复合字段中，如果某个字段，在docValue没有设置值，直接忽略
                 //因为在mongo中，某个字段不需要值，直接unset，而不是设成null等，所以如果传入的带检测值有空字段，直接忽略unqique检测
@@ -146,6 +153,7 @@ async function ifCompoundFiledUnique_returnExistRecord_async({collName,docValue}
             if(true===allCompoundFiledAvailable){
                 // console.log(`compound condition=============>${JSON.stringify(condition)}`)
                 // console.log(`collName=============>${JSON.stringify(collName)}`)
+                ap.print('condition',condition)
                 let results=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel[collName],condition:condition})
                 // console.log(`compound result=============>${JSON.stringify(results)}`)
                 if(results.length>1){
@@ -175,6 +183,7 @@ async function ifFkValueExist_async({docValue,collFkConfig,collFieldChineseName}
         // console.log(`docValue ========>${JSON.stringify(docValue)}`)
         for(let singleFkFieldName in collFkConfig){
             // console.log(`singleFkFieldName=======>${singleFkFieldName}`)
+            // ap.print('docValue',docValue)
             // console.log(`docValue[singleFkFieldName]===============>${JSON.stringify(docValue[singleFkFieldName])}`)
             //外键值不空，才进行是否存在的检测
             if(undefined!==docValue[singleFkFieldName]){
@@ -376,8 +385,10 @@ async function ifPenalizeOngoing_async({userId, penalizeType,penalizeSubType}){
         [e_field.ADMIN_PENALIZE.PENALIZE_TYPE]:penalizeType,
         [e_field.ADMIN_PENALIZE.PENALIZE_SUB_TYPE]:penalizeSubType,
     }//,,
+    // ap.print('penalize condition',condition)
     let activePenalizeRecords=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.admin_penalize,condition:condition,selectedFields:'-uDate'})
     // console.log(`activePenalizeRecords===========>${JSON.stringify(activePenalizeRecords)}`)
+    // ap.print('activePenalizeRecords',activePenalizeRecords)
     if(activePenalizeRecords.length>0){
         return Promise.resolve(true)
     }else{
@@ -465,6 +476,8 @@ async function ifFileSuffixMatchContentType_returnSuffixOrFalse_async({uploadFil
     }
 }
 
+
+
 module.exports= {
     // ifFieldValueExistInColl_async,// 检测字段值是否已经在db中存在
     ifSingleFieldFkValueExist_async, //根据coll中的2个字段（外键和外键对应coll），动态确定外键是否在指定的coll中存在
@@ -490,4 +503,6 @@ module.exports= {
     ifCurrentUserCreatorOfImpeach_async,
 
     ifFileSuffixMatchContentType_returnSuffixOrFalse_async,
+
+
 }

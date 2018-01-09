@@ -42,7 +42,7 @@ const FileSizeUnit={
 }
 
 //保存用户信息到session时，那些字段是必须的
-const userInfoField={
+const UserInfoField={
     USER_ID:`userId`,
     USER_COLL_NAME:`userCollName`,
     USER_TYPE:`userType`,
@@ -54,5 +54,5 @@ module.exports={
     GmGetter,
     GmCommand,
     FileSizeUnit,
-    userInfoField,
+    UserInfoField,
 }

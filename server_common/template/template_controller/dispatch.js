@@ -2,6 +2,8 @@
  * Created by wzhan039 on 2017/10/24.
  */
 'use strict'
+const ap=require(`awesomeprint`)
+
 /*                          server common                       */
 const server_common_file_require=require('../../../server_common_file_require')
 
@@ -10,6 +12,7 @@ const mongoEnum=server_common_file_require.mongoEnum
 const controllerHelper=server_common_file_require.controllerHelper
 
 const e_uploadFileType=nodeEnum.UploadFileType
+const e_findEleInArray=nodeEnum.FindEleInArray
 
 const e_penalizeType=mongoEnum.PenalizeType.DB
 const e_penalizeSubType=mongoEnum.PenalizeSubType.DB
@@ -46,7 +49,7 @@ async function dispatcher_async({req,impeachType}){
     let method=req.body.values[e_part.METHOD]
     delete req.body.values[e_part.METHOD]
 
-    let userLoginCheck,penalizeCheck,expectedPart
+    let userLoginCheck,penalizeCheck,expectedPart,optionalPart
     switch (method){
         case e_method.CREATE: //create
             /*          create 必须有impeachType（impeach_route中，根据URL设置）           */
@@ -105,13 +108,19 @@ async function dispatcher_async({req,impeachType}){
             }
 
             expectedPart=[e_part.RECORD_INFO,e_part.RECORD_ID]
-            // console.log(`update preCheck start============>`)
+
+            optionalPart=[e_part.RECORD_INFO,e_part.EDIT_SUB_FIELD]
+            controllerHelper.checkOptionPartExist({req:req,optionPart:optionalPart,findType:e_findEleInArray.AT_LEAST_ONE,expectedPart:expectedPart})
+            if(tmpResult.rc>0){
+                return Promise.reject(tmpResult)
+            }
+
             tmpResult=await controllerHelper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
             //tmpResult=await controllerHelper.preCheck_async({req:req,collName:collConfig.collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart,e_field:e_field,e_coll:e_coll,e_internal_field:e_internal_field,maxSearchKeyNum:maxSearchKeyNum,maxSearchPageNum:maxSearchPageNum})
             // console.log(`update preCheck done============>`)
 
             /*      执行逻辑                */
-            tmpResult=await update_async({req:req})
+            tmpResult=await update_async({req:req,expectedPart:expectedPart})
             break;
         case e_method.DELETE: //delete
             userLoginCheck={

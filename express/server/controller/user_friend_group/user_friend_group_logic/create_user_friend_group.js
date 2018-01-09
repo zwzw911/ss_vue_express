@@ -2,7 +2,7 @@
  * Created by ada on 2017/9/1.
  */
 'use strict'
-
+const ap=require('awesomeprint')
 
 /*                      controller setting                */
 const controller_setting=require('../user_friend_group_setting/user_friend_group_setting').setting
@@ -56,8 +56,9 @@ const fkConfig=server_common_file_require.fkConfig.fkConfig
 
 /*                      configuration                                               */
 const userGroupFriend_Configuration=server_common_file_require.globalConfiguration.userGroupFriend
+
 async  function createUserFriendGroup_async({req}){
-    // console.log(`create impeach in`)
+    // console.log(`createUserFriendGroup_async in`)
     /*******************************************************************************************/
     /*                                          define variant                                 */
     /*******************************************************************************************/
@@ -72,6 +73,7 @@ async  function createUserFriendGroup_async({req}){
     /*******************************************************************************************/
     /*                                     用户类型和权限检测                                  */
     /*******************************************************************************************/
+    await controllerChecker.ifExpectedUserType_async({req:req,arr_expectedUserType:[e_allUserType.USER_NORMAL]})
     /*******************************************************************************************/
     /*                                     参数转为server格式                                  */
     /*******************************************************************************************/
@@ -92,7 +94,9 @@ async  function createUserFriendGroup_async({req}){
         [e_field.USER_FRIEND_GROUP.OWNER_USER_ID]:userId,
     }
     let existUserFriendGroupNum=await common_operation_model.count_async({dbModel:e_dbModel.user_friend_group,condition:condition})
-    if(existUserFriendGroupNum>userGroupFriend_Configuration.maxUserFriendGroupNum){
+    // ap.print('existUserFriendGroupNum',existUserFriendGroupNum)
+    // ap.print('userGroupFriend_Configuration.maxUserFriendGroupNum',userGroupFriend_Configuration.max.maxUserFriendGroupNum)
+    if(existUserFriendGroupNum>=userGroupFriend_Configuration.max.maxUserFriendGroupNum){
         return Promise.reject(controllerError.reachMaxUserFriendGroupNum)
     }
     /*******************************************************************************************/
@@ -124,15 +128,15 @@ async  function createUserFriendGroup_async({req}){
     /*******************************************************************************************/
     /*                 因为name是unique，所以要检查用户名是否存在(unique check)                */
     /*******************************************************************************************/
-    //此处unique是对用户，而非对整个coll
+/*    //此处unique是对用户，而非对整个coll
     condition={
         [e_field.USER_FRIEND_GROUP.OWNER_USER_ID]:userId,
         [e_field.USER_FRIEND_GROUP.FRIEND_GROUP_NAME]:docValue[e_field.USER_FRIEND_GROUP.FRIEND_GROUP_NAME]
     }
     tmpResult=await common_operation_model.count_async({dbModel:e_dbModel.user_friend_group,condition:condition})
     if(tmpResult>0){
-        return Promise.reject(controllerError.groupNameAlreadyExist)
-    }
+        return Promise.reject(controllerError.groupNameAlreadyExistCantUpdate)
+    }*/
 
     /*******************************************************************************************/
     /*                              检查是否有为完成的doc，以便复用                            */
@@ -154,41 +158,6 @@ async  function createUserFriendGroup_async({req}){
     let internalValue={}
     // internalValue[e_field.USER_FRIEND_GROUP.]=impeachType
     internalValue[e_field.USER_FRIEND_GROUP.OWNER_USER_ID]=userId
-    //根据被举报的类型（文档还是评论）获得其作者ID
-    let impeachedThingId //articleId/comment的id
-    let impeachedThingFieldName //impeach中，id位于（article/comment）的那个coll
-    let impeachedThingRelatedColl //id对应哪个coll，以便从中获得userId
-    let impeachedThingRelatedCollFieldName //id对应哪个coll，其中哪个字段代表userId
-    switch (impeachType){
-        case e_impeachType.ARTICLE:
-            impeachedThingRelatedColl=e_coll.ARTICLE
-            impeachedThingRelatedCollFieldName=e_field.ARTICLE.AUTHOR_ID
-
-            impeachedThingFieldName=e_field.IMPEACH.IMPEACHED_ARTICLE_ID
-            break;
-        case e_impeachType.COMMENT:
-            impeachedThingRelatedColl=e_coll.ARTICLE_COMMENT
-            impeachedThingRelatedCollFieldName=e_field.ARTICLE_COMMENT.AUTHOR_ID
-
-            impeachedThingFieldName=e_field.IMPEACH.IMPEACHED_COMMENT_ID
-            break;
-        default:
-            return Promise.reject(controllerError.unknownImpeachType)
-
-    }
-    impeachedThingId=docValue[impeachedThingFieldName]
-    let impeachedRecord=await  common_operation_model.findById_returnRecord_async({dbModel:e_dbModel[impeachedThingRelatedColl],id:impeachedThingId})
-    // console.log(`impeachedRecord==========>${JSON.stringify(impeachedRecord)}`)
-    if(null===impeachedRecord){
-        return Promise.reject(controllerError.impeachObjectNotExist)
-    }
-    // console.log(`impeachedRecord[impeachedThingRelatedCollFieldName]==》${impeachedRecord[impeachedThingRelatedCollFieldName]}`)
-    // console.log(`impeachedRecord[impeachedThingRelatedCollFieldName]==》${impeachedRecord[impeachedThingRelatedCollFieldName].toString()}`)
-    internalValue[e_field.IMPEACH.IMPEACHED_USER_ID]=impeachedRecord[impeachedThingRelatedCollFieldName].toString()    //返回mongoose文档，其中每个字段的值都是object，需要手工转换，以便通过OBJECT_ID的测试（字符）
-
-    internalValue[e_field.IMPEACH.CREATOR_ID]=userId
-    internalValue[e_field.IMPEACH.CURRENT_STATE]=e_impeachState.NEW
-    // console.log(`7`)
     /*              对内部产生的值进行检测（开发时使用，上线后为了减低负荷，无需使用）           */
     if(e_env.DEV===currentEnv){
         let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInputRule:inputRule[collName],collInternalRule:internalInputRule[collName]})
@@ -209,12 +178,12 @@ async  function createUserFriendGroup_async({req}){
     //复合字段唯一返回true或者已有的doc
     //有重复值，且重复记录数为1（大于1，已经直接reject）
     if(true!==compoundUniqueCheckResult){
-        if(undefined!==docValue[e_field.IMPEACH.IMPEACHED_ARTICLE_ID]){
-            return Promise.reject(controllerError.articleAlreadyImpeached)
+        if(undefined!==docValue[e_field.USER_FRIEND_GROUP.FRIEND_GROUP_NAME]){
+            return Promise.reject(controllerError.groupNameAlreadyExistCantCreate)
         }
-        if(undefined!==docValue[e_field.IMPEACH.IMPEACHED_COMMENT_ID]){
+/*        if(undefined!==docValue[e_field.IMPEACH.IMPEACHED_COMMENT_ID]){
             return Promise.reject(controllerError.articleCommentAlreadyImpeached)
-        }
+        }*/
     }
     /*******************************************************************************************/
     /*                                  db operation                                           */
@@ -223,7 +192,7 @@ async  function createUserFriendGroup_async({req}){
     tmpResult= await common_operation_model.create_returnRecord_async({dbModel:e_dbModel[collName],value:docValue})
 // console.log(`create result is ====>${JSON.stringify(tmpResult)}`)
 
-    //插入关联数据（impeach action=create）
+   /* //插入关联数据（impeach action=create）
     let impeachStateValue={
         [e_field.IMPEACH_ACTION.IMPEACH_ID]:tmpResult['_id'],
         // [e_field.IMPEACH_STATE.OWNER_ID]:userId,
@@ -232,7 +201,7 @@ async  function createUserFriendGroup_async({req}){
         [e_field.IMPEACH_ACTION.CREATOR_ID]:userId,
         [e_field.IMPEACH_ACTION.CREATOR_COLL]:e_coll.USER,
     }
-    await common_operation_model.create_returnRecord_async({dbModel:e_dbModel.impeach_action,value:impeachStateValue})
+    await common_operation_model.create_returnRecord_async({dbModel:e_dbModel.impeach_action,value:impeachStateValue})*/
     return Promise.resolve({rc:0,msg:tmpResult})
 }
 

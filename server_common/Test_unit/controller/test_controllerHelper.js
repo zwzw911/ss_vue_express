@@ -14,6 +14,8 @@ const mongoEnum=require(`../../constant/enum/mongoEnum`)
 
 const e_part=nodeEnum.ValidatePart
 const e_method=nodeEnum.Method
+const e_subField=nodeEnum.SubField
+
 const e_field=require('../../server/constant/genEnum/DB_field').Field
 const e_coll=require('../../server/constant/genEnum/DB_Coll').Coll
 // const e_articleStatus=mongoEnum.ArticleStatus.DB
@@ -23,6 +25,8 @@ const e_resourceProfileRange=mongoEnum.ResourceProfileRange.DB
 const e_resourceType=nodeEnum.ResourceType
 
 const e_impeachType=mongoEnum.ImpeachType.DB
+
+const e_serverRuleType=require(`../../constant/enum/inputDataRuleType`).ServerRuleType
 
 const common_operation_model=require(`../../model/mongo/operation/common_operation_model`)
 const e_dbModel=require('../../constant/genEnum/dbModel')
@@ -40,7 +44,7 @@ const validateError=require('../../server/constant/error/validateError').validat
 //
 // const test_helper=require("../API_helper/db_operation_helper")
 const testData=require('../../Test/testData')
-const helper=require(`../../controller/controllerHelper`)//require('../../server/controller/helper')
+const controllerHelper=require(`../../controller/controllerHelper`)//require('../../server/controller/helper')
 const controllerChecker=require(`../../controller/controllerChecker`)
 
 const db_operation_helper=require('../../Test/db_operation_helper')
@@ -61,7 +65,7 @@ describe('helpe=>XSS ', async function() {
         // console.log(`testData.user.user1 ${JSON.stringify(testData.user.user1)}`)
         let content='<script>'
         let error={rc:1}
-        helper.contentXSSCheck_async({content:content,error:error}).then(
+        controllerHelper.contentXSSCheck_async({content:content,error:error}).then(
             (res)=>{},
             (err)=>{
                 // console.log(`xss====>${JSON.stringify(err)}`)
@@ -166,7 +170,7 @@ describe('help=>calcExistResource_async ', async function() {
 
 // console.log(`resourceFieldName =================> ${JSON.stringify(calcResourceConfig.resourceFileFieldName[e_coll.IMPEACH_IMAGE])}`)
 
-        let currentResourceResult=await helper.calcExistResource_async({
+        let currentResourceResult=await controllerHelper.calcExistResource_async({
             resourceProfileRange:e_resourceProfileRange.PER_IMPEACH_OR_COMMENT,
             resourceFileFieldName:calcResourceConfig.resourceFileFieldName[e_coll.IMPEACH_IMAGE],
             fieldsValueToFilterGroup:calcResourceConfig.fieldsValueToFilterGroup({impeach:{userId:user2Id,referenceId:impeachId}})[e_coll.IMPEACH_IMAGE],
@@ -181,7 +185,7 @@ describe('help=>calcExistResource_async ', async function() {
 
         let validResourceProfileRange=[e_resourceProfileRange.PER_PERSON_IN_IMPEACH]
         for(let singleResourceProfileRange of validResourceProfileRange){
-            resourceProfile[singleResourceProfileRange]=await helper.chooseLastValidResourceProfile_async({resourceProfileRange:singleResourceProfileRange,userId:user2Id})
+            resourceProfile[singleResourceProfileRange]=await controllerHelper.chooseLastValidResourceProfile_async({resourceProfileRange:singleResourceProfileRange,userId:user2Id})
 
 // console.log(`tester chosee last range===========>${JSON.stringify(resourceProfile[singleResourceProfileRange])}`)
             let result=await controllerChecker.ifNewFileLeadExceed_async({
@@ -249,7 +253,7 @@ describe('help=>contentDbDeleteNotExistImage_async ', async function() {
 
     it('contentDbDeleteNotExistImage_async==>image in content not in db', async function () {
         let inputContent='test <img src="http://127.0.0.1/912ec803b2ce49e4a541068d495ab570.png">'
-        let convertContent=await helper.contentDbDeleteNotExistImage_async({
+        let convertContent=await controllerHelper.contentDbDeleteNotExistImage_async({
             content:inputContent,
             recordId:impeachId,
             collConfig:collConfig,
@@ -259,7 +263,7 @@ describe('help=>contentDbDeleteNotExistImage_async ', async function() {
     })
     it('contentDbDeleteNotExistImage_async==>image in content not own site', async function () {
         let inputContent='test <img src="http://xss.org/912ec803b2ce49e4a541068d495ab570.png">'
-        let convertContent=await helper.contentDbDeleteNotExistImage_async({
+        let convertContent=await controllerHelper.contentDbDeleteNotExistImage_async({
             content:inputContent,
             recordId:impeachId,
             collConfig:collConfig,
@@ -281,7 +285,7 @@ describe('help=>contentDbDeleteNotExistImage_async ', async function() {
         assert.deepStrictEqual(impeachWithImageInsert[e_field.IMPEACH.IMPEACH_IMAGES_ID].length, 1)
 
         //db中的
-        let convertContent=await helper.contentDbDeleteNotExistImage_async({
+        let convertContent=await controllerHelper.contentDbDeleteNotExistImage_async({
             content:inputContent,
             recordId:impeachId,
             collConfig:collConfig,
@@ -291,5 +295,25 @@ describe('help=>contentDbDeleteNotExistImage_async ', async function() {
 
         assert.deepStrictEqual(convertContent, 'test ')
         assert.deepStrictEqual(impeachWithImageDelete[e_field.IMPEACH.IMPEACH_IMAGES_ID].length, 0)
+    })
+})
+
+describe('controllerHelper.checkEditSubFieldEleArray_async ', async function() {
+    let func=controllerHelper.checkEditSubFieldEleArray_async
+    let partValue,singleSubValue,result
+
+    it('fkConfig miss define', async function () {
+        singleSubValue={
+            [e_field.USER_FRIEND_GROUP.OWNER_USER_ID]:{
+                // [e_subField.TO]:
+            }
+        }
+        result=func({
+            singleEditSubFieldValue:singleSubValue,
+            eleAdditionalCondition:undefined,
+            collName:e_coll.USER_FRIEND_GROUP,
+            fieldName:[e_field.USER_FRIEND_GROUP.OWNER_USER_ID],
+            userId:})
+        assert.deepStrictEqual(convertContent, 'test ')
     })
 })

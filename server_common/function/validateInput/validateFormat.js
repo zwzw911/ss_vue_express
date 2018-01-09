@@ -10,6 +10,7 @@
 'use strict'
 // require("babel-polyfill");
 // require("babel-core/register")
+const ap=require('awesomeprint')
 
 const dataTypeCheck=require('./validateHelper').dataTypeCheck
 const searchSetting=require('../../constant/config/globalConfiguration').searchSetting
@@ -94,9 +95,11 @@ function  validatePartFormat (inputValue,expectedParts){
             return validateFormatError.inputValuePartNotMatch
         }
     }
+    // ap.print('start part value format check')
     for(let partKey in inputValue){
         //3.2 每个part的value的类型
         let partFormatCheckResult=validatePartValueFormat({part:partKey,partValue:inputValue[partKey]})
+        // ap.print('partFormatCheckResult',partFormatCheckResult)
         if(partFormatCheckResult.rc>0){return partFormatCheckResult}
     }
     return rightResult
@@ -146,10 +149,17 @@ function validatePartValueFormat({part,partValue}){
                 return validateFormatError.inputValuePartSearchParamsValueFormatWrong
             }
             break;
-        case e_validatePart.EVENT_FIELD:
+        case e_validatePart.EVENT:
             if(false===dataTypeCheck.isObject(partValue)){
                 // console.log(`searchparam errir in`)
                 return validateFormatError.inputValuePartEventValueFormatWrong
+            }
+            break;
+        case e_validatePart.EDIT_SUB_FIELD:
+            // ap.print('e_validatePart.EDIT_SUB_FIELD in')
+            if(false===dataTypeCheck.isObject(partValue)){
+                // console.log(`searchparam errir in`)
+                return validateFormatError.inputValuePartEditSubFieldValueFormatWrong
             }
             break;
         case e_validatePart.METHOD:
@@ -751,7 +761,7 @@ function validateStaticSearchParamsFormat(searchParams,inputRules){
                     */
 function validateEditSubFieldFormat({inputValue,browseInputRule}){
     // const SUB_FIELD=['from','to','eleArray']
-
+// ap.print('inputValue',inputValue)
     //1. 是否为object
     if(false===dataTypeCheck.isObject(inputValue)){
         return validateFormatError.editSubFieldMustBeObject

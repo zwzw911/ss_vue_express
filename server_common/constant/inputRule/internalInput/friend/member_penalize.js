@@ -11,7 +11,7 @@ const regex=require('../../../regex/regex').regex
 
 
 /*        field有enum才需要require        */
-const mongoEnum=require('../../../enum/mongoEnum')
+const enumValue=require('../../../../constant/genEnum//enumValue')
 
 const member_penalize= {
     creatorId: {
