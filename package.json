@@ -9,7 +9,7 @@
     "connect-redis": "^3.3.3",
     "cookie-parser": "^1.4.3",
     "debug": "^2.6.9",
-    "dompurify": "^0.8.9",
+    "dompurify": "^1.0.3",
     "express": "^4.16.2",
     "express-session": "^1.15.6",
     "gm": "^1.23.1",

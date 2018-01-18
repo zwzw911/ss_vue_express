@@ -2,6 +2,7 @@
  * Created by ada on 2017/8/9.
  */
 'use strict'
+const ap=require(`awesomeprint`)
 
 // const server_common_file_require=require('../../express_admin/server_common_file_require')
 const nodeEnum=require(`../constant/enum/nodeEnum`)
@@ -18,7 +19,7 @@ const e_field=require('../constant/genEnum/DB_field').Field
 const dbModelInArray=require('../constant/genEnum/dbModelInArray')
 
 const e_hashType=nodeRuntimeEnum.HashType
-const hash=require('../function/assist/crypt').hash() //server_common_file_require.crypt.hash
+const hash=require('../function/assist/crypt').hash //server_common_file_require.crypt.hash
 
 const e_accountType=mongoEnum.AccountType.DB
 const e_docStatus=mongoEnum.DocStatus.DB
@@ -31,13 +32,14 @@ const initSettingObject=require('../constant/genEnum/initSettingObject').iniSett
 const regex=require(`../constant/regex/regex`).regex//server_common_file_require.regex.regex
 
 let tmpResult
-async function deleteUserAndRelatedInfo_async({account}){
-    // console.log(`account =====>${JSON.stringify(account)}`)
-    let result=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.user,condition:{account:account}})
-    // console.log(`find user result =======>${JSON.stringify(result)}`)
+async function deleteUserAndRelatedInfo_async({account,name}){
+    // ap.inf('account',account)
+    let result=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.user,condition:{$or:[{account:account},{name:name}]}})
+    // ap.inf('find result',result)
     if(0<result.length){
         let userId=result[0]['id']
-        await common_operation_model.deleteOne_returnRecord_async({dbModel:e_dbModel.user,condition:{account:account}})
+        // ap.inf('delete use account',account)
+        await common_operation_model.deleteOne_returnRecord_async({dbModel:e_dbModel.user,condition:{_id:userId}})
         await common_operation_model.deleteOne_returnRecord_async({dbModel:e_dbModel.sugar,condition:{userId:userId}})
         await common_operation_model.deleteOne_returnRecord_async({dbModel:e_dbModel.user_friend_group,condition:{userId:userId}})
         await common_operation_model.deleteOne_returnRecord_async({dbModel:e_dbModel.folder,condition:{authorId:userId}})

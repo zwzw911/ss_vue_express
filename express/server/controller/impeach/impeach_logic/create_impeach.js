@@ -59,7 +59,7 @@ const fkConfig=server_common_file_require.fkConfig.fkConfig
 //对数值逻辑进行判断（外键是否有对应的记录等）
 //执行db操作并返回结果
 async  function createImpeach_async({req,impeachType}){
-    console.log(`create impeach in`)
+    // console.log(`create impeach in`)
     /*******************************************************************************************/
     /*                                          define variant                                 */
     /*******************************************************************************************/
@@ -217,7 +217,7 @@ async  function createImpeach_async({req,impeachType}){
     // console.log(`add internal done`)
     /*              对内部产生的值进行检测（开发时使用，上线后为了减低负荷，无需使用）           */
     if(e_env.DEV===currentEnv){
-        let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInputRule:inputRule[collName],collInternalRule:internalInputRule[collName]})
+        let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInputRule:inputRule[collName],collInternalRule:internalInputRule[collName],method:req.body.values[e_part.METHOD]})
         // console.log(`internalValue check result====>   ${JSON.stringify(tmpResult)}`)
         if(tmpResult.rc>0){
             return Promise.reject(tmpResult)

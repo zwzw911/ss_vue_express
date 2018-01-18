@@ -18,6 +18,8 @@ const nodeEnum=server_common_file_require.nodeEnum
 const nodeRuntimeEnum=server_common_file_require.nodeRuntimeEnum
 const mongoEnum=server_common_file_require.mongoEnum
 
+const e_applyRange=server_common_file_require.inputDataRuleType.ApplyRange
+
 const e_part=nodeEnum.ValidatePart
 const e_method=nodeEnum.Method
 const e_coll=require('../../server/constant/genEnum/DB_Coll').Coll
@@ -242,19 +244,30 @@ describe('create add friend:', async function() {
         await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user3Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
         // normalRecord[e_field.IMPEACH_ACTION.ACTION]=e_impeachUserAction.SUBMIT
     });
-    it('user3 try to update record that user2 add user3 with not necessary field', async function() {
+    it('user3 try to update record that user2 add user3 with not allow field', async function() {
         data.values={}
         normalRecord={}
-        normalRecord[e_field.ADD_FRIEND.STATUS]=e_addFriendStatus.REJECT
+        // normalRecord[e_field.ADD_FRIEND.STATUS]=e_addFriendStatus.REJECT
         normalRecord[e_field.ADD_FRIEND.RECEIVER]=user3Id
         data.values[e_part.RECORD_INFO]=normalRecord
         data.values[e_part.RECORD_ID]=recordId3
         data.values[e_part.METHOD]=e_method.UPDATE
-        expectedErrorRc=controllerError.notMandatoryFieldExist.rc
-        await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user3Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        expectedErrorRc=validateError.validateValue.fieldValueShouldNotExistSinceNoRelateApplyRange({fieldName:'receiver',applyRange:e_applyRange.UPDATE_SCALAR}).rc
+        await misc_helper.sendDataToAPI_compareFieldRc_async({APIUrl:finalUrl,sess:user3Sess,data:data,expectedErrorRc:expectedErrorRc,fieldName:e_field.ADD_FRIEND.RECEIVER,app:app})
         // normalRecord[e_field.IMPEACH_ACTION.ACTION]=e_impeachUserAction.SUBMIT
     });
-
+    it('user3 try to update record that user2 add user3 miss mandatory field', async function() {
+        data.values={}
+        normalRecord={}
+        // normalRecord[e_field.ADD_FRIEND.STATUS]=e_addFriendStatus.REJECT
+        normalRecord[e_field.ADD_FRIEND.RECEIVER]=user3Id
+        data.values[e_part.RECORD_INFO]=normalRecord
+        data.values[e_part.RECORD_ID]=recordId3
+        data.values[e_part.METHOD]=e_method.UPDATE
+        expectedErrorRc=browserInputRule.add_friend.status.require.error.rc
+        await misc_helper.sendDataToAPI_compareFieldRc_async({APIUrl:finalUrl,sess:user3Sess,data:data,expectedErrorRc:expectedErrorRc,fieldName:e_field.ADD_FRIEND.STATUS,app:app})
+        // normalRecord[e_field.IMPEACH_ACTION.ACTION]=e_impeachUserAction.SUBMIT
+    });
     /*//browser字段太少，无法测试
     it('user3 try to update record that user2 add user3 without necessary field', async function() {
         data.values={}
@@ -290,7 +303,9 @@ describe('create add friend:', async function() {
         data.values[e_part.METHOD]=e_method.UPDATE
         expectedErrorRc=0
         await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user3Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
-        // normalRecord[e_field.IMPEACH_ACTION.ACTION]=e_impeachUserAction.SUBMIT
+
+
+
     });
 })
 

@@ -6,7 +6,12 @@
 
 'use strict'
 
-const serverDataType=require('../../../enum/inputDataRuleType').ServerDataType
+const inputDataRuleType=require('../../../enum/inputDataRuleType')
+const serverDataType=inputDataRuleType.ServerDataType
+const ruleFiledName=inputDataRuleType.RuleFiledName
+const otherRuleFiledName=inputDataRuleType.OtherRuleFiledName
+const applyRange=inputDataRuleType.ApplyRange
+
 const regex=require('../../../regex/regex').regex
 
 // console.log(`internal serverDataType =========>${JSON.stringify(serverDataType)}`)
@@ -19,39 +24,41 @@ const collNameForFK=require('../../../../constant/enum/collEnum').collNameForFK
 
 const impeach_action= {
 /*    impeachId: {
-        'chineseName': '举报',
-        'type': serverDataType.OBJECT_ID,
-        'require': {define: true, error: {rc: 10590}, mongoError: {rc: 20590, msg: '举报不能为空'}},//默认为空对象
+        [otherRuleFiledName.CHINESE_NAME]: '举报',
+        [otherRuleFiledName.DATA_TYPE]: serverDataType.OBJECT_ID,
+        [ruleFiledName.REQUIRE]: {define: true, error: {rc: 10590}, mongoError: {rc: 20590, msg: '举报不能为空'}},//默认为空对象
         // 'arrayMinLength': {define: 0, error: {rc: 10002}, mongoError: {rc: 20002, msg: '至少设置1个标签'}},
         //'arrayMaxLength': {define: maxNumber.impeach.maxImageNumber, error: {rc: 10004}, mongoError: {rc: 20004, msg: `最多插入${maxNumber.impeach.maxImageNumber}个图片`}},
-        'format': {define: regex.objectId, error: {rc: 10592}, mongoError: {rc: 20592, msg: '举报必须是objectId'}} //server端使用
+        [ruleFiledName.FORMAT]: {define: regex.objectId, error: {rc: 10592}, mongoError: {rc: 20592, msg: '举报必须是objectId'}} //server端使用
     },*/
     //处理人
     creatorId: {
-        'chineseName': '状态改变人',
-        'type': serverDataType.OBJECT_ID,
-        'require': {define: false, error: {rc: 10598}, mongoError: {rc: 20598, msg: '状态改变人不能为空'}},//默认为空对象
+        [otherRuleFiledName.CHINESE_NAME]: '状态改变人',
+        [otherRuleFiledName.DATA_TYPE]: serverDataType.OBJECT_ID,
+        [otherRuleFiledName.APPLY_RANGE]:[applyRange.CREATE],
+        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true}, error: {rc: 10598}, mongoError: {rc: 20598, msg: '状态改变人不能为空'}},//默认为空对象
         // 'arrayMinLength': {define: 1, error: {rc: 10002}, mongoError: {rc: 20002, msg: '至少设置1个标签'}},
         //'arrayMaxLength': {define: maxNumber.impeach.maxAttachmentNumber, error: {rc: 10004}, mongoError: {rc: 20004, msg: `最多添加${maxNumber.impeach.maxAttachmentNumber}个附件`}},
-        'format': {define: regex.objectId, error: {rc: 10600}, mongoError: {rc: 20600, msg: '状态改变人必须是objectId'}} //server端使用
+        [ruleFiledName.FORMAT]: {define: regex.objectId, error: {rc: 10600}, mongoError: {rc: 20600, msg: '状态改变人必须是objectId'}} //server端使用
     },
     //处理人所在coll（通过enum限定可取的coll name）
     creatorColl: {
-        'chineseName': '状态改变人表',
-        'type': serverDataType.STRING,
-        'require': {define: false, error: {rc: 10594}, mongoError: {rc: 20594, msg: '状态改变人表不能为空'}},//默认为空对象
+        [otherRuleFiledName.CHINESE_NAME]: '状态改变人表',
+        [otherRuleFiledName.DATA_TYPE]: serverDataType.STRING,
+        [otherRuleFiledName.APPLY_RANGE]:[applyRange.CREATE],
+        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true}, error: {rc: 10594}, mongoError: {rc: 20594, msg: '状态改变人表不能为空'}},//默认为空对象
         // 'arrayMinLength': {define: 1, error: {rc: 10002}, mongoError: {rc: 20002, msg: '至少设置1个标签'}},
         //'arrayMaxLength': {define: maxNumber.impeach.maxAttachmentNumber, error: {rc: 10004}, mongoError: {rc: 20004, msg: `最多添加${maxNumber.impeach.maxAttachmentNumber}个附件`}},
-        // 'format': {define: regex.objectId, error: {rc: 10596}, mongoError: {rc: 20596, msg: '状态改变人表必须是objectId'}} //server端使用
-        'enum':{define:collNameForFK.impeach_state.dealerColl,error:{rc:10092},mongoError:{rc:20092,msg:'受罚子类型不正确'}},//server端使用
+        // [ruleFiledName.FORMAT]: {define: regex.objectId, error: {rc: 10596}, mongoError: {rc: 20596, msg: '状态改变人表必须是objectId'}} //server端使用
+        [ruleFiledName.ENUM]:{define:collNameForFK.impeach_state.dealerColl,error:{rc:10092},mongoError:{rc:20092,msg:'受罚子类型不正确'}},//server端使用
     },
 /*    state:{
-        'chineseName': '状态',
-        'type': serverDataType.STRING,
-        'require': {define: true, error: {rc: 10598}, mongoError: {rc: 20598, msg: '处理人不能为空'}},//默认为空对象
+        [otherRuleFiledName.CHINESE_NAME]: '状态',
+        [otherRuleFiledName.DATA_TYPE]: serverDataType.STRING,
+        [ruleFiledName.REQUIRE]: {define: true, error: {rc: 10598}, mongoError: {rc: 20598, msg: '处理人不能为空'}},//默认为空对象
         // 'arrayMinLength': {define: 1, error: {rc: 10002}, mongoError: {rc: 20002, msg: '至少设置1个标签'}},
         //'arrayMaxLength': {define: maxNumber.impeach.maxAttachmentNumber, error: {rc: 10004}, mongoError: {rc: 20004, msg: `最多添加${maxNumber.impeach.maxAttachmentNumber}个附件`}},
-        'format': {define: enumValue.ImpeachType, error: {rc: 10600}, mongoError: {rc: 20600, msg: '处理人必须是objectId'}} //server端使用
+        [ruleFiledName.FORMAT]: {define: enumValue.ImpeachType, error: {rc: 10600}, mongoError: {rc: 20600, msg: '处理人必须是objectId'}} //server端使用
     },*/
 
 

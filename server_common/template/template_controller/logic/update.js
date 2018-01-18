@@ -94,29 +94,7 @@ async function updateImpeach_async({req,expectedPart}){
         return Promise.reject(controllerError.notImpeachCreatorCantUpdateComment)
     }
     let originalDoc=misc.objectDeepCopy(tmpResult)
-    /*******************************************************************************************/
-    /*                          delete field cant be update from client                        */
-    /*******************************************************************************************/
-    //CREATE是client输入，但是update时候，无法更改，所以需要删除。同时还需要合并editSubField的field值
-    let forbidUpdateFields=[]
-    for(let singleForbidUpdateField of forbidUpdateFields){
-        if(undefined!==docValue && undefined!== docValue[singleForbidUpdateField]){
-            return Promise.reject(controllerError.forbidUpdateFieldExist(singleForbidUpdateField))
-        }
-        if(undefined!==subFieldValue && undefined!== subFieldValue[singleForbidUpdateField]){
-            return Promise.reject(controllerError.forbidUpdateFieldExist(singleForbidUpdateField))
-        }
-    }
-    /*******************************************************************************************/
-    /*                 check non-require, but mandatory field for update                       */
-    /*******************************************************************************************/
-    //以下字段，虽然定义是非required，但是在update的时候必须存在
-    let mandatoryUpdateFields=[e_field.ADD_FRIEND.STATUS]
-    for(let singleMandatoryUpdateField of mandatoryUpdateFields){
-        if(undefined=== docValue[singleMandatoryUpdateField]){
-            return Promise.reject(controllerError.mandatoryFieldNotExist)
-        }
-    }
+
     /*******************************************************************************************/
     /*                             value cant be changed                                       */
     /*******************************************************************************************/
@@ -254,6 +232,7 @@ async function updateImpeach_async({req,expectedPart}){
     /*******************************************************************************************/
     if(undefined!==e_uniqueField[collName] && e_uniqueField[collName].length>0) {
         // let additionalCheckCondition={[e_field.ADMIN_USER.DOC_STATUS]:e_docStatus.DONE}
+        let additionalCheckCondition
         await controllerChecker.ifFieldInDocValueUnique_async({collName: collName, docValue: docValue,additionalCheckCondition:additionalCheckCondition})
     }
 
@@ -262,7 +241,7 @@ async function updateImpeach_async({req,expectedPart}){
     /*******************************************************************************************/
     let internalValue={}
     if(e_env.DEV===currentEnv && Object.keys(internalValue).length>0){
-        let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInputRule:inputRule[collName],collInternalRule:internalInputRule[e_coll.ARTICLE]})
+        let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInputRule:inputRule[collName],collInternalRule:internalInputRule[collName],method:req.body.values[e_part.METHOD]})
         if(tmpResult.rc>0){
             return Promise.reject(tmpResult)
         }

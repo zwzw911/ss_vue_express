@@ -73,7 +73,7 @@ router.post('/retrievePassword',function(req,res,next){
 
 router.post('/uploadPhoto',function(req,res,next){
 // console.log(`uploadPhoto in`)
-    userMiscFunc.uploadPhoto_async(req).then(
+    userMiscFunc.uploadPhoto_async({req}).then(
         (v)=>{
             console.log(`uploadPhoto  success, result:  ${JSON.stringify(v)}`)
             return res.json(v)

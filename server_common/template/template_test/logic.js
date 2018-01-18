@@ -18,6 +18,8 @@ const nodeEnum=server_common_file_require.nodeEnum
 const nodeRuntimeEnum=server_common_file_require.nodeRuntimeEnum
 const mongoEnum=server_common_file_require.mongoEnum
 
+const e_applyRange=server_common_file_require.inputDataRuleType.ApplyRange
+
 const e_part=nodeEnum.ValidatePart
 const e_method=nodeEnum.Method
 const e_coll=require('../../server/constant/genEnum/DB_Coll').Coll

@@ -8,6 +8,8 @@ const request=require('supertest')
 const app=require('../../app')
 const assert=require('assert')
 
+const ap=require('awesomeprint')
+
 const server_common_file_require=require('../../server_common_file_require')
 const nodeEnum=server_common_file_require.nodeEnum
 const nodeRuntimeEnum=server_common_file_require.nodeRuntimeEnum
@@ -31,7 +33,7 @@ const browserInputRule=require('../../server/constant/inputRule/browserInputRule
 const validateError=server_common_file_require.validateError//require('../../server/constant/error/va').validateError
 const helpError=server_common_file_require.helperError.helper//require('../../server/constant/error/controller/helperError').helper
 
-const controllerError=require('../../server/controller/impeach/impeach_upload_file_logic').controllerError
+const controllerError=require('../../server/controller/impeach/impeach_setting/impeach_controllerError').controllerError
 
 // const objectDeepCopy=server_common_file_require.misc.objectDeepCopy
 
@@ -39,7 +41,7 @@ const controllerError=require('../../server/controller/impeach/impeach_upload_fi
 const testData=server_common_file_require.testData//require('../testData')
 const API_helper=server_common_file_require.API_helper//require('../API_helper/API_helper')
 const component_function=server_common_file_require.component_function
-const calcResourceConfig=require('../../server/constant/config/calcResourceConfig')
+// const calcResourceConfig=require('../../server/constant/config/calcResourceConfig')
 
 
 /*************************************************************/
@@ -77,9 +79,10 @@ describe('impeachUploadFile_dispatch_async ', async function() {
         impeachId=await API_helper.createImpeachForArticle_returnImpeachId_async({articleId:articleId,userSess:user2Sess,app:app})
     });
 
-    it("user2 upload image for impeach",function(done){
 
-        request(app).post('/impeach/impeachImage/').field('name','file')
+    /*              cant be test since no method send together with upload file             */
+    it("user2 upload image for impeach",function(done){
+        request(app).post('/impeach/').field('name','file')
         // .attach('file','H:/ss_vue_express/培训结果1.png')
         //     .attach('file','H:/ss_vue_express/test_data/impeach_image.png')
             .attach('file',`${testData.impeach_image.image1}`)
@@ -88,7 +91,8 @@ describe('impeachUploadFile_dispatch_async ', async function() {
             .end(function(err, res) {
                 // if (err) return done(err);
                 // console.log(`res ${JSON.stringify(res['header']['set-cookie']['connect.sid'])}`)
-                console.log(`"user2 upload image for impeach result ${JSON.stringify(res)}`)
+                // console.log(`"user2 upload image for impeach result ${JSON.stringify(res)}`)
+                ap.inf('res',res)
                 let parsedRes=JSON.parse(res.text)
                 console.log(`"user2 upload image for impeach result ${JSON.stringify(parsedRes)}`)
                 assert.deepStrictEqual(parsedRes.rc,0)

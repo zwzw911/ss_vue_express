@@ -299,10 +299,19 @@ function consoleDebug(prompt,info,level){
 function genFinalReturnResult(rc){
     //如果是实际上线，且同时有client和server2中msg，那么根据clientFlag选择返回那种msg
     if(e_env.PROD===currentEnv){
+        let result={}
+        //普通rc
         if(rc.msg &&  rc.msg.server){
-            let result={}
+
             result['rc']=rc['rc']
             result['msg']=rc.msg.client
+            return result
+        }else {
+            //检测inputVlaue的rc
+            for(let singleField in rc){
+                result[singleField]['rc']=rc[singleField]['rc']
+                result[singleField]['msg']=rc[singleField].msg.client
+            }
             return result
         }
     }

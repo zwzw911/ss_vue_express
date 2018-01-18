@@ -3,7 +3,7 @@
  * 若干函数组成一个完整功能(例如，将db的删除用户，和API中create/login组合，形成一个重建/登录/获得userId的函数)
  */
 'use strict'
-
+const ap=require(`awesomeprint`)
 const API_helper=require('./API_helper')
 const db_operation_helper=require('./db_operation_helper')
 const e_field=require(`../constant/genEnum/DB_field`).Field
@@ -20,7 +20,8 @@ const objectDeepCopy=require(`../function/assist/misc`).objectDeepCopy
 
 async function reCreateUser_returnSessUserId_async({userData,app}){
     //删除用户
-    await db_operation_helper.deleteUserAndRelatedInfo_async({account:userData.account})
+    // ap.inf('start to del account',userData.account)
+    await db_operation_helper.deleteUserAndRelatedInfo_async({account:userData.account,name:userData.name})
     //建立用户
     await API_helper.createUser_async({userData:userData,app:app})
     //获得userId

@@ -73,7 +73,7 @@ async function dispatcher_async(req){
         case e_method.UPDATE:
             return Promise.reject(controllerError.methodNotSupport)
 
-            break;
+            // break;
         case e_method.DELETE: //delete
             userLoginCheck={
                 needCheck:true,

@@ -18,8 +18,11 @@ import {regex} from '../../define/regex/regex'
  */
 
 const fs=require('fs')
-const serverRuleType=require('../../constant/enum/inputDataRuleType').ServerRuleType
-const serverDataType=require('../../constant/enum/inputDataRuleType').ServerDataType
+const inputDataRuleType=require('../../constant/enum/inputDataRuleType')
+const serverRuleType=inputDataRuleType.ServerRuleType
+const serverDataType=inputDataRuleType.ServerDataType
+const requireType=inputDataRuleType.RequireType
+
 const regex=require('../../constant/regex/regex').regex
 const validateHelperError=require('../../constant/error/validateError').validateRule
 
@@ -528,7 +531,22 @@ function ruleFormatCheck(collName,singleFieldName,singleFieldInputRules){
 
 }
 
-
+/*/!*          require的有3中状态，因此需要特殊函数来处理错误
+* @requireRule：字段require的整个定义
+* @p_applyRange：当前对应哪个applyRange
+*
+* *!/
+const genRequireInputError=function({requireRule,p_applyRange}){
+    let ruleDefine=requireRule['define']
+    let ruleRc=requireRule['error']['rc']
+    let chineseName=requireRule['chineseName']
+    if(ruleDefine[p_applyRange]===requireType.MANDATORY){
+        return {rc:ruleRc,msg:`${chineseName}不能为空`}
+    }
+    if(ruleDefine[p_applyRange]===requireType.FORBID){
+        return {rc:ruleRc,msg:`${chineseName}必须为空`}
+    }
+}*/
 /*      产生人性化的errorMsg
 * params：
 * 1. fieldRule：对象，字段的所有rule，提供chineseName，和singleRule的define
@@ -683,6 +701,7 @@ module.exports={
     dataTypeCheck,
     valueTypeCheck,
     ruleFormatCheck,
+    // genRequireInputError,
     genInputError,
     valueMatchRuleDefineCheck,
 

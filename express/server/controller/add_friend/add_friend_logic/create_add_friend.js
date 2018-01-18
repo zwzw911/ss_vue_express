@@ -207,7 +207,7 @@ async  function createAddFriend_async({req}){
                 ap.print('reject')
                 await  common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel[collName],id:tmpResult[0][`_id`],updateFieldsValue:{[e_field.ADD_FRIEND.STATUS]:e_addFriendStatus.UNTREATED}})
                 return Promise.resolve({rc:0})
-                break
+                // break
         }
     }
     /*//1. 未被处理，直接返回
@@ -269,7 +269,7 @@ async  function createAddFriend_async({req}){
     // console.log(`7`)
     /*              对内部产生的值进行检测（开发时使用，上线后为了减低负荷，无需使用）           */
     if(e_env.DEV===currentEnv){
-        let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInputRule:inputRule[collName],collInternalRule:internalInputRule[collName]})
+        let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInputRule:inputRule[collName],collInternalRule:internalInputRule[collName],method:req.body.values[e_part.METHOD]})
         // console.log(`internalValue check result====>   ${JSON.stringify(tmpResult)}`)
         if(tmpResult.rc>0){
             return Promise.reject(tmpResult)

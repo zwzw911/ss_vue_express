@@ -5,11 +5,14 @@
  */
 
 'use strict'
+const ap=require('awesomeprint')
+
 const configuration=require('./configuration').configuration
 const serverRuleTypeMatchMongooseRuleType=require('../../../constant/enum/inputDataRuleType').serverRuleTypeMatchMongooseRule
 const serverRuleType=require('../../../constant/enum/inputDataRuleType').ServerRuleType
 const regex=require('../../../constant/regex/regex').regex
 
+const e_applyRange=require('../../../constant/enum/inputDataRuleType').ApplyRange
 /*        某些serverRuleType在mongoose中有对应的内建validator，直接设置
 *   @collFieldDefine: model中，对单个coll的schema定义
 *   @collInputRule: inputRule中，对单个coll的rule定义（包含server和client的，包含server是为了更加保险一点（理论上server由node））
@@ -60,12 +63,27 @@ function setMongooseBuildInValidator(collFieldDefine,collInputRule){
                         //"required":[true,"错误代码20041:单据类别不能为空"]
                         if(false!==singleRuleValue['define']) {//一般而言，有define就可以判断为有validator，但是require比较特殊，只有true才认为有对应的定义
                             if(collFieldDefine[singleFiled]){//对应的field在mongo中有定义，则为此field添加validator
-                                collFieldDefine[singleFiled][serverRuleTypeMatchMongooseRuleType[singleRuleName]]=[]
-                                collFieldDefine[singleFiled][serverRuleTypeMatchMongooseRuleType[singleRuleName]].push(singleRuleValue['define'])
+
+
+                                //require需要判别是否有CREATE
+                                if(serverRuleType.REQUIRE===singleRuleName){
+                                    if(undefined!==singleRuleValue['define'][e_applyRange.CREATE] && true===singleRuleValue['define'][e_applyRange.CREATE]){
+                                        collFieldDefine[singleFiled][serverRuleTypeMatchMongooseRuleType[singleRuleName]]=[]
+                                        collFieldDefine[singleFiled][serverRuleTypeMatchMongooseRuleType[singleRuleName]].push(singleRuleValue['define'][e_applyRange.CREATE])
+                                        let errorMsg=`错误代码${singleRuleValue['mongoError']['rc']}:${singleRuleValue['mongoError']['msg']}`
+                                        collFieldDefine[singleFiled][serverRuleTypeMatchMongooseRuleType[singleRuleName]].push(errorMsg)//只能接受字符串
+                                    }
+                                }else{
+                                    collFieldDefine[singleFiled][serverRuleTypeMatchMongooseRuleType[singleRuleName]]=[]
+                                    collFieldDefine[singleFiled][serverRuleTypeMatchMongooseRuleType[singleRuleName]].push(singleRuleValue['define'])
+                                    let errorMsg=`错误代码${singleRuleValue['mongoError']['rc']}:${singleRuleValue['mongoError']['msg']}`
+                                    collFieldDefine[singleFiled][serverRuleTypeMatchMongooseRuleType[singleRuleName]].push(errorMsg)//只能接受字符串
+                                }
+
                                 //collFieldDefine[singleFiled][ruleMatch[singleRuleName]].push(singleRuleValue['mongoError'])
                                 //if('enum'!==singleRuleName){
-                                let errorMsg=`错误代码${singleRuleValue['mongoError']['rc']}:${singleRuleValue['mongoError']['msg']}`
-                                collFieldDefine[singleFiled][serverRuleTypeMatchMongooseRuleType[singleRuleName]].push(errorMsg)//只能接受字符串
+                                // ap.inf('singleRuleValue',singleRuleValue)
+
                                 //}
 
                             }

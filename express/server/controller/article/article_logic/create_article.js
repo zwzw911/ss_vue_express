@@ -55,7 +55,7 @@ const fkConfig=server_common_file_require.fkConfig.fkConfig
 
 /*              新article无任何输入，所有的值都是内部产生                */
 async  function createArticle_async({req}){
-    console.log(`createArticle_async in`)
+    // console.log(`createArticle_async in`)
     /*******************************************************************************************/
     /*                                          define variant                                 */
     /*******************************************************************************************/
@@ -98,7 +98,7 @@ async  function createArticle_async({req}){
         // console.log(`before newDocValue====>${JSON.stringify(internalValue)}`)
         // let newDocValue=dataConvert.addSubFieldKeyValue(internalValue)
         // console.log(`newDocValue====>${JSON.stringify(newDocValue)}`)
-        let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInputRule:inputRule[e_coll.ARTICLE],collInternalRule:internalInputRule[e_coll.ARTICLE]})
+        let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInputRule:inputRule[collName],collInternalRule:internalInputRule[collName],method:req.body.values[e_part.METHOD]})
 // console.log(`internalValue check result====>   ${JSON.stringify(tmpResult)}`)
         if(tmpResult.rc>0){
             return Promise.reject(tmpResult)

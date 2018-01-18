@@ -13,9 +13,12 @@
 // import {coll as e_coll} from '../../define/enum/node'
 // import {searchMaxPage} from '../../config/global/globalSettingRule'
 "use strict";
+const ap=require('awesomeprint')
+
 const validateHelper=require('./validateHelper')
 const dataTypeCheck=validateHelper.dataTypeCheck
 const genInputError=validateHelper.genInputError
+// const genRequireInputError=validateHelper.genRequireInputError
 const valueMatchRuleDefineCheck=validateHelper.valueMatchRuleDefineCheck
 // const ruleTypeMatchRuleDefineCheck=validateHelper.ruleTypeMatchRuleDefineCheck
 const valueTypeCheck=validateHelper.valueTypeCheck
@@ -24,9 +27,12 @@ const validateError=require('../../constant/error/validateError')
 const validateValueError=validateError.validateValue
 // const validateFormatError=validateError.validateFormat
 
-const validEnum=require('../../constant/enum/inputDataRuleType')
-const e_serverDataType=validEnum.ServerDataType
-const e_serverRuleType=validEnum.ServerRuleType
+const inputDataRuleType=require('../../constant/enum/inputDataRuleType')
+const e_serverDataType=inputDataRuleType.ServerDataType
+const e_serverRuleType=inputDataRuleType.ServerRuleType
+const e_otherRuleFiledName=inputDataRuleType.OtherRuleFiledName
+const e_applyRange=inputDataRuleType.ApplyRange
+// const e_requireType=inputDataRuleType.RequireType
 // const  e_validatePart=require('../../constant/enum/nodeEnum').ValidatePart
 const e_inputFieldCheckType=require('../../constant/enum/nodeEnum').InputFieldCheckType
 const e_method=require('../../constant/enum/nodeEnum').Method
@@ -42,51 +48,65 @@ const rightResult={rc:0}
 const e_eventStatus=require('../../constant/enum/mongoEnum').EventStatus
 // const arr_eventField=require('../../constant/define/node').EVENT_FIELD
 
-/*********************************************/
-/*         检测create/update 输入值并返回结果        */
-/*********************************************/
-/* params:
- * XXXX@inputValue:{username:{value:xxx},password:{value:yyy}} 由调用函数保证输入参数的格式正确XXXX
+
+
+/*  对传入格式为{field1:value1,field1:value1}的part进行检查；一般是recordInfo
  * @inputValue:{username::xxx,password:yyy} 由调用函数保证输入参数的格式正确
- * @collRules： ruleDefine(以coll为单位)adminLogin。每个页面有不同的定义
- * @baseType: 是对coll中所有field check（例如：创建新纪录），还是根据inputValue中有的field检查（例如：更改field value或者对field进行unique检查）
+ * @collRules： 可以是browser或者internal；browser的时候，对client输入（recordInfo）进行检查，internal，对internal产生的数据检查
+ * @p_applyRange: 当前是哪种操作（applyRange）
  * return:
  * 返回值有2种：一种是严重错误（出错后，字段的值是否符合rule已经无关紧要）使用common：{rc:xxx,msg:yyy}，另外一种是对全部输入的field都进行检查，返回{field1:{rc:xxx,msg,yyy},field2:{rc:zzz,msg:aaa}}
  *
  * step；
- * xxxxxxx1. 判断输入的值的字段数是否超过对应rule中的字段数（防止client输入过多字段，导致开销过大）===>放入validateFormat
- * xxxxxxx2. 判断输入值中的字段是否在inputRule中有定义（防止用户输入随便定义的字段）===>放入validateFormat
- * 1. 遍历所有rule字段，如果是require=true，检查inputValue是有值，有（即使为{value:null}），交给validateSingleRecorderFieldValue处理
+ * 1. 字段的require检查
+ * 2. 如果字段数据类型是数据，执行ARRAY_MAX/MIN_LENGTH检查
+ * 3. 如果字段有值，调用validateSingleRecorderFieldValue，对单个字段的值进行检查
  * */
-function _validateRecorderValue(inputValue,collRules,baseType){
+function validateScalarInputValue({inputValue,collRule,p_applyRange}){
     let rc={}
-    // console.log(`inputValue ==================>${JSON.stringify(inputValue)} `)
-    // console.log(`collRules ==================>${JSON.stringify(collRules)} `)
-    // console.log(`baseType ==================>${JSON.stringify(baseType)} `)
     //itemName: 字段名称
-    for (let fieldName in collRules ){
-        if(e_inputFieldCheckType.BASE_INPUT_RULE===baseType){
-            //如果rule中为require，但是inputValue中没有，返回据错误。否则后续的赋值会报错
-            //require是rule中的必填字段，区别只是false/true
-            // console.log(`collRules is ${JSON.stringify(collRules)}`)
-            // console.log(`field is ${fieldName}`)
-            // console.log(`require  is ${JSON.stringify(collRules[fieldName])}`)
-            if(collRules[fieldName][e_serverRuleType.REQUIRE]['define'] ){
-                //只检查是否定义，如果定义（即使为{value:undefined}），交给validateSingleRecorderFieldValue处理
-                if(false===dataTypeCheck.isSetValue(inputValue[fieldName])  ){
-                    // console.log(`va in`)
-                    // rc[fieldName]=validateValueError.mandatoryFieldMiss(fieldName)
-                    rc[fieldName]= genInputError(collRules[fieldName],e_serverRuleType.REQUIRE)  //require错误，返回字段require对应的rc，而不是返回一个common rc（mandatoryFieldMiss）
-                    // console.log(`validate result of created is ${JSON.stringify(rc)}`)
-                    return rc
-                }
+    // ap.inf('inputValue',inputValue)
+    // ap.inf('p_applyRange',p_applyRange)
+    // ap.inf('collRule',collRule)
+    for (let fieldName in collRule ){
 
+
+        // ap.inf('fieldName',fieldName)
+        let requireRule=collRule[fieldName][e_serverRuleType.REQUIRE]
+// ap.inf('requireRule',requireRule)
+        //如果require中，没有对对应的applyRange做定义，说明此字段不能在当前applyRange中出现
+        // ap.inf('fieldName',fieldName)
+        // ap.inf('require rule',requireRule)
+        if(undefined===requireRule['define'][p_applyRange]){
+            if(true===dataTypeCheck.isSetValue(inputValue[fieldName])  ){
+                rc[fieldName]=validateValueError.fieldValueShouldNotExistSinceNoRelateApplyRange({fieldName:fieldName,applyRange:p_applyRange})
+                continue
             }
         }
+        let requireDefine=requireRule['define'][p_applyRange]
 
-// console.log(`valie to be check is ${JSON.stringify(inputValue[fieldName])}`)
+
+        if(true===requireDefine){
+            if(false===dataTypeCheck.isSetValue(inputValue[fieldName])  ){
+                rc[fieldName]= genInputError(collRule[fieldName],e_serverRuleType.REQUIRE)  //require错误，返回字段require对应的rc，而不是返回一个common rc（mandatoryFieldMiss）
+                // console.log(`validate result of created is ${JSON.stringify(rc)}`)
+                // return rc
+                continue
+            }
+        }
+        /*if(requireDefine===e_requireType.FORBID){
+            if(true===dataTypeCheck.isSetValue(inputValue[fieldName])  ){
+                rc[fieldName]= genRequireInputError({requireRule:requireRule,p_applyRange:p_applyRange})  //require错误，返回字段require对应的rc，而不是返回一个common rc（mandatoryFieldMiss）
+                // console.log(`validate result of created is ${JSON.stringify(rc)}`)
+                // return rc
+                continue
+            }
+        }*/
+
         //value中对应的字段是有的，才进行检测
         if(undefined!==inputValue[fieldName]){
+            //只有输入的字段有对应的值，才预先设置rc:0（防止对rule中所有字段都设置rc:0）
+            rc[fieldName]={rc:0}
             // console.log(`inputValue[fieldName]['value'] is ${JSON.stringify(inputValue[fieldName]['value'])}`)
             // console.log(`before validate result of single field is ${JSON.stringify(inputValue[fieldName]['value'])}`)
             // 输入的值默认要去掉头尾空白后在处理
@@ -94,15 +114,19 @@ function _validateRecorderValue(inputValue,collRules,baseType){
                 inputValue[fieldName]=inputValue[fieldName].trim()
             }
             let fieldValue=inputValue[fieldName]
-            let fieldRule=collRules[fieldName]
+            let fieldRule=collRule[fieldName]
 
-            let fieldType=collRules[fieldName]['type']
+            let fieldType=collRule[fieldName][e_otherRuleFiledName.DATA_TYPE]
+            // ap.inf('fieldName',fieldName)
+            // ap.inf('fieldType',fieldType)
             //数组需要额外检查
-            if(dataTypeCheck.isArray(fieldType)){
+            if(true===dataTypeCheck.isArray(fieldType)){
                 // console.log(`field ${fieldName} is array`)
                 //首先检查数据类型是不是array
+                // ap.inf('fieldValue',fieldValue)
                 if(false===dataTypeCheck.isArray(fieldValue)){
                     rc[fieldName]=validateValueError.CUDTypeWrong
+                    // ap.inf('rc',rc)
                     continue
                 }
                 // console.log(`1`)
@@ -112,23 +136,24 @@ function _validateRecorderValue(inputValue,collRules,baseType){
                 if(undefined!==fieldRule[e_serverRuleType.ARRAY_MIN_LENGTH] && undefined!==fieldRule[e_serverRuleType.ARRAY_MIN_LENGTH]['define']){
                     if(fieldValue.length<fieldRule[e_serverRuleType.ARRAY_MIN_LENGTH]['define']){
                         rc[fieldName]=genInputError(fieldRule,e_serverRuleType.ARRAY_MIN_LENGTH)
-                        break
+                        continue
                     }
                 }
                 // console.log(`2`)
                 if(undefined!==fieldRule[e_serverRuleType.ARRAY_MAX_LENGTH] && undefined!==fieldRule[e_serverRuleType.ARRAY_MAX_LENGTH]['define']){
                     if(fieldValue.length>fieldRule[e_serverRuleType.ARRAY_MAX_LENGTH]['define']){
                         rc[fieldName]=genInputError(fieldRule,e_serverRuleType.ARRAY_MAX_LENGTH)
-                        break
+                        continue
                     }
                 }
-                rc[fieldName]={rc:0}
+// ap.inf('fieldValue.length',fieldValue.length)
                 //预先检查数组中每个元素都是有意义的值，非null或者undefined,然后将单个元素传入函数validateSingleRecorderFieldValue进行检查
                 for(let singleFieldValue of fieldValue){
                     // console.log(`singleFieldValue=========>${JSON.stringify(singleFieldValue)}`)
                     // console.log(` dataTypeCheck.isSetValue(singleFieldValue)=========>${JSON.stringify( dataTypeCheck.isSetValue(singleFieldValue))}`)
                     //每个元素不能是null或者undefined
                     if(false===dataTypeCheck.isSetValue(singleFieldValue)){
+                        // ap.inf('in')
                         rc[fieldName]['rc']=validateValueError.CUDTypeWrong.rc
                         rc[fieldName]['msg']=`${fieldRule['chineseName']}${validateValueError.CUDTypeWrong.msg}`
                         break
@@ -154,25 +179,7 @@ function _validateRecorderValue(inputValue,collRules,baseType){
 //    注意，返回的结果是对象，结构和inputValue类似，不是{rc;xxx,msg:xxx}的格式
 }
 
-/*      create新纪录的时候，对输入的值进行检查          */
-function validateCreateRecorderValue(inputValue,collRules){
-    return _validateRecorderValue(inputValue,collRules,e_inputFieldCheckType.BASE_INPUT_RULE)
-}
-/*      update纪录的时候，对输入的值进行检查          */
-function validateUpdateRecorderValue(inputValue,collRules){
-    //console.log(`validateUpdateRecorderValue in ======================>`)
-    return _validateRecorderValue(inputValue,collRules,e_inputFieldCheckType.BASE_INPUT)
-}
 
-/*/!*     delete纪录的时候，对输入的值进行检查          *!/
-// 1. 输入直接就是recorderId的值
-function validateRecorderIdValue(recorderIdValue){
-    // let allInputFields=Object.keys(inputValue)
-
-
-//不知道是id还是_id
-    return _validateObjectId(inputValue[allInputFields[0]]['value'])
-}*/
 /*          对一条记录的单个字段的值进行检查（字段必须有对应的rule，且不是equalTo）
  *           因为记录要存储到db，所以field的值必须严格的符合field对应的所有rule
  *           _id/id，以及equalTo要用单独的函数进行判断
@@ -182,7 +189,7 @@ function validateRecorderIdValue(recorderIdValue){
  * 2. fieldRule：单个字段对应的rule
  *
  * step:
- * 1. 首先检查require（default不再检查，而是通过db的default自动补全）
+ * 1. require默认已经检查过，且fieldValue不为空
  * 2. 有值的话，检查值的类型是否和rule中定义的type匹配
  * 2. 如果有objectId或者regexp，首先用此检测
  * 3. 检查maxLength，防止输入过大
@@ -191,79 +198,25 @@ function validateRecorderIdValue(recorderIdValue){
  *
  * */
 function validateSingleRecorderFieldValue(fieldValue,fieldRule){
-    // console.log(`validateSingleRecorderFieldValue in ===================>${fieldRule['chineseName']}`)
-    // console.log(`field value is ${JSON.stringify(fieldValue)}`)
-    // console.log(`field rule is ${JSON.stringify(fieldRule)}`)
-    // console.log(`field value isSetValue ${JSON.stringify(dataTypeCheck.isSetValue(fieldValue))}`)
-    // console.log(`field value isEmpty ${JSON.stringify(dataTypeCheck.isEmpty(fieldValue))}`)
     let rc={rc:0}
     let chineseName=fieldRule['chineseName']
-
-
-    //首先检查require
-    // 如果require为true
-    if(true===fieldRule[e_serverRuleType.REQUIRE]['define']){
-        // console.log(`field ${chineseName} requier check ${valueMatchRuleDefineCheck.require(fieldValue)}`)
-        if(false===valueMatchRuleDefineCheck({ruleType:e_serverRuleType.REQUIRE,fieldValue:fieldValue,ruleDefine:true})){
-            return genInputError(fieldRule,e_serverRuleType.REQUIRE)
-        }
-    }
-    //如果require为false
-    //如果无值返回rc:0，有值，继续往下走
-    if(false===fieldRule[e_serverRuleType.REQUIRE]['define']){
-        // console.log(`field value is ${fieldValue}`)
-        if(false===dataTypeCheck.isSetValue(fieldValue)){
-            return rightResult
-        }
-    }
-
-    // break;
-   /* let fieldValueSetFlag=dataTypeCheck.isSetValue(fieldValue) && !dataTypeCheck.isEmpty(fieldValue) //防止输入空字符/object/array等
-    // console.log(`field value fieldValueSetFlag ${JSON.stringify(fieldValueSetFlag)}`)
-    let requireFlag=fieldRule[e_serverRuleType.REQUIRE]['define']
-
-
-    //1. 首先检查require（default不再检查，而是通过db的default自动补全）
-    /!*
-     * 1. 如果fieldValueSetFlag=false，而require=true，返回错误
-     * 2. 如果fieldValueSetFlag=false，而require=false，返回rc：0
-     * 3. 如果fieldValueSetFlag=true，继续
-     * *!/
-    if(false===fieldValueSetFlag){
-        if(requireFlag){
-            /!*            rc['rc']=validateValueError.CUDValueNotDefineWithRequireTrue.rc
-             rc['msg']=`${chineseName}:${validateValueError.CUDValueNotDefineWithRequireTrue.msg}`*!/
-            rc['rc']=fieldRule[e_serverRuleType.REQUIRE]['error']['rc']
-            rc['msg']=genInputError(fieldRule,e_serverRuleType.REQUIRE)
-        }
-        //不能放在上面的if块中。
-        // 如果错误，返回错误；如果正确，返回{rc:0}
-        return rc
-    }*/
-
 
     //2 检查value的类型是否符合type中的定义
     let valueTypeCheckResult
     // console.log(`fieldRule is ${JSON.stringify(fieldRule)}`)
 
-    if(dataTypeCheck.isArray(fieldRule['type'])){
-        // console.log(`fieldRule is ===>${JSON.stringify(JSON.stringify(fieldRule))}`)
-        valueTypeCheckResult= valueTypeCheck(fieldValue,fieldRule['type'][0])
-        // console.log(`valueTypeCheckResult is ===>${JSON.stringify(JSON.stringify(valueTypeCheckResult))}`)
+    if(dataTypeCheck.isArray(fieldRule[e_otherRuleFiledName.DATA_TYPE])){
+        valueTypeCheckResult= valueTypeCheck(fieldValue,fieldRule[e_otherRuleFiledName.DATA_TYPE][0])
     }else{
-        // console.log(`fieldRule['chineseName'] is ${JSON.stringify(fieldRule['chineseName'])}`)
-        // console.log(`fieldRule['type'] is ${JSON.stringify(fieldRule['type'])}`)
-        // console.log(`fieldValue is ===>${JSON.stringify(JSON.stringify(fieldValue))}`)
-        valueTypeCheckResult= valueTypeCheck(fieldValue,fieldRule['type'])
-        // console.log(`valueTypeCheckResult is ===>${JSON.stringify(JSON.stringify(valueTypeCheckResult))}`)
+        valueTypeCheckResult= valueTypeCheck(fieldValue,fieldRule[e_otherRuleFiledName.DATA_TYPE])
     }
-    // console.log(`valueTypeCheckResult is ${JSON.stringify(valueTypeCheckResult)}`)
     if(valueTypeCheckResult.rc && 0<valueTypeCheckResult.rc){
         rc['rc']=valueTypeCheckResult.rc
         rc['msg']=`${chineseName}${valueTypeCheckResult.msg}`
         return rc
     }
     if(false===valueTypeCheckResult){
+        // ap.inf('in')
         rc['rc']=validateValueError.CUDTypeWrong.rc
         rc['msg']=`${chineseName}${validateValueError.CUDTypeWrong.msg}`
         return rc
@@ -272,13 +225,7 @@ function validateSingleRecorderFieldValue(fieldValue,fieldRule){
     //3 如果有format，直接使用format,如果正确，还要继续其他的检测，例如：数字的格式检查完后，还要判断min和max.
     if(fieldRule[e_serverRuleType.FORMAT] && fieldRule[e_serverRuleType.FORMAT]['define']){
         let formatDefine=fieldRule[e_serverRuleType.FORMAT]['define']
-        // console.log(`formatDefine is ${JSON.stringify(formatDefine)}`)
         if(false===valueMatchRuleDefineCheck({ruleType:e_serverRuleType.FORMAT,fieldValue:fieldValue,ruleDefine:formatDefine})){
-            // rc['rc']=fieldRule[e_serverRuleType.FORMAT]['error']['rc']
-            // rc['msg']=genInputError(fieldRule,e_serverRuleType.FORMAT)
-            // return rc
-            // console.log(`format check result is false`)
-            // console.log(`format check result rc is ${JSON.stringify(genInputError(fieldRule,e_serverRuleType.FORMAT))}`)
             return genInputError(fieldRule,e_serverRuleType.FORMAT)
         }else{
             //如果是objectId，通过format check后，后续rule无需检测，直接返回rc:0
@@ -286,18 +233,12 @@ function validateSingleRecorderFieldValue(fieldValue,fieldRule){
                 return rightResult
             }
         }
-
-        // console.log(`format check done}`)
     }
 
     //4 如果有maxLength属性，首先检查（防止输入的参数过于巨大）
     if(fieldRule[e_serverRuleType.MAX_LENGTH] && fieldRule[e_serverRuleType.MAX_LENGTH]['define']){
         let maxLengthDefine=fieldRule[e_serverRuleType.MAX_LENGTH]['define']
-        // console.log(`maxLength: define ${maxLengthDefine}, value ${currentItemValue}`)
         if(false===valueMatchRuleDefineCheck({ruleType:e_serverRuleType.MAX_LENGTH,fieldValue:fieldValue,ruleDefine:maxLengthDefine})){
-            // rc['rc']=fieldRule[e_serverRuleType.MAX_LENGTH]['error']['rc']
-            // rc['msg']=genInputError(fieldRule,e_serverRuleType.MAX_LENGTH)
-            // return rc
             return genInputError(fieldRule,e_serverRuleType.MAX_LENGTH)
         }
         //继续往下检查其他rule
@@ -305,13 +246,8 @@ function validateSingleRecorderFieldValue(fieldValue,fieldRule){
 
     //5 检查enum
     if(fieldRule[e_serverRuleType.ENUM] && fieldRule[e_serverRuleType.ENUM]['define']){
-        // console.log(`enum in`)
         let enumDefine=fieldRule[e_serverRuleType.ENUM]['define']
         if(false===valueMatchRuleDefineCheck({ruleType:e_serverRuleType.ENUM,fieldValue:fieldValue,ruleDefine:enumDefine})){
-            // console.log(`enum check fialed`)
-            // rc['rc']=fieldRule[e_serverRuleType.ENUM]['error']['rc']
-            // rc['msg']=genInputError(fieldRule,e_serverRuleType.ENUM)
-            // return rc
             return genInputError(fieldRule,e_serverRuleType.ENUM)
         }
     }
@@ -320,7 +256,7 @@ function validateSingleRecorderFieldValue(fieldValue,fieldRule){
     //已经预检过的rule
     let alreadyCheckedRule=[e_serverRuleType.REQUIRE,e_serverRuleType.FORMAT,e_serverRuleType.MAX_LENGTH,e_serverRuleType.ENUM]
     //非rule的key;value对()
-    let nonRuleKey=['type','default','chineseName']
+    let nonRuleKey=[e_otherRuleFiledName.DATA_TYPE,e_otherRuleFiledName.CHINESE_NAME,e_otherRuleFiledName.APPLY_RANGE]
     //无需检测的rule
     let ignoreRule=[]
     //合并需要skip的rule或者key
@@ -334,41 +270,27 @@ function validateSingleRecorderFieldValue(fieldValue,fieldRule){
         let ruleDefine=fieldRule[singleItemRuleName]['define']
         switch (singleItemRuleName){
             case e_serverRuleType.MIN_LENGTH:
-                // console.log(`fieldRule of MIN_LENGTH============>${JSON.stringify(fieldRule)}`)
-                // console.log(`fieldValue of MIN_LENGTH============>${JSON.stringify(fieldValue)}`)
-                // console.log(`ruleDefine of MIN_LENGTH============>${JSON.stringify(ruleDefine)}`)
                 if(false===valueMatchRuleDefineCheck({ruleType:e_serverRuleType.MIN_LENGTH,fieldValue:fieldValue,ruleDefine:ruleDefine})){
-                    // rc['rc']=fieldRule[singleItemRuleName]['error']['rc']
-                    // rc['msg']=genInputError(fieldRule,e_serverRuleType.MIN_LENGTH)
-                    // return rc
-                    // console.log(`min length in==========>`)
                     return genInputError(fieldRule,e_serverRuleType.MIN_LENGTH)
                 }
                 break;
             case e_serverRuleType.EXACT_LENGTH:
                 if(false===valueMatchRuleDefineCheck({ruleType:e_serverRuleType.EXACT_LENGTH,fieldValue:fieldValue,ruleDefine:ruleDefine})){
-                    // rc['rc']=fieldRule[singleItemRuleName]['error']['rc']
-                    // rc['msg']=genInputError(fieldRule,e_serverRuleType.EXACT_LENGTH)
-                    // return rc
                     return genInputError(fieldRule,e_serverRuleType.EXACT_LENGTH)
                 }
                 break;
             case e_serverRuleType.MAX:
                 if(false===valueMatchRuleDefineCheck({ruleType:e_serverRuleType.MAX,fieldValue:fieldValue,ruleDefine:ruleDefine})){
-                    // rc['rc']=fieldRule[singleItemRuleName]['error']['rc']
-                    // rc['msg']=genInputError(fieldRule,e_serverRuleType.MAX)
                     return genInputError(fieldRule,e_serverRuleType.MAX)
                 }
                 break;
             case e_serverRuleType.MIN:
-                // console.log(`min fieldvalue is ${fieldValue}, rule defind is ${ruleDefine}`)
                 if(false===valueMatchRuleDefineCheck({ruleType:e_serverRuleType.MIN,fieldValue:fieldValue,ruleDefine:ruleDefine})){
-                    // rc['rc']=fieldRule[singleItemRuleName]['error']['rc']
-                    // rc['msg']=genInputError(fieldRule,e_serverRuleType.MIN)
                     return genInputError(fieldRule,e_serverRuleType.MIN)
                 }
                 break;
-            default:
+            default: //未知的rule就不进行任何检测了
+                // ap.err('unknown rule',singleItemRuleName)
                 // console.log(`unknown ruel ${singleItemRuleName}`)
             //其他的rule，要么已经检测过了，要么是未知的，不用检测。所以default不能返回任何错误rc（前面检测过的rule可能进入default）
             // return validateValueError.unknownRuleType
@@ -554,9 +476,9 @@ function _validateSingleSearchValue(searchValue,fieldRule){
     }
     //2 检查value的类型是否符合type中的定义，错误返回
     //  console.log(`data is ${singleSearchString}`)
-    //   console.log(`data type is ${singleFieldRule['type'].toString()}`)
+    //   console.log(`data type is ${singleFieldRule[e_otherRuleFiledName.DATA_TYPE].toString()}`)
 
-    let typeCheckResult = valueTypeCheck(searchValue,fieldRule['type'])
+    let typeCheckResult = valueTypeCheck(searchValue,fieldRule[e_otherRuleFiledName.DATA_TYPE])
     //console.log(`data type check result is ${JSON.stringify(typeCheckResult)}`)
     if(typeCheckResult.rc && 0<typeCheckResult.rc){
         //当前字段值的类型未知
@@ -572,7 +494,7 @@ function _validateSingleSearchValue(searchValue,fieldRule){
 
     //3 objectId/format/maxLength/enum
     //3 如果类型是objectId(有对应inputRule定义，主要是外键)，直接判断（而无需后续的检测，以便加快速度），错误返回
-    if(e_serverDataType.OBJECT_ID===fieldRule['type'] ){
+    if(e_serverDataType.OBJECT_ID===fieldRule[e_otherRuleFiledName.DATA_TYPE] ){
         if(false===fieldRule[e_serverRuleType.FORMAT]['define'].test(searchValue)){
             rc['rc']=fieldRule[e_serverRuleType.FORMAT]['error']['rc']
             rc['msg']=genInputError(fieldRule,e_serverRuleType.FORMAT)
@@ -704,7 +626,7 @@ function validateStaticSearchParamsValue(searchParams,rules){
 
             let fieldValue=searchParams[fieldName]['value']
             //判断类型是否符合
-            let typeResult=valueTypeCheck(fieldValue,rules[fieldName]['type'])
+            let typeResult=valueTypeCheck(fieldValue,rules[fieldName][e_otherRuleFiledName.DATA_TYPE])
             if(typeResult.rc && 0<typeResult.rc){
                 rc[fieldName]['rc']=typeResult.rc
                 rc[fieldName]['msg']=`${fieldName}${typeResult.msg}`
@@ -834,13 +756,13 @@ function validateEditSubFieldValue(v){
 function validateEditSubFieldValue({inputValue,browseInputRule}){
 
     for(let singleFieldName in inputValue){
-        // console.log(`browseCollRule[singleFieldName]['type'] +++++${JSON.stringify(browseInputRule[singleFieldName]['type'])}`)
+        // console.log(`browseCollRule[singleFieldName][e_otherRuleFiledName.DATA_TYPE] +++++${JSON.stringify(browseInputRule[singleFieldName][e_otherRuleFiledName.DATA_TYPE])}`)
         //由format check保证rule必定是存在的
         let singleFieldRule=browseInputRule[singleFieldName]
-        if(false===dataTypeCheck.isArray(singleFieldRule['type'])){
+        if(false===dataTypeCheck.isArray(singleFieldRule[e_otherRuleFiledName.DATA_TYPE])){
             return validateValueError.fieldDataTypeNotArray
         }
-        let fieldDataType=singleFieldRule['type'][0]  //type是[ObjectId]这样的格式，如果是其他非数组格式，会返回第一个字符（而不是undefined）
+        let fieldDataType=singleFieldRule[e_otherRuleFiledName.DATA_TYPE][0]  //type是[ObjectId]这样的格式，如果是其他非数组格式，会返回第一个字符（而不是undefined）
 
         // console.log(`browseInputRule[singleFieldName]['arrayMaxLength']=========>${JSON.stringify(browseInputRule[singleFieldName][`arrayMaxLength`])}`)
         if(undefined===singleFieldRule[`arrayMaxLength`] || undefined===singleFieldRule[`arrayMaxLength`][`define`]){
@@ -961,9 +883,10 @@ function validateMethodValue(methodValue){
 
 
 module.exports= {
-    validateCreateRecorderValue,    //调用_validateRecorderValue
-    validateUpdateRecorderValue,        //调用_validateRecorderValue
-    validateSingleRecorderFieldValue,   //validateCreateRecorderValue=>_validateRecorderValue=>validateSingleRecorderFieldValue
+    validateScalarInputValue,
+    // validateCreateRecorderValue,    //调用_validateRecorderValue
+    // validateUpdateRecorderValue,        //调用_validateRecorderValue
+    validateSingleRecorderFieldValue,   //validateRecorderValue=>validateSingleRecorderFieldValue
 
     validateSearchParamsValue,
     validateSingleSearchFieldValue,//辅助函数，一般不直接使用

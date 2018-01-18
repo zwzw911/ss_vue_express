@@ -87,6 +87,8 @@ async function updateAddFriend_async({req,expectedPart}){
     /*                                       authorization check                               */
     /*******************************************************************************************/
     //当前用户必须是receiver，且状态是为处理，才能修改状态
+    // ap.inf('recordId',recordId)
+    // ap.inf('userId',userId)
     tmpResult=await controllerChecker.ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({
         dbModel:e_dbModel.add_friend,
         recordId:recordId,
@@ -94,13 +96,14 @@ async function updateAddFriend_async({req,expectedPart}){
         ownerFieldValue:userId,
         additionalCondition:{[e_field.ADD_FRIEND.STATUS]:e_addFriendStatus.UNTREATED}, //添加朋友的记录必须是未被处理
     })
+    // ap.inf('tmpResult',tmpResult)
     if(false===tmpResult){
         return Promise.reject(controllerError.notReceiverCantUpdate)
     }
     let originalDoc=misc.objectDeepCopy(tmpResult)
-    /*******************************************************************************************/
-    /*                          delete field cant be update from client                        */
-    /*******************************************************************************************/
+    /*/!*******************************************************************************************!/
+    /!*                          delete field cant be update from client                        *!/
+    /!*******************************************************************************************!/
     //以下字段，CREATE是client输入，但是update时候，无法更改，所以不能存在
     let forbidUpdateFields=[e_field.ADD_FRIEND.RECEIVER]
     for(let singleForbidUpdateField of forbidUpdateFields){
@@ -110,17 +113,17 @@ async function updateAddFriend_async({req,expectedPart}){
         if(undefined!==subFieldValue && undefined!== subFieldValue[singleForbidUpdateField]){
             return Promise.reject(controllerError.forbidUpdateFieldExist(singleForbidUpdateField))
         }
-    }
-    /*******************************************************************************************/
-    /*                 check non-require, but mandatory field for update                       */
-    /*******************************************************************************************/
+    }*/
+/*    /!*******************************************************************************************!/
+    /!*                 check non-require, but mandatory field for update                       *!/
+    /!*******************************************************************************************!/
     //以下字段，虽然定义是非required，但是在update的时候必须存在
     let mandatoryUpdateFields=[e_field.ADD_FRIEND.STATUS]
     for(let singleMandatoryUpdateField of mandatoryUpdateFields){
         if(undefined=== docValue[singleMandatoryUpdateField]){
             return Promise.reject(controllerError.mandatoryFieldNotExist)
         }
-    }
+    }*/
 /*    for(let singleNotAllowUpdateField of notAllowUpdateFields){
         delete docValue[singleNotAllowUpdateField]
     }*/
@@ -180,6 +183,7 @@ async function updateAddFriend_async({req,expectedPart}){
     /*******************************************************************************************/
     if(undefined!==e_uniqueField[collName] && e_uniqueField[collName].length>0) {
         // let additionalCheckCondition={[e_field.ADMIN_USER.DOC_STATUS]:e_docStatus.DONE}
+        let additionalCheckCondition
         await controllerChecker.ifFieldInDocValueUnique_async({collName: collName, docValue: docValue,additionalCheckCondition:additionalCheckCondition})
     }
 
@@ -188,7 +192,7 @@ async function updateAddFriend_async({req,expectedPart}){
     /*******************************************************************************************/
     let internalValue={}
     if(e_env.DEV===currentEnv && Object.keys(internalValue).length>0){
-        let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInputRule:inputRule[collName],collInternalRule:internalInputRule[e_coll.ARTICLE]})
+        let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInputRule:inputRule[collName],collInternalRule:internalInputRule[collName],method:req.body.values[e_part.METHOD]})
         if(tmpResult.rc>0){
             return Promise.reject(tmpResult)
         }

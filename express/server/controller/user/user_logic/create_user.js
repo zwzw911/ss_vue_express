@@ -5,6 +5,9 @@
 
 // const controllerError=require('./user_controllerError').controllerError
 const ap=require(`awesomeprint`)
+const controller_setting=require('../user_setting/user_setting').setting
+const controllerError=require('../user_setting/user_controllerError').controllerError
+
 /*                      specify: genEnum                */
 const e_uniqueField=require('../../../constant/genEnum/DB_uniqueField').UniqueField
 // const e_chineseName=require('../../../constant/genEnum/inputRule_field_chineseName').ChineseName
@@ -48,6 +51,7 @@ const globalConfiguration=server_common_file_require.globalConfiguration
 //执行db操作并返回结果
 async  function createUser_async(req){
     // console.log(`create user in`)
+    // ap.inf('create use in')
     let collName=e_coll.USER
     /*                      logic                               */
     let docValue=req.body.values[e_part.RECORD_INFO]
@@ -119,7 +123,8 @@ async  function createUser_async(req){
     // console.log(`collInputRule =======> ${JSON.stringify(inputRule[e_coll.USER])}`)
     // console.log(`collInternalRule =======> ${JSON.stringify(internalInputRule[e_coll.USER])}`)
     if(e_env.DEV===currentEnv){
-        let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInputRule:inputRule[e_coll.USER],collInternalRule:internalInputRule[e_coll.USER]})
+        //ap.inf('req.body.values',req.body.values)
+        let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInputRule:inputRule[collName],collInternalRule:internalInputRule[collName],method:req.body.values[e_part.METHOD]})
         // console.log(`internalValue check result====>   ${JSON.stringify(tmpResult)}`)
         if(tmpResult.rc>0){
             return Promise.reject(tmpResult)

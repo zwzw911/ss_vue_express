@@ -50,7 +50,7 @@ let rootId,adminUser1Id,adminUser2Id,adminUser3Id
 let adminUser1Data,adminUser2Data,adminUser3Data
 let adminUser1Info,adminUser2Info,adminUser3Info
 /*              create_admin_user中的错误               */
-describe('create user', function() {
+describe('create user:', function() {
     let data={values:{method:e_method.CREATE}}
     let rootSess
     before('prepare===>create user error', async function(){
@@ -103,7 +103,7 @@ describe('create user', function() {
                 done();
             });
     });
-    it('priority(enum) value duplicate', function(done) {
+    it('priority type is enum, value duplicate', function(done) {
         data.values={}
         data.values[e_part.METHOD]=e_method.CREATE
         // console.log(`Object.assign(testData.admin_user.adminUser1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]})=========>${JSON.stringify(Object.assign(testData.admin_user.adminUser1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]}))}`)
@@ -116,7 +116,7 @@ describe('create user', function() {
                 let parsedRes=JSON.parse(res.text)
                 console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
                 // assert.deepStrictEqual(parsedRes.rc,99999)
-                assert.deepStrictEqual(parsedRes.rc,controllerCheckerError.containDuplicateValue({fieldName:'pripority'}).rc)
+                assert.deepStrictEqual(parsedRes.rc,controllerError.createUserPriorityCantDuplicate.rc)
                 done();
             });
     });

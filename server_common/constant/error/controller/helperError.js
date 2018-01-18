@@ -69,6 +69,10 @@ const helper={
     // fkConfigNotDefineOwnerField:{rc:60035,msg:{'client':"内部错误，请联系管理员",server:`fkConfig中，没有为ELE_ARRAY对应的coll，定义对应的owner的字段名称`}},
     notOwnerOfEleArray:{rc:60036,msg:{'client':"无权移动数据",server:`editSubField中，用户不是eleArray中数据的拥有者，无权移动`}},
     eleArrayNotObjectId:{rc:60040,msg:{'client':"内部错误，请联系管理员",server:`eleArray数据类型不是objectId，需要controllerHelper->checkEditSubFieldValue_async添加新代码处理`}},
+
+
+    /*          checkInternalValue                  */
+    undefinedMethod:{rc:60050,msg:{'client':"内部错误，请联系管理员",server:`不支持的method`}},
 }
 
 const checker={

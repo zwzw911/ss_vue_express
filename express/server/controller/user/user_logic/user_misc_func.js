@@ -4,6 +4,7 @@
 'use strict'
 
 const fs=require('fs')
+const ap=require(`awesomeprint`)
 
 const inputRule=require('../../../constant/inputRule/inputRule').inputRule
 const internalInputRule=require('../../../constant/inputRule/internalInputRule').internalInputRule
@@ -13,6 +14,8 @@ const browserInputRule=require('../../../constant/inputRule/browserInputRule').b
 const server_common_file_require=require('../../../../server_common_file_require')
 const controllerHelper=server_common_file_require.controllerHelper
 const controllerChecker=server_common_file_require.controllerChecker
+
+const e_applyRange=server_common_file_require.inputDataRuleType.ApplyRange
 
 const dataConvert=server_common_file_require.dataConvert
 
@@ -36,6 +39,8 @@ const e_gmGetter=nodeRuntimeEnum.GmGetter
 const e_env=nodeEnum.Env
 const e_uploadFileDefinitionFieldName=nodeEnum.UploadFileDefinitionFieldName
 
+// const e_method=e_method=nodeEnum.Method
+
 const e_hashType=server_common_file_require.nodeRuntimeEnum.HashType
 const e_docStatus=mongoEnum.DocStatus.DB
 
@@ -54,7 +59,7 @@ const currentEnv=server_common_file_require.appSetting.currentEnv
 const dbModel=require('../../../constant/genEnum/dbModel')
 const e_iniSettingObject=require('../../../constant/genEnum/initSettingObject').iniSettingObject
 
-const controllerError=require('./user_controllerError').controllerError
+const controllerError=require('../user_setting/user_controllerError').controllerError
 
 const hash=server_common_file_require.crypt.hash
 /*                      检查用户名/账号的唯一性                           */
@@ -197,20 +202,14 @@ async function retrievePassword_async(req){
 }
 
 
-async function uploadPhoto_async(req){
+async function uploadPhoto_async({req}){
     /*             检查用户是否在更新 自己 的头像           */
-    console.log(`uploadPhoto_async in`)
-    console.log(`uploadPhoto_async req.body====>${JSON.stringify(req.param)}`)
+    // ap.inf('req method',req.body.values.method)
+    // console.log(`uploadPhoto_async in`)
+    // console.log(`uploadPhoto_async req.body====>${JSON.stringify(req.param)}`)
     let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
     let userId=userInfo.userId
-    /*    if(req.session.userId!==userId){
-     return Promise.reject(controllerError.cantUpdateOwnProfile)
-     }*/
 
-// console.log(`before upload photo ========> `)
-// console.log(`e_iniSettingObject.store_path.UPLOAD_TMP.upload_tmp_dir.path ========> ${e_iniSettingObject.store_path.UPLOAD_TMP.upload_tmp_dir.path}`)
-// console.log(`serPhotoConfiguration.maxSizeInByte ========> ${userPhotoConfiguration.maxSizeInByte}`)
-// console.log(`e_fileSizeUnit.KB ========> ${JSON.stringify(e_fileSizeUnit)}`)
 
     let tmpResult
     tmpResult=await controllerHelper.uploadFileToTmpDir_async({req:req,uploadTmpDir:e_iniSettingObject.store_path.UPLOAD_TMP.upload_tmp_dir.path,maxFileSizeInByte:userPhotoConfiguration.maxSizeInByte,fileSizeUnit:e_fileSizeUnit.KB})
@@ -234,7 +233,7 @@ async function uploadPhoto_async(req){
     //读取所有avaliable的存储路径，挑选usedSize最小的那个
     let choosenStorePathRecord
     tmpResult=await controllerHelper.chooseStorePath_async({usage:e_storePathUsage.DB.USER_PHOTO})
-// console.log(`choosen tmpResult ====> ${JSON.stringify(tmpResult)}`)
+// ap.inf('chooseStorePath_async result',tmpResult)
     choosenStorePathRecord=misc.objectDeepCopy(tmpResult)
      // console.log(`choosen store path recorder ====> ${JSON.stringify(choosenStorePathRecord)}`)
 
@@ -246,7 +245,7 @@ async function uploadPhoto_async(req){
     let finalFileName=`${md5NameWithoutSuffix.msg}.${userPhotoConfiguration.imageType[0].toLowerCase()}`
 
     let finalPath=choosenStorePathRecord.path+finalFileName
-
+// ap.inf('finalPath',finalPath)
  // console.log(`path ==== ${path}`)
     // console.log(`finalPath ==== ${finalPath}`)
     //格式不同，直接转换到指定位置
@@ -270,7 +269,7 @@ async function uploadPhoto_async(req){
         fs.renameSync(path,finalPath)
     }
     // console.log(`final size========>${JSON.stringify(size)}`)
-
+    // ap.inf('final size',size)
 
 
     /*          获得原始user记录，来对比原始文件size和当前文件size，并获得原始文件地址来删除文件，         */
@@ -279,6 +278,7 @@ async function uploadPhoto_async(req){
     let oldPhotoFile,originalUserInfo,originalStorePath
     tmpResult=await common_operation_model.findById_returnRecord_async({dbModel:dbModel.user,id:userId})
     originalUserInfo=misc.objectDeepCopy(tmpResult)
+    // ap.inf('originalUserInfo',originalUserInfo)
     // console.log(`originalUserInfo=======> ${JSON.stringify(originalUserInfo)}`)
     // mongoose 4.11.4 has issue about populate
     /*
@@ -332,11 +332,14 @@ async function uploadPhoto_async(req){
     // console.log(`choosenStorePathRecord['_id']===>${JSON.stringify(choosenStorePathRecord['_id'])}`)
 
     let  updateFieldsValueForModel={photoHashName:finalFileName,photoSize:size,photoPathId:choosenStorePathRecord['_id']}//实际update
+
     // console.log(`updateFieldsValueForModel===>${JSON.stringify(updateFieldsValueForModel)}`)
 // console.log(`updateFieldsValueForModel===>${JSON.stringify(updateFieldsValueForModel)}`)
 //     console.log(`currentEnv ${currentEnv}`)
     if(e_env.DEV===currentEnv){
+        // ap.inf('updateFieldsValueForModel',updateFieldsValueForModel)
         let newDocValue=dataConvert.addSubFieldKeyValue(updateFieldsValueForModel)
+        // ap.inf('newDocValue',newDocValue)
         // console.log(`newDocValue===>${JSON.stringify(newDocValue)}`)
         tmpResult=validateFormat.validateCURecordInfoFormat(newDocValue,inputRule[e_coll.USER])
         // console.log(`tmpResult===>${JSON.stringify(tmpResult)}`)
@@ -346,8 +349,21 @@ async function uploadPhoto_async(req){
         }
         // console.log(`newDocValue===>${JSON.stringify(newDocValue)}`)
         // console.log(`internalInputRule[e_coll.USER]===>${JSON.stringify(internalInputRule[e_coll.USER])}`)
-        tmpResult=validateValue.validateUpdateRecorderValue(newDocValue,internalInputRule[e_coll.USER])
-        // console.log(`internal check=============> ${JSON.stringify(tmpResult)}`)
+        // tmpResult=validateValue.validateUpdateRecorderValue(newDocValue,internalInputRule[e_coll.USER])
+/*        let applyRange,method=req.body.values.method
+        switch (method){
+            case e_method.CREATE:
+                applyRange=e_applyRange.CREATE
+                break;
+                case e_method.UPDATE
+        }
+        if(method===e_method){
+
+        }*/
+// ap.inf('start to validate')
+        tmpResult=validateValue.validateScalarInputValue({inputValue:newDocValue,collRule:internalInputRule[e_coll.USER],p_applyRange:e_applyRange.UPDATE_SCALAR})
+
+        // ap.inf('validate result',tmpResult)       // console.log(`internal check=============> ${JSON.stringify(tmpResult)}`)
         // tmpResult=helper.validatePartValue({req:req,exceptedPart:exceptedPart,coll:e_coll.USER,inputRule:user_internalInputRule,method:e_method.CREATE})
         // console.log(`updateFieldsValue   ${JSON.stringify(updateFieldsValue)}`)
         // console.log(`internalInputRule   ${JSON.stringify(internalInputRule[e_coll.USER][e_field.USER.PHOTO_DATA_URL])}`)
@@ -362,6 +378,8 @@ async function uploadPhoto_async(req){
     //存储到db中
 
 // console.log(`updateFieldsValueForModel ${JSON.stringify(updateFieldsValueForModel)}`)
+//     ap.inf('updateFieldsValueForModel',updateFieldsValueForModel)
+//     ap.inf('userId',userId)
     await common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:dbModel.user,id:userId,updateFieldsValue:updateFieldsValueForModel})
     // console.log(`type ====>${JSON.stringify(type)}`)
 

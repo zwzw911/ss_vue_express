@@ -6,7 +6,12 @@
 
 'use strict'
 
-const serverDataType=require('../../../enum/inputDataRuleType').ServerDataType
+const inputDataRuleType=require('../../../enum/inputDataRuleType')
+const serverDataType=inputDataRuleType.ServerDataType
+const ruleFiledName=inputDataRuleType.RuleFiledName
+const otherRuleFiledName=inputDataRuleType.OtherRuleFiledName
+const applyRange=inputDataRuleType.ApplyRange
+
 const regex=require('../../../regex/regex').regex
 
 
@@ -15,19 +20,21 @@ const mongoEnum=require('../../../enum/mongoEnum')
 
 const public_group_interaction= {
     creatorId: {
-        'chineseName': '发言者',
-        'type': serverDataType.OBJECT_ID,
-        'require': {define: true, error: {rc: 10400}, mongoError: {rc: 20400, msg: '发言者不能为空'}},//只有发言被删除的时候，才会
-        // 'minLength': {define: 6, error: {rc: 10002}, mongoError: {rc: 20002, msg: '密码至少6个字符'}},
-        // 'maxLength': {define: 20, error: {rc: 10004}, mongoError: {rc: 20004, msg: '密码的长度不能超过20个字符'}},
-        'format': {define: regex.objectId, error: {rc: 10402}, mongoError: {rc: 20402, msg: '发言者必须是objectId'}} //server端使用
+        [otherRuleFiledName.CHINESE_NAME]: '发言者',
+        [otherRuleFiledName.DATA_TYPE]: serverDataType.OBJECT_ID,
+        [otherRuleFiledName.APPLY_RANGE]:[applyRange.CREATE],
+        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true}, error: {rc: 10400}, mongoError: {rc: 20400, msg: '发言者不能为空'}},//只有发言被删除的时候，才会
+        // [ruleFiledName.MIN_LENGTH]: {define: 6, error: {rc: 10002}, mongoError: {rc: 20002, msg: '密码至少6个字符'}},
+        // [ruleFiledName.MAX_LENGTH]: {define: 20, error: {rc: 10004}, mongoError: {rc: 20004, msg: '密码的长度不能超过20个字符'}},
+        [ruleFiledName.FORMAT]: {define: regex.objectId, error: {rc: 10402}, mongoError: {rc: 20402, msg: '发言者必须是objectId'}} //server端使用
     },
 
     deleteById: {
-        'chineseName': '删除者',
-        'type': serverDataType.OBJECT_ID,
-        'require': {define: false, error: {rc: 10404}, mongoError: {rc: 20404, msg: '删除者不能为空'}},//只有在删除发言，才会加上发言删除者
-        'format': {define: regex.objectId, error: {rc: 10406}, mongoError: {rc: 20406, msg: '删除者必须是objectId'}} //server端使用
+        [otherRuleFiledName.CHINESE_NAME]: '删除者',
+        [otherRuleFiledName.DATA_TYPE]: serverDataType.OBJECT_ID,
+        [otherRuleFiledName.APPLY_RANGE]:[applyRange.CREATE],
+        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:false}, error: {rc: 10404}, mongoError: {rc: 20404, msg: '删除者不能为空'}},//只有在删除发言，才会加上发言删除者
+        [ruleFiledName.FORMAT]: {define: regex.objectId, error: {rc: 10406}, mongoError: {rc: 20406, msg: '删除者必须是objectId'}} //server端使用
     },
 
 

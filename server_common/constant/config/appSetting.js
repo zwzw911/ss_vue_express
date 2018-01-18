@@ -50,9 +50,9 @@ const generalCookieSetting={
 
 const absolutePath={
     'express':'D:/ss_vue_express/express/',
-    'express_admin':`D:/ss_vue_express/express_admin/`,
+    'express_admin':'D:/ss_vue_express/express_admin/',
     'server_common':'D:/ss_vue_express/server_common/',
-    'image_path_for_test':`D:/ss_vue_express/test_data/`,
+    'image_path_for_test':'D:/ss_vue_express/test_data/',
 }
 module.exports={
     currentEnv,

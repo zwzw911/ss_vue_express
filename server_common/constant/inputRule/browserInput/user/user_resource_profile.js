@@ -6,39 +6,48 @@
 
 'use strict'
 
-const serverDataType=require('../../../enum/inputDataRuleType').ServerDataType
+const inputDataRuleType=require('../../../enum/inputDataRuleType')
+const serverDataType=inputDataRuleType.ServerDataType
+const ruleFiledName=inputDataRuleType.RuleFiledName
+const otherRuleFiledName=inputDataRuleType.OtherRuleFiledName
+const applyRange=inputDataRuleType.ApplyRange
+
 const regex=require('../../../regex/regex').regex
 
 /*        field有enum才需要require        */
 // const mongoEnum=require('../../../enum/mongo')
 const enumValue=require('../../../../constant/genEnum//enumValue')
 
+/*              只能create，不能update*/
 const user_resource_profile= {
     userId: {
-        'chineseName': '用户',
-        'type': serverDataType.OBJECT_ID,
-        'require': {define: true, error: {rc: 10760}, mongoError: {rc: 20760, msg: '用户不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        [otherRuleFiledName.CHINESE_NAME]: '用户',
+        [otherRuleFiledName.DATA_TYPE]: serverDataType.OBJECT_ID,
+        [otherRuleFiledName.APPLY_RANGE]:[applyRange.CREATE],
+        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true}, error: {rc: 10760}, mongoError: {rc: 20760, msg: '用户不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
 /*        'minLength': {define: 2, error: {rc: 10702}, mongoError: {rc: 20702, msg: '用户名至少2个字符'}},
         'maxLength': {define: 20, error: {rc: 10704}, mongoError: {rc: 20704, msg: '用户名的长度不能超过20个字符'}},*/
-        'format': {define: regex.objectId, error: {rc: 10762}, mongoError: {rc: 20762, msg: '用户格式不正确'}} //server端使用
+        [ruleFiledName.FORMAT]: {define: regex.objectId, error: {rc: 10762}, mongoError: {rc: 20762, msg: '用户格式不正确'}} //server端使用
     },
     resource_profile_id: {
-        'chineseName': '资源配置',
-        'type': serverDataType.OBJECT_ID,
-        'require': {define: true, error: {rc: 10764}, mongoError: {rc: 20764, msg: '资源配置不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        [otherRuleFiledName.CHINESE_NAME]: '资源配置',
+        [otherRuleFiledName.DATA_TYPE]: serverDataType.OBJECT_ID,
+        [otherRuleFiledName.APPLY_RANGE]:[applyRange.CREATE],
+        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true}, error: {rc: 10764}, mongoError: {rc: 20764, msg: '资源配置不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
 /*        'minLength': {define: 2, error: {rc: 10710}, mongoError: {rc: 20710, msg: '用户名至少2个字符'}},
         'maxLength': {define: 20, error: {rc: 10712}, mongoError: {rc: 20712, msg: '用户名的长度不能超过20个字符'}},*/
-        'format': {define: regex.objectId, error: {rc: 10766}, mongoError: {rc: 20766, msg: '资源配置格式不正确'}} //server端使用
+        [ruleFiledName.FORMAT]: {define: regex.objectId, error: {rc: 10766}, mongoError: {rc: 20766, msg: '资源配置格式不正确'}} //server端使用
     },
 
 
 
     duration:{
-        'chineseName': '资源配置有效期',
-        'type': serverDataType.NUMBER,
-        'require': {define: true, error: {rc: 10768}, mongoError: {rc: 20768, msg: '资源配置有效期不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
-        'min': {define: 0, error: {rc: 10770}, mongoError: {rc: 20770, msg: '源配置有效期最短1天'}},
-        'max': {define: 365, error: {rc: 10772}, mongoError: {rc: 20772, msg: '源配置有效期最长1年'}},
+        [otherRuleFiledName.CHINESE_NAME]: '资源配置有效期',
+        [otherRuleFiledName.DATA_TYPE]: serverDataType.NUMBER,
+        [otherRuleFiledName.APPLY_RANGE]:[applyRange.CREATE],
+        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true}, error: {rc: 10768}, mongoError: {rc: 20768, msg: '资源配置有效期不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        [ruleFiledName.MIN]: {define: 0, error: {rc: 10770}, mongoError: {rc: 20770, msg: '源配置有效期最短1天'}},
+        [ruleFiledName.MAX]: {define: 365, error: {rc: 10772}, mongoError: {rc: 20772, msg: '源配置有效期最长1年'}},
 },
 
 

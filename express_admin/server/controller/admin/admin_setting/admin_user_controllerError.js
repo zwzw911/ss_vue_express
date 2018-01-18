@@ -21,6 +21,7 @@ const controllerError={
     onlyRootCanUpdateRoot:{rc:51012,msg:'无法更新root用户'},
 
     createUserPriorityNotInheritedFromParent:{rc:51013,msg:'创建新用户时，权限不能超出创建者的权限'},
+    createUserPriorityCantDuplicate:{rc:51014,msg:'创建新用户时，权限不能重复'},
     // nameAlreadyExists:{rc:50100,msg:`用户名已经存在`}, //key名字必须固定为 field+AlreadyExists
     // accountAlreadyExists:{rc:50102,msg:`账号已经存在`},
     // fieldNotSupport:{rc:50104,msg:`字段名称不正确`},
@@ -32,6 +33,7 @@ const controllerError={
 
     /*                  updateUser_async                */
     updatePriorityNotInheritedFromParent:{rc:51022,msg:'更新用户时，权限不能超出创建者的权限'},
+    updateUserPriorityCantDuplicate:{rc:51024,msg:'创建新用户时，权限不能重复'},
     /*//不能泄露具体信息
     ,
 

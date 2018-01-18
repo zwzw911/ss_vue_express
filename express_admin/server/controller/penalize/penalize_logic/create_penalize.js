@@ -145,9 +145,12 @@ async  function createPenalize_async(req){
     if(0!==docValue[e_field.ADMIN_PENALIZE.DURATION]){
         internalValue[e_field.ADMIN_PENALIZE.END_DATE]=Date.now()+docValue[e_field.ADMIN_PENALIZE.DURATION]*24*3600*1000
     }
-
+    //处罚100年
+    if(0===docValue[e_field.ADMIN_PENALIZE.DURATION]){
+        internalValue[e_field.ADMIN_PENALIZE.END_DATE]=Date.now()+docValue[e_field.ADMIN_PENALIZE.DURATION]*36500*24*3600*1000
+    }
     if(e_env.DEV===currentEnv){
-        let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInputRule:inputRule[collName],collInternalRule:internalInputRule[collName]})
+        let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInputRule:inputRule[collName],collInternalRule:internalInputRule[collName],method:req.body.values[e_part.METHOD]})
         // console.log(`internalValue check result====>   ${JSON.stringify(tmpResult)}`)
         if(tmpResult.rc>0){
             return Promise.reject(tmpResult)

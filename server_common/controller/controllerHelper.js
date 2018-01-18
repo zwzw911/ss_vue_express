@@ -42,6 +42,7 @@ const e_userInfoField=nodeRuntimeEnum.UserInfoField
 
 const e_serverDataType=require(`../constant/enum/inputDataRuleType`).ServerDataType
 const e_serverRuleType=require(`../constant/enum/inputDataRuleType`).ServerRuleType
+const e_applyRange=require(`../constant/enum/inputDataRuleType`).ApplyRange
 
 const e_dbModel=require('../constant/genEnum/dbModel')
 const e_coll=require('../constant/genEnum/DB_Coll').Coll
@@ -207,9 +208,9 @@ function validatePartValueFormat({req,expectedPart,collName,fkConfig,inputRule})
 * @req:需要检查的part的值
 * @expectedPart:需要检查的part
 * @inputRule:如果需要检查的part中有RECORD_INFO/FILTER_VALUE/SEARCH_PARAMS，需要inputRule，可能只有一个coll，也有可能多个coll（如果有外键，需要把外键对应的Rule加入）
-* @recordInfoBaseRule：如果需要对part RECORD_INFO的value进行检查，是以rule为base进行检查（创建新纪录），还是以inputValue为base（modify）
+* @method：和part结合，产生对应的applyRange
 * */
-function validatePartValue({req,expectedPart,collName,inputRule,recordInfoBaseRule,fkConfig}){
+function validatePartValue({req,expectedPart,collName,inputRule,method,fkConfig}){
 // console.log(`validatePartValue in ===============>`)
 //     ap.print('expectedPart',expectedPart)
     let checkPartValueResult
@@ -246,25 +247,38 @@ function validatePartValue({req,expectedPart,collName,inputRule,recordInfoBaseRu
                 // }
                 break;
             case e_part.RECORD_INFO:
+                // ap.inf('record info in')
+                // ap.inf('method',method)
                 // console.log(`record info in ===================> `)
                 // console.log(`methos is ${JSON.stringify(recordInfoBaseRule)}`)
-                switch (recordInfoBaseRule){
-                    case e_inputFieldCheckType.BASE_INPUT_RULE://create
-                        checkPartValueResult=validateValue.validateCreateRecorderValue(req.body.values[e_part.RECORD_INFO],inputRule[collName])
+                switch (method){
+                    case e_method.CREATE://create
+
+                        checkPartValueResult=validateValue.validateScalarInputValue({inputValue:req.body.values[e_part.RECORD_INFO],collRule:browserInputRule[collName],p_applyRange:e_applyRange.CREATE})
                         break;
                     // case 1://search
                     //     break;
-                    case e_inputFieldCheckType.BASE_INPUT://update
+                    case e_method.UPDATE://update
+                        checkPartValueResult=validateValue.validateScalarInputValue({inputValue:req.body.values[e_part.RECORD_INFO],collRule:browserInputRule[collName],p_applyRange:e_applyRange.UPDATE_SCALAR})
+                        break;
+                    case e_method.DELETE://delete在某些情况下也会用到recordInfo（例如penalize，需要记录revoke）
+
+                        // ap.inf('start delete validate recordinfo check')
+                        checkPartValueResult=validateValue.validateScalarInputValue({inputValue:req.body.values[e_part.RECORD_INFO],collRule:browserInputRule[collName],p_applyRange:e_applyRange.DELETE})
+                        break;
+                    case e_method.MATCH://match也使用recordInfo，但是无需进行检查，因为不是对db进行写操作
                         // console.log(`record info uddate in===================> `)
                         // console.log(`record info ===================>${JSON.stringify(req.body.values[e_part.RECORD_INFO])} `)
                         // console.log(`record info =reule ==================>${JSON.stringify(inputRule[collName])} `)
-                        checkPartValueResult=validateValue.validateUpdateRecorderValue(req.body.values[e_part.RECORD_INFO],inputRule[collName])
+                        //checkPartValueResult=validateValue.validateScalarInputValue({inputValue:req.body.values[e_part.RECORD_INFO],browserCollRule:browserInputRule[collName],p_applyRange:e_applyRange.UPDATE_SCALAR})
                         break;
                     // case 3://delete
                     //     break;
                     default:
+                        // ap.inf('method',method)
                         return helperError.undefinedBaseRuleType
                 }
+                // ap.inf('record nfo result',checkPartValueResult)
                 // console.log(`record nfo result ===================> ${JSON.stringify(checkPartValueResult)}`)
                 for(let singleField in checkPartValueResult){
                     if(checkPartValueResult[singleField].rc>0){
@@ -362,7 +376,7 @@ function CRUDPreCheck({req,expectedPart,collName,method}){
     //检查输入参数中part的值（格式预先检查好，某些part的值简单。例如method/currentPage，同时检测了value）
 
     // 此处检查除了method之外的part（method已经在checkMethod中预检）
-    delete req.body.values[e_part.METHOD]
+    // delete req.body.values[e_part.METHOD]
 // console.log(`req.body.values ====>${JSON.stringify(req.body.values)}`)
 //     console.log(`expectedPart ====>${JSON.stringify(expectedPart)}`)
 //     console.log(`req.body.values ====>${JSON.stringify(req.body.values)}`)
@@ -370,35 +384,7 @@ function CRUDPreCheck({req,expectedPart,collName,method}){
  // console.log(`validatePartFormat result ====>${JSON.stringify(result)}`)
     if(result.rc>0){return result}
 
-    let recordInfoBaseRule
-    //validateReqBody+validatePartFormat检查完，就可以使用method（如果有）
-    // if(-1!==expectedPart.indexOf(e_part.METHOD)){
-    //CRUDM必须有method，所以无需进行判断，直接取值
-    //     let method=req.body.values[e_part.METHOD]
-        switch (method){
-            case e_method.CREATE:
-                recordInfoBaseRule=e_inputFieldCheckType.BASE_INPUT_RULE
-                break;
-            case e_method.DELETE: //delete带recordInfo，检测规则和update一样
-                recordInfoBaseRule=e_inputFieldCheckType.BASE_INPUT
-                break;
-            case e_method.SEARCH:
-                break;
-            case e_method.UPDATE:
-                recordInfoBaseRule=e_inputFieldCheckType.BASE_INPUT
-                break;
-            case e_method.MATCH:
-                recordInfoBaseRule=e_inputFieldCheckType.BASE_INPUT
-                break;
-                //没有default，因为在inputCommonCheck->validatePartFormat中，已经过滤了非预定义的method
-        }
-    // }
-    // console.log(`before validatePartValueFormat  `)
-    // console.log(`expectedPart======>${JSON.stringify(expectedPart)}`)
-    // console.log(`collName======>${JSON.stringify(collName)}`)
-    // console.log(`browserInputRule======>${JSON.stringify(browserInputRule)}`)
-    // console.log(`fkConfig======>${JSON.stringify(fkConfig)}`)
-    // console.log(`req 4 validatePartValueFormat======>${JSON.stringify(req.body)}`)
+
 
 //检查输入参数格式是否正确
     result = validatePartValueFormat({
@@ -408,6 +394,7 @@ function CRUDPreCheck({req,expectedPart,collName,method}){
         inputRule: browserInputRule, //此地检查的都是client输入的值
         fkConfig: fkConfig,
     })
+    // ap.inf('format check result ',result)
 // console.log(`format check result =======》 ${JSON.stringify(result)}`)
     if (result.rc > 0) {
         // return Promise.reject(result)
@@ -415,12 +402,7 @@ function CRUDPreCheck({req,expectedPart,collName,method}){
     }
 
 // console.log(`validatePartValueFormat ===========>${JSON.stringify(result)}`)
-//
-//     console.log(`req.body.values====>${JSON.stringify(req.body.values[e_part.RECORD_INFO])}`)
-//     console.log(`collName====>${JSON.stringify(collName)}`)
-//     console.log(`browserInputRule====>${JSON.stringify(browserInputRule[collName])}`)
-//     console.log(`recordInfoBaseRule====>${JSON.stringify(recordInfoBaseRule)}`)
-//     console.log(`fkConfig====>${JSON.stringify(fkConfig[collName])}`)
+
 //检查输入参数是否正确
     //part是recordInfo
     // if(undefined!==recordInfoBaseRule){
@@ -429,10 +411,11 @@ function CRUDPreCheck({req,expectedPart,collName,method}){
             expectedPart: expectedPart,
             collName: collName,
             inputRule: browserInputRule, //此地检查的都是client输入的值
-            recordInfoBaseRule:recordInfoBaseRule,
+            // recordInfoBaseRule:recordInfoBaseRule,
+            method:method,
             fkConfig: fkConfig,
         })
-
+    // ap.inf('validatePartValue result ',result)
 // console.log(`validatePartValue result =======》 ${JSON.stringify(result)}`)
 
         return result
@@ -572,8 +555,9 @@ async function chooseProperAdminUser_async({arr_priorityType}){
 
 /*  对内部产生的值进行format和value的检测
 *
+*  @method：用来产生applyRange,给validateScalarInputValue用
 * */
-function checkInternalValue({internalValue,collInputRule,collInternalRule}){
+function checkInternalValue({internalValue,collInputRule,collInternalRule,method}){
 
         let tmpResult
 
@@ -582,11 +566,24 @@ function checkInternalValue({internalValue,collInputRule,collInternalRule}){
         tmpResult=validateFormat.validateCURecordInfoFormat(newDocValue,collInputRule)
     // console.log(`internal check format=============> ${JSON.stringify(tmpResult)}`)
         if(tmpResult.rc>0){
-
             return tmpResult
         }
 
-        tmpResult=validateValue.validateUpdateRecorderValue(newDocValue,collInternalRule)
+        let applyRange
+        switch (method){
+            case e_method.CREATE:
+                applyRange=e_applyRange.CREATE
+                break;
+            case e_method.UPDATE:
+                applyRange=e_applyRange.UPDATE_SCALAR  //本函数内只对recordInfo进行检查，所以只能使用UPDATE_SCALAR
+                break;
+            case e_method.UPLOAD:
+                applyRange=e_applyRange.CREATE  //上传文件相当于新建一个记录
+                break;
+            default:
+                return helperError.undefinedMethod
+        }
+        tmpResult=validateValue.validateScalarInputValue({inputValue:newDocValue,collRule:collInternalRule,p_applyRange:applyRange})
     // console.log(`internal check format=============> ${JSON.stringify(tmpResult)}`)
         for(let singleFieldName in tmpResult){
             if(tmpResult[singleFieldName]['rc']>0){
@@ -634,11 +631,8 @@ function deleteInternalField({docValue,collInternalFieldEnum,collBrowserInputRul
 * */
 async function preCheck_async({req,collName,method,userLoginCheck={needCheck:false},penalizeCheck,expectedPart}){
     let tmpResult
-    //let {e_field,e_coll,e_internal_field}=dbMetaInfo
-    //let {maxSearchKeyNum,maxSearchPageNum}=searchSetting
-    //let {browserInputRule,internalInputRule,inputRule}=allRule
-// console.log(`preCheck in====>${JSON.stringify(req.body.values)}`)
-//     console.log(`req.session.userInfo in====>${JSON.stringify(req.session.userInfo)}`)
+
+// ap.inf('1. req.body.values',req.body.values)
     /*              检查用户是否登录            */
     let {needCheck,error}=userLoginCheck
     if(true===needCheck){
@@ -680,7 +674,10 @@ async function preCheck_async({req,collName,method,userLoginCheck={needCheck:fal
             // console.log(`====penalize check done====`)
         }
     }
-// console.log(`penalize done====>`)
+    // ap.inf('penalize done')
+
+
+    // ap.inf('2. req.body.values',req.body.values)
     // if(expectedPart.length>0){
     /*              如果带method，根据method的不同，选择不同的inputRule（Create还是update）
                     不带，直接检查expectPart
@@ -698,12 +695,12 @@ async function preCheck_async({req,collName,method,userLoginCheck={needCheck:fal
         // return Promise.reject(`method not define in preCheck_async`)
         // tmpResult=nonCRUDPreCheck({req:req,expectedPart:expectedPart,collName:collName})
     }
-    
-// console.log(`CRUDPreCheck result ====》${JSON.stringify(tmpResult)}`)
+    // ap.inf('CRUDPreCheck result',tmpResult)
+
     if(tmpResult.rc>0){
         return Promise.reject(tmpResult)
     }
-
+    // ap.inf('3. req.body.values',req.body.values)
     /*              删除内部字段值                     */
     // 删除内部字段（RECORD_INFO）
     if(expectedPart.length>0 && -1!==expectedPart.indexOf(e_part.RECORD_INFO)){
@@ -712,6 +709,10 @@ async function preCheck_async({req,collName,method,userLoginCheck={needCheck:fal
         deleteInternalField({docValue:docValue,collInternalFieldEnum:e_internal_field[collName],collBrowserInputRule:browserInputRule[collName]})
         // console.log(`after delete internal field for RECORD_INFO=========>${JSON.stringify(docValue)}`)
     }
+
+    //恢复method，保证checkInternal能使用method
+    req.body.values[e_part.METHOD]=method
+
 
     return Promise.resolve({rc:0})
 }

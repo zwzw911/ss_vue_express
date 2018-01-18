@@ -11,7 +11,7 @@ const genFinalReturnResult=server_common_file_require.misc.genFinalReturnResult/
 
 
 /*              dispatch require                 */
-const dispatcher_async=require('./user_friend_group_dispatch').dispatcher_async
+const dispatcher_async=require('./public_group_dispatch').dispatcher_async
 
 const nodeEnum=server_common_file_require.nodeEnum
 // const i=server_common_file_require.inputDataRuleType

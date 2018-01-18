@@ -6,7 +6,8 @@
 
 const createDOMPurify = require('dompurify')
 const {JSDOM} = require('jsdom')
-
+/*const dom=new JSDOM('')
+const window = dom.window*/
 const window = (new JSDOM('')).window
 const DOMPurify = createDOMPurify(window)
 

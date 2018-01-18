@@ -6,6 +6,7 @@
 const controller_setting=require('../penalize_setting/penalize_setting').setting
 const controllerError=require('../penalize_setting/penalize_controllerError').controllerError
 
+const ap=require('awesomeprint')
 
 /*                      specify: genEnum                */
 const e_uniqueField=require('../../../constant/genEnum/DB_uniqueField').UniqueField

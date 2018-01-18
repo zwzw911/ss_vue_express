@@ -66,7 +66,7 @@ const ChineseName={
         'pathId':'存储路径',
         'sizeInMb':'附件大小',
         'authorId':'附件上传者',
-        'articleId':'附件文档',
+        'articleId':'所属文档',
     },
     article_comment:{
         'articleId':'文档',
@@ -79,7 +79,7 @@ const ChineseName={
         'pathId':'存储路径',
         'sizeInMb':'图片大小',
         'authorId':'图片上传者',
-        'articleId':'文档',
+        'articleId':'所属文档',
     },
     folder:{
         'name':'目录名称',

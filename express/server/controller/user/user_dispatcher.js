@@ -5,6 +5,8 @@
  *  2. /user/unique: 用户注册的时候，对应用户名/账号进行唯一性检查
  */
 'use strict'
+const ap=require('awesomeprint')
+
 const server_common_file_include=require('../../../server_common_file_require')
 
 const nodeEnum=server_common_file_include.nodeEnum
@@ -14,7 +16,7 @@ const e_part=nodeEnum.ValidatePart
 const e_method=nodeEnum.Method//require('../../constant/enum/node').Method
 const e_coll=require('../../constant/genEnum/DB_Coll').Coll
 
-const controllerError=require(`./user_logic/user_controllerError`).controllerError
+const controllerError=require(`./user_setting/user_controllerError`).controllerError
 const createUser_async=require('./user_logic/create_user').createUser_async
 const updateUser_async=require('./user_logic/update_user').updateUser_async
 const userLogin_async=require('./user_logic/user_login').login_async
@@ -34,7 +36,7 @@ async function dispatcher_async(req){
     }
 
 
-    //因为method已经检测过，所有要从req.body.values中删除，防止重复检查
+    //因为method已经检测过，所有要从req.body.values中删除，防止重复检查，并保证validateFormat能正常功能工作
     let method=req.body.values[e_part.METHOD]
     delete req.body.values[e_part.METHOD]
 
@@ -42,6 +44,7 @@ async function dispatcher_async(req){
     switch (method){
         case e_method.CREATE: //create
             // console.log(`create in`)
+            // ap.inf('create in')
 
             userLoginCheck={
                 needCheck:false,
@@ -54,8 +57,10 @@ async function dispatcher_async(req){
             }
             expectedPart=[e_part.RECORD_INFO]
             // console.log(`before precheck done=====.`)
+            // ap.inf('start')
             await controllerHelper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
-	    //await helper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart,e_field:e_field,e_coll:e_coll,e_internal_field:e_internal_field,maxSearchKeyNum:maxSearchKeyNum,maxSearchPageNum:maxSearchPageNum})
+            // ap.inf('end')
+            //await helper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart,e_field:e_field,e_coll:e_coll,e_internal_field:e_internal_field,maxSearchKeyNum:maxSearchKeyNum,maxSearchPageNum:maxSearchPageNum})
 // console.log(`precheck done=====.`)
 
             tmpResult=await createUser_async(req)

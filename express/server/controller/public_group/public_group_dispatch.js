@@ -28,8 +28,8 @@ const e_coll=require(`../../constant/genEnum/DB_Coll`).Coll
 
 
 /*                          controller                          */
-const controllerError=require('./user_friend_group_setting/user_friend_group_controllerError').controllerError
-const controllerSetting=require('./user_friend_group_setting/user_friend_group_setting').setting
+const controllerError=require('./public_group_setting/public_group_controllerError').controllerError
+const controllerSetting=require('./public_group_setting/public_group_setting').setting
 const create_async=require('./public_group_logic/create_public_group').createPublicGroup_async
 const update_async=require('./public_group_logic/update_public_group').updatePublicGroup_async
 // const updateSubFieldOnly_async=require('./user_friend_group_logic/update_user_friend_group_sub_field_only').updatePublicGroup_async

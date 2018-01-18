@@ -35,7 +35,7 @@ const admin_user={
 
 const impeach_image={
 
-    image1:`${absolutePath.image_for_test}impeach_image.png`,
+    image1:`${absolutePath.image_path_for_test}impeach_image.png`,
 /*    image2:{},
     image3:{},
     image5:{},

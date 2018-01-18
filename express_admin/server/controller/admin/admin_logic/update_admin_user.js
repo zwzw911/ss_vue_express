@@ -97,10 +97,16 @@ async function updateUser_async(req){
     // console.log(`update admin======>parent pri ${JSON.stringify(userPriority)}`)
     // console.log(`update admin======>child pri ${JSON.stringify(docValue[e_field.ADMIN_USER.USER_PRIORITY])}`)
     if(undefined!==docValue[e_field.ADMIN_USER.USER_PRIORITY]){
+        //权限在预订范围内
         if(false===misc.ifArrayContainArray({parentArray:userPriority,childArray:docValue[e_field.ADMIN_USER.USER_PRIORITY]})){
             return Promise.reject(controllerError.updatePriorityNotInheritedFromParent)
         }
+        //权限不能重复
+        if(false===misc.ifArrayHasDuplicate(docValue[e_field.ADMIN_USER.USER_PRIORITY])){
+            return Promise.reject(controllerError.updateUserPriorityCantDuplicate)
+        }
     }
+
 
 
     /*              剔除value没有变化的field            */

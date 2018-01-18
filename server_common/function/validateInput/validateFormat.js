@@ -212,6 +212,8 @@ function validateCURecordInfoFormat(recordInfo,rule){
         return validateFormatError.recordInfoFieldNumExceed
 
     }
+
+
     //3. 检测是否有重复的key（虽然客户端可能会将重复key中的最后一个传到server）
     let tmpValue={}
     for(let key in recordInfo){
@@ -226,6 +228,8 @@ function validateCURecordInfoFormat(recordInfo,rule){
     if(tmpKeys.length!==inputKeys.length){
         return validateFormatError.recordInfoHasDuplicateField
     }
+
+
     //4. 判断输入值中的字段是否在inputRule中有定义
     for(let singleFieldName in recordInfo){
         //必须忽略id或者_id，因为没有定义在rule中（在创建doc时，这是自动生成的，所以创建上传的value，无需对此检测；如果rule中定义了，就要检测，并fail）
@@ -233,9 +237,7 @@ function validateCURecordInfoFormat(recordInfo,rule){
             if(undefined===rule[singleFieldName]){
                 return validateFormatError.recordInfoFiledRuleNotDefine
             }
-
         }
-
     }
 
 /*    //5. 每个key的value必须是object，且有key为value的key-value对,且value不能为undefined(可以为null，说明update的时候要清空字段)
@@ -311,45 +313,7 @@ function validateSingleFieldFormat(singleField,collRule){
 
     return rightResult
 }
-/*          delete操作时，对recordInfo part的格式检查
-* delete格式必须是:{id:{value:}}或者{_id:{value:}}，因为id不在rule中定义，所以要单独抽出检测
-*
-* step：
-*
-* 1. key只能1个
-* 2. key名必须是 id/_id
-* 3. key的值必须是object，
-* 4. key的值（object）只有一个key
-* 5. id值（object）的key为value
-* */
-/*function validateDelrecordInfoFormat(recordInfo){
 
-    //1 只能有一个key
-    if(Object.keys(recordInfo).length!==1){
-        return validateFormatError.delrecordInfoFieldNumNot1
-    }
-    //2 key的名称为id/_id
-    if(false==='id' in recordInfo && false==='_id' in recordInfo){
-        return validateFormatError.delrecordInfoFieldNameWrong
-    }
-
-    //获取key name，可能是id或者_id
-    for(let idKeyName in recordInfo){
-        //3 id/_id的值必须是object
-        if(false===dataTypeCheck.isObject(recordInfo[idKeyName])){
-            return  validateFormatError.delrecordInfoFormatWrong
-        }
-        //4 id/_id的值（object），只有一个key
-        if(1!==Object.keys(recordInfo[idKeyName]).length){
-            return validateFormatError.delrecordInfoFieldValueFiledNumNot1
-        }
-        //5 且key name必须是value
-        if(false==='value' in recordInfo[idKeyName]){
-            return validateFormatError.delrecordInfoFieldValueFiledWrong
-        }
-    }
-return rightResult
-}*/
 
 
 /* 对POST输入的 查询参数 的格式检查，最终值的格式的检测放在validateSingleSearchParamsFormat执行（所以不会检测最终value的格式）

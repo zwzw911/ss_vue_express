@@ -88,7 +88,7 @@ describe('logic check for upload:', async function() {
                 // console.log(`res ios ${JSON.stringify(res)}`)
                 let parsedRes=JSON.parse(res.text)
                 console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes['rc'],controllerError.notArticleAuthorCantInsertFile.rc)
+                assert.deepStrictEqual(parsedRes['rc'],controllerError.notArticleAuthorCantUploadImage.rc)
                 // assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.require.error.rc)
                 done();
             });

@@ -194,7 +194,7 @@ async function updateArticle_async({req}){
     /*******************************************************************************************/
     let internalValue={}
     if(e_env.DEV===currentEnv && Object.keys(internalValue).length>0){
-        let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInputRule:inputRule[collName],collInternalRule:internalInputRule[e_coll.ARTICLE]})
+        let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInputRule:inputRule[collName],collInternalRule:internalInputRule[collName],method:req.body.values[e_part.METHOD]})
         if(tmpResult.rc>0){
             return Promise.reject(tmpResult)
         }

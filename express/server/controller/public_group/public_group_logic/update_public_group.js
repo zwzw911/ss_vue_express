@@ -4,8 +4,8 @@
 'use strict'
 const ap=require('awesomeprint')
 /*                      controller setting                */
-const controller_setting=require('../user_friend_group_setting/user_friend_group_setting').setting
-const controllerError=require('../user_friend_group_setting/user_friend_group_controllerError').controllerError
+const controller_setting=require('../public_group_setting/public_group_setting').setting
+const controllerError=require('../public_group_setting/public_group_controllerError').controllerError
 
 
 /*                      specify: genEnum                */
@@ -261,7 +261,7 @@ async function updatePublicGroup_async({req,expectedPart}){
     /*******************************************************************************************/
     let internalValue={}
     if(e_env.DEV===currentEnv && Object.keys(internalValue).length>0){
-        let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInputRule:inputRule[collName],collInternalRule:internalInputRule[e_coll.ARTICLE]})
+        let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInputRule:inputRule[collName],collInternalRule:internalInputRule[collName],method:req.body.values[e_part.METHOD]})
         if(tmpResult.rc>0){
             return Promise.reject(tmpResult)
         }

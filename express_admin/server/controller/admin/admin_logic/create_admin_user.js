@@ -3,7 +3,7 @@
  */
 'use strict'
 
-
+const ap=require('awesomeprint')
 /*                      controller setting                */
 const controller_setting=require('../admin_setting/admin_setting').setting
 
@@ -94,9 +94,16 @@ async  function createUser_async(req){
     //创建的用户的权限必须来自当前login用户的权限（是login用户权限的子集）
     // console.log(`create admin======>parent pri ${JSON.stringify(userPriority)}`)
     // console.log(`create admin======>child pri ${JSON.stringify(docValue[e_field.ADMIN_USER.USER_PRIORITY])}`)
+    // ap.inf('docValue[e_field.ADMIN_USER.USER_PRIORITY]',docValue[e_field.ADMIN_USER.USER_PRIORITY])
     if(undefined!==docValue[e_field.ADMIN_USER.USER_PRIORITY]){
+
+        //权限在预订范围内
         if(false===misc.ifArrayContainArray({parentArray:userPriority,childArray:docValue[e_field.ADMIN_USER.USER_PRIORITY]})){
             return Promise.reject(controllerError.createUserPriorityNotInheritedFromParent)
+        }
+        //权限是否重复
+        if(true===misc.ifArrayHasDuplicate(docValue[e_field.ADMIN_USER.USER_PRIORITY])){
+            return Promise.reject(controllerError.createUserPriorityCantDuplicate)
         }
     }
 
@@ -150,7 +157,7 @@ async  function createUser_async(req){
     // console.log(`collInputRule =======> ${JSON.stringify(inputRule[e_coll.USER])}`)
     // console.log(`collInternalRule =======> ${JSON.stringify(internalInputRule[e_coll.USER])}`)
     if(e_env.DEV===currentEnv){
-        let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInputRule:inputRule[collName],collInternalRule:internalInputRule[collName]})
+        let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInputRule:inputRule[collName],collInternalRule:internalInputRule[collName],method:req.body.values[e_part.METHOD]})
         // console.log(`internalValue check result====>   ${JSON.stringify(tmpResult)}`)
         if(tmpResult.rc>0){
             return Promise.reject(tmpResult)

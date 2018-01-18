@@ -3,8 +3,8 @@
  */
 'use strict'
 /*                      controller setting                */
-const controller_setting=require('../user_friend_group_setting/user_friend_group_setting').setting
-const controllerError=require('../user_friend_group_setting/user_friend_group_controllerError').controllerError
+const controller_setting=require('../public_group_setting/public_group_setting').setting
+const controllerError=require('../public_group_setting/public_group_controllerError').controllerError
 
 
 /*                      specify: genEnum                */

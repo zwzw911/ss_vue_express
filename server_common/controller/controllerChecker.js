@@ -153,7 +153,7 @@ async function ifCompoundFiledUnique_returnExistRecord_async({collName,docValue}
             if(true===allCompoundFiledAvailable){
                 // console.log(`compound condition=============>${JSON.stringify(condition)}`)
                 // console.log(`collName=============>${JSON.stringify(collName)}`)
-                ap.print('condition',condition)
+                // ap.print('condition',condition)
                 let results=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel[collName],condition:condition})
                 // console.log(`compound result=============>${JSON.stringify(results)}`)
                 if(results.length>1){

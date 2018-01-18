@@ -100,3 +100,7 @@
 1. genColl 完成==========>done
 2. 上传文件测试是否可以传递参数（supertest）=============> done    not allow
 
+
+1. checkInternalValue添加一个新参数，指定applyRange
+2. inputRule（browser/internal）同时更新
+

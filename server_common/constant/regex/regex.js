@@ -71,7 +71,7 @@ const regex={
     removeDoubleQuotes:/("format":\{"define"\:)("\/)(.+?)(\/",)"/g,  //    '$1/$3/,"'
     removeDoubleSlash:/\\{2}/g,    // '\\'  正则toString后，一个\会变成2个\\，需要变回去
 
-    moduleExports:/module\.exports={\s*(.+)\r\n}/,
+    moduleExports:/module\.exports={\s*(.+)\r\n\s*}/,
 }
 
 module.exports= {

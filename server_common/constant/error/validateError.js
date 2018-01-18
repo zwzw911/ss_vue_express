@@ -125,8 +125,10 @@ const validateFormat={
 }
 
 const validateValue={
+    //validateRecorderValue
+    fieldValueShouldNotExistSinceNoRelateApplyRange({fieldName,applyRange}) {return {rc:40300,msg:{client:'输入多余字段',server:`字段${fieldName}的require定义中，没有对applyRange：${applyRange}定义，说明此字段不能输入`}}},
     //validateCreateUpdateInputValue
-    CUDObjectIdEmpty:{rc:40300,msg:'objectId不能为空'},
+
     CUDObjectIdWrong:{rc:40302,msg:'objectId的格式不正确'},
     mandatoryFieldMiss(fieldName){
         return {rc:40304,msg:`缺少必填字段${fieldName}`}//create的时候，某些必填字段没有填入

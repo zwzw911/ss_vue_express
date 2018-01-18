@@ -3,7 +3,7 @@
  */
 'use strict'
 
-const controllerError=require('./user_controllerError').controllerError
+const controllerError=require('../user_setting/user_controllerError').controllerError
 
 const e_uniqueField=require('../../../constant/genEnum/DB_uniqueField').UniqueField
 const e_chineseName=require('../../../constant/genEnum/inputRule_field_chineseName').ChineseName

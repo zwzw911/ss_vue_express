@@ -8,6 +8,7 @@ const request=require('supertest')
 const adminApp=require('../../app')
 const app=require('../../../express/app')
 const assert=require('assert')
+const ap=require(`awesomeprint`)
 
 const server_common_file_require=require('../../server_common_file_require')
 const nodeEnum=server_common_file_require.nodeEnum
@@ -50,6 +51,8 @@ const misc_helper=server_common_file_require.misc_helper
 let data = {values: {}},  baseUrl="/admin_penalize/",finalUrl=baseUrl
 let adminUser1Sess,adminUser2Sess,adminUser3Sess,user1Sess,user1Id,user2Id
 
+let copyNormalRecord
+
 let normalRecord={
     // [e_field.ADMIN_PENALIZE.PUNISHED_ID]:{value:'asdf'}, //创建user后直接获得id后填入
     [e_field.ADMIN_PENALIZE.DURATION]:5,
@@ -57,6 +60,9 @@ let normalRecord={
     [e_field.ADMIN_PENALIZE.PENALIZE_TYPE]:e_penalizeType.NO_ARTICLE,
     [e_field.ADMIN_PENALIZE.PENALIZE_SUB_TYPE]:e_penalizeSubType.CREATE,
 }
+
+let deleteRecordInfo={[e_field.ADMIN_PENALIZE.REVOKE_REASON]:'123456766123456766123456766'}
+
 /*              create_admin_user中的错误               */
 describe('create penalize', async function() {
     let data={values:{method:e_method.CREATE}}
@@ -66,9 +72,10 @@ describe('create penalize', async function() {
     before('prepare===>create penalize', async function(){
         // console.log(`######   delete exist record   ######`)
         /*              root admin login                    */
-
+        // ap.wrn('before rootSess',rootSess)
         rootSess=await API_helper.adminUserLogin_returnSess_async({userData:testData.admin_user.adminRoot,adminApp:adminApp})
         // console.log(`rootSess==================>${JSON.stringify(rootSess)}`)
+        // ap.inf('rootSess',rootSess)
         /*              reCreate  adminUser1/2/3                    */
         adminUser1Data=Object.assign({},testData.admin_user.adminUser1, {[e_field.ADMIN_USER.USER_PRIORITY]:[e_adminPriorityType.PENALIZE_USER]})
         adminUser2Data=Object.assign({},testData.admin_user.adminUser2, {[e_field.ADMIN_USER.USER_PRIORITY]:[e_adminPriorityType.REVOKE_PENALIZE]})
@@ -99,6 +106,7 @@ describe('create penalize', async function() {
 
 
     it('non admin user create penalize not allow', async function() {
+        // ap.inf('case ',rootSess)
         data.values={}
         normalRecord[e_field.ADMIN_PENALIZE.PUNISHED_ID]=user1Id
         data.values[e_part.RECORD_INFO]=normalRecord
@@ -322,11 +330,12 @@ describe('delete penalize', function() {
         await db_operation_helper.deleteCollRecords_async({arr_dbModel:[e_dbModel[e_coll.ADMIN_PENALIZE]]})
 
         penalizeId=await API_helper.createPenalize_returnPenalizeId_async({adminUserSess:adminUser1Sess,penalizeInfo:normalRecord,penalizedUserData:testData.user.user1,adminApp:adminApp})
+        // ap.inf('before onde',user1Info)
     });
     it('non admin user delete penalize not allow', async function() {
         data.values={}
-        // normalRecord[e_field.ADMIN_PENALIZE.PUNISHED_ID]=user1Id
-        data.values[e_part.RECORD_INFO]=normalRecord
+        // copyNormalRecord=objectDeepCopy(normalRecord)
+        data.values[e_part.RECORD_INFO]=deleteRecordInfo
         data.values[e_part.METHOD]=e_method.DELETE
         data.values[e_part.RECORD_ID]=penalizeId
         // console.log(`user1Sess=====>${JSON.stringify(user1Sess)}`)
@@ -335,9 +344,9 @@ describe('delete penalize', function() {
 
     it('admin user2 has no priority to delete penalize',async  function() {
         data.values={}
-        let testRecord=objectDeepCopy(normalRecord)
+        // let testRecord=objectDeepCopy(normalRecord)
         data.values[e_part.RECORD_ID]=penalizeId
-        data.values[e_part.RECORD_INFO]=testRecord
+        data.values[e_part.RECORD_INFO]=deleteRecordInfo
         data.values[e_part.METHOD]=e_method.DELETE
         // console.log(`Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]})=========>${JSON.stringify(Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]}))}`)
         // data.values[e_part.RECORD_INFO]=Object.assign(testData.admin_user.user1,{[e_field.ADMIN_USER.USER_PRIORITY]:{value:['1','1']}})
@@ -351,11 +360,12 @@ describe('delete penalize', function() {
         data.values={}
         data.values[e_part.METHOD]=e_method.DELETE
         data.values[e_part.RECORD_ID]=penalizeId
-        let tmpRecordInfo=objectDeepCopy(normalRecord)
-        tmpRecordInfo[e_field.ADMIN_PENALIZE.DURATION]=9
-        data.values[e_part.RECORD_INFO]=tmpRecordInfo
-
-        await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:adminUser1Sess,data:data,expectedErrorRc:controllerError.deleteRecordInfoFieldNumIncorrect.rc,app:adminApp})
+        data.values[e_part.RECORD_INFO]={
+            [e_field.ADMIN_PENALIZE.DURATION]:9,
+            [e_field.ADMIN_PENALIZE.REVOKE_REASON]:'123456789090973452345345'
+        }
+        let expectedErrorRc=validateError.validateValue.fieldValueShouldNotExistSinceNoRelateApplyRange({}).rc
+        await misc_helper.sendDataToAPI_compareFieldRc_async({APIUrl:finalUrl,sess:adminUser1Sess,data:data,expectedErrorRc:expectedErrorRc,fieldName:[e_field.ADMIN_PENALIZE.DURATION],app:adminApp})
 
     });
 
@@ -365,9 +375,12 @@ describe('delete penalize', function() {
         data.values[e_part.METHOD]=e_method.DELETE
         data.values[e_part.RECORD_ID]=penalizeId
 
-        data.values[e_part.RECORD_INFO]={[e_field.ADMIN_PENALIZE.DURATION]:9}
-
-        await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:adminUser1Sess,data:data,expectedErrorRc:controllerError.missMandatoryFieldRevokeReason.rc,app:adminApp})
+        data.values[e_part.RECORD_INFO]={
+            [e_field.ADMIN_PENALIZE.DURATION]:9,
+            // [e_field.ADMIN_PENALIZE.REVOKE_REASON]:'123456789090973452345345'
+        }
+let expectedErrorRc=browserInputRule.admin_penalize.revokeReason.require.error.rc
+        await misc_helper.sendDataToAPI_compareFieldRc_async({APIUrl:finalUrl,sess:adminUser1Sess,data:data,expectedErrorRc:expectedErrorRc,fieldName:[e_field.ADMIN_PENALIZE.REVOKE_REASON],app:adminApp})
 
     });
 })

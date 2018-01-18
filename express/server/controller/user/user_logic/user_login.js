@@ -43,7 +43,7 @@ const e_field=require('../../../constant/genEnum/DB_field').Field
 const e_dbModel=require('../../../constant/genEnum/dbModel')
 // const e_iniSettingObject=require('../../../constant/genEnum/initSettingObject').iniSettingObject
 
-const controllerError=require('./user_controllerError').controllerError
+const controllerError=require('../user_setting/user_controllerError').controllerError
 
 
 async function login_async(req){

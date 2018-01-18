@@ -7,6 +7,7 @@
 const request=require('supertest')
 const app=require('../../app')
 const assert=require('assert')
+const ap=require(`awesomeprint`)
 
 const server_common_file_require=require('../../server_common_file_require')
 const nodeEnum=server_common_file_require.nodeEnum
@@ -28,7 +29,7 @@ const validateError=server_common_file_require.validateError//require('../../ser
 const controllerHelperError=server_common_file_require.helperError.helper//require('../../server/constant/error/controller/helperError').helper
 const controllerCheckerError=server_common_file_require.helperError.checker
 
-const controllerError=require('../../server/controller/user/user_logic/user_controllerError').controllerError
+const controllerError=require('../../server/controller/user/user_setting/user_controllerError').controllerError
 
 const objectDeepCopy=server_common_file_require.misc.objectDeepCopy
 
@@ -255,8 +256,9 @@ describe('update user： ', function() {
 
     let sess
     before('user login first before update', async function() {
-        sess=await  API_helper.userLogin_returnSess_async({userData:testData.user.user1,app:app})
-        await db_operation_helper.deleteUserAndRelatedInfo_async({account:testData.user.user2.account})
+        let userInfo=await component_function.reCreateUser_returnSessUserId_async({userData:testData.user.user1,app:app})
+        sess=userInfo['sess']
+        await db_operation_helper.deleteUserAndRelatedInfo_async({account:testData.user.user2.account,name:testData.user.user2.name})
         // console.log(`sess ======>${JSON.stringify(sess)}`)
     })
 /*    after('delete exist create testData.user.user2', async function() {
@@ -298,6 +300,7 @@ describe('update user： ', function() {
         // data.values[e_part.RECORD_INFO]={account:{value:testData.user.user1.account.value},name:{value:'anotherName'}}//,notExist:{value:123}
         // console.log(`data.values ${JSON.stringify(data.values)}`)
         // console.log(`image_path_for_test======> ${JSON.stringify(image_path_for_test)}`)
+        ap.wrn('${image_path_for_test}gm_test.png',`${image_path_for_test}gm_test.png`)
         request(app).post(finalUrl).field('name','file')
             // .attach('file','H:/ss_vue_express/培训结果1.png')
             .attach('file',`${image_path_for_test}gm_test.png`)
@@ -340,7 +343,7 @@ describe('update user： ', function() {
     })
     it('update testData.user.user1 with account not change', function(done) {
         data.values.method=e_method.UPDATE
-        data.values[e_part.RECORD_INFO]={account:testData.user.user1.account.value,name:'anotherName'}//,notExist:{value:123}
+        data.values[e_part.RECORD_INFO]={account:testData.user.user1.account}//,notExist:{value:123}
         // console.log(`data.values ${JSON.stringify(data.values)}`)
         // console.log(`sess ${JSON.stringify(sess)}`)
         request.agent(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[sess]).send(data)
@@ -359,7 +362,7 @@ describe('update user： ', function() {
     let newPassword='asdf456'
     it('update testData.user.user1 with  password change', function(done) {
         data.values.method=e_method.UPDATE
-        data.values[e_part.RECORD_INFO]={password:newPassword,name:'anotherName'}//,notExist:{value:123}
+        data.values[e_part.RECORD_INFO]={password:newPassword}//,notExist:{value:123}
         // console.log(`data.values ${JSON.stringify(data.values)}`)
         console.log(`sess==============> ${JSON.stringify(sess)}`)
         request.agent(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[sess]).send(data)
@@ -420,6 +423,7 @@ describe('update user： ', function() {
         let user1UpdateTmp=objectDeepCopy(testData.user.user2)
         delete user1UpdateTmp['name']
         delete user1UpdateTmp['password']
+        delete user1UpdateTmp['userType']
         data.values.method=e_method.UPDATE
         data.values[e_part.RECORD_INFO]=user1UpdateTmp//,notExist:{value:123}
         request.agent(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[sess]).send(data)
@@ -464,24 +468,13 @@ describe('update user： ', function() {
             });
     })
 
-    after("rollback testData.user.user1's update account", function(done) {
-        data.values.method=e_method.UPDATE
-        // console.log(`testData.user.user1 ====> ${JSON.stringify(testData.user.user1)}`)
-        data.values[e_part.RECORD_INFO]=testData.user.user1//,notExist:{value:123}
-        request.agent(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[sess]).send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-                // console.log(`res ${JSON.stringify(res['header']['set-cookie']['connect.sid'])}`)
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,0)
-                // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
-                done();
-            });
+    after("rollback testData.user.user1's update account", async function() {
+        await component_function.reCreateUser_returnSessUserId_async({userData:testData.user.user1,app:app})
+
     })
 
     after('delete new create user2', async function() {
-        await db_operation_helper.deleteUserAndRelatedInfo_async({account:testData.user.user2.account})
+        await db_operation_helper.deleteUserAndRelatedInfo_async({account:testData.user.user2.account,name:testData.user.user2.name})
 
     })
 })
@@ -543,7 +536,7 @@ describe('retrieve password: ', function() {
 
 
     after('delete new create testData.user.user3', async function() {
-        await db_operation_helper.deleteUserAndRelatedInfo_async({account:testData.user.user3NewAccount})
+        await db_operation_helper.deleteUserAndRelatedInfo_async({account:testData.user.user3NewAccount,name:testData.user.user3NewAccount.name})
 
     })
 })

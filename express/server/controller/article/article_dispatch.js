@@ -91,7 +91,7 @@ async function article_dispatcher_async(req){
 
     //检查格式
     // console.log(`req is ${JSON.stringify(req.cookies)}`)
-    console.log(`dispatcher in`)
+    // console.log(`dispatcher in`)
     // console.log(`req.body.values ${JSON.stringify(req.body.values)}`)
     let collName=controllerSetting.MAIN_HANDLED_COLL_NAME,tmpResult
 

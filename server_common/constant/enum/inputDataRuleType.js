@@ -45,14 +45,15 @@ const ServerDataType={
 const OtherRuleFiledName={
     CHINESE_NAME:'chineseName',
     // default:'chineseName',
-    DATA_TYPE:'type',
-    APPLY_RANGE:'apply_range',    //确定字段应用在哪种CRUD的操作上（以便确定该字段是否应该出现在输入中）
+    DATA_TYPE:'dataType',
+    APPLY_RANGE:'applyRange',    //确定字段应用在哪种CRUD的操作上（以便确定该字段是否应该出现在输入中）
 }
 
 const ApplyRange={
     CREATE:'create',
     UPDATE_SCALAR:'update_scalar',//适用recordInfo
-    UPDATE_ARRAY:'update_array',//适用editSubFiel
+    UPDATE_ARRAY:'update_array',//适用editSubField
+    DELETE:'delete',
 }
 //input对应的rule(client)，根据server获得，排除（exactLength/Format/eauqlTo): 不在client使用format（正则）
 /*
@@ -125,14 +126,11 @@ let serverRuleTypeMatchMongooseRule={
 }
 
 
-/*
-const RequireType={
-    REQUIRE_ENABLE_CREATE:'create',
-    REQUIRE_ENABLE_UPDATE:'update',
-    REQUIRE_ENABLE_BOTH:'both',
-    REQUIRE_DISABLE_BOTH:'none',
-}
-*/
+/*const RequireType={
+    MANDATORY:'mandatory', //require===true
+    OPTIONAL:'optional', //require===true or false
+    FORBID:'forbid', ////require===false
+}*/
 
 module.exports={
     ServerDataType,
