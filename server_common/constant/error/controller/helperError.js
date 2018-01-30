@@ -85,7 +85,7 @@ const checker={
     'adminUserCantBeEmpty':{rc:61004,msg:{client:`待检测的用户不能为空`,server:`待检测的用户不能为空`}},
 
     'userInfoUndefined':{rc:61006,msg:{client:`用户尚未登录`,server:`检测用户类型，但是用户尚未登录`}},
-    'userTypeNotExpected':{rc:61006,msg:{client:`用户类型不正确`,server:`用户类型不正确，无法执行对应的操作`}},
+    'userTypeNotExpected':{rc:61007,msg:{client:`用户类型不正确`,server:`用户类型不正确，无法执行对应的操作`}},
 
     /*          unique check            */
     //collName和fieldName都根据constant/enum/DB_uniqueField而来
@@ -125,7 +125,7 @@ const checker={
                 switch (fieldName){
                     case "name":
                         return {rc:61130,msg:{client:`已经有相同的${fieldChineseName}存在`,server:`集合${collName}的字段${fieldName}是unique，其中已经有同样的值存在了`}}
-                        break;
+                        // break;
                     default:
                         return {rc:61132,msg:{client:'内部错误，请联系管理员',server:`集合${collName}中出现未知unique字段`}}
                 }
@@ -134,7 +134,7 @@ const checker={
                 switch (fieldName){
                     case "name":
                         return {rc:61140,msg:{client:`已经有相同的${fieldChineseName}存在`,server:`集合${collName}的字段${fieldName}是unique，其中已经有同样的值存在了`}}
-                        break;
+                        // break;
                     default:
                         return {rc:61142,msg:{client:'内部错误，请联系管理员',server:`集合${collName}中出现未知unique字段`}}
                 }

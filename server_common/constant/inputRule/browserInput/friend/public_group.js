@@ -63,6 +63,15 @@ const public_group= {
         // 'enum':{define:Object.values(mongoEnum.PublicGroupJoinInRule.DB),error:{rc:10354},mongoError:{rc:20354,msg:'新成员加入规则不正确'}},//server端使用
         [ruleFiledName.ENUM]:{define:enumValue.PublicGroupJoinInRule,error:{rc:10354},mongoError:{rc:20354,msg:'新成员加入规则不正确'}},//server端使用
     },
+    waitApproveId: {
+        [otherRuleFiledName.CHINESE_NAME]: '等待批准加入',
+        [otherRuleFiledName.DATA_TYPE]: [serverDataType.OBJECT_ID],
+        [otherRuleFiledName.APPLY_RANGE]:[applyRange.UPDATE_ARRAY],
+        [ruleFiledName.REQUIRE]: {define: {[applyRange.UPDATE_ARRAY]:false,}, error: {rc: 10360}, mongoError: {rc: 20360, msg: '等待批准加入不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        // [ruleFiledName.MIN_LENGTH]: {define: 1, error: {rc: 10002}, mongoError: {rc: 30002, msg: '朋友分组名至少1个字符'}},
+        [ruleFiledName.ARRAY_MAX_LENGTH]: {define: maxNumber.friend.maxMemberNumberPerPublicGroup, error: {rc: 10361}, mongoError: {rc: 30361, msg: `等待批准加入的名单长度不能超过${maxNumber.friend.maxMemberNumberPerPublicGroup}`}},
+        [ruleFiledName.FORMAT]: {define: regex.objectId, error: {rc: 10362}, mongoError: {rc: 20362, msg: '等待批准加入必须是objectId'}} //server端使用
+    },
 }
 
 /*const public_group= {

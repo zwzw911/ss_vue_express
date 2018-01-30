@@ -111,6 +111,7 @@ const ChineseName={
         'membersId':'群成员',
         'adminsId':'群管理员',
         'joinInRule':'新成员加入规则',
+        'waitApproveId':'等待批准加入',
         'creatorId':'群创建者',
     },
     public_group_event:{

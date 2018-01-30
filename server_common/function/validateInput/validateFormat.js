@@ -21,7 +21,9 @@ const rightResult={rc:0}
 const e_validatePart=require('../../constant/enum/nodeEnum').ValidatePart
 const e_keyForSearchParams=require('../../constant/enum/nodeEnum').KeyForSearchParams
 const e_method=require('../../constant/enum/nodeEnum').Method
+const e_manipulateOperator=require('../../constant/enum/nodeEnum').ManipulateOperator
 const arr_editSubField=require('../../constant/genEnum/nodeEnumValue').SubField
+const arr_manipulateOperator=require('../../constant/genEnum/nodeEnumValue').ManipulateOperator
 const arr_eventField=require('../../constant/genEnum/nodeEnumValue').EventField
 const regex=require(`../../constant/regex/regex`).regex
 //检测req.body.values是否存在且为object
@@ -91,7 +93,8 @@ function  validatePartFormat (inputValue,expectedParts){
         // 3.1 key是否都在expectedParts中
         if(-1===expectedParts.indexOf(partKey)){
             // console.log(`expectedParts part ${JSON.stringify(expectedParts)}`)
-            console.log(`unknon part ${partKey}`)
+            // console.log(`unknon part ${partKey}`
+            ap.err('unknown part',partKey)
             return validateFormatError.inputValuePartNotMatch
         }
     }
@@ -169,6 +172,11 @@ function validatePartValueFormat({part,partValue}){
                 return validateFormatError.inputValuePartMethodValueFormatWrong
             }
             break;
+        case e_validatePart.MANIPULATE_ARRAY:
+            if(false===dataTypeCheck.isObject(partValue)){
+                return validateFormatError.inputValuePartManipulateArrayValueFormatWrong
+            }
+            break;
         default:
             //理论上不会出现，因为在之前的检查就会被过滤。放在此处只是为了格式完整
             return validateFormatError.inputValuePartUndefinedPart
@@ -229,12 +237,13 @@ function validateCURecordInfoFormat(recordInfo,rule){
         return validateFormatError.recordInfoHasDuplicateField
     }
 
-
+// ap.inf('validateCURecordInfoFormat：recordInfo',recordInfo)
     //4. 判断输入值中的字段是否在inputRule中有定义
     for(let singleFieldName in recordInfo){
         //必须忽略id或者_id，因为没有定义在rule中（在创建doc时，这是自动生成的，所以创建上传的value，无需对此检测；如果rule中定义了，就要检测，并fail）
         if(singleFieldName!=='_id' && singleFieldName !=='id'){
             if(undefined===rule[singleFieldName]){
+                // ap.inf('single field name',singleFieldName)
                 return validateFormatError.recordInfoFiledRuleNotDefine
             }
         }
@@ -770,6 +779,53 @@ function validateEditSubFieldFormat({inputValue,browseInputRule}){
     return rightResult
 }
 
+/*               用于对array进行操作
+ @inputValue：对象。{fieldName:{add:[id1],remove:[id2]:,},fieldName2:{add:[id1],remove:[id2]:,}}
+ @browseInputRule: 对应的coll rule
+ * 1. value是否为object
+ * 2. singleField的name是否有对应的rule
+ * 3. singleField的value的类型是否为对象
+ * 4. singleField value中键值的数量是否为1～2之间（add/remove必须有一个）
+ * 5. singleField value中键值的名称是否validate
+*/
+function validateManipulateArrayFormat({inputValue,browseInputRule}){
+// ap.print('inputValue',inputValue)
+    //1. 是否为object
+    if(false===dataTypeCheck.isObject(inputValue)){
+        return validateFormatError.manipulateArray.manipulateArrayMustBeObject
+    }
+// ap.inf('inputValue',inputValue)
+    for(let singleFieldName in inputValue){
+        //2. 每个字段是否有对应的rule
+        // ap.inf('singleFieldName',singleFieldName)
+        // ap.inf('browseInputRule[singleFieldName]',browseInputRule[singleFieldName])
+        if(undefined===browseInputRule[singleFieldName]){
+            return validateFormatError.manipulateArray.manipulateArrayNoRelatedRule
+        }
+
+        let singleFieldValue=inputValue[singleFieldName]
+        //3. 字段值必须是对象{remove:[],add:[]}
+        if(false===dataTypeCheck.isObject(singleFieldValue)){
+            return validateFormatError.manipulateArray.manipulateArrayFieldValueMustBeObject
+        }
+
+        //4 fieldValue中的字段数量是否正常(2~3个)
+        let vKeyLength=Object.keys(singleFieldValue).length
+        if(1>vKeyLength || 2<vKeyLength){
+            return validateFormatError.manipulateArray.manipulateArrayFieldKeyNumberWrong
+        }
+        //5 fieldValue中每个key（remove/add）名是否为预定义
+        for(let singleKey in singleFieldValue){
+            if(-1===arr_manipulateOperator.indexOf(singleKey)){
+                return validateFormatError.manipulateArray.manipulateArrayFieldKeyNameWrong
+            }
+        }
+
+    }
+
+
+    return rightResult
+}
 /*
 * 由于event是server内部处理，所以无需inputRule，只需要（内部产生的）值
 *
@@ -843,5 +899,5 @@ module.exports={
     validateEditSubFieldFormat,
     validateEventFormat,
 
-
+    validateManipulateArrayFormat,
 }

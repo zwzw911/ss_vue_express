@@ -1,5 +1,6 @@
 /**
  * Created by ada on 2017/9/1.
+ * 为了保持logic的简洁性，此update只对群的名称和joinRule进行修改（admin和member的修改另起炉灶）
  */
 'use strict'
 const ap=require('awesomeprint')
@@ -97,23 +98,20 @@ async function updatePublicGroup_async({req,expectedPart}){
     /*******************************************************************************************/
     /*                                       authorization check                               */
     /*******************************************************************************************/
-    //当前用户必须是user_group的创建人，且user_group未被删除
-    tmpResult=await controllerChecker.ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({dbModel:e_dbModel.user_friend_group,recordId:recordId,ownerFieldName:e_field.USER_FRIEND_GROUP.OWNER_USER_ID,ownerFieldValue:userId,additionalCondition:undefined})
+    //当前用户必须是public_group的admin，且public_group未被删除
+    tmpResult=await controllerChecker.ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({dbModel:e_dbModel.public_group,recordId:recordId,ownerFieldName:e_field.PUBLIC_GROUP.ADMINS_ID,ownerFieldValue:userId,additionalCondition:undefined})
     if(false===tmpResult){
-        return Promise.reject(controllerError.notUserGroupOwnerCantUpdate)
+        return Promise.reject(controllerError.notUserGroupAdminCantUpdate)
     }
     let originalDoc=misc.objectDeepCopy(tmpResult)
     /*******************************************************************************************/
-    /*                          delete field cant be update from client                        */
+    /*                          检测是否有不合格的update字段(可有可无)                         */
     /*******************************************************************************************/
-    //以下字段，CREATE是client输入，但是update时候，无法更改，所以不能存在
-    let forbidUpdateFields=[]
-    for(let singleForbidUpdateField of forbidUpdateFields){
-        if(undefined!==docValue && undefined!== docValue[singleForbidUpdateField]){
-            return Promise.reject(controllerError.forbidUpdateFieldExist(singleForbidUpdateField))
-        }
-        if(undefined!==subFieldValue && undefined!== subFieldValue[singleForbidUpdateField]){
-            return Promise.reject(controllerError.forbidUpdateFieldExist(singleForbidUpdateField))
+    //为了逻辑简单，只对group name和joinRule进行修改
+    let allowUpdateField=[e_field.PUBLIC_GROUP.NAME,e_field.PUBLIC_GROUP.JOIN_IN_RULE]
+    for(let singleAllowUpdateField of allowUpdateField){
+        if(-1===allowUpdateField.indexOf(singleAllowUpdateField)){
+            return Promise.reject(controllerError.notAllowUpdateField)
         }
     }
     /*******************************************************************************************/
@@ -129,7 +127,7 @@ async function updatePublicGroup_async({req,expectedPart}){
     /*******************************************************************************************/
     /*                             value cant be changed                                       */
     /*******************************************************************************************/
-    if(undefined!==docValue){
+/*    if(undefined!==docValue){
         let defaultGroupName=globalConfiguration.userGroupFriend.defaultGroupName.enumFormat
         let notAllowChangeField={
             [e_field.USER_FRIEND_GROUP.FRIEND_GROUP_NAME]:[defaultGroupName.MyFriend,defaultGroupName.BlackList]
@@ -140,12 +138,12 @@ async function updatePublicGroup_async({req,expectedPart}){
                 return Promise.reject(controllerError.notAllowUpdateDefaultRecord)
             }
         }
-    }
+    }*/
     // ap.print('value cant be changed done')
     /*******************************************************************************************/
     /*                              edit sub field value check and convert                     */
     /*******************************************************************************************/
-    if(undefined!==subFieldValue){
+    /*if(undefined!==subFieldValue){
         // ap.print('start checkEditSubFieldEleArray_async')
         // ap.print('subFieldValue',subFieldValue)
         //对eleArray中的值进行检测:1.fk是否存在，2. To如果存在，满足数量要求否 3. （额外）其中每个记录，用户是否有权操作
@@ -183,7 +181,7 @@ async function updatePublicGroup_async({req,expectedPart}){
             error:fromToError,
         })
         // ap.print('checkEditSubFieldFromTo_async')
-    }
+    }*/
 
     /*******************************************************************************************/
     /*                              remove not change field                                    */
@@ -240,7 +238,7 @@ async function updatePublicGroup_async({req,expectedPart}){
     /*                                       特定字段的处理（检查）                            */
     /*******************************************************************************************/
     if(undefined!==docValue){
-        let XssCheckField=[e_field.USER_FRIEND_GROUP.FRIEND_GROUP_NAME]
+        let XssCheckField=[e_field.PUBLIC_GROUP.NAME]
         await controllerHelper.inputFieldValueXSSCheck({docValue:docValue,collName:collName,expectedXSSCheckField:XssCheckField})
 
     }
@@ -277,7 +275,7 @@ async function updatePublicGroup_async({req,expectedPart}){
     /*******************************************************************************************/
     //根据compound_unique_field_config中的设置，进行唯一查询
     //如果不唯一，返回已经存在的记录，以便进一步处理
-    if(undefined!==docValue){
+/*    if(undefined!==docValue){
         //复合字段的定义中，一个字段不能从client传入，需要手工构造；
         let docValueTobeCheck=Object.assign({},{[e_field.USER_FRIEND_GROUP.OWNER_USER_ID]:userId},docValue)
         let compoundUniqueCheckResult=await controllerChecker.ifCompoundFiledUnique_returnExistRecord_async({collName:collName,docValue:docValueTobeCheck})
@@ -289,7 +287,7 @@ async function updatePublicGroup_async({req,expectedPart}){
                 return Promise.reject(controllerError.groupNameAlreadyExistCantUpdate)
             }
         }
-    }
+    }*/
 
     /*******************************************************************************************/
     /*                                  db operation                                           */

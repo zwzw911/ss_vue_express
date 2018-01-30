@@ -153,6 +153,11 @@ function checkRule({collName,ruleDefinitionOfFile}){
             return tmpResult
         }
 
+        tmpResult=checkDataTypeRelateRule({collName:collName,fieldName:singleFieldName,fieldRuleDefinition:ruleDefinitionOfFile[singleFieldName]})
+        if(tmpResult.rc>0){
+            // ap.err('tmpResult',tmpResult)
+            return tmpResult
+        }
 
     }
 
@@ -290,6 +295,27 @@ function checkApplyRange({collName,fieldName,fieldRuleDefinition}){
 
     return rightResult
 }
+
+/* 某些特定的dataTye，需要特定的rule（例如，数组，需要max_array_length）
+ * @collName,fieldName:用来打印信息
+ * @fieldRuleDefinition：object。单个字段的rule定义
+ * */
+function checkDataTypeRelateRule({collName,fieldName,fieldRuleDefinition}){
+    let dataTypeDefinition=fieldRuleDefinition[otherRuleFiledName.DATA_TYPE]
+    //数据类型是数组，则需要array_max_length
+    if(true===dataTypeCheck.isArray(dataTypeDefinition)){
+        if(undefined===fieldRuleDefinition[ruleFiledName.ARRAY_MAX_LENGTH]){
+            return checkRuleError.dataTypeArrayMissMaxlength({collName:collName,fieldName:fieldName,ruleField:undefined})
+        }
+    }
+
+
+
+    return rightResult
+}
+
+
+
 
 module.exports={
     readDirOrFileAndCheckFormat, //对一个目录或者一个文件，读取内容并进行rule check

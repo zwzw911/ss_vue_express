@@ -504,6 +504,53 @@ async function updateUserFriendGroup_returnRecord_async({userDataForRecordInfo,r
     })
 }
 
+/****************       GENERAL CREATE            *****************/
+async function generalCreate_returnRecord_async({userData,sess,app,url}){
+    let data={values:{}}
+    // let url='/public_group/'
+    data.values[e_part.RECORD_INFO]=userData
+// console.log(`userDate==============>${JSON.stringify(userData)}`)
+    data.values[e_part.METHOD]=e_method.CREATE
+    // console.log(`data.values==============>${JSON.stringify(data.values)}`)
+    return new Promise(function(resolve,reject){
+        request(app).post(url).set('Accept', 'application/json').set('Cookie',[sess]).send(data)
+            .end(function(err, res) {
+                let parsedRes=JSON.parse(res.text)
+                // console.log(`createAddFriend_async result =========> ${JSON.stringify(parsedRes)}`)
+                // ap.print(`parsedRes.msg`,parsedRes.msg)
+                assert.deepStrictEqual(parsedRes.rc,0)
+                return resolve(parsedRes.msg)
+            });
+    })
+}
+
+/****************       GENERAL UPDATE             *****************/
+async function generalUpdate_returnRecord_async({docValue,manipulateArray,recordId,sess,app,url}){
+    let data={values:{}}
+    // let url='/public_group/'
+    if(undefined!==docValue){
+        data.values[e_part.RECORD_INFO]=docValue
+    }
+    if(undefined!==manipulateArray){
+        data.values[e_part.MANIPULATE_ARRAY]=manipulateArray
+    }
+    data.values[e_part.RECORD_ID]=recordId
+// console.log(`userDate==============>${JSON.stringify(userData)}`)
+    data.values[e_part.METHOD]=e_method.UPDATE
+    // console.log(`data.values==============>${JSON.stringify(data.values)}`)
+    return new Promise(function(resolve,reject){
+        request(app).post(url).set('Accept', 'application/json').set('Cookie',[sess]).send(data)
+            .end(function(err, res) {
+                let parsedRes=JSON.parse(res.text)
+                // console.log(`createAddFriend_async result =========> ${JSON.stringify(parsedRes)}`)
+                // ap.print(`parsedRes.msg`,parsedRes.msg)
+                assert.deepStrictEqual(parsedRes.rc,0)
+                return resolve(parsedRes.msg)
+            });
+    })
+}
+
+
 module.exports={
     removeExistsRecord_async,
 
@@ -536,4 +583,7 @@ module.exports={
 
     createUserFriendGroup_returnRecord_async,
     updateUserFriendGroup_returnRecord_async,
+
+    generalCreate_returnRecord_async,
+    generalUpdate_returnRecord_async,
 }
