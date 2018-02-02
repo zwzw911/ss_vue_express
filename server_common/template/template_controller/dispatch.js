@@ -109,8 +109,10 @@ async function dispatcher_async({req,impeachType}){
 
             expectedPart=[e_part.RECORD_INFO,e_part.RECORD_ID]
 
+            //update的时候，如果操作的字段类型是数组，且其中数据众多，那么使用edit_sub_field对某个元素进行操作（增加，删除，移动）
+            //如果数组数据少：5个以下，直接使用recordInfo，通过牺牲带宽换取处理代码的简化
             optionalPart=[e_part.RECORD_INFO,e_part.EDIT_SUB_FIELD]
-            controllerHelper.checkOptionPartExist({req:req,optionPart:optionalPart,findType:e_findEleInArray.AT_LEAST_ONE,expectedPart:expectedPart})
+            tmpResult=controllerHelper.checkOptionPartExist({req:req,optionPart:optionalPart,findType:e_findEleInArray.AT_LEAST_ONE,expectedPart:expectedPart})
             if(tmpResult.rc>0){
                 return Promise.reject(tmpResult)
             }
@@ -120,6 +122,7 @@ async function dispatcher_async({req,impeachType}){
             // console.log(`update preCheck done============>`)
 
             /*      执行逻辑                */
+            //expectedPart:获得指定part的值
             tmpResult=await update_async({req:req,expectedPart:expectedPart})
             break;
         case e_method.DELETE: //delete

@@ -46,10 +46,11 @@ const validateFormat={
     inputValuePartSingleFieldValueFormatWrong:{rc:40112,msg:{client:`输入值格式错误`,server:`输入参数中，singleField的值必须为object`}},
     inputValuePartMethodValueFormatWrong:{rc:40113,msg:{client:`输入值格式错误`,server:`输入参数中，method的值必须为字符`}},
     inputValuePartCurrentPageValueFormatWrong:{rc:40114,msg:{client:`输入值格式错误`,server:`输入参数中，currentPage的值必须为整数`}},
-    inputValuePartCurrentCollValueFormatWrong:{rc:40116,msg:{client:`输入值格式错误`,server:`输入参数中，currentColl的值必须为字符串`}},
+    inputValuePartCurrentCollValueFormatWrong:{rc:40115,msg:{client:`输入值格式错误`,server:`输入参数中，currentColl的值必须为字符串`}},
+    inputValuePartManipulateArrayValueFormatWrong:{rc:40116,msg:{client:`输入值格式错误`,server:`输入参数中，manipulate array的值必须为对象`}},
     inputValuePartRecordIdValueFormatWrong:{rc:40118,msg:{client:`输入值格式错误`,server:`输入参数中，recordId的值不正确`}},//必须为字符，且为objectId
     inputValuePartFilterFieldValueFormatWrong:{rc:40120,msg:{client:`输入值格式错误`,server:`输入参数中，FilterFieldValue的值必须为对象`}},
-    inputValuePartRecIdArrValueFormatWrong:{rc:40122,msg:{client:`输入值格式错误`,server:`输入参数中，recIdArr的值必须为数组`}},
+    inputValuePartRecIdArrValueFormatWrong:{rc:40121,msg:{client:`输入值格式错误`,server:`输入参数中，recIdArr的值必须为数组`}},
     inputValuePartEventValueFormatWrong:{rc:40122,msg:{client:`输入值格式错误`,server:`输入参数中，event的值必须为对象`}},
     inputValuePartEditSubFieldValueFormatWrong:{rc:40123,msg:{client:`输入值格式错误`,server:`输入参数中，editSubField的值必须为对象`}},
     inputValuePartUndefinedPart:{rc:40124,msg:{client:`输入值格式错误`,server:`输入参数中，part未定义`}},
@@ -119,6 +120,15 @@ const validateFormat={
     singleFieldValueCantUndefined:{rc:40221,msg:{client:`输入值格式不正确`,server:`单个字段中值不能为undefined`}},
     singleFieldCantContainId:{rc:40222,msg:{client:`输入值格式不正确`,server:`单个字段中不能包含主键`}},
     singleFiledRuleNotDefine:{rc:40224,msg:{client:'输入值格式错误',server:'待检测的输入值字段没有对应的rule'}},
+
+    manipulateArray:{
+        manipulateArrayMustBeObject:{rc:40226,msg:{client:`输入值格式不正确`,server:`必须是object`}},
+        manipulateArrayNoRelatedRule:{rc:40228,msg:{client:`输入值格式不正确`,server:`字段的没有对应的rule`}},
+        manipulateArrayFieldValueMustBeObject:{rc:40230,msg:{client:`输入值格式不正确`,server:`字段的值必须是对象`}},
+        manipulateArrayFieldKeyNumberWrong:{rc:40232,msg:{client:`输入值格式不正确`,server:`字段中键值的数量不正确`}},
+        manipulateArrayFieldKeyNameWrong:{rc:40234,msg:{client:`输入值格式不正确`,server:`字段中键值的名称不是预定义`}},
+    },
+
 /*    singleFiledRValueMustBeObject:{rc:40226,msg:{client:'输入值格式错误',server:'singleField的值必须是object'}},
     singleFiledValueMustContainOneKey:{rc:40228,msg:{client:'输入值格式错误',server:'singleField的值(object)必须只有一个键'}},
     singleFiledValuesKeyNameWrong:{rc:40230,msg:{client:'输入值格式错误',server:'singleField的值(object)的键名必须是value'}},*/
@@ -180,6 +190,18 @@ const validateValue={
 
     /*              method              */
     methodValueUndefined:{rc:40354,msg:{client:'输入值格式错误',server:'method的值不是预定义的值之一'}},
+
+    /*              validateManipulateArrayValue           */
+    manipulateArray:{
+        fieldDataTypeNotArray:{rc:40360,msg:{client:`内部错误`,server:`rule中字段的数据类型不是数组`}},
+        arrayMaxLengthUndefined:{rc:40362,msg:{client:`内部错误`,server:`rule中没有定义arrayMaxLength属性`}},
+        fieldKeyValueMustBeArray:{rc:40364,msg:{client:`输入错误`,server:`add/remove的值必须是数组`}},
+        fieldKeyValueCantEmpty:{rc:40366,msg:{client:`输入错误`,server:`add/remove的值不能为空数组`}},
+        fieldKeyValueNumExceed:{rc:40368,msg:{client:`输入错误`,server:`add/remove的值超出最大定义`}},
+        fieldKeyValueDataTypeWrong:{rc:40370,msg:{client:`输入错误`,server:`add/remove的值数据类型不正确`}},
+    },
+
+
 }
 
 

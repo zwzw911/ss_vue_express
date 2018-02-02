@@ -103,9 +103,9 @@ async function updateUserFriendGroup_async({req,expectedPart}){
         return Promise.reject(controllerError.notUserGroupOwnerCantUpdate)
     }
     let originalDoc=misc.objectDeepCopy(tmpResult)
-    /*******************************************************************************************/
-    /*                          delete field cant be update from client                        */
-    /*******************************************************************************************/
+   /* /!*******************************************************************************************!/
+    /!*                          delete field cant be update from client                        *!/
+    /!*******************************************************************************************!/
     //以下字段，CREATE是client输入，但是update时候，无法更改，所以不能存在
     let forbidUpdateFields=[]
     for(let singleForbidUpdateField of forbidUpdateFields){
@@ -115,7 +115,7 @@ async function updateUserFriendGroup_async({req,expectedPart}){
         if(undefined!==subFieldValue && undefined!== subFieldValue[singleForbidUpdateField]){
             return Promise.reject(controllerError.forbidUpdateFieldExist(singleForbidUpdateField))
         }
-    }
+    }*/
     /*******************************************************************************************/
     /*                 check non-require, but mandatory field for update                       */
     /*******************************************************************************************/
@@ -145,6 +145,7 @@ async function updateUserFriendGroup_async({req,expectedPart}){
     /*******************************************************************************************/
     /*                              edit sub field value check and convert                     */
     /*******************************************************************************************/
+    // ap.print('subFieldValue',subFieldValue)
     if(undefined!==subFieldValue){
         // ap.print('start checkEditSubFieldEleArray_async')
         // ap.print('subFieldValue',subFieldValue)
@@ -152,7 +153,10 @@ async function updateUserFriendGroup_async({req,expectedPart}){
         for(let singleFieldName in subFieldValue){
             let singleSubFieldValue=subFieldValue[singleFieldName] //subFieldValue中，单个字段的值
             // ap.print('singleSubFieldValue',singleSubFieldValue)
+            // ap.print('singleFieldName',singleFieldName)
+            // ap.print('userId',userId)
             //检查eleArray的值
+            // try{
             await controllerHelper.checkEditSubFieldEleArray_async({
                 singleEditSubFieldValue:singleSubFieldValue,
                 eleAdditionalCondition:undefined,
@@ -162,7 +166,13 @@ async function updateUserFriendGroup_async({req,expectedPart}){
                 userId:userId,
                 // error:fromToError,
             })
+            // }
+            // catch(e){
+            //     ap('e',e)
+            // }
+
         }
+        // {singleEditSubFieldValue,eleAdditionalCondition,collName,fieldName,userId}
         // ap.print('checkEditSubFieldEleArray_async')
         //转换成nosql
         convertedNoSql=await dataConvert.convertEditSubFieldValueToNoSql({editSubFieldValue:subFieldValue})
@@ -182,9 +192,10 @@ async function updateUserFriendGroup_async({req,expectedPart}){
             userId:userId,
             error:fromToError,
         })
+
         // ap.print('checkEditSubFieldFromTo_async')
     }
-
+    // ap.print('fkexist    check done1')
     /*******************************************************************************************/
     /*                              remove not change field                                    */
     /*******************************************************************************************/
@@ -204,7 +215,7 @@ async function updateUserFriendGroup_async({req,expectedPart}){
     if(true===recordInfoNotChange && true===editSubFieldValueNotChange){
         return Promise.resolve({rc:0})
     }
-
+    // ap.print('not chaget done')
     /*******************************************************************************************/
     /*                                       resource check                                    */
     /*******************************************************************************************/

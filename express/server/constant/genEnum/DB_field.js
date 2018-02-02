@@ -113,6 +113,7 @@ const Field={
         CREATOR_ID:'creatorId',
         MEMBERS_ID:'membersId',
         ADMINS_ID:'adminsId',
+        WAIT_APPROVE_ID:'waitApproveId',
         JOIN_IN_RULE:'joinInRule',
     },
     PUBLIC_GROUP_EVENT:{

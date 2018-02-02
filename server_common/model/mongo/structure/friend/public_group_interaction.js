@@ -1,7 +1,7 @@
 /**
  * Created by wzhan039 on 2017-06-22.
  *
- * 定义用户信息
+ * 群用户互动记录
  */
 
 'use strict'

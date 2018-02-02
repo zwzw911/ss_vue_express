@@ -93,6 +93,8 @@ const ClientDataType={
     REGEXP: 'regexp',
 }
 
+
+
 //asyncValidator的ruletype（用在client（vue）代码中）
 const ClientRuleType={
     REQUIRE:'required',
@@ -103,6 +105,29 @@ const ClientRuleType={
     ENUM:'enum',
 }
 
+const ServerRuleMatchClientRule={
+    [RuleFiledName.REQUIRE]:ClientRuleType.REQUIRE,
+    [RuleFiledName.FORMAT]:ClientRuleType.PATTERN,
+    [RuleFiledName.ENUM]:ClientRuleType.ENUM,
+    [RuleFiledName.ARRAY_MAX_LENGTH]:ClientRuleType.MAX,
+    [RuleFiledName.ARRAY_MIN_LENGTH]:ClientRuleType.MIN,
+    [RuleFiledName.MAX]:ClientRuleType.MAX,
+    [RuleFiledName.MIN]:ClientRuleType.MIN,
+    [RuleFiledName.MAX_LENGTH]:ClientRuleType.MAX,
+    [RuleFiledName.MIN_LENGTH]:ClientRuleType.MIN,
+}
+
+const ServerDataTypeMatchClientDataType={
+    [ServerDataType.OBJECT_ID]:ClientDataType.STRING,
+    [ServerDataType.STRING]:ClientDataType.STRING,
+    [ServerDataType.FLOAT]:ClientDataType.FLOAT,
+    [ServerDataType.INT]:ClientDataType.INT,
+    [ServerDataType.DATE]:ClientDataType.DATE,
+    [ServerDataType.NUMBER]:ClientDataType.NUMBER,
+    [ServerDataType.OBJECT]:ClientDataType.OBJECT,
+    // [ServerDataType.FILE]:ClientDataType.,
+    // [ServerDataType.MIN_LENGTH]:ClientDataType.MIN,
+}
 //server端自定义rule type，和mongoose中字段值的rule type的匹配关系
 // const serverRuleTypeMatchMongooseRule={
 //     [ServerRuleType.REQUIRE]:'required',
@@ -144,5 +169,9 @@ module.exports={
 
     serverRuleTypeMatchMongooseRule,
     ApplyRange,
+
+    //server和client(async_validator之间的对应关系)
+    ServerRuleMatchClientRule,
+    ServerDataTypeMatchClientDataType,
     // RequireType,
 }

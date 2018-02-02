@@ -57,7 +57,7 @@ const fkConfig=server_common_file_require.fkConfig.fkConfig
 /*                      configuration                                               */
 const publicGroup_Configuration=server_common_file_require.globalConfiguration.PublicGroup
 
-async  function createPublicGroup_async({req,}){
+async  function createPublicGroup_async({req}){
     // console.log(`createPublicGroup_async in`)
     /*******************************************************************************************/
     /*                                          define variant                                 */
@@ -79,16 +79,7 @@ async  function createPublicGroup_async({req,}){
     /*                                     参数转为server格式                                  */
     /*******************************************************************************************/
     dataConvert.constructCreateCriteria(docValue)
-    /*******************************************************************************************/
-    /*                          delete field cant be create from client                        */
-    /*******************************************************************************************/
-    //有些字段只能从client进行update，而无法从cleent进行create（create时，ADMINSID内部添加，而MENBERSIS则为空）
-    let forbidCreateFields=[e_field.PUBLIC_GROUP.MEMBERS_ID,e_field.PUBLIC_GROUP.ADMINS_ID]
-    for(let singleForbidUpdateField of forbidCreateFields){
-        if(undefined!== docValue[singleForbidUpdateField]){
-            return Promise.reject(controllerError.forbidUpdateFieldExist(singleForbidUpdateField))
-        }
-    }
+
     /*******************************************************************************************/
     /*                                       authorization check                               */
     /*******************************************************************************************/
@@ -136,21 +127,6 @@ async  function createPublicGroup_async({req,}){
     if(tmpResult.rc>0){
         return Promise.reject(tmpResult)
     }
-    // console.log(`========================>enum unique check<--------------------------`)
-// console.log(`createUser_async docValue===> ${JSON.stringify(docValue)}`)
-
-    /*******************************************************************************************/
-    /*                 因为name是unique，所以要检查用户名是否存在(unique check)                */
-    /*******************************************************************************************/
-/*    //此处unique是对用户，而非对整个coll
-    condition={
-        [e_field.USER_FRIEND_GROUP.OWNER_USER_ID]:userId,
-        [e_field.USER_FRIEND_GROUP.FRIEND_GROUP_NAME]:docValue[e_field.USER_FRIEND_GROUP.FRIEND_GROUP_NAME]
-    }
-    tmpResult=await common_operation_model.count_async({dbModel:e_dbModel.user_friend_group,condition:condition})
-    if(tmpResult>0){
-        return Promise.reject(controllerError.groupNameAlreadyExistCantUpdate)
-    }*/
 
     /*******************************************************************************************/
     /*                              检查是否有为完成的doc，以便复用                            */
@@ -160,18 +136,31 @@ async  function createPublicGroup_async({req,}){
     /*                                       特定字段的处理（检查）                            */
     /*******************************************************************************************/
     //content内容进行XSS检测
-    let XssCheckField=[e_field.USER_FRIEND_GROUP.FRIEND_GROUP_NAME]
+    let XssCheckField=[e_field.PUBLIC_GROUP.NAME]
     await controllerHelper.inputFieldValueXSSCheck({docValue:docValue,collName:collName,expectedXSSCheckField:XssCheckField})
 
-
-    // console.log(`========================>special check done<--------------------------`)
+    /*******************************************************************************************/
+    /*                 因为name是unique，所以要检查用户名是否存在(unique check)                */
+    /*******************************************************************************************/
+    if(undefined!==e_uniqueField[collName] &&  e_uniqueField[collName].length>0) {
+        // let additionalCheckCondition={[e_field.ADMIN_USER.DOC_STATUS]:e_docStatus.DONE}
+        // await controllerChecker.ifFieldInDocValueUnique_async({collName: collName, docValue: docValue,additionalCheckCondition:additionalCheckCondition})
+        await controllerChecker.ifFieldInDocValueUnique_async({collName: collName, docValue: docValue,additionalCheckCondition:undefined})
+    }
+    /*******************************************************************************************/
+    /*                         添加默认的client field                                          */
+    /*******************************************************************************************/
+    docValue[e_field.PUBLIC_GROUP.ADMINS_ID]=[userId]
+    docValue[e_field.PUBLIC_GROUP.MEMBERS_ID]=[userId]
     /*******************************************************************************************/
     /*                         添加internal field，然后检查                                    */
     /*******************************************************************************************/
     // console.log(`before hash is ${JSON.stringify(docValue)}`)
     let internalValue={}
     // internalValue[e_field.USER_FRIEND_GROUP.]=impeachType
-    internalValue[e_field.USER_FRIEND_GROUP.OWNER_USER_ID]=userId
+    internalValue[e_field.PUBLIC_GROUP.CREATOR_ID]=userId
+    // ap.inf('collname',collName)
+    // ap.inf('internalInputRule[collName]',internalInputRule[collName])
     /*              对内部产生的值进行检测（开发时使用，上线后为了减低负荷，无需使用）           */
     if(e_env.DEV===currentEnv){
         let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInputRule:inputRule[collName],collInternalRule:internalInputRule[collName],method:req.body.values[e_part.METHOD]})
@@ -188,10 +177,10 @@ async  function createPublicGroup_async({req,}){
     //根据compound_unique_field_config中的设置，进行唯一查询
     //如果不唯一，返回已经存在的记录，以便进一步处理
     let compoundUniqueCheckResult=await controllerChecker.ifCompoundFiledUnique_returnExistRecord_async({collName:collName,docValue:docValue})
-    // console.log(`compound field check result===================>${JSON.stringify(compoundUniqueCheckResult)}`)
+    // ap.inf('compoundUniqueCheckResult',compoundUniqueCheckResult===undefined)
     //复合字段唯一返回true或者已有的doc
     //有重复值，且重复记录数为1（大于1，已经直接reject）
-    if(true!==compoundUniqueCheckResult){
+    if(true!==compoundUniqueCheckResult && undefined!==compoundUniqueCheckResult){
         if(undefined!==docValue[e_field.USER_FRIEND_GROUP.FRIEND_GROUP_NAME]){
             return Promise.reject(controllerError.groupNameAlreadyExistCantCreate)
         }

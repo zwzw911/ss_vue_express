@@ -86,12 +86,14 @@ const AdminPriorityType={
 
 const PublicGroupJoinInRule={
     DB:{
-        ANYONE_ALLOW:'0',
-        PERMIT_ALLOW:'1',
+        ANYONE_ALLOW:'1',
+        PERMIT_ALLOW:'2',
+        NOONE_ALLOW:'3',
     },
     SHOW:{
         ANYONE_ALLOW:'任意加入',
         PERMIT_ALLOW:'批准加入',
+        NOONE_ALLOW:'拒绝加入',
     },
 
 }
@@ -430,6 +432,8 @@ const AddFriendStatus={
         REJECT:'拒绝',
     },
 }
+
+
 module.exports={
     ArticleStatus,
     AdminUserType,

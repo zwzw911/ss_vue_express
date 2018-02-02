@@ -61,7 +61,6 @@ const collFieldDefine={
     userId:{type:mongoose.Schema.Types.ObjectId,ref:"user"},
     currentJoinGroup:{type:[mongoose.Schema.Types.ObjectId],ref:"public_group",validate:[currentJoinGroup_arrayMaxLengthValidator]},
 
-
     cDate:{type:Date,default:Date.now},
     uDate:{type:Date,default:Date.now},
     dDate:{type:Date},

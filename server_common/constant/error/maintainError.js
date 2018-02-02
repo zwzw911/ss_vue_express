@@ -59,9 +59,18 @@ const checkRule={
     applyRangeCantContainMoreThan1Update({collName,fieldName,ruleField}){
         return {rc:43024,msg:`coll:${collName}的字段${fieldName}中，rule字段require中，update只能有一个`}
     },
+    /*           check relate rule              */
+    dataTypeArrayMissMaxlength({collName,fieldName,ruleField}) {
+        return {rc: 43026, msg: `coll:${collName}的字段${fieldName}中，rule的数据类型为数组，但是没有定义array_max_length属性`}
+    },
 }
 
+const convertBrowserRuleError={
+
+}
 module.exports={
     dailyError,
     checkRule,
+
+    convertBrowserRuleError,
 }

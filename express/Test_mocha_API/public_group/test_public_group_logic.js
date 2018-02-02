@@ -3,8 +3,8 @@
  */
 'use strict'
 
-const controllerError=require('../../server/controller/impeach_action/impeach_action_setting/impeach_action_controllerError').controllerError
-let  baseUrl="/impeach_action/",finalUrl,url
+const controllerError=require('../../server/controller/public_group/public_group_setting/public_group_controllerError').controllerError
+let  baseUrl="/public_group/",finalUrl,url
 
 const ap=require(`awesomeprint`)
 
@@ -33,7 +33,7 @@ const e_adminUserType=server_common_file_require.mongoEnum.AdminUserType.DB
 const e_adminPriorityType=server_common_file_require.mongoEnum.AdminPriorityType.DB
 const e_penalizeType=server_common_file_require.mongoEnum.PenalizeType.DB
 const e_penalizeSubType=server_common_file_require.mongoEnum.PenalizeSubType.DB
-const e_impeachState=server_common_file_require.mongoEnum.ImpeachState.DB
+const e_publicGroupJoinInRule=server_common_file_require.mongoEnum.PublicGroupJoinInRule.DB
 const e_impeachUserAction=server_common_file_require.mongoEnum.ImpeachUserAction.DB
 const e_impeachAdminAction=server_common_file_require.mongoEnum.ImpeachAdminAction.DB
 
@@ -66,16 +66,16 @@ let adminRootSess,adminRootId,data={values:{}}
 let recordId1,recordId2,recordId3,expectedErrorRc
 
 let normalRecord={
-    [e_field.IMPEACH_ACTION.IMPEACH_ID]:undefined,
-    [e_field.IMPEACH_ACTION.ACTION]:e_impeachUserAction.SUBMIT,
+    [e_field.PUBLIC_GROUP.NAME]:'test',
+    [e_field.PUBLIC_GROUP.JOIN_IN_RULE]:e_publicGroupJoinInRule.PERMIT_ALLOW,
     // [e_field.IMPEACH_ACTION.OWNER_ID]:undefined, //普通用户无需操作此字段
 }
 
 /*              create_impeach_state中的错误               */
-describe('create impeach action', async function() {
+describe('public group', async function() {
     data={values:{method:e_method.CREATE}}
     let impeachId,impeachId2
-    before('user1/2  login and create article and impeach', async function(){
+    before('user1/2/3 recreate and login ', async function(){
         url=''
         finalUrl=baseUrl+url
         // parameter[`APIUrl`]=finalUrl
@@ -87,23 +87,29 @@ describe('create impeach action', async function() {
         user2Id=user2Info[`userId`]
         user2Sess=user2Info[`sess`]
 
+        let user3Info =await component_function.reCreateUser_returnSessUserId_async({userData:testData.user.user3,app:app})
+        user3Id=user3Info[`userId`]
+        user3Sess=user3Info[`sess`]
+
         adminRootSess=await API_helper.adminUserLogin_returnSess_async({userData:testData.admin_user.adminRoot,adminApp:adminApp})
         adminRootId=db_operation_helper.getAdminUserId_async({userName:testData.admin_user.adminRoot.name})
 
-        let articledId=await component_function.createArticle_setToFinish_returnArticleId_async({userSess:user1Sess,app:app})
-        impeachId=await API_helper.createImpeachForArticle_returnImpeachId_async({articleId:articledId,userSess:user1Sess,app:app})
-        normalRecord[e_field.IMPEACH_ACTION.IMPEACH_ID]=impeachId
+        /*          user1/2 create group(for unique test)     */
+        tmpResult=await API_helper.genaralCreate_returnRecord_async({userData:normalRecord,sess:user1Sess,app:app,url:finalUrl,})
+        recordId1=tmpResult['_id']
 
-
-        let articledId2=await component_function.createArticle_setToFinish_returnArticleId_async({userSess:user2Sess,app:app})
-        console.log(`articledId2================>${articledId2}`)
-        impeachId2=await API_helper.createImpeachForArticle_returnImpeachId_async({articleId:articledId2,userSess:user2Sess,app:app})
-        await API_helper.delete_impeach_async({impeachId:impeachId2,userSess:user2Sess,app:app})
+        copyNormalRecord=objectDeepCopy(normalRecord)
+        copyNormalRecord[e_field.PUBLIC_GROUP.NAME]='test2'
+        tmpResult=await API_helper.genaralCreate_returnRecord_async({userData:copyNormalRecord,sess:user2Sess,app:app,url:finalUrl,})
+        recordId2=tmpResult['_id']
         console.log(`==============================================================`)
         console.log(`=================    before all done      ====================`)
         console.log(`==============================================================`)
     });
 
+    /****************************************/
+    /*              create                  */
+    /****************************************/
     describe('create public group', async function() {
         before('init var', async function(){
             data.values = {}
@@ -291,6 +297,5 @@ describe('create impeach action', async function() {
         });
 
     })
-
 })
 
