@@ -214,7 +214,7 @@ const uploadFileDefine={
     common:{
         imageType:['PNG','JPEG','JPG'],
         attachmentType:['7z','txt','log'],
-
+        userThumbImageType:['PNG'],
     },
     article_image:{
         [e_uploadFileDefinitionFieldName.MAX_SIZE_IN_BYTE]:2*1024*1024, //byte
@@ -227,10 +227,9 @@ const uploadFileDefine={
         [e_uploadFileDefinitionFieldName.MAX_SIZE_IN_MB]:10, //byte
     },
     user_thumb:{
-        [e_uploadFileDefinitionFieldName.MAX_SIZE_IN_BYTE]:400*1024,// in byte
-        [e_uploadFileDefinitionFieldName.MAX_HEIGHT]:10000,//px
-        [e_uploadFileDefinitionFieldName.MAX_WIDTH]:10000,//px
-        imageType:['PNG'],
+        [e_uploadFileDefinitionFieldName.MAX_SIZE_IN_BYTE]:100*1024,// in byte
+        [e_uploadFileDefinitionFieldName.MAX_HEIGHT]:100,//px
+        [e_uploadFileDefinitionFieldName.MAX_WIDTH]:100,//px
         // saveDir:'H:/ss_vue_express/test_data/userPhoto/dest/',
         // tmpSaveDir:'H:/ss_vue_express/test_data/tmp/'
     },
@@ -623,13 +622,13 @@ const PublicGroup={
     //     enumValue:[`我的好友`,`黑名单`]
     // },
 }
+// mongoSetting,/*               转移到model/model定义中了   */
+// internalSetting,
+// session,
+// pageSetting,
 module.exports={
 	defaultSetting,
-	// mongoSetting,/*               转移到model/model定义中了   */
     searchSetting,
-	// internalSetting,
-	// session,
-    // pageSetting,
     paginationSetting,
     suggestLimit,
     searchMaxPage,//search时，最大的页码

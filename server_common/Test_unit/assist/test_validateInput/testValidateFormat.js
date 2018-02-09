@@ -673,6 +673,64 @@ describe('validateEditSubFieldFormat', function() {
 
 })
 
+/***************************************************************************/
+/***************   manipulateArray   *******************/
+/***************************************************************************/
+describe('validateManipulateArrayFormat', function() {
+    let func=testModule.validateManipulateArrayFormat
+    let value
+    let rule={}
+    //1     value is undefined
+    it(`manipulateArray value is undefined, not object`,function(done){
+        assert.deepStrictEqual(func({inputValue:value,browseInputRule:rule}).rc,validateFormatError.manipulateArray.manipulateArrayMustBeObject.rc)
+        done()
+    })
+    //2      value is array
+    it(`manipulateArray value is array, not object`,function(done){
+        value=[]
+        assert.deepStrictEqual(func({inputValue:value,browseInputRule:rule}).rc,validateFormatError.manipulateArray.manipulateArrayMustBeObject.rc)
+        done()
+    })
+    //1     field no related rule
+    it(`manipulateArray field no related rule`,function(done){
+        value={f1:undefined}
+        assert.deepStrictEqual(func({inputValue:value,browseInputRule:rule}).rc,validateFormatError.manipulateArray.manipulateArrayNoRelatedRule.rc)
+        done()
+    })
+    //1     field value not object
+    it(`manipulateArray field value not object`,function(done){
+        value={f1:[]}
+        rule={f1:{}}
+        assert.deepStrictEqual(func({inputValue:value,browseInputRule:rule}).rc,validateFormatError.manipulateArray.manipulateArrayFieldValueMustBeObject.rc)
+        done()
+    })
+    //3      key number less than 2
+    it(`manipulateArray value key number cant empty`,function(done){
+        value={f1:{}}
+        assert.deepStrictEqual(func({inputValue:value,browseInputRule:rule}).rc,validateFormatError.manipulateArray.manipulateArrayFieldKeyNumberWrong.rc)
+        done()
+    })
+    //4      key number larger than 3
+    it(`manipulateArray value key number must 2`,function(done){
+        value={f1:{k1:1,k2:2,k3:3,k4:4}}
+        assert.deepStrictEqual(func({inputValue:value,browseInputRule:rule}).rc,validateFormatError.manipulateArray.manipulateArrayFieldKeyNumberWrong.rc)
+        done()
+    })
+    //5      key not validate
+    it(`manipulateArray key not predefined`,function(done){
+        value={f1:{k3:undefined}}
+        assert.deepStrictEqual(func({inputValue:value,browseInputRule:rule}).rc,validateFormatError.manipulateArray.manipulateArrayFieldKeyNameWrong.rc)
+        done()
+    })
+    //7    right result
+    it(`right result`,function(done){
+        value={f1:{remove:[1]}}
+        assert.deepStrictEqual(func({inputValue:value,browseInputRule:rule}).rc,0)
+        done()
+    })
+
+})
+
 
 /***************************************************************************/
 /***************   EventFormat   *******************/

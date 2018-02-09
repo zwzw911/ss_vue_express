@@ -62,20 +62,20 @@ async function deletePublicGroup_async({req}){
     /*******************************************************************************************/
     /*                                       authorization check                               */
     /*******************************************************************************************/
-    //作者本身才能删除举报
-    tmpResult=await controllerChecker.ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({dbModel:e_dbModel[collName],recordId:recordId,ownerFieldName:e_field.USER_FRIEND_GROUP.OWNER_USER_ID,ownerFieldValue:userId,additionalCondition:undefined})
+    //1. 创建者本身  2. 无其他用户  才能删除举报
+    tmpResult=await controllerChecker.ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({dbModel:e_dbModel[collName],recordId:recordId,ownerFieldName:e_field.PUBLIC_GROUP.CREATOR_ID,ownerFieldValue:userId,additionalCondition:undefined})
     if(false===tmpResult){
-        return Promise.reject(controllerError.notUserGroupOwnerCantDelete)
+        return Promise.reject(controllerError.notGroupCreatorCantDelete)
     }
     let originalDoc=misc.objectDeepCopy(tmpResult)
-    //不能删除默认分组
+/*    //不能删除默认分组
     let defaultGroupNames=Object.values(globalConfiguration.userGroupFriend.defaultGroupName.enumFormat)
     if(-1!==defaultGroupNames.indexOf(originalDoc[e_field.USER_FRIEND_GROUP.FRIEND_GROUP_NAME])){
         return Promise.reject(controllerError.cantDeleteDefaultGroup)
-    }
-    //分组中的好友数必须为0
-    if(originalDoc[e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP].length>0){
-        return Promise.reject(controllerError.cantDeleteGroupContainFriend)
+    }*/
+    //群中的成员数必须为1（creator自己）
+    if(originalDoc[e_field.PUBLIC_GROUP.MEMBERS_ID].length>1 || originalDoc[e_field.PUBLIC_GROUP.MEMBERS_ID][0]!==originalDoc[e_field.PUBLIC_GROUP.CREATOR_ID]){
+        return Promise.reject(controllerError.cantDeleteGroupContainMember)
     }
     /*******************************************************************************************/
     /*                                  db operation                                           */

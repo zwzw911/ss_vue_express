@@ -26,17 +26,17 @@ const public_group_event= {
         [otherRuleFiledName.CHINESE_NAME]: '群',
         [otherRuleFiledName.DATA_TYPE]: serverDataType.OBJECT_ID,
         [otherRuleFiledName.APPLY_RANGE]:[applyRange.CREATE],
-        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true}, error: {rc: 10360}, mongoError: {rc: 20360, msg: '群不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
-        [ruleFiledName.FORMAT]: {define: regex.objectId, error: {rc: 10362}, mongoError: {rc: 20362, msg: '群必须是objectId'}} //server端使用
+        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true}, error: {rc: 10360, msg: '群不能为空'}, mongoError: {rc: 20360, msg: '群不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        [ruleFiledName.FORMAT]: {define: regex.objectId, error: {rc: 10362, msg: '群必须是objectId'}, mongoError: {rc: 20362, msg: '群必须是objectId'}} //server端使用
     },
 
     eventType: {
         [otherRuleFiledName.CHINESE_NAME]: '群事件类型',
         [otherRuleFiledName.DATA_TYPE]: serverDataType.STRING,
         [otherRuleFiledName.APPLY_RANGE]:[applyRange.CREATE],
-        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true}, error: {rc: 10364}, mongoError: {rc: 20364, msg: '群事件类型不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true}, error: {rc: 10364, msg: '群事件类型不能为空'}, mongoError: {rc: 20364, msg: '群事件类型不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         // [ruleFiledName.ENUM]:{define:Object.values(mongoEnum.PublicGroupEventType.DB),error:{rc:10366},mongoError:{rc:20366,msg:'未知群事件类型'}},//server端使用
-        [ruleFiledName.ENUM]:{define:enumValue.PublicGroupEventType,error:{rc:10366},mongoError:{rc:20366,msg:'未知群事件类型'}},//server端使用
+        [ruleFiledName.ENUM]:{define:enumValue.PublicGroupEventType,error:{rc:10366,msg:'未知群事件类型'},mongoError:{rc:20366,msg:'未知群事件类型'}},//server端使用
     },
 
 
@@ -44,19 +44,19 @@ const public_group_event= {
         [otherRuleFiledName.CHINESE_NAME]: '事件接收者',
         [otherRuleFiledName.DATA_TYPE]: serverDataType.OBJECT_ID,
         [otherRuleFiledName.APPLY_RANGE]:[applyRange.CREATE],
-        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:false}, error: {rc: 10368}, mongoError: {rc: 20368, msg: '事件接收者不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:false}, error: {rc: 10368, msg: '事件接收者不能为空'}, mongoError: {rc: 20368, msg: '事件接收者不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         // 'minLength': {define: 6, error: {rc: 10002}, mongoError: {rc: 20002, msg: '密码至少6个字符'}},
         // 'maxLength': {define: 20, error: {rc: 10004}, mongoError: {rc: 20004, msg: '密码的长度不能超过20个字符'}},
-        [ruleFiledName.FORMAT]: {define: regex.objectId, error: {rc: 10370}, mongoError: {rc: 20370, msg: '事件接收者必须是objectId'}} //server端使用
+        [ruleFiledName.FORMAT]: {define: regex.objectId, error: {rc: 10370, msg: '事件接收者必须是objectId'}, mongoError: {rc: 20370, msg: '事件接收者必须是objectId'}} //server端使用
     },
 
     status: {
         [otherRuleFiledName.CHINESE_NAME]: '事件状态',
         [otherRuleFiledName.DATA_TYPE]: serverDataType.STRING,
         [otherRuleFiledName.APPLY_RANGE]:[applyRange.CREATE],
-        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true}, error: {rc: 10372}, mongoError: {rc: 20372, msg: '事件状态不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true}, error: {rc: 10372, msg: '事件状态不能为空'}, mongoError: {rc: 20372, msg: '事件状态不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         // [ruleFiledName.ENUM]:{define:Object.values(mongoEnum.EventStatus.DB),error:{rc:10374},mongoError:{rc:20374,msg:'未知事件状态'}},//server端使用
-        [ruleFiledName.ENUM]:{define:enumValue.PublicGroupEventType,error:{rc:10374},mongoError:{rc:20374,msg:'未知事件状态'}},//server端使用
+        [ruleFiledName.ENUM]:{define:enumValue.PublicGroupEventType,error:{rc:10374,msg:'未知事件状态'},mongoError:{rc:20374,msg:'未知事件状态'}},//server端使用
     },
 
 

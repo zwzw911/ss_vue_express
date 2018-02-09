@@ -23,7 +23,7 @@ const controllerError={
 
     // update
     notImpeachCreatorCantUpdateComment:{rc:51005,msg:`无权对他人举报进行评论`},
-    forbidUpdateFieldExist(fieldName){return {rc:51006,msg:{client:`输入错误`,server:`字段${fieldName}不允许被用户更新`}}},
+    // forbidUpdateFieldExist(fieldName){return {rc:51006,msg:{client:`输入错误`,server:`字段${fieldName}不允许被用户更新`}}},
     notAllowUpdateDefaultRecord:{rc:51742,msg:'无法更改默认记录'},
 
     //upload

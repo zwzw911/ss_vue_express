@@ -48,6 +48,9 @@ async function deleteUserAndRelatedInfo_async({account,name}){
         await common_operation_model.deleteMany_async({dbModel:e_dbModel.add_friend,condition:{[e_field.ADD_FRIEND.ORIGINATOR]:userId}})
         //删除所有好友分组（以及其中的朋友）
         await common_operation_model.deleteMany_async({dbModel:e_dbModel.user_friend_group,condition:{[e_field.USER_FRIEND_GROUP.OWNER_USER_ID]:userId}})
+        //删除所有创建的群
+        await common_operation_model.deleteMany_async({dbModel:e_dbModel.public_group,condition:{[e_field.PUBLIC_GROUP.CREATOR_ID]:userId}})
+
     }
 
 }

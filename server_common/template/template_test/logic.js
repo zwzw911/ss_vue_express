@@ -104,64 +104,193 @@ describe('create impeach action', async function() {
         console.log(`==============================================================`)
     });
 
-    /****************************************/
-    /*              create                  */
-    /****************************************/
-    // userType check
-    it('userType check, admin not allow for create', async function() {
-        data.values={}
-        copyNormalRecord=objectDeepCopy(normalRecord)
-        data.values[e_part.RECORD_INFO]=normalRecord
-        data.values[e_part.METHOD]=e_method.CREATE
-        expectedErrorRc=controllerCheckerError.userTypeNotExpected.rc
-        await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:adminRootSess,data:data,expectedErrorRc:expectedErrorRc,app:app})
-    });
+    describe('create public group', async function() {
+        before('init var', async function(){
+            data.values = {}
+            data.values[e_part.METHOD] = e_method.CREATE
+        })
+        it('userType check, admin not allow for create', async function() {
 
-    /*              authorization check            */
-    it('authorization check: user2 not creator try to add impeach comment', async function() {
-        data.values={}
-        data.values[e_part.RECORD_INFO]=normalRecord
-        data.values[e_part.METHOD]=e_method.CREATE
+            copyNormalRecord=objectDeepCopy(normalRecord)
+            data.values[e_part.RECORD_INFO]=normalRecord
 
-        expectedErrorRc=controllerError.notImpeachCreatorCantCreateComment.rc
-        await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user2Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
-    });
-    it('admin action not allow for user', async function() {
-        data.values={}
-        normalRecord[e_field.IMPEACH_ACTION.ACTION]=e_impeachAdminAction.ASSIGN
-        data.values[e_part.RECORD_INFO]=normalRecord
-        data.values[e_part.METHOD]=e_method.CREATE
+            expectedErrorRc=controllerCheckerError.userTypeNotExpected.rc
+            await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:adminRootSess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        });
+        it(`field ${e_field.PUBLIC_GROUP.ADMINS_ID} not allow for create`, async function() {
+            copyNormalRecord=objectDeepCopy(normalRecord)
+            copyNormalRecord[e_field.PUBLIC_GROUP.ADMINS_ID]=user1Id
+            data.values[e_part.RECORD_INFO]=copyNormalRecord
 
-        expectedErrorRc=controllerError.invalidActionForUser.rc
-        await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
-        normalRecord[e_field.IMPEACH_ACTION.ACTION]=e_impeachUserAction.SUBMIT
-    });
-    it('action create not allow ', async function() {
-        data.values={}
-        normalRecord[e_field.IMPEACH_ACTION.ACTION]=e_impeachUserAction.CREATE
-        data.values[e_part.RECORD_INFO]=normalRecord
-        data.values[e_part.METHOD]=e_method.CREATE
+            expectedErrorRc=validateError.validateValue.fieldValueShouldNotExistSinceNoRelateApplyRange({}).rc
+            await misc_helper.sendDataToAPI_compareFieldRc_async({APIUrl:finalUrl,sess:user2Sess,data:data,expectedErrorRc:expectedErrorRc,fieldName:e_field.PUBLIC_GROUP.ADMINS_ID,app:app})
+        });
+        it(`field ${e_field.PUBLIC_GROUP.CREATOR_ID} not allow for client input`, async function() {
+            copyNormalRecord=objectDeepCopy(normalRecord)
+            copyNormalRecord[e_field.PUBLIC_GROUP.CREATOR_ID]=user1Id
+            data.values[e_part.RECORD_INFO]=copyNormalRecord
 
-        expectedErrorRc=controllerError.forbidActionForUser.rc
-        await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
-        normalRecord[e_field.IMPEACH_ACTION.ACTION]=e_impeachUserAction.SUBMIT
-    });
+            expectedErrorRc=validateError.validateFormat.recordInfoFiledRuleNotDefine.rc
+            await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user2Sess,data:data,expectedErrorRc:expectedErrorRc,fieldName:e_field.PUBLIC_GROUP.CREATOR_ID,app:app})
+        });
+        it(`field ${e_field.PUBLIC_GROUP.MEMBERS_ID} not allow for create`, async function() {
+            copyNormalRecord=objectDeepCopy(normalRecord)
+            copyNormalRecord[e_field.PUBLIC_GROUP.MEMBERS_ID]=[user1Id]
+            data.values[e_part.RECORD_INFO]=copyNormalRecord
 
-    /*              fk exists check            */
-    it('fk:IMPEACH_ID not exists', async function() {
-        data.values={}
-        copyNormalRecord=objectDeepCopy(normalRecord)
-        copyNormalRecord[e_field.IMPEACH_ACTION.IMPEACH_ID]=testData.unExistObjectId
-        data.values[e_part.RECORD_INFO]=copyNormalRecord
-        data.values[e_part.METHOD]=e_method.CREATE
+            expectedErrorRc=validateError.validateValue.fieldValueShouldNotExistSinceNoRelateApplyRange({}).rc
+            await misc_helper.sendDataToAPI_compareFieldRc_async({APIUrl:finalUrl,sess:user2Sess,data:data,expectedErrorRc:expectedErrorRc,fieldName:e_field.PUBLIC_GROUP.MEMBERS_ID,app:app})
+        });
 
-        expectedErrorRc=controllerHelperError.fkValueNotExist(e_chineseFieldName.impeach_action.impeachId,normalRecord[e_field.IMPEACH_ACTION.IMPEACH_ID]).rc
-        await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
-    });
+        it(`limitation check: reach max user number(manually change global setting to 0)`, async function() {
+
+            copyNormalRecord=objectDeepCopy(normalRecord)
+            // copyNormalRecord[e_field.PUBLIC_GROUP.MEMBERS_ID]=[user1Id]
+            data.values[e_part.RECORD_INFO]=copyNormalRecord
+
+            expectedErrorRc=controllerError.publicGroupNumberExceed.rc
+            await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user2Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        });
+        it(`group name xss check`, async function() {
+
+            copyNormalRecord=objectDeepCopy(normalRecord)
+            copyNormalRecord[e_field.PUBLIC_GROUP.NAME]='<alert>as'
+            data.values[e_part.RECORD_INFO]=copyNormalRecord
 
 
+            expectedErrorRc=helperError.XSSCheckFailed(e_field.PUBLIC_GROUP.NAME).rc
+            await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user2Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        });
+
+        it(`group name unique check`, async function() {
+
+            copyNormalRecord=objectDeepCopy(normalRecord)
+            // copyNormalRecord[e_field.PUBLIC_GROUP.NAME]='<alert>as'
+            data.values[e_part.RECORD_INFO]=copyNormalRecord
 
 
+            expectedErrorRc=controllerCheckerError.fieldValueUniqueCheckError({collName:e_coll.PUBLIC_GROUP,fieldName:e_field.PUBLIC_GROUP.NAME}).rc
+            await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user2Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        });
+    })
+
+    describe('update public group', async function() {
+        before('init var', async function(){
+            data.values = {}
+            data.values[e_part.METHOD] = e_method.UPDATE
+        })
+        it('userType check, admin not allow for update', async function () {
+
+            copyNormalRecord = objectDeepCopy(normalRecord)
+            data.values[e_part.RECORD_INFO] = normalRecord
+            data.values[e_part.RECORD_ID]=recordId1
+
+            expectedErrorRc = controllerCheckerError.userTypeNotExpected.rc
+            await misc_helper.sendDataToAPI_compareCommonRc_async({
+                APIUrl: finalUrl,
+                sess: adminRootSess,
+                data: data,
+                expectedErrorRc: expectedErrorRc,
+                app: app
+            })
+        });
+        it('user2 try to update group while user2 not admin', async function () {
+            copyNormalRecord = objectDeepCopy(normalRecord)
+            data.values[e_part.RECORD_INFO] = normalRecord
+            data.values[e_part.RECORD_ID]=recordId1
+
+            expectedErrorRc = controllerError.notUserGroupAdminCantUpdate.rc
+            await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl: finalUrl, sess: user2Sess, data: data, expectedErrorRc: expectedErrorRc, app: app})
+        });
+        it('only 2 field(name/joinRule) allow update(cant test, already detected by preCheck)', async function () {
+            copyNormalRecord = objectDeepCopy(normalRecord)
+            copyNormalRecord[e_field.PUBLIC_GROUP.WAIT_APPROVE_ID]=[user2Id]
+            data.values[e_part.RECORD_INFO] = copyNormalRecord
+            data.values[e_part.RECORD_ID]=recordId1
+
+            expectedErrorRc = controllerError.notAllowUpdateField.rc
+            await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl: finalUrl, sess: user2Sess, data: data, expectedErrorRc: expectedErrorRc, app: app})
+        });
+
+        it('update group name with XSS', async function () {
+            copyNormalRecord = objectDeepCopy(normalRecord)
+            copyNormalRecord[e_field.PUBLIC_GROUP.NAME]='<alert>a'
+            data.values[e_part.RECORD_INFO] = copyNormalRecord
+            data.values[e_part.RECORD_ID]=recordId1
+
+            expectedErrorRc = helperError.XSSCheckFailed(e_field.PUBLIC_GROUP.NAME).rc
+            await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl: finalUrl, sess: user1Sess, data: data, expectedErrorRc: expectedErrorRc, app: app})
+        });
+        it('update group name with duplicate', async function () {
+            copyNormalRecord = objectDeepCopy(normalRecord)
+            // copyNormalRecord[e_field.PUBLIC_GROUP.NAME]='<alert>a'
+            data.values[e_part.RECORD_INFO] = copyNormalRecord
+            data.values[e_part.RECORD_ID]=recordId2
+
+            expectedErrorRc =controllerCheckerError.fieldValueUniqueCheckError({collName:e_coll.PUBLIC_GROUP,fieldName:e_field.PUBLIC_GROUP.NAME}).rc
+            await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl: finalUrl, sess: user2Sess, data: data, expectedErrorRc: expectedErrorRc, app: app})
+        });
+        it('normal update', async function () {
+            copyNormalRecord = objectDeepCopy(normalRecord)
+            copyNormalRecord[e_field.PUBLIC_GROUP.NAME]='test3'
+            data.values[e_part.RECORD_INFO] = copyNormalRecord
+            data.values[e_part.RECORD_ID]=recordId2
+
+            expectedErrorRc =0
+            await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl: finalUrl, sess: user2Sess, data: data, expectedErrorRc: expectedErrorRc, app: app})
+        });
+    })
+
+    describe('delete public group', async function() {
+        // userType check
+        before('init var', async function(){
+            data.values = {}
+            data.values[e_part.METHOD] = e_method.DELETE
+        })
+
+
+        it('userType check, admin not allow for delete', async function () {
+            copyNormalRecord = objectDeepCopy(normalRecord)
+            data.values[e_part.RECORD_ID]=recordId1
+
+            expectedErrorRc = controllerCheckerError.userTypeNotExpected.rc
+            await misc_helper.sendDataToAPI_compareCommonRc_async({
+                APIUrl: finalUrl,
+                sess: adminRootSess,
+                data: data,
+                expectedErrorRc: expectedErrorRc,
+                app: app
+            })
+        });
+        it('user2 try to delete group which create by user1', async function () {
+            copyNormalRecord = objectDeepCopy(normalRecord)
+            data.values[e_part.RECORD_ID]=recordId1
+
+            expectedErrorRc = controllerError.notGroupCreatorCantDelete.rc
+            await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl: finalUrl, sess: user2Sess, data: data, expectedErrorRc: expectedErrorRc, app: app})
+        });
+
+
+        it('group1 memberId number more than 1', async function () {
+            await common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel.public_group,id:recordId1,updateFieldsValue:{$addToSet:{[e_field.PUBLIC_GROUP.MEMBERS_ID]:user2Id}}})
+
+            data.values[e_part.RECORD_ID]=recordId1
+
+            expectedErrorRc = controllerError.cantDeleteGroupContainMember.rc
+            await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl: finalUrl, sess: user1Sess, data: data, expectedErrorRc: expectedErrorRc, app: app})
+        });
+
+        it('group1 memberId number 1, but not creator', async function () {
+            await common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel.public_group,id:recordId1,updateFieldsValue:{$addToSet:{[e_field.PUBLIC_GROUP.MEMBERS_ID]:user2Id}}})
+            await common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel.public_group,id:recordId1,updateFieldsValue:{$pull:{[e_field.PUBLIC_GROUP.MEMBERS_ID]:user1Id}}})
+
+            data.values[e_part.RECORD_ID]=recordId1
+
+            expectedErrorRc = controllerError.cantDeleteGroupContainMember.rc
+            await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl: finalUrl, sess: user1Sess, data: data, expectedErrorRc: expectedErrorRc, app: app})
+        });
+
+    })
 
 })
 

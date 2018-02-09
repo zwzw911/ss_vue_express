@@ -153,6 +153,16 @@ function checkRule({collName,ruleDefinitionOfFile}){
             return tmpResult
         }
 
+        tmpResult=checkDataTypeRelateRule({collName:collName,fieldName:singleFieldName,fieldRuleDefinition:ruleDefinitionOfFile[singleFieldName]})
+        if(tmpResult.rc>0){
+            // ap.err('tmpResult',tmpResult)
+            return tmpResult
+        }
+        tmpResult=checkRuleContainMsgForError({collName:collName,fieldName:singleFieldName,fieldRuleDefinition:ruleDefinitionOfFile[singleFieldName]})
+        if(tmpResult.rc>0){
+            // ap.err('tmpResult',tmpResult)
+            return tmpResult
+        }
 
     }
 
@@ -290,6 +300,64 @@ function checkApplyRange({collName,fieldName,fieldRuleDefinition}){
 
     return rightResult
 }
+
+/* 某些特定的dataTye，需要特定的rule（例如，数组，需要max_array_length）
+ * @collName,fieldName:用来打印信息
+ * @fieldRuleDefinition：object。单个字段的rule定义
+ * */
+function checkDataTypeRelateRule({collName,fieldName,fieldRuleDefinition}){
+    let dataTypeDefinition=fieldRuleDefinition[otherRuleFiledName.DATA_TYPE]
+    //数据类型是数组，则需要array_max_length
+    if(true===dataTypeCheck.isArray(dataTypeDefinition)){
+        if(undefined===fieldRuleDefinition[ruleFiledName.ARRAY_MAX_LENGTH]){
+            return checkRuleError.dataTypeArrayMissMaxlength({collName:collName,fieldName:fieldName,ruleField:undefined})
+        }
+    }
+
+
+
+    return rightResult
+}
+
+/*检查单个字段中，在rule定义中,error有无msg
+ * @collName,fieldName:用来打印信息
+ * @fieldRuleDefinition：object。单个字段的rule定义
+ * */
+function checkRuleContainMsgForError({collName,fieldName,fieldRuleDefinition}){
+    //APPLY_RANGE enum
+    // let applyRange=otherRuleFiledName.APPLY_RANGE
+    // let applyRangeValue=fieldRuleDefinition[otherRuleFiledName.APPLY_RANGE]
+    for(let singleRuleName in fieldRuleDefinition){
+        // ap.inf('singleRuleName',singleRuleName)
+        //rule属于ruleFieldName中（而不是chineseName/applyRange/DataType）
+        if(-1!==Object.values(ruleFiledName).indexOf(singleRuleName) ){
+            let ruleDefinition=fieldRuleDefinition[singleRuleName]
+            // ap.inf('ruleDefinition',ruleDefinition)
+            if(undefined===ruleDefinition['error']['msg']){
+                return checkRuleError.ruleMissErrorMsg({collName:collName,fieldName:fieldName,ruleField:singleRuleName})
+            }
+        }
+    }
+    // let requireRuleDefinition=fieldRuleDefinition[ruleFiledName.REQUIRE]
+    // ap.inf('applyRangeValue',applyRangeValue)
+    // ap.inf('applyRangeValue.length',applyRangeValue.length)
+    // ap.inf('requireRuleDefinition',requireRuleDefinition)
+    // ap.inf('Object.keys(requireRuleDefinition)',Object.keys(requireRuleDefinition).length)
+
+
+
+
+/*    if(applyRangeValue.length!==Object.keys(requireRuleDefinition).length){
+        return checkRuleError.requireDefinitionLengthNotEqualApplyRangeValue({collName:collName,fieldName:fieldName,ruleField:undefined})
+    }
+    for (let singleApplyRange of applyRangeValue){
+        if(undefined===requireRuleDefinition[singleApplyRange]){
+            return checkRuleError.requireDefinitionNotMatchApplyRangeValue({collName:collName,fieldName:fieldName,ruleField:undefined})
+        }
+    }*/
+    return rightResult
+}
+
 
 module.exports={
     readDirOrFileAndCheckFormat, //对一个目录或者一个文件，读取内容并进行rule check

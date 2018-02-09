@@ -43,6 +43,8 @@ const e_userInfoField=nodeRuntimeEnum.UserInfoField
 const e_serverDataType=require(`../constant/enum/inputDataRuleType`).ServerDataType
 const e_serverRuleType=require(`../constant/enum/inputDataRuleType`).ServerRuleType
 const e_applyRange=require(`../constant/enum/inputDataRuleType`).ApplyRange
+const e_otherRuleFiledName=require(`../constant/enum/inputDataRuleType`).OtherRuleFiledName
+
 
 const e_dbModel=require('../constant/genEnum/dbModel')
 const e_coll=require('../constant/genEnum/DB_Coll').Coll
@@ -160,6 +162,15 @@ function validatePartValueFormat({req,expectedPart,collName,fkConfig,inputRule})
                     /*            returnResult(checkResult[singleField])
                      return res.json(checkResult[singleField])*/
                     //return checkResult[singleField]
+                    return checkPartFormatResult//返回全部检查结果，为了统一格式，设置一个非0的rc
+                }
+
+                break;
+            case e_part.MANIPULATE_ARRAY:
+                // ap.inf('collName',collName)
+                // ap.inf('browserInputRule[collName]',browserInputRule[collName])
+                checkPartFormatResult=validateFormat.validateManipulateArrayFormat({inputValue:req.body.values[e_part.MANIPULATE_ARRAY],browseInputRule:browserInputRule[collName]})
+                if(checkPartFormatResult.rc>0){
                     return checkPartFormatResult//返回全部检查结果，为了统一格式，设置一个非0的rc
                 }
 
@@ -302,6 +313,13 @@ function validatePartValue({req,expectedPart,collName,inputRule,method,fkConfig}
                     return checkPartValueResult
                 }
                 break;
+            case e_part.MANIPULATE_ARRAY:
+                checkPartValueResult=validateValue.validateManipulateArrayValue({inputValue:req.body.values[e_part.MANIPULATE_ARRAY],browseInputRule:browserInputRule[collName]})
+                // ap.print('checkPartValueResult',checkPartValueResult)
+                if(checkPartValueResult.rc>0){
+                    return checkPartValueResult
+                }
+                break;
             case e_part.EDIT_SUB_FIELD:
                 checkPartValueResult=validateValue.validateEditSubFieldValue({inputValue:req.body.values[e_part.EDIT_SUB_FIELD],browseInputRule:browserInputRule[collName]})
                 // ap.print('checkPartValueResult',checkPartValueResult)
@@ -377,9 +395,8 @@ function CRUDPreCheck({req,expectedPart,collName,method}){
 
     // 此处检查除了method之外的part（method已经在checkMethod中预检）
     // delete req.body.values[e_part.METHOD]
-// console.log(`req.body.values ====>${JSON.stringify(req.body.values)}`)
-//     console.log(`expectedPart ====>${JSON.stringify(expectedPart)}`)
-//     console.log(`req.body.values ====>${JSON.stringify(req.body.values)}`)
+// ap.inf('req.body.values',req.body.values)
+//     ap.inf('expectedPart',expectedPart)
     result=validateFormat.validatePartFormat(req.body.values,expectedPart)
  // console.log(`validatePartFormat result ====>${JSON.stringify(result)}`)
     if(result.rc>0){return result}
@@ -387,6 +404,7 @@ function CRUDPreCheck({req,expectedPart,collName,method}){
 
 
 //检查输入参数格式是否正确
+//     ap.inf('expectedPart',expectedPart)
     result = validatePartValueFormat({
         req: req,
         expectedPart: expectedPart,
@@ -796,7 +814,7 @@ async function inputFieldValueXSSCheck({docValue,collName,expectedXSSCheckField}
             // console.log(`singleXssFieldName========================>${JSON.stringify(singleXssFieldName)}`)
             // console.log(`browserInputRule[collName][singleXssFieldName]========================>${JSON.stringify(browserInputRule[collName][singleXssFieldName])}`)
             // console.log(`browserInputRule[collName][singleXssFieldName][\`type\`] instanceof Array========================>${JSON.stringify(browserInputRule[collName][singleXssFieldName][`type`] instanceof Array)}`)
-            if( browserInputRule[collName][singleXssFieldName][`type`] instanceof Array && docValue[singleXssFieldName].length>0){
+            if( browserInputRule[collName][singleXssFieldName][e_otherRuleFiledName.DATA_TYPE] instanceof Array && docValue[singleXssFieldName].length>0){
                 docValue[singleXssFieldName].forEach(async function(ele){
                     await contentXSSCheck_async({content:ele,fieldName:singleXssFieldName})
                 })
@@ -1222,7 +1240,7 @@ async function checkEditSubFieldFromTo_async({convertedNoSql,fromToAdditionCondi
     let condition
     // ap.print('convertedNoSql',convertedNoSql)
     for(let singleRecordId in convertedNoSql){
-        ap.print('singleRecordId',singleRecordId)
+        // ap.print('singleRecordId',singleRecordId)
         condition={"dDate":{$exists:false},"_id":singleRecordId}
         if(undefined!==fromToAdditionCondition){
             condition=Object.assign(condition,fromToAdditionCondition)
@@ -1302,86 +1320,90 @@ async function checkEditSubFieldEleArray_async({singleEditSubFieldValue,eleAddit
     // 4. To如果存在，满足数量要求否
     // 5. eleArray中每个记录是否存在
     // 6. （额外）其中每个记录，用户是否有权操作
-
-    let condition,tmpResult
-    // ap.print('browserInputRule[collName][fieldName][`type`][0]',browserInputRule[collName][fieldName][`type`][0])
-    if(browserInputRule[collName][fieldName][`type`][0]===e_serverDataType.OBJECT_ID ){
-        //1. fkConfig是否存在
-        if(undefined===fkConfig[collName][fieldName]){
-            return Promise.reject(helperError.fkConfigUndefined)
-        }
-        //获得eleArray的field对应的collName，以及ownerFieldName
-        // ap.print('fkConfig[collName][fieldName]',fkConfig[collName][fieldName])
-        let fkCollName=fkConfig[collName][fieldName][`relatedColl`]
-        // ap.print('fkCollName',fkCollName)
-        // let fkRecordOwnerFieldName=
-        // ap.print('fkRecordOwnerFieldName',fkRecordOwnerFieldName)
-        //获得要转移（加入）的数量
-        let eleArrayLength=singleEditSubFieldValue[e_subField.ELE_ARRAY].length
-        //获得rule定义的最大arrayLength
-        let ruleDefineArrayMaxLength=browserInputRule[collName][fieldName][e_serverRuleType.ARRAY_MAX_LENGTH]['define']
+// ap('singleEditSubFieldValue',singleEditSubFieldValue)
+//     try{
+        let condition,tmpResult
+        // ap.print('browserInputRule[collName][fieldName][`type`][0]',browserInputRule[collName][fieldName][`type`][0])
+        if(browserInputRule[collName][fieldName][e_otherRuleFiledName.DATA_TYPE][0]===e_serverDataType.OBJECT_ID ){
+            //1. fkConfig是否存在
+            if(undefined===fkConfig[collName][fieldName]){
+                return Promise.reject(helperError.fkConfigUndefined)
+            }
+            //获得eleArray的field对应的collName，以及ownerFieldName
+            // ap.print('fkConfig[collName][fieldName]',fkConfig[collName][fieldName])
+            let fkCollName=fkConfig[collName][fieldName][`relatedColl`]
+            // ap.print('fkCollName',fkCollName)
+            // let fkRecordOwnerFieldName=
+            // ap.print('fkRecordOwnerFieldName',fkRecordOwnerFieldName)
+            //获得要转移（加入）的数量
+            let eleArrayLength=singleEditSubFieldValue[e_subField.ELE_ARRAY].length
+            //获得rule定义的最大arrayLength
+            let ruleDefineArrayMaxLength=browserInputRule[collName][fieldName][e_serverRuleType.ARRAY_MAX_LENGTH]['define']
 // ap.print('eleArrayLength',eleArrayLength)
-        // 2. eleArray中元素数量符合字段定义的数量（预检）
-        if(eleArrayLength>ruleDefineArrayMaxLength){
-            return Promise.reject(helperError.eleArrayLengthExceed)
-        }
+            // 2. eleArray中元素数量符合字段定义的数量（预检）
+            if(eleArrayLength>ruleDefineArrayMaxLength){
+                return Promise.reject(helperError.eleArrayLengthExceed)
+            }
 
-        //3. 元素没有重复
-        if(true===misc.ifArrayHasDuplicate(singleEditSubFieldValue[e_subField.ELE_ARRAY])){
-            return Promise.reject(helperError.eleArrayContainDuplicateEle)
-        }
-        // ap.print('misc.ifArrayHasDuplicate(singleEditSubFieldValue[e_subField.ELE_ARRAY]',misc.ifArrayHasDuplicate(singleEditSubFieldValue[e_subField.ELE_ARRAY]))
-        //4. 如果有to，需要测算对应recordId的容量是否够
-        tmpResult=await common_operation_model.findById_returnRecord_async({dbModel:e_dbModel[collName],id:singleEditSubFieldValue[e_subField.TO]})
-        //需要预防from/to对应的id不存在（eleArray先于from/to进行检测）
-        if(null===tmpResult){
-            return Promise.reject(helperError.toIdNotExist)
-        }
+            //3. 元素没有重复
+            if(true===misc.ifArrayHasDuplicate(singleEditSubFieldValue[e_subField.ELE_ARRAY])){
+                return Promise.reject(helperError.eleArrayContainDuplicateEle)
+            }
+            // ap.print('misc.ifArrayHasDuplicate(singleEditSubFieldValue[e_subField.ELE_ARRAY]',misc.ifArrayHasDuplicate(singleEditSubFieldValue[e_subField.ELE_ARRAY]))
+            //4. 如果有to，需要测算对应recordId的容量是否够
+            tmpResult=await common_operation_model.findById_returnRecord_async({dbModel:e_dbModel[collName],id:singleEditSubFieldValue[e_subField.TO]})
+            //需要预防from/to对应的id不存在（eleArray先于from/to进行检测）
+            if(null===tmpResult){
+                return Promise.reject(helperError.toIdNotExist)
+            }
 
-        //相加之后和rule中定义数量比较
-        // ap.print('eleArrayLength',eleArrayLength)
-        // ap.print('tmpResult[fieldName].length',tmpResult[fieldName].length)
-        // ap.print('ruleDefineArrayMaxLength',ruleDefineArrayMaxLength)
-        if(eleArrayLength+tmpResult[fieldName].length>ruleDefineArrayMaxLength){
-            return Promise.reject(helperError.toRecordNotEnoughRoom)
-        }
-        // ap.print('de[]')
-        // 5. eleArray中每个记录是否存在
-        condition={'dDate':{$exists:false}}
-        if(undefined!==eleAdditionalCondition){
-            condition=Object.assign(condition,eleAdditionalCondition)
-        }
-
-        for(let singleEle of singleEditSubFieldValue[e_subField.ELE_ARRAY]){
+            //相加之后和rule中定义数量比较
+            // ap.print('eleArrayLength',eleArrayLength)
+            // ap.print('tmpResult[fieldName].length',tmpResult[fieldName].length)
+            // ap.print('ruleDefineArrayMaxLength',ruleDefineArrayMaxLength)
+            if(eleArrayLength+tmpResult[fieldName].length>ruleDefineArrayMaxLength){
+                return Promise.reject(helperError.toRecordNotEnoughRoom)
+            }
+            // ap.print('de[]')
             // 5. eleArray中每个记录是否存在
-            condition['_id']=singleEle
-            // ap.print('condition',condition)
-            tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel[fkCollName],condition:condition})
-            if(1!==tmpResult.length){
-                return Promise.reject(helperError.eleArrayRecordIdNotExists)
+            condition={'dDate':{$exists:false}}
+            if(undefined!==eleAdditionalCondition){
+                condition=Object.assign(condition,eleAdditionalCondition)
             }
-            // ap.print('tmpResult',tmpResult)
-/*                if(undefined!==fkConfig[collName][fieldName][`fkCollOwnerField`]){
-                return Promise.reject(helperError.fkConfigNotDefineOwnerField)
-            }*/
-            //6. （额外）其中每个记录，用户是否有权操作
-            //如果fk中有定义，才需要检测权限
-            // ap.print('fkCollName[collName][fkCollName][`fkCollOwnerField`]',fkConfig[collName][fieldName][`fkCollOwnerField`])
-            if(undefined!==fkConfig[collName][fieldName][`fkCollOwnerField`]){
-                let fkRecordOwnerFieldName=fkConfig[collName][fieldName][`fkCollOwnerField`]
-                if(tmpResult[0][fkRecordOwnerFieldName]!==userId){
-                    return Promise.reject(helperError.notOwnerOfEleArray)
+
+            for(let singleEle of singleEditSubFieldValue[e_subField.ELE_ARRAY]){
+                // 5. eleArray中每个记录是否存在
+                condition['_id']=singleEle
+                // ap.print('condition',condition)
+                tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel[fkCollName],condition:condition})
+                if(1!==tmpResult.length){
+                    return Promise.reject(helperError.eleArrayRecordIdNotExists)
                 }
+                // ap.print('tmpResult',tmpResult)
+                /*                if(undefined!==fkConfig[collName][fieldName][`fkCollOwnerField`]){
+                                return Promise.reject(helperError.fkConfigNotDefineOwnerField)
+                            }*/
+                //6. （额外）其中每个记录，用户是否有权操作
+                //如果fk中有定义，才需要检测权限
+                // ap.print('fkCollName[collName][fkCollName][`fkCollOwnerField`]',fkConfig[collName][fieldName][`fkCollOwnerField`])
+                if(undefined!==fkConfig[collName][fieldName][`fkCollOwnerField`]){
+                    let fkRecordOwnerFieldName=fkConfig[collName][fieldName][`fkCollOwnerField`]
+                    if(tmpResult[0][fkRecordOwnerFieldName]!==userId){
+                        return Promise.reject(helperError.notOwnerOfEleArray)
+                    }
+                }
+                // if(false===tmpResult){}
             }
-            // if(false===tmpResult){}
+
+
+        }else{
+            return Promise.reject(helperError.eleArrayNotObjectId)
         }
 
+        return Promise.resolve({rc:0})
+    // }
+    // catch(e){ap('e',e)}
 
-    }else{
-        return Promise.reject(helperError.eleArrayNotObjectId)
-    }
-
-    return Promise.resolve({rc:0})
 }
 module.exports= {
     checkOptionPartExist,//检查option中那些part是存在

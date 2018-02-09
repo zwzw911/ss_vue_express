@@ -66,6 +66,7 @@ const ValidatePart={
     EDIT_SUB_FIELD: 'editSubField',      //当对mixed或者array字段操作时使用，无需inputRule
     EVENT: 'event',      //事件（当前暂时只用于 群 事件），无需inputRule
     SINGLE_FIELD:'singleField',     //和RECORD_INFO类似，只是只有一个字段
+    MANIPULATE_ARRAY:'manipulateArray',//直接操作array字段
     METHOD:'method',    //当前操作对应的是CRUD中哪一个
 }
 
@@ -147,11 +148,17 @@ const SubField={
     ELE_ARRAY:'eleArray'
 }
 
+const ManipulateOperator={
+    ADD:'add',
+    REMOVE:'remove',
+    // ELE_ARRAY:'eleArray'
+}
 //req中part的值，一般赋给哪个变量
 const PartValueToVarName={
     [ValidatePart.EDIT_SUB_FIELD]:'subFieldValue',
     [ValidatePart.RECORD_ID]:'recordId',
     [ValidatePart.RECORD_INFO]:'docValue',
+    [ValidatePart.MANIPULATE_ARRAY]:'manipulateArrayValue',
 }
 
 //update可以分成普通update（普通字段，或者加上array字段），和subField的update（只能是值为array的字段）
@@ -192,4 +199,5 @@ module.exports={
 
     FindEleInArray,
 
+    ManipulateOperator,
 }

@@ -70,8 +70,10 @@ const regex={
     //   "format":{"define":"/^data:image\\/(png|jpg|jpeg);base64,/"  ====> "format":{"define":/^data:image\/(png|jpg|jpeg);base64,/
     removeDoubleQuotes:/("format":\{"define"\:)("\/)(.+?)(\/",)"/g,  //    '$1/$3/,"'
     removeDoubleSlash:/\\{2}/g,    // '\\'  正则toString后，一个\会变成2个\\，需要变回去
+    clientRemoveDoubleQuotes:/("pattern":)("\/)(.+?)(\/",)"/g,  //    '$1/$3/,"'
 
     moduleExports:/module\.exports={\s*(.+)\r\n\s*}/,
+    moduleExportsNew:/module\.exports={(.*)}/,
 }
 
 module.exports= {

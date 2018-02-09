@@ -42,9 +42,9 @@ function _genForGeneral_part1(absoluteDestDirForInputRule,absoluteDestDirForEnum
     let {skipFilesArray,skipCollNameArray}=skipObject
 
     /*                  产生client用的配置                        */
-/*    const generateClientConfiguration=require('./generateFunction/generateClientConfiguration').genClientEnum
-    generateClientConfiguration()  //for client
-    const generateMongoEnumKeyValueExchange=require('./generateFunction/generateMongoEnumKeyValueExchange').genMongoEnumKVExchange
+    const generateClientEnum=require('./generateFunction/generateClientEnum').generateClientEnum
+    generateClientEnum({resultFilePath:`${absoluteDestDirForEnum}clientEnum.js`})  //for client
+/*    const generateMongoEnumKeyValueExchange=require('./generateFunction/generateMongoEnumKeyValueExchange').genMongoEnumKVExchange
     generateMongoEnumKeyValueExchange() //for client*/
 
     /*                  dbMetaData                      */

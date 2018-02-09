@@ -60,12 +60,11 @@ async function dispatcher_async({req}){
             }
 
             penalizeCheck={
-                penalizeType:e_penalizeType.NO_USER_FRIEND_GROUP,
+                penalizeType:e_penalizeType.NO_PUBLIC_GROUP,
                 penalizeSubType:e_penalizeSubType.CREATE,
                 penalizeCheckError:controllerError.inPenalizeCantCreatePublicGroup
             }
-            //此处RECORD_INFO只包含了一个字段：impeachArticle或者(comment)Id。
-            // impeachType是由URL决定（是internal的field），需要和其他默认之合并之后，才能进行preCheck_async（否则validate value会fail）
+
             expectedPart=[e_part.RECORD_INFO]
             // console.log(`before preCheck_async===============>`)
             tmpResult=await controllerHelper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
@@ -76,24 +75,25 @@ async function dispatcher_async({req}){
             break;
         case e_method.SEARCH:// search
             break;
-        case e_method.UPDATE: //包括群名/入群方式的更改，以及群成员/管理员的变更（editSubField）
+        case e_method.UPDATE: //为了保持logic的简洁性，此update只对群的名称和joinRule进行修改（admin和member的修改另起炉灶）
             userLoginCheck={
                 needCheck:true,
                 error:controllerError.notLoginCantUpdatePublicGroup
             }
             penalizeCheck={
-                penalizeType:e_penalizeType.NO_USER_FRIEND_GROUP,
+                penalizeType:e_penalizeType.NO_PUBLIC_GROUP,
                 penalizeSubType:e_penalizeSubType.UPDATE,
                 penalizeCheckError:controllerError.inPenalizeCantUpdatePublicGroup
             }
 
-            expectedPart=[e_part.RECORD_ID]
+            expectedPart=[e_part.RECORD_ID,e_part.RECORD_INFO]
 
-            optionalPart=[e_part.RECORD_INFO,e_part.EDIT_SUB_FIELD]
+            //因为可能更新membersId（上限100）
+           /* optionalPart=[e_part.RECORD_INFO,e_part.EDIT_SUB_FIELD]
             tmpResult=controllerHelper.checkOptionPartExist({req:req,optionPart:optionalPart,findType:e_findEleInArray.AT_LEAST_ONE,expectedPart:expectedPart})
             if(tmpResult.rc>0){
                     return Promise.reject(tmpResult)
-            }
+            }*/
 // ap.print('after check option part',expectedPart)
             tmpResult=await controllerHelper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
             // ap.print('tmpResult',tmpResult)

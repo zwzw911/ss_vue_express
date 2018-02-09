@@ -52,6 +52,7 @@ const e_chineseName=require('../../../constant/genEnum/inputRule_field_chineseNa
 
 
 const userPhotoConfiguration=server_common_file_require.globalConfiguration.uploadFileDefine.user_thumb
+const userThumbImageType=server_common_file_require.globalConfiguration.uploadFileDefine.common.userThumbImageType
 const captchaIntervalConfiguration=server_common_file_require.globalConfiguration.intervalCheckConfiguration.captcha
 const mailOption=server_common_file_require.globalConfiguration.mailOption
 const currentEnv=server_common_file_require.appSetting.currentEnv
@@ -242,7 +243,7 @@ async function uploadPhoto_async({req}){
     //保存到指定位置
 // console.log(`originalFilename ==== ${originalFilename}`)
     let md5NameWithoutSuffix=hash(`${originalFilename}${Date.now()}`,e_hashType.MD5)
-    let finalFileName=`${md5NameWithoutSuffix.msg}.${userPhotoConfiguration.imageType[0].toLowerCase()}`
+    let finalFileName=`${md5NameWithoutSuffix.msg}.${userThumbImageType[0].toLowerCase()}`
 
     let finalPath=choosenStorePathRecord.path+finalFileName
 // ap.inf('finalPath',finalPath)
@@ -251,7 +252,7 @@ async function uploadPhoto_async({req}){
     //格式不同，直接转换到指定位置
     tmpResult=await gmImage.getImageProperty_async(inst,e_gmGetter.FORMAT)
     // console.log(`tmpResult ==== ${JSON.stringify(tmpResult)}`)
-    if(-1===userPhotoConfiguration.imageType.indexOf(tmpResult)){
+    if(-1===userThumbImageType.indexOf(tmpResult)){
         // console.log(`path ==== ${path}`)
         await gmImage.gmCommand_async(inst,e_gmCommand.CONVERT_FILE_TYPE,finalPath)
         let newInst=gmImage.initImage(finalPath)

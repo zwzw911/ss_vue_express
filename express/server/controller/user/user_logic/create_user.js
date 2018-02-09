@@ -34,8 +34,11 @@ const hash=server_common_file_require.crypt.hash
 /*                      server common：enum                                       */
 const e_accountType=mongoEnum.AccountType.DB
 const e_docStatus=mongoEnum.DocStatus.DB
+const e_userType=mongoEnum.UserType.DB
+
 const e_env=nodeEnum.Env
 const e_part=nodeEnum.ValidatePart
+
 const e_hashType=server_common_file_require.nodeRuntimeEnum.HashType
 
 const e_resourceType=mongoEnum.ResourceType.DB
@@ -116,6 +119,7 @@ async  function createUser_async(req){
     // docValue[e_field.USER.USED_ACCOUNT]=docValue[e_field.USER.ACCOUNT]
     internalValue[e_field.USER.LAST_ACCOUNT_UPDATE_DATE]=Date.now()
     internalValue[e_field.USER.LAST_SIGN_IN_DATE]=Date.now()
+    internalValue[e_field.USER.USER_TYPE]=e_userType.USER_NORMAL
 // console.log(`internalValue====>   ${JSON.stringify(internalValue)}`)
     // console.log(`internalValue[e_field.USER.LAST_ACCOUNT_UPDATE_DATE]====>   ${JSON.stringify(internalValue[e_field.USER.LAST_ACCOUNT_UPDATE_DATE])}`)
     /*              对内部产生的值进行检测（开发时使用，上线后为了减低负荷，无需使用）           */

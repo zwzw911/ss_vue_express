@@ -772,8 +772,6 @@ function validateEditSubFieldValue({inputValue,browseInputRule}){
         // console.log(`browseInputRule[singleFieldName]['arrayMaxLength']=========>${JSON.stringify(browseInputRule[singleFieldName][`arrayMaxLength`])}`)
         let fieldValue=inputValue[singleFieldName]
 
-
-
         //首先检测from/to，以便出错立刻返回（节省检测eleArray的资源）
         if(true==='from' in fieldValue){
             if(false===dataTypeCheck.isObjectId(fieldValue['from'])){
@@ -831,6 +829,101 @@ function validateEditSubFieldValue({inputValue,browseInputRule}){
                 }
             }
         }
+    }
+
+    return rightResult
+}
+
+
+/*        根据rule，对输入的值进行格式检查
+ * @inputValue：对象。{fieldName:{remove:[id1],add:[id2]},fieldName2:{remove:[id1],add:[id2]}}
+ * 0. rule中，对应的值类型必须是数组
+ * 1. remove/add：必须是数组
+ * 2. remove/add：不能为空，且不能长度不能超过rule中max_array_length
+ * 3. remove/add:每个元素类型必须和rule中定义的一样
+ * */
+function validateManipulateArrayValue({inputValue,browseInputRule}){
+
+    for(let singleFieldName in inputValue){
+        // console.log(`browseCollRule[singleFieldName][e_otherRuleFiledName.DATA_TYPE] +++++${JSON.stringify(browseInputRule[singleFieldName][e_otherRuleFiledName.DATA_TYPE])}`)
+        //由format check保证rule必定是存在的
+        let singleFieldRule=browseInputRule[singleFieldName]
+        //1 dataType必须是数组
+        if(false===dataTypeCheck.isArray(singleFieldRule[e_otherRuleFiledName.DATA_TYPE])){
+            return validateValueError.manipulateArray.fieldDataTypeNotArray
+        }
+        let fieldDataType=singleFieldRule[e_otherRuleFiledName.DATA_TYPE][0]  //type是[ObjectId]这样的格式，如果是其他非数组格式，会返回第一个字符（而不是undefined）
+
+        // console.log(`browseInputRule[singleFieldName]['arrayMaxLength']=========>${JSON.stringify(browseInputRule[singleFieldName][`arrayMaxLength`])}`)
+        if(undefined===singleFieldRule[`arrayMaxLength`] || undefined===singleFieldRule[`arrayMaxLength`][`define`]){
+            return validateValueError.manipulateArray.arrayMaxLengthUndefined
+        }
+        let fieldArrayMaxLength=singleFieldRule[`arrayMaxLength`][`define`]
+        // console.log(`browseInputRule[singleFieldName]['arrayMaxLength']=========>${JSON.stringify(browseInputRule[singleFieldName][`arrayMaxLength`])}`)
+        let fieldValue=inputValue[singleFieldName]
+
+        /*
+        //首先检测from/to，以便出错立刻返回（节省检测eleArray的资源）
+        if(true==='from' in fieldValue){
+            if(false===dataTypeCheck.isObjectId(fieldValue['from'])){
+                return validateValueError.fromMustBeObjectId
+            }
+        }
+
+        if(true==='to' in fieldValue){
+            if(false===dataTypeCheck.isObjectId(fieldValue['to'])){
+                return validateValueError.toMustBeObjectId
+            }
+        }*/
+
+        //检测field中的每个key
+        //1. 必须是数组
+        //1. 数量，不能超过字段arrMaxLength
+        //2. 每个元素类型必须正确
+        for(let singleKey in fieldValue){
+            if(false===dataTypeCheck.isArray(fieldValue[singleKey])){
+                return validateValueError.manipulateArray.fieldKeyValueMustBeArray
+            }
+
+            //如果为空，报错（空数据意味着没有操作对象，那就根本不应该传送add/remove这个key）
+            if(0===fieldValue[singleKey].length){
+                return validateValueError.manipulateArray.fieldKeyValueCantEmpty
+            }
+
+            if(fieldArrayMaxLength<fieldValue[singleKey].length){
+                return validateValueError.manipulateArray.fieldKeyValueNumExceed
+            }
+
+            //add/remove中每个元素符合rule中数据类型的定义，且要符合rule的定义
+            for(let singleEle of fieldValue[singleKey]){
+                //数据类型检测
+                let valueTypeCheckResult=valueTypeCheck(singleEle,fieldDataType)
+                if(false===valueTypeCheckResult){
+                    return validateValueError.manipulateArray.fieldKeyValueDataTypeWrong
+                }
+
+                //数据类型检测通过，且为objectId，则无需继续进行rule的check
+                if(fieldDataType===e_serverDataType.OBJECT_ID){
+                    continue
+                }
+                //rule check(ARRAY_MAX_LENGTH和ARRAY_MIN_LENGTH在format check中完成)
+                let singleRuleDefine,ruleCheckFunc
+                //可以检测的rule
+                let validRule=[e_serverRuleType.FORMAT,e_serverRuleType.MIN_LENGTH,e_serverRuleType.MAX_LENGTH,e_serverRuleType.MIN,e_serverRuleType.MAX,e_serverRuleType.EXACT_LENGTH,e_serverRuleType.ENUM]
+                for(let singleValidRule of validRule){
+                    if(undefined!==singleFieldRule[singleValidRule]){
+                        singleRuleDefine=singleFieldRule[singleValidRule][`define`]
+                        if(false===valueMatchRuleDefineCheck({ruleType:singleValidRule,ruleDefine:singleRuleDefine,fieldValue:singleEle})){
+                            return genInputError(singleFieldRule,singleValidRule)
+                        }
+                    }
+                }
+            }
+        }
+
+
+
+
     }
 
     return rightResult
@@ -905,6 +998,8 @@ module.exports= {
 
 
     validateEditSubFieldValue,
+    validateManipulateArrayValue,
+
     validateEventValue,
 
     validateMethodValue,

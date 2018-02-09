@@ -15,13 +15,20 @@ const e_adminUserType=mongoEnum.AdminUserType.DB
 const absolutePath=require(`../constant/config/appSetting`).absolutePath
 
 const user={
-    user1:{name:'user1',account:'15912345678',password:'123456',userType:e_userType.USER_NORMAL},
-    user2:{name:'user2',account:'15987654321',password:'654321',userType:e_userType.USER_NORMAL},
-    user3:{name:'user3',account:'1952206639@qq.com',password:'654321',userType:e_userType.USER_NORMAL},
-    user4:{name:'user4',account:'user4@qq.com',password:'654321',userType:e_userType.USER_NORMAL},
+    // user1:{name:'user1',account:'15912345678',password:'123456',userType:e_userType.USER_NORMAL},
+    // user2:{name:'user2',account:'15987654321',password:'654321',userType:e_userType.USER_NORMAL},
+    // user3:{name:'user3',account:'1952206639@qq.com',password:'654321',userType:e_userType.USER_NORMAL},
+    // user4:{name:'user4',account:'user4@qq.com',password:'654321',userType:e_userType.USER_NORMAL},
+    //
+    // user3NewAccount:'wei.ag.zhang@alcate-sbell.com.cn',
+    // userNotExist:{name:'userNotExist',account:'13912341234',password:'123456',userType:e_userType.USER_NORMAL},
+    user1:{name:'user1',account:'15912345678',password:'123456'},
+    user2:{name:'user2',account:'15987654321',password:'654321'},
+    user3:{name:'user3',account:'1952206639@qq.com',password:'654321'},
+    user4:{name:'user4',account:'user4@qq.com',password:'654321'},
 
     user3NewAccount:'wei.ag.zhang@alcate-sbell.com.cn',
-    userNotExist:{name:'userNotExist',account:'13912341234',password:'123456',userType:e_userType.USER_NORMAL},
+    userNotExist:{name:'userNotExist',account:'13912341234',password:'123456'},
 }
 
 const admin_user={

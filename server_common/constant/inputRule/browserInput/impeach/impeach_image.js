@@ -26,20 +26,20 @@ const impeach_image= {
         [otherRuleFiledName.CHINESE_NAME]: '举报对象',
         [otherRuleFiledName.DATA_TYPE]: serverDataType.OBJECT_ID,
         [otherRuleFiledName.APPLY_RANGE]:[applyRange.CREATE,],
-        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true}, error: {rc: 10634}, mongoError: {rc: 20634, msg: '举报对象不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true}, error: {rc: 10634, msg: '举报对象不能为空'}, mongoError: {rc: 20634, msg: '举报对象不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         // [ruleFiledName.MIN_LENGTH]: {define: 6, error: {rc: 10002}, mongoError: {rc: 20002, msg: '密码至少6个字符'}},
         // [ruleFiledName.MAX_LENGTH]: {define: 20, error: {rc: 10004}, mongoError: {rc: 20004, msg: '密码的长度不能超过20个字符'}},
-        [ruleFiledName.FORMAT]: {define: regex.objectId, error: {rc: 10636}, mongoError: {rc: 20636, msg: '举报对象必须是objectId'}} //server端使用
+        [ruleFiledName.FORMAT]: {define: regex.objectId, error: {rc: 10636, msg: '举报对象必须是objectId'}, mongoError: {rc: 20636, msg: '举报对象必须是objectId'}} //server端使用
     },
 
     referenceColl: {
         [otherRuleFiledName.CHINESE_NAME]: '举报对象类型',
         [otherRuleFiledName.DATA_TYPE]: serverDataType.STRING,
         [otherRuleFiledName.APPLY_RANGE]:[applyRange.CREATE,],
-        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true}, error: {rc: 10638}, mongoError: {rc: 20638, msg: '举报对象类型不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true}, error: {rc: 10638, msg: '举报对象类型不能为空'}, mongoError: {rc: 20638, msg: '举报对象类型不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         // [ruleFiledName.MIN_LENGTH]: {define: 6, error: {rc: 10002}, mongoError: {rc: 20002, msg: '密码至少6个字符'}},
         // [ruleFiledName.MAX_LENGTH]: {define: 20, error: {rc: 10004}, mongoError: {rc: 20004, msg: '密码的长度不能超过20个字符'}},
-        [ruleFiledName.ENUM]:{define:enumValue.ImpeachImageReferenceColl,error:{rc:10539},mongoError:{rc:20539,msg:'举报对象的类型未知'}},//server端使用
+        [ruleFiledName.ENUM]:{define:enumValue.ImpeachImageReferenceColl,error:{rc:10539,msg:'举报对象的类型未知'},mongoError:{rc:20539,msg:'举报对象的类型未知'}},//server端使用
     },
 
 }

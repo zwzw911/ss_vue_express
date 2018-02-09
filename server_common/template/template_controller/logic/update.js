@@ -266,7 +266,7 @@ async function updateImpeach_async({req,expectedPart}){
         // console.log(`compound field check result===================>${JSON.stringify(compoundUniqueCheckResult)}`)
         //复合字段唯一返回true或者已有的doc
         //有重复值，且重复记录数为1（大于1，已经直接reject）
-        if (true !== compoundUniqueCheckResult) {
+        if (true !== compoundUniqueCheckResult && undefined!==compoundUniqueCheckResult) {
             if (undefined !== docValue[e_field.IMPEACH.IMPEACHED_ARTICLE_ID]) {
                 return Promise.reject(controllerError.articleAlreadyImpeached)
             }

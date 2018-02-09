@@ -133,8 +133,8 @@ function writeResult(structurePath,resultWriteFilePath,ruleType,skipFilesArray,i
 function returnRegExp(){
 
     let internalRule=require('../constant/inputRule/internalInputRule').internalInputRule
-    console.log(`${typeof internalRule['user']['password']['format']['define']}`)
-    console.log(`${internalRule['user']['password']['format']['define']}`)
+    // console.log(`${typeof internalRule['user']['password']['format']['define']}`)
+    // console.log(`${internalRule['user']['password']['format']['define']}`)
     for(let coll in internalRule){
         for(let field in internalRule[coll]){
             if(true==='format' in internalRule[coll][field]){
@@ -142,8 +142,8 @@ function returnRegExp(){
             }
         }
     }
-    console.log(`${typeof internalRule['user']['password']['format']['define']}`)
-    console.log(`${internalRule['user']['password']['format']['define']}`)
+    // console.log(`${typeof internalRule['user']['password']['format']['define']}`)
+    // console.log(`${internalRule['user']['password']['format']['define']}`)
 }
 
 // let convertedEnum=''

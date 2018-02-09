@@ -31,7 +31,7 @@ const Field={
     like_dislike_static:['articleId',],
     user_resource_static:[],
     sugar:[],
-    user:['password','photoPathId','photoHashName','docStatus','accountType','usedAccount','lastAccountUpdateDate','lastSignInDate','photoSize',],
+    user:['userType','password','photoPathId','photoHashName','docStatus','accountType','usedAccount','lastAccountUpdateDate','lastSignInDate','photoSize',],
     user_resource_profile:[],
     read_article:[],
     user_input_keyword:[],

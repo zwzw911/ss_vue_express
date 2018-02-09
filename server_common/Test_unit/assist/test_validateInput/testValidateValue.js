@@ -23,7 +23,7 @@ const e_applyRange=inputDataRuleType.ApplyRange
 // const e_requireType=inputDataRuleType.RequireType
 // const inputRule=require('../../../server/constant/inputRule/clientInput').inputRule
 
-
+const e_manipulateOperator=require('../../../constant/enum/nodeEnum').ManipulateOperator
 
 let rules ={
     billType:{
@@ -810,3 +810,139 @@ describe('validateEditSubFieldValue', function() {
 
 })
 
+
+
+/***************************************************************************/
+/***************   validateManipulateArrayValue   *******************/
+/***************************************************************************/
+describe('validateManipulateArrayValue', function() {
+    let func = testModule.validateManipulateArrayValue
+
+
+    let result, value, rule={f1:{
+            [e_otherRuleFiledName.DATA_TYPE]: [e_serverDataType.OBJECT_ID],
+            // 'arrayMaxLength': {define: 100, error: {rc: 10422}, mongoError: {rc: 20422, msg: `好友分组最多包含100个好友`}},
+        }}
+
+    it(`manipulateArray rule data type not array`,function(done){
+        rule={f1:{
+                [e_otherRuleFiledName.DATA_TYPE]: e_serverDataType.INT,
+                'arrayMaxLength': {define: 2, error: {rc: 10422}, mongoError: {rc: 20422, msg: `好友分组最多包含2个好友`}},
+                // [e_serverRuleType.MIN]:{define: 2, error: {rc: 10422}, mongoError: {rc: 20422, msg: `好友分组最多包含2个好友`}},
+                // [e_serverRuleType.MAX]:{define: 4, error: {rc: 104232}, mongoError: {rc: 20423, msg: `好友分组最多包含2个好友`}},
+            }}
+
+        value={f1:{[e_manipulateOperator.ADD]:[3]}}
+        assert.deepStrictEqual(func({inputValue:value,browseInputRule:rule}).rc,validateValueError.manipulateArray.fieldDataTypeNotArray.rc)
+        // value={f1:{eleArray:[5]}}
+        // assert.deepStrictEqual(func({inputValue:value,browseInputRule:rule}).rc,rule.f1[e_serverRuleType.MAX][`error`][`rc`])
+        done()
+    })
+
+    //1 field rule not define arrayMaxLength
+    it(`manipulateArray field rule not define arrayMaxLength`,function(done){
+        value={f1:{[e_manipulateOperator.ADD]:[1],[e_manipulateOperator.REMOVE]:[]}}
+        rule={f1:{
+                [e_otherRuleFiledName.DATA_TYPE]: [e_serverDataType.OBJECT_ID],
+                // 'arrayMaxLength': {define: 100, error: {rc: 10422}, mongoError: {rc: 20422, msg: `好友分组最多包含100个好友`}},
+            }}
+        assert.deepStrictEqual(func({inputValue:value,browseInputRule:rule}).rc,validateValueError.manipulateArray.arrayMaxLengthUndefined.rc)
+        rule={f1:{
+                [e_otherRuleFiledName.DATA_TYPE]: [e_serverDataType.OBJECT_ID],
+                'arrayMaxLength': {define: 2, error: {rc: 10422}, mongoError: {rc: 20422, msg: `好友分组最多包含2个好友`}},
+            }}
+        done()
+    })
+
+/*
+//1 from not objectId
+    it(`manipulateArray from value undefined must be objectId `,function(done){
+        value={f1:{from:undefined}}
+        assert.deepStrictEqual(func({inputValue:value,browseInputRule:rule}).rc,validateValueError.fromMustBeObjectId.rc)
+        done()
+    })
+    it(`manipulateArray from value number must be objectId `,function(done){
+        value={f1:{from:123456789012345678901234}}
+        assert.deepStrictEqual(func({inputValue:value,browseInputRule:rule}).rc,validateValueError.fromMustBeObjectId.rc)
+        done()
+    })
+    //2 to not objectId
+    it(`manipulateArray to undefined must be objectId `,function(done){
+        value={f1:{to:undefined}}
+        assert.deepStrictEqual(func({inputValue:value,browseInputRule:rule}).rc,validateValueError.toMustBeObjectId.rc)
+        done()
+    })
+    it(`manipulateArray to number must be objectId `,function(done){
+        value={f1:{to:123456789012345678901234}}
+        assert.deepStrictEqual(func({inputValue:value,browseInputRule:rule}).rc,validateValueError.toMustBeObjectId.rc)
+        done()
+    })
+*/
+
+
+    //3 key value not array
+    it(`manipulateArray key value must be array`,function(done){
+        value={f1:{[e_manipulateOperator.REMOVE]:undefined}}
+        assert.deepStrictEqual(func({inputValue:value,browseInputRule:rule}).rc,validateValueError.manipulateArray.fieldKeyValueMustBeArray.rc)
+        done()
+    })
+
+    //4 key value not array
+    it(`manipulateArray key eleArray must be array`,function(done){
+        value={f1:{[e_manipulateOperator.REMOVE]:{}}}
+        assert.deepStrictEqual(func({inputValue:value,browseInputRule:rule}).rc,validateValueError.manipulateArray.fieldKeyValueMustBeArray.rc)
+        done()
+    })
+    //6 key value 不能空
+    it(`manipulateArray key eleArray cant be empty array`,function(done){
+        value={f1:{[e_manipulateOperator.REMOVE]:[]}}
+        assert.deepStrictEqual(func({inputValue:value,browseInputRule:rule}).rc,validateValueError.manipulateArray.fieldKeyValueCantEmpty.rc)
+        done()
+    })
+    // key value 元素数量超过maxArrayMax
+    it(`manipulateArray key value length exceed maxArrayMax`,function(done){
+        value={f1:{[e_manipulateOperator.ADD]:[1,2,3]}}
+        assert.deepStrictEqual(func({inputValue:value,browseInputRule:rule}).rc,validateValueError.manipulateArray.fieldKeyValueNumExceed.rc)
+        done()
+    })
+    //5 eleArray中每个元素类型必须和rule中匹配
+    it(`manipulateArray key value element data type must match rule type`,function(done){
+        value={f1:{[e_manipulateOperator.ADD]:[1]}}
+        assert.deepStrictEqual(func({inputValue:value,browseInputRule:rule}).rc,validateValueError.manipulateArray.fieldKeyValueDataTypeWrong.rc)
+        done()
+    })
+    it(`manipulateArray key eleArray element not match rule`,function(done){
+
+        rule={f1:{
+                [e_otherRuleFiledName.DATA_TYPE]: [e_serverDataType.INT],
+                'arrayMaxLength': {define: 2, error: {rc: 10422}, mongoError: {rc: 20422, msg: `好友分组最多包含2个好友`}},
+                [e_serverRuleType.MIN]:{define: 2, error: {rc: 10422}, mongoError: {rc: 20422, msg: `好友分组最多包含2个好友`}},
+                [e_serverRuleType.MAX]:{define: 4, error: {rc: 104232}, mongoError: {rc: 20423, msg: `好友分组最多包含2个好友`}},
+            }}
+
+        value={f1:{[e_manipulateOperator.ADD]:[1]}}
+        assert.deepStrictEqual(func({inputValue:value,browseInputRule:rule}).rc,rule.f1[e_serverRuleType.MIN][`error`][`rc`])
+        value={f1:{[e_manipulateOperator.ADD]:[5]}}
+        assert.deepStrictEqual(func({inputValue:value,browseInputRule:rule}).rc,rule.f1[e_serverRuleType.MAX][`error`][`rc`])
+        done()
+    })
+
+    //7 right result
+    it(`manipulateArray key eleArray cant be empty array`,function(done){
+        rule={f1:{
+                [e_otherRuleFiledName.DATA_TYPE]: [e_serverDataType.OBJECT_ID],
+                'arrayMaxLength': {define: 2, error: {rc: 10422}, mongoError: {rc: 20422, msg: `好友分组最多包含2个好友`}},
+                [e_serverRuleType.MIN]:{define: 2, error: {rc: 10422}, mongoError: {rc: 20422, msg: `好友分组最多包含2个好友`}},
+                [e_serverRuleType.MAX]:{define: 4, error: {rc: 104232}, mongoError: {rc: 20423, msg: `好友分组最多包含2个好友`}},
+            }}
+        value={f1:{[e_manipulateOperator.ADD]:['58c0c32486e5a6d02657303f']}}
+        assert.deepStrictEqual(func({inputValue:value,browseInputRule:rule}).rc,0)
+
+        done()
+    })
+
+
+
+
+
+})
