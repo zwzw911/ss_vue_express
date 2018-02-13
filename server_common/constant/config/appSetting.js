@@ -30,7 +30,7 @@ const appSetting={
     }
 }
 
-const currentEnv=e_env.DEV
+const currentEnv=e_env.PROD
 const currentAppSetting=appSetting[currentEnv]
 
 

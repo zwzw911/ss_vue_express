@@ -174,7 +174,6 @@ const FindEleInArray={
 module.exports={
     RandomStringType,
     UserState,
-    // Coll,
     Env,
     CompOp,
     MongooseOp,
@@ -184,9 +183,7 @@ module.exports={
     Method,
     InputFieldCheckType,
     UploadFileType,
-    // ResourceType,
-    //UploadForImpeachOrComment,//上传image，是对impeach还是impeachComment（因为使用了同一个函数处理，所以需要区分）
-    // StorePathUsage,
+
     ResourceConfigFieldName,
     ResourceFieldName,
     UploadFileDefinitionFieldName,

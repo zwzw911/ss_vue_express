@@ -13,7 +13,7 @@ const e_clientDataType=inputDataRuleType.ClientDataType
 const e_clientRuleType=inputDataRuleType.ClientRuleType
 
 const e_field=require('../../constant/genEnum/DB_field').Field
-
+const e_uniqueField=require('../../constant/genEnum/DB_uniqueField').UniqueField //单字段的unique
 
 const clientNonValueEnum=require('../../constant/clientEnum/clientNonValueEnum')
 const e_inputAttributeFieldName=clientNonValueEnum.InputAttributeFieldName
@@ -39,6 +39,7 @@ const browserInputRule=require('../../constant/inputRule/browserInputRule').brow
 const objectDeepCopy=require('../../function/assist/misc').objectDeepCopy
 
 const clientEnumValue=require('../../constant/genEnum/clientEnumValue')
+
 const rightResult={rc:0}
 let indent=`    `
 
@@ -71,7 +72,7 @@ function generateClientInputAttribute({originRulePath,absResultPath}){
         //对每个coll的rule定义，转换成iview的rule格式（但是require尚未处理）
         let result=generateSingleCollInputAttribute({collName:collName,collRuleDefinition:fileExport[collName],absFilesPath:absFilesPath})
         allCollAttribute[collName]=result
-
+        generateSingleCollInputAttributeUnique({collAttribute:allCollAttribute[collName],collUniqueField:e_uniqueField[collName]})
 
         writeClientInitInputValueResult({content:allCollAttribute,resultPath:absResultPath})
     }
@@ -138,6 +139,22 @@ function generateSingleCollInputAttribute({collName,collRuleDefinition,absFilesP
 
         return collAttribute
 
+}
+
+/*  对单个coll的field进行检查，看是否有unique的字段
+* */
+function generateSingleCollInputAttributeUnique({collAttribute,collUniqueField}){
+    // ap.inf('collAttribute',collAttribute)
+    // ap.inf('collUniqueField',collUniqueField)
+    // collUniqueField的值是数组
+    for(let singleUniqueField of collUniqueField){
+        if(undefined!==collAttribute[singleUniqueField]){
+            // ap.inf('singleUniqueField',singleUniqueField)
+            // ap.inf('collAttribute[singleUniqueField]',collAttribute[singleUniqueField])
+            collAttribute[singleUniqueField][e_inputAttributeFieldName.UNIQUE]=true
+            // ap.inf('collAttribute[singleUniqueField]',collAttribute[singleUniqueField])
+        }
+    }
 }
 //将rule结果写入指定路径的文件下
 //convertedRule：分隔成ruleForCreate/update的内容（object）

@@ -64,15 +64,17 @@ function  recursiveReadFileAbsPath({fileOrDirPath,skipFilesArray,absFilesPathRes
 
 /*  读取文件内容并返回export的内容
 * @absFilePath：rule文件绝对路径
+* @specificItem: 数组。指定文件中部分需要export的内容
 * */
-function readFileExportItem({absFilePath}){
+function readFileExportItem({absFilePath,specificItem}){
     let exportResult={}
     // ap.inf('absFilePath',absFilePath)
 
         // 读取文件中export的内容
-        let pattern=regex.moduleExports
+        let pattern=regex.moduleExportsNew
         // ap.print('tmpFileDir',tmpFileDir)
         let fileContent=fs.readFileSync(`${absFilePath}`,'utf8')
+        fileContent=deleteCommentSpaceReturn({string:fileContent})
         // ap.print('fileContent',fileContent)
         // ap.print('absFilePath',absFilePath)
         let matchResult=fileContent.match(pattern)
@@ -82,17 +84,30 @@ function readFileExportItem({absFilePath}){
         }
         // ap.print('matchResult[1]',matchResult[1])
         let allExportsInFile=matchResult[1].split(',')
-        // ap.print('allExportsInFile',allExportsInFile)
+        // ap.print('specificItem',specificItem)
 
         for(let singleExportsItem of allExportsInFile){
             if(''!==singleExportsItem){
                 // ap.print('tmpFileDir',tmpFileDir)
                 // ap.print('singleExportsItem',singleExportsItem)
-                let ruleDefineContent=require(`${absFilePath}`)[singleExportsItem]
+                // ap.inf('specificItem',specificItem)
+                let ruleDefineContent
+                if(undefined!==specificItem){
+                    if(-1!==specificItem.indexOf(singleExportsItem)){
+                        // ap.wrn('allow item',singleExportsItem)
+                        ruleDefineContent=require(`${absFilePath}`)[singleExportsItem]
+                        exportResult[singleExportsItem]=ruleDefineContent  //重复，防止未定义的item也被当作undefined加入到exportResult
+                    }
+                }else{
+                    // ap.inf('singleExportsItem',singleExportsItem)
+                    ruleDefineContent=require(`${absFilePath}`)[singleExportsItem]
+                    exportResult[singleExportsItem]=ruleDefineContent
+                }
+
                 // ap.inf(`start convert coll==>${singleExportsItem}`)
                 // ap.inf('tmpResult',tmpResult)
                 // ap.inf('singleExportsItem',singleExportsItem)
-                exportResult[singleExportsItem]=ruleDefineContent
+
                 // ap.inf('tmpResult',tmpResult)
 
                 // ap.inf(`end convert coll==>${singleExportsItem}`)
@@ -112,7 +127,8 @@ function sanityClientPatternInString({string}){
 
 //删除字符中注释，空白和换行
 function deleteCommentSpaceReturn({string}){
-    return string.replace(/\/\/.*\r\n/g,'').replace(/\s+/g,'').replace(/(\r\n)*/g,'').replace(/(\/\*+).*?(\*+\/)/g,'')
+    //单行注释；空白；换行符；多行注释
+    return string.replace(/\/\/.*\r?\n/g,'').replace(/\s+/g,'').replace(/(\r?\n)*/g,'').replace(/(\/\*+).*?(\*+\/)/g,'')
 }
 module.exports={
     recursiveReadFileAbsPath,

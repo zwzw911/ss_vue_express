@@ -301,13 +301,16 @@ function genFinalReturnResult(rc){
     if(e_env.PROD===currentEnv){
         let result={}
         //普通rc
-        if(rc.msg &&  rc.msg.server){
-
-            result['rc']=rc['rc']
-            result['msg']=rc.msg.client
-            return result
+        if(rc.msg &&  rc.msg){
+            if(rc.msg.server){
+                result['rc']=rc['rc']
+                result['msg']=rc.msg.client
+                return result
+            }else{
+                return rc
+            }
         }else {
-            //检测inputVlaue的rc
+            //检测inputValue的rc
             for(let singleField in rc){
                 result[singleField]['rc']=rc[singleField]['rc']
                 result[singleField]['msg']=rc[singleField].msg.client

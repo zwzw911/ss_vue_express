@@ -6,7 +6,7 @@
  */
 'use strict'
 
-
+const ap=require('awesomeprint')
 
 const express = require('express');
 //var app=express()
@@ -25,6 +25,7 @@ const userMiscFunc=require('./user_logic/user_misc_func')
 router.post('/',function(req,res,next){
 //     console.log(`req in`)
 // console.log(`req is ${JSON.stringify(req.body)}`)
+//     ap.inf('user in')
     userDispatcher_async(req).then(
         (v)=>{
             console.log(`create   register   success, result:  ${JSON.stringify(v)}`)

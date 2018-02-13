@@ -13,8 +13,8 @@ const controllerError={
     /*              login_async               */
     loginMandatoryFieldNotExist(fieldName){return {rc:50106,msg:`缺少字段${fieldName}`}},
     loginFieldNumNotExpected:{rc:50107,msg:`输入字段字段数量不正确`},
-    accountNotExist:{rc:50108,msg:`用户或者密码不正确`},//不能泄露具体信息
-    accountPasswordNotMatch:{rc:50110,msg:`用户或者密码不正确`},
+    accountNotExist:{rc:50108,msg:`用户名或者密码不正确`},//不能泄露具体信息
+    accountPasswordNotMatch:{rc:50110,msg:`用户名或者密码不正确`},
 
     /*              updateUser_async            */
     notLoginCantUpdate:{rc:50112,msg:`尚未登录，无法执行用户信息更改`},

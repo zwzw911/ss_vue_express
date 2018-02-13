@@ -5,10 +5,10 @@ const favicon = require('serve-favicon');
 const logger = require('morgan');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
-
+const ap=require('awesomeprint')
 // const index = require('./routes/index');
 // var users = require('./routes/users');
-
+ap.inf('app in ')
 const app = express();
 
 // view engine setup
@@ -22,7 +22,10 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+// app.use(express.static(path.join(__dirname, 'public')));
+
+// app.set('views', path.join(__dirname, 'server/views'));
+// app.set('view engine', 'ejs');
 
 const server_common_file_require=require('./server_common_file_require')
 // const e_env=server_common_file_require.mongoEnum.Env

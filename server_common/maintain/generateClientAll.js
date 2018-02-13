@@ -10,8 +10,10 @@ const generateClientInputValue=require('./convert2Client/generateClientInput').g
 const generateClientInputAttribute=require('./convert2Client/generateClientInputAttribute').generateClientInputAttribute
 const generateClientInputTempResult=require('./convert2Client/generateClientInputTempData').generateClientInputTempResult
 
-const copyToCilent=require('./convert2Client/copyClientNonValueEnum').copyToClient
-//
+const generateClientNonValueEnum=require('./convert2Client/generateClientNonValueEnum').generateClientNonValueEnum
+const convertGlobalConfiguration=require('./convert2Client/globalConfiguration').convertGlobalConfiguration
+const generateProxySetting=require('./convert2Client/generateVueProxyTable').generateProxySetting
+
 function generateClientAll({originRulePath,iviewConstantPath}){
     // ap.inf('fs.existsSync(`${iviewConstantPath}rule`)',fs.existsSync(`${iviewConstantPath}rule/`))
     if(false===fs.existsSync(`${iviewConstantPath}rule/`)){
@@ -30,4 +32,6 @@ function generateClientAll({originRulePath,iviewConstantPath}){
 generateClientAll({originRulePath:'D:/ss_vue_express/server_common/constant/inputRule/browserInput/user/user.js',iviewConstantPath:`D:/ss_vue_view/src/constant/`})
 
 
-copyToCilent({originProjectPath:`D:/ss_vue_express/server_common/`,resultProjectPath:`D:/ss_vue_view/`})
+generateClientNonValueEnum({originProjectPath:'D:/ss_vue_express/server_common/',resultPath:'D:/ss_vue_view/src/constant/enum/nonValueEnum.js'})
+convertGlobalConfiguration({absFilePath:'D:/ss_vue_express/server_common/constant/config/globalConfiguration.js',resultPath:'D:/ss_vue_view/src/constant/globalConfiguration/globalConfiguration.js'})
+generateProxySetting({projectPath:'D:/ss_vue_express/express/',resultProject:'D:/ss_vue_view/'})

@@ -44,10 +44,10 @@ function readGlobalConfiguration({absFilePath,skipFilesArray}){
         let fileContent=fs.readFileSync(`${absFilePath}`,'utf8')
         //去掉 注释（首先去掉，因为需要\r\n界定结束位置）/回车换行/空白/，然后正则出module.exports中的内容
         fileContent=fileContent.replace(/\/\/.*\r\n/g,'').replace(/\r\n/g,'').replace(/\s+/g,'')
-        ap.print('fileContent',fileContent)
+        // ap.print('fileContent',fileContent)
         // ap.print('absFilePath',absFilePath)
         let matchResult=fileContent.match(pattern)
-        ap.print('matchResult',matchResult)
+        // ap.print('matchResult',matchResult)
         if(null===matchResult){
             ap.err(`not find module.exports content`)
         }
@@ -113,13 +113,6 @@ module.exports={
 }
 
 
-// readDirOrFileAndCovertRule({rulePath:'D:/ss_vue_express/server_common/constant/inputRule/internalInput/admin/admin_penalize.js'})
-// tmpResult=readDirOrFileAndCovertRule({rulePath:'D:/ss_vue_express/server_common/constant/inputRule/browserInput/friend/user_friend_group.js'})
 
 convertGlobalConfiguration({absFilePath:'D:/ss_vue_express/server_common/constant/config/globalConfiguration.js',resultPath:'D:/ss_vue_view/src/constant/globalConfiguration/globalConfiguration.js'})
-// readDirOrFileAndCovertRule({rulePath:'D:/ss_vue_express/server_common/constant/inputRule/internalInput/',resultPath:'D:/ss_vue_express/vue/src/constant/rule/'})
 
-/*
-if(tmpResult.rc>0){
-    ap.err('tmpResult',tmpResult)
-}*/

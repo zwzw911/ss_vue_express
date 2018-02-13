@@ -41,7 +41,6 @@ const generateTestData_API=require('../server_common/Test/generateTestData_API.j
 const inputRule_API_tester=require('../server_common/Test/inputRule_API_tester.js')
 const misc_helper=require('../server_common/Test/misc_helper.js')
 const testData=require('../server_common/Test/testData.js')
-const testCaseEnum=require('../server_common/constant/testCaseEnum/testCaseEnum.js')
 const common_operation_model=require('../server_common/model/mongo/operation/common_operation_model.js')
 const common_operation_helper=require('../server_common/model/mongo/operation/common_operation_helper.js')
 const common_operation_document=require('../server_common/model/mongo/operation/common_operation_document.js')
@@ -88,7 +87,6 @@ module.exports={
     inputRule_API_tester,
     misc_helper,
     testData,
-    testCaseEnum,
     common_operation_model,
     common_operation_helper,
     common_operation_document,
