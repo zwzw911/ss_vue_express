@@ -56,6 +56,8 @@ async function updateUser_async(req){
     // let tmpResult=await common_operation_model.findById({dbModel:dbModel[e_coll.USER],id:objectId})
     // let userId=tmpResult.msg[e_field.USER.]
 
+    /*              剔除需要通过单独函数来update的字段（password）            */
+    delete docValue[e_field.USER.PASSWORD]
 
 
     /*              剔除value没有变化的field            */

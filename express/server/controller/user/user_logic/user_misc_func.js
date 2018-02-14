@@ -30,6 +30,8 @@ const validateFormat=server_common_file_require.validateFormat
 const validateValue=server_common_file_require.validateValue
 
 const e_part=nodeEnum.ValidatePart
+const e_method=nodeEnum.Method
+
 const e_randomStringType=nodeEnum.RandomStringType
 const e_userState=nodeEnum.UserState
 const e_fileSizeUnit=nodeRuntimeEnum.FileSizeUnit
@@ -37,6 +39,8 @@ const e_storePathUsage=mongoEnum.StorePathUsage
 const e_gmCommand=nodeRuntimeEnum.GmCommand
 const e_gmGetter=nodeRuntimeEnum.GmGetter
 const e_env=nodeEnum.Env
+
+
 const e_uploadFileDefinitionFieldName=nodeEnum.UploadFileDefinitionFieldName
 
 // const e_method=e_method=nodeEnum.Method
@@ -63,6 +67,9 @@ const e_iniSettingObject=require('../../../constant/genEnum/initSettingObject').
 const controllerError=require('../user_setting/user_controllerError').controllerError
 
 const hash=server_common_file_require.crypt.hash
+
+const valueTypeCheck=server_common_file_require.validateHelper.valueTypeCheck
+
 /*                      检查用户名/账号的唯一性                           */
 async  function  uniqueCheck_async(req) {
     // console.log(`unique check values =========> ${JSON.stringify(req.body.values)} `)
@@ -443,9 +450,94 @@ async function generateCaptcha_async(req){
 
 }
 
+/*
+* 输入只能包含RECORD_INFO，RECORD_INFO中只能包含oldPassword/newPassword
+*
+* */
+async function changePassword({req}){
+    //检查需要的部分是否存在：recordInfo
+    let inputValue=req.body.values
+    if(undefined===req.body.values
+        || undefined===req.body.values[e_part.RECORD_INFO]
+        || undefined===req.body.values[e_part.RECORD_INFO]['oldPassword']
+        || undefined===req.body.values[e_part.RECORD_INFO]['newPassword']
+    ){
+        return Promise.reject(controllerError.changePasswordInputRecordInfoFormatInCorrect)
+    }
+
+    //提取需要的部分
+    let expectValue={
+        // [e_part.METHOD]:e_method.UPDATE,
+        [e_part.RECORD_INFO]:{
+            'oldPassword':req.body.values[e_part.RECORD_INFO]['oldPassword'],
+            'newPassword':req.body.values[e_part.RECORD_INFO]['newPassword'],
+        }
+    }
+
+    //判断输入是否只包含了需要的部分
+    if(JSON.stringify(req.body.values) !== JSON.stringify(expectValue)){
+        return Promise.reject(controllerError.changePasswordInputFormatNotExpected)
+    }
+
+    //判断字段的值是否符合格式
+    let allFieldsName=['oldPassword','newPassword']
+    let docValue=req.body.values[e_part.RECORD_INFO]
+    for(let singleInputFieldName of allFieldsName){
+        //1. 是否require
+        if(undefined===docValue[singleInputFieldName]|| null===docValue[singleInputFieldName]){
+            return Promise.reject(controllerError.missMandatoryField)
+        }
+        //2. 检查类型
+        let dataType=browserInputRule.user.password.dataType
+        let fieldValue=docValue[singleInputFieldName]
+        if(true!==valueTypeCheck(fieldValue,dataType)){
+            return Promise.reject(controllerError.fieldValueTypeIncorrect)
+        }
+        //3. 检查格式
+        let fieldPattern=browserInputRule.user.password.format.define
+        if(false===fieldPattern.test(fieldValue)){
+            return Promise.reject(controllerError.fieldValueFormatIncorrect)
+        }
+    }
+    //比较输入新旧password，如果一样，直接返回(非正常从client输入，尽早返回)
+    if(docValue['oldPassword']===docValue['newPassword']){
+        return Promise.resolve({rc:0})
+    }
+
+    //检查oldPassword是否正确
+    let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
+    // console.log(`userInfo===> ${JSON.stringify(userInfo)}`)
+    let {userId,userCollName,userType,userPriority}=userInfo
+    //查找hash过的password和salt
+    let userRecord=await common_operation_model.findById_returnRecord_async({dbModel:dbModel.user,id:userId})
+    let userSaltRecord=await common_operation_model.find_returnRecords_async({dbModel:dbModel.sugar,condition:{[e_field.SUGAR.USER_ID]:userId}})
+
+    let hashedInputOldPassword=hash(`${docValue['oldPassword']}${userSaltRecord[0][e_field.SUGAR.SUGAR]}`,e_hashType.SHA256)
+
+    if(hashedInputOldPassword.rc>0){
+        return Promise.reject(hashedInputOldPassword)
+    }
+    // ap.inf('hashedInputOldPassword',hashedInputOldPassword)
+    // ap.inf('userRecord[0][e_field.USER.PASSWORD]',userRecord)
+    //比较输入的hash和db中的hash
+    if(hashedInputOldPassword.msg!==userRecord[e_field.USER.PASSWORD]){
+        return Promise.reject(controllerError.oldPasswordIncorrect)
+    }
+
+
+
+    //hash输入的新密码，并写入db
+    let hashedInputNewPassword=hash(`${docValue['newPassword']}${userSaltRecord[0][e_field.SUGAR.SUGAR]}`,e_hashType.SHA256)
+    if(hashedInputNewPassword.rc>0){
+        return Promise.reject(hashedInputNewPassword)
+    }
+    let result=await common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:dbModel.user,id:userId,updateFieldsValue:{[e_field.USER.PASSWORD]:hashedInputNewPassword.msg}})
+    return Promise.resolve({rc:0})
+}
 module.exports={
     uniqueCheck_async,
     retrievePassword_async,
     uploadPhoto_async,
     generateCaptcha_async,
+    changePassword,
 }

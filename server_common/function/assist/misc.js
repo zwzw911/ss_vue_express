@@ -286,13 +286,13 @@ function escapeRegSpecialChar(str){
     return str.replace(reg,'\\$1')
 }
 
-/*      开发的时候，打印的trace      */
+/*/!*      开发的时候，打印的trace      *!/
 //prompt: 提示文字
 //info：需要打印的trace
 //level：根据不同的trace level决定是否打印
 function consoleDebug(prompt,info,level){
     console.log(`${prompt} ${JSON.stringify(info)}`)
-}
+}*/
 
 //将server返回的rc格式化成client能接受的格式
 //server可能是{rc:xxxx,msg:{client:'yyy',server:'zzz'}======>client  {rc:xxx,msg:yyy}
@@ -549,7 +549,7 @@ module.exports={
 
 
     // formatRc,
-    consoleDebug,
+    // consoleDebug,
 
     convertURLSearchString,
     escapeRegSpecialChar,

@@ -40,6 +40,8 @@ const component_function=server_common_file_require.component_function
 
 const image_path_for_test=server_common_file_require.appSetting.absolutePath.image_path_for_test
 
+const misc_help=server_common_file_require.misc_helper
+
 let baseUrl="/user/"
 let userId  //create后存储对应的id，以便后续的update操作
 
@@ -476,6 +478,149 @@ describe('update user： ', function() {
     after('delete new create user2', async function() {
         await db_operation_helper.deleteUserAndRelatedInfo_async({account:testData.user.user2.account,name:testData.user.user2.name})
 
+    })
+})
+
+describe('change password:', function() {
+    let data = {}, url = 'changePassword', finalUrl = baseUrl + url
+    let newPassword='oiqier123'
+    let user1Sess
+    before('user login first before update', async function() {
+        await db_operation_helper.deleteUserAndRelatedInfo_async({account:testData.user.user1.account,name:testData.user.user1.name})
+        let userInfo=await component_function.reCreateUser_returnSessUserId_async({userData:testData.user.user1,app:app})
+        user1Sess=userInfo['sess']
+    })
+
+
+    it('inputValue miss mandatory recordInfo', async function() {
+        // let finalUrl='/user/uploadPhoto'
+        data={
+            values:{
+                [e_part.METHOD]:e_method.UPDATE,
+            }
+
+        }
+        let expectedErrorRc=controllerError.changePasswordInputRecordInfoFormatInCorrect.rc
+        await misc_help.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+    })
+    it('inputValue miss mandatory recordInfo field oldPassword', async function() {
+        // let finalUrl='/user/uploadPhoto'
+        data={
+            values:{
+                [e_part.METHOD]:e_method.UPDATE,
+                [e_part.RECORD_INFO]:{
+                    'oldPassword':testData.user.user1.password,
+                    // 'newPassword':newPassword,
+                },
+            }
+
+        }
+        let expectedErrorRc=controllerError.changePasswordInputRecordInfoFormatInCorrect.rc
+        await misc_help.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+    })
+    it('inputValue include extra method', async function() {
+        // let finalUrl='/user/uploadPhoto'
+        data={
+            values:{
+                [e_part.METHOD]:e_method.UPDATE,
+                [e_part.RECORD_INFO]:{
+                    'oldPassword':testData.user.user1.password,
+                    'newPassword':newPassword,
+                },
+            }
+        }
+        let expectedErrorRc=controllerError.changePasswordInputFormatNotExpected.rc
+        await misc_help.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+    })
+
+    it('inputValue miss mandatory field value', async function() {
+        // let finalUrl='/user/uploadPhoto'
+        data={
+            values:{
+                // [e_part.METHOD]:e_method.UPDATE,
+                [e_part.RECORD_INFO]:{
+                    'oldPassword':testData.user.user1.password,
+                    'newPassword':null,
+                },
+            }
+        }
+        let expectedErrorRc=controllerError.missMandatoryField.rc
+        await misc_help.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+    })
+
+    it('inputValue field value type incorrect', async function() {
+        // let finalUrl='/user/uploadPhoto'
+        data={
+            values:{
+                // [e_part.METHOD]:e_method.UPDATE,
+                [e_part.RECORD_INFO]:{
+                    'oldPassword':testData.user.user1.password,
+                    'newPassword':[newPassword],
+                },
+            }
+        }
+        let expectedErrorRc=controllerError.fieldValueTypeIncorrect.rc
+        await misc_help.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+    })
+
+    it('inputValue field value pattern incorrect', async function() {
+        // let finalUrl='/user/uploadPhoto'
+        data={
+            values:{
+                // [e_part.METHOD]:e_method.UPDATE,
+                [e_part.RECORD_INFO]:{
+                    'oldPassword':testData.user.user1.password,
+                    'newPassword':'12',
+                },
+            }
+        }
+        let expectedErrorRc=controllerError.fieldValueFormatIncorrect.rc
+        await misc_help.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+    })
+
+    it('inputValue old password incorrect', async function() {
+        // let finalUrl='/user/uploadPhoto'
+        data={
+            values:{
+                // [e_part.METHOD]:e_method.UPDATE,
+                [e_part.RECORD_INFO]:{
+                    'oldPassword':testData.user.user1.password+'1',
+                    'newPassword':newPassword,
+                },
+            }
+        }
+        let expectedErrorRc=controllerError.oldPasswordIncorrect.rc
+        await misc_help.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+    })
+
+    it('inputValue not change ', async function() {
+        // let finalUrl='/user/uploadPhoto'
+        data={
+            values:{
+                // [e_part.METHOD]:e_method.UPDATE,
+                [e_part.RECORD_INFO]:{
+                    'oldPassword':testData.user.user1.password,
+                    'newPassword':testData.user.user1.password,
+                },
+            }
+        }
+        let expectedErrorRc=0
+        await misc_help.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+    })
+
+    it('change password success ', async function() {
+        // let finalUrl='/user/uploadPhoto'
+        data={
+            values:{
+                // [e_part.METHOD]:e_method.UPDATE,
+                [e_part.RECORD_INFO]:{
+                    'oldPassword':testData.user.user1.password,
+                    'newPassword':newPassword,
+                },
+            }
+        }
+        let expectedErrorRc=0
+        await misc_help.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
     })
 })
 

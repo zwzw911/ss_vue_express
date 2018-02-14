@@ -8,7 +8,7 @@ let dataTypeCheck=require('../validateInput/validateHelper').dataTypeCheck;
 
 let error=require('../../constant/error/assistError').upload
 
-
+const ap=require('awesomeprint')
 
 /*检测初始化multiParty的参数是否正确
 * @name:上传文件的名称？和client端设置的一致----无需检测。默认是file
@@ -56,14 +56,18 @@ async function formParse_async(req,option){
             // let fieldsTemp = JSON.stringify(fields);
             // console.log(`filesTmp===>${JSON.stringify(filesTmp)}`)
             // console.log(`fieldsTemp===>${JSON.stringify(fieldsTemp)}`)
+            // ap.inf('files',files)
             if (err) {
                 switch (err.status) {
                     case 413:
                         return reject(error.exceedMaxFileSize())
-                        break
+                        // break
                 }
             }
 
+            if(undefined === files || null === files){
+                return reject(error.uploadedFileUndefined())
+            }
             if (undefined === files[option['name']] || null === files[option['name']]) {
                 return reject(error.uploadedFileUndefined())
             }

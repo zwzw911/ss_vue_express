@@ -69,7 +69,20 @@ router.post('/retrievePassword',function(req,res,next){
     )
 })
 
+router.post('/changePassword',function(req,res,next){
 
+    userMiscFunc.changePassword({req:req}).then(
+        (v)=>{
+            console.log(`changePassword  success, result:  ${JSON.stringify(v)}`)
+            return res.json(v)
+        },
+        (err)=>{
+            console.log(`changePassword  fail: ${JSON.stringify(err)}`)
+            return res.json(genFinalReturnResult(err))
+
+        }
+    )
+})
 
 
 router.post('/uploadPhoto',function(req,res,next){

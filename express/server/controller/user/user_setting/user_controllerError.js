@@ -34,6 +34,13 @@ const controllerError={
     intervalBetween2CaptchaTooShort:{rc:50132,msg:`请求过于频繁，请稍候再试`},
     captchaReqNumInDurationExceed:{rc:50134,msg:`请求次数过多，请稍候再试`},
 
+    /*              change password                    */
+    changePasswordInputRecordInfoFormatInCorrect:{rc:50136,msg:{client:`输入格式错误`,server:`输入中，RECORD_INFO的格式不正确`}},
+    changePasswordInputFormatNotExpected:{rc:50138,msg:{client:`输入格式错误`,server:`输入格式和预期的不一致`}},
+    missMandatoryField:{rc:50140,msg:{client:`输入值错误`,server:`必须字段没有对应的值`}},
+    fieldValueTypeIncorrect:{rc:50142,msg:{client:`输入值错误`,server:`字段值类型不正确`}},
+    fieldValueFormatIncorrect:{rc:50144,msg:{client:`输入值错误`,server:`字段值格式不正确`}},
+    oldPasswordIncorrect:{rc:50144,msg:{client:`旧密码不正确`,server:`旧密码不正确`}},
 }
 
 module.exports={

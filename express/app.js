@@ -8,7 +8,7 @@ const bodyParser = require('body-parser');
 const ap=require('awesomeprint')
 // const index = require('./routes/index');
 // var users = require('./routes/users');
-ap.inf('app in ')
+// ap.inf('app in ')
 const app = express();
 
 // view engine setup
