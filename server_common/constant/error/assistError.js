@@ -8,7 +8,7 @@ const e_method=require('../enum/nodeEnum').Method
 
 const crypt={
     unknownHashType:{rc:40400,msg:`未知hash类型`},
-    unknownCroptType:{rc:40402,msg:`未知加密类型`},
+    unknownCryptType:{rc:40402,msg:`未知加密类型`},
 }
 
 const gmImage={
@@ -110,8 +110,8 @@ const misc={
 
 //40900~41000
 const awesomeCaptcha={
-    unknownHashType:{rc:40900,msg:`未知hash类型`},
-    unknownCryptType:{rc:40902,msg:`未知加密类型`},
+    genCaptchaBufferFail:{rc:40900,msg:{client:`生成图形字符失败`,server:`canvas调用toBuffer失败`}},
+    genCaptchaDataUrlFail:{rc:40902,msg:{client:`生成图形字符失败`,server:`canvas调用toDataURL失败`}},
 }
 
 

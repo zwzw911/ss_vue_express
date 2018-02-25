@@ -67,6 +67,7 @@ const e_iniSettingObject=require('../../../constant/genEnum/initSettingObject').
 const controllerError=require('../user_setting/user_controllerError').controllerError
 
 const hash=server_common_file_require.crypt.hash
+const captcha_async=server_common_file_require.awesomeCaptcha.captcha_async
 
 const valueTypeCheck=server_common_file_require.validateHelper.valueTypeCheck
 
@@ -395,11 +396,35 @@ async function uploadPhoto_async({req}){
 }
 
 /*          产生captcha           */
-// @captcha:
-//      firstTime:session中，第一次产生captcha的时间,
-//      lastTime：session中，最近一次产生的时间，
-//      firstTimeInDuration: duration中，第一次captcha的时间
-//      numberInDuration:在定义的时间段中，产生的次数
+/*@captcha:
+     @firstTime:session中，第一次产生captcha的时间,
+     @lastTime：session中，最近一次产生的时间，
+
+     @firstTimeInDuration: duration中，第一次captcha的时间
+
+     @duration: 检查周期，周期内请求次数必须小于阀值。单位秒
+     @numberInDuration:在定义的时间段中，产生的次数
+
+     @expireTimeBetween2Req:2次请求最小间隔
+     @expireTimeOfRejectTimes：rejectTimes的存在时间
+     @rejectTimesThreshold；最多有几次rejectTimes之后，要设置rejectFlag，并加上对应的处罚时间
+
+中间值：
+    rejectFlag：当用户请求 在 expireTimeOfRejectTimes 时间段内 rejectTimes达到rejectTimesThreshold后，设置，以便检测时直接
+    rejectTimes：
+
+    1. 检测是否为第一次请求，如果是，初始化对应的数据，并直接返回，继续下一步
+        如果不是第一次请求，
+    2. 检测reject flag是否存在，存在，直接报错，并返回报错
+    3. 如果reject flag不存在，检测当前请求是否要reject
+        3.1 当前请求距离上次请求是否超出expireTimeBetween2Req，超出，reject
+        3.2 当前duration内，请求次数+1是否超出numberInDuration，超出，reject
+    4. 产生了reject
+        4.1 如果rejectTimes不存在，直接设置为1，并设置ttl为[10,30,60,300,600]中的最小值10，并返回报错
+        4.2 如果rejectTimes存在
+            4.2.1 首先rejectTimes+1，然后检测rejectTimes超出rejectTimesThreshold的次数，如果此处小于等于0，index为0，然后根据index从数组中获得对应的ttl，重置rejectFlag和rejectTimes的ttl，然后返回报错
+
+     */
 async function generateCaptcha_async(req){
     //第一次产生，记录产生时间
     if(undefined===req.session.captcha ){
@@ -446,7 +471,8 @@ async function generateCaptcha_async(req){
     req.session.captcha.captcha=captchaString
 
     //产生dataURL并返回
-    return Promise.resolve({rc:0,msg:captchaString})
+    let dataURL=captcha_async({captchaString:captchaString})
+    return Promise.resolve({rc:0,msg:dataURL})
 
 }
 

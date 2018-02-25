@@ -4,12 +4,12 @@
 'use strict'
 const fs=require('fs')
 const ap=require('awesomeprint')
-
+const path=require('path')
 const regex=require('../../constant/regex/regex').regex
 /*   递归 读取指定目录下文件的 绝对路径
 * @fileOrDirPath：要读取的文件或者目录的绝对路径
 * @skipFilesArray： 需要排除的文件名（非绝对路径）
-* @absFilesPathResult：保存读取到文件路径的变量
+* @absFilesPathResult：保存读取到文件路径的变量，数组
 * */
 function  recursiveReadFileAbsPath({fileOrDirPath,skipFilesArray,absFilesPathResult}){
     // let baseDir=inputRuleBaseDir
@@ -17,6 +17,7 @@ function  recursiveReadFileAbsPath({fileOrDirPath,skipFilesArray,absFilesPathRes
     // let inputRuleFolder=['browserInput/','internalInput/']
     // let matchResult
     // let tmpResult={}
+    // ap.inf('skipFilesArray',skipFilesArray)
     let isRulePathDir=fs.lstatSync(fileOrDirPath).isDirectory()
     let isRulePathFile=fs.lstatSync(fileOrDirPath).isFile()
     if(true===isRulePathDir){
@@ -32,7 +33,7 @@ function  recursiveReadFileAbsPath({fileOrDirPath,skipFilesArray,absFilesPathRes
             if(true===isDir){
                 tmpFileDir+='/'
                 // ap.inf('${rulePath}${singleFileDir}',tmpFileDir)
-                recursiveReadFileAbsPath({skipFilesArray:skipFilesArray,fileOrDirPath:tmpFileDir})
+                recursiveReadFileAbsPath({fileOrDirPath:tmpFileDir,skipFilesArray:skipFilesArray,absFilesPathResult:absFilesPathResult})
             }
             //读取到coll文件中module.exports中的内容（以便require）
             if(true===isFile){
@@ -42,6 +43,18 @@ function  recursiveReadFileAbsPath({fileOrDirPath,skipFilesArray,absFilesPathRes
                 //     ap.err('tmpResult',tmpResult)
                 //     return tmpResult
                 // }
+                //定义了skipFilesArray，且文件在里面，继续
+                // ap.inf('skipFilesArray',skipFilesArray)
+                if(undefined!==skipFilesArray && skipFilesArray.length>0 ){
+                    // ap.inf('skipFilesArray',skipFilesArray)
+                    // ap.inf('path.basename(tmpFileDir',path.basename(tmpFileDir))
+                    // ap.inf('skipFilesArray.indexOf[path.basename(tmpFileDir)]',skipFilesArray.indexOf[path.basename(tmpFileDir)])
+                    if( -1!==skipFilesArray.indexOf(path.basename(tmpFileDir))){
+                        // ap.inf('skipFilesArra in',tmpFileDir)
+                        continue
+                    }
+                }
+                // ap.inf('skipFilesArray',tmpFileDir)
                 absFilesPathResult.push(tmpFileDir)
             }
         }
@@ -53,7 +66,13 @@ function  recursiveReadFileAbsPath({fileOrDirPath,skipFilesArray,absFilesPathRes
         //     ap.err('tmpResult',tmpResult)
         //     return tmpResult
         // }
-        absFilesPathResult.push(fileOrDirPath)
+        if(undefined!==skipFilesArray && skipFilesArray.length>0 ){
+            if(-1===skipFilesArray.indexOf(path.basename(fileOrDirPath))){
+                absFilesPathResult.push(fileOrDirPath)
+            }
+
+        }
+        // absFilesPathResult.push(fileOrDirPath)
     }
 
     // writeResult_iview({content:tmpResult,resultProjectPath:resultProjectPath})

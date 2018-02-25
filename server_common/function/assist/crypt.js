@@ -67,7 +67,7 @@ const hmac=function(string,hashType){
  const crypt=function(string,cryptType){
      // if ('undefined'===typeof (string) || string.length>255){return false}
      if(validCryptType.indexOf(cryptType)===-1 || cryptType===null || cryptType===undefined || cryptType===""){
-         return error.unknownCroptType
+         return error.unknownCryptType
      }
      //var pemFilePath='../../../other/key/key.pem';
      let pem=fs.readFileSync(pemKeyPath);
@@ -83,7 +83,7 @@ const hmac=function(string,hashType){
      //console.log(typeof (str))
      // if ('undefined'===typeof (string) || string.length>255){return false}
      if(validCryptType.indexOf(cryptType)===-1 || cryptType===null || cryptType===undefined || cryptType===""){
-         return error.unknownCroptType
+         return error.unknownCryptType
      }
      //var pemFilePath='../../../other/key/key.pem';
      const pem=fs.readFileSync(pemKeyPath);

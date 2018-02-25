@@ -974,7 +974,35 @@ function validateMethodValue(methodValue){
     return {rc:0}
 }
 
+/*      验证captcha
+*       格式简单，不用验证format，直接验证value
+* */
+function validateCaptcha(captchaValue){
+    if(false===dataTypeCheck.isString(captchaValue)){
+        return validateValueError.captcha.valueTypeIncorrect
+    }
+    if(captchaValue.length!==4){
+        return validateValueError.captcha.valueLengthIncorrect
+    }
+    return rightResult
+}
 
+/*      验证短信验证码
+*       格式简单，不用验证format，直接验证value
+* */
+function validateSMS(SMSValue){
+    if(false===dataTypeCheck.isString(SMSValue)){
+        return validateValueError.SMS.valueTypeIncorrect
+    }
+    if(SMSValue.length!==6){
+        return validateValueError.SMS.valueLengthIncorrect
+    }
+    if(false===regex.SMS.test(SMSValue)){
+        return validateValueError.SMS.valueLengthIncorrect
+    }
+
+    return rightResult
+}
 module.exports= {
     validateScalarInputValue,
     // validateCreateRecorderValue,    //调用_validateRecorderValue
@@ -1003,4 +1031,6 @@ module.exports= {
     validateEventValue,
 
     validateMethodValue,
+    validateCaptcha,
+    validateSMS,
 }

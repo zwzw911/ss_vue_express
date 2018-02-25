@@ -3,10 +3,11 @@
  */
 'use strict'
 
-
-const general={
+/*  32000~33000         */
+const generalError={
     setError:{rc:32000,msg:'保存数据出错'},
     getError:{rc:32002,msg:'读取数据出错'},
+    delError:{rc:32003,msg:'删除错误'},
     keyNotExist:{rc:32004,msg:'redis中没有找到对应的键'},
     existsFail:{rc:32006,msg:'执行exists命令出错'},
     rpushFail:{rc:32008,msg:'执行rpush命令出错'},
@@ -21,7 +22,7 @@ const luaError={
     luaParamNotObject(sha){return {rc:32030,msg:`lua脚本${sha}的参数必须是object`}},
     luaExecFail(sha){return {rc:32030,msg:`lua脚本${sha}执行失败`}},
 }
-const captcha={
+const captchaError={
     getError:{rc:32010,msg:'读取验证码出错'},
     saveError:{rc:32012,msg:'保存验证码出错'},
     delError:{rc:32013,msg:'删除验证码出错'},
@@ -48,6 +49,10 @@ const globalSetting={
 }
 
 module.exports={
-    general,
+    generalError,
     luaError,
+    captchaError,
+    // adminLogin,
+    // intervalCheckBaseIP,
+    // globalSetting,
 }

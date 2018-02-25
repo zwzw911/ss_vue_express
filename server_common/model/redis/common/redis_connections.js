@@ -16,13 +16,19 @@ const currentAppSetting=require('../../../constant/config/appSetting').currentAp
  //db:1,
  }*/
 
-let ioredisOption={
+let redisOption_session={
     host:currentAppSetting['redisIPForNormal'],
     port:currentAppSetting['redisPortForNormal'],
     family:'4',//IPv4
     db:0,
     //password:'',
-
+}
+let redisOption_captcha={
+    host:currentAppSetting['redisIPForNormal'],
+    port:currentAppSetting['redisPortForNormal'],
+    family:'4',//IPv4
+    db:1,
+    //password:'',
 }
 // console.log(`ioredisOption===========>${JSON.stringify(ioredisOption)}`)
 module.exports={
@@ -54,7 +60,8 @@ module.exports={
 
 
     },*/
-    ioredisClient:new ioredis(ioredisOption),
+    redisClientForSession:new ioredis(redisOption_session),
+    redisClientForCaptcha:new ioredis(redisOption_captcha),
 /*	redisClient: function(){return new ioredis(ioredisOption)},
 	redisClient1:new ioredis(ioredisOption),*/
     //redisClient:redis.createClient(redisOptions)

@@ -440,13 +440,13 @@ const defaultSetting= {
     },
     miscellaneous: {
         captchaExpire: {
-            default:60,
+            value:60, //秒
             type:e_serverDataType.INT,
             chineseName:'captcha最大保存时间',
             unit:'秒',
-            require:{define:true,error:{rc:60080}},
-            min:{define:30,error:{rc:60081}},
-            max:{define:60,error:{rc:60082}},
+            // require:{define:true,error:{rc:60080}},
+            // min:{define:30,error:{rc:60081}},
+            // max:{define:60,error:{rc:60082}},
         }//captcha超时删除(redis ttl 秒）
 
     },

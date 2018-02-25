@@ -36,7 +36,9 @@ function requireServerCommon(serverCommonRelateBaseDir,absoluteDestFilePath,fina
     }
 
     /*                  临时patch，captcha需要canvas，等待Node支持图像处理                */
-    let skipArray=['awesomeCaptcha.js']
+    // let skipArray=['awesomeCaptcha.js']
+    let skipArray=[]
+
     for(let singleDir of dirArray){
         recursiveReadFileIntoArray(singleDir,filesArray,skipArray)
     }

@@ -22,6 +22,7 @@ const regex=require('../server_common/constant/regex/regex.js')
 const controllerChecker=require('../server_common/controller/controllerChecker.js')
 const controllerHelper=require('../server_common/controller/controllerHelper.js')
 const dataConvert=require('../server_common/controller/dataConvert.js')
+const awesomeCaptcha=require('../server_common/function/assist/awesomeCaptcha.js')
 const checkRobot=require('../server_common/function/assist/checkRobot.js')
 const cookieSession=require('../server_common/function/assist/cookieSession.js')
 const crypt=require('../server_common/function/assist/crypt.js')
@@ -68,6 +69,7 @@ module.exports={
     controllerChecker,
     controllerHelper,
     dataConvert,
+    awesomeCaptcha,
     checkRobot,
     cookieSession,
     crypt,

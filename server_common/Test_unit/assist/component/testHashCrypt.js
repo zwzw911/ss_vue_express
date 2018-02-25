@@ -65,7 +65,7 @@ const cryptDecrypt=function(test){
     
     result=func('','xxxx');
     //console.log(result);
-    test.equal(result.rc,error.unknownCroptType.rc,'unknown cipher type empty string. failed');
+    test.equal(result.rc,error.unknownCryptType.rc,'unknown cipher type empty string. failed');
 
     result=func(testString[0],e_cryptType.BLOW_FISH);
     test.equal(result.msg,'080b1222760d10ee','blowfish+empty string. failed');
@@ -84,7 +84,7 @@ const cryptDecrypt=function(test){
     func=testModule.decrypt
     result=func('080b1222760d10ee','xxx');
     //console.log(result);
-    test.equal(result.rc,error.unknownCroptType.rc,'unknown deCipher type empty string. failed');
+    test.equal(result.rc,error.unknownCryptType.rc,'unknown deCipher type empty string. failed');
 
     result=func('080b1222760d10ee',e_cryptType.BLOW_FISH);
     test.equal(result.msg,'','deCipher:blowfish+empty string. failed');

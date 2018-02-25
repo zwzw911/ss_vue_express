@@ -76,6 +76,8 @@ const regex={
     moduleExportsNew:/module\.exports={(.*)}/,
 
     appRouteUrl:/app\.use\('(\/.*?)',.*?\)/g,
+
+    SMS:/^\d{6}$/,
 }
 
 module.exports= {

@@ -200,7 +200,20 @@ const validateValue={
         fieldKeyValueNumExceed:{rc:40368,msg:{client:`输入错误`,server:`add/remove的值超出最大定义`}},
         fieldKeyValueDataTypeWrong:{rc:40370,msg:{client:`输入错误`,server:`add/remove的值数据类型不正确`}},
     },
+    /*              captcha                      */
+    captcha:{
+        valueTypeIncorrect:{rc:40380,msg:{client:`图片字符错误`,server:`captcha的值必须是字符`}},
+        valueLengthIncorrect:{rc:40382,msg:{client:`图片字符错误`,server:`captcha的长度必须是4`}},
+        // valueIncorrect:{rc:40382,msg:{client:`图片字符错误`,server:`captcha的值不正确`}},
 
+    },
+    /*              SMS                      */
+    SMS:{
+        valueTypeIncorrect:{rc:40390,msg:{client:`验证码错误`,server:`验证码的值必须是字符`}},
+        valueLengthIncorrect:{rc:40392,msg:{client:`验证码错误`,server:`验证码的长度必须是6`}},
+        valueIncorrect:{rc:40396,msg:{client:`验证码错误`,server:`验证码的值的格式不正确`}},
+
+    }
 
 }
 
