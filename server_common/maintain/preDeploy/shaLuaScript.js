@@ -7,10 +7,10 @@
 
 'use strict'
 
-const redisClient=require('../../model/redis/common/redis_connections').redisClientForSession  //只是用来进行sha，不care db
+const redisClient=require('../../model/redis/common/redis_connections').redisClient  //只是用来进行sha，不care db
 const fs=require('fs')
 const path=require('path')
-const misc=require('../function/misc')
+const misc=require('../../function/assist/misc')
 const ap=require('awesomeprint')
 // var LuaSHA=require('./../../routes/assist/globalConstantDefine').constantDefine.LuaSHA
 // var CRUDGlobalSetting=require('./../../routes/model/redis/CRUDGlobalSetting').globalSetting
@@ -30,7 +30,7 @@ async function SHAFileInFolder_async({absoluteDirOrFilePath,skipFilesArray}){
     misc.recursiveReadFileAbsPath({fileOrDirPath:absoluteDirOrFilePath,skipFilesArray:skipFilesArray,absFilesPathResult:filesPath})
     // ap.inf('shaResult',filesPath)
     for(let singleFilePath of filesPath){
-        let fileName=path.basename(singleFilePath).split(',')[0] //取无扩展的文件名
+        let fileName=path.basename(singleFilePath).split('.')[0] //取无扩展的文件名
         let fileContent=fs.readFileSync(singleFilePath,'utf8')
         let shaResult=await redisClient.script('load',fileContent)//,function(err,sha){
         // ap.inf('shaResult',shaResult)
@@ -58,7 +58,7 @@ function writeResult({content,resultFilePath}){
     let exp=`\r\nmodule.exports={\r\n${indent}luaScriptSHA,\r\n}`
 
 
-    fs.writeFileSync(resultFilePath,`${description}${useStrict}${convertedContent}${exp}}`)
+    fs.writeFileSync(resultFilePath,`${description}${useStrict}${convertedContent}${exp}`)
 }
 
 

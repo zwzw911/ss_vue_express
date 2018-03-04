@@ -24,7 +24,8 @@ const e_applyRange=inputDataRuleType.ApplyRange
 const fs=require('fs'),path=require('path')
 const regex=require('../../constant/regex/regex').regex
 
-const maintainMisc=require('../function/misc')
+const misc=require('../../function/assist/misc')
+
 
 const dataTypeCheck=require(`../../function/validateInput/validateHelper`).dataTypeCheck
 const ap=require('awesomeprint')
@@ -172,12 +173,12 @@ function writeResult_asyncValidator({content,resultProjectPath}){
 function generateClientRule({originRulePath,absResultPath}){
     //1. 读取originRulePath下所有文件
     let absFilesPath=[]
-    maintainMisc.recursiveReadFileAbsPath({fileOrDirPath:originRulePath,absFilesPathResult:absFilesPath})
+    misc.recursiveReadFileAbsPath({fileOrDirPath:originRulePath,absFilesPathResult:absFilesPath})
     // ap.inf('absFilesPath',absFilesPath)
     //2. 对每个文件，读取export定义
     let fileExport={}
     for(let singleAbsFilePath of absFilesPath){
-        Object.assign(fileExport,maintainMisc.readFileExportItem({absFilePath:singleAbsFilePath}))
+        Object.assign(fileExport,misc.readFileExportItem({absFilePath:singleAbsFilePath}))
 
     }
 
@@ -306,10 +307,10 @@ function writeClientRuleResult_iview({convertedRule,resultPath}){
     //将require中的applyRange（CREATE，UPDATE_SCRLAR）区分
     
 // ap.inf('convertedRule[\'ruleForCreate\']',convertedRule['ruleForCreate'])
-    let contentFormatSanityForCreate=maintainMisc.sanityClientPatternInString({string:JSON.stringify(convertedRule['ruleForCreate'])})
+    let contentFormatSanityForCreate=misc.sanityClientPatternInString({string:JSON.stringify(convertedRule['ruleForCreate'])})
 
     // ap.inf('contentFormatSanityForCreate',contentFormatSanityForCreate)
-    let contentFormatSanityForUpdate=maintainMisc.sanityClientPatternInString({string:JSON.stringify(convertedRule['ruleForUpdate'])})
+    let contentFormatSanityForUpdate=misc.sanityClientPatternInString({string:JSON.stringify(convertedRule['ruleForUpdate'])})
     let finalStr=`${head}\r\n${ruleForCreate}${contentFormatSanityForCreate}\r\n${ruleForUpdate}${contentFormatSanityForUpdate}\r\n\r\n${exportStr}`
     fs.writeFileSync(`${resultPath}`,finalStr)
 

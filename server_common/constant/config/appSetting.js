@@ -8,7 +8,8 @@ const e_env=require('../enum/nodeEnum').Env
     //fasle：req.ip(s)返回undefined和[]。此时需要req.connection.remoteAddress
 const appSetting={
     [e_env.DEV]:{
-        'trust_proxy':false,
+        userIdentify:'session',//判别用户，通过session还是ip，还是both（2者皆要）
+        'trust_proxy':true,
         hostDomain:'127.0.0.1',
 
         mongoSwitchForNormal:'127.0.0.1:27017',//mongo switch的ip
@@ -19,6 +20,7 @@ const appSetting={
 
     },
     [e_env.PROD]:{
+        userIdentify:'session',
         'trust_proxy':true,
         hostDomain:'172.24.251.56',
 

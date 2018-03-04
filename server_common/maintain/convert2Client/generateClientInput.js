@@ -23,7 +23,7 @@ const e_applyRange=inputDataRuleType.ApplyRange
 const fs=require('fs'),path=require('path')
 const regex=require('../../constant/regex/regex').regex
 
-const maintainMisc=require('../function/misc')
+const misc=require('../../function/assist/misc')
 
 const dataTypeCheck=require(`../../function/validateInput/validateHelper`).dataTypeCheck
 const ap=require('awesomeprint')
@@ -49,12 +49,12 @@ function convertRule(){
 function generateClientInputValue({originRulePath,absResultPath}){
     //1. 读取originRulePath下所有文件
     let absFilesPath=[]
-    maintainMisc.recursiveReadFileAbsPath({fileOrDirPath:originRulePath,absFilesPathResult:absFilesPath})
+    misc.recursiveReadFileAbsPath({fileOrDirPath:originRulePath,absFilesPathResult:absFilesPath})
     // ap.inf('absFilesPath',absFilesPath)
     //2. 对每个文件，读取export定义
     let fileExport={}
     for(let singleAbsFilePath of absFilesPath){
-        Object.assign(fileExport,maintainMisc.readFileExportItem({absFilePath:singleAbsFilePath}))
+        Object.assign(fileExport,misc.readFileExportItem({absFilePath:singleAbsFilePath}))
 
     }
 
@@ -117,10 +117,10 @@ function writeClientInitInputValueResult({content,resultPath}){
     let initValueForCreate=content['inputValueForCreate']
     let initValueForUpdate=content['inputValueForUpdate']
 // ap.inf('ruleForCreate',ruleForCreate)
-//     let contentFormatSanityForCreate=maintainMisc.sanityClientPatternInString({string:JSON.stringify(convertedRule['ruleForCreate'])})
+//     let contentFormatSanityForCreate=misc.sanityClientPatternInString({string:JSON.stringify(convertedRule['ruleForCreate'])})
 
     // ap.inf('contentFormatSanityForCreate',contentFormatSanityForCreate)
-    // let contentFormatSanityForUpdate=maintainMisc.sanityClientPatternInString({string:JSON.stringify(convertedRule['ruleForUpdate'])})
+    // let contentFormatSanityForUpdate=misc.sanityClientPatternInString({string:JSON.stringify(convertedRule['ruleForUpdate'])})
 
 
     let finalStr=`${head}\r\n${inputValueForCreate}${JSON.stringify(initValueForCreate)}\r\n${inputValueForUpdate}${JSON.stringify(initValueForUpdate)}\r\n\r\n${exportStr}`

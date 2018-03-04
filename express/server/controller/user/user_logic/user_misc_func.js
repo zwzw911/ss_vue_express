@@ -64,6 +64,7 @@ const currentEnv=server_common_file_require.appSetting.currentEnv
 const dbModel=require('../../../constant/genEnum/dbModel')
 const e_iniSettingObject=require('../../../constant/genEnum/initSettingObject').iniSettingObject
 
+const redisOperation=server_common_file_require.redis_common_operation
 const controllerError=require('../user_setting/user_controllerError').controllerError
 
 const hash=server_common_file_require.crypt.hash
@@ -396,16 +397,16 @@ async function uploadPhoto_async({req}){
 }
 
 /*          产生captcha           */
+/*  使用的key
+	1. sessionId.captcha: lastOkRequestTime。list，记录最近合格的请求的时间，TTL=duration
+*/
 /*@captcha:
      @firstTime:session中，第一次产生captcha的时间,
      @lastTime：session中，最近一次产生的时间，
 
      @firstTimeInDuration: duration中，第一次captcha的时间
 
-     @duration: 检查周期，周期内请求次数必须小于阀值。单位秒
-     @numberInDuration:在定义的时间段中，产生的次数
 
-     @expireTimeBetween2Req:2次请求最小间隔
      @expireTimeOfRejectTimes：rejectTimes的存在时间
      @rejectTimesThreshold；最多有几次rejectTimes之后，要设置rejectFlag，并加上对应的处罚时间
 
@@ -426,54 +427,20 @@ async function uploadPhoto_async({req}){
 
      */
 async function generateCaptcha_async(req){
-    //第一次产生，记录产生时间
-    if(undefined===req.session.captcha ){
-        // console.log(`captcha not generate captcha`)
-        req.session.captcha={firstTime:Date.now(),lastTime:Date.now(),numberInDuration:1,firstTimeInDuration:Date.now()}
+    //首先检查是否可以处理req
+    //captcha为constant/config/globalConfiguration下intervalCheckConfiguration的一个键值
+    // ap.inf('interval start')
+    await controllerChecker.checkInterval_async({req:req,reqTypePrefix:'captcha'})
 
-    }
-    // else if(undefined===req.session.captcha.firstTime){
-    //     req.session.captcha.firstTime=Date.now()
-    // }
-    else{
-        // req.session.captcha.numberInDuration+=1
-        //2次间隔是否大于预定义
-        if(captchaIntervalConfiguration.expireTimeBetween2Req>(Date.now()-req.session.captcha.lastTime)){
-            return Promise.reject(controllerError.intervalBetween2CaptchaTooShort)
-        }
-        //单位时间内请求次数是否达到门限值
-        //没有进入duration，则设置duration的第一次时间
-        if(undefined===req.session.captcha.firstTimeInDuration){
-            req.session.captcha.lastTime=Date.now()
-            req.session.captcha.firstTimeInDuration=Date.now()
-            req.session.captcha.numberInDuration=1
-        }else{
-            //1. duration已经超出，重新开始周期
-            if((Date.now()-req.session.captcha.firstTimeInDuration)>captchaIntervalConfiguration.duration*1000){
-                req.session.captcha.lastTime=Date.now()
-                req.session.captcha.firstTimeInDuration=Date.now()
-                req.session.captcha.numberInDuration=1
-            }else{
-                //   duration没有超出，比较次数是否超出定义
-                //次数超出，报错
-                if((req.session.captcha.numberInDuration+1)>=captchaIntervalConfiguration.numberInDuration){
-                    return Promise.reject(controllerError.captchaReqNumInDurationExceed)
-                }else{
-                    //次数没有超出，number+1
-                    req.session.captcha.lastTime=Date.now()
-                    req.session.captcha.numberInDuration+=1
-                }
-            }
-        }
-    }
-
+// ap.inf('interval done')
     let captchaString=misc.generateRandomString()
-    req.session.captcha.captcha=captchaString
-
+    // ap.inf('captchaString',captchaString)
+    await misc.setCaptcha_async({req:req,captchaString:captchaString})
+    // ap.inf('save captchaString to db done')
     //产生dataURL并返回
-    let dataURL=captcha_async({captchaString:captchaString})
+    let dataURL=await captcha_async({params:{},captchaString:captchaString})
     return Promise.resolve({rc:0,msg:dataURL})
-
+    // return Promise.resolve({rc:0,msg:'test'})
 }
 
 /*

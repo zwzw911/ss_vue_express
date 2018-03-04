@@ -6,9 +6,11 @@
 
 const fs=require('fs')
 const path=require('path')
+const ap=require('awesomeprint')
 
 const nodeMailer=require('nodemailer')
 // const mailOption=require('../../constant/config/globalConfiguration').mailOption
+const  redisOperation=require(`../../model/redis/operation/redis_common_operation`)
 
 let miscError=require('../../constant/error/assistError').misc
 
@@ -17,8 +19,8 @@ let regex=require('../../constant/regex/regex').regex
 
 let e_randomStringType=require('../../constant/enum/nodeEnum').RandomStringType
 let e_timeUnit=require('../../constant/enum/nodeEnum').TimeUnit
-let intervalCheck=require('../../constant/config/globalConfiguration').intervalCheck
-let LuaSHA=require('../../constant/genEnum/LuaSHA').LuaSHA
+// let intervalCheck=require('../../constant/config/globalConfiguration').intervalCheckConfiguration
+// let LuaSHA=require('../../constant/genEnum/LuaSHA').luaScriptSHA
 
 let e_userStateEnum=require('../../constant/enum/nodeEnum').UserState
 
@@ -28,15 +30,17 @@ let e_userStateEnum=require('../../constant/enum/nodeEnum').UserState
 // let intervalCheck=require('../config/global/globalSettingRule').defaultSetting.intervalCheck
 
 // let mongooseErrorHandler=require('../define/error/mongoError').mongooseErrorHandler
-let execSHALua=require("../../model/redis/operation/redis_common_operation").execSHALua
+// let execSHALua=require("../../model/redis/operation/redis_common_operation").execSHALua
 
 let appSetting=require('../../constant/config/appSetting').currentAppSetting
+const globalConfiguration=require('../../constant/config/globalConfiguration')
+
 let currentEnv=require('../../constant/config/appSetting').currentEnv
 let e_env=require('../../constant/enum/nodeEnum').Env
 
 const e_sizeUnit=require('../../constant/enum/nodeRuntimeEnum').FileSizeUnit
 
-const checkInterval_async=async function(req){
+/*const checkInterval_async=async function(req){
     //return new Promise(function(resolve,reject){
 
     let identify
@@ -105,7 +109,7 @@ const checkInterval_async=async function(req){
 
     }
     return Promise.resolve({rc:0})
-}
+}*/
 
 //len:产生字符串的长度
 //type: basic(0-9A-Z)；normal(0-9A-Za-z); complicated(normal+特殊字符)
@@ -183,22 +187,22 @@ let restTimeInDay=function(timeUnit=e_timeUnit.SEC){
 
 
 
-/*          检查当前用户状态是否和期望的一致            */
+/*/!*          检查当前用户状态是否和期望的一致            *!/
 const checkUserState=function(req, exceptState){
-/*
+/!*
 * 一旦在app中启用了express-session，则在server端，req.session就一直存在，其中内容为cookie的设置参数（但是没有写入redis）；
 * 只有当通过诸如req.session.userId=objectId的语句，才会将cookies和userId写入到redis，如此，就可以根据client传入的sessionId，查找redis中对应的记录（cookie设置+程序存储的值）
 * 1. 一旦用户运行过某些正常的页面（某些API是用户正常打开页面时会调用，例如，createUser/login），则在session中设置对应的 lastPage，
 * 2. 而有些rest API是client 自动调用的（例如，uniqueCheck），此时需要检测是否有lastPage，且lastpage为调用此API的页面，没有或者不是，说明不是浏览器发出的操作，而可能是黑客的操作
 * 3. 一旦用户登录，直接设置userId
-* */
+* *!/
 //console.log(`req.session ${JSON.stringify(req.session)}`)
     let currentUserState
     if(undefined===req.session.userId){
         currentUserState=e_userStateEnum.NOT_LOGIN
-/*    } else if(undefined===req.session.userId){
+/!*    } else if(undefined===req.session.userId){
         //已经在get方法中获得sess
-        currentUserState=e_userStateEnum.NOT_LOGIN*/
+        currentUserState=e_userStateEnum.NOT_LOGIN*!/
     }else{
         currentUserState=e_userStateEnum.LOGIN
     }
@@ -225,7 +229,7 @@ const checkUserState=function(req, exceptState){
 
     return miscError.notExpectedUserState
 
-}
+}*/
 
 let encodeHtml = function(s){
     if(undefined===s){return "";}
@@ -242,9 +246,9 @@ let encodeHtml = function(s){
 };
 
 
-const ifUserLogin=function(req){
+/*const ifUserLogin=function(req){
     return undefined!==req.session.userId
-}
+}*/
 
 
 
@@ -438,68 +442,7 @@ function convertFileSize({num,unit,newUnit}){
 
 }
 
-/*
- * @absoluteRequireDir: 需要require文件的目录
- * @skipFileArray: requireDir需要被排除的文件
- * @absoluteDestFilePath: 最终文件要被写入的文件（路径+文件名）
- *
- * return: 返回一个数组，元素是absoluteRequireDir下所有的文件（绝对路径）
- * */
 
-function recursiveReadFileIntoArray(absoluteRequireDir,resultArray,skipFilesArray){
-    // let baseDir=requireDir
-    let isDir=fs.lstatSync(absoluteRequireDir).isDirectory()
-    if(isDir) {
-        let dirContent = fs.readdirSync(absoluteRequireDir)
-        for(let singleFileDir of dirContent){
-            // console.log(`singleFileDir ${singleFileDir}`)
-            let tmpFileDir=`${absoluteRequireDir}${singleFileDir}`
-            // console.log(`tmpFileDir ${tmpFileDir}`)
-            let isDir=fs.lstatSync(tmpFileDir).isDirectory()
-            let isFile=fs.lstatSync(tmpFileDir).isFile()
-            // console.log(`isDir ${isDir}`)
-            // console.log(`isFile ${isFile}`)
-            if(isDir){
-                // let tmpFileDir=`${absoluteRequireDir}/${singleFileDir}/`
-                // console.log(`isdir ${tmpFileDir}`)
-                recursiveReadFileIntoArray(tmpFileDir+'/',resultArray,skipFilesArray)
-            }
-            //读取到文件名称
-            if(isFile){
-                // console.log(`isfiel ${singleFileDir}`)
-                if(-1===skipFilesArray.indexOf(path.basename(singleFileDir))){
-                    resultArray.push(tmpFileDir)
-                    //判断文件是否在browserInput/internalInput中存在
-                }
-
-            }
-        }
-    }
-}
-
-function recursiveRequireAllFileInDir(filesArray,absoluteDestFilePath) {
-/*    let filesArray=[]
-    recursiveReadFileIntoArray(absoluteRequireDir,filesArray,skipFilesArray)*/
-
-    let description=`/*    gene by ${__filename}     */ \r\n \r\n`
-    let indent=`\ \ \ \ `
-    let useStrict=`"use strict"\r\n`
-    let convertedEnum=`${description}${useStrict}\r\n`
-    let exp=`\r\nmodule.exports={\r\n`
-    if(filesArray.length>0){
-        for(let singleFilePath of filesArray){
-            // console.log(   `singleFilePath:${singleFilePath}`)
-            let baseName=path.basename(singleFilePath).split('.')[0] //不包含扩展名的文件名
-            // console.log(   `baseName:${baseName}`)
-            convertedEnum+=`const ${baseName}=require('${singleFilePath}')\r\n`
-            exp+=`${indent}${baseName},\r\n`
-        }
-    }
-    exp+=`}`
-    let finalContent=`${convertedEnum}${exp}`
-    fs.writeFileSync(absoluteDestFilePath,`${finalContent}`)
-
-}
 
 /*
 * 数组中的每个值作为key，值的类型作为value，赋给一个对象。如果已经存在，说明是重复
@@ -535,15 +478,231 @@ function ifArrayContainArray({parentArray,childArray}){
 // console.log(`${ifArrayContainArray({parentArray:['1','2'],childArray:['1']})}`)
 // console.log(`${ifArrayContainArray({parentArray:['1','2'],childArray:['3']})}`)
 
+/*   递归 读取指定目录下文件的 绝对路径
+* @fileOrDirPath：要读取的文件或者目录的绝对路径
+* @skipFilesArray： 需要排除的文件名（非绝对路径）
+* @skipDirArray: 需要排除的目录名（非绝对路径）
+* @absFilesPathResult：保存读取到文件路径的变量，数组
+* */
+function  recursiveReadFileAbsPath({fileOrDirPath,skipFilesArray,skipDirArray,absFilesPathResult}){
+// ap.inf('recursiveReadFileAbsPath in')
+//     ap.inf('fileOrDirPath',fileOrDirPath)
+    let isRulePathDir=fs.lstatSync(fileOrDirPath).isDirectory()
+    let isRulePathFile=fs.lstatSync(fileOrDirPath).isFile()
+    // ap.inf('isRulePathDir',isRulePathDir)
+    if(true===isRulePathDir){
+        let dirContent=fs.readdirSync(fileOrDirPath)
+        for(let singleFileDir of dirContent){
+            let tmpFileDir=`${fileOrDirPath}${singleFileDir}`
+            let isDir=fs.lstatSync(tmpFileDir).isDirectory()
+            let isFile=fs.lstatSync(tmpFileDir).isFile()
+
+            if(true===isDir){
+                tmpFileDir+='/'
+                // ap.inf('before no skip dir')
+                if(undefined!==skipDirArray && skipDirArray.length>0 ){
+                    if( -1!==skipDirArray.indexOf(path.basename(tmpFileDir))){
+                        continue
+                    }
+                }
+                // ap.inf('no skip dir')
+                recursiveReadFileAbsPath({fileOrDirPath:tmpFileDir,skipFilesArray:skipFilesArray,skipDirArray:skipDirArray,absFilesPathResult:absFilesPathResult})
+            }
+            //读取到coll文件中module.exports中的内容（以便require）
+            if(true===isFile){
+                //定义了skipFilesArray，且文件在里面，继续
+                // ap.inf('skipFilesArray',skipFilesArray)
+                if(undefined!==skipFilesArray && skipFilesArray.length>0 ){
+                    if( -1!==skipFilesArray.indexOf(path.basename(tmpFileDir))){
+                        // ap.inf('skipFilesArra in',tmpFileDir)
+                        continue
+                    }
+                }
+                absFilesPathResult.push(tmpFileDir)
+            }
+        }
+    }
+    if(true===isRulePathFile){
+        if(undefined!==skipFilesArray && skipFilesArray.length>0 ){
+            if(-1!==skipFilesArray.indexOf(path.basename(fileOrDirPath))){
+                absFilesPathResult.push(fileOrDirPath)
+            }
+        }else{
+            //无需检测是否需要skip，所以直接push
+            absFilesPathResult.push(fileOrDirPath)
+        }
+    }
+}
+
+/*  读取文件内容并返回export的内容
+* @absFilePath：rule文件绝对路径
+* @specificItem: 数组。指定文件中部分需要export的内容
+* */
+function readFileExportItem({absFilePath,specificItem}){
+    let exportResult={}
+    // ap.inf('absFilePath',absFilePath)
+
+    // 读取文件中export的内容
+    let pattern=regex.moduleExportsNew
+    // ap.print('tmpFileDir',tmpFileDir)
+    let fileContent=fs.readFileSync(`${absFilePath}`,'utf8')
+    fileContent=deleteCommentSpaceReturn({string:fileContent})
+    // ap.print('fileContent',fileContent)
+    // ap.print('absFilePath',absFilePath)
+    let matchResult=fileContent.match(pattern)
+    // ap.print('matchResult',matchResult)
+    if(null===matchResult){
+        ap.err(`not find module.exports content`)
+    }
+    // ap.print('matchResult[1]',matchResult[1])
+    let allExportsInFile=matchResult[1].split(',')
+    // ap.print('specificItem',specificItem)
+
+    for(let singleExportsItem of allExportsInFile){
+        if(''!==singleExportsItem){
+            let ruleDefineContent
+            if(undefined!==specificItem){
+                if(-1!==specificItem.indexOf(singleExportsItem)){
+                    // ap.wrn('allow item',singleExportsItem)
+                    ruleDefineContent=require(`${absFilePath}`)[singleExportsItem]
+                    exportResult[singleExportsItem]=ruleDefineContent  //重复，防止未定义的item也被当作undefined加入到exportResult
+                }
+            }else{
+                // ap.inf('singleExportsItem',singleExportsItem)
+                ruleDefineContent=require(`${absFilePath}`)[singleExportsItem]
+                exportResult[singleExportsItem]=ruleDefineContent
+            }
+        }
+    }
+    return exportResult
+}
+
+//字符中，如果包含了正则（iview是patter），需要进行格式化（去除双引号）
+function sanityClientPatternInString({string}){
+    return string.replace(regex.clientRemoveDoubleQuotes, '$1/$3/,"').replace(regex.removeDoubleSlash,'\\')
+}
+
+//删除字符中注释，空白和换行
+function deleteCommentSpaceReturn({string}){
+    //单行注释；空白；换行符；多行注释
+    return string.replace(/\/\/.*\r?\n/g,'').replace(/\s+/g,'').replace(/(\r?\n)*/g,'').replace(/(\/\*+).*?(\*+\/)/g,'')
+}
+
+function recursiveRequireAllFileInDir(filesArray,absoluteDestFilePath) {
+    /*    let filesArray=[]
+        recursiveReadFileIntoArray(absoluteRequireDir,filesArray,skipFilesArray)*/
+
+    let description=`/*    gene by ${__filename}     */ \r\n \r\n`
+    let indent=`\ \ \ \ `
+    let useStrict=`"use strict"\r\n`
+    let convertedEnum=`${description}${useStrict}\r\n`
+    let exp=`\r\nmodule.exports={\r\n`
+    if(filesArray.length>0){
+        for(let singleFilePath of filesArray){
+            // console.log(   `singleFilePath:${singleFilePath}`)
+            let baseName=path.basename(singleFilePath).split('.')[0] //不包含扩展名的文件名
+            // console.log(   `baseName:${baseName}`)
+            convertedEnum+=`const ${baseName}=require('${singleFilePath}')\r\n`
+            exp+=`${indent}${baseName},\r\n`
+        }
+    }
+    exp+=`}`
+    let finalContent=`${convertedEnum}${exp}`
+    fs.writeFileSync(absoluteDestFilePath,`${finalContent}`)
+
+}
+
+
+
+async function getSessionId_async({req}){
+    let tmpSessionId
+    // ap.inf('getSessionId_async start')
+    if(undefined===req.session || undefined===req.session.id){
+        return Promise.reject(miscError.sessionIdNotExist)
+    }else{
+        tmpSessionId=req.session.id
+        if(false===regex.sessionId.test(tmpSessionId)){
+            return Promise.reject(miscError.sessionIdFormatWrong)
+        }
+        return Promise.resolve(tmpSessionId)
+    }
+}
+
+async function getIP_async({req}){
+    let tmpIP
+    if(true===appSetting.trust_proxy){
+        if(undefined===req.ips || undefined===req.ips[0]){
+            return Promise.reject(miscError.IPNotExist)
+        }
+        tmpIP=req.ips[0]
+
+        // prefix=`${req.ips[0]}.${reqTypePrefix}`
+    }
+    if(false===appSetting.trust_proxy){
+        if(undefined===req.connection.remoteAddress){
+            return Promise.reject(miscError.IPNotExist)
+        }
+        tmpIP=req.connection.remoteAddress
+        // prefix=`${req.connection.remoteAddress}.${reqTypePrefix}`
+    }
+
+    if (tmpIP && tmpIP.substr(0, 7) === "::ffff:") {
+        tmpIP = tmpIP.substr(7)
+        if(false===regex.ipv4.test(tmpIP)){
+            return Promise.reject(miscError.IPFormatWrong)
+        }
+    }
+
+    return Promise.resolve(tmpIP)
+}
+
+/*  根据server_common->constant->config->globalConfiguration中的配置，决定用session还是IP，或者2者皆是，作为identity
+*   返回：数组。包含session/IP
+* */
+async function getIdentify_async({req}){
+    let userIdentify=appSetting['userIdentify'] //基于sessionId，IP或者2者皆是进行interval的检测
+    // ap.inf('userIdentify for getIdentify_async',userIdentify)
+    let prefix=[]
+
+    if(userIdentify==='session' || userIdentify==='both'){
+        let sessionId=await getSessionId_async({req:req})
+        prefix.push(`${sessionId}`)
+    }
+
+    if(userIdentify==='ip' || userIdentify==='both'){
+        let ip=await getIP_async({req:req})
+        prefix.push(`${ip}`)
+    }
+
+    return Promise.resolve(prefix)
+}
+
+/*                  captcha get/set             */
+/*  保存captcha
+ *
+* */
+async function setCaptcha_async({req,captchaString}){
+    //获得identify（session or ip）
+    // ap.inf('setCaptcha_async in')
+    let userIdentify=await getIdentify_async({req:req})
+    // ap.inf('userIdentify for setCaptcha_async',userIdentify)
+    //获得captcha expire time
+    // ap.inf('globalConfiguration.defaultSetting.miscellaneous.captchaExpire.value',globalConfiguration.defaultSetting)
+    let expireTime=globalConfiguration.defaultSetting.miscellaneous.captchaExpire.value
+
+    // ap.inf('expireTime',expireTime)
+    await redisOperation.set_async({db:2,key:`${userIdentify[0]}:captcha`,value:captchaString,expireTime:expireTime,expireUnit:'s'})
+    return Promise.resolve({rc:0})
+}
 module.exports={
-    checkInterval_async,
+    // checkInterval_async,
     generateRandomString,
     restTimeInDay,
 
 
     // getUserInfo,
-    checkUserState,
-    ifUserLogin,
+    // checkUserState,
+    // ifUserLogin,
 
     encodeHtml,
 
@@ -560,11 +719,22 @@ module.exports={
 
     convertFileSize,
 
-    recursiveReadFileIntoArray,//递归读取一个目录下所有文件的路径
-    recursiveRequireAllFileInDir,//将数组中所有文件名require到指定文件中
-
     ifArrayHasDuplicate,
     ifArrayContainArray,
+
+    /*              for maintain                */
+    recursiveReadFileAbsPath,//递归读取一个目录下所有文件的路径
+    readFileExportItem,
+    sanityClientPatternInString,
+    deleteCommentSpaceReturn,
+    recursiveRequireAllFileInDir,//将数组中所有文件名require到指定文件中
+
+    getSessionId_async,
+    getIP_async,
+    getIdentify_async,//调用getSessionId_async/getIP_async,获得sessionId或者ip
+
+    /*              set/get cpatch              */
+    setCaptcha_async,
 }
 
 

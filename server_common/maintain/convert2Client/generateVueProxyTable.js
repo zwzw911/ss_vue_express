@@ -17,8 +17,8 @@ const ap=require('awesomeprint')
 const objectDeepCopy=require('../../function/assist/misc').objectDeepCopy
 
 const rightResult={rc:0}
+const misc=require('../../function/assist/misc')
 
-const maintainMisc=require('../function/misc')
 /*  读取app文件中route信息（有哪些可用的rul）
 * @projectPath：后台使用express，项目的绝对路径，由此获得记录路由信息都的文件app.js
 * @resultPath: 结果写入的project
@@ -31,7 +31,7 @@ function readRouteInfo({projectPath,resultProject}){
         // 读取app.js文件中的内容
         let fileContent=fs.readFileSync(`${appPath}`,'utf8')
         //去掉 注释（首先去掉，因为需要\r\n界定结束位置）/回车换行/空白/
-        fileContent=maintainMisc.deleteCommentSpaceReturn({string:fileContent})
+        fileContent=misc.deleteCommentSpaceReturn({string:fileContent})
     // ap.print('fileContent',fileContent)
         // ap.print('fileContent',fileContent)
         // ap.print('absFilePath',absFilePath)

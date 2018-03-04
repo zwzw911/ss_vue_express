@@ -27,6 +27,9 @@ function requireServerCommon(serverCommonRelateBaseDir,absoluteDestFilePath,fina
         `${serverCommonRelateBaseDir}controller/`,
         `${serverCommonRelateBaseDir}function/`,
         `${serverCommonRelateBaseDir}Test/`,  //包含Test通用数据和API
+        /*              patch; redis：common+operation                 */
+        // `${serverCommonRelateBaseDir}model/redis/common/`,
+        `${serverCommonRelateBaseDir}model/redis/operation/`,
     ]
     /*              如果是开发环境，需要把testCaseEnum加入，以便测试case                  */
     if(currentEnv===e_env.DEV){

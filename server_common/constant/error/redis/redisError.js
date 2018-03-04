@@ -5,7 +5,8 @@
 
 /*  32000~33000         */
 const generalError={
-    setError:{rc:32000,msg:'保存数据出错'},
+    expireUnitInCorrect:{rc:32000,msg:{client:'内部错误',server:'时间单位不正确'}},
+    setError:{rc:32001,msg:'保存数据出错'},
     getError:{rc:32002,msg:'读取数据出错'},
     delError:{rc:32003,msg:'删除错误'},
     keyNotExist:{rc:32004,msg:'redis中没有找到对应的键'},
@@ -19,8 +20,8 @@ const generalError={
 }
 
 const luaError={
-    luaParamNotObject(sha){return {rc:32030,msg:`lua脚本${sha}的参数必须是object`}},
-    luaExecFail(sha){return {rc:32030,msg:`lua脚本${sha}执行失败`}},
+    // luaParamNotObject(sha){return {rc:32030,msg:`lua脚本${sha}的参数必须是object`}},
+    luaExecFail({luaFileName}){return {rc:32030,msg:`lua脚本${luaFileName}.lua执行失败`}},
 }
 const captchaError={
     getError:{rc:32010,msg:'读取验证码出错'},

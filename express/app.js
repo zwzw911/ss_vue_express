@@ -5,7 +5,9 @@ const favicon = require('serve-favicon');
 const logger = require('morgan');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
+
 const ap=require('awesomeprint')
+const appSetting=require('./server_common_file_require').appSetting
 // const index = require('./routes/index');
 // var users = require('./routes/users');
 // ap.inf('app in ')
@@ -22,6 +24,7 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.set('trust proxy',appSetting['trust_proxy'])
 // app.use(express.static(path.join(__dirname, 'public')));
 
 // app.set('views', path.join(__dirname, 'server/views'));

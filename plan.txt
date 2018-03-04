@@ -104,3 +104,5 @@
 1. checkInternalValue添加一个新参数，指定applyRange ==========>done
 2. inputRule（browser/internal）同时更新===========>done
 
+1. require 文件的时候，可以skip dir
+2. 使用普通redis操作（set/get）在user_misc_func

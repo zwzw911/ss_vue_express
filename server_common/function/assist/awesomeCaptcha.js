@@ -1,9 +1,11 @@
 'use strict'
-const Canvas = require('canvas');
+
 //var captchaImgPath=require('../assist/general').general.captchaImg_path;
 //var captchaImgPath='H:/gj/' //直接以dataURL的格式返回，而不再保存在磁盘上了
 const assistError=require('../../constant/error/assistError').awesomeCaptcha
 const fs=require('fs');
+const ap=require('awesomeprint')
+const Canvas = require('canvas');
 
 let defaultParams={
     // expireDuration:1, // minute //有调用函数控制
@@ -128,9 +130,10 @@ function generateMandatoryParams({params={}}){
 *  @captchaString：需要写入的字符
 * */
 async function captcha_async({params,captchaString}){
-    // return new Promise(function(re){
-        generateMandatoryParams(params)
-
+    return new Promise(function(resolve,reject){
+        // ap.inf('captcha_async in with params',params)
+        generateMandatoryParams({params})
+        // ap.inf('aafter captcha_async in with params',params)
 
         params.size=captchaString.length
         //根据必须参数计算其他参数
@@ -171,7 +174,7 @@ async function captcha_async({params,captchaString}){
                 }
             }*/
         verticalPadding=Math.round((params.height-realCharacterHeight)/2);
-
+        // ap.inf('aafter captcha_async in with params',params)
 
         /*************************************************************/
         /**************   start to generate captcha  ****************/
@@ -197,7 +200,7 @@ async function captcha_async({params,captchaString}){
         }
         // /*  start gen captcha   */
         // let genText='';
-
+        // ap.inf('2 aafter captcha_async in with params',params)
         //gen curve which cross all character
         ctx.lineWidth=1;
         ctx.moveTo(horizontalPadding,verticalPadding+Math.random()*realCharacterHeight);
@@ -208,24 +211,26 @@ async function captcha_async({params,captchaString}){
         let randomControlY3=verticalPadding+parseInt(realCharacterHeight*Math.random())
         ctx.bezierCurveTo(randomControlX1,randomControlY1,randomControlX2,randomControlY2,params.width-horizontalPadding, randomControlY3);
         ctx.stroke();
-
+        // ap.inf('3 aafter captcha_async in with params',params)
         // let singleChar=''
-        for (let singleChar of captchaString)
+        for (let idx in captchaString)
         {
             // singleChar= validString.substr(parseInt(Math.random()*36,10),1);
-
+            let singleChar=captchaString[idx]
+// ap.inf('singleChar',singleChar)
             //console.log(ctx.font)
             //tranform character
-            ctx.setTransform(1,Math.random()*params.inclineFactor,Math.random()*params.inclineFactor,1,horizontalPadding+(i-1)*characterSpacing+(i-1)*realCharacterWidth,Math.ceil(params.fontSize*0.7)+verticalPadding );//for axis y, the start still be fontSize*0.7 instead of fontSize*0.7*(1+inclineFactor), thus the character can show in vertical center
+            ctx.setTransform(1,Math.random()*params.inclineFactor,Math.random()*params.inclineFactor,1,horizontalPadding+idx*characterSpacing+idx*realCharacterWidth,Math.ceil(params.fontSize*0.7)+verticalPadding );//for axis y, the start still be fontSize*0.7 instead of fontSize*0.7*(1+inclineFactor), thus the character can show in vertical center
+            // ap.inf('ctx.lineWidth',ctx.lineWidth)
             ctx.lineWidth=1;
-
+            // ap.inf('ctx.lineWidth',ctx.lineWidth)
             if(params.fontRandom){
                 genRandomFontSetting(params);
             }
             //ctx.font=params.fontType+' normal '+params.fontWeight+' '+params.fontSize.toString()+'px '+params.fontFamily;//there is an issue of node-canvas:it not accept font-weight, if set, font will be default 10px sans-serif
             ctx.font=params.fontType+' '+params.fontSize.toString()+'px '+params.fontFamily;
             //console.log(ctx.font)
-
+            // ap.inf('ctx.font',ctx.font)
             let charIdx=parseInt(Math.random()*color.length);
             ctx.fillStyle = color[charIdx];
             let textStroke=(Math.random() > 0.5);
@@ -239,29 +244,33 @@ async function captcha_async({params,captchaString}){
             }
             // genText+=singleChar;
         }
-
+        // ap.inf('4 aafter captcha_async in with params',params)
         if (2 === params.resultMode) {
             // return new Promise(function(resolve,reject){
-                canvas.toBuffer(function(err, buf) {
-                    if(err){
-                        return Promise.reject(assistError.awesomeCaptcha.genCaptchaBufferFail)
-                    }
-                    return Promise.resolve(buf)
-                });
+            canvas.toBuffer(function(err, buf) {
+                if(err){
+                    reject(assistError.awesomeCaptcha.genCaptchaBufferFail)
+                }
+                resolve(buf)
+            });
             // })
         }
 
 
         if (0 === params.resultMode) {
             // return new Promise(function(resolve,reject){
-                canvas.toDataURL('image/png', function(err, data){
-                    if(err){
-                        return Promise.reject(assistError.awesomeCaptcha.genCaptchaDataUrlFail)
-                    }
-                    return Promise.resolve(data)
-                });
+            canvas.toDataURL('image/png', function(err, data){
+                if(err){
+                    // ap.inf('gen dataurl fail',err)
+                    reject(assistError.awesomeCaptcha.genCaptchaDataUrlFail)
+                }
+                // ap.inf('gen dataurl result',data)
+                resolve(data)
+            });
             // })
-        };
+        };       
+    })
+    
 
 
 }
@@ -269,7 +278,14 @@ async function captcha_async({params,captchaString}){
 
 
 
-exports.captcha={
+module.exports={
     captcha_async,
     //removeExpireFile:removeExpireFile
 }
+
+/*
+captcha_async({params:{},captchaString:'asdf'}).then(function(result){
+    ap.inf('result',result)
+},function(err){
+    ap.inf('err',err)
+})*/

@@ -274,14 +274,17 @@ const gm={
 }
 
 const intervalCheckConfiguration={
-
     captcha:{
-        expireTimeBetween2Req:500, //ms，两次请求间隔最小时间
-        // expireTimeOfRejectTimes:600,//秒，不同的拒绝次数，会导致不同的拒绝时长（Lua {30,60,120,240,600}
-        timesInDuration:3,//定义的时间段内，最多允许的请求次数
-        //检查最大请求次数的时间段
-        duration:10,//second。定义的时间段
-        // rejectTimesThreshold:5,//达到此拒绝次数，拒绝时间设成600
+        // baseType:'session', //session/ip/both
+        simpleCheckParams:{
+            duration:60,  //second
+            numberInDuration:10, //duration时间段中，最大请求次数
+            expireTimeBetween2Req:500, //ms  2次间隔最小时间
+        },
+        rejectCheckParams:{
+            rejectTimesToTime:'{10,30,60,120,300,600}', //被拒超过rejectTimesThreshold后，开始设置惩罚flag的TTL（第一个元素是for未达到门限的reject次数设置的惩罚时间）
+            rejectTimesThreshold:5,//5次被拒后，之后的每次被拒，都要加上惩罚时间
+        },
     },
     global:{
         expireTimeBetween2Req:500, //ms，两次请求间隔最小时间
@@ -309,7 +312,7 @@ const defaultSetting= {
     //defaultRedirectURL:'http://127.0.0.1:3000/',
 
 
-    article: {
+    /*article: {
         articleAuthorNum: {
             default: 20,
             type: e_serverDataType.INT,
@@ -364,7 +367,7 @@ const defaultSetting= {
         }//在personalArticle中，总共显示的页数
     },
     search: {
-        /*                      search                              */
+        /!*                      search                              *!/
         maxKeyNum: {
             default: 5,
             type:e_serverDataType.INT,
@@ -437,7 +440,7 @@ const defaultSetting= {
             max:{define:250,error:{rc:60077}},
             //client: {rc: 60052, msg: '首页文档最多显示200个字符'}
         }//在主页上显示的文档内容长度
-    },
+    },*/
     miscellaneous: {
         captchaExpire: {
             value:60, //秒
@@ -453,7 +456,7 @@ const defaultSetting= {
     //ueUploadPath:'d:/',//ueditor上传文件的路径
     //captchaImg_path:['g:/ss_express/ss-express/captcha_Img','h:/ss_express/ss-express/captcha_Img'],
 
-    attachment: {
+    /*attachment: {
         maxSize: {
             default: 5 * 1024 * 1024,
             type:e_serverDataType.INT,
@@ -529,12 +532,12 @@ const defaultSetting= {
             //    maxLength:{rc: 60076, msg: '文件夹最多包含1024个字符'}
             //}
         },//disk path where to save file
-/*        saveDirLength: {
+/!*        saveDirLength: {
             define: 1024,
             type:'path',
             maxLength:1024,
             //client: {rc: 60078, msg: '绝对路径的长度不能超过1024个字符'}
-        },//disk path where to save file*/
+        },//disk path where to save file*!/
         fileNameLength: {
             default: 100,
             type:e_serverDataType.INT,
@@ -542,9 +545,9 @@ const defaultSetting= {
             require:{define:true,error:{rc:60160}},
             min:{define:5,error:{rc:60161}},// x.png
             max:{define:1024,error:{rc:60162}},
-/*            type:'file',
+/!*            type:'file',
             maxLength:100,
-            client: {rc: 60079, msg: "文件名最多包含100个字符"}*/
+            client: {rc: 60079, msg: "文件名最多包含100个字符"}*!/
         }//考虑兼容windows的长度限制（路径+文件名<255），以便下载文件
     },
 
@@ -588,7 +591,7 @@ const defaultSetting= {
             type:e_serverDataType.FOLDER,
             require:{define:true,error:{rc:60400}},
         }
-    }
+    }*/
 }
 
 const userGroupFriend={

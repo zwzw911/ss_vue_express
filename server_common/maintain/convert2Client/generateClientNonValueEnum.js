@@ -23,7 +23,8 @@ const e_applyRange=inputDataRuleType.ApplyRange
 const fs=require('fs'),path=require('path')
 const regex=require('../../constant/regex/regex').regex
 
-const maintainMisc=require('../function/misc')
+const misc=require('../../function/assist/misc')
+
 
 const dataTypeCheck=require(`../../function/validateInput/validateHelper`).dataTypeCheck
 const ap=require('awesomeprint')
@@ -52,7 +53,7 @@ function generateClientNonValueEnum({originProjectPath,resultPath}){
         let absFilesPath=[]
         //1. 读取originRulePath下所有文件
         // ap.inf("singleFileEle", singleFileEle)
-        maintainMisc.recursiveReadFileAbsPath({
+        misc.recursiveReadFileAbsPath({
             fileOrDirPath: `${singleFileEle['path']}`,
             absFilesPathResult: absFilesPath
         })
@@ -63,13 +64,13 @@ function generateClientNonValueEnum({originProjectPath,resultPath}){
             let specificItem
             if(singleFileEle['exportItem']==='all'){
                 // ap.inf('before fileExport for all',fileExport)
-                Object.assign(fileExport,maintainMisc.readFileExportItem({absFilePath:singleAbsFilePath}))
+                Object.assign(fileExport,misc.readFileExportItem({absFilePath:singleAbsFilePath}))
                 // ap.inf('after fileExport for all',fileExport)
             }else{
                 // ap.inf('before fileExport',fileExport)
                 specificItem=singleFileEle['exportItem']
                 // ap.wrn('specificItem',specificItem)
-                Object.assign(fileExport,maintainMisc.readFileExportItem({absFilePath:singleAbsFilePath,specificItem:specificItem }))
+                Object.assign(fileExport,misc.readFileExportItem({absFilePath:singleAbsFilePath,specificItem:specificItem }))
                 // ap.inf('after fileExport',fileExport)
             }
         }

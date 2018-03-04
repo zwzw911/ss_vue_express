@@ -1,5 +1,6 @@
 /**
  * Created by ada on 2018/2/7.
+ * 从server段的文件，生成client（iview）需要的文件
  */
 'use strict'
 const fs=require('fs')

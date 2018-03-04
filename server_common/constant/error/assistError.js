@@ -86,8 +86,7 @@ const shaLua={
 //40800~40900
 const misc={
     /*          checkInterval_async             */
-    sessionIdWrong:{rc:40800,msg:{client:'请求格式不正确',server:'session格式不正确'}},
-    IPWrong:{rc:40802,msg:{client:'请求格式不正确',server:'IP格式不正确'}},
+
     unknownRequestIdentify:{rc:40824,msg:{client:'无法识别请求id',server:'请求既无IP也无sessionId'}},
     forbiddenReq:{rc:40816,msg:{client:'请求被禁止',server:'请求被禁止'}},
     between2ReqCheckFail:{rc:40818,msg:{client:'请求过于频繁，请稍候再尝试',server:'两次请求间隔小于预订值'}},
@@ -104,8 +103,15 @@ const misc={
     notExpectedUserState:{rc:40852,msg:{client:'内部错误',server:'用户状态不对'}},
 
     /*              sendVerificationCodeByEmail_async               */
-    sendMailError(err){return {rc:40854,msg:{client:'邮件发送出错',server:`邮件发送错误:${JSON.stringify(err)}`}}}
+    sendMailError(err){return {rc:40854,msg:{client:'邮件发送出错',server:`邮件发送错误:${JSON.stringify(err)}`}}},
+    /*              getSessionId_async                               */
 
+
+    sessionIdNotExist:{rc:40856,msg:{client:`非法请求`,server:`请求中无session`}},
+    sessionIdFormatWrong:{rc:40857,msg:{client:'请求格式不正确',server:'session格式不正确'}},
+    /*              getIP_async                               */
+    IPNotExist:{rc:40858,msg:{client:`非法请求`,server:`请求中无IP`}},
+    IPFormatWrong:{rc:40859,msg:{client:'请求格式不正确',server:'IP格式不正确'}},
 }
 
 //40900~41000

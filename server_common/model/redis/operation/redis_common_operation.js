@@ -1,9 +1,8 @@
 /**
  * Created by Ada on 2017/7/10.
+ * 为了能够自定义db，使用lua脚本完成基本操作
  */
 'use strict'
-
-// const redisClient=require('../common/redis_connections').redisClient
 
 const runtimeRedisError=require('../../../constant/error/redis/redisError')
 const luaError=runtimeRedisError.luaError
@@ -11,113 +10,77 @@ const generalError=runtimeRedisError.generalError
 // const captchaError=runtimeRedisError.captchaError
 
 const regex=require('../../../constant/regex/regex').regex
+const luaScriptSHA=require('../../../constant/genEnum/LuaSHA').luaScriptSHA
+const ap=require('awesomeprint')
 
+// const convertARGV=require('../helper').convertARGV
+
+const redisClient=require('../common/redis_connections').redisClient
 // let defaultSetting=require('../../constant/config/globalConfiguration').defaultSetting
 let rightResult={rc:0}
 
-function save({key,value,expireInSecond,redisClient}){
-    /*    redisClient.set(`${req.session.id}:captcha`,captcha,function(){
-
-        })*/
-    // let captchaKey=`${key}:captcha`
-    if(undefined===expireInSecond){
-        redisClient.multi().set(key,value).exec()
-    }else{
-        redisClient.multi().set(key,value).expire(key,expireInSecond).exec()
-    }
-}
-
-function get_async({key,redisClient}){
-    // let captchaKey=`${reqSessionId}:captcha`;
-    redisClient.exists(key,function(err,exist){
-        if(err){
-            return Promise.reject(generalError.existsFail)
+async function set_async({db=0,key,value,expireTime,expireUnit}){
+    return new Promise(function (resolve, reject) {
+        let t=redisClient.multi().set(key,value)
+        if(undefined!==expireTime){
+            if('s'===expireUnit){
+                t.expire(key,expireTime)
+            }
+            else if('ms'===expireUnit){
+                t.pexpire(key,expireTime)
+            }else {
+                reject(generalError.expireUnitInCorrect)
+            }
         }
-        if(1===exist){
-            redisClient.get(key,function(err,result){
-                if(err){
-                    return Promise.reject(generalError.getError)
-                    // return cb(null,runtimeRedisError.captcha.getError)
-                }
-                return Promise.resolve({rc:0,msg:result})
-                // return cb(null,{rc:0,msg:result})
-            })
-        }else{
-            //getCaptcha只在对比时才调用，那么说明之前已经产生过captcha了，所以notExist，返回说明文字“超时”
-            return Promise.reject(generalError.expire)
-            // return cb(null,runtimeRedisError.captcha.expire)
-        }
-
-    })
-}
-
-function del_async({key,redisClient}){
-    // let captchaKey=`${reqSessionId}:captcha`;
-    redisClient.del(key,function(err,result){
-        if(err){
-            // ap.err(err)
-            return Promise.reject(generalError.delError)
-            // return cb(null,)
-        }
-        // ap.inf(result)
-        return Promise.resolve({rc:0,msg:result})
-        // return cb(null,)
-    })
-    /*    redisClient.exists(captchaKey,function(err,exist){
+        t.exec(function (err,result) {
             if(err){
-                return cb(null,runtimeRedisError.general.existsFail)
+                // ap.inf('err',err)
+                reject(err)
             }
-            if(1===exist){
-                redisClient.del(captchaKey,function(err,result){
-                    if(err){
-                        return cb(null,runtimeRedisError.captcha.delError)
-                    }
-                    return cb(null,{rc:0,msg:result})
-                })
-            }
-        })*/
-}
-
-//执行sha后的lua脚本（实际使用）
-function execSHALua_async(sha,params,redisClient){
-
-        if(params){
-            if('string'!==typeof params && 'object'!==typeof params){
-                return Promise.reject(luaError.luaParamNotObject(sha))
-            }
-            if('object'===typeof params){
-                params=JSON.stringify(params)
-            }
-            //为了能使Lua将字符串（对象转换）转换成table，key不能由括号（无论单还是双）括起
-            params=params.replace(regex.lua.paramsConvert,'$1$2')
-        }
-        /*        console.log(`sha is ${sha}`)
-         console.log(`params is ${params}`)*/
-        //统一格式，没有key（key num为0），参数是对象转换的字符串
-    // return new Promise(function(reslove,reject){
-        redisClient.evalsha(sha,0,params,function(err,result){
-            if(err){
-                // console.log(`sha err is ${err}`);
-                // console.log(`parsed sha err is ${LuaError.LueExecFail(sha)}`);
-
-                return Promise.reject(luaError.luaExecFail(sha))
-            }else{
-                //console.log(`type of result ${typeof result}`);
-                // console.log(`sha result is ${result}`);
-                if(result && result!==''){
-                    //result=
-                    return Promise.resolve(JSON.parse(result))
-                }
-            }
-
+            // ap.inf('result',result)
+            resolve(result)
         })
-    // })
-    // return shaResult
+    })
 }
+
+/*
+* 返回值：如果key不存在，返回null
+* */
+async function get_async({db=0,key}){
+    return new Promise(function(resolve,reject){
+        redisClient.get(key,function(err,result){
+            if(err){
+                // ap.wrn('get err', err)
+                reject(generalError.getError)
+            }
+            // ap.inf('get result ',result)
+            resolve(result)
+        })
+    })
+}
+
+/*
+* 返回值：删除成功：1，删除失败(例如键不存在)：0
+* */
+async function del_async({db=0,key}){
+    return new Promise(function (resolve, reject) {
+        redisClient.del(key,function(err,result){
+            if(err){
+                reject(generalError.delError)
+            }
+            resolve(result)
+        })
+    })
+}
+
+
 
 module.exports={
-    save,
+    set_async,
     get_async,
     del_async,
-    execSHALua_async,
 }
+
+// set_async({key:'a',value:1,expireTime:20000,expireUnit:'ms'})
+// del_async({key:'a'})
+// ap.inf('get_async',)
