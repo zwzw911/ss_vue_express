@@ -55,7 +55,7 @@ async function dispatcher_async(req){
                 penalizeSubType:e_penalizeSubType.CREATE,
                 penalizeCheckError:controllerError.userInPenalizeNoCommentCreate*/
             }
-            expectedPart=[e_part.RECORD_INFO]
+            expectedPart=[e_part.RECORD_INFO,e_part.CAPTCHA]
             // console.log(`before precheck done=====.`)
             // ap.inf('start')
             await controllerHelper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
@@ -98,7 +98,7 @@ async function dispatcher_async(req){
                                 penalizeCheckError:controllerError.userInPenalizeNoCommentCreate*/
             }
             //update的时候，userId直接保存在session中，无需通过client传入
-            expectedPart=[e_part.RECORD_INFO]
+            expectedPart=[e_part.RECORD_INFO,e_part.CAPTCHA]
             // console.log(`before precheck done=====.`)
             await controllerHelper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
 	    //await helper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart,e_field:e_field,e_coll:e_coll,e_internal_field:e_internal_field,maxSearchKeyNum:maxSearchKeyNum,maxSearchPageNum:maxSearchPageNum})

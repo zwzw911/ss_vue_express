@@ -32,22 +32,15 @@ const e_docStatus=mongoEnum.DocStatus.DB
 const e_coll=require('../../../constant/genEnum/DB_Coll').Coll
 const e_field=require('../../../constant/genEnum/DB_field').Field
 
-// const e_uniqueField=require('../../../constant/genEnum/DB_uniqueField').UniqueField
-// const e_chineseName=require('../../../constant/genEnum/inputRule_field_chineseName').ChineseName
-//
-//
-// const userPhotoConfiguration=server_common_file_include.globalConfiguration.uploadFileDefine.user_thumb
-// const captchaIntervalConfiguration=server_common_file_include.globalConfiguration.intervalCheckConfiguration.captcha
-// const mailOption=server_common_file_include.globalConfiguration.mailOption
-
 const e_dbModel=require('../../../constant/genEnum/dbModel')
-// const e_iniSettingObject=require('../../../constant/genEnum/initSettingObject').iniSettingObject
 
 const controllerError=require('../user_setting/user_controllerError').controllerError
 
-
+const user_misc_func=require('./user_misc_func')
 async function login_async(req){
     /*                              logic                                   */
+    /*                  首先检查captcha                 */
+    await user_misc_func.checkCaptcha_async({req:req})
     /*              略有不同，需要确定字段有且只有账号和密码                */
     // let usedColl=e_coll.USER
     let docValue = req.body.values[e_part.RECORD_INFO],tmpResult

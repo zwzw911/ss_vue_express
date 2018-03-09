@@ -116,7 +116,8 @@ async function ifFieldInDocValueUnique_async({collName,docValue,additionalCheckC
 // console.log(`collname ${collName}`)
 // console.log(`singleFieldName ${singleFieldName}`)
 // console.log(`chineseName ${chineseName}`)
-                return Promise.reject(checkerError.fieldValueUniqueCheckError({collName:collName,fieldName:singleFieldName,fieldChineseName:chineseName}))
+                //fieldValue:只供user/account使用，用来区分是phone还是email
+                return Promise.reject(checkerError.fieldValueUniqueCheckError({collName:collName,fieldName:singleFieldName,fieldChineseName:chineseName,fieldValue:docValue[singleFieldName]}))
             }
         }
     }

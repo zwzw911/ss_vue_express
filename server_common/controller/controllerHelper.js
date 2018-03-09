@@ -60,7 +60,7 @@ const helperError=require('../constant/error/controller/helperError').helper
 const common_operation_model=require('../model/mongo/operation/common_operation_model')
 const common_operation_helper=require('../model/mongo/operation/common_operation_helper')
 
-const checkUserState=require('../function/assist/misc').checkUserState
+// const misc=require('../function/assist/misc')
 const hash=require('../function/assist/crypt').hash
 const checkRobot_async=require('../function/assist/checkRobot').checkRobot_async
 
@@ -82,7 +82,11 @@ const sanityHtml=require('../function/assist/sanityHtml').sanityHtml
 
 const regex=require('../constant/regex/regex').regex
 const currentAppSetting=require('../constant/config/appSetting').currentAppSetting
+const globalConfiguration=require('../constant/config/globalConfiguration')
 
+const  redisOperation=require(`../model/redis/operation/redis_common_operation`)
+
+const captcha_async=require('../function/assist/awesomeCaptcha').captcha_async
 /*  根据findType，在req中检测是否存在optionPart中定义的part
 * @req
 * @optionPart；候选的part，是否在req中存在
@@ -123,7 +127,8 @@ function inputCommonCheck(req,expectedPart){
 
 
 
-
+/*      对partValue进行细致的格式检查
+* */
 function validatePartValueFormat({req,expectedPart,collName,fkConfig,inputRule}){
 // console.log(`validatePartValueFormat in `)
     let checkPartFormatResult
@@ -205,6 +210,9 @@ function validatePartValueFormat({req,expectedPart,collName,fkConfig,inputRule})
                 if(checkPartFormatResult.rc>0){
                     return checkPartFormatResult
                 }
+                break;
+            case e_part.CAPTCHA:
+                //格式简单，无需检查format，直接在value中检查
                 break;
             default:
                 return helperError.unknownPartInFormatCheck
@@ -332,6 +340,20 @@ function validatePartValue({req,expectedPart,collName,inputRule,method,fkConfig}
             case e_part.FILTER_FIELD_VALUE:
                 //3.2 检查filterFieldValue的和value
                 checkPartValueResult=validateValue.validateFilterFieldValue(req.body.values[e_part.FILTER_FIELD_VALUE],fkConfig[collName],collName,inputRule)
+                // console.log(   `checkFilterFieldValueResult check result is  ${JSON.stringify(checkFilterFieldValueResult)}`)
+                if(checkPartValueResult.rc>0){
+                    return checkPartValueResult
+                }
+                break;
+            case e_part.CAPTCHA:
+                checkPartValueResult=validateValue.validateCaptcha(req.body.values[e_part.CAPTCHA])
+                // console.log(   `checkFilterFieldValueResult check result is  ${JSON.stringify(checkFilterFieldValueResult)}`)
+                if(checkPartValueResult.rc>0){
+                    return checkPartValueResult
+                }
+                break;
+            case e_part.SMS:
+                checkPartValueResult=validateValue.validateSMS(req.body.values[e_part.SMS])
                 // console.log(   `checkFilterFieldValueResult check result is  ${JSON.stringify(checkFilterFieldValueResult)}`)
                 if(checkPartValueResult.rc>0){
                     return checkPartValueResult
@@ -744,9 +766,6 @@ async function preCheck_async({req,collName,method,userLoginCheck={needCheck:fal
 * */
 async function uploadFileToTmpDir_async({req,uploadTmpDir,maxFileSizeInByte,fileSizeUnit=e_fileSizeUnit.MB}){
     let tmpResult
-    // console.log(`uploadTmpDir ${uploadTmpDir}`)
-    // console.log(`maxFileSizeInByte ${maxFileSizeInByte}`)
-    // console.log(`fileSizeUnit ${fileSizeUnit}`)
     /*              设置multiPart参数           */
     // tmpResult=await common_operation_model.find({dbModel:dbModel.store_path,condition:{usage:e_storePathUsage.UPLOAD_TMP}})
     let uploadOption={
@@ -757,7 +776,6 @@ async function uploadFileToTmpDir_async({req,uploadTmpDir,maxFileSizeInByte,file
         name:'file',
         uploadDir:uploadTmpDir
     }
-    // console.log(`uploadOption============> ${JSON.stringify(uploadOption)}`)
     //检查上传参数设置的是否正确
     tmpResult=uploadFile.checkOption(uploadOption)
     if(tmpResult.rc>0){
@@ -765,12 +783,8 @@ async function uploadFileToTmpDir_async({req,uploadTmpDir,maxFileSizeInByte,file
     }
     //读取上传的文件，获得文件信息
     tmpResult=await uploadFile.formParse_async(req,uploadOption)
-    // console.log(`formParse===${JSON.stringify(tmpResult)}`)
 
     let {originalFilename,path,size}=tmpResult.msg[0]
-    // console.log(`originalFilename===${originalFilename}`)  //原始文件名
-    // console.log(`path===${path}`)  //包括路径已经upload之后的文件名
-    // console.log(`size===${size}`) //byte
 
     //检测原始文件名
     if(sanityHtml(originalFilename)!==originalFilename){
@@ -1392,20 +1406,85 @@ async function checkEditSubFieldEleArray_async({singleEditSubFieldValue,eleAddit
                         return Promise.reject(helperError.notOwnerOfEleArray)
                     }
                 }
-                // if(false===tmpResult){}
             }
-
-
         }else{
             return Promise.reject(helperError.eleArrayNotObjectId)
         }
 
         return Promise.resolve({rc:0})
-    // }
-    // catch(e){ap('e',e)}
 
 }
 
+/*  如果req不带任何cookie（sessionId），server对每个req自动生成新的session，导致同一client的请求产生过多session
+*   因此，如果出现以上情况，先在server产生一个session（设置req.session.field），然后传递给client，以便client保存到cookie中
+*   client收到后，自动重发req（带sessionId）
+* */
+async function setSessionByServer_async({req}){
+    return new Promise(function(resolve, reject){
+        // ap.inf('setSessionByServer_async in')
+        let field='req1'
+        // ap.inf('session id',req.session.id)
+        if(undefined===req.session[field]){
+            req.session[field]=1
+            // return Promise.reject(helperError.sessionNotSet)
+            // ap.inf('helperError.sessionNotSet',helperError.sessionNotSet)
+            reject(misc.genFinalReturnResult(helperError.sessionNotSet))
+        }
+        //一定要返回一个resolve，否则app.js中的调用会无法继续
+        else{
+            resolve('1')
+        }
+    })
+}
+
+/*  产生captcha，并保存到redis
+* */
+async  function genCaptchaAdnSave_async({req,params}){
+    // await controllerChecker.checkInterval_async({req:req,reqTypePrefix:'captcha'})
+
+// ap.inf('interval done')
+    let captchaString=misc.generateRandomString()
+    // ap.inf('captchaString',captchaString)
+    //获得session或者ip
+    let userIdentify=await misc.getIdentify_async({req:req})
+    // ap.inf('userIdentify for setCaptcha_async',userIdentify)
+    //获得captcha expire time
+    // ap.inf('globalConfiguration.defaultSetting.miscellaneous.captchaExpire.value',globalConfiguration.defaultSetting)
+    let expireTime=globalConfiguration.defaultSetting.miscellaneous.captchaExpire.value
+
+    // ap.inf('expireTime',expireTime)
+    await redisOperation.set_async({db:2,key:`${userIdentify[0]}:captcha`,value:captchaString,expireTime:expireTime,expireUnit:'s'})
+
+    // await misc.setCaptcha_async({req:req,captchaString:captchaString})
+    // ap.inf('save captchaString to db done')
+    //产生dataURL并返回
+    let dataURL=await captcha_async({params:params,captchaString:captchaString})
+    return Promise.resolve(dataURL)
+}
+
+/*  从req中提取captcha并和redis中的比较       */
+async function getCaptchaAndCheck_async({req}){
+    let clientCaptcha=req.body.values[e_part.CAPTCHA]
+
+    //获得session或者ip
+    let userIdentify=await misc.getIdentify_async({req:req})
+
+    let serverCaptcha= await redisOperation.get_async({db:2,key:`${userIdentify[0]}:captcha`})
+    // ap.inf('serverCaptcha',serverCaptcha)
+    if(null===serverCaptcha){
+        return Promise.reject(helperError.captchaExpire)
+
+    }
+    if(clientCaptcha.toLowerCase()!==serverCaptcha.toLowerCase()){
+        return Promise.reject(helperError.captchaNotMatch)
+    }else{
+        //验证成功，立刻删除，防止复用
+        ap.inf('readt to del')
+        await redisOperation.del_async({db:2,key:`${userIdentify[0]}:captcha`})
+        return Promise.resolve(0)
+    }
+    // ap.inf('serverCaptcha',serverCaptcha)
+}
 
 module.exports= {
     checkOptionPartExist,//检查option中那些part是存在
@@ -1462,6 +1541,11 @@ module.exports= {
 
     checkEditSubFieldFromTo_async,//判断editSubField中from/to的值
     checkEditSubFieldEleArray_async, //判断editSubField中eleArray的值
+
+    setSessionByServer_async,
+
+    genCaptchaAdnSave_async,
+    getCaptchaAndCheck_async,
 }
 
 

@@ -87,6 +87,9 @@ function generateMandatoryParams({params={}}){
             }
         }
     }*/
+    if (undefined===params.width ) {params.width=defaultParams.width}
+    if (undefined===params.height ) {params.height=defaultParams.height}
+
 
     if (undefined===params.fontRandom || typeof(params.fontRandom)!=='boolean') {params.fontRandom=defaultParams.fontRandom}
     if (undefined===params.fontType || validFontType.indexOf(params.fontType)===-1) {params.fontType=defaultParams.fontType;}
@@ -158,9 +161,14 @@ async function captcha_async({params,captchaString}){
         }
         horizontalPadding=Math.round((params.width-params.size*realCharacterWidth-(params.size-1)*characterSpacing)/2);
 
+/*ap.inf('verticalPadding',verticalPadding)
+        ap.inf('realCharacterHeight',realCharacterHeight)
+        ap.inf('params.height',params.height)*/
 
         let neededHeight=2*verticalPadding+realCharacterHeight;
-        if (undefined===params.height || neededWidth>params.height ){
+        // ap.inf('neededHeight',neededHeight)
+
+        if (undefined===params.height || neededHeight>params.height ){
             params.height=neededHeight;
         }
         // tmpInt=convertToInt(params.height);
@@ -188,7 +196,7 @@ async function captcha_async({params,captchaString}){
         /*  gen pic border*/
         ctx.fillStyle = borderColor;
         ctx.lineWidth=1;
-        ctx.strokeRect(0,0,params.width,params.height);
+        // ctx.strokeRect(0,0,params.width,params.height);  //无需边框
 
         /*  check shadow flag*/
         if(params.shadow){

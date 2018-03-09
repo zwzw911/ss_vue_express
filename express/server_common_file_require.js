@@ -49,6 +49,7 @@ const common_operation_helper=require('../server_common/model/mongo/operation/co
 const common_operation_document=require('../server_common/model/mongo/operation/common_operation_document.js')
 const fkConfig=require('../server_common/model/mongo/fkConfig.js')
 const generateMongoEnumKeyValueExchange=require('../server_common/maintain/generateFunction/generateMongoEnumKeyValueExchange.js')
+const genLuaSHA=require('../server_common/maintain/genLuaSHA.js')
 
 module.exports={
     appSetting,
@@ -98,4 +99,5 @@ module.exports={
     common_operation_document,
     fkConfig,
     generateMongoEnumKeyValueExchange,
+    genLuaSHA,
 }

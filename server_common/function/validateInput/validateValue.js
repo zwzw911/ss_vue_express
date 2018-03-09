@@ -978,6 +978,7 @@ function validateMethodValue(methodValue){
 *       格式简单，不用验证format，直接验证value
 * */
 function validateCaptcha(captchaValue){
+    // ap.inf('typeof captchaValue',typeof captchaValue)
     if(false===dataTypeCheck.isString(captchaValue)){
         return validateValueError.captcha.valueTypeIncorrect
     }

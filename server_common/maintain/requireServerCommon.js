@@ -4,7 +4,7 @@
  */
 'use strict'
 
-const recursiveReadFileIntoArray=require('../function/assist/misc').recursiveReadFileIntoArray
+const recursiveReadFileAbsPath=require('../function/assist/misc').recursiveReadFileAbsPath
 const recursiveRequireAllFileInDir=require('../function/assist/misc').recursiveRequireAllFileInDir
 
 const currentEnv=require(`../constant/config/appSetting`).currentEnv
@@ -43,10 +43,11 @@ function requireServerCommon(serverCommonRelateBaseDir,absoluteDestFilePath,fina
     let skipArray=[]
 
     for(let singleDir of dirArray){
-        recursiveReadFileIntoArray(singleDir,filesArray,skipArray)
+        recursiveReadFileAbsPath({fileOrDirPath:singleDir,skipFilesArray:skipArray,absFilesPathResult:filesArray})
+        // recursiveReadFileIntoArray(singleDir,filesArray,skipArray)
     }
 
-    /*              patch; 2个model+1个配置文件+1个maintain文件                 */
+    /*              patch; 2个model+1个配置文件+2个maintain文件                 */
     filesArray.push(`${serverCommonRelateBaseDir}model/mongo/operation/common_operation_model.js`)
     filesArray.push(`${serverCommonRelateBaseDir}model/mongo/operation/common_operation_helper.js`)
     filesArray.push(`${serverCommonRelateBaseDir}model/mongo/operation/common_operation_document.js`)
@@ -54,7 +55,8 @@ function requireServerCommon(serverCommonRelateBaseDir,absoluteDestFilePath,fina
     filesArray.push(`${serverCommonRelateBaseDir}model/mongo/fkConfig.js`)
 
     filesArray.push(`${serverCommonRelateBaseDir}maintain/generateFunction/generateMongoEnumKeyValueExchange.js`)
-
+    //lua脚本sha化，并载入
+    filesArray.push(`${serverCommonRelateBaseDir}maintain/genLuaSHA.js`)
 
 
     //把基于执行脚本的相对路径改成基于最终require文件的相对路径

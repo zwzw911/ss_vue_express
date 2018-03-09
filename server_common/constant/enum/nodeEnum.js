@@ -68,6 +68,8 @@ const ValidatePart={
     SINGLE_FIELD:'singleField',     //和RECORD_INFO类似，只是只有一个字段
     MANIPULATE_ARRAY:'manipulateArray',//直接操作array字段
     METHOD:'method',    //当前操作对应的是CRUD中哪一个
+    CAPTCHA:'captcha',
+    SMS:'sms',
 }
 
 

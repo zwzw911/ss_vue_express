@@ -8,6 +8,9 @@ const app = require('../app');
 const debug = require('debug')('express-new:server');
 const http = require('http');
 
+const server_common_file_require=require('../server_common_file_require')
+server_common_file_require.genLuaSHA.genSha()
+
 /**
  * Get port from environment and store in Express.
  */

@@ -7,6 +7,13 @@
 const app = require('../app');
 const debug = require('debug')('express:server');
 const http = require('http');
+const ap=require('awesomeprint')
+
+ap.inf('www in')
+const server_common_file_require=require('../server_common_file_require')
+
+
+server_common_file_require.genLuaSHA.genSha()//.then(function(res){ap.inf('res',res);return 1},function(err){ap.err('err',err)})
 
 /**
  * Get port from environment and store in Express.
@@ -28,6 +35,7 @@ const server = http.createServer(app);
 server.listen(port);
 server.on('error', onError);
 server.on('listening', onListening);
+
 
 /**
  * Normalize a port into a number, string, or false.

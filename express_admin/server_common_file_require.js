@@ -15,13 +15,14 @@ const assistError=require('../server_common/constant/error/assistError.js')
 const helperError=require('../server_common/constant/error/controller/helperError.js')
 const maintainError=require('../server_common/constant/error/maintainError.js')
 const mongoError=require('../server_common/constant/error/mongo/mongoError.js')
-const redisError=require('../server_common/constant/error/redisError.js')
+const redisError=require('../server_common/constant/error/redis/redisError.js')
 const systemError=require('../server_common/constant/error/systemError.js')
 const validateError=require('../server_common/constant/error/validateError.js')
 const regex=require('../server_common/constant/regex/regex.js')
 const controllerChecker=require('../server_common/controller/controllerChecker.js')
 const controllerHelper=require('../server_common/controller/controllerHelper.js')
 const dataConvert=require('../server_common/controller/dataConvert.js')
+const awesomeCaptcha=require('../server_common/function/assist/awesomeCaptcha.js')
 const checkRobot=require('../server_common/function/assist/checkRobot.js')
 const cookieSession=require('../server_common/function/assist/cookieSession.js')
 const crypt=require('../server_common/function/assist/crypt.js')
@@ -41,12 +42,14 @@ const generateTestData_API=require('../server_common/Test/generateTestData_API.j
 const inputRule_API_tester=require('../server_common/Test/inputRule_API_tester.js')
 const misc_helper=require('../server_common/Test/misc_helper.js')
 const testData=require('../server_common/Test/testData.js')
-const testCaseEnum=require('../server_common/constant/testCaseEnum/testCaseEnum.js')
+const redis_common_operation=require('../server_common/model/redis/operation/redis_common_operation.js')
+const redis_common_script=require('../server_common/model/redis/operation/redis_common_script.js')
 const common_operation_model=require('../server_common/model/mongo/operation/common_operation_model.js')
 const common_operation_helper=require('../server_common/model/mongo/operation/common_operation_helper.js')
 const common_operation_document=require('../server_common/model/mongo/operation/common_operation_document.js')
 const fkConfig=require('../server_common/model/mongo/fkConfig.js')
 const generateMongoEnumKeyValueExchange=require('../server_common/maintain/generateFunction/generateMongoEnumKeyValueExchange.js')
+const genLuaSHA=require('../server_common/maintain/genLuaSHA.js')
 
 module.exports={
     appSetting,
@@ -69,6 +72,7 @@ module.exports={
     controllerChecker,
     controllerHelper,
     dataConvert,
+    awesomeCaptcha,
     checkRobot,
     cookieSession,
     crypt,
@@ -88,10 +92,12 @@ module.exports={
     inputRule_API_tester,
     misc_helper,
     testData,
-    testCaseEnum,
+    redis_common_operation,
+    redis_common_script,
     common_operation_model,
     common_operation_helper,
     common_operation_document,
     fkConfig,
     generateMongoEnumKeyValueExchange,
+    genLuaSHA,
 }

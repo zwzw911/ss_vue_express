@@ -68,7 +68,7 @@ const redisOperation=server_common_file_require.redis_common_operation
 const controllerError=require('../user_setting/user_controllerError').controllerError
 
 const hash=server_common_file_require.crypt.hash
-const captcha_async=server_common_file_require.awesomeCaptcha.captcha_async
+
 
 const valueTypeCheck=server_common_file_require.validateHelper.valueTypeCheck
 
@@ -426,23 +426,23 @@ async function uploadPhoto_async({req}){
             4.2.1 首先rejectTimes+1，然后检测rejectTimes超出rejectTimesThreshold的次数，如果此处小于等于0，index为0，然后根据index从数组中获得对应的ttl，重置rejectFlag和rejectTimes的ttl，然后返回报错
 
      */
-async function generateCaptcha_async(req){
+async function generateCaptcha_async({req}){
+    // ap.inf('session id ',req,sesssion.id)
     //首先检查是否可以处理req
     //captcha为constant/config/globalConfiguration下intervalCheckConfiguration的一个键值
-    // ap.inf('interval start')
     await controllerChecker.checkInterval_async({req:req,reqTypePrefix:'captcha'})
 
-// ap.inf('interval done')
-    let captchaString=misc.generateRandomString()
-    // ap.inf('captchaString',captchaString)
-    await misc.setCaptcha_async({req:req,captchaString:captchaString})
-    // ap.inf('save captchaString to db done')
-    //产生dataURL并返回
-    let dataURL=await captcha_async({params:{},captchaString:captchaString})
-    return Promise.resolve({rc:0,msg:dataURL})
+    let result=await controllerHelper.genCaptchaAdnSave_async({req:req,params:{height:33}})
+
+    return Promise.resolve({rc:0,msg:result})
     // return Promise.resolve({rc:0,msg:'test'})
 }
 
+async function checkCaptcha_async({req}){
+    await controllerHelper.getCaptchaAndCheck_async({req:req})
+/*    let clientInputCaptcha=req.body.values[e_part.CAPTCHA]
+    let serverCaptcha=*/
+}
 /*
 * 输入只能包含RECORD_INFO，RECORD_INFO中只能包含oldPassword/newPassword
 *
@@ -531,6 +531,9 @@ module.exports={
     uniqueCheck_async,
     retrievePassword_async,
     uploadPhoto_async,
+
     generateCaptcha_async,
+    checkCaptcha_async,
+
     changePassword,
 }

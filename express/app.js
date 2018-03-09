@@ -13,6 +13,7 @@ const appSetting=require('./server_common_file_require').appSetting
 // ap.inf('app in ')
 const app = express();
 
+
 // view engine setup
 /*app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');*/
@@ -41,6 +42,18 @@ session.setSessionDurationInMinute(480) //session duration is 8hours
 app.use(session.getSession())
 
 
+
+app.use(function(req, res, next) {
+    // ap.inf('req.session',req.session)
+    server_common_file_require.controllerHelper.setSessionByServer_async({req}).then(function(result){
+        // ap.inf('ap.use result',result)
+        next();
+    },function(err){
+        // ap.inf('ap.use err',err)
+        return res.json(err)
+    })
+
+});
 /*const checkInterval_async=require('./server/function/assist/misc').checkInterval_async
 /!*                      预处理                 *!/
 app.use(function(req,res,next){

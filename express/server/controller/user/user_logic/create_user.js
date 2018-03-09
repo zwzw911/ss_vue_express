@@ -47,7 +47,7 @@ const regex=server_common_file_require.regex.regex
 const currentEnv=server_common_file_require.appSetting.currentEnv
 
 const globalConfiguration=server_common_file_require.globalConfiguration
-
+const user_misc_func=require('./user_misc_func')
 //添加内部产生的值（hash password）
 //对内部产生的值进行检测（开发时使用，上线后为了减低负荷，无需使用）
 //对数值逻辑进行判断（外键是否有对应的记录等）
@@ -55,6 +55,9 @@ const globalConfiguration=server_common_file_require.globalConfiguration
 async  function createUser_async(req){
     // console.log(`create user in`)
     // ap.inf('create use in')
+    /*                  首先检查captcha                 */
+    await user_misc_func.checkCaptcha_async({req:req})
+
     let collName=e_coll.USER
     /*                      logic                               */
     let docValue=req.body.values[e_part.RECORD_INFO]

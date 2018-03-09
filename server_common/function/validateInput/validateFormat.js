@@ -108,7 +108,7 @@ function  validatePartFormat (inputValue,expectedParts){
     return rightResult
 }
 
-/*  对每个part的value进行format的验证
+/*  对每个part的value进行整体format的验证
 *
 * */
 function validatePartValueFormat({part,partValue}){
@@ -176,6 +176,9 @@ function validatePartValueFormat({part,partValue}){
             if(false===dataTypeCheck.isObject(partValue)){
                 return validateFormatError.inputValuePartManipulateArrayValueFormatWrong
             }
+            break;
+        case e_validatePart.CAPTCHA:
+            //captcha格式简单，无需format，直接value检查
             break;
         default:
             //理论上不会出现，因为在之前的检查就会被过滤。放在此处只是为了格式完整

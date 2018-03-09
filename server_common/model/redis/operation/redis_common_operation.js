@@ -21,7 +21,7 @@ let rightResult={rc:0}
 
 async function set_async({db=0,key,value,expireTime,expireUnit}){
     return new Promise(function (resolve, reject) {
-        let t=redisClient.multi().set(key,value)
+        let t=redisClient.multi().select(db).set(key,value)
         if(undefined!==expireTime){
             if('s'===expireUnit){
                 t.expire(key,expireTime)
@@ -48,13 +48,14 @@ async function set_async({db=0,key,value,expireTime,expireUnit}){
 * */
 async function get_async({db=0,key}){
     return new Promise(function(resolve,reject){
-        redisClient.get(key,function(err,result){
+        redisClient.multi().select(db).get(key).exec(function(err,result){
             if(err){
                 // ap.wrn('get err', err)
                 reject(generalError.getError)
             }
             // ap.inf('get result ',result)
-            resolve(result)
+            //get位于multi的第二个命令
+            resolve(result[1][1])
         })
     })
 }
@@ -64,11 +65,14 @@ async function get_async({db=0,key}){
 * */
 async function del_async({db=0,key}){
     return new Promise(function (resolve, reject) {
-        redisClient.del(key,function(err,result){
+        redisClient.multi().select(db).del(key).exec(function(err,result){
             if(err){
-                reject(generalError.delError)
+                ap.wrn('delete err', err)
+                reject(generalError.getError)
             }
-            resolve(result)
+            ap.inf('get delete ',result)
+            //get位于multi的第二个命令
+            resolve(result[1][1])
         })
     })
 }

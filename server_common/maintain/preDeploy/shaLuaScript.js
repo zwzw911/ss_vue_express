@@ -64,13 +64,13 @@ function writeResult({content,resultFilePath}){
 
 /*  综合文件，调用SHAFileInFolder_async和writeResult
 * */
-async function genSha({absoluteDirOrFilePath,skipFilesArray,resultFilePath}){
+async function genSha_async({absoluteDirOrFilePath,skipFilesArray,resultFilePath}){
     let content=await SHAFileInFolder_async({absoluteDirOrFilePath:absoluteDirOrFilePath,skipFilesArray:skipFilesArray})
     writeResult({content:content,resultFilePath:resultFilePath})
 }
 
 
 module.exports={
-    genSha,
+    genSha_async,
 }
 // writeResult({absoluteDirOrFilePath:'D:/ss_vue_express/server_common/model/redis/lua_script/',skipFilesArray:['adminLogin.lua']})

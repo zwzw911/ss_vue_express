@@ -52,7 +52,7 @@ async function checkIfInPunishReject_async({rejectFlagName,argv_configuration,re
     return new Promise(function(resolve,reject){
         let scriptName='script_checkInterval_checkIfInPunishReject'
         argv_configuration=convertARGV(argv_configuration)
-
+// ap.wrn('argv_configuration',argv_configuration)
         redisClient.evalsha(luaScriptSHA[scriptName],1,rejectFlagName,argv_configuration,function(err,result){
             if(err){
                 // ap.inf('checkIfInPunishReject_async failed',err)

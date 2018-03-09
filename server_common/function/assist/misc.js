@@ -334,6 +334,23 @@ function objectDeepCopy(sourceObj){
     return JSON.parse(JSON.stringify(sourceObj))
 }
 
+/*  部分copy对象
+* @expectedKey:需要copy的key
+* */
+function objectPartlyDeepCopy({sourceObj,expectedKey}){
+    if(undefined===sourceObj || null===sourceObj){
+        return sourceObj
+    }
+
+    let copyObject={}
+    for(let singleKey of expectedKey){
+        if(undefined!==sourceObj[singleKey]){
+            copyObject[singleKey]=JSON.parse(JSON.stringify(sourceObj[singleKey]))
+        }
+    }
+    return copyObject
+}
+
 function ifCaptchaValid(captchaValue,captchaValueType){
     let p
     switch (captchaValueType){
@@ -677,23 +694,23 @@ async function getIdentify_async({req}){
     return Promise.resolve(prefix)
 }
 
-/*                  captcha get/set             */
-/*  保存captcha
+/*/!*                  captcha get/set             *!/
+/!*  保存captcha
  *
-* */
+* *!/
 async function setCaptcha_async({req,captchaString}){
     //获得identify（session or ip）
     // ap.inf('setCaptcha_async in')
-    let userIdentify=await getIdentify_async({req:req})
+/!*    let userIdentify=await getIdentify_async({req:req})
     // ap.inf('userIdentify for setCaptcha_async',userIdentify)
     //获得captcha expire time
     // ap.inf('globalConfiguration.defaultSetting.miscellaneous.captchaExpire.value',globalConfiguration.defaultSetting)
     let expireTime=globalConfiguration.defaultSetting.miscellaneous.captchaExpire.value
 
     // ap.inf('expireTime',expireTime)
-    await redisOperation.set_async({db:2,key:`${userIdentify[0]}:captcha`,value:captchaString,expireTime:expireTime,expireUnit:'s'})
+    await redisOperation.set_async({db:2,key:`${userIdentify[0]}:captcha`,value:captchaString,expireTime:expireTime,expireUnit:'s'})*!/
     return Promise.resolve({rc:0})
-}
+}*/
 module.exports={
     // checkInterval_async,
     generateRandomString,
@@ -715,6 +732,7 @@ module.exports={
     genFinalReturnResult,
 
     objectDeepCopy,
+    objectPartlyDeepCopy,
     sendVerificationCodeByEmail_async,
 
     convertFileSize,
@@ -734,7 +752,8 @@ module.exports={
     getIdentify_async,//调用getSessionId_async/getIP_async,获得sessionId或者ip
 
     /*              set/get cpatch              */
-    setCaptcha_async,
+    // setCaptcha_async,
 }
 
-
+/*let s={k1:1,k2:2,k3:3}
+ap.inf('k1,k2', objectPartlyDeepCopy({sourceObj:s,expectedKey:['k1','k100']}))*/

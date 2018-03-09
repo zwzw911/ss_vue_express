@@ -2,6 +2,7 @@
  * Created by wzhan039 on 2017-07-10.
  */
 'use strict'
+const regex=require('../../regex/regex').regex
 
 const helper={
     /*              checkOptionPartExist            */
@@ -73,6 +74,13 @@ const helper={
 
     /*          checkInternalValue                  */
     undefinedMethod:{rc:60050,msg:{'client':"内部错误，请联系管理员",server:`不支持的method`}},
+
+    /*      setSessionByServer_async                    */
+    sessionNotSet:{rc:60052,msg:{client:`请刷新页面重试`,server:`session尚未设置，请重发请求`}},
+
+    /*         getCaptchaAndCheck_async                 */
+    captchaNotMatch:{rc:60054,msg:{client:`图形验证码错误`,server:`captcha和server端存储的内容不一致`}},
+    captchaExpire:{rc:60056,msg:{client:`图形验证码超时`,server:`redis中没有capatcha`}},
 }
 
 const checker={
@@ -89,7 +97,7 @@ const checker={
 
     /*          unique check            */
     //collName和fieldName都根据constant/enum/DB_uniqueField而来
-    fieldValueUniqueCheckError({collName,fieldName,fieldChineseName}){
+    fieldValueUniqueCheckError({collName,fieldName,fieldChineseName,fieldValue}){
         switch (collName){
             case "admin_user":
                 switch (fieldName){
@@ -152,10 +160,17 @@ const checker={
                 switch (fieldName){
                     case "name":
                         return {rc:61160,msg:{client:`已经有相同的${fieldChineseName}存在`,server:`集合${collName}的字段${fieldName}是unique，其中已经有同样的值存在了`}}
-                        break;
+                        // break;
                     case "account":
-                        return {rc:61162,msg:{client:`已经有相同的${fieldChineseName}存在`,server:`集合${collName}的字段${fieldName}是unique，其中已经有同样的值存在了`}}
-                        break;
+                        let accountChineseName=`未知类型的账号已经存在`
+                        if(true===regex.mobilePhone.test(fieldValue)){
+                            accountChineseName=`手机号已经存在`
+                        }
+                        if(true===regex.email.test(fieldValue)){
+                            accountChineseName=`邮件地址已经存在`
+                        }
+                        return {rc:61162,msg:{client:`${accountChineseName}`,server:`集合${collName}的字段${fieldName}是unique，其中已经有同样的值存在了`}}
+                        // break;
                     default:
                         return {rc:61164,msg:{client:'内部错误，请联系管理员',server:`集合${collName}中出现未知unique字段`}}
                 }
@@ -183,7 +198,9 @@ const checker={
     uploadFileHasNoSuffix:{rc:61202,msg:{client:`上传文件没有后缀，无法区分文件类型`}},
 
     /*      checkInterval_async                         */
-    rejectReq(ttl){return {rc:61206,msg:`请求过于频繁，请在${ttl}后再试`}},
+    rejectReq(ttl){return {rc:61206,msg:`请求过于频繁，请在${ttl}秒后再试`}},
+
+
 }
 
 /*admin_user:["name",],

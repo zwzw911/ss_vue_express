@@ -104,8 +104,8 @@ router.post('/uploadPhoto',function(req,res,next){
 
 
 router.post('/captcha',function(req,res,next){
-
-    userMiscFunc.generateCaptcha_async(req).then(
+// ap.inf('router in')
+    userMiscFunc.generateCaptcha_async({req:req}).then(
         (v)=>{
             console.log(`captcha  success, result:  ${JSON.stringify(v)}`)
             return res.json(v)
