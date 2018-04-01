@@ -9,7 +9,8 @@ const ruleFiledName=inputDataRuleType.RuleFiledName
 const serverDataType=inputDataRuleType.ServerDataType
 const serverRuleType=inputDataRuleType.ServerRuleType
 const applyRange=inputDataRuleType.ApplyRange
-
+const searchRange=inputDataRuleType.SearchRange
+const dataType=inputDataRuleType.ServerDataType
 
 const fs=require('fs'),path=require('path')
 const regex=require('../../constant/regex/regex').regex
@@ -164,6 +165,12 @@ function checkRule({collName,ruleDefinitionOfFile}){
             return tmpResult
         }
 
+        tmpResult=checkSearchRange({collName:collName,fieldName:singleFieldName,fieldRuleDefinition:ruleDefinitionOfFile[singleFieldName]})
+        if(tmpResult.rc>0){
+            // ap.err('tmpResult',tmpResult)
+            return tmpResult
+        }
+
     }
 
     return rightResult
@@ -310,7 +317,7 @@ function checkDataTypeRelateRule({collName,fieldName,fieldRuleDefinition}){
     //数据类型是数组，则需要array_max_length
     if(true===dataTypeCheck.isArray(dataTypeDefinition)){
         if(undefined===fieldRuleDefinition[ruleFiledName.ARRAY_MAX_LENGTH]){
-            return checkRuleError.dataTypeArrayMissMaxlength({collName:collName,fieldName:fieldName,ruleField:undefined})
+            return checkRuleError.dataTypeArrayMissMaxLength({collName:collName,fieldName:fieldName,ruleField:undefined})
         }
     }
 
@@ -358,6 +365,43 @@ function checkRuleContainMsgForError({collName,fieldName,fieldRuleDefinition}){
     return rightResult
 }
 
+/* 检查searchRange是否定义，如果定义，类型是否为数组，且其中元素为预定义，且无冲突
+ * @collName,fieldName:用来打印信息
+ * @fieldRuleDefinition：object。单个字段的rule定义
+ * */
+function checkSearchRange({collName,fieldName,fieldRuleDefinition}){
+    let searchRangeDefinition=fieldRuleDefinition[otherRuleFiledName.SEARCH_RANGE]
+    if(undefined!==searchRangeDefinition){
+        //必须为数组，且不为空
+        if(false===dataTypeCheck.isArray(searchRangeDefinition) || 0===searchRangeDefinition.length){
+            return checkRuleError.searchRangeTypeIncorrect({collName:collName,fieldName:fieldName,ruleField:undefined})
+        }
+        //数组中每个元素都是预定义的值
+        for(let singleEle of searchRangeDefinition){
+            if(-1===Object.values(searchRange).indexOf(singleEle)){
+                return checkRuleError.searchRangeValueIncorrect({collName:collName,fieldName:fieldName,ruleField:undefined})
+            }
+        }
+        //如果数组元素大于1个，那么不能包含ALL
+        // ap.inf('searchRangeDefinition.length',searchRangeDefinition.length)
+        // ap.inf('searchRangeDefinition',searchRangeDefinition)
+        if(1<searchRangeDefinition.length && -1!==searchRangeDefinition.indexOf(searchRange.ALL)){
+            return checkRuleError.searchRangeRedundant({collName:collName,fieldName:fieldName,ruleField:undefined})
+        }
+
+        //如果field的类型是string，那么可能需要设置MAX_LENGTH，为sanity
+        let fieldDataTypeDefinition=fieldRuleDefinition[otherRuleFiledName.DATA_TYPE]
+        let fieldDataType= dataTypeCheck.isArray(fieldDataTypeDefinition) ? fieldDataTypeDefinition[0]:fieldDataTypeDefinition
+        if(fieldDataType===dataType.STRING){
+            if(undefined===fieldRuleDefinition[ruleFiledName.MAX_LENGTH]){
+                ap.wrn(`${collName}的字段${fieldName}可用作搜索，且字段类型为string，可能需要设置MAX_LENGTH，为sanity提供方便`)
+            }
+        }
+    }
+
+
+    return rightResult
+}
 
 module.exports={
     readDirOrFileAndCheckFormat, //对一个目录或者一个文件，读取内容并进行rule check
@@ -370,7 +414,7 @@ module.exports={
 // tmpResult=readDirOrFileAndCheckFormat({rulePath:'D:/ss_vue_express/server_common/constant/inputRule/browserInput/friend/user_friend_group.js'})
 
 readDirOrFileAndCheckFormat({rulePath:'D:/ss_vue_express/server_common/constant/inputRule/browserInput/'})
-readDirOrFileAndCheckFormat({rulePath:'D:/ss_vue_express/server_common/constant/inputRule/internalInput/'})
+// readDirOrFileAndCheckFormat({rulePath:'D:/ss_vue_express/server_common/constant/inputRule/internalInput/'})
 
 /*
 if(tmpResult.rc>0){

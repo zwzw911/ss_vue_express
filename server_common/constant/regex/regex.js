@@ -39,7 +39,7 @@ const regex={
     hashName:/^[0-9a-f]{40}\.\w{3,4}$/, //hash名+后缀
     captcha:/^[a-zA-Z0-9]{4}$/,
     hashedThumbnail:/^[0-9a-f]{32}\.(jpg|jpeg|png)$/, //md5，非重要数据，节省空间
-    dataUrlThumbnail:/^data:image\/(png|jpg|jpeg);base64,/,
+    dataUrlUserPhoto:/^data:image\/png;base64,/, //userPhoto的格式是由client的crop组件决定   // /^data:image\/(png|jpg|jpeg);base64,/
     originalThumbnail:/^[\u4E00-\u9FFF\w]{2,20}\.(jpg|jpeg|png)$/,//
     // number采用isNaN判断，而无需正则
     // number:/^-?\d{1,}$/,//只能对字符正常工作，如果是纯数值会出错（1.0会true）; 无法处理巨大数字，因为会被parseFloat转换成科学计数法(1.23e+45}，从而无法用统一的regex处理

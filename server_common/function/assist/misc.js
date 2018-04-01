@@ -432,7 +432,7 @@ function convertFileSize({num,unit,newUnit}){
                 originFileInByte=Math.floor(num*1024*1024*1024)
                 break;
             default:
-                return imageErrorDefine.unknownUnit
+                return miscError.unknownUnit
         }
     }
 
@@ -452,7 +452,7 @@ function convertFileSize({num,unit,newUnit}){
                 convertedSize=(originFileInByte/1024/1024/1024).toFixed(2)*1
                 break;
             default:
-                return imageErrorDefine.unknownUnit
+                return miscError.unknownUnit
         }
         return {rc:0,msg:convertedSize}
     }
@@ -465,7 +465,7 @@ function convertFileSize({num,unit,newUnit}){
 * 数组中的每个值作为key，值的类型作为value，赋给一个对象。如果已经存在，说明是重复
 * */
 function ifArrayHasDuplicate(array){
-    let obj={}
+    let obj={} //key是array的元素，value是元素的类型
     for(let singleEle of array){
         //有key且类型一致，说明重复
         if(undefined!==obj[singleEle] && typeof singleEle===obj[singleEle]){
@@ -681,12 +681,16 @@ async function getIdentify_async({req}){
     // ap.inf('userIdentify for getIdentify_async',userIdentify)
     let prefix=[]
 
-    if(userIdentify==='session' || userIdentify==='both'){
+    if(userIdentify==='session' || userIdentify==='bothAnd' || userIdentify==='bothOr'){
         let sessionId=await getSessionId_async({req:req})
         prefix.push(`${sessionId}`)
+        //bothOr,则session优先，即如果检测到session，就可以了；没有session，才检查ip
+        if(userIdentify==='bothOr'){
+            return
+        }
     }
 
-    if(userIdentify==='ip' || userIdentify==='both'){
+    if(userIdentify==='ip' || userIdentify==='bothAnd' || userIdentify==='bothOr'){
         let ip=await getIP_async({req:req})
         prefix.push(`${ip}`)
     }
@@ -694,23 +698,50 @@ async function getIdentify_async({req}){
     return Promise.resolve(prefix)
 }
 
-/*/!*                  captcha get/set             *!/
-/!*  保存captcha
- *
-* *!/
-async function setCaptcha_async({req,captchaString}){
-    //获得identify（session or ip）
-    // ap.inf('setCaptcha_async in')
-/!*    let userIdentify=await getIdentify_async({req:req})
-    // ap.inf('userIdentify for setCaptcha_async',userIdentify)
-    //获得captcha expire time
-    // ap.inf('globalConfiguration.defaultSetting.miscellaneous.captchaExpire.value',globalConfiguration.defaultSetting)
-    let expireTime=globalConfiguration.defaultSetting.miscellaneous.captchaExpire.value
+//根据userIdentify产生设置redis中reject需要的key的名称： userIdentify.intervalCheck(key):rejectFlag  and userIdentify.intervalCheck(key):rejectTimes
+//prefix: captcha/uploadUserPhoto等
+//返回数组：对不同的userIdentify产生对应的key name，例如[{rejectFlag:session.captcha:rejectFlag,rejectTimes:session.captcha:rejectTimes}]
+function genRejectKeyName({arr_userIdentify,prefix}){
+    let rejectKeyName=[]
+    for(let singleUserIdentify of arr_userIdentify){
+        let tmpRejectKey={}
+        tmpRejectKey['rejectFlag']=`${singleUserIdentify}.${prefix}:rejectFlag`
+        tmpRejectKey['rejectTimes']=`${singleUserIdentify}.${prefix}:rejectTimes`
+        rejectKeyName.push(tmpRejectKey)
+    }
+    return rejectKeyName
+}
 
-    // ap.inf('expireTime',expireTime)
-    await redisOperation.set_async({db:2,key:`${userIdentify[0]}:captcha`,value:captchaString,expireTime:expireTime,expireUnit:'s'})*!/
-    return Promise.resolve({rc:0})
-}*/
+
+// async function regenSessionId_async({req,sessionCookieConfiguration}){
+//
+// }
+/* 将dataUrl转换成文件
+* */
+function dataUrl2File_returnFileAbsPath_async({dataUrl,fileNameWithoutExtension,filePath}){
+    return new Promise(function(resolve, reject){
+        //1. 首先获得后缀（png/jpeg）
+        let reg=/^data:image\/(png|jpg|jpeg);base64,/
+        let result=dataUrl.match(reg)
+        //["data:image/png;base64,","png"]
+        if(undefined===result || undefined===result[1]){
+            return reject(miscError.dataUrlNotValidImage)
+        }
+        let ext=result[1]
+        //2 删除前缀，然后写入文件
+        let base64Data = dataUrl.replace(/^data:image\/\w+;base64,/, "");
+        let dataBuffer = new Buffer(base64Data, 'base64');
+        fs.writeFile(`${filePath}${fileNameWithoutExtension}.${ext}`, dataBuffer, function(err) {
+            if(err){
+                return reject(err);
+            }else{
+                return resolve(`${filePath}${fileNameWithoutExtension}.${ext}`);
+            }
+        });
+    })
+
+    // ap.inf('result',result)
+}
 module.exports={
     // checkInterval_async,
     generateRandomString,
@@ -750,10 +781,15 @@ module.exports={
     getSessionId_async,
     getIP_async,
     getIdentify_async,//调用getSessionId_async/getIP_async,获得sessionId或者ip
-
+    genRejectKeyName, //产生redis设置reject是对应的keyname
+    // regenSessionId_async,//当session的时间段
     /*              set/get cpatch              */
     // setCaptcha_async,
+
+    dataUrl2File_returnFileAbsPath_async,
 }
 
 /*let s={k1:1,k2:2,k3:3}
 ap.inf('k1,k2', objectPartlyDeepCopy({sourceObj:s,expectedKey:['k1','k100']}))*/
+/*let dataUrl='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAYzUlEQVR4nO2bZ1RU1/73/2vlSpkZpiCCilQVpUqXDjYQFWvsvcUSQVBQURALKqgoaq5JjCWJJWosiXqTqInd2LtYooBKBymKdJjP8+KMRCOW+0RzSZyz1nfxYu/Z++zf5+z9K4fzf7rtVlDf1NBvKW38p/C6q7SijOTcNM6nJvFz0ik2ntzLmiM7mPntCiK/TaSiqvK1Y7zLa1joSvS85/9Xa/+//7XxXwVEqVSS/+QRyTlpnPztEgevn2Lt0Z2sOriFqB0rmbY1gTHrYxi4ehpByyfhFTsM17kDMZ0SgMkUf0oqytRA/mu1T0TPPx69wAXo95yFfu8ZNO4XTMvBg4jauYqwzYsZu34OfVaFEbR8Eq5zB2If/SEmU/xfKzWQN3n6Oy7FoPc0DPqF0njQRJoOHYvhyBEYjh5Ks/H9MJrQB6PgIEwmd34jo6…YbUKbTWPqJW/YS5Ww8QqgyOk5G5THvJCyq/ZSi8FqiMP1UY3DEUmWukENO7xyB3ixaqv0/bVJPWynWG6gXNYlXBbyFyt9nInCOEyWvb41WZ7iLk7rNVv322FC9kwXL3GGFRzyz2qYGfglB4x6n8YBxy9znIXKarAAQ/02fR7+2u05E6hvxuPJcIVcV50UthPHXqco+5yFxnIHWcXMc9PQskXFX8XCDM6zEPWdtIoaCqAvZsu/qd+gvGjhfqU64zkDlORuYYUoeCa4uZtVXmtzS/GkidQDazLuURj5VKlHXqDgmjl9BSDeSvAjIXhVskCudQFE6T61AIchf1DvkLgTz1Ly/3D+ojSw3kfVYiT99zvFRP+7zludVA6pnUQOqZ1EDqmdRA6pnUQOqZ1EDqmdRA6pnUQOqZ1EDqmdRA6pnUQOqZ1EDqmdRA6pnUQOqZ1EDqmdRA6pnUQOqZ1EDqmdRA6pnUQOqZ/h/t8TWgRy1HLAAAAABJRU5ErkJggg=='
+dataUrl2File_async({dataUrl:dataUrl,fileNameWithoutExtension:`test`,filePath:'d:/'})*/

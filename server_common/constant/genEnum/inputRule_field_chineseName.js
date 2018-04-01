@@ -190,9 +190,10 @@ const ChineseName={
     sugar:{
     },
     user:{
-        'name':'用户名',
+        'name':'昵称',
         'account':'账号',
         'password':'密码',
+        'photoDataUrl':'用户头像',
         'userType':'用户类型',
         'photoPathId':'头像存储路径',
         'photoHashName':'头像hash名',

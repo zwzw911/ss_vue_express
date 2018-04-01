@@ -19,6 +19,7 @@ const regex=require('../../../regex/regex').regex
 // const mongoEnum=require('../../../enum/mongo')
 const enumValue=require('../../../../constant/genEnum//enumValue')
 
+const searchRange=inputDataRuleType.SearchRange
 
 /*                  处罚只能创建                  */
 const member_penalize= {
@@ -53,6 +54,7 @@ const member_penalize= {
         [otherRuleFiledName.CHINESE_NAME]: '处罚时间',
         [otherRuleFiledName.DATA_TYPE]: serverDataType.INT,
         [otherRuleFiledName.APPLY_RANGE]:[applyRange.CREATE],
+        [otherRuleFiledName.SEARCH_RANGE]:[searchRange.ALL],
         [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true}, error: {rc: 10312, msg: '处罚时间不能为空'}, mongoError: {rc: 20312, msg: '处罚时间不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         [ruleFiledName.MIN]: {define: 1, error: {rc: 10314, msg: '处罚时间最少1天'}, mongoError: {rc: 20314, msg: '处罚时间最少1天'}},
         [ruleFiledName.MAX]: {define: 30, error: {rc: 10316, msg: '处罚时间最多30天'}, mongoError: {rc: 20316, msg: '处罚时间最多30天'}},

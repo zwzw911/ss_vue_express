@@ -19,7 +19,7 @@ const e_uploadFileType=require('../enum/nodeEnum').UploadFileType
 const e_uploadFileDefinitionFieldName=require(`../enum/nodeEnum`).UploadFileDefinitionFieldName
 const regex=require('../regex/regex').regex
 
-
+const e_intervalCheckPrefix=require('../enum/nodeEnum').IntervalCheckPrefix
 
 
 /*/!*
@@ -56,7 +56,12 @@ const session={
 }*/
 
 const searchSetting={
-    maxKeyNum:5, //对某个字段，最大选取5个字段，作为select的条件
+    normal:{
+        maxKeyNum:5, //对某个查询，最大选取5个字段，作为select的条件
+        maxQueryValuePerField:5, //对某个查询，每个字段所能容纳的最大查询值（防止过多的查询值，占用过多资源）
+    },
+
+
 }
 /*//内部设定，无法更改
 const internalSetting={
@@ -214,7 +219,7 @@ const uploadFileDefine={
     common:{
         imageType:['PNG','JPEG','JPG'],
         attachmentType:['7z','txt','log'],
-        userThumbImageType:['PNG'],
+        userPhotoType:['PNG'], //因为使用了dataUrl，所以此设置无效了
     },
     article_image:{
         [e_uploadFileDefinitionFieldName.MAX_SIZE_IN_BYTE]:2*1024*1024, //byte
@@ -226,8 +231,8 @@ const uploadFileDefine={
         [e_uploadFileDefinitionFieldName.MAX_SIZE_IN_BYTE]:10*1024*1024, //byte
         [e_uploadFileDefinitionFieldName.MAX_SIZE_IN_MB]:10, //byte
     },
-    user_thumb:{
-        [e_uploadFileDefinitionFieldName.MAX_SIZE_IN_BYTE]:100*1024,// in byte
+    user_photo:{
+        [e_uploadFileDefinitionFieldName.MAX_SIZE_IN_BYTE]:32*100*100,// in byte  32：颜色深度
         [e_uploadFileDefinitionFieldName.MAX_HEIGHT]:100,//px
         [e_uploadFileDefinitionFieldName.MAX_WIDTH]:100,//px
         // saveDir:'H:/ss_vue_express/test_data/userPhoto/dest/',
@@ -274,7 +279,8 @@ const gm={
 }
 
 const intervalCheckConfiguration={
-    captcha:{
+    //key必须和constant/enum/nodeEnum下的IntervalCheckPrefix中定义的一致
+    [e_intervalCheckPrefix.CPATCHA]:{
         // baseType:'session', //session/ip/both
         simpleCheckParams:{
             duration:60,  //second
@@ -286,14 +292,38 @@ const intervalCheckConfiguration={
             rejectTimesThreshold:5,//5次被拒后，之后的每次被拒，都要加上惩罚时间
         },
     },
-    global:{
+    [e_intervalCheckPrefix.UPLOAD_USER_PHOTO]:{
+        // baseType:'session', //session/ip/both
+        simpleCheckParams:{
+            duration:60,  //second
+            numberInDuration:10, //duration时间段中，最大请求次数
+            expireTimeBetween2Req:3000, //ms  2次间隔最小时间
+        },
+        rejectCheckParams:{
+            rejectTimesToTime:'{10,120,300,1200}', //被拒超过rejectTimesThreshold后，开始设置惩罚flag的TTL（第一个元素是for未达到门限的reject次数设置的惩罚时间）
+            rejectTimesThreshold:3,//3次被拒后，之后的每次被拒，都要加上惩罚时间
+        },
+    },
+    [e_intervalCheckPrefix.NORMAL_REQ]:{
+        // baseType:'session', //session/ip/both
+        simpleCheckParams:{
+            duration:30,  //second
+            numberInDuration:10, //duration时间段中，最大请求次数
+            expireTimeBetween2Req:100, //ms  2次间隔最小时间
+        },
+        rejectCheckParams:{
+            rejectTimesToTime:'{5,10,30,60,120,240}', //被拒超过rejectTimesThreshold后，开始设置惩罚flag的TTL（第一个元素是for未达到门限的reject次数设置的惩罚时间）
+            rejectTimesThreshold:5,//5次被拒后，之后的每次被拒，都要加上惩罚时间
+        },
+    },
+/*    global:{
         expireTimeBetween2Req:500, //ms，两次请求间隔最小时间
         expireTimeOfRejectTimes:600,//秒，不同的拒绝次数，会导致不同的拒绝时长（Lua {30,60,120,240,600}
         timesInDuration:5,//定义的时间段内，最多允许的请求次数
         //检查最大请求次数的时间段
         duration:60,//second。定义的时间段
         rejectTimesThreshold:5,//达到此拒绝次数，拒绝时间设成600
-    },
+    },*/
 
 
 }

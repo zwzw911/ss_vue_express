@@ -12,14 +12,12 @@ const regex=require('../../constant/regex/regex').regex
 * @absFilesPathResult：保存读取到文件路径的变量，数组
 * */
 function  recursiveReadFileAbsPath({fileOrDirPath,skipFilesArray,absFilesPathResult}){
-    // let baseDir=inputRuleBaseDir
-    // console.log(`baseDir===========>${baseDir}`)
-    // let inputRuleFolder=['browserInput/','internalInput/']
-    // let matchResult
-    // let tmpResult={}
-    // ap.inf('skipFilesArray',skipFilesArray)
+    // ap.inf('recursiveReadFileAbsPath->fileOrDirPath',fileOrDirPath)
+    // ap.inf('recursiveReadFileAbsPath->skipFilesArray',skipFilesArray)
+    // ap.inf('recursiveReadFileAbsPath->absFilesPathResult',absFilesPathResult)
     let isRulePathDir=fs.lstatSync(fileOrDirPath).isDirectory()
     let isRulePathFile=fs.lstatSync(fileOrDirPath).isFile()
+    // ap.inf('recursiveReadFileAbsPath->isRulePathDir',isRulePathDir)
     if(true===isRulePathDir){
         let dirContent=fs.readdirSync(fileOrDirPath)
         // ap.print('dirContent',dirContent)
@@ -71,6 +69,8 @@ function  recursiveReadFileAbsPath({fileOrDirPath,skipFilesArray,absFilesPathRes
                 absFilesPathResult.push(fileOrDirPath)
             }
 
+        }else{
+            absFilesPathResult.push(fileOrDirPath)
         }
         // absFilesPathResult.push(fileOrDirPath)
     }

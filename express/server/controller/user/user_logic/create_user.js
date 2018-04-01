@@ -52,7 +52,7 @@ const user_misc_func=require('./user_misc_func')
 //对内部产生的值进行检测（开发时使用，上线后为了减低负荷，无需使用）
 //对数值逻辑进行判断（外键是否有对应的记录等）
 //执行db操作并返回结果
-async  function createUser_async(req){
+async  function createUser_async({req}){
     // console.log(`create user in`)
     // ap.inf('create use in')
     /*                  首先检查captcha                 */
@@ -67,6 +67,7 @@ async  function createUser_async(req){
     //dataConvert.convertCreateUpdateValueToServerFormat(docValue)
     dataConvert.constructCreateCriteria(docValue)
 // console.log(`createUser_async docValue===> ${JSON.stringify(docValue)}`)
+
     /*      因为name是unique，所以要检查用户名是否存在(unique check)     */
     if(undefined!==e_uniqueField[collName] &&  e_uniqueField[collName].length>0) {
         let additionalCheckCondition={[e_field.USER.DOC_STATUS]:e_docStatus.DONE}

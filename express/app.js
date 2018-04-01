@@ -13,7 +13,7 @@ const appSetting=require('./server_common_file_require').appSetting
 // ap.inf('app in ')
 const app = express();
 
-
+const e_intervalCheckPrefix=require('./server_common_file_require').nodeEnum.IntervalCheckPrefix
 // view engine setup
 /*app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');*/
@@ -44,16 +44,29 @@ app.use(session.getSession())
 
 
 app.use(function(req, res, next) {
-    // ap.inf('req.session',req.session)
     server_common_file_require.controllerHelper.setSessionByServer_async({req}).then(function(result){
-        // ap.inf('ap.use result',result)
+        // ap.inf('method',req.route)
+        //ap.inf('ap.use result',result)
         next();
     },function(err){
-        // ap.inf('ap.use err',err)
+        ap.inf('ap.use err',err)
         return res.json(err)
     })
 
 });
+
+/*app.use(function(req, res, next) {
+    // ap.inf('req.session',req.session)
+    server_common_file_require.interval.getIntervalPrefix_async({req:req}).then(function(result){
+        ap.inf('ap.use result',result)
+        next();
+    },function(err){
+        ap.inf('ap.use err',err)
+        return res.json(err)
+    })
+
+});*/
+// await controllerHelper.checkInterval_async({req:req,reqTypePrefix:e_intervalCheckPrefix.CPATCHA})
 /*const checkInterval_async=require('./server/function/assist/misc').checkInterval_async
 /!*                      预处理                 *!/
 app.use(function(req,res,next){

@@ -62,39 +62,27 @@ function validateReqBody(reqBody){
  *      recoderId:string(objectId)
  */
 function  validatePartFormat (inputValue,expectedParts){
-    // console.log(`dataTypeCheck.isObject(inputValue) ${dataTypeCheck.isObject(inputValue)}`)
-    // console.log(`${__filename}: inputvalue ${JSON.stringify(inputValue)}`)
+
     //expectedPart和inputValue中的part必须一一对应
-    // if(validateAllExpectedPart){
-        //1  inputValue的数量是否等于expectedParts的数量
-        let inputValueKeyNum=Object.keys(inputValue).length
-        let expectedPartsNum=expectedParts.length
-        // console.log(`inputValueKeyNum is ${inputValueKeyNum}`)
-        // console.log(`expectedPartsNum is ${expectedPartsNum}`)
-        if(inputValueKeyNum!==expectedPartsNum){
-            return validateFormatError.inputValuePartNumNotExpected
-        }
-    // }
+    //1  inputValue的数量是否等于expectedParts的数量
+    let inputValueKeyNum=Object.keys(inputValue).length
+    let expectedPartsNum=expectedParts.length
+    if(inputValueKeyNum!==expectedPartsNum){
+        return validateFormatError.inputValuePartNumNotExpected
+    }
 
     //2. 遍历expectedParts，确保所有item都在validatePart中定义
     for(let part of expectedParts){
-        // console.log(`part is ${part}`)
-        // console.log(`expectedParts is ${JSON.stringify(expectedParts)}`)
         if(-1=== Object.values(e_validatePart).indexOf(part)){
-            // console.log(`part is ${part}, not in expectedParts is ${JSON.stringify( Object.values(e_validatePart))}`)
             return validateFormatError.inputValueExceptedPartNotValid
         }
     }
-    // console.log(`${__filename}: inputvalue ${JSON.stringify(inputValue)}`)
+
     //3  遍历inputValue，
     for(let partKey in inputValue){
-        // console.log(`${__filename}: expectedParts ${JSON.stringify(expectedParts)}`)
-        // console.log(`${__filename}: expectedParts.indexOf(partKey) ${JSON.stringify(expectedParts.indexOf(partKey))}`)
         // 3.1 key是否都在expectedParts中
         if(-1===expectedParts.indexOf(partKey)){
-            // console.log(`expectedParts part ${JSON.stringify(expectedParts)}`)
-            // console.log(`unknon part ${partKey}`
-            ap.err('unknown part',partKey)
+            // ap.err('unknown part',partKey)
             return validateFormatError.inputValuePartNotMatch
         }
     }
@@ -140,16 +128,16 @@ function validatePartValueFormat({part,partValue}){
                 return validateFormatError.inputValuePartSingleFieldValueFormatWrong
             }
             break;
-        case e_validatePart.SEARCH_PARAMS:
+/*        case e_validatePart.SEARCH_PARAMS:
             if(false===dataTypeCheck.isObject(partValue)){
                 // console.log(`searchparam errir in`)
                 return validateFormatError.inputValuePartSearchParamsValueFormatWrong
             }
-            break;
+            break;*/
         case e_validatePart.FILTER_FIELD_VALUE:
             if(false===dataTypeCheck.isObject(partValue)){
                 // console.log(`searchparam errir in`)
-                return validateFormatError.inputValuePartSearchParamsValueFormatWrong
+                return validateFormatError.inputValuePartFilterFieldValueFormatWrong
             }
             break;
         case e_validatePart.EVENT:
@@ -179,6 +167,19 @@ function validatePartValueFormat({part,partValue}){
             break;
         case e_validatePart.CAPTCHA:
             //captcha格式简单，无需format，直接value检查
+            break;
+        case e_validatePart.SMS:
+        //SMS格式简单，无需format，直接value检查
+            break;
+/*        case e_validatePart.DATA_URL:
+            if(false===dataTypeCheck.isString(partValue)){
+                return validateFormatError.inputValuePartDataUrlValueFormatWrong
+            }
+            break;*/
+        case e_validatePart.SEARCH_PARAMS:
+            if(false===dataTypeCheck.isObject(partValue)){
+                return validateFormatError.searchParams.partValueFormatWrong
+            }
             break;
         default:
             //理论上不会出现，因为在之前的检查就会被过滤。放在此处只是为了格式完整

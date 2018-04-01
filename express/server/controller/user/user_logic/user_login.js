@@ -37,7 +37,7 @@ const e_dbModel=require('../../../constant/genEnum/dbModel')
 const controllerError=require('../user_setting/user_controllerError').controllerError
 
 const user_misc_func=require('./user_misc_func')
-async function login_async(req){
+async function login_async({req}){
     /*                              logic                                   */
     /*                  首先检查captcha                 */
     await user_misc_func.checkCaptcha_async({req:req})

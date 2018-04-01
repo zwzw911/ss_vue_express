@@ -62,7 +62,7 @@ const common_operation_helper=require('../model/mongo/operation/common_operation
 
 // const misc=require('../function/assist/misc')
 const hash=require('../function/assist/crypt').hash
-const checkRobot_async=require('../function/assist/checkRobot').checkRobot_async
+
 
 const browserInputRule=require('../constant/inputRule/browserInputRule').browserInputRule
 const internalInputRule=require('../constant/inputRule/internalInputRule').internalInputRule
@@ -84,9 +84,13 @@ const regex=require('../constant/regex/regex').regex
 const currentAppSetting=require('../constant/config/appSetting').currentAppSetting
 const globalConfiguration=require('../constant/config/globalConfiguration')
 
+
 const  redisOperation=require(`../model/redis/operation/redis_common_operation`)
 
 const captcha_async=require('../function/assist/awesomeCaptcha').captcha_async
+
+
+// const complicatedCheckInterval_async=redisCommonScript.complicatedCheckInterval_async
 /*  根据findType，在req中检测是否存在optionPart中定义的part
 * @req
 * @optionPart；候选的part，是否在req中存在
@@ -114,256 +118,14 @@ function checkOptionPartExist({req,optionPart,findType,expectedPart}){
     return {rc:0}
 }
 
-//1. 对输入（inputValue）进行整体检查；对expectedPart进行检查（part是否正确，part值类型是否正确）
-// 只用于nonCRUDCheck。CRUDCHeck中，验证步骤被拆散
-function inputCommonCheck(req,expectedPart){
-    let result=validateFormat.validateReqBody(req.body)
-    if(result.rc>0){return result}
-
-    //检查expectedPart中设定的部分是否valid，且其值格式是否正确
-    result=validateFormat.validatePartFormat(req.body.values,expectedPart)
-    return result
-}
 
 
 
-/*      对partValue进行细致的格式检查
-* */
-function validatePartValueFormat({req,expectedPart,collName,fkConfig,inputRule}){
-// console.log(`validatePartValueFormat in `)
-    let checkPartFormatResult
-    for(let singlePart of expectedPart){
-        switch (singlePart){
-            case e_part.EVENT:
-                checkPartFormatResult=validateFormat.validateEventFormat(req.body.values[e_part.EVENT])
-                if(checkPartFormatResult.rc>0){
-                    return checkPartFormatResult//返回全部检查结果，为了统一格式，设置一个非0的rc
-                }
-                break;
-            case e_part.CURRENT_PAGE:
-                break;
-            case e_part.RECORD_ID_ARRAY:
-/*                checkPartValueResult=validateValue.validateRecIdArr(req.body.values[e_part.RECORD_ID_ARRAY])
-                if(checkPartValueResult.rc>0){
-                    return checkPartValueResult
-                }*/
-                break;
-            case e_part.SEARCH_PARAMS:
-                checkPartFormatResult=validateFormat.validateSearchParamsFormat(req.body.values[e_part.SEARCH_PARAMS],fkConfig[collName],collName,inputRule)
-                // console.log(   `search params value result is ${JSON.stringify(validateValueResult)}`)
-                // for(let singleFieldName in checkPartFormatResult){
-                    if(checkPartFormatResult['rc']>0){
-                        return checkPartFormatResult
-                    }
-                // }
-                break;
-            case e_part.RECORD_ID:
-                break;
-            case e_part.RECORD_INFO:
-                // console.log('=====>recordInfo in')
-                checkPartFormatResult=validateFormat.validateCURecordInfoFormat(req.body.values[e_part.RECORD_INFO],inputRule[collName])
-// console.log(`RECORD_INFO ====> ${JSON.stringify(checkPartFormatResult)}`)
-                if(checkPartFormatResult.rc>0){
-                    /*            returnResult(checkResult[singleField])
-                     return res.json(checkResult[singleField])*/
-                    //return checkResult[singleField]
-                    return checkPartFormatResult//返回全部检查结果，为了统一格式，设置一个非0的rc
-                }
-
-                break;
-            case e_part.MANIPULATE_ARRAY:
-                // ap.inf('collName',collName)
-                // ap.inf('browserInputRule[collName]',browserInputRule[collName])
-                checkPartFormatResult=validateFormat.validateManipulateArrayFormat({inputValue:req.body.values[e_part.MANIPULATE_ARRAY],browseInputRule:browserInputRule[collName]})
-                if(checkPartFormatResult.rc>0){
-                    return checkPartFormatResult//返回全部检查结果，为了统一格式，设置一个非0的rc
-                }
-
-                break;
-            case e_part.SINGLE_FIELD:
-                // console.log('=====>in')
-                checkPartFormatResult=validateFormat.validateSingleFieldFormat(req.body.values[e_part.SINGLE_FIELD],inputRule[collName])
-// console.log(`RECORD_INFO ====> ${JSON.stringify(checkPartFormatResult)}`)
-                if(checkPartFormatResult.rc>0){
-                    /*            returnResult(checkResult[singleField])
-                     return res.json(checkResult[singleField])*/
-                    //return checkResult[singleField]
-                    return checkPartFormatResult//返回全部检查结果，为了统一格式，设置一个非0的rc
-                }
-
-                break;
-            case e_part.METHOD://直接在validatePartFormat完成了format和value的check
-                    break
-            case e_part.EDIT_SUB_FIELD:
-                // ap.print('EDIT_SUB_FIELD in')
-                // ap.print('req.body.values[e_part.EDIT_SUB_FIELD] in',req.body.values[e_part.EDIT_SUB_FIELD]),
-                checkPartFormatResult=validateFormat.validateEditSubFieldFormat({inputValue:req.body.values[e_part.EDIT_SUB_FIELD],browseInputRule:browserInputRule[collName]})
-                // console.log(   `checkFilterFieldValueResult check result is  ${JSON.stringify(checkPartFormatResult)}`)
-                if(checkPartFormatResult.rc>0){
-                    return checkPartFormatResult
-                }
-                break;
-            case e_part.FILTER_FIELD_VALUE:
-                //3.2 检查filterFieldValue的和value
-                checkPartFormatResult=validateFormat.validateFilterFieldValueFormat(req.body.values[e_part.FILTER_FIELD_VALUE],fkConfig[collName],collName,inputRule)
-                // console.log(   `checkFilterFieldValueResult check result is  ${JSON.stringify(checkFilterFieldValueResult)}`)
-                if(checkPartFormatResult.rc>0){
-                    return checkPartFormatResult
-                }
-                break;
-            case e_part.CAPTCHA:
-                //格式简单，无需检查format，直接在value中检查
-                break;
-            default:
-                return helperError.unknownPartInFormatCheck
-        }
-    }
-
-    return {rc:0}
-}
 
 
-/*  在inputCommonCheck后执行，确保所有part都存在，且值的数据类型正确
-* @req:需要检查的part的值
-* @expectedPart:需要检查的part
-* @inputRule:如果需要检查的part中有RECORD_INFO/FILTER_VALUE/SEARCH_PARAMS，需要inputRule，可能只有一个coll，也有可能多个coll（如果有外键，需要把外键对应的Rule加入）
-* @method：和part结合，产生对应的applyRange
-* */
-function validatePartValue({req,expectedPart,collName,inputRule,method,fkConfig}){
-// console.log(`validatePartValue in ===============>`)
-//     ap.print('expectedPart',expectedPart)
-    let checkPartValueResult
-    for(let singlePart of expectedPart){
-        switch (singlePart){
-            case e_part.EVENT:
-                break;
-            case e_part.CURRENT_PAGE:
-                checkPartValueResult=validateValue.validateCurrentPageValue(req.body.values[e_part.CURRENT_PAGE])
-                if(checkPartValueResult.rc>0){
-                    return checkPartValueResult
-                }
-                break;
-            case e_part.RECORD_ID_ARRAY:
-                checkPartValueResult=validateValue.validateRecIdArr(req.body.values[e_part.RECORD_ID_ARRAY])
-                if(checkPartValueResult.rc>0){
-                    return checkPartValueResult
-                }
-                break;
-            case e_part.SEARCH_PARAMS:
-                checkPartValueResult=validateValue.validateSearchParamsValue(req.body.values[e_part.SEARCH_PARAMS],fkConfig,collName,inputRule)
-                // console.log(   `search params value result is ${JSON.stringify(validateValueResult)}`)
-                for(let singleFieldName in checkPartValueResult){
-                    if(checkPartValueResult[singleFieldName]['rc']>0){
-                        return {rc:9999,msg:checkPartValueResult}
-                    }
-                }
-                break;
-            case e_part.RECORD_ID:
-                // 无需检测，直接在validateFormat中检测
-                // checkPartValueResult=validateValue.validateRecorderId(req.body.values[e_part.RECORD_ID])
-                // if(checkPartValueResult.rc>0){
-                //     return checkPartValueResult
-                // }
-                break;
-            case e_part.RECORD_INFO:
-                // ap.inf('record info in')
-                // ap.inf('method',method)
-                // console.log(`record info in ===================> `)
-                // console.log(`methos is ${JSON.stringify(recordInfoBaseRule)}`)
-                switch (method){
-                    case e_method.CREATE://create
 
-                        checkPartValueResult=validateValue.validateScalarInputValue({inputValue:req.body.values[e_part.RECORD_INFO],collRule:browserInputRule[collName],p_applyRange:e_applyRange.CREATE})
-                        break;
-                    // case 1://search
-                    //     break;
-                    case e_method.UPDATE://update
-                        checkPartValueResult=validateValue.validateScalarInputValue({inputValue:req.body.values[e_part.RECORD_INFO],collRule:browserInputRule[collName],p_applyRange:e_applyRange.UPDATE_SCALAR})
-                        break;
-                    case e_method.DELETE://delete在某些情况下也会用到recordInfo（例如penalize，需要记录revoke）
 
-                        // ap.inf('start delete validate recordinfo check')
-                        checkPartValueResult=validateValue.validateScalarInputValue({inputValue:req.body.values[e_part.RECORD_INFO],collRule:browserInputRule[collName],p_applyRange:e_applyRange.DELETE})
-                        break;
-                    case e_method.MATCH://match也使用recordInfo，但是无需进行检查，因为不是对db进行写操作
-                        // console.log(`record info uddate in===================> `)
-                        // console.log(`record info ===================>${JSON.stringify(req.body.values[e_part.RECORD_INFO])} `)
-                        // console.log(`record info =reule ==================>${JSON.stringify(inputRule[collName])} `)
-                        //checkPartValueResult=validateValue.validateScalarInputValue({inputValue:req.body.values[e_part.RECORD_INFO],browserCollRule:browserInputRule[collName],p_applyRange:e_applyRange.UPDATE_SCALAR})
-                        break;
-                    // case 3://delete
-                    //     break;
-                    default:
-                        // ap.inf('method',method)
-                        return helperError.undefinedBaseRuleType
-                }
-                // ap.inf('record nfo result',checkPartValueResult)
-                // console.log(`record nfo result ===================> ${JSON.stringify(checkPartValueResult)}`)
-                for(let singleField in checkPartValueResult){
-                    if(checkPartValueResult[singleField].rc>0){
-                        /*            returnResult(checkResult[singleField])
-                         return res.json(checkResult[singleField])*/
-                        //return checkResult[singleField]
-                        return {rc:99999,msg:checkPartValueResult}//返回全部检查结果，为了统一格式，设置一个非0的rc
-                    }
-                }
-                break;
-            case e_part.SINGLE_FIELD:
-                //获取单个字段的字段名
-                let singleFieldName=Object.keys(req.body.values[e_part.SINGLE_FIELD])[0]
-                let fieldInputValue=req.body.values[e_part.SINGLE_FIELD][singleFieldName]
-                let fieldInputRule=inputRule[collName][singleFieldName]
-                // console.log(`fieldInputValue ${JSON.stringify(fieldInputValue)}`)
-                // console.log(`fieldInputRule ${JSON.stringify(fieldInputRule)}`)
-                checkPartValueResult=validateValue.validateSingleRecorderFieldValue(fieldInputValue,fieldInputRule)
-                // console.log(   `checkFilterFieldValueResult check result is  ${JSON.stringify(checkFilterFieldValueResult)}`)
-                if(checkPartValueResult.rc>0){
-                    return checkPartValueResult
-                }
-                break;
-            case e_part.MANIPULATE_ARRAY:
-                checkPartValueResult=validateValue.validateManipulateArrayValue({inputValue:req.body.values[e_part.MANIPULATE_ARRAY],browseInputRule:browserInputRule[collName]})
-                // ap.print('checkPartValueResult',checkPartValueResult)
-                if(checkPartValueResult.rc>0){
-                    return checkPartValueResult
-                }
-                break;
-            case e_part.EDIT_SUB_FIELD:
-                checkPartValueResult=validateValue.validateEditSubFieldValue({inputValue:req.body.values[e_part.EDIT_SUB_FIELD],browseInputRule:browserInputRule[collName]})
-                // ap.print('checkPartValueResult',checkPartValueResult)
-                if(checkPartValueResult.rc>0){
-                    return checkPartValueResult
-                }
-                break;
-            case e_part.METHOD://直接在validatePartFormat完成了format和value的check
-                break
-            case e_part.FILTER_FIELD_VALUE:
-                //3.2 检查filterFieldValue的和value
-                checkPartValueResult=validateValue.validateFilterFieldValue(req.body.values[e_part.FILTER_FIELD_VALUE],fkConfig[collName],collName,inputRule)
-                // console.log(   `checkFilterFieldValueResult check result is  ${JSON.stringify(checkFilterFieldValueResult)}`)
-                if(checkPartValueResult.rc>0){
-                    return checkPartValueResult
-                }
-                break;
-            case e_part.CAPTCHA:
-                checkPartValueResult=validateValue.validateCaptcha(req.body.values[e_part.CAPTCHA])
-                // console.log(   `checkFilterFieldValueResult check result is  ${JSON.stringify(checkFilterFieldValueResult)}`)
-                if(checkPartValueResult.rc>0){
-                    return checkPartValueResult
-                }
-                break;
-            case e_part.SMS:
-                checkPartValueResult=validateValue.validateSMS(req.body.values[e_part.SMS])
-                // console.log(   `checkFilterFieldValueResult check result is  ${JSON.stringify(checkFilterFieldValueResult)}`)
-                if(checkPartValueResult.rc>0){
-                    return checkPartValueResult
-                }
-                break;
-        }
-    }
 
-    return {rc:0}
-}
 
 
 /*          预检method是否正确，以便后续能使用正确的method调用不同的CRUD方法            */
@@ -396,81 +158,17 @@ function checkMethod({req}){
 }
 
 
-/*
-* 必须和checkMethod配合使用，后者用来预先检测Method，剩下的part交由本函数处理
-* */
-//validatePartValueFormat+validatePartValue
-function CRUDPreCheck({req,expectedPart,collName,method}){
-    // console.log(`expectedPart in====>${JSON.stringify(expectedPart)}`)
-    // console.log(`recordInfoBaseRule ${JSON.stringify(recordInfoBaseRule)}`)
-    let result
-    //检查参数
-/*    if(-1===Object.values(e_userState).indexOf(expectUserState)){
-        return helperError.undefinedUserState
-    }*/
-    if(-1===Object.values(e_coll).indexOf(collName)){
-        return helperError.undefinedColl
-    }
-
-// console.log(`CRUDPreCheck： checkUserState  ${JSON.stringify(result)}`)
-    //检查输入参数中part的值（格式预先检查好，某些part的值简单。例如method/currentPage，同时检测了value）
-
-    // 此处检查除了method之外的part（method已经在checkMethod中预检）
-    // delete req.body.values[e_part.METHOD]
-// ap.inf('req.body.values',req.body.values)
-//     ap.inf('expectedPart',expectedPart)
-    result=validateFormat.validatePartFormat(req.body.values,expectedPart)
- // console.log(`validatePartFormat result ====>${JSON.stringify(result)}`)
-    if(result.rc>0){return result}
 
 
 
-//检查输入参数格式是否正确
-//     ap.inf('expectedPart',expectedPart)
-    result = validatePartValueFormat({
-        req: req,
-        expectedPart: expectedPart,
-        collName: collName,
-        inputRule: browserInputRule, //此地检查的都是client输入的值
-        fkConfig: fkConfig,
-    })
-    // ap.inf('format check result ',result)
-// console.log(`format check result =======》 ${JSON.stringify(result)}`)
-    if (result.rc > 0) {
-        // return Promise.reject(result)
-        return result
-    }
-
-// console.log(`validatePartValueFormat ===========>${JSON.stringify(result)}`)
-
-//检查输入参数是否正确
-    //part是recordInfo
-    // if(undefined!==recordInfoBaseRule){
-        result = validatePartValue({
-            req: req,
-            expectedPart: expectedPart,
-            collName: collName,
-            inputRule: browserInputRule, //此地检查的都是client输入的值
-            // recordInfoBaseRule:recordInfoBaseRule,
-            method:method,
-            fkConfig: fkConfig,
-        })
-    // ap.inf('validatePartValue result ',result)
-// console.log(`validatePartValue result =======》 ${JSON.stringify(result)}`)
-
-        return result
-    // }
-}
-
-
-//没有method
+/*//没有method
 function nonCRUDPreCheck({req,expectPart,collName}){
     let result
     // console.log(`recordInfoBaseRule ${JSON.stringify(recordInfoBaseRule)}`)
     //检查参数
-/*    if(-1===Object.values(e_userState).indexOf(expectUserState)){
+/!*    if(-1===Object.values(e_userState).indexOf(expectUserState)){
         return helperError.undefinedUserState
-    }*/
+    }*!/
     if(-1===Object.values(e_coll).indexOf(collName)){
         return helperError.undefinedColl
     }
@@ -511,10 +209,10 @@ function nonCRUDPreCheck({req,expectPart,collName}){
         // recordInfoBaseRule:recordInfoBaseRule,
         fkConfig: fkConfig,
     })
-    console.log(` check result is ${JSON.stringify(result)}`)
+    // console.log(` check result is ${JSON.stringify(result)}`)
     return result
     // }
-}
+}*/
 
 /*
 * @ usage: storePath的用途
@@ -665,35 +363,28 @@ function deleteInternalField({docValue,collInternalFieldEnum,collBrowserInputRul
 * @userLoginCheck: 对象。包含2个字段：needCheck，是否检测用户登录；error：检测到未登录时返回的错误
 * @penalizeCheck:对象，默认是需要检查的。包含3个字段： penalizeType,penalizeSubType,penalizeCheckError
 * @expectedPart: 期望的part
+* @reqTypePrefix: 用来检测intervalCheck的prefix
 * //@searchSetting:{maxSearchKeyNum,maxSearchPageNum}  //每次搜索最多几个关键字,每次搜索最多显示几页
 * //@dbMetaInfo: {e_field,e_coll,e_internal_field}
 * //@allRule: {browserInputRule,internalInputRule,inputRule}
 * */
-async function preCheck_async({req,collName,method,userLoginCheck={needCheck:false},penalizeCheck,expectedPart}){
+/*async function preCheck_async({req,collName,method,userLoginCheck={needCheck:false},penalizeCheck,expectedPart,reqTypePrefix}){
     let tmpResult
 
 // ap.inf('1. req.body.values',req.body.values)
-    /*              检查用户是否登录            */
+    /!*              检查用户是否登录            *!/
     let {needCheck,error}=userLoginCheck
     if(true===needCheck){
         if(undefined===error){
-            console.log(`error============================>need to check **user login**, but not supply related error`)
+            ap.err(`need to check **user login**, but not supply related error`)
         }
         if(undefined===req.session.userInfo){
             return Promise.reject(error)
         }
         // console.log(`====user login check done====`)
     }
-// console.log(`userLoginCheck done====>`)
-    /*      检测用户是否为robot，是robot，直接Promise.reject        */
-    // console.log(`checkRobot_async======>${JSON.stringify(checkRobot_async)}`)
-    // console.log(`type ======>${JSON.stringify(typeof checkRobot_async[e_coll.ARTICLE][method]({userId:req.session.userId}))}`)
-    if(undefined!==checkRobot_async[collName] && undefined!==checkRobot_async[collName][method]){
-        await checkRobot_async[collName][method]({userId:req.session.userInfo.userId})
-        // console.log(`====robot check done====`)
-    }
-// console.log(`robot done====>`)
-    /*        检查用户是否被处罚                                 */
+
+    /!*        检查用户是否被处罚                                 *!/
     // console.log(`create in with robot check result =======> ${result}`)
     let {penalizeType,penalizeSubType,penalizeCheckError}=penalizeCheck
     // console.log(`penalizeCheck===============================================>${JSON.stringify(penalizeCheck)}`)
@@ -702,7 +393,7 @@ async function preCheck_async({req,collName,method,userLoginCheck={needCheck:fal
         if(undefined!==penalizeType && undefined!==penalizeSubType){
             // console.log(`penalize check in 1 ==========================================>`)
             if(undefined===penalizeCheckError){
-                console.log(`error============================>need to check **penalize**, but not supply related error`)
+                ap.err(`need to check **penalize**, but not supply related error`)
             }
 // console.log(`penalize check in 2 ==========================================>`)
             tmpResult=await ifPenalizeOngoing_async({userId:req.session.userInfo.userId, penalizeType:penalizeType,penalizeSubType:penalizeSubType})
@@ -719,9 +410,9 @@ async function preCheck_async({req,collName,method,userLoginCheck={needCheck:fal
 
     // ap.inf('2. req.body.values',req.body.values)
     // if(expectedPart.length>0){
-    /*              如果带method，根据method的不同，选择不同的inputRule（Create还是update）
+    /!*              如果带method，根据method的不同，选择不同的inputRule（Create还是update）
                     不带，直接检查expectPart
-     */
+     *!/
     //因为dispatch而已经检查过req的总体结构(method必定存在)，所以无需再次检查，而直接检查partValueFormat+partValueCheck
     // console.log(`pmethod====>${method}`)
     // console.log(`expectedPart====>${JSON.stringify(expectedPart)}`)
@@ -741,7 +432,7 @@ async function preCheck_async({req,collName,method,userLoginCheck={needCheck:fal
         return Promise.reject(tmpResult)
     }
     // ap.inf('3. req.body.values',req.body.values)
-    /*              删除内部字段值                     */
+    /!*              删除内部字段值                     *!/
     // 删除内部字段（RECORD_INFO）
     if(expectedPart.length>0 && -1!==expectedPart.indexOf(e_part.RECORD_INFO)){
         let docValue=req.body.values[e_part.RECORD_INFO]
@@ -755,7 +446,8 @@ async function preCheck_async({req,collName,method,userLoginCheck={needCheck:fal
 
 
     return Promise.resolve({rc:0})
-}
+}*/
+
 
 
 /*      使用multiPart获得并保存上传的文件
@@ -1479,22 +1171,25 @@ async function getCaptchaAndCheck_async({req}){
         return Promise.reject(helperError.captchaNotMatch)
     }else{
         //验证成功，立刻删除，防止复用
-        ap.inf('readt to del')
+        // ap.inf('readt to del')
         await redisOperation.del_async({db:2,key:`${userIdentify[0]}:captcha`})
         return Promise.resolve(0)
     }
     // ap.inf('serverCaptcha',serverCaptcha)
 }
 
+
+
+
 module.exports= {
     checkOptionPartExist,//检查option中那些part是存在
-    inputCommonCheck,//每个请求进来是，都要进行的操作（时间间隔检查等）
-    validatePartValueFormat,
-    validatePartValue,//对每个part的值进行检查
+    // inputCommonCheck,//每个请求进来是，都要进行的操作（时间间隔检查等）
+    // validatePartValueFormat,
+    // validatePartValue,//对每个part的值进行检查
 
     checkMethod,
-    CRUDPreCheck,
-    nonCRUDPreCheck,//inputCommonCheck+validatePartValueFormat+validatePartValue
+    // CRUDPreCheck,
+    // nonCRUDPreCheck,//inputCommonCheck+validatePartValueFormat+validatePartValue
 
     // covertToServerFormat,//将req中诸如RECORD_INFO/SINGLE_FIELD的值转换成server的格式，并去除不合格字段值（create：控制
 
@@ -1515,7 +1210,7 @@ module.exports= {
     // ifFkValueExist_async_old,
 
     deleteInternalField,//检查client端输入的值（recordInfo），如果其中包含了internalField，直接删除
-    preCheck_async,//user login+robot+penalize+delete internal+ CRUD
+    //preCheck_async,//user login+robot+penalize+delete internal+ CRUD
 
     uploadFileToTmpDir_async,
 
@@ -1546,6 +1241,8 @@ module.exports= {
 
     genCaptchaAdnSave_async,
     getCaptchaAndCheck_async,
+
+
 }
 
 

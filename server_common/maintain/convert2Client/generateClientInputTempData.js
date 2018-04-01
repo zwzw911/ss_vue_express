@@ -73,6 +73,9 @@ function generateSingleCollInputTempData({collName,collRuleDefinition,absFilesPa
 function writeClientInitInputValueResult({content,resultPath}){
     // ap.inf('content',content)
     // let relativePath='src/constant/rule/'
+    let description=`/*    gene by ${__filename}  \r\n`
+    description+=`* 为每个field产生对象，存储一些临时数据，例如验证结果等 \r\n`
+    description+=`*/\r\n\r\n`
     let head=`"use strict"\r\n\r\n`
 
     let inputAttribute=`const inputTempData=\r\n`
@@ -87,7 +90,7 @@ function writeClientInitInputValueResult({content,resultPath}){
     // let contentFormatSanityForUpdate=misc.sanityClientPatternInString({string:JSON.stringify(convertedRule['ruleForUpdate'])})
 
 
-    let finalStr=`${head}\r\n${inputAttribute}${JSON.stringify(content)}\r\n\r\n${exportStr}`
+    let finalStr=`${description}${head}\r\n${inputAttribute}${JSON.stringify(content)}\r\n\r\n${exportStr}`
     fs.writeFileSync(`${resultPath}`,finalStr)
     
 }

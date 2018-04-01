@@ -298,6 +298,9 @@ function splitRequire_iview({rawContent}){
 function writeClientRuleResult_iview({convertedRule,resultPath}){
     // ap.inf('content',content)
     // let relativePath='src/constant/rule/'
+    let description=`/*    gene by ${__filename}  \r\n`
+    description+=`* 产生client的rule \r\n`
+    description+=`*/\r\n\r\n`
     let head=`"use strict"\r\n\r\n`
 
     let ruleForCreate=`const ruleForCreate=\r\n`
@@ -311,7 +314,7 @@ function writeClientRuleResult_iview({convertedRule,resultPath}){
 
     // ap.inf('contentFormatSanityForCreate',contentFormatSanityForCreate)
     let contentFormatSanityForUpdate=misc.sanityClientPatternInString({string:JSON.stringify(convertedRule['ruleForUpdate'])})
-    let finalStr=`${head}\r\n${ruleForCreate}${contentFormatSanityForCreate}\r\n${ruleForUpdate}${contentFormatSanityForUpdate}\r\n\r\n${exportStr}`
+    let finalStr=`${description}${head}\r\n${ruleForCreate}${contentFormatSanityForCreate}\r\n${ruleForUpdate}${contentFormatSanityForUpdate}\r\n\r\n${exportStr}`
     fs.writeFileSync(`${resultPath}`,finalStr)
 
 

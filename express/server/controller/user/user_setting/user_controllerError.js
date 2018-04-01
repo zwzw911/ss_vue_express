@@ -5,6 +5,12 @@
 
 
 const controllerError={
+    dispatch:{
+        notLoginCantRetrievePassword:{rc:50100,msg:`尚未登录，无法重置密码`},
+        notLoginCantUpdateUserInfo:{rc:50100,msg:`尚未登录，无法更新用户信息`},
+        notLoginCantUpdatePassword:{rc:50100,msg:`尚未登录，无法更新密码`},
+        notLoginCantUpdateUserPhoto:{rc:50100,msg:`尚未登录，无法上传头像`},
+    },
     /*              common                          */
 
     nameAlreadyExists:{rc:50100,msg:`用户名已经存在`}, //key名字必须固定为 field+AlreadyExists
@@ -27,12 +33,13 @@ const controllerError={
     accountNotUnique:{rc:50122,msg:`账号错误，请联系管理员`},
 
     /*              upload user photo               */
-    imageSizeInvalid:{rc:50130,msg:`头像的宽度或者高度超出最大值`},
-
-
+    notLoginCantUpload:{rc:50130,msg:`尚未登录，无法上传头像`},
+    userInPenalizeNoPhotoUpload:{rc:50131,msg:`您被禁止上传头像`},
+    imageSizeInvalid:{rc:50132,msg:`头像的宽度或者高度超出最大值`},
+    imageFormatInvalid:{rc:50133,msg:`头像的格式不正确`},
     /*              captcha                          */
-    intervalBetween2CaptchaTooShort:{rc:50132,msg:`请求过于频繁，请稍候再试`},
-    captchaReqNumInDurationExceed:{rc:50134,msg:`请求次数过多，请稍候再试`},
+    intervalBetween2CaptchaTooShort:{rc:50134,msg:`请求过于频繁，请稍候再试`},
+    captchaReqNumInDurationExceed:{rc:50135,msg:`请求次数过多，请稍候再试`},
 
     /*              change password                    */
     changePasswordInputRecordInfoFormatInCorrect:{rc:50136,msg:{client:`输入格式错误`,server:`输入中，RECORD_INFO的格式不正确`}},
@@ -41,6 +48,11 @@ const controllerError={
     fieldValueTypeIncorrect:{rc:50142,msg:{client:`输入值错误`,server:`字段值类型不正确`}},
     fieldValueFormatIncorrect:{rc:50144,msg:{client:`输入值错误`,server:`字段值格式不正确`}},
     oldPasswordIncorrect:{rc:50144,msg:{client:`旧密码不正确`,server:`旧密码不正确`}},
+
+    getUser:{
+        userIdUndefined:{rc:50150,msg:{client:`用户信息不正确，请重新登录`,server:`session的userInfo中，userId为undefined`}},
+        userIdFormatIncorrect:{rc:50152,msg:{client:`用户信息不正确，请重新登录`,server:`session的userInfo中，userId格式不是objectId`}},
+    },
 }
 
 module.exports={

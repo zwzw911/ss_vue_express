@@ -21,8 +21,8 @@ const helper={
 
 
     /*            CRUDPreCheck                        */
-    undefinedUserState:{rc:60008,msg:{client:'内部错误',server:'非预定义的用户状态'}},
-    undefinedColl:{rc:60010,msg:{client:'内部错误',server:'非预定义的的集合'}},
+    // undefinedUserState:{rc:60008,msg:{client:'内部错误',server:'非预定义的用户状态'}},
+
 
     /*            dispatcherPreCheck                        */
     methodPartMustExistInDispatcher:{rc:60012,msg:{client:'输入值格式错误',server:'dispatcher中必须有method'}},
@@ -44,7 +44,7 @@ const helper={
         },
 
     /*                  get login info                              */
-    userInfoNotInSession:{rc:60022,msg:{client:'内部错误',server:'userInfo未在session中找到'}},
+    userInfoNotInSession:{rc:60022,msg:{client:'用户尚未登录',server:'userInfo未在session中找到'}},
 
     /*                  XSS check                              */
     XSSCheckFailed(fieldName){
@@ -81,6 +81,7 @@ const helper={
     /*         getCaptchaAndCheck_async                 */
     captchaNotMatch:{rc:60054,msg:{client:`图形验证码错误`,server:`captcha和server端存储的内容不一致`}},
     captchaExpire:{rc:60056,msg:{client:`图形验证码超时`,server:`redis中没有capatcha`}},
+
 }
 
 const checker={
@@ -197,21 +198,27 @@ const checker={
     /*      ifFileSuffixMatchContentType_async          */
     uploadFileHasNoSuffix:{rc:61202,msg:{client:`上传文件没有后缀，无法区分文件类型`}},
 
-    /*      checkInterval_async                         */
-    rejectReq(ttl){return {rc:61206,msg:`请求过于频繁，请在${ttl}秒后再试`}},
-
-
 }
 
-/*admin_user:["name",],
-    category:["name",],
-    store_path:["name","path",],
-    tag:["name",],
-    public_group:["name",],
-    sugar:["userId",],
-    user:["name","account",],
-    user_input_keyword:["name",],*/
+const preCheck={
+    userStateCheck:{
+        demandUserLoginCheckButWithoutRelatedError:{rc:62000,msg:{client:`内部错误，请联系管理员`,server:`userStateCheck_async中，参数userLoginCheck中，needCheck=true，但是对应的error没有设置，以便检测到用户未登录时，返回此错误`}},
+        penalizeCheckParamMissError:{rc:62001,msg:{client:`内部错误，请联系管理员`,server:`userStateCheck_async中，设置了penalize检测的参数，penalizeType和penalizeSubType，但是没有设置Error，以便penalize检测不通过是返回此error`}},
+        demandPenalizeCheckButUserNotLogin:{rc:62002,msg:{client:`内部错误，请联系管理员`,server:`userStateCheck_async中，设置了penalize检测的参数，但是用户未登录，无法检测penalize，请检查是否需要将userLoginCheck.needCheck设成true`}}
+    },
+    inputPreCheck:{
+        undefinedColl:{rc:62006,msg:{client:'内部错误',server:'非预定义的集合'}},
+    }
+}
+
+const dispatch={
+    common:{
+        unknownRequestRul:{rc:63000,msg:{client:'网页不存在',server:'URL没有匹配的处理函数'}}
+    }
+}
 module.exports={
     helper,
     checker,
+    preCheck,
+    dispatch,
 }

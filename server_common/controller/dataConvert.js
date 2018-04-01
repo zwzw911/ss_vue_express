@@ -7,14 +7,345 @@
  * 3. constructUpdateCriteria：对传入的update的参数，将其中value为null的字段，转换成mongodb中unset
  */
 "use strict";
+const ap=require('awesomeprint')
+
+
 const  mongoose = require('mongoose') //用于将objectId转换
 
 const dataTypeCheck=require('../function/validateInput/validateHelper').dataTypeCheck
-const dataType=require('../constant/enum/inputDataRuleType').ServerDataType
-const compOp=require('../constant/enum/nodeEnum').CompOp
+
+const inputDataRuleType=require('../constant/enum/inputDataRuleType')
+const dataType=inputDataRuleType.ServerDataType
+const ruleFiledName=inputDataRuleType.RuleFiledName
+const otherRuleFiledName=inputDataRuleType.OtherRuleFiledName
+
+const e_searchFieldName=inputDataRuleType.SearchFieldName
+const e_fieldOp=inputDataRuleType.FieldOp
+const e_arrayCompOp=inputDataRuleType.ArrayCompOp
+const e_scalarCompOpForDigit=inputDataRuleType.ScalarCompOpForDigit
+const e_scalarCompOpForDigitMatchToMongoOp=inputDataRuleType.ScalarCompOpForDigitMatchToMongoOp
+const e_scalarCompOpForString=inputDataRuleType.ScalarCompOpForString
+
+const genInputDataRuleType=require('../constant/genEnum/inputDataRuleTypeValue')
+const e_fieldOpArrayValue=genInputDataRuleType.FieldOp
+const e_arrayCompOpValue=genInputDataRuleType.ArrayCompOp
+const e_scalarCompOpForDigitValue=genInputDataRuleType.ScalarCompOpForDigit
+const e_scalarCompOpForStringValue=genInputDataRuleType.ScalarCompOpForString
 
 const e_subField=require(`../constant/enum/nodeEnum`).SubField
-// const inputRules=require('../constant/validateRule/inputRule').inputRule //genNativeSearchCondition
+const inputRules=require('../constant/inputRule/inputRule').inputRule
+
+
+/*  对client输入的searchParams进行过滤，而不是直接转化后传给mongo
+* */
+function santiySearchParams({searchParams}){
+    for(let singleCollName in searchParams){
+        let collFieldOp=searchParams[singleCollName][e_searchFieldName.FIELD_OP]
+        for(let singleFieldName in searchParams[singleCollName][e_searchFieldName.SEARCH_VALUE]){
+            let arrayCopmOp=searchParams[singleCollName][e_searchFieldName.SEARCH_VALUE][singleFieldName][e_searchFieldName.ARRAY_COMP_OP]
+            let arrayValue=searchParams[singleCollName][e_searchFieldName.SEARCH_VALUE][singleFieldName][e_searchFieldName.ARRAY_VALUE]
+            let fieldRuleDefinition=inputRules[singleCollName][singleFieldName]
+
+            for(let idx in arrayValue){
+                let tmpResult=ifValueInRange({value:arrayValue[idx][e_searchFieldName.SCALAR_VALUE],fieldRule:fieldRuleDefinition})
+                if(false===tmpResult){
+                    //1. 如果fieldOp是AND，那么当arrayValue->scalarValue不符合的查询条件，直接delete整个field的查询
+                    if(collFieldOp===e_fieldOp.AND){
+                        delete searchParams[singleCollName][e_searchFieldName.SEARCH_VALUE][singleFieldName]
+                    }
+                    //2. 如果fieldOp是OR，那么当arrayValue->scalarValue不符合的查询条件，delete scalarCompOp+scalarValue
+                    if(collFieldOp===e_fieldOp.OR){
+                        searchParams[singleCollName][e_searchFieldName.SEARCH_VALUE][singleFieldName][e_searchFieldName.ARRAY_VALUE].splice(index, 1)
+                    }
+                }
+            }
+        }
+    }
+
+}
+
+/* 检测当前value是否在fieldRule定义范围内
+* */
+function ifValueInRange({value,fieldRule}){
+    let fieldDataTypeDefinition=fieldRule[otherRuleFiledName.DATA_TYPE]
+    let fieldDataType= dataTypeCheck.isArray(fieldDataTypeDefinition) ? fieldDataTypeDefinition[0]:fieldDataTypeDefinition
+    if(fieldDataType===dataType.DATE || fieldDataType===dataType.NUMBER || fieldDataType===dataType.INT || fieldDataType===dataType.FLOAT){
+        if(undefined!==fieldRule[ruleFiledName.MIN]){
+            if(value<fieldRule[ruleFiledName.MIN]['define']){return false}
+        }
+        if(undefined!==fieldRule[ruleFiledName.MAX]){
+            if(value>fieldRule[ruleFiledName.MAX]['define']){return false}
+        }
+    }else if(fieldDataType===dataType.STRING ){
+        if(undefined!==fieldRule[ruleFiledName.MAX_LENGTH]){
+            if(value.length>fieldRule[ruleFiledName.MAX_LENGTH]['define']){return false}
+        }
+        if(undefined!==fieldRule[ruleFiledName.ENUM]){
+            if(-1===fieldRule[ruleFiledName.ENUM]['define'].indexOf(value)){return false}
+        }
+    }else if(fieldDataType===dataType.OBJECT_ID ){
+
+    }else{
+
+    }
+
+    return true
+}
+
+/*  将client传入的searchParams转换成nosql
+* */
+function convertSearchParamsToNoSQL({searchParams}){
+    let result={}
+    for(let singleCollName in searchParams){
+        let fieldANDFlag=false
+        let fieldORFlag=false
+
+        result[singleCollName]={
+            // '$and':{},
+            // '$or':{},
+        }
+        switch (searchParams[singleCollName][e_searchFieldName.FIELD_OP]){
+            case e_fieldOp.AND:
+                result[singleCollName]['$and']=[]
+                fieldANDFlag=true
+                break
+            case e_fieldOp.OR:
+                result[singleCollName]['$or']=[]
+                fieldORFlag=true
+                break
+            default:
+                ap.err('未知fieldOp')
+        }
+        // ap.inf('init result',result)
+        //判断最高级使用$and还是$or
+/*        for(let singleFieldName in searchParams[singleCollName]){
+            let fieldSearchParams=searchParams[singleCollName][singleFieldName]
+        }*/
+        for(let singleFieldName in searchParams[singleCollName][e_searchFieldName.SEARCH_VALUE]){
+            let fieldSearchParams=searchParams[singleCollName][e_searchFieldName.SEARCH_VALUE][singleFieldName]
+// ap.inf('fieldSearchParams',fieldSearchParams)
+            // let fieldOp=fieldSearchParams[e_searchFieldName.FIELD_OP]
+            let arrayCompOp=fieldSearchParams[e_searchFieldName.ARRAY_COMP_OP]
+            let arrayValue=fieldSearchParams[e_searchFieldName.ARRAY_VALUE]
+
+            let fieldDataTypeDefinition=inputRules[singleCollName][singleFieldName][otherRuleFiledName.DATA_TYPE]
+            let fieldDataType= dataTypeCheck.isArray(fieldDataTypeDefinition) ? fieldDataTypeDefinition[0]:fieldDataTypeDefinition
+
+            let fieldExpression
+            if(fieldDataType===dataType.STRING || fieldDataType===dataType.OBJECT_ID){
+                fieldExpression=convertStringArrayValueToExpression({arrayCompOp:arrayCompOp,fieldName:singleFieldName,arrayValue:arrayValue})
+            }else if(fieldDataType===dataType.NUMBER || fieldDataType===dataType.DATE || fieldDataType===dataType.INT || fieldDataType===dataType.FLOAT){
+                fieldExpression=convertDigitArrayValueToExpression({arrayCompOp:arrayCompOp,fieldName:singleFieldName,arrayValue:arrayValue})
+            }
+ap.inf('fieldExpression',fieldExpression)
+            if(true===fieldANDFlag){
+                if(undefined!==result[singleCollName]['$and']){
+                    result[singleCollName]['$and'].push(fieldExpression)
+                }
+            }
+            if(true===fieldORFlag){
+                if(undefined!==result[singleCollName]['$or']){
+                    result[singleCollName]['$or'].push(fieldExpression)
+                }
+            }
+        }
+    }
+    return result
+}
+
+/*  将arrayValue的值转换成表达式
+[{scalarCompOp:'gt',scalarValue:10},{scalarCompOp:'lt',scalarValue:100}]  ======>{$or/$and:[{field:{"$gt":10}},{field:{"$lt":100}]
+[{scalarCompOp:'include',scalarValue:'zw'},{scalarCompOp:'exclude',scalarValue:'zw110'}]  ======>{$or/$and:{"$gt":10,"$lt":100}}
+* */
+function convertDigitArrayValueToExpression({arrayCompOp,fieldName,arrayValue}){
+    let result={},finalResult={}
+    // let needNotFlag= !(true===fieldNOTFlag && e_arrayCompOp.NONE===arrayCompOp) //如果field级别有NOT，且scalar级别有NONE，则互相抵消
+
+    for(let singleEle of arrayValue){
+        let scalarCompOp=singleEle[e_searchFieldName.SCALAR_COMP_OP]
+        let scalarValue=singleEle[e_searchFieldName.SCALAR_VALUE]
+
+        switch (scalarCompOp){
+            case e_scalarCompOpForDigit.EQUAL:
+                if(undefined===result['$in']){
+                    result['$in']=[]
+                }
+                result['$in'].push(scalarValue)
+                break;
+            case e_scalarCompOpForDigit.UNEQUAL:
+                if(undefined===result['$nin']){
+                    result['$nin']=[]
+                }
+                result['$nin'].push(scalarValue)
+                break;
+            case e_scalarCompOpForDigit.LESS_EQUAL:
+                result['$lte']=scalarValue
+                break;
+            case e_scalarCompOpForDigit.LESS:
+                result['$lt']=scalarValue
+                break;
+            case e_scalarCompOpForDigit.GREATER_EQUAL:
+                result['$gte']=scalarValue
+                break;
+            case e_scalarCompOpForDigit.GREATER:
+                result['$gt']=scalarValue
+                break;
+        }
+    }
+
+    // {"$in":[12]}  ======>  {"$eq":12}
+    if(undefined!==result['$in'] && result['$in'].length===1){
+        result["$eq"]=result["$in"][0]
+        delete result["$in"]
+    }
+    // {"$in":[12]}  ======>  {"$eq":12}
+    if(undefined!==result['$nin'] && result['$nin'].length===1){
+        result["$ne"]=result["$nin"][0]
+        delete["$nin"]
+    }
+
+    ap.inf('digit result',result)
+    let fieldANDORCompOp,fieldNOTCompOp
+    for(let singleArrayCompOp of arrayCompOp){
+        if(e_arrayCompOp.ANY===singleArrayCompOp){
+            fieldANDORCompOp="$or"
+        }else if(e_arrayCompOp.ALL===singleArrayCompOp){
+            fieldANDORCompOp="$and"
+        }
+
+        if(e_arrayCompOp.NONE===singleArrayCompOp){
+            fieldNOTCompOp="$not"
+        }
+    }
+    /*switch (arrayCompOp){
+        case e_arrayCompOp.NONE:
+            fieldEleCompOp="$not"
+            break
+        case e_arrayCompOp.ALL:
+            fieldEleCompOp="$and"
+            break
+        case e_arrayCompOp.ANY:
+            fieldEleCompOp="$or"
+            break
+        default:
+            ap.err('未知arrayCompOp')
+    }
+    finalResult[fieldEleCompOp]=[]*/
+    for(let compOp in result){
+        // let eleSql={}
+        if(undefined===finalResult[fieldANDORCompOp]){
+            finalResult[fieldANDORCompOp]=[]
+        }
+        if(undefined!==fieldANDORCompOp){
+            if(undefined!==fieldNOTCompOp ){
+                finalResult[fieldANDORCompOp].push({
+                    [fieldName]:{[fieldNOTCompOp]:{[compOp]:result[compOp]}}
+                })
+            }else{
+                finalResult[fieldANDORCompOp].push({
+                    [fieldName]:{[compOp]:result[compOp]}
+                })
+            }
+
+        }
+
+
+    }
+
+
+    ap.inf('digit finalResult',finalResult)
+    return finalResult
+}
+
+/*  将arrayValue的值转换成表达式
+[{scalarCompOp:'gt',scalarValue:10},{scalarCompOp:'lt',scalarValue:100}]  ======>{$or/$and:{"$gt":10,"$lt":100}}
+[{scalarCompOp:'include',scalarValue:'zw'},{scalarCompOp:'exclude',scalarValue:'zw110'}]  ======>{$or/$and:{"$gt":10,"$lt":100}}
+* */
+function convertStringArrayValueToExpression({arrayCompOp,fieldName,arrayValue}){
+    let result={},finalResult={}
+    for(let singleEle of arrayValue){
+        let scalarCompOp=singleEle[e_searchFieldName.SCALAR_COMP_OP]
+        let scalarValue=singleEle[e_searchFieldName.SCALAR_VALUE]
+
+        let searchString
+        switch (scalarCompOp){
+            case e_scalarCompOpForString.EXACT:
+                if(undefined===result['$in']){
+                    result['$in']=[]
+                }
+                searchString=scalarValue
+                result['$in'].push(scalarValue)
+                break;
+            case e_scalarCompOpForString.INCLUDE:
+                if(undefined===result['$in']){
+                    result['$in']=[]
+                }
+                searchString=new RegExp(scalarValue,'i')
+                // ap.inf('searchString',searchString.toString())
+                result['$in'].push(searchString)
+                break;
+            case e_scalarCompOpForString.EXCLUDE:
+                if(undefined===result['$nin']){
+                    result['$nin']=[]
+                }
+                result['$nin'].push(new RegExp(scalarValue,'i'))
+                break;
+
+        }
+    }
+    let fieldANDORCompOp,fieldNOTCompOp
+    for(let singleArrayCompOp of arrayCompOp){
+        if(e_arrayCompOp.ANY===singleArrayCompOp){
+            fieldANDORCompOp="$or"
+        }else if(e_arrayCompOp.ALL===singleArrayCompOp){
+            fieldANDORCompOp="$and"
+        }
+
+        if(e_arrayCompOp.NONE===singleArrayCompOp){
+            fieldNOTCompOp="$not"
+        }
+    }
+    /*switch (arrayCompOp){
+        case e_arrayCompOp.NONE:
+            fieldEleCompOp="$not"
+            break
+        case e_arrayCompOp.ALL:
+            fieldEleCompOp="$and"
+            break
+        case e_arrayCompOp.ANY:
+            fieldEleCompOp="$or"
+            break
+        default:
+            ap.err('未知arrayCompOp')
+    }
+    finalResult[fieldEleCompOp]=[]*/
+
+    ap.inf('string result',result)
+    for(let compOp in result){
+        // let eleSql={}
+        if(undefined===finalResult[fieldANDORCompOp]){
+            finalResult[fieldANDORCompOp]=[]
+        }
+        if(undefined!==fieldANDORCompOp){
+            if(undefined!==fieldNOTCompOp ){
+                finalResult[fieldANDORCompOp].push({
+                    [fieldName]:{[fieldNOTCompOp]:{[compOp]:result[compOp]}}
+                })
+            }else{
+                finalResult[fieldANDORCompOp].push({
+                    [fieldName]:{[compOp]:result[compOp]}
+                })
+            }
+
+        }
+
+
+    }
+    ap.inf('string finalResult',finalResult)
+    return finalResult
+}
+
+
 /*将前端传入的search value转换成mongodb对应的select condition（如此方便在mongodb中直接使用，来进行调试）。
  *  返回一个object {field；{condition}}
  * 分成2个函数，好处是层次清楚：
@@ -40,7 +371,7 @@ const genNativeSearchCondition=function(clientSearchParams,collInputRule,collFkC
     //所有的查询条件都是 或
     let fieldsType={} //{name:dataType.string,age:dataType.int}  普通字段，只有一个key，外键：可能有一个以上的key
     let result={}
-console.log(`dataTypeCheck.isEmpty(clientSearchParams) is ${JSON.stringify(dataTypeCheck.isEmpty(clientSearchParams))}`)
+// console.log(`dataTypeCheck.isEmpty(clientSearchParams) is ${JSON.stringify(dataTypeCheck.isEmpty(clientSearchParams))}`)
     //有search参数传入，则进行转换
     if(false===dataTypeCheck.isEmpty(clientSearchParams)){
         result={'$or':[]}
@@ -386,6 +717,7 @@ function convertEditSubFieldValueToNoSql({editSubFieldValue}){
     return result
 }
 module.exports={
+    convertSearchParamsToNoSQL,
     genNativeSearchCondition,
     convertCreateUpdateValueToServerFormat,
     constructCreateCriteria,
@@ -399,3 +731,54 @@ module.exports={
 
     convertEditSubFieldValueToNoSql,
 }
+/*
+
+let clientSql={
+    user:{
+        [e_searchFieldName.FIELD_OP]:e_fieldOp.AND,
+        [e_searchFieldName.SEARCH_VALUE]: {
+            name: {
+
+                [e_searchFieldName.ARRAY_COMP_OP]: [e_arrayCompOp.ANY,e_arrayCompOp.NONE],
+                [e_searchFieldName.ARRAY_VALUE]: [
+                    {
+                        [e_searchFieldName.SCALAR_COMP_OP]: e_scalarCompOpForString.INCLUDE,
+                        [e_searchFieldName.SCALAR_VALUE]: 'zw',
+                    },
+                    {
+                        [e_searchFieldName.SCALAR_COMP_OP]: e_scalarCompOpForString.INCLUDE,
+                        [e_searchFieldName.SCALAR_VALUE]: 'wzhan039wzhan039wzhan039wzhan039wzhan039wzhan039wzhan039',
+                    },
+                ]
+            },
+            /!*            nickname:{
+                            [e_searchFieldName.FIELD_OP]:[e_fieldOp.AND,e_fieldOp.NOT],
+                            [e_searchFieldName.ARRAY_COMP_OP]:e_arrayCompOp.ANY,
+                            [e_searchFieldName.ARRAY_VALUE]:[
+                                {
+                                    [e_searchFieldName.SCALAR_COMP_OP]:e_scalarCompOpForString.EXACT,
+                                    [e_searchFieldName.SCALAR_VALUE]:'zhangwei',
+                                },
+                            ]
+                        },*!/
+            lastSignInDate: {
+
+                [e_searchFieldName.ARRAY_COMP_OP]: [e_arrayCompOp.ANY,e_arrayCompOp.NONE],
+                [e_searchFieldName.ARRAY_VALUE]: [
+                    {
+                        [e_searchFieldName.SCALAR_COMP_OP]: e_scalarCompOpForDigit.EQUAL,
+                        [e_searchFieldName.SCALAR_VALUE]: 18,
+                    },
+                    {
+                        [e_searchFieldName.SCALAR_COMP_OP]: e_scalarCompOpForDigit.EQUAL,
+                        [e_searchFieldName.SCALAR_VALUE]: 65,
+                    },
+                ]
+            },
+        }
+    }
+}
+
+santiySearchParams({searchParams:clientSql})
+ap.inf('after sanity',clientSql)
+ap.inf('nosql',convertSearchParamsToNoSQL({searchParams:clientSql}))*/

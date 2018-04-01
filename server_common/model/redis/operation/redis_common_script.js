@@ -1,9 +1,13 @@
 /**
  * Created by Ada on 2017/7/10.
+ *
+ *
+ *
  */
 'use strict'
 
-// const redisClient=require('../common/redis_connections').redisClient
+//所有函数无需输入redisClient，而是直接使用。简化使用（减少require redisClient已经对应的参数）
+const redisClient=require('../common/redis_connections').redisClient
 const luaScriptSHA=require('../../../constant/genEnum/LuaSHA').luaScriptSHA
 const runtimeRedisError=require('../../../constant/error/redis/redisError')
 const luaError=runtimeRedisError.luaError
@@ -26,7 +30,7 @@ let rightResult={rc:0}
      -- numberInDuration:在duratin中，最大request次数
      -- expireTimeBetween2Req:2次请求最小间隔
 * */
-async function simpleCheckInterval_async({keyNameToStoreReqList,intervalCheckConfiguration,redisClient}){
+async function simpleCheckInterval_async({keyNameToStoreReqList,intervalCheckConfiguration}){
     return new Promise(function(resolve,reject){
         intervalCheckConfiguration=convertARGV(intervalCheckConfiguration)
         let scriptName='script_checkInterval_simpleCheckInterval'
@@ -48,7 +52,7 @@ async function simpleCheckInterval_async({keyNameToStoreReqList,intervalCheckCon
 /*  通过检查sessionId.captcha:rejectFlag，判断用户是否处于 处罚状态（禁止请求的时间随着被拒次数增加而增加）
 *
 * */
-async function checkIfInPunishReject_async({rejectFlagName,argv_configuration,redisClient}){
+async function checkIfInPunishReject_async({rejectFlagName,argv_configuration}){
     return new Promise(function(resolve,reject){
         let scriptName='script_checkInterval_checkIfInPunishReject'
         argv_configuration=convertARGV(argv_configuration)
@@ -70,7 +74,7 @@ async function checkIfInPunishReject_async({rejectFlagName,argv_configuration,re
 /*  complicatedCheckInterval_async中，如果被reject（无论是simple还是complecated的reject），设置相应的key
 *
 * */
-async function set_rejectFlagTimesWhenReceiveReject_async({keyName_rejectFlagName,keyName_rejectTimesName,argv_configuration,redisClient}){
+async function set_rejectFlagTimesWhenReceiveReject_async({keyName_rejectFlagName,keyName_rejectTimesName,argv_configuration}){
 
     return new Promise(function(resolve,reject){
         argv_configuration=convertARGV(argv_configuration)
@@ -96,14 +100,14 @@ async function set_rejectFlagTimesWhenReceiveReject_async({keyName_rejectFlagNam
 *
 *   返回：0=检测通过；其他>0的数字，剩余TTL
 * */
-async function complicatedCheckInterval_async({rejectFlagName,rejectTimesName,keyNameToStoreReqList,intervalCheckConfiguration,argv_configuration,redisClient}){
+async function complicatedCheckInterval_async({rejectFlagName,rejectTimesName,keyNameToStoreReqList,intervalCheckConfiguration,argv_configuration}){
 // ap.inf('complicatedCheckInterval_async in')
-    let checkIfPunishReject=await checkIfInPunishReject_async({rejectFlagName:rejectFlagName,argv_configuration:argv_configuration,redisClient:redisClient})
+    let checkIfPunishReject=await checkIfInPunishReject_async({rejectFlagName:rejectFlagName,argv_configuration:argv_configuration})
     // ap.inf('checkIfPunishReject result is ',checkIfPunishReject)
     // flag不存在，进行simple check
     if(checkIfPunishReject===0){
         //没有设置rejectFlag，则根据simpleCheckInterval_async是否为reject，没有reject，返回0
-        let simpleCheckIntervalResult=await simpleCheckInterval_async({keyNameToStoreReqList:keyNameToStoreReqList,intervalCheckConfiguration:intervalCheckConfiguration,redisClient:redisClient})
+        let simpleCheckIntervalResult=await simpleCheckInterval_async({keyNameToStoreReqList:keyNameToStoreReqList,intervalCheckConfiguration:intervalCheckConfiguration})
         // ap.inf('simpleCheckIntervalResult result is ',simpleCheckIntervalResult)
         if(0===simpleCheckIntervalResult) {
             return Promise.resolve(0)
@@ -116,12 +120,13 @@ async function complicatedCheckInterval_async({rejectFlagName,rejectTimesName,ke
     }
     //此处：有flag或者simple check reject，则需要重新设置rejectFlag/Times
     //返回值为0（通过），或者ttl（被禁止多久不得请求）
-    let result=await set_rejectFlagTimesWhenReceiveReject_async({keyName_rejectFlagName:rejectFlagName,keyName_rejectTimesName:rejectTimesName,argv_configuration:argv_configuration,redisClient:redisClient})
+    let result=await set_rejectFlagTimesWhenReceiveReject_async({keyName_rejectFlagName:rejectFlagName,keyName_rejectTimesName:rejectTimesName,argv_configuration:argv_configuration})
     // ap.inf('set_rejectFlagTimesWhenReceiveReject_async result is ',result)
     return Promise.resolve(result)
 
 }
 module.exports={
+    set_rejectFlagTimesWhenReceiveReject_async,
     simpleCheckInterval_async,
     complicatedCheckInterval_async,
 }

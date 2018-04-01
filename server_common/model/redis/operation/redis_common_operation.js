@@ -77,12 +77,28 @@ async function del_async({db=0,key}){
     })
 }
 
-
+/*
+* 返回值：ttl返回值
+* */
+async function ttl_async({db=0,key}){
+    return new Promise(function (resolve, reject) {
+        redisClient.multi().select(db).ttl(key).exec(function(err,result){
+            if(err){
+                ap.wrn('ttl err', err)
+                reject(generalError.getError)
+            }
+            ap.inf('ttl result ',result)
+            //get位于multi的第二个命令
+            resolve(result[1][1])
+        })
+    })
+}
 
 module.exports={
     set_async,
     get_async,
     del_async,
+    ttl_async,
 }
 
 // set_async({key:'a',value:1,expireTime:20000,expireUnit:'ms'})

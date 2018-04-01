@@ -44,7 +44,7 @@ let indent=`    `
 function generateClientNonValueEnum({originProjectPath,resultPath}){
     let filesToBeRead=[
         {path:`${originProjectPath}constant/clientEnum/clientNonValueEnum.js`, exportItem:'all'},
-        {path:`${originProjectPath}constant/enum/nodeEnum.js`, exportItem:['Method','ValidatePart']},
+        {path:`${originProjectPath}constant/enum/nodeEnum.js`, exportItem:['ValidatePart']},
     ]
 
 
@@ -75,17 +75,6 @@ function generateClientNonValueEnum({originProjectPath,resultPath}){
             }
         }
 
-        // Object.assign(finalFileExport,fileExport)
-        /*let allCollResult={'inputValueForCreate':{},'inputValueForUpdate':{}}
-        for(let collName in fileExport){
-            //对每个coll的rule定义，转换成iview的rule格式（但是require尚未处理）
-            let result=generateInitInputValue({collName:collName,collRuleDefinition:fileExport[collName]})
-
-            allCollResult['inputValueForCreate'][collName]=result['inputValueForCreate']
-            allCollResult['inputValueForUpdate'][collName]=result['inputValueForUpdate']
-
-            writeClientInitInputValueResult({content:allCollResult,resultPath:absResultPath})
-        }*/
     }
     // ap.inf('final fileExport',fileExport)
 
@@ -100,6 +89,9 @@ function generateClientNonValueEnum({originProjectPath,resultPath}){
 function writeClientInitInputValueResult({content,resultPath}){
 
     // let relativePath='src/constant/rule/'
+    let description=`/*    gene by ${__filename}  \r\n`
+    description+=`* 一些常用的enum值，写代码方便，例如ValidatePart \r\n`
+    description+=`*/\r\n\r\n`
     let head=`"use strict"\r\n\r\n`
     let indent=`    `
 
@@ -119,7 +111,7 @@ function writeClientInitInputValueResult({content,resultPath}){
 
 // ap.inf('resultPath',resultPath)
 //     ap.inf('contentStr',contentStr)
-    let finalStr=`${head}\r\n${contentStr}\r\n${exportStr}`
+    let finalStr=`${description}${head}\r\n${contentStr}\r\n${exportStr}`
     // ap.inf('finalStr',finalStr)
     fs.writeFileSync(`${resultPath}`,finalStr)
     

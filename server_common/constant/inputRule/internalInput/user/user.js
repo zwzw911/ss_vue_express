@@ -16,6 +16,8 @@ const enumValue=require('../../../../constant/genEnum//enumValue')
 /*              获得 某些设置值            */
 const maxNumber=require('../../../config/globalConfiguration').maxNumber
 
+const searchRange=inputDataRuleType.SearchRange
+
 const user= {
 
     //根据不同url，自动决定

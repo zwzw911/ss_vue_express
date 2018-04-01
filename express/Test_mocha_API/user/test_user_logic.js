@@ -41,11 +41,13 @@ const component_function=server_common_file_require.component_function
 const image_path_for_test=server_common_file_require.appSetting.absolutePath.image_path_for_test
 
 const misc_help=server_common_file_require.misc_helper
-
+// const misc_helper=server_common_file_require.misc_helper
 let baseUrl="/user/"
 let userId  //create后存储对应的id，以便后续的update操作
 
-
+let adminUser1Info,adminUser2Info,adminUser3Info,adminUser1Id,adminUser2Id,adminUser3Id,adminUser1Sess,adminUser2Sess,adminUser3Sess,adminUser1Data,adminUser2Data,adminUser3Data
+let user1Info,user2Info,user3Info,user1Id,user2Id,user3Id,user1Sess,user2Sess,user3Sess,user1Data,user2Data,user3Data
+let userData,tmpResult,copyNormalRecord
 
 
 
@@ -718,5 +720,32 @@ describe('captcha: ', function() {
                 done();
             });
 
+    })
+})
+
+
+describe('upload user photo by data url:', function() {
+    let data={values:{method:e_method.UPLOAD}}
+    let dataUrl='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAPb0lEQVR4nO3d+VOUd4LHcf6GqJPN6Uwllama3SRVmU02qWQnm5jRHK7GY3KMiZlEJ64Iyo3I2dw30tz3JZeczdnclwIiNwjddAOCaDK7M0mMHErT/d4fujE03dJgpoqu8FD1/kmt4ulXfaH70/2UFo+8FYmQ+WSx2d+AkABi1gkgZpYAYmYJIGaWAGJmCSBmlgBiZgkgZpYAYmYJIGaWAGJmCSBmlgBiZgkgZpYAYmYJIGaWAGJmCSBmlgBiZgkgZpYAYmYJIGaWAGJmCSBmllGQHbvEPP1BLP96OIkXPk7mhY+S+d3hJHZ+EMv2XeJN/6Z/yVn85+fB3O9oKG8dS+CISxF2IVX4JTYQlFxPQGIdXtHVWPkVs986nZc/Oa/7N0EPKITnD4Vt+sWZa9veDGLHG15GsygrDmA5SXEYZVWl9A3KUSgUyGQyRk…bYToSjlvXRduUJzcxONjQ1c7eqirbmGgbpzBifjPoj8LEsjlmjktgYYyG0RRwog6wAxHArvjYcwMtRJc3MzVVVVVFdX09LSQk11Kb3VzgYQyzO7Sn6WpWsndSD6GMhtBJD1g+hvU/eUIQwPdNLY2Eh1dTV1dXU0NTUhrSploM7DKAbKlSfExgAD+RkiI20FENMgq4dCL+5ORDMml9Hb20t7e/t9GElpIa0VQUYwXNCMe7A4cgr1qJXuhOhj3B06wZe2Lmx/WwBZEyQ90Y70RDvSdKUm2hMf74F7aCa2ojgsXSI44RjKcYdgjtn54+TuQlqCzapsSU2wJSXuFKnxVqTFn16RNYkxp/na8RxP7fnlf8hhvSC/fdOKV/edNcji2b2hrO6ZveHsfF/MU+9G8uSe8zy5J+J+T78bZvD3TfXMB6Fb4hMn6+6/wtn2ZojRhP+DyswSQMwsAcTMEkDMLAHEzBJAzCwBxMz6f9SU6ZZ2YGQaAAAAAElFTkSuQmCC'
+    data.values[e_part.RECORD_INFO]={[e_field.USER.PHOTO_DATA_URL]:dataUrl}
+    let finalUrl,url='',expectedErrorRc
+    before('user1 recreate and login ', async function() {
+        url = ''
+        finalUrl = baseUrl + url
+        // parameter[`APIUrl`]=finalUrl
+        let user1Info = await component_function.reCreateUser_returnSessUserId_async({
+            userData: testData.user.user1,
+            app: app
+        })
+        user1Id = user1Info[`userId`]
+        user1Sess = user1Info[`sess`]
+    })
+
+    it('user upload data url', async function(){
+        url='uploadUserPhoto/'
+        finalUrl = baseUrl + url
+// ap.inf('user1Sess',user1Sess)
+        expectedErrorRc=0
+        await misc_help.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
     })
 })

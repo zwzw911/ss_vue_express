@@ -66,7 +66,7 @@ function readRouteInfo({projectPath,resultProject}){
 function writeResult({content,resultProject:resultProject}){
     let resultPath=`${resultProject}src/constant/envConfiguration/envConfiguration.js`
     // ap.inf('content',content)
-    let description=`/*    gene by ${__filename}  @ ${Date.now()}`
+    let description=`/*    gene by ${__filename}  \r\n`
     description+=`* 开发时候的一些运行环境的配置 \r\n`
     description+=`*/\r\n\r\n`
     let head=`"use strict"\r\n\r\n`

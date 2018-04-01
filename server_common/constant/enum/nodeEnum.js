@@ -36,11 +36,11 @@ const Env={
     PROD:'production',
 }
 
-const CompOp={
+/*const CompOp={
     EQ:'eq',
     GT:'gt',
     LT:'lt'
-}
+}*/
 
 const MongooseOp={
     INSERT_MANY:'insertMany',
@@ -70,6 +70,7 @@ const ValidatePart={
     METHOD:'method',    //当前操作对应的是CRUD中哪一个
     CAPTCHA:'captcha',
     SMS:'sms',
+    //DATA_URL:'dataUrl',//上传dataUrl
 }
 
 
@@ -173,11 +174,26 @@ const UpdateType={
 const FindEleInArray={
     AT_LEAST_ONE:'atLeastOne',//指定的option中，至少存在一个指定元素（或者全部存在）
 }
+
+//使用redis对interval进行check的时候，redis中对应的key（部分名称，整个key名字是session/ip+prefix）的名称
+const IntervalCheckPrefix={
+    CPATCHA:'captcha',
+    UPLOAD_USER_PHOTO:'uploadUserPhoto',
+    NORMAL_REQ:'normalReq',//普通的GET/POST/PUT/DELETE
+}
+
+/********************************/
+/*          search              */
+/********************************/
+
+
+
+
 module.exports={
     RandomStringType,
     UserState,
     Env,
-    CompOp,
+    // CompOp,
     MongooseOp,
     ValidatePart,
     KeyForSearchParams,
@@ -199,4 +215,8 @@ module.exports={
     FindEleInArray,
 
     ManipulateOperator,
+
+    IntervalCheckPrefix,
+
+
 }

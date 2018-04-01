@@ -37,28 +37,29 @@ const collInputRule=Object.assign({},browserInputRule,internalInputRule)
 
 const collName='user'
 const collFieldDefine={
-        name:{type:String,unique:true},
-        account:{type:String,unique:true}, //email或者手机号
-        accountType:{type:String}, //到底是email还是手机号
+    name:{type:String,unique:true},
+    account:{type:String,unique:true}, //email或者手机号
+    accountType:{type:String}, //到底是email还是手机号
     usedAccount:{type:[{type:String}]},//记录曾经使用过的account
     lastAccountUpdateDate:{type:Date},//最近一次修改account的时间
-        password:{type:String}, //加密后的密码
-        docStatus:{type:String},//实现 事务 的一致性
+    password:{type:String}, //加密后的密码
+    docStatus:{type:String},//实现 事务 的一致性
     userType:{type:String},//enum: 用户类型
-        /*  理论上浏览器只会执行一次http请求，但是如果用户数多，会对每个用户执行http    */
-        photoPathId:{type:mongoose.Schema.Types.ObjectId,ref:'store_path'},//
-        photoHashName:{type:String},//md5
-        photoSize:{type:Number},//kb，头像以文件格式存储
+    photoDataUrl:{type:String},//使用dataUrl存储头像，如此，可以一次http请求传输（代价是有重复，然而可以通过zip减少传输量）
+    /*  理论上浏览器只会执行一次http请求，但是如果用户数多，会对每个用户执行http    */
+    photoPathId:{type:mongoose.Schema.Types.ObjectId,ref:'store_path'},//
+    photoHashName:{type:String},//md5
+    photoSize:{type:Number},//kb，头像以文件格式存储
 /*        头像size较小，采用base64Url。 好处：减少http请求；坏处：增加前后端处理复杂度
-        * 例如： 评论：3人各自做2次评论。
-        * 如果是图片，要发起3次http请求；
-        * 如果是baseUrl：需要将用户信息单独提取（而不是直接为每个评论直接读取用户信息），分成评论和用户信息，然后在client组合。只有一次http，但是处理比较复杂
-        * */
-        // photoDataUrl:{type:String},
+    * 例如： 评论：3人各自做2次评论。
+    * 如果是图片，要发起3次http请求；
+    * 如果是baseUrl：需要将用户信息单独提取（而不是直接为每个评论直接读取用户信息），分成评论和用户信息，然后在client组合。只有一次http，但是处理比较复杂
+    * */
+    // photoDataUrl:{type:String},
     lastSignInDate:{type:Date},
-        cDate:{type:Date,default:Date.now},
-        uDate:{type:Date,default:Date.now},
-        dDate:{type:Date},
+    cDate:{type:Date,default:Date.now},
+    uDate:{type:Date,default:Date.now},
+    dDate:{type:Date},
 }
 
 // console.log(`${__filename}:before: ${JSON.stringify(collFieldDefine)}`)

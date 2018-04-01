@@ -33,10 +33,10 @@ const misc=require('../function/assist/misc')
 const appSetting=require('../constant/config/appSetting').currentAppSetting
 const fkConfig=require('../model/mongo/fkConfig').fkConfig
 
-const complicatedCheckInterval_async=require('../model/redis/operation/redis_common_script').complicatedCheckInterval_async
+
 const redisClient=require('../model/redis/common/redis_connections').redisClient
 
-const intervalCheckConfiguration=require('../constant/config/globalConfiguration').intervalCheckConfiguration
+// const intervalCheckConfiguration=require('../constant/config/globalConfiguration').intervalCheckConfiguration
 async function ifRoot_async({userName:userName}){
     // let condition={[e_fi]}
     let tmpResult=common_operation_model.find_returnRecords_async({dbModel:e_dbModel.admin_user})
@@ -486,7 +486,7 @@ async function ifFileSuffixMatchContentType_returnSuffixOrFalse_async({uploadFil
 /*  检查用户req是否合格（防止DoS）。默认使用复杂方式检测
 * @reqTypePrefix:用于生成key的前缀，格式为sessionId.reqTypePrefix;keyname。为constant/config/globalConfiguration下intervalCheckConfiguration的一个键值
 * */
-async function checkInterval_async({req,reqTypePrefix}){
+/*async function checkInterval_async({req,reqTypePrefix}){
     let configuration=intervalCheckConfiguration[reqTypePrefix]
     let userIdentity=await misc.getIdentify_async({req})
     for (let singlePrefix of userIdentity){
@@ -502,7 +502,9 @@ async function checkInterval_async({req,reqTypePrefix}){
     }
 
     return Promise.resolve({rc:0})
-}
+}*/
+
+
 
 module.exports= {
     // ifFieldValueExistInColl_async,// 检测字段值是否已经在db中存在
@@ -531,5 +533,5 @@ module.exports= {
     ifFileSuffixMatchContentType_returnSuffixOrFalse_async,
 
 
-    checkInterval_async,
+    // checkInterval_async,
 }

@@ -150,6 +150,9 @@ const PenalizeType={
 
         //public_group
         NO_PUBLIC_GROUP:'9',
+
+        //user:upload_photo
+        NO_UPLOAD_USER_PHOTO:'10',
     },
     SHOW:{
         NO_ARTICLE: '禁止文档',
@@ -166,6 +169,9 @@ const PenalizeType={
 
         //public_group
         NO_PUBLIC_GROUP:'禁止创建群',
+
+        //user:upload_photo
+        NO_UPLOAD_USER_PHOTO:'禁止上传头像',
     },
 
 }

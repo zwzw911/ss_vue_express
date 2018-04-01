@@ -41,7 +41,7 @@ const validateFormat={
     inputValuePartNumNotExpected:{rc:40104,msg:{client:`输入值格式错误`,server:`输入参数中，输入值中字段数量和定义的不一致`}},
     inputValueExceptedPartNotValid:{rc:40106,msg:{client:`输入值格式错误`,server:`期望进行检查的参数不存在`}},
     inputValuePartNotMatch:{rc:40108,msg:{client:`输入值格式错误`,server:`输入参数中，某个参数并非期望的参数`}},
-    inputValuePartSearchParamsValueFormatWrong:{rc:40110,msg:{client:`输入值格式错误`,server:`输入参数中，searchParams的值必须为object`}},
+    // inputValuePartSearchParamsValueFormatWrong:{rc:40110,msg:{client:`输入值格式错误`,server:`输入参数中，searchParams的值必须为object`}},
     inputValuePartRecordInfoValueFormatWrong:{rc:40111,msg:{client:`输入值格式错误`,server:`输入参数中，recordInfo的值必须为object`}},
     inputValuePartSingleFieldValueFormatWrong:{rc:40112,msg:{client:`输入值格式错误`,server:`输入参数中，singleField的值必须为object`}},
     inputValuePartMethodValueFormatWrong:{rc:40113,msg:{client:`输入值格式错误`,server:`输入参数中，method的值必须为字符`}},
@@ -53,7 +53,8 @@ const validateFormat={
     inputValuePartRecIdArrValueFormatWrong:{rc:40121,msg:{client:`输入值格式错误`,server:`输入参数中，recIdArr的值必须为数组`}},
     inputValuePartEventValueFormatWrong:{rc:40122,msg:{client:`输入值格式错误`,server:`输入参数中，event的值必须为对象`}},
     inputValuePartEditSubFieldValueFormatWrong:{rc:40123,msg:{client:`输入值格式错误`,server:`输入参数中，editSubField的值必须为对象`}},
-    inputValuePartUndefinedPart:{rc:40124,msg:{client:`输入值格式错误`,server:`输入参数中，part未定义`}},
+    //inputValuePartDataUrlValueFormatWrong:{rc:40124,msg:{client:`输入值格式错误`,server:`输入参数中，dataUrl的值必须为字符`}},
+    inputValuePartUndefinedPart:{rc:40125,msg:{client:`输入值格式错误`,server:`输入参数中，part未定义`}},
 
     recordInfoCantEmpty:{rc:40126,msg:{client:'输入值格式错误',server:'recorderInfo不能为空'}},//在validatePart已经检测为object，次数检测为空object
     recordInfoFieldNumExceed:{rc:40128,msg:{client:'输入值格式错误',server:'recorderInfo中的字段数量超出定义的数量'}},//inputValue中的字段数量超出rule中定义的字段数量
@@ -129,6 +130,72 @@ const validateFormat={
         manipulateArrayFieldKeyNameWrong:{rc:40234,msg:{client:`输入值格式不正确`,server:`字段中键值的名称不是预定义`}},
     },
 
+    searchParams:{
+        /*      validateFormat->validatePartValueFormat       */
+        partValueFormatWrong:{rc:40240,msg:{client:`查询值格式错误`,server:`查询参数中，searchParams的值必须为对象`}},
+
+        /*      searchParamsNonIdCheck_async        */
+        partValueCantEmpty:{rc:40242,msg:{client:`查询值格式错误`,server:`searchParams不能为空对象`}},
+        illegalCollName:{rc:40244,msg:{client:`查询值格式错误`,server:`searchParams中包含禁止collName`}},
+
+        /*          collValueFormatCheck_async          */
+        collValueMustBeObject:{rc:40246,msg:{client:`查询值格式错误`,server:`searchParams中coll的值，必须是对象`}},
+        collValueContain2Key:{rc:40247,msg:{client:`查询值格式错误`,server:`searchParams中coll的值，只能包含2个key`}},
+        collValueKeyInvalid:{rc:40247,msg:{client:`查询值格式错误`,server:`searchParams中coll的值，key名称无效`}},
+
+        /*      fieldOpCheck_async      */
+        fieldOpValueUndefined:{rc:40256,msg:{client:`查询值格式错误`,server:`searchParams中coll的fieldOp没有赋值`}},
+        fieldOpValueInvalid:{rc:40258,msg:{client:`查询值格式错误`,server:`searchParams中coll的fieldOp的值是数组，其中有元素无效`}},
+        /*      searchValueFormatCheck_async      */
+        searchValueMustBeObject:{rc:40256,msg:{client:`查询值格式错误`,server:`searchParams中coll的searchValue必须是object`}},
+        searchValueFieldNumIncorrect:{rc:40256,msg:{client:`查询值格式错误`,server:`searchParams中coll的searchValue包含的查询字段数不正确`}},
+        /*          searchValueValidationCheck_async          */
+        fieldUndefined:{rc:40247,msg:{client:`查询值格式错误`,server:`searchParams中coll的searchValue的field，未在rule中定义`}},
+        fieldForbidForSearch:{rc:40248,msg:{client:`查询值格式错误`,server:`searchParams中coll的searchValue的field，被禁止用作查询之用`}},
+        currentSearchRangeForbid:{rc:40250,msg:{client:`查询值格式错误`,server:`searchParams中coll的searchValue的field，当前searchRange不符合rule中定义的searchRange`}},
+
+        /*      fieldValueFormatCheck_async       */
+        fieldValueMustBeObject:{rc:40252,msg:{client:`查询值格式错误`,server:`searchParams中coll的field的值，必须是对象`}},
+        fieldValueMustContain2Key:{rc:40254,msg:{client:`查询值格式错误`,server:`searchParams中coll的field的值，必须包含2个key`}},
+        fieldValueKeyInvalid:{rc:40255,msg:{client:`查询值格式错误`,server:`searchParams中coll的field的值的key无效`}},
+
+        /*      arrayCompOpCheck_async      */
+        arrayCompOpUndefined:{rc:40262,msg:{client:`查询值格式错误`,server:`searchParams中coll的field的arrayCompOp没有赋值`}},
+        arrayCompOpValueMustBeArray:{rc:40264,msg:{client:`查询值格式错误`,server:`searchParams中coll的field的arrayCompOp的值必须是数组`}},
+        // arrayCompOpValueEleNumIncorrect:{rc:40254,msg:{client:`查询值格式错误`,server:`searchParams中coll的field的arrayCompOp，必须包含2个key`}},
+        arrayCompOpValueEleNumberIncorrect:{rc:40265,msg:{client:`查询值格式错误`,server:`searchParams中coll的field的arrayCompOp的值是数组，其中只能包含1或者2个元素`}},
+        arrayCompOpInvalid:{rc:40266,msg:{client:`查询值格式错误`,server:`searchParams中coll的field的arrayCompOp的值无效`}},
+        arrayCompOp1OpMissMandatoryOp:{rc:40260,msg:{client:`查询值格式错误`,server:`searchParams中coll的field的arrayCompOp的值是数组，长度为1，但是没有包含必须的操作符(ALL或者ANY)`}},
+        arrayCompOp2OpMissMandatoryOp:{rc:40261,msg:{client:`查询值格式错误`,server:`searchParams中coll的field的arrayCompOp的值是数组，长度为2，但是没有包含必须的操作符([ALL,NONE]或者[ANY,NONE])`}},
+        /*      arrayValueCheck_async       */
+        arrayValueUndefined:{rc:40266,msg:{client:`查询值格式错误`,server:`searchParams中coll的field的arrayValue没有赋值`}},
+        arrayValueMustBeArray:{rc:40268,msg:{client:`查询值格式错误`,server:`searchParams中coll的field的arrayValue必须是数组`}},
+        arrayValueCantBeEmpty:{rc:40270,msg:{client:`查询值格式错误`,server:`searchParams中coll的field的arrayValue必须是数组`}},
+        arrayValueExceedSetting:{rc:40272,msg:{client:`查询值格式错误`,server:`searchParams中coll的field的arrayValue是数组，其中查询值的数量超过定义的最大数量`}},
+        arrayValueEleMustBeObject:{rc:40274,msg:{client:`查询值格式错误`,server:`searchParams中coll的field的arrayValue是数组，其中每个查询值必须是对象`}},
+        arrayValueEleKeyNumberIncorrect:{rc:40276,msg:{client:`查询值格式错误`,server:`searchParams中coll的field的arrayValue是数组，其中每个查询值必须有2个key`}},
+        arrayValueEleKeyNameInvalid:{rc:40278,msg:{client:`查询值格式错误`,server:`searchParams中coll的field的arrayValue是数组，其中查询值的key无效`}},
+
+        arrayValueEleScalarCompOpInvalid:{rc:40280,msg:{client:`查询值格式错误`,server:`searchParams中coll的field的arrayValue是数组，其中查询值的key scalarCompOp不符合field的数据类型`}},
+        arrayValueEleScalarCompOpMisMatch:{rc:40282,msg:{client:`查询值格式错误`,server:`searchParams中coll的field的arrayValue是数组，其中查询值的key scalarCompOp没有field的数据类型对应的设定`}},
+        arrayValueEleScalarValueMisMatch:{rc:40284,msg:{client:`查询值格式错误`,server:`searchParams中coll的field的arrayValue是数组，其中查询值的key scalarValue的类型不等于field的数据类型`}},
+
+        arrayValuesScalarValueHasDuplicateEle:{rc:40285,msg:{client:`查询值格式错误`,server:`searchParams中coll的field的arrayValue是数组，其中不同的scalarCompOp含有重复的scalarValue，这是毫无意义的`}},
+
+        /*      arrayValueDigitLogicCheck_async         */
+        scalarCompCanOnlyOneWhenNOT:{rc:40285,msg:{client:`查询值格式错误`,server:`searchParams中coll的field的arrayComp包含NOT，那么arrayValue中所有元素只能包含相同那个的scalarCompOp`}},
+        scalarCompGteLteMaxOne:{rc:40286,msg:{client:`查询值格式错误`,server:`searchParams中coll的field的arrayValue是数组，其中查询值的key scalarValue中gt/lt/gte/lte的数量大于1（多个gt/lt/gte/lte无意义）`}},
+        scalarCompGtGteLtLteCantCoexist:{rc:40286,msg:{client:`查询值格式错误`,server:`searchParams中coll的field的arrayValue是数组，其中查询值的key scalarValue中gt/gte，lt/lte不能共存（共存无意义）`}},
+        scalarCompEqAtMostOneWhenScalarCompOpALL:{rc:40286,msg:{client:`查询值格式错误`,server:`searchParams中coll的field的arrayValue是数组，其中查询值的key arrayComp为ALL时，EQUAL至多一个（多个无意义）`}},
+        scalarCompEqCantCoexistWithGteLte:{rc:40288,msg:{client:`查询值格式错误`,server:`searchParams中coll的field的arrayValue是数组，其中查询值的key arrayComp为ALL时，arrayComp的EQUAL不能和gte/lte共存`}},
+        scalarValueGteValueCantGreaterThanLteValue:{rc:40290,msg:{client:`查询值格式错误`,server:`searchParams中coll的field的arrayValue是数组，其中查询值的key arrayComp为ALL时，如果gt(e)和lt(e)同时存在，gt(e)的值不能大于等于lt(e)的值，否则查询结果为空`}},
+
+        /*      arrayValueNonDigitLogicCheck_async      */
+        scalarValueForExactDuplicate:{rc:40292,msg:{client:`查询值格式错误`,server:`searchParams中coll的field的arrayValue是数组，其中查询值的key arrayValue对应的字段类型为string，查询exact有重复`}},
+        scalarValueForIncludeDuplicate:{rc:40294,msg:{client:`查询值格式错误`,server:`searchParams中coll的field的arrayValue是数组，其中查询值的key arrayValue对应的字段类型为string，查询include有重复`}},
+        scalarValueForExcludeDuplicate:{rc:40296,msg:{client:`查询值格式错误`,server:`searchParams中coll的field的arrayValue是数组，其中查询值的key arrayValue对应的字段类型为string，查询exclude有重复`}},
+        scalarValueExactCantCoexist:{rc:40298,msg:{client:`查询值格式错误`,server:`searchParams中coll的field的arrayValue是数组，其中查询值的key arrayValue对应的字段类型为string，arrayCompOp为ALL(and)，exact不能和include/exclude共存`}},
+    },
 /*    singleFiledRValueMustBeObject:{rc:40226,msg:{client:'输入值格式错误',server:'singleField的值必须是object'}},
     singleFiledValueMustContainOneKey:{rc:40228,msg:{client:'输入值格式错误',server:'singleField的值(object)必须只有一个键'}},
     singleFiledValuesKeyNameWrong:{rc:40230,msg:{client:'输入值格式错误',server:'singleField的值(object)的键名必须是value'}},*/
@@ -212,9 +279,11 @@ const validateValue={
         valueTypeIncorrect:{rc:40390,msg:{client:`验证码错误`,server:`验证码的值必须是字符`}},
         valueLengthIncorrect:{rc:40392,msg:{client:`验证码错误`,server:`验证码的长度必须是6`}},
         valueIncorrect:{rc:40396,msg:{client:`验证码错误`,server:`验证码的值的格式不正确`}},
-
-    }
-
+    },
+    /*              dataUrl                      */
+    dataUrl:{
+        valueIncorrect:{rc:40398,msg:{client:`图片格式错误`,server:`图片的dataUrl不正确`}},
+    },
 }
 
 

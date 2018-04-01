@@ -25,10 +25,14 @@ function generateClientAll({originRulePath,iviewConstantPath}){
     if(false===fs.existsSync(`${iviewConstantPath}inputValue/`)){
         fs.mkdirSync(`${iviewConstantPath}inputValue`)
     }
-    generateClientInputValue({originRulePath:originRulePath,absResultPath:`${iviewConstantPath}inputValue/inputValue.js`})
-    generateClientInputAttribute({originRulePath:originRulePath,absResultPath:`${iviewConstantPath}inputValue/inputAttribute.js`})
-    generateClientInputTempResult({originRulePath:originRulePath,absResultPath:`${iviewConstantPath}inputValue/inputTempData.js`})
+    if(false===fs.existsSync(`${iviewConstantPath}inputValue/gen/`)){
+        fs.mkdirSync(`${iviewConstantPath}inputValue/gen`)
+    }
+    generateClientInputValue({originRulePath:originRulePath,absResultPath:`${iviewConstantPath}inputValue/gen/inputValue.js`})
+    generateClientInputAttribute({originRulePath:originRulePath,absResultPath:`${iviewConstantPath}inputValue/gen/inputAttribute.js`})
+    generateClientInputTempResult({originRulePath:originRulePath,absResultPath:`${iviewConstantPath}inputValue/gen/inputTempData.js`})
 }
+
 
 generateClientAll({originRulePath:'D:/ss_vue_express/server_common/constant/inputRule/browserInput/user/user.js',iviewConstantPath:`D:/ss_vue_view/src/constant/`})
 

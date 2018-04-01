@@ -60,12 +60,23 @@ const checkRule={
         return {rc:43024,msg:`coll:${collName}的字段${fieldName}中，rule字段require中，update只能有一个`}
     },
     /*           check relate rule              */
-    dataTypeArrayMissMaxlength({collName,fieldName,ruleField}) {
+    dataTypeArrayMissMaxength({collName,fieldName,ruleField}) {
         return {rc: 43026, msg: `coll:${collName}的字段${fieldName}中，rule的数据类型为数组，但是没有定义array_max_length属性`}
     },
     /*          checkRequireContainMsgForError          */
     ruleMissErrorMsg({collName,fieldName,ruleField}) {
         return {rc: 43028, msg: `coll:${collName}的字段${fieldName}中，rule：${ruleField}的error中，没有定义msg`}
+    },
+
+    /*          check SearchRange         */
+    searchRangeTypeIncorrect({collName,fieldName,ruleField}) {
+        return {rc: 43030, msg: `coll:${collName}的字段${fieldName}中，searchRange的类型不正确`}
+    },
+    searchRangeValueIncorrect({collName,fieldName,ruleField}) {
+        return {rc: 43032, msg: `coll:${collName}的字段${fieldName}中，searchRange的值不是预定义的`}
+    },
+    searchRangeRedundant({collName,fieldName,ruleField}) {
+        return {rc: 43034, msg: `coll:${collName}的字段${fieldName}中，searchRange已经定义了ALL，但是又定义了其他搜索范围`}
     },
 }
 

@@ -37,7 +37,7 @@ const currentEnv=server_common_file_require.appSetting.currentEnv
  * 更新用户资料
  * 1. 需要对比req中的userId和session中的id是否一致
  * */
-async function updateUser_async(req){
+async function updateUser_async({req}){
     // console.log(`updateUser_async in`)
     // console.log(`req.session ${JSON.stringify(req.session)}`)
     /*                  要更改的记录的owner是否为发出req的用户本身                            */

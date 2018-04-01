@@ -81,6 +81,9 @@ function readGlobalConfiguration({absFilePath,skipFilesArray}){
 //将结果写入指定路径的文件下
 function writeResult({content,resultPath}){
     // ap.inf('content',content)
+    let description=`/*    gene by ${__filename}  \r\n`
+    description+=`* 一些设置信息，和服务器端的设置保持一致 \r\n`
+    description+=`*/\r\n\r\n`
     let head=`"use strict"\r\n\r\n`
 
 
@@ -97,7 +100,7 @@ function writeResult({content,resultPath}){
     exportStr+=`}`
 
     // ap.inf('contentForCreate',contentForCreate)
-    let finalStr=`${head}\r\n${contentStr}\r\n\r\n${exportStr}`
+    let finalStr=`${description}${head}\r\n${contentStr}\r\n\r\n${exportStr}`
     fs.writeFileSync(`${resultPath}`,finalStr)
 }
 

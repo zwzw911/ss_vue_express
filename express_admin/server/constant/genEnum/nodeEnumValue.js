@@ -6,7 +6,7 @@ const UserState=["noSess","login","not login",]
 const Env=["development","production",] 
 const CompOp=["eq","gt","lt",] 
 const MongooseOp=["insertMany","updateMany","findById","findByIdAndUpdate","remove","readAll","readName","search","count",] 
-const ValidatePart=["searchParams","recordInfo","recordId","currentPage","filterFieldValue","recIdArr","editSubField","event","singleField","manipulateArray","method",] 
+const ValidatePart=["searchParams","recordInfo","recordId","currentPage","filterFieldValue","recIdArr","editSubField","event","singleField","manipulateArray","method","captcha","sms",] 
 const KeyForSearchParams=["value","compOp",] 
 const TimeUnit=["ms","second","minute","hour",] 
 const Method=["0","1","2","3","4","5",] 
@@ -21,6 +21,7 @@ const PartValueToVarName=["subFieldValue","recordId","docValue","manipulateArray
 const UpdateType=["normal","subField",] 
 const FindEleInArray=["atLeastOne",] 
 const ManipulateOperator=["add","remove",] 
+const IntervalCheckPrefix=["captcha","uploadUserPhoto",] 
 module.exports={
     RandomStringType,
     UserState,
@@ -42,4 +43,5 @@ module.exports={
     UpdateType,
     FindEleInArray,
     ManipulateOperator,
+    IntervalCheckPrefix,
 }

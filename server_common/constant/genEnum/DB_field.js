@@ -238,6 +238,7 @@ const Field={
         PASSWORD:'password',
         DOC_STATUS:'docStatus',
         USER_TYPE:'userType',
+        PHOTO_DATA_URL:'photoDataUrl',
         PHOTO_PATH_ID:'photoPathId',
         PHOTO_HASH_NAME:'photoHashName',
         PHOTO_SIZE:'photoSize',

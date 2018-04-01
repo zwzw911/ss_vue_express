@@ -1004,6 +1004,18 @@ function validateSMS(SMSValue){
 
     return rightResult
 }
+
+/*      验证短信验证码
+*       格式简单，不用验证format，直接验证value
+* */
+function validateDataUrl(dataUrlValue){
+    if(false===regex.dataUrlThumbnail.test(dataUrlValue)){
+        return validateValueError.dataUrl.valueIncorrect
+    }
+
+
+    return rightResult
+}
 module.exports= {
     validateScalarInputValue,
     // validateCreateRecorderValue,    //调用_validateRecorderValue
@@ -1034,4 +1046,5 @@ module.exports= {
     validateMethodValue,
     validateCaptcha,
     validateSMS,
+    validateDataUrl,
 }

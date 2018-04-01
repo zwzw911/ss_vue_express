@@ -112,6 +112,10 @@ const misc={
     /*              getIP_async                               */
     IPNotExist:{rc:40858,msg:{client:`非法请求`,server:`请求中无IP`}},
     IPFormatWrong:{rc:40859,msg:{client:'请求格式不正确',server:'IP格式不正确'}},
+    /*              dataUrl2File_async                          */
+    dataUrlNotValidImage:{rc:40862,msg:{client:'图片格式不正确',server:'dataUrl无法通过正则获得图片格式'}},
+    /*              convertFileSize                         */
+    unknownUnit:{rc:40864,msg:'转换文件大小的单位未知'},
 }
 
 //40900~41000

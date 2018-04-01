@@ -14,6 +14,7 @@ const browserInputRule=require('../../../constant/inputRule/browserInputRule').b
 const server_common_file_require=require('../../../../server_common_file_require')
 const controllerHelper=server_common_file_require.controllerHelper
 const controllerChecker=server_common_file_require.controllerChecker
+const interval=server_common_file_require.interval
 
 const e_applyRange=server_common_file_require.inputDataRuleType.ApplyRange
 
@@ -54,12 +55,14 @@ const e_field=require('../../../constant/genEnum/DB_field').Field
 const e_uniqueField=require('../../../constant/genEnum/DB_uniqueField').UniqueField
 const e_chineseName=require('../../../constant/genEnum/inputRule_field_chineseName').ChineseName
 
+const e_intervalCheckPrefix=nodeEnum.IntervalCheckPrefix
 
-const userPhotoConfiguration=server_common_file_require.globalConfiguration.uploadFileDefine.user_thumb
-const userThumbImageType=server_common_file_require.globalConfiguration.uploadFileDefine.common.userThumbImageType
+const userPhotoConfiguration=server_common_file_require.globalConfiguration.uploadFileDefine.user_photo
+const userThumbImageType=server_common_file_require.globalConfiguration.uploadFileDefine.common.userPhotoType
 const captchaIntervalConfiguration=server_common_file_require.globalConfiguration.intervalCheckConfiguration.captcha
 const mailOption=server_common_file_require.globalConfiguration.mailOption
 const currentEnv=server_common_file_require.appSetting.currentEnv
+const absolutePath=server_common_file_require.appSetting.absolutePath
 
 const dbModel=require('../../../constant/genEnum/dbModel')
 const e_iniSettingObject=require('../../../constant/genEnum/initSettingObject').iniSettingObject
@@ -125,7 +128,7 @@ async  function  uniqueCheck_async(req) {
 
 }
 
-async function retrievePassword_async(req){
+async function retrievePassword_async({req}){
     //新产生的密码,账号对应的记录
     let tmpResult,newPwd,userId,newPwdType=e_randomStringType.NORMAL
 
@@ -211,8 +214,70 @@ async function retrievePassword_async(req){
 
 }
 
+/*  以dataUrl方式保存头像
+* */
+async function uploadDataUrlPhoto_async({req}){
+    // ap.inf('uploadDataUrlPhoto_async in')
+    /*             检查用户是否在更新 自己 的头像           */
+    let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
+    let userId=userInfo.userId
 
-async function uploadPhoto_async({req}){
+    let tmpResult
+    //转换成文件，以便gm读取解析度
+    let dataUrl=req.body.values[e_part.RECORD_INFO][e_field.USER.PHOTO_DATA_URL]
+    let fileNameWithoutExtension=`${userId}_${Date.now()}`
+    let filePath=absolutePath.tmpImage
+    // ap.inf('uploadPhoto_async in')
+    let fileAbsPath=await misc.dataUrl2File_returnFileAbsPath_async({dataUrl:dataUrl,fileNameWithoutExtension:fileNameWithoutExtension,filePath:filePath})
+    // ap.inf('fileAbsPath',fileAbsPath)
+
+    let inst=gmImage.initImage(fileAbsPath)
+    // ap.inf('inst done')
+    //检查size(width&&height)不符合，直接返回错误（而不是试图转换）,因为在client已经确保了height和width的正确
+    tmpResult=await gmImage.getImageProperty_async(inst,e_gmGetter.SIZE)
+    // ap.inf('size',tmpResult)
+    if(tmpResult.width>userPhotoConfiguration.maxWidth || tmpResult.height>userPhotoConfiguration.maxHeight){
+        fs.unlinkSync(fileAbsPath)
+        return Promise.reject(controllerError.imageSizeInvalid)
+    }
+// ap.inf('size done')
+    //检查文件大小
+    tmpResult=await gmImage.getImageProperty_async(inst,e_gmGetter.FILE_SIZE)
+    let tmpSize=tmpResult.sizeNum,tmpUnit=tmpResult.sizeUnit
+    tmpResult=misc.convertFileSize({num:tmpSize,unit:tmpUnit,newUnit:undefined})
+    if(tmpResult.msg>userPhotoConfiguration.maxSizeInByte){
+        fs.unlinkSync(fileAbsPath)
+        return Promise.reject(controllerError.imageSizeInvalid)
+    }
+    // ap.inf('file size done')
+    //格式不同，返回错误
+    tmpResult=await gmImage.getImageProperty_async(inst,e_gmGetter.FORMAT)
+    // console.log(`tmpResult ==== ${JSON.stringify(tmpResult)}`)
+    if(-1===userThumbImageType.indexOf(tmpResult)){
+        fs.unlinkSync(fileAbsPath)
+        return Promise.reject(controllerError.imageFormatInvalid)
+    }
+
+
+    fs.unlinkSync(fileAbsPath)
+    ap.inf('format done')
+
+    //存储到db中
+
+// console.log(`updateFieldsValueForModel ${JSON.stringify(updateFieldsValueForModel)}`)
+//     ap.inf('updateFieldsValueForModel',updateFieldsValueForModel)
+//     ap.inf('userId',userId)
+    await common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:dbModel.user,id:userId,updateFieldsValue:{[e_field.USER.PHOTO_DATA_URL]:dataUrl}})
+    // console.log(`type ====>${JSON.stringify(type)}`)
+    // ap.inf('save to db done')
+
+    return Promise.resolve({rc:0})
+}
+
+
+/*  以文件的格式保存头像
+* */
+async function uploadFilePhoto_async({req}){
     /*             检查用户是否在更新 自己 的头像           */
     // ap.inf('req method',req.body.values.method)
     // console.log(`uploadPhoto_async in`)
@@ -245,7 +310,7 @@ async function uploadPhoto_async({req}){
     tmpResult=await controllerHelper.chooseStorePath_async({usage:e_storePathUsage.DB.USER_PHOTO})
 // ap.inf('chooseStorePath_async result',tmpResult)
     choosenStorePathRecord=misc.objectDeepCopy(tmpResult)
-     // console.log(`choosen store path recorder ====> ${JSON.stringify(choosenStorePathRecord)}`)
+    // console.log(`choosen store path recorder ====> ${JSON.stringify(choosenStorePathRecord)}`)
 
 
     /*              将文件从临时目录转移（转换）到选择的路径                */
@@ -256,14 +321,14 @@ async function uploadPhoto_async({req}){
 
     let finalPath=choosenStorePathRecord.path+finalFileName
 // ap.inf('finalPath',finalPath)
- // console.log(`path ==== ${path}`)
+    // console.log(`path ==== ${path}`)
     // console.log(`finalPath ==== ${finalPath}`)
     //格式不同，直接转换到指定位置
     tmpResult=await gmImage.getImageProperty_async(inst,e_gmGetter.FORMAT)
     // console.log(`tmpResult ==== ${JSON.stringify(tmpResult)}`)
     if(-1===userThumbImageType.indexOf(tmpResult)){
         // console.log(`path ==== ${path}`)
-        await gmImage.gmCommand_async(inst,e_gmCommand.CONVERT_FILE_TYPE,finalPath)
+        await gmImage.gmCommand_async({gmInst:inst, command:e_gmCommand.CONVERT_FILE_TYPE,savePath:finalPath,sizeParameter:undefined})
         let newInst=gmImage.initImage(finalPath)
         // console.log(`finalPath ====》 ${finalPath}`)
         tmpResult=await  gmImage.getImageProperty_async(newInst,e_gmGetter.FILE_SIZE)
@@ -284,7 +349,7 @@ async function uploadPhoto_async({req}){
 
     /*          获得原始user记录，来对比原始文件size和当前文件size，并获得原始文件地址来删除文件，         */
     //获得2个数据：populateUserRec（原始用户数据），sizeToBeAddInDB（新文件和就文件的size差值）
- // console.log(`userId===>${JSON.stringify(userId)}`)
+    // console.log(`userId===>${JSON.stringify(userId)}`)
     let oldPhotoFile,originalUserInfo,originalStorePath
     tmpResult=await common_operation_model.findById_returnRecord_async({dbModel:dbModel.user,id:userId})
     originalUserInfo=misc.objectDeepCopy(tmpResult)
@@ -360,25 +425,20 @@ async function uploadPhoto_async({req}){
         // console.log(`newDocValue===>${JSON.stringify(newDocValue)}`)
         // console.log(`internalInputRule[e_coll.USER]===>${JSON.stringify(internalInputRule[e_coll.USER])}`)
         // tmpResult=validateValue.validateUpdateRecorderValue(newDocValue,internalInputRule[e_coll.USER])
-/*        let applyRange,method=req.body.values.method
-        switch (method){
-            case e_method.CREATE:
-                applyRange=e_applyRange.CREATE
-                break;
-                case e_method.UPDATE
-        }
-        if(method===e_method){
+        /*        let applyRange,method=req.body.values.method
+                switch (method){
+                    case e_method.CREATE:
+                        applyRange=e_applyRange.CREATE
+                        break;
+                        case e_method.UPDATE
+                }
+                if(method===e_method){
 
-        }*/
+                }*/
 // ap.inf('start to validate')
         tmpResult=validateValue.validateScalarInputValue({inputValue:newDocValue,collRule:internalInputRule[e_coll.USER],p_applyRange:e_applyRange.UPDATE_SCALAR})
 
         // ap.inf('validate result',tmpResult)       // console.log(`internal check=============> ${JSON.stringify(tmpResult)}`)
-        // tmpResult=helper.validatePartValue({req:req,exceptedPart:exceptedPart,coll:e_coll.USER,inputRule:user_internalInputRule,method:e_method.CREATE})
-        // console.log(`updateFieldsValue   ${JSON.stringify(updateFieldsValue)}`)
-        // console.log(`internalInputRule   ${JSON.stringify(internalInputRule[e_coll.USER][e_field.USER.PHOTO_DATA_URL])}`)
-        // console.log(`internal check  tmpResult   ${JSON.stringify(internalInputRule[e_coll.USER][e_field.USER.PHOTO_DATA_URL]['format']['define'].test(finalFileName))}`)
-        // console.log(`internal check  ${JSON.stringify(tmpResult)}`)
         if(tmpResult.rc>0){
             return Promise.reject(tmpResult)
         }
@@ -395,7 +455,6 @@ async function uploadPhoto_async({req}){
 
     return Promise.resolve({rc:0})
 }
-
 /*          产生captcha           */
 /*  使用的key
 	1. sessionId.captcha: lastOkRequestTime。list，记录最近合格的请求的时间，TTL=duration
@@ -427,13 +486,13 @@ async function uploadPhoto_async({req}){
 
      */
 async function generateCaptcha_async({req}){
-    // ap.inf('session id ',req,sesssion.id)
+    // ap.inf('generateCaptcha_async in ')
     //首先检查是否可以处理req
     //captcha为constant/config/globalConfiguration下intervalCheckConfiguration的一个键值
-    await controllerChecker.checkInterval_async({req:req,reqTypePrefix:'captcha'})
-
+    // await interval.checkInterval_async({req:req,reqTypePrefix:e_intervalCheckPrefix.CPATCHA})
+// ap.inf('checkInterval_async pass')
     let result=await controllerHelper.genCaptchaAdnSave_async({req:req,params:{height:33}})
-
+    // ap.inf('genCaptchaAdnSave_async result',result)
     return Promise.resolve({rc:0,msg:result})
     // return Promise.resolve({rc:0,msg:'test'})
 }
@@ -447,7 +506,7 @@ async function checkCaptcha_async({req}){
 * 输入只能包含RECORD_INFO，RECORD_INFO中只能包含oldPassword/newPassword
 *
 * */
-async function changePassword({req}){
+async function changePassword_async({req}){
     //检查需要的部分是否存在：recordInfo
     let inputValue=req.body.values
     if(undefined===req.body.values
@@ -530,10 +589,11 @@ async function changePassword({req}){
 module.exports={
     uniqueCheck_async,
     retrievePassword_async,
-    uploadPhoto_async,
+    uploadDataUrlPhoto_async,
+    uploadFilePhoto_async,
 
     generateCaptcha_async,
     checkCaptcha_async,
 
-    changePassword,
+    changePassword_async,
 }

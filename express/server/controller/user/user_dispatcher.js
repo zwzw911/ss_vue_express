@@ -7,26 +7,169 @@
 'use strict'
 const ap=require('awesomeprint')
 
+
 const server_common_file_include=require('../../../server_common_file_require')
+const controllerPreCheck=server_common_file_include.controllerPreCheck
+const dispatchError=server_common_file_include.helperError.dispatch
 
 const nodeEnum=server_common_file_include.nodeEnum
+const mongoEnum=server_common_file_include.mongoEnum
 const controllerHelper=server_common_file_include.controllerHelper
 // const e_userState=require('../../constant/enum/node').UserState
 const e_part=nodeEnum.ValidatePart
 const e_method=nodeEnum.Method//require('../../constant/enum/node').Method
 const e_coll=require('../../constant/genEnum/DB_Coll').Coll
 
+const e_penalizeType=mongoEnum.PenalizeType.DB
+const e_penalizeSubType=mongoEnum.PenalizeSubType.DB
+
+const e_intervalCheckPrefix=server_common_file_include.nodeEnum.IntervalCheckPrefix
+const e_searchRange=server_common_file_include.inputDataRuleType.SearchRange
+
 const controllerError=require(`./user_setting/user_controllerError`).controllerError
+const controllerSetting=require('./user_setting/user_setting').setting
+
+const getUser_async=require('./user_logic/get_user').getUser_async
 const createUser_async=require('./user_logic/create_user').createUser_async
 const updateUser_async=require('./user_logic/update_user').updateUser_async
 const userLogin_async=require('./user_logic/user_login').login_async
+const userMisc=require('./user_logic/user_misc_func')
+const uploadUserPhoto_async=userMisc.uploadDataUrlPhoto_async
+
+const uniqueCheck_async=userMisc.uniqueCheck_async
+const retrievePassword_async=userMisc.retrievePassword_async
+const changePassword_async=userMisc.changePassword_async
+const generateCaptcha_async=userMisc.generateCaptcha_async
+
 //对CRUD（输入参数带有method）操作调用对应的函数
 async function dispatcher_async(req){
+
     //检查格式
-    // console.log(`req is ${JSON.stringify(req.body)}`)
-    // console.log(`dispatcher in`)
-    // console.log(`req.body.values ${JSON.stringify(req.body.values)}`)
-    let collName=e_coll.USER,tmpResult
+// ap.inf('req.route',req.route)
+    ap.inf('req.originalUrl',req.originalUrl)
+//     ap.inf('req.baseUrl',req.baseUrl)
+//     ap.inf('req.path',req.path)
+//     ap.inf('req.route.stack[0].method',req.route.stack[0].method)
+
+    let userLoginCheck={
+        //needCheck:false,
+        // error:controllerError.userNotLoginCantCreateComment
+    }
+    let penalizeCheck={
+        /*                penalizeType:e_penalizeType.NO_ARTICLE,
+                        penalizeSubType:e_penalizeSubType.CREATE,
+                        penalizeCheckError:controllerError.userInPenalizeNoCommentCreate*/
+    }
+    let arr_currentSearchRange=[e_searchRange.ALL]
+    let originalUrl=req.originalUrl
+    let collName=controllerSetting.MAIN_HANDLED_COLL_NAME
+    let expectedPart
+    let result=dispatchError.common.unknownRequestRul
+
+    //interval和robot检测
+    await controllerPreCheck.commonPreCheck_async({req:req,collName:collName})
+    // ap.inf('commonPreCheck_async done')
+    switch (req.route.stack[0].method) {
+        case 'get':
+            if(originalUrl==='/user' || originalUrl==='/user/') {
+                // ap.inf('start userStateCheck_async check')
+                await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
+                result= await getUser_async({req: req})
+                return Promise.resolve(result)
+            }
+            if(originalUrl==='/user/captcha' || originalUrl==='/user/captcha/') {
+                //captcha一般在注册或者登录时候使用，此时用户尚未登录
+                await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
+                // ap.inf('userStateCheck_async done')
+                result = await generateCaptcha_async({req: req})
+                return Promise.resolve(result)
+            }
+            break;
+        case 'post':
+            if(originalUrl==='/user' || originalUrl==='/user/') {
+                await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
+                // ap.inf('create use userStateCheck_async done')
+                expectedPart=[e_part.RECORD_INFO,e_part.CAPTCHA]
+                result=controllerPreCheck.inputPreCheck({req:req,expectedPart:expectedPart,collName:collName,method:e_method.CREATE,arr_currentSearchRange:arr_currentSearchRange})
+                // ap.inf('create use inputPreCheck result',result)
+                if(result.rc>0){return Promise.reject(result)}
+                result = await createUser_async({req: req})
+                return Promise.resolve(result)
+            }
+            if(originalUrl==='/user/login' || originalUrl==='/user/login/') {
+                await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
+                ap.inf('login userStateCheck_async done')
+                expectedPart=[e_part.RECORD_INFO,e_part.CAPTCHA]
+                result=controllerPreCheck.inputPreCheck({req:req,expectedPart:expectedPart,collName:collName,method:e_method.MATCH,arr_currentSearchRange:arr_currentSearchRange})
+                ap.inf('inputPreCehck result',result)
+                if(result.rc>0){return Promise.reject(result)}
+                result = await userLogin_async({req: req})
+                return Promise.resolve(result)
+            }
+            if(originalUrl==='/user/uniqueCheck' || originalUrl==='/user/uniqueCheck/') {
+                await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
+                result = await uniqueCheck_async({req: req})
+                return Promise.resolve(result)
+            }
+            if(originalUrl==='/user/retrievePassword' || originalUrl==='/user/retrievePassword/') {
+                userLoginCheck={
+                    needCheck:true,
+                    error:controllerError.dispatch.notLoginCantRetrievePassword
+                }
+                await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
+                result = await retrievePassword_async({req: req})
+                return Promise.resolve(result)
+            }
+
+            break
+        case 'delete':
+
+            break;
+        case 'put':
+            if(originalUrl==='/user' || originalUrl==='/user/') {
+                userLoginCheck={
+                    needCheck:true,
+                    error:controllerError.dispatch.notLoginCantUpdateUserInfo
+                }
+                await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
+                expectedPart=[e_part.RECORD_INFO]
+                result=controllerPreCheck.inputPreCheck({req:req,expectedPart:expectedPart,collName:collName,method:e_method.UPDATE,arr_currentSearchRange:arr_currentSearchRange})
+                if(result.rc>0){return Promise.reject(result)}
+                result = await updateUser_async({req: req})
+                return Promise.resolve(result)
+            }
+            if(originalUrl==='/user/changePassword' || originalUrl==='/user/changePassword/') {
+                userLoginCheck={
+                    needCheck:true,
+                    error:controllerError.dispatch.notLoginCantUpdatePassword
+                }
+                await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
+                result = await changePassword_async({req: req})
+                return Promise.resolve(result)
+            }
+            if(originalUrl==='/user/uploadUserPhoto' || originalUrl==='/user/uploadUserPhoto/') {
+                ap.inf('upload in')
+                userLoginCheck={
+                    needCheck:true,
+                    error:controllerError.dispatch.notLoginCantUpdateUserPhoto
+                }
+                await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
+                // ap.inf('userStateCheck_async done')
+                expectedPart=[e_part.RECORD_INFO]
+                result=controllerPreCheck.inputPreCheck({req:req,expectedPart:expectedPart,collName:collName,method:e_method.UPLOAD,arr_currentSearchRange:arr_currentSearchRange})
+                // ap.inf('inputPreCheck result',result)
+                if(result.rc>0){return Promise.reject(result)}
+                result = await uploadUserPhoto_async({req: req})
+                return Promise.resolve(result)
+            }
+            break;
+        default:
+            // return Promise.reject()
+
+    }
+
+
+    /*let collName=e_coll.USER,tmpResult
 
     //dispatcher只检测req的结构，以及req中method的格式和值，以便后续可以直接根据method进行调用
     tmpResult=controllerHelper.checkMethod({req:req})
@@ -51,11 +194,11 @@ async function dispatcher_async(req){
                 // error:controllerError.userNotLoginCantCreateComment
             }
             penalizeCheck={
-/*                penalizeType:e_penalizeType.NO_ARTICLE,
+/!*                penalizeType:e_penalizeType.NO_ARTICLE,
                 penalizeSubType:e_penalizeSubType.CREATE,
-                penalizeCheckError:controllerError.userInPenalizeNoCommentCreate*/
+                penalizeCheckError:controllerError.userInPenalizeNoCommentCreate*!/
             }
-            expectedPart=[e_part.RECORD_INFO,e_part.CAPTCHA]
+            expectedPart=[e_part.RECORD_INFO,e_part.CAPTCHA]//
             // console.log(`before precheck done=====.`)
             // ap.inf('start')
             await controllerHelper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
@@ -74,9 +217,9 @@ async function dispatcher_async(req){
                 error:controllerError.notLoginCantUpdate
             }
             penalizeCheck={
-                /*                penalizeType:e_penalizeType.NO_ARTICLE,
+                /!*                penalizeType:e_penalizeType.NO_ARTICLE,
                                 penalizeSubType:e_penalizeSubType.CREATE,
-                                penalizeCheckError:controllerError.userInPenalizeNoCommentCreate*/
+                                penalizeCheckError:controllerError.userInPenalizeNoCommentCreate*!/
             }
             expectedPart=[e_part.RECORD_INFO]
             // console.log(`before precheck done=====.`)
@@ -93,9 +236,9 @@ async function dispatcher_async(req){
                 // error:controllerError.userNotLoginCantCreateComment
             }
             penalizeCheck={
-                /*                penalizeType:e_penalizeType.NO_ARTICLE,
+/!*                                penalizeType:e_penalizeType.NO_ARTICLE,
                                 penalizeSubType:e_penalizeSubType.CREATE,
-                                penalizeCheckError:controllerError.userInPenalizeNoCommentCreate*/
+                                penalizeCheckError:controllerError.userInPenalizeNoCommentCreate*!/
             }
             //update的时候，userId直接保存在session中，无需通过client传入
             expectedPart=[e_part.RECORD_INFO,e_part.CAPTCHA]
@@ -104,12 +247,39 @@ async function dispatcher_async(req){
 	    //await helper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart,e_field:e_field,e_coll:e_coll,e_internal_field:e_internal_field,maxSearchKeyNum:maxSearchKeyNum,maxSearchPageNum:maxSearchPageNum})
             tmpResult=await userLogin_async(req)
             break;
+        case e_method.UPLOAD: //create
+            let reqTypePrefix=e_intervalCheckPrefix.UPLOAD_USER_PHOTO
+            // console.log(`create in`)
+            // ap.inf('create in')
+            // await controllerHelper.checkInterval_async({req:req,reqTypePrefix:e_intervalCheckPrefix.UPLOAD_USER_PHOTO})
+
+            userLoginCheck={
+                needCheck:true,
+                error:controllerError.notLoginCantUpload
+            }
+            penalizeCheck={
+                penalizeType:e_penalizeType.NO_UPLOAD_USER_PHOTO,
+                // penalizeSubType:e_penalizeSubType.CREATE,
+                penalizeCheckError:controllerError.userInPenalizeNoPhotoUpload
+            }
+            expectedPart=[e_part.RECORD_INFO]
+            // console.log(`before precheck done=====.`)
+            // ap.inf('before preCheck done')
+            await controllerHelper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart,reqTypePrefix:reqTypePrefix})
+            // ap.inf('after preCheck done')
+            // ap.inf('end')
+            //await helper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart,e_field:e_field,e_coll:e_coll,e_internal_field:e_internal_field,maxSearchKeyNum:maxSearchKeyNum,maxSearchPageNum:maxSearchPageNum})
+// console.log(`precheck done=====.`)
+
+            tmpResult=await uploadUserPhoto_async({req:req})
+            // console.log(`create  tmpResult ${JSON.stringify(tmpResult)}`)
+            break;
         default:
-            console.log(`======>ERR:Wont in cause method check before`)
+           ap.err(`======>ERR:Wont in cause method check before`)
             // console.log(`match tmpResult ${JSON.stringify(tmpResult)}`)
     }
     
-    return Promise.resolve(tmpResult)
+    return Promise.resolve()*/
 }
 
 

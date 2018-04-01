@@ -8,7 +8,7 @@ const e_env=require('../enum/nodeEnum').Env
     //fasle：req.ip(s)返回undefined和[]。此时需要req.connection.remoteAddress
 const appSetting={
     [e_env.DEV]:{
-        userIdentify:'session',//判别用户，通过session还是ip，还是both（2者皆要）
+        userIdentify:'session',//判别用户，通过session,ip，bothAnd(两者皆要)bothOr（任意一个，但是session优先）
         'trust_proxy':true,
         hostDomain:'127.0.0.1',
 
@@ -55,6 +55,7 @@ const absolutePath={
     'express_admin':'D:/ss_vue_express/express_admin/',
     'server_common':'D:/ss_vue_express/server_common/',
     'image_path_for_test':'D:/ss_vue_express/test_data/',
+    'tmpImage':'D:/ss_vue_express/tmp/',//临时存储图片的目录（userPhoto上传为dataUrl，临时转换成图片后获得解析度，然后删除）
 }
 module.exports={
     currentEnv,

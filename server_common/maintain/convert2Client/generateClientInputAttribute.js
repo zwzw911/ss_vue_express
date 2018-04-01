@@ -162,6 +162,9 @@ function generateSingleCollInputAttributeUnique({collAttribute,collUniqueField})
 function writeClientInitInputValueResult({content,resultPath}){
     // ap.inf('content',content)
     // let relativePath='src/constant/rule/'
+    let description=`/*    gene by ${__filename}  \r\n`
+    description+=`* 字段的非rule属性，例如label，placeHolder，unique等 \r\n`
+    description+=`*/\r\n\r\n`
     let head=`"use strict"\r\n\r\n`
 
     let inputAttribute=`const inputAttribute=\r\n`
@@ -176,7 +179,7 @@ function writeClientInitInputValueResult({content,resultPath}){
     // let contentFormatSanityForUpdate=misc.sanityClientPatternInString({string:JSON.stringify(convertedRule['ruleForUpdate'])})
 
 
-    let finalStr=`${head}\r\n${inputAttribute}${JSON.stringify(content)}\r\n\r\n${exportStr}`
+    let finalStr=`${description}${head}\r\n${inputAttribute}${JSON.stringify(content)}\r\n\r\n${exportStr}`
     fs.writeFileSync(`${resultPath}`,finalStr)
     
 }

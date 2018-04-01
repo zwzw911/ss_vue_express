@@ -106,3 +106,6 @@
 
 1. require 文件的时候，可以skip dir
 2. 使用普通redis操作（set/get）在user_misc_func
+
+
+1. session时间管理，达到某个时间点后（例如duration的75%），自动重新生成sessionId。暂缓（需要同时修改captcha/reject等数据，有点麻烦）

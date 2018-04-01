@@ -107,6 +107,9 @@ function generateInitInputValue({collName,collRuleDefinition}){
 function writeClientInitInputValueResult({content,resultPath}){
     // ap.inf('content',content)
     // let relativePath='src/constant/rule/'
+    let description=`/*    gene by ${__filename}  \r\n`
+    description+=`* 空对象，存储字段值（vue双向绑定） \r\n`
+    description+=`*/\r\n\r\n`
     let head=`"use strict"\r\n\r\n`
 
     let inputValueForCreate=`const inputValueForCreate=\r\n`
@@ -123,7 +126,7 @@ function writeClientInitInputValueResult({content,resultPath}){
     // let contentFormatSanityForUpdate=misc.sanityClientPatternInString({string:JSON.stringify(convertedRule['ruleForUpdate'])})
 
 
-    let finalStr=`${head}\r\n${inputValueForCreate}${JSON.stringify(initValueForCreate)}\r\n${inputValueForUpdate}${JSON.stringify(initValueForUpdate)}\r\n\r\n${exportStr}`
+    let finalStr=`${description}${head}\r\n${inputValueForCreate}${JSON.stringify(initValueForCreate)}\r\n${inputValueForUpdate}${JSON.stringify(initValueForUpdate)}\r\n\r\n${exportStr}`
     fs.writeFileSync(`${resultPath}`,finalStr)
     
 }

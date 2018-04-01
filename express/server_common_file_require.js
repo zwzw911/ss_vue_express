@@ -16,11 +16,13 @@ const helperError=require('../server_common/constant/error/controller/helperErro
 const maintainError=require('../server_common/constant/error/maintainError.js')
 const mongoError=require('../server_common/constant/error/mongo/mongoError.js')
 const redisError=require('../server_common/constant/error/redis/redisError.js')
+const securityError=require('../server_common/constant/error/securityError.js')
 const systemError=require('../server_common/constant/error/systemError.js')
 const validateError=require('../server_common/constant/error/validateError.js')
 const regex=require('../server_common/constant/regex/regex.js')
 const controllerChecker=require('../server_common/controller/controllerChecker.js')
 const controllerHelper=require('../server_common/controller/controllerHelper.js')
+const controllerPreCheck=require('../server_common/controller/controllerPreCheck.js')
 const dataConvert=require('../server_common/controller/dataConvert.js')
 const awesomeCaptcha=require('../server_common/function/assist/awesomeCaptcha.js')
 const checkRobot=require('../server_common/function/assist/checkRobot.js')
@@ -32,8 +34,10 @@ const pagination=require('../server_common/function/assist/pagination.js')
 const sanityHtml=require('../server_common/function/assist/sanityHtml.js')
 const system=require('../server_common/function/assist/system.js')
 const upload=require('../server_common/function/assist/upload.js')
+const interval=require('../server_common/function/security/interval.js')
 const validateFormat=require('../server_common/function/validateInput/validateFormat.js')
 const validateHelper=require('../server_common/function/validateInput/validateHelper.js')
+const validateSearchFormat=require('../server_common/function/validateInput/validateSearchFormat.js')
 const validateValue=require('../server_common/function/validateInput/validateValue.js')
 const API_helper=require('../server_common/Test/API_helper.js')
 const component_function=require('../server_common/Test/component_function.js')
@@ -66,11 +70,13 @@ module.exports={
     maintainError,
     mongoError,
     redisError,
+    securityError,
     systemError,
     validateError,
     regex,
     controllerChecker,
     controllerHelper,
+    controllerPreCheck,
     dataConvert,
     awesomeCaptcha,
     checkRobot,
@@ -82,8 +88,10 @@ module.exports={
     sanityHtml,
     system,
     upload,
+    interval,
     validateFormat,
     validateHelper,
+    validateSearchFormat,
     validateValue,
     API_helper,
     component_function,

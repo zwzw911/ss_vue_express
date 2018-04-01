@@ -3,7 +3,7 @@
  */
 'use strict'
 const fs=require('fs')
-
+const ap=require('awesomeprint')
 // const recursiveRequireAllFileInDir=require('../function/assist/misc').recursiveRequireAllFileInDir
 
 
@@ -21,11 +21,11 @@ const fs=require('fs')
 function _ifParamsDirExist(dirToBeCheckInObject){
     for(let singleKey in dirToBeCheckInObject){
         if(false=== fs.existsSync(dirToBeCheckInObject[singleKey])){
-            console.log(`${singleKey}:${dirToBeCheckInObject[singleKey]} not exist`)
+            ap.inf(`${singleKey}:${dirToBeCheckInObject[singleKey]} not exist`)
             return false
         }
 /*        else{
-            console.log(`${singleKey}:${dirToBeCheckInObject[singleKey]} exist`)
+            ap.inf(`${singleKey}:${dirToBeCheckInObject[singleKey]} exist`)
         }*/
     }
 
@@ -38,6 +38,8 @@ function _ifParamsDirExist(dirToBeCheckInObject){
 * */
 function _genForGeneral_part1(absoluteDestDirForInputRule,absoluteDestDirForEnum,absoluteDestDirForMongoEnumValue,modelCollRootDir,inputRuleBaseDir,mongoEnumDir,skipObject,skipGenMongoEnum=false){
     // const generateMongoInternalFieldToEnum=require('./generateFunction/generateMongoInternalFieldToEnum').writeFinalResult
+    const genEnumValueToArray=require('./generateFunction/generateEnumValueToArray').genEnumValueToArray
+
 
     let {skipFilesArray,skipCollNameArray}=skipObject
 
@@ -48,44 +50,50 @@ function _genForGeneral_part1(absoluteDestDirForInputRule,absoluteDestDirForEnum
     generateMongoEnumKeyValueExchange() //for client*/
 
     /*                  dbMetaData                      */
-    console.log(`start generateMongoCollToEnum`)
+    ap.inf(`start generateMongoCollToEnum`)
     const generateMongoCollToEnum=require('./generateFunction/generateMongoCollToEnum').writeResult
     generateMongoCollToEnum(modelCollRootDir,`${absoluteDestDirForEnum}DB_Coll.js`,skipFilesArray)
 
-    console.log(`start generateMongoDbModelToEnum`)
+    ap.inf(`start generateMongoDbModelToEnum`)
     const generateMongoDbModelToEnum=require('./generateFunction/generateMongoDbModelToEnum').writeModelResult
     const generateMongoDbModelToEnumInArray=require('./generateFunction/generateMongoDbModelToEnum').writeModelInArrayResult
     generateMongoDbModelToEnum(modelCollRootDir,`${absoluteDestDirForEnum}dbModel.js`,skipFilesArray)
     generateMongoDbModelToEnumInArray(modelCollRootDir,`${absoluteDestDirForEnum}dbModelInArray.js`,skipFilesArray)
 
-    console.log(`start generateMongoFieldToEnum`)
+    ap.inf(`start generateMongoFieldToEnum`)
     const generateMongoFieldToEnum=require('./generateFunction/generateMongoFieldToEnum').writeFinalResult
     generateMongoFieldToEnum(modelCollRootDir,`${absoluteDestDirForEnum}DB_field.js`,skipFilesArray)
 
-    console.log(`start generateMongoUniqueFieldToEnum`)
+    ap.inf(`start generateMongoUniqueFieldToEnum`)
     const generateMongoUniqueFieldToEnum=require('./generateFunction/generateMongoUniqueFieldToEnum').writeFinalResult
     generateMongoUniqueFieldToEnum(modelCollRootDir,`${absoluteDestDirForEnum}DB_uniqueField.js`,skipFilesArray)
 
     if(false===skipGenMongoEnum){
-        console.log(`start generateMongoEnum`)
-        // console.log(`mongoEnumDir: ${mongoEnumDir}`)
-        // console.log(`absoluteDestDirForMongoEnumValue: ${absoluteDestDirForMongoEnumValue}`)
+        ap.inf(`start generateMongoEnum`)
+        // ap.inf(`mongoEnumDir: ${mongoEnumDir}`)
+        // ap.inf(`absoluteDestDirForMongoEnumValue: ${absoluteDestDirForMongoEnumValue}`)
         const generateMongoEnum=require('./generateFunction/generateMongoEnum').writeResult
         generateMongoEnum(mongoEnumDir,`${absoluteDestDirForMongoEnumValue}enumValue.js`)
     }
 
-    console.log(`start generateNodeEnum`)
-    // console.log(`mongoEnumDir: ${mongoEnumDir}`)
-    // console.log(`absoluteDestDirForMongoEnumValue: ${absoluteDestDirForMongoEnumValue}`)
-    const generateMongoEnum=require('./generateFunction/generateNodeEnum').writeResult
-    generateMongoEnum(mongoEnumDir,`${absoluteDestDirForMongoEnumValue}nodeEnumValue.js`)
+    ap.inf(`start generateNodeEnum`)
+    // ap.inf(`mongoEnumDir: ${mongoEnumDir}`)
+    // ap.inf(`absoluteDestDirForMongoEnumValue: ${absoluteDestDirForMongoEnumValue}`)
 
-    console.log(`part1 done`)
+    genEnumValueToArray({fileOrDirPath:`${mongoEnumDir}nodeEnum.js`,resultDirPath:`${absoluteDestDirForEnum}`})
+
+    ap.inf(`start generate inputDataRuleType enum to array`)
+    genEnumValueToArray({fileOrDirPath:`${mongoEnumDir}inputDataRuleType.js`,resultDirPath:`${absoluteDestDirForEnum}`})
+
+    ap.inf(`start generate db_coll enum to array`)
+    genEnumValueToArray({fileOrDirPath:`${absoluteDestDirForEnum}DB_Coll.js`,resultDirPath:`${absoluteDestDirForEnum}`})
+
+    ap.inf(`part1 done`)
 }
 
 function _genForGeneral_part2(absoluteDestDirForInputRule,absoluteDestDirForEnum,absoluteDestDirForMongoEnumValue,modelCollRootDir,inputRuleBaseDir,mongoEnumDir,skipObject){
     if(false=== fs.existsSync(absoluteDestDirForInputRule)){
-        // console.log(`${absoluteDestDirForInputRule} not exist`)
+        // ap.inf(`${absoluteDestDirForInputRule} not exist`)
         return false
     }
     const e_ruleType=require('./generateFunction/generateAllRuleInOneFile').RuleType
@@ -102,19 +110,19 @@ function _genForGeneral_part2(absoluteDestDirForInputRule,absoluteDestDirForEnum
     //absoluteDestDirForInputRule:  server/inputRule
 
     const generateAllRuleInOneFile=require('./generateFunction/generateAllRuleInOneFile').writeResult
-    console.log(`start generateAllRuleInOneFile for both`)
+    ap.inf(`start generateAllRuleInOneFile for both`)
     generateAllRuleInOneFile(modelCollRootDir,`${absoluteDestDirForInputRule}inputRule.js`,e_ruleType.BOTH,skipFilesArray,inputRuleBaseDir)
-    console.log(`start generateAllRuleInOneFile for browser`)
+    ap.inf(`start generateAllRuleInOneFile for browser`)
     generateAllRuleInOneFile(modelCollRootDir,`${absoluteDestDirForInputRule}browserInputRule.js`,e_ruleType.BROWSER,skipFilesArray,inputRuleBaseDir)
-    console.log(`start generateAllRuleInOneFile for internal`)
+    ap.inf(`start generateAllRuleInOneFile for internal`)
     generateAllRuleInOneFile(modelCollRootDir,`${absoluteDestDirForInputRule}internalInputRule.js`,e_ruleType.INTERNAL,skipFilesArray,inputRuleBaseDir)
 
 
-    console.log(`start generateMongoInternalFieldToEnum`)
+    ap.inf(`start generateMongoInternalFieldToEnum`)
     const generateMongoInternalFieldToEnum=require('./generateFunction/generateMongoInternalFieldToEnum').writeFinalResult
     generateMongoInternalFieldToEnum(`${inputRuleBaseDir}internalInputRule.js`,`${absoluteDestDirForEnum}DB_internal_field.js`,skipCollNameArray)
 
-    console.log(`start generateRuleFieldChineseName`)
+    ap.inf(`start generateRuleFieldChineseName`)
     const generateRuleFieldChineseName=require('./generateFunction/generateRuleFieldChineseName').writeFinalResult
     generateRuleFieldChineseName(`${inputRuleBaseDir}inputRule.js`,`${absoluteDestDirForEnum}inputRule_field_chineseName.js`,skipCollNameArray)
 
@@ -122,7 +130,7 @@ function _genForGeneral_part2(absoluteDestDirForInputRule,absoluteDestDirForEnum
 
 
 
-    console.log(`part2 done`)
+    ap.inf(`part2 done`)
 }
 /*let absoluteDestDirForInputRule=`h:/ss_vue_express/express_admin/server/constant/inputRule/`
 let absoluteDestDirForEnum=`h:/ss_vue_express/express_admin/server/constant/collFieldEnum/`

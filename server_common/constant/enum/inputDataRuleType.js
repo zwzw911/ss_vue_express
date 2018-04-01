@@ -48,14 +48,23 @@ const OtherRuleFiledName={
     DATA_TYPE:'dataType',
     APPLY_RANGE:'applyRange',    //确定字段应用在哪种CRUD的操作上（以便确定该字段是否应该出现在输入中）
     PLACE_HOLDER:'placeHolder',  //用来为client的input提供placeholder
-
+    SEARCH_RANGE:'searchRange',  //确定字段是否用在search上，如果是，确定范围。  数组
 }
 
+//只用于CU
 const ApplyRange={
     CREATE:'create',
     UPDATE_SCALAR:'update_scalar',//适用recordInfo
     UPDATE_ARRAY:'update_array',//适用editSubField
     DELETE:'delete',
+    UPLOAD:'upload',
+}
+
+//字段适用的搜索范围
+const SearchRange={
+    ALL:'all',//任何情况都可以用作搜索
+    // TEST1:'a',
+    // B:'b',
 }
 //input对应的rule(client)，根据server获得，排除（exactLength/Format/eauqlTo): 不在client使用format（正则）
 /*
@@ -152,7 +161,47 @@ let serverRuleTypeMatchMongooseRule={
     'enum':'enum',
 }
 
+const SearchFieldName={
+    FIELD_OP:'fieldOp',//决定使用field间使用$and/$or/$not
+    SEARCH_VALUE:'searchValue',
+    ARRAY_COMP_OP:'arrayCompOp',//根据field类型不同，提供不同的比较符号
+    ARRAY_VALUE:'arrayValue',
+    SCALAR_COMP_OP:'scalarCompOp',
+    SCALAR_VALUE:'scalarValue',
+}
 
+const FieldOp={
+    AND:'and',
+    OR:'or',
+    // NOT:'not', // $not通过 NONE实现
+}
+const ArrayCompOp={
+    ALL:'all', //  and
+    ANY:'any',  //or
+    NONE:'none', //not
+}
+const ScalarCompOpForDigit={
+    EQUAL:'equal', //  =
+    UNEQUAL:'unequal', // !=
+    GREATER:'greater', // >
+    LESS:'less', // <
+    GREATER_EQUAL:'greaterEqual', //>=
+    LESS_EQUAL:'lessEqual', //<=
+}
+const ScalarCompOpForDigitMatchToMongoOp={
+    [ScalarCompOpForDigit.EQUAL]:'$eq',
+    [ScalarCompOpForDigit.UNEQUAL]:'$ne',
+    [ScalarCompOpForDigit.GREATER]:'$gt',
+    [ScalarCompOpForDigit.LESS]:'$lt',
+    [ScalarCompOpForDigit.GREATER_EQUAL]:'$gte',
+    [ScalarCompOpForDigit.LESS_EQUAL]:'$lte',
+}
+
+const ScalarCompOpForString={
+    INCLUDE:'include', //  使用正则
+    EXCLUDE:'exclude',  // 使用$not
+    EXACT:'exact',    //   不使用正则
+}
 /*const RequireType={
     MANDATORY:'mandatory', //require===true
     OPTIONAL:'optional', //require===true or false
@@ -176,4 +225,12 @@ module.exports={
     ServerRuleMatchClientRule,
     ServerDataTypeMatchClientDataType,
     // RequireType,
+
+    SearchRange,
+    SearchFieldName,//searchParams中，coll/field下的3个字段
+    FieldOp,
+    ArrayCompOp,
+    ScalarCompOpForDigit,
+    ScalarCompOpForDigitMatchToMongoOp,
+    ScalarCompOpForString,
 }
