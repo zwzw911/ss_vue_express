@@ -71,7 +71,7 @@ async function updateUser_async({req}){
     if(0===tmpResult.length){return Promise.reject(controllerError.userNotExist)}
     let originUserInfo=tmpResult[0]
     //如果传入了password，hash后覆盖原始值
-    if(e_field.USER.PASSWORD in docValue){
+    /*if(e_field.USER.PASSWORD in docValue){
         let sugarTmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.sugar,condition:{ userId:originUserInfo.id}})
         if(null===sugarTmpResult){
             return Promise.reject(controllerError.userNoMatchSugar)
@@ -89,7 +89,7 @@ async function updateUser_async({req}){
         docValue[e_field.USER.PASSWORD]=hashPasswordTmpResult.msg
         // console.log(` after hash password====> ${JSON.stringify(docValue)}`)
 
-    }
+    }*/
     // console.log(`updateUser after compare with origin value ${JSON.stringify(docValue)}`)
     // console.log(`originUserInfo value ${JSON.stringify(originUserInfo)}`)
     for(let singleFieldName in docValue){

@@ -37,7 +37,7 @@ const server_common_file_require=require('./server_common_file_require')
 
 // console.log(`=============app in=======`)
 const session=server_common_file_require.cookieSession
-session.setSessionDurationInMinute(480) //session duration is 8hours
+session.setSessionDurationInMinute(48000) //session duration is 800hours
 // let op=
 app.use(session.getSession())
 

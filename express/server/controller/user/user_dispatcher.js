@@ -46,7 +46,7 @@ async function dispatcher_async(req){
 
     //检查格式
 // ap.inf('req.route',req.route)
-    ap.inf('req.originalUrl',req.originalUrl)
+//     ap.inf('req.originalUrl',req.originalUrl)
 //     ap.inf('req.baseUrl',req.baseUrl)
 //     ap.inf('req.path',req.path)
 //     ap.inf('req.route.stack[0].method',req.route.stack[0].method)
@@ -108,6 +108,10 @@ async function dispatcher_async(req){
             }
             if(originalUrl==='/user/uniqueCheck' || originalUrl==='/user/uniqueCheck/') {
                 await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
+                expectedPart=[e_part.SINGLE_FIELD]
+                result=controllerPreCheck.inputPreCheck({req:req,expectedPart:expectedPart,collName:collName,method:e_method.CREATE,arr_currentSearchRange:arr_currentSearchRange})
+                // ap.inf('create use inputPreCheck result',result)
+                if(result.rc>0){return Promise.reject(result)}
                 result = await uniqueCheck_async({req: req})
                 return Promise.resolve(result)
             }

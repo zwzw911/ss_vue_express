@@ -76,27 +76,30 @@ const hash=server_common_file_require.crypt.hash
 const valueTypeCheck=server_common_file_require.validateHelper.valueTypeCheck
 
 /*                      检查用户名/账号的唯一性                           */
-async  function  uniqueCheck_async(req) {
+async  function  uniqueCheck_async({req}) {
     // console.log(`unique check values =========> ${JSON.stringify(req.body.values)} `)
-
+// ap.inf('uniqueCheck_async in')
     let collName=e_coll.USER
+    /*let collName=e_coll.USER
 
     let userLoginCheck={
         needCheck:false,
         // error:controllerError.userNotLoginCantCreateComment
     }
     let penalizeCheck={
-        /*                penalizeType:e_penalizeType.NO_ARTICLE,
+        /!*                penalizeType:e_penalizeType.NO_ARTICLE,
          penalizeSubType:e_penalizeSubType.CREATE,
-         penalizeCheckError:controllerError.userInPenalizeNoCommentCreate*/
+         penalizeCheckError:controllerError.userInPenalizeNoCommentCreate*!/
     }
     let expectedPart=[e_part.SINGLE_FIELD]
     // console.log(`before precheck =====.`)
     await controllerHelper.preCheck_async({req:req,collName:collName,method:undefined,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
 // console.log(`precheck done=====.`)
-
+*/
     /*                  logic               */
+    // ap.inf('req.body.values',req.body.values)
     let docValue = req.body.values[e_part.SINGLE_FIELD]
+    // ap.inf('docValue',docValue)
     /*              参数转为server格式（SINGLE_FIELD和RECORD_INFO格式一致）            */
     //dataConvert.convertCreateUpdateValueToServerFormat(docValue)
     // dataConvert.constructCreateCriteria(docValue)
@@ -104,6 +107,7 @@ async  function  uniqueCheck_async(req) {
 
     //读取字段名，进行不同的操作（userUnique或者passowrd格式,只支持一个field）
     let fieldName=Object.keys(docValue)[0]
+    // ap.inf('fieldName',fieldName)
     // let fieldValue=Object.values(docValue)[0]
     // let condition
     // let uniqueCheck_asynctmpResult
@@ -113,7 +117,7 @@ async  function  uniqueCheck_async(req) {
     if(-1===e_uniqueField[e_coll.USER].indexOf(fieldName)){
         return Promise.reject(controllerError.fieldNotSupport)
     }
-// console.log(`indexof check done`)
+// ap.inf(`indexof check done`)
     if(undefined!==e_uniqueField[collName] &&  e_uniqueField[collName].length>0) {
         //unique check，还要考虑到DOC_STATUS为done（不为done的可以重复）
         /*                if(collName===e_coll.USER){
@@ -123,7 +127,7 @@ async  function  uniqueCheck_async(req) {
         await controllerChecker.ifFieldInDocValueUnique_async({collName: collName, docValue: docValue,additionalCheckCondition:additionalCheckCondition})
     }
 
-
+    // ap.inf(`indexof 111 check done`)
     return Promise.resolve({rc:0})
 
 }
