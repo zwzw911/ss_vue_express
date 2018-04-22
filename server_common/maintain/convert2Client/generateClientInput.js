@@ -24,6 +24,7 @@ const fs=require('fs'),path=require('path')
 const regex=require('../../constant/regex/regex').regex
 
 const misc=require('../../function/assist/misc')
+const file=require('../../function/assist/file')
 
 const dataTypeCheck=require(`../../function/validateInput/validateHelper`).dataTypeCheck
 const ap=require('awesomeprint')
@@ -49,12 +50,12 @@ function convertRule(){
 function generateClientInputValue({originRulePath,absResultPath}){
     //1. 读取originRulePath下所有文件
     let absFilesPath=[]
-    misc.recursiveReadFileAbsPath({fileOrDirPath:originRulePath,absFilesPathResult:absFilesPath})
+    file.recursiveReadFileAbsPath({fileOrDirPath:originRulePath,absFilesPathResult:absFilesPath})
     // ap.inf('absFilesPath',absFilesPath)
     //2. 对每个文件，读取export定义
     let fileExport={}
     for(let singleAbsFilePath of absFilesPath){
-        Object.assign(fileExport,misc.readFileExportItem({absFilePath:singleAbsFilePath}))
+        Object.assign(fileExport,file.readFileExportItem({absFilePath:singleAbsFilePath}))
 
     }
 
@@ -107,18 +108,51 @@ function generateInitInputValue({collName,collRuleDefinition}){
 function writeClientInitInputValueResult({content,resultPath}){
     // ap.inf('content',content)
     // let relativePath='src/constant/rule/'
+    let intent=`    `
     let description=`/*    gene by ${__filename}  \r\n`
     description+=`* 空对象，存储字段值（vue双向绑定） \r\n`
     description+=`*/\r\n\r\n`
     let head=`"use strict"\r\n\r\n`
 
-    let inputValueForCreate=`const inputValueForCreate=\r\n`
-    let inputValueForUpdate=`const inputValueForUpdate=\r\n`
+    let fileContentForCreate=`const inputValueForCreate={\r\n`
+    for(let singleColl in content['inputValueForCreate']){
+        fileContentForCreate+=`${intent}${singleColl}:${JSON.stringify(content['inputValueForCreate'][singleColl])},\r\n`
+/*        for(let singleFieldName in content[singleColl]){
+            fileContentForCreate+=`${intent}${intent}${singleFieldName}:${JSON.stringify(content[singleColl][singleFieldName])},\r\n`
+        }
+        // fileContent+=`${intent}${intent}\r\n`
+        fileContentForCreate+=`${intent}},\r\n`*/
+    }
+    fileContentForCreate+=`}\r\n`
+
+    let fileContentForUpdate=`const inputValueForUpdate={\r\n`
+    for(let singleColl in content['inputValueForUpdate']){
+        fileContentForUpdate+=`${intent}${singleColl}:${JSON.stringify(content['inputValueForUpdate'][singleColl])},\r\n`
+        /*        for(let singleFieldName in content[singleColl]){
+                    fileContentForCreate+=`${intent}${intent}${singleFieldName}:${JSON.stringify(content[singleColl][singleFieldName])},\r\n`
+                }
+                // fileContent+=`${intent}${intent}\r\n`
+                fileContentForCreate+=`${intent}},\r\n`*/
+    }
+    fileContentForUpdate+=`}\r\n`
+
     let exportStr=`export {inputValueForCreate,inputValueForUpdate}` //client段采用es6的export写法
     //将require中的applyRange（CREATE，UPDATE_SCRLAR）区分
 
-    let initValueForCreate=content['inputValueForCreate']
-    let initValueForUpdate=content['inputValueForUpdate']
+/*    let initValueForCreate=content['inputValueForCreate']
+    let initValueForUpdate=content['inputValueForUpdate']*/
+    /*let fileContent=`const inputTempData={\r\n`
+
+    for(let singleColl in content){
+        fileContent+=`${intent}${singleColl}:{\r\n`
+        for(let singleFieldName in content[singleColl]){
+            fileContent+=`${intent}${intent}${singleFieldName}:${JSON.stringify(content[singleColl][singleFieldName])},\r\n`
+        }
+        // fileContent+=`${intent}${intent}\r\n`
+        fileContent+=`${intent}},\r\n`
+    }
+    fileContent+=`}\r\n`*/
+
 // ap.inf('ruleForCreate',ruleForCreate)
 //     let contentFormatSanityForCreate=misc.sanityClientPatternInString({string:JSON.stringify(convertedRule['ruleForCreate'])})
 
@@ -126,7 +160,7 @@ function writeClientInitInputValueResult({content,resultPath}){
     // let contentFormatSanityForUpdate=misc.sanityClientPatternInString({string:JSON.stringify(convertedRule['ruleForUpdate'])})
 
 
-    let finalStr=`${description}${head}\r\n${inputValueForCreate}${JSON.stringify(initValueForCreate)}\r\n${inputValueForUpdate}${JSON.stringify(initValueForUpdate)}\r\n\r\n${exportStr}`
+    let finalStr=`${description}${head}\r\n${fileContentForCreate}\r\n${fileContentForUpdate}\r\n\r\n${exportStr}`
     fs.writeFileSync(`${resultPath}`,finalStr)
     
 }

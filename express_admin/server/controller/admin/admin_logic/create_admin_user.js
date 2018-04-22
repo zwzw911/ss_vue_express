@@ -29,7 +29,10 @@ const dataConvert=server_common_file_require.dataConvert
 const controllerHelper=server_common_file_require.controllerHelper
 const controllerChecker=server_common_file_require.controllerChecker
 const common_operation_model=server_common_file_require.common_operation_model
+
 const misc=server_common_file_require.misc
+const arr=server_common_file_require.array
+
 const hash=server_common_file_require.crypt.hash
 /*                      server common：enum                                       */
 const e_accountType=server_common_file_require.mongoEnum.AccountType.DB
@@ -98,11 +101,11 @@ async  function createUser_async(req){
     if(undefined!==docValue[e_field.ADMIN_USER.USER_PRIORITY]){
 
         //权限在预订范围内
-        if(false===misc.ifArrayContainArray({parentArray:userPriority,childArray:docValue[e_field.ADMIN_USER.USER_PRIORITY]})){
+        if(false===arr.ifArrayContainArray({parentArray:userPriority,childArray:docValue[e_field.ADMIN_USER.USER_PRIORITY]})){
             return Promise.reject(controllerError.createUserPriorityNotInheritedFromParent)
         }
         //权限是否重复
-        if(true===misc.ifArrayHasDuplicate(docValue[e_field.ADMIN_USER.USER_PRIORITY])){
+        if(true===arr.ifArrayHasDuplicate(docValue[e_field.ADMIN_USER.USER_PRIORITY])){
             return Promise.reject(controllerError.createUserPriorityCantDuplicate)
         }
     }

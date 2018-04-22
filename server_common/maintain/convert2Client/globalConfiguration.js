@@ -3,18 +3,6 @@
  * 读取globalConfiguration, 转换成client
  */
 'use strict'
-// const inputDataRuleType=require('../../constant/enum/inputDataRuleType')
-// const otherRuleFiledName=inputDataRuleType.OtherRuleFiledName
-// const ruleFiledName=inputDataRuleType.RuleFiledName
-// const serverDataType=inputDataRuleType.ServerDataType
-// const serverRuleType=inputDataRuleType.ServerRuleType
-// const e_clientDataType=inputDataRuleType.ClientDataType
-// const e_clientRuleType=inputDataRuleType.ClientRuleType
-// // const applyRange=inputDataRuleType.ApplyRange
-// const e_serverRuleMatchClientRule=inputDataRuleType.ServerRuleMatchClientRule
-// const e_serverDataTypeMatchClientDataType=inputDataRuleType.ServerDataTypeMatchClientDataType
-//
-// const e_applyRange=inputDataRuleType.ApplyRange
 
 const fs=require('fs'),path=require('path')
 const regex=require('../../constant/regex/regex').regex
@@ -56,7 +44,7 @@ function readGlobalConfiguration({absFilePath,skipFilesArray}){
         // ap.print('allExportsInFile',allExportsInFile)
 
         for(let singleExportsItem of allExportsInFile){
-            if(''!==singleExportsItem && 'uploadFileDefine'===singleExportsItem){
+            if(''!==singleExportsItem ){ //&& 'uploadFileDefine'===singleExportsItem
                 // ap.print('tmpFileDir',tmpFileDir)
                 // ap.print('singleExportsItem',singleExportsItem)
                 let ruleDefineContent=require(`${absFilePath}`)[singleExportsItem]
@@ -89,12 +77,15 @@ function writeResult({content,resultPath}){
 
     let exportStr=`export {\r\n`  //client段采用es6的export写法
     let contentStr=''
-    for(let singleKey in content){
-        // ap.inf('singleKey',singleKey)
-        contentStr+=`const ${singleKey}=${JSON.stringify(content[singleKey])}`
-
+    for(let singleItem in content){
+        // ap.inf('singleItem',singleItem)
+        contentStr+=`const ${singleItem}={\r\n`
+        for(let singleField in content[singleItem]){
+            contentStr+=`   ${singleField}:${JSON.stringify(content[singleItem][singleField])},\r\n`
+        }
+        contentStr+=`}\r\n`
         exportStr+='    '
-        exportStr+=singleKey
+        exportStr+=singleItem
         exportStr+=`,\r\n`
     }
     exportStr+=`}`

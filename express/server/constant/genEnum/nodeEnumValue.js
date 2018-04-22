@@ -1,4 +1,4 @@
-/*    gene by server/maintain/generateMongoEnum     */ 
+/*    gene by server/maintain/generateEnumValueToArray     */ 
  
 "use strict"
 const RandomStringType=["basic","normal","complicated",] 
@@ -20,7 +20,7 @@ const PartValueToVarName=["subFieldValue","recordId","docValue","manipulateArray
 const UpdateType=["normal","subField",] 
 const FindEleInArray=["atLeastOne",] 
 const ManipulateOperator=["add","remove",] 
-const IntervalCheckPrefix=["captcha","uploadUserPhoto","",] 
+const IntervalCheckPrefix=["captcha","uploadUserPhoto","normalReq",] 
 module.exports={
     RandomStringType,
     UserState,

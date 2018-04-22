@@ -23,6 +23,7 @@ const admin_penalize= {
         [otherRuleFiledName.CHINESE_NAME]: '受罚人',
         [otherRuleFiledName.DATA_TYPE]: serverDataType.OBJECT_ID,
         [otherRuleFiledName.APPLY_RANGE]:[applyRange.CREATE], //只能在create的recordInfo中出现
+        [otherRuleFiledName.PLACE_HOLDER]:['受罚人账号，手机号或者邮件地址'],
         [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true}, error: {rc: 10080, msg: '受罚人不能为空'}, mongoError: {rc: 20080, msg: '受罚人不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         // [ruleFiledName.MIN_LENGTH]: {define: 2, error: {rc: 10002}, mongoError: {rc: 20002, msg: '用户名至少2个字符'}},
         // [ruleFiledName.MAX_LENGTH]: {define: 20, error: {rc: 10004}, mongoError: {rc: 20004, msg: '用户名的长度不能超过20个字符'}},
@@ -33,6 +34,7 @@ const admin_penalize= {
         [otherRuleFiledName.CHINESE_NAME]: '受罚原因',
         [otherRuleFiledName.DATA_TYPE]: serverDataType.STRING,
         [otherRuleFiledName.APPLY_RANGE]:[applyRange.CREATE], //只能在create的recordInfo中出现
+        [otherRuleFiledName.PLACE_HOLDER]:['受罚原因，至少15个字符'],
         [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true}, error: {rc: 10082, msg: '受罚原因不能为空'}, mongoError: {rc: 20082, msg: '受罚原因不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         [ruleFiledName.MIN_LENGTH]: {define: 15, error: {rc: 10083, msg: '受罚原因至少15个字符'}, mongoError: {rc: 20083, msg: '受罚原因至少15个字符'}},
         [ruleFiledName.MAX_LENGTH]: {define: 1000, error: {rc: 10084, msg: '受罚原因的字数不能超过1000个字符'}, mongoError: {rc: 20084, msg: '受罚原因的字数不能超过1000个字符'}},

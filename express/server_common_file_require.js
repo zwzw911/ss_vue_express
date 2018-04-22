@@ -1,4 +1,4 @@
-/*    gene by D:\ss_vue_express\server_common\function\assist\misc.js     */ 
+/*    gene by D:\ss_vue_express\server_common\function\assist\file.js     */ 
  
 "use strict"
 
@@ -24,14 +24,17 @@ const controllerChecker=require('../server_common/controller/controllerChecker.j
 const controllerHelper=require('../server_common/controller/controllerHelper.js')
 const controllerPreCheck=require('../server_common/controller/controllerPreCheck.js')
 const dataConvert=require('../server_common/controller/dataConvert.js')
+const array=require('../server_common/function/assist/array.js')
 const awesomeCaptcha=require('../server_common/function/assist/awesomeCaptcha.js')
 const checkRobot=require('../server_common/function/assist/checkRobot.js')
 const cookieSession=require('../server_common/function/assist/cookieSession.js')
 const crypt=require('../server_common/function/assist/crypt.js')
+const file=require('../server_common/function/assist/file.js')
 const gmImage=require('../server_common/function/assist/gmImage.js')
 const misc=require('../server_common/function/assist/misc.js')
 const pagination=require('../server_common/function/assist/pagination.js')
 const sanityHtml=require('../server_common/function/assist/sanityHtml.js')
+const string=require('../server_common/function/assist/string.js')
 const system=require('../server_common/function/assist/system.js')
 const upload=require('../server_common/function/assist/upload.js')
 const interval=require('../server_common/function/security/interval.js')
@@ -78,14 +81,17 @@ module.exports={
     controllerHelper,
     controllerPreCheck,
     dataConvert,
+    array,
     awesomeCaptcha,
     checkRobot,
     cookieSession,
     crypt,
+    file,
     gmImage,
     misc,
     pagination,
     sanityHtml,
+    string,
     system,
     upload,
     interval,

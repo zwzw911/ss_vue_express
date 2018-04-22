@@ -13,7 +13,10 @@ const validateHelper=require('../function/validateInput/validateHelper')
 const validateFormat=require('../function/validateInput/validateFormat')
 const validateValue=require('../function/validateInput/validateValue')
 const dataConvert=require('./dataConvert')
+
 const misc=require('../function/assist/misc')
+const arr=require('../function/assist/array')
+
 const ifPenalizeOngoing_async=require(`./controllerChecker`).ifPenalizeOngoing_async
 
 
@@ -1052,7 +1055,7 @@ async function checkEditSubFieldEleArray_async({singleEditSubFieldValue,eleAddit
             }
 
             //3. 元素没有重复
-            if(true===misc.ifArrayHasDuplicate(singleEditSubFieldValue[e_subField.ELE_ARRAY])){
+            if(true===arr.ifArrayHasDuplicate(singleEditSubFieldValue[e_subField.ELE_ARRAY])){
                 return Promise.reject(helperError.eleArrayContainDuplicateEle)
             }
             // ap.print('misc.ifArrayHasDuplicate(singleEditSubFieldValue[e_subField.ELE_ARRAY]',misc.ifArrayHasDuplicate(singleEditSubFieldValue[e_subField.ELE_ARRAY]))

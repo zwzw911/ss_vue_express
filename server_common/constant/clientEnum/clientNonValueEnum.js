@@ -11,6 +11,7 @@ const InputAttributeFieldName={
     INPUT_TYPE:'inputType',
     ENUM_VALUE:'enumValue',
     UNIQUE:'unique',//当前（单个）字段是否必须为unique
+    AUTO_GEN:'autoGen',
 }
 
 const InputTempDataFieldName={

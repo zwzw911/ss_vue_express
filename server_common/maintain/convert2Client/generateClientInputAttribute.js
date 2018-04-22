@@ -30,6 +30,8 @@ const fs=require('fs'),path=require('path')
 const regex=require('../../constant/regex/regex').regex
 
 const misc=require('../../function/assist/misc')
+const file=require('../../function/assist/file')
+const str=require('../../function/assist/string')
 
 const dataTypeCheck=require(`../../function/validateInput/validateHelper`).dataTypeCheck
 const ap=require('awesomeprint')
@@ -57,16 +59,17 @@ function convertRule(){
 function generateClientInputAttribute({originRulePath,absResultPath}){
     //1. 读取originRulePath下所有文件
     let absFilesPath=[]
-    misc.recursiveReadFileAbsPath({fileOrDirPath:originRulePath,absFilesPathResult:absFilesPath})
+    file.recursiveReadFileAbsPath({fileOrDirPath:originRulePath,absFilesPathResult:absFilesPath})
     // ap.inf('absFilesPath',absFilesPath)
     //2. 对每个文件，读取export定义
     let fileExport={}
     for(let singleAbsFilePath of absFilesPath){
-        Object.assign(fileExport,misc.readFileExportItem({absFilePath:singleAbsFilePath}))
+        Object.assign(fileExport,file.readFileExportItem({absFilePath:singleAbsFilePath}))
     }
 
 
     // let allCollResult={'inputValueForCreate':{},'inputValueForUpdate':{}}
+    // ap.inf('fileexport',fileExport)
     let allCollAttribute={}
     for(let collName in fileExport){
         //对每个coll的rule定义，转换成iview的rule格式（但是require尚未处理）
@@ -84,10 +87,25 @@ function generateClientInputAttribute({originRulePath,absResultPath}){
 * 
 * */
 function generateSingleCollInputAttribute({collName,collRuleDefinition,absFilesPath}){
+    // ap.inf('collname',collName)
+    // ap.inf('fileContent',fileContent)
+    // ap.inf('collRuleDefinition',Object.keys(collRuleDefinition))
+    // ap.inf('absFilesPath',absFilesPath)
     //根据ruleForUpdate和ruleForCreate，产生对应的inputValue
     // relativePath='src/constant/initInputValue/'
     let collAttribute={}
+    let fileContent
 
+    //获得匹配js文件，并读取文件内容（JSON.strinify object或有\，影响正则匹配）
+    for(let singleFilePath of absFilesPath){
+        // ap.inf('singleFilePath',singleFilePath)
+        if(path.basename(singleFilePath).split('.')[0]===collName){
+            fileContent =fs.readFileSync(singleFilePath,'utf8')
+        }
+    }
+    //去除注释，空白和换行
+    fileContent=str.deleteCommentSpaceReturn({string:fileContent})
+    // ap.inf('fileciontent',fileContent)
     // for(let coll in ruleForCreate){
     //     inputValueForCreate[coll]={}
         for(let field in collRuleDefinition){
@@ -103,25 +121,28 @@ function generateSingleCollInputAttribute({collName,collRuleDefinition,absFilesP
                 collAttribute[field][e_inputAttributeFieldName.PLACE_HOLDER_BKUP]=collRuleDefinition[field][otherRuleFiledName.PLACE_HOLDER]
             }
 
-            if(field===e_field.USER.PASSWORD){
+            //inputType在client手工测试
+/*            if(field===e_field.USER.PASSWORD){
                 collAttribute[field][e_inputAttributeFieldName.INPUT_TYPE]='password'
-            }
+            }*/
 
             //如果enum存在，获得enum的key
             if(undefined!==collRuleDefinition[field][ruleFiledName.ENUM]){
                 //读取rule文件内容
-                for(let singleFilePath of absFilesPath){
-                    if(true===singleFilePath.includes(singleFilePath)){
-                        let fileContent=fs.readFileSync(singleFilePath,'utf8')
-                        //去除注释，空白和换行
-                        fileContent=misc.deleteCommentSpaceReturn({string:fileContent})
+
+
+                // fileContent=fileContent.replace(/\/,'')
+
+
 
                         // ap.inf('fileContent',fileContent)
+                        // ap.inf('field',field)
                         let regexp=new RegExp(`${field}:{.*ruleFiledName.ENUM.+?:{define:(.*?),`)
                         // let regexp=new RegExp(`userType:{(.+)}`,'g')
                         // let regexp=/userType:{.*\[ruleFiledName.ENUM\]:{define:(.*?),/
                         // ap.inf('regexp',regexp.toString())
                         let result=fileContent.match(regexp)
+                        // ap.inf('result',result)
                         if(undefined!==result[1]){
                             let enumName=result[1].replace('enumValue.','')
                             collAttribute[field][e_inputAttributeFieldName.ENUM_VALUE]=clientEnumValue[enumName]
@@ -130,8 +151,8 @@ function generateSingleCollInputAttribute({collName,collRuleDefinition,absFilesP
                         }
                         // ap.inf('result',result)
                         // ap.inf('result',result[1])
-                    }
-                }
+                //     }
+                // }
 
             }
             // let enumDef=JSON.stringify(collRuleDefinition[ruleFiledName.ENUM])
@@ -147,28 +168,41 @@ function generateSingleCollInputAttributeUnique({collAttribute,collUniqueField})
     // ap.inf('collAttribute',collAttribute)
     // ap.inf('collUniqueField',collUniqueField)
     // collUniqueField的值是数组
-    for(let singleUniqueField of collUniqueField){
-        if(undefined!==collAttribute[singleUniqueField]){
-            // ap.inf('singleUniqueField',singleUniqueField)
-            // ap.inf('collAttribute[singleUniqueField]',collAttribute[singleUniqueField])
-            collAttribute[singleUniqueField][e_inputAttributeFieldName.UNIQUE]=true
-            // ap.inf('collAttribute[singleUniqueField]',collAttribute[singleUniqueField])
+    if(undefined!==collUniqueField){
+        for(let singleUniqueField of collUniqueField){
+            if(undefined!==collAttribute[singleUniqueField]){
+                // ap.inf('singleUniqueField',singleUniqueField)
+                // ap.inf('collAttribute[singleUniqueField]',collAttribute[singleUniqueField])
+                collAttribute[singleUniqueField][e_inputAttributeFieldName.UNIQUE]=true
+                // ap.inf('collAttribute[singleUniqueField]',collAttribute[singleUniqueField])
+            }
         }
     }
+
 }
 //将rule结果写入指定路径的文件下
 //convertedRule：分隔成ruleForCreate/update的内容（object）
 //resultPath: 最终写入的绝对路径
 function writeClientInitInputValueResult({content,resultPath}){
-    // ap.inf('content',content)
+    // ap.inf('content',typeof content)
     // let relativePath='src/constant/rule/'
     let description=`/*    gene by ${__filename}  \r\n`
+    let intent=`    `
     description+=`* 字段的非rule属性，例如label，placeHolder，unique等 \r\n`
     description+=`*/\r\n\r\n`
     let head=`"use strict"\r\n\r\n`
 
-    let inputAttribute=`const inputAttribute=\r\n`
-    // let inputValueForUpdate=`const inputValueForUpdate=\r\n`
+    let fileContent=`const inputAttribute={\r\n`
+
+    for(let singleColl in content){
+        fileContent+=`${intent}${singleColl}:{\r\n`
+        for(let singleFieldName in content[singleColl]){
+            fileContent+=`${intent}${intent}${singleFieldName}:${JSON.stringify(content[singleColl][singleFieldName])},\r\n`
+        }
+        // fileContent+=`${intent}${intent}\r\n`
+        fileContent+=`${intent}},\r\n`
+    }
+    fileContent+=`}\r\n`
     let exportStr=`export {inputAttribute}` //client段采用es6的export写法
     //将require中的applyRange（CREATE，UPDATE_SCRLAR）区分
 
@@ -179,7 +213,7 @@ function writeClientInitInputValueResult({content,resultPath}){
     // let contentFormatSanityForUpdate=misc.sanityClientPatternInString({string:JSON.stringify(convertedRule['ruleForUpdate'])})
 
 
-    let finalStr=`${description}${head}\r\n${inputAttribute}${JSON.stringify(content)}\r\n\r\n${exportStr}`
+    let finalStr=`${description}${head}\r\n${fileContent}\r\n\r\n${exportStr}`
     fs.writeFileSync(`${resultPath}`,finalStr)
     
 }

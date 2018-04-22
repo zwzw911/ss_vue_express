@@ -7,19 +7,20 @@ const fs=require('fs')
 const path=require('path')
 const ap=require('awesomeprint')
 
-const misc=require('../function/misc')
+// const misc=require('../function/misc')
+const file=require('../../function/assist/file')
 
 function genEnumValueToArray({fileOrDirPath,skipFilesArray,resultDirPath}){
     // ap.inf('fileOrDirPath',fileOrDirPath)
     //1. 读取originRulePath下所有文件
     let absFilesPath=[]
-    misc.recursiveReadFileAbsPath({fileOrDirPath:fileOrDirPath,skipFilesArray:skipFilesArray,absFilesPathResult:absFilesPath})
+    file.recursiveReadFileAbsPath({fileOrDirPath:fileOrDirPath,skipFilesArray:skipFilesArray,absFilesPathResult:absFilesPath})
     // ap.inf('absFilesPath',absFilesPath)
     //2. 对每个文件，读取export定义
 
     for(let singleAbsFilePath of absFilesPath){
         let fileExport={}
-        Object.assign(fileExport,misc.readFileExportItem({absFilePath:singleAbsFilePath}))
+        Object.assign(fileExport,file.readFileExportItem({absFilePath:singleAbsFilePath}))
         let content=genContent({fileExport})
         // ap.inf('content',content)
         let resultAbsPath=resultDirPath+path.basename(singleAbsFilePath).split('.')[0]+'Value.js'

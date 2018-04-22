@@ -10,6 +10,7 @@ const generateClientRule=require('./convert2Client/generateClientRule').generate
 const generateClientInputValue=require('./convert2Client/generateClientInput').generateClientInputValue
 const generateClientInputAttribute=require('./convert2Client/generateClientInputAttribute').generateClientInputAttribute
 const generateClientInputTempResult=require('./convert2Client/generateClientInputTempData').generateClientInputTempResult
+const generateClientNumRange=require('./convert2Client/generateClientNumRange').generateClientNumRange
 
 const generateClientNonValueEnum=require('./convert2Client/generateClientNonValueEnum').generateClientNonValueEnum
 const convertGlobalConfiguration=require('./convert2Client/globalConfiguration').convertGlobalConfiguration
@@ -31,10 +32,11 @@ function generateClientAll({originRulePath,iviewConstantPath}){
     generateClientInputValue({originRulePath:originRulePath,absResultPath:`${iviewConstantPath}inputValue/gen/inputValue.js`})
     generateClientInputAttribute({originRulePath:originRulePath,absResultPath:`${iviewConstantPath}inputValue/gen/inputAttribute.js`})
     generateClientInputTempResult({originRulePath:originRulePath,absResultPath:`${iviewConstantPath}inputValue/gen/inputTempData.js`})
+    generateClientNumRange({originRulePath:originRulePath,absResultPath:`${iviewConstantPath}inputValue/gen/numRange.js`})
 }
 
 
-generateClientAll({originRulePath:'D:/ss_vue_express/server_common/constant/inputRule/browserInput/user/user.js',iviewConstantPath:`D:/ss_vue_view/src/constant/`})
+generateClientAll({originRulePath:'D:/ss_vue_express/server_common/constant/inputRule/browserInput/',iviewConstantPath:`D:/ss_vue_view/src/constant/`})
 
 
 generateClientNonValueEnum({originProjectPath:'D:/ss_vue_express/server_common/',resultPath:'D:/ss_vue_view/src/constant/enum/nonValueEnum.js'})

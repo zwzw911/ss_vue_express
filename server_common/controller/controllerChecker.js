@@ -29,6 +29,7 @@ const compound_unique_field_config=require(`../model/mongo/compound_unique_field
 const checkerError=require('../constant/error/controller/helperError').checker
 
 const misc=require('../function/assist/misc')
+const arr=require('../function/assist/array')
 
 const appSetting=require('../constant/config/appSetting').currentAppSetting
 const fkConfig=require('../model/mongo/fkConfig').fkConfig
@@ -308,7 +309,7 @@ function ifEnumHasDuplicateValue({collValue,collRule}){
         if(undefined!==singleFieldRule[e_serverRuleType.ENUM] && undefined!==singleFieldRule['type'] && singleFieldRule['type'] instanceof Array){
             //字段rule满足条件的情况下，字段值存在，则进行检查
             if(undefined!==collValue[singleFieldName]){
-                let fieldResult=misc.ifArrayHasDuplicate(collValue[singleFieldName])
+                let fieldResult=arr.ifArrayHasDuplicate(collValue[singleFieldName])
                 if(true===fieldResult){
                     return checkerError.containDuplicateValue({fieldName:singleFieldName})
                 }

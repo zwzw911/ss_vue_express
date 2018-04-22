@@ -142,6 +142,7 @@ function readFileExportItem({absFilePath,specificItem}){
 //字符中，如果包含了正则（iview是patter），需要进行格式化（去除双引号）
 function sanityClientPatternInString({string}){
     return string.replace(regex.clientRemoveDoubleQuotes, '$1/$3/,"').replace(regex.removeDoubleSlash,'\\')
+    // return string.replace(regex.clientRemoveDoubleQuotes, '$1/$3/,"').replace(regex.removeDoubleSlash,'\\')
 }
 
 //删除字符中注释，空白和换行

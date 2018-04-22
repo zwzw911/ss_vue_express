@@ -12,6 +12,7 @@ const serverDataType=inputDataRuleType.ServerDataType
 const serverRuleType=inputDataRuleType.ServerRuleType
 const e_clientDataType=inputDataRuleType.ClientDataType
 const e_clientRuleType=inputDataRuleType.ClientRuleType
+const e_applyRange=inputDataRuleType.ApplyRange
 
 const e_field=require('../../constant/genEnum/DB_field').Field
 // ServerRuleMatchClientRule
@@ -19,13 +20,14 @@ const e_field=require('../../constant/genEnum/DB_field').Field
 const e_serverRuleMatchClientRule=inputDataRuleType.ServerRuleMatchClientRule
 const e_serverDataTypeMatchClientDataType=inputDataRuleType.ServerDataTypeMatchClientDataType
 
-const e_applyRange=inputDataRuleType.ApplyRange
+// const e_applyRange=inputDataRuleType.ApplyRange
 
 const fs=require('fs'),path=require('path')
 const regex=require('../../constant/regex/regex').regex
 
-const misc=require('../../function/assist/misc')
-
+// const misc=require('../../function/assist/misc')
+const file=require('../../function/assist/file')
+const str=require('../../function/assist/string')
 
 const dataTypeCheck=require(`../../function/validateInput/validateHelper`).dataTypeCheck
 const ap=require('awesomeprint')
@@ -51,120 +53,7 @@ let absFilesPath=[] //使用全局变量记录递归的中间值（文件）
 
 
 
-/*  对传入的ruleDefinition进行检测,并转换成asyncValidator的格式
-* @ruleDefinitionOfFile：object。一个文件的ruleDefinition。
-* */
-function convertRule_asyncValidator({collName,ruleDefinitionOfFile}){
-    let tmpResult={}
 
-    for(let singleFieldName in ruleDefinitionOfFile){
-        tmpResult[singleFieldName]={}  //iview的格式
-
-        for(let singleRuleName in ruleDefinitionOfFile[singleFieldName]){
-            // ap.inf('ruleDefinitionOfFile[singleFieldName]',ruleDefinitionOfFile[singleFieldName])
-            // ap.inf('singleRuleName',singleRuleName)
-            let singleRuleDefinition=ruleDefinitionOfFile[singleFieldName][singleRuleName]
-            // ap.inf('singleRuleDefinition',singleRuleDefinition)
-            switch (singleRuleName){
-                case otherRuleFiledName.DATA_TYPE:
-                    if(true===dataTypeCheck.isArray(singleRuleDefinition)){
-                        tmpResult[singleFieldName]['type']=e_clientDataType.ARRAY   //{type:'array'}
-                        tmpResult[singleFieldName]['defaultField']={'type':e_serverDataTypeMatchClientDataType[singleRuleDefinition[0]]}  //{'defaultField':'patttern'}
-                        if(undefined!==ruleDefinitionOfFile[singleFieldName][ruleFiledName.FORMAT]){
-                            // ap.inf('ruleDefinitionOfFile[singleFieldName][ruleFiledName.FORMAT]',eval(ruleDefinitionOfFile[singleFieldName][ruleFiledName.FORMAT]['define']))
-                            tmpResult[singleFieldName]['defaultField'][e_clientRuleType.PATTERN]=eval(ruleDefinitionOfFile[singleFieldName][ruleFiledName.FORMAT]['define'])
-                        }
-                        if(undefined!==ruleDefinitionOfFile[singleFieldName][ruleFiledName.ENUM]){
-                            tmpResult[singleFieldName]['defaultField'][e_clientRuleType.ENUM]=ruleDefinitionOfFile[singleFieldName][ruleFiledName.ENUM]['define']
-                        }
-                    }else{
-                        tmpResult[singleFieldName]['type']=e_serverDataTypeMatchClientDataType[singleRuleDefinition]
-                        if(undefined!==ruleDefinitionOfFile[singleFieldName][ruleFiledName.FORMAT]){
-                            // ap.inf('ruleDefinitionOfFile[singleFieldName][ruleFiledName.FORMAT]',ruleDefinitionOfFile[singleFieldName][ruleFiledName.FORMAT]['define'].toString())
-                            tmpResult[singleFieldName][e_clientRuleType.PATTERN]=ruleDefinitionOfFile[singleFieldName][ruleFiledName.FORMAT]['define'].toString()
-                        }
-                        if(undefined!==ruleDefinitionOfFile[singleFieldName][ruleFiledName.ENUM]){
-                            tmpResult[singleFieldName][e_clientRuleType.ENUM]=ruleDefinitionOfFile[singleFieldName][ruleFiledName.ENUM]['define']
-                        }
-                    }
-                    break;
-                case ruleFiledName.REQUIRE:
-                    // ap.inf('singleRuleDefinition',singleRuleDefinition)
-                    tmpResult[singleFieldName][e_clientRuleType.REQUIRE]=singleRuleDefinition['define']
-                    break;
-            }
-        }
-
-    }
-
-    return tmpResult
-}
-//将结果写入指定路径的文件下
-function writeResult_asyncValidator({content,resultProjectPath}){
-    // ap.inf('content',content)
-    let relativePath='src/constant/rule/'
-    let head=`"use strict"\r\n\r\n`
-
-    let ruleForCreate=`const ruleForCreate=\r\n`
-    let ruleForUpdate=`const ruleForUpdate=\r\n`
-    let exportStr=`export {ruleForCreate,ruleForUpdate}`   //client段采用es6的export写法
-
-    //将require中的applyRange（CREATE，UPDATE_SCRLAR）区分
-    let ruleForCreate=objectDeepCopy(content),ruleForUpdate=objectDeepCopy(content)
-    for(let coll in content){
-        for(let field in content[coll]){
-            // ap.inf('field',field)
-            // ap.inf('content[coll][field][e_clientRuleType.REQUIRE]',content[coll][field][e_clientRuleType.REQUIRE])
-            // ap.inf('ruleForCreate[coll][field][e_clientRuleType.REQUIRE]',ruleForCreate[coll][field][e_clientRuleType.REQUIRE])
-            //如果某个applyRange定义了对应的require，则设置；如果根本没有定义，说明无法输入，需要删除
-            if(undefined!==content[coll][field][e_clientRuleType.REQUIRE][e_applyRange.CREATE]){
-                // ap.inf('content[coll][field][e_clientRuleType.REQUIRE][e_applyRange.CREATE]',content[coll][field][e_clientRuleType.REQUIRE][e_applyRange.CREATE])
-                ruleForCreate[coll][field][e_clientRuleType.REQUIRE]=content[coll][field][e_clientRuleType.REQUIRE][e_applyRange.CREATE]
-            }else{
-                delete ruleForCreate[coll][field]
-            }
-
-            if(undefined!==content[coll][field][e_clientRuleType.REQUIRE][e_applyRange.UPDATE_ARRAY]){
-                ruleForUpdate[coll][field][e_clientRuleType.REQUIRE]=content[coll][field][e_clientRuleType.REQUIRE][e_applyRange.UPDATE_ARRAY]
-            }
-            if(undefined!==content[coll][field][e_clientRuleType.REQUIRE][e_applyRange.UPDATE_SCALAR]){
-                ruleForUpdate[coll][field][e_clientRuleType.REQUIRE]=content[coll][field][e_clientRuleType.REQUIRE][e_applyRange.UPDATE_SCALAR]
-            }
-            if(undefined===content[coll][field][e_clientRuleType.REQUIRE][e_applyRange.UPDATE_ARRAY] && undefined===content[coll][field][e_clientRuleType.REQUIRE][e_applyRange.UPDATE_SCALAR]){
-                delete ruleForUpdate[coll][field]
-            }
-        }
-    }
-
-    let finalStr=`${head}\r\n${ruleForCreate}${JSON.stringify(ruleForCreate)}\r\n${ruleForUpdate}${JSON.stringify(ruleForUpdate)}\r\n\r\n${exportStr}`
-    fs.writeFileSync(`${resultProjectPath}${relativePath}rule.js`,finalStr)
-
-
-    //根据ruleForUpdate和ruleForCreate，产生对应的inputValue
-    relativePath='src/constant/initInputValue/'
-    let inputValueruleForCreate={},inputValueruleForUpdate={}
-    let inputValueForCreate=`const inputValueForCreate=\r\n`
-    let inputValueForUpdate=`const inputValueForUpdate=\r\n`
-    exportStr=`export {inputValueForCreate,inputValueForUpdate}`  //client段采用es6的export写法
-    for(let coll in ruleForCreate){
-        inputValueruleForCreate[coll]={}
-        for(let field in ruleForCreate[coll]){
-            inputValueruleForCreate[coll][field]={}
-            inputValueruleForCreate[coll][field]['label']=browserInputRule[coll][field][otherRuleFiledName.CHINESE_NAME]
-            inputValueruleForCreate[coll][field]['value']=null //设成null，而不是undefined，否则字段会不存在
-        }
-    }
-    for(let coll in ruleForUpdate){
-        inputValueruleForUpdate[coll]={}
-        for(let field in ruleForUpdate[coll]){
-            inputValueruleForUpdate[coll][field]={}
-            inputValueruleForUpdate[coll][field]['label']=browserInputRule[coll][field][otherRuleFiledName.CHINESE_NAME]
-            inputValueruleForUpdate[coll][field]['value']=null //设成null，而不是undefined，否则字段会不存在
-        }
-    }
-    finalStr=`${head}\r\n${inputValueForCreate}${JSON.stringify(inputValueruleForCreate)}\r\n${inputValueForUpdate}${JSON.stringify(inputValueruleForUpdate)}\r\n\r\n${exportStr}`
-    fs.writeFileSync(`${resultProjectPath}${relativePath}inputValue.js`,finalStr)
-}
 
 /*  根据server段browser的rule定义，获得对应的client的rule定义（iview）
 * @originRulePath：需要转换的rule的路径（文件或者目录）
@@ -173,12 +62,12 @@ function writeResult_asyncValidator({content,resultProjectPath}){
 function generateClientRule({originRulePath,absResultPath}){
     //1. 读取originRulePath下所有文件
     let absFilesPath=[]
-    misc.recursiveReadFileAbsPath({fileOrDirPath:originRulePath,absFilesPathResult:absFilesPath})
+    file.recursiveReadFileAbsPath({fileOrDirPath:originRulePath,absFilesPathResult:absFilesPath})
     // ap.inf('absFilesPath',absFilesPath)
     //2. 对每个文件，读取export定义
     let fileExport={}
     for(let singleAbsFilePath of absFilesPath){
-        Object.assign(fileExport,misc.readFileExportItem({absFilePath:singleAbsFilePath}))
+        Object.assign(fileExport,file.readFileExportItem({absFilePath:singleAbsFilePath}))
 
     }
 
@@ -209,18 +98,26 @@ function convertRule_iview({collName,ruleDefinitionOfFile}){
 
     for(let singleFieldName in ruleDefinitionOfFile){
         tmpResult[singleFieldName]=[]  //iview的格式
-
+// ap.inf('singleFieldName',singleFieldName)
         let clientDataType,clientEleDataType  //获得field的dataType，如果是array，还要获得array元素的类型
         let dataTypeDefinition=ruleDefinitionOfFile[singleFieldName][otherRuleFiledName.DATA_TYPE]
+        let isEnumArray=false,isNormalArray=false //字段是否为enumArray还是普通array，默认不是任何array
+
         //获得field的数据类型
+        //是array，判断enumArray还是normalArray
         if(true===dataTypeCheck.isArray(dataTypeDefinition)){
             clientDataType=e_clientDataType.ARRAY   //{type:'array'}
             clientEleDataType=dataTypeDefinition[0]
+            if(undefined!==ruleDefinitionOfFile[singleFieldName][ruleFiledName.ENUM]){
+                isEnumArray=true
+            }else{
+                isNormalArray=true
+            }
         }else{
             clientDataType=dataTypeDefinition
         }
-
-
+        // ap.inf('singleFieldName isEnumArray',isEnumArray)
+        // ap.inf('singleFieldName isNormalArray',isNormalArray)
         for(let singleRuleName in ruleDefinitionOfFile[singleFieldName]){
             // ap.inf('ruleDefinitionOfFile[singleFieldName]',ruleDefinitionOfFile[singleFieldName])
             // ap.inf('singleRuleName',singleRuleName)
@@ -228,23 +125,45 @@ function convertRule_iview({collName,ruleDefinitionOfFile}){
                 let singleRuleDefinition=ruleDefinitionOfFile[singleFieldName][singleRuleName]['define']
                 let errorMsg=ruleDefinitionOfFile[singleFieldName][singleRuleName]['error']['msg']
                 if(singleRuleName===ruleFiledName.REQUIRE){
+                    //如果是普通array，那么必定为true（array的元素必须设置值；原始中设置的true/false对应的为array中是否有元素）
+                    if(isNormalArray===true){
+                        singleRuleDefinition[e_applyRange.CREATE]=true //普通array，create必定为true
+                    }
                     tmpResult[singleFieldName].push({[e_serverRuleMatchClientRule[singleRuleName]]:singleRuleDefinition})
+
+
                 }else if(singleRuleName===ruleFiledName.FORMAT){
                     tmpResult[singleFieldName].push({[e_serverRuleMatchClientRule[singleRuleName]]:singleRuleDefinition.toString()})
-                }else{
+                }
+                //如果是数组，需要判断是否为enum（type:array,max:5,message）还是非enum(无视ARRAY_MIN/MAX_LENGTH,在clientNumRange中产生numRange.js)
+                else if(singleRuleName===ruleFiledName.ARRAY_MIN_LENGTH || singleRuleName===ruleFiledName.ARRAY_MAX_LENGTH){
+                    //enum+数组,才把ARRAY_MIN/MAX_LENGTH放入rule，normalArray，ARRAY_MIN/MAX_LENGTH放入独立文件numRange.js
+                    if(true===isEnumArray){
+                        tmpResult[singleFieldName].push({[e_serverRuleMatchClientRule[singleRuleName]]:singleRuleDefinition})
+                    }else{
+                        continue
+                    }
+                }
+                else{
                     tmpResult[singleFieldName].push({[e_serverRuleMatchClientRule[singleRuleName]]:singleRuleDefinition})
                 }
                 let lastIdx=tmpResult[singleFieldName].length-1
                 tmpResult[singleFieldName][lastIdx]['trigger']='blur,change'
                 tmpResult[singleFieldName][lastIdx]['message']=errorMsg
-                tmpResult[singleFieldName][lastIdx]['type']=clientDataType
+                
+                if(true===isNormalArray){
+                    tmpResult[singleFieldName][lastIdx]['type']=clientEleDataType
+                }else{
+                    tmpResult[singleFieldName][lastIdx]['type']=clientDataType
+                }
+
                     // , :errorMsg
             }
 
         }
 
     }
-
+// ap.inf('tmpResult',tmpResult.tags)
     return tmpResult
 }
 
@@ -289,7 +208,7 @@ function splitRequire_iview({rawContent}){
 
     }
     // }
-
+// ap.inf('ruleForCreate',ruleForCreate)
     return {ruleForCreate:ruleForCreate,ruleForUpdate:ruleForUpdate}
 }
 //将rule结果写入指定路径的文件下
@@ -310,10 +229,10 @@ function writeClientRuleResult_iview({convertedRule,resultPath}){
     //将require中的applyRange（CREATE，UPDATE_SCRLAR）区分
     
 // ap.inf('convertedRule[\'ruleForCreate\']',convertedRule['ruleForCreate'])
-    let contentFormatSanityForCreate=misc.sanityClientPatternInString({string:JSON.stringify(convertedRule['ruleForCreate'])})
+    let contentFormatSanityForCreate=str.sanityClientPatternInString({string:JSON.stringify(convertedRule['ruleForCreate'])})
 
     // ap.inf('contentFormatSanityForCreate',contentFormatSanityForCreate)
-    let contentFormatSanityForUpdate=misc.sanityClientPatternInString({string:JSON.stringify(convertedRule['ruleForUpdate'])})
+    let contentFormatSanityForUpdate=str.sanityClientPatternInString({string:JSON.stringify(convertedRule['ruleForUpdate'])})
     let finalStr=`${description}${head}\r\n${ruleForCreate}${contentFormatSanityForCreate}\r\n${ruleForUpdate}${contentFormatSanityForUpdate}\r\n\r\n${exportStr}`
     fs.writeFileSync(`${resultPath}`,finalStr)
 
@@ -354,4 +273,4 @@ module.exports={
 
 
 
-// generateClientRule({originRulePath:'D:/ss_vue_express/server_common/constant/inputRule/browserInput/user/user.js',absResultPath:'D:/ss_vue_view/src/constant/rule/rule.js'})
+// generateClientRule({originRulePath:'D:/ss_vue_express/server_common/constant/inputRule/browserInput/article/article.js',absResultPath:'D:/ss_vue_view/src/constant/rule/rule.js'})

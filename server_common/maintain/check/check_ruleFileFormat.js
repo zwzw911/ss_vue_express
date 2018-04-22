@@ -136,6 +136,7 @@ function checkRule({collName,ruleDefinitionOfFile}){
             return tmpResult
         }
 
+        //field中某些rule（APPLY_RANGE）的值，必须是enum
         tmpResult=checkEnumValue({collName:collName,fieldName:singleFieldName,fieldRuleDefinition:ruleDefinitionOfFile[singleFieldName]})
         if(tmpResult.rc>0){
             // ap.err('tmpResult',tmpResult)
@@ -148,6 +149,7 @@ function checkRule({collName,ruleDefinitionOfFile}){
             return tmpResult
         }
 
+        //APPLY_RANGE的逻辑设置（某些值不能共存）
         tmpResult=checkApplyRange({collName:collName,fieldName:singleFieldName,fieldRuleDefinition:ruleDefinitionOfFile[singleFieldName]})
         if(tmpResult.rc>0){
             // ap.err('tmpResult',tmpResult)

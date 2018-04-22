@@ -4,8 +4,8 @@
  */
 'use strict'
 
-const recursiveReadFileAbsPath=require('../function/assist/misc').recursiveReadFileAbsPath
-const recursiveRequireAllFileInDir=require('../function/assist/misc').recursiveRequireAllFileInDir
+const recursiveReadFileAbsPath=require('../function/assist/file').recursiveReadFileAbsPath
+const recursiveRequireAllFileInDir=require('../function/assist/file').recursiveRequireAllFileInDir
 
 const currentEnv=require(`../constant/config/appSetting`).currentEnv
 const e_env=require(`../constant/enum/nodeEnum`).Env

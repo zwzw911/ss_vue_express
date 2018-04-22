@@ -11,6 +11,7 @@ const redisClient=require('../../model/redis/common/redis_connections').redisCli
 const fs=require('fs')
 const path=require('path')
 const misc=require('../../function/assist/misc')
+const file=require('../../function/assist/file')
 const ap=require('awesomeprint')
 // var LuaSHA=require('./../../routes/assist/globalConstantDefine').constantDefine.LuaSHA
 // var CRUDGlobalSetting=require('./../../routes/model/redis/CRUDGlobalSetting').globalSetting
@@ -27,7 +28,7 @@ async function SHAFileInFolder_async({absoluteDirOrFilePath,skipFilesArray}){
     let finalResult={}
 
     let filesPath=[]
-    misc.recursiveReadFileAbsPath({fileOrDirPath:absoluteDirOrFilePath,skipFilesArray:skipFilesArray,absFilesPathResult:filesPath})
+    file.recursiveReadFileAbsPath({fileOrDirPath:absoluteDirOrFilePath,skipFilesArray:skipFilesArray,absFilesPathResult:filesPath})
     // ap.inf('shaResult',filesPath)
     for(let singleFilePath of filesPath){
         let fileName=path.basename(singleFilePath).split('.')[0] //取无扩展的文件名

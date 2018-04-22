@@ -1,4 +1,4 @@
-/*    gene by server/maintain/generateMongoEnum     */ 
+/*    gene by server/maintain/generateEnumValueToArray     */ 
  
 "use strict"
 const ServerDataType=["int","float","string","date","object","file","folder","number","objectId","boolean",] 

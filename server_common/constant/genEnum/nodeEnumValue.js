@@ -1,4 +1,4 @@
-/*    gene by server/maintain/generateMongoEnum     */ 
+/*    gene by server/maintain/generateEnumValueToArray     */ 
  
 "use strict"
 const RandomStringType=["basic","normal","complicated",] 

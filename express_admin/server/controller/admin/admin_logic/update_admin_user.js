@@ -24,6 +24,7 @@ const controllerHelper=server_common_file_require.controllerHelper
 const controllerChecker=server_common_file_require.controllerChecker
 const common_operation_model=server_common_file_require.common_operation_model
 const misc=server_common_file_require.misc
+const arr=server_common_file_require.array
 const miscConfiguration=server_common_file_require.globalConfiguration.misc
 const maxNumber=server_common_file_require.globalConfiguration.maxNumber
 const fkConfig=server_common_file_require.fkConfig
@@ -98,11 +99,11 @@ async function updateUser_async(req){
     // console.log(`update admin======>child pri ${JSON.stringify(docValue[e_field.ADMIN_USER.USER_PRIORITY])}`)
     if(undefined!==docValue[e_field.ADMIN_USER.USER_PRIORITY]){
         //权限在预订范围内
-        if(false===misc.ifArrayContainArray({parentArray:userPriority,childArray:docValue[e_field.ADMIN_USER.USER_PRIORITY]})){
+        if(false===arr.ifArrayContainArray({parentArray:userPriority,childArray:docValue[e_field.ADMIN_USER.USER_PRIORITY]})){
             return Promise.reject(controllerError.updatePriorityNotInheritedFromParent)
         }
         //权限不能重复
-        if(false===misc.ifArrayHasDuplicate(docValue[e_field.ADMIN_USER.USER_PRIORITY])){
+        if(false===arr.ifArrayHasDuplicate(docValue[e_field.ADMIN_USER.USER_PRIORITY])){
             return Promise.reject(controllerError.updateUserPriorityCantDuplicate)
         }
     }

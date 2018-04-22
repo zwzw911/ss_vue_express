@@ -23,7 +23,7 @@
 const ap=require('awesomeprint')
 const dataTypeCheck=require('./validateHelper').dataTypeCheck
 const valueTypeCheck=require('./validateHelper').valueTypeCheck
-const ifArrayHasDuplicate=require('../../function/assist/misc').ifArrayHasDuplicate
+const ifArrayHasDuplicate=require('../../function/assist/array').ifArrayHasDuplicate
 /*              常量              */
 const searchSetting=require('../../constant/config/globalConfiguration').searchSetting
 const validateFormatError=require('../../constant/error/validateError').validateFormat
