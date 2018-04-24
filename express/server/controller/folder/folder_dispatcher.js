@@ -1,20 +1,25 @@
 /**
- * Created by Ada on 2017/7/9.
+ * Created by 张伟 on 2018/04/23.
  * url：
  *  1. /user，根据method的不同，调用不同的函数进行对应的处理
  *  2. /user/unique: 用户注册的时候，对应用户名/账号进行唯一性检查
  */
 'use strict'
+
+/****************   内置lib和第三方lib   ******************/
 const ap=require('awesomeprint')
 
 
 const server_common_file_include=require('../../../server_common_file_require')
+/****************   公共函数   ******************/
 const controllerPreCheck=server_common_file_include.controllerPreCheck
+/****************   公共常量   ******************/
+//error
 const dispatchError=server_common_file_include.helperError.dispatch
-
+const controllerHelper=server_common_file_include.controllerHelper
+//enum
 const nodeEnum=server_common_file_include.nodeEnum
 const mongoEnum=server_common_file_include.mongoEnum
-const controllerHelper=server_common_file_include.controllerHelper
 // const e_userState=require('../../constant/enum/node').UserState
 const e_part=nodeEnum.ValidatePart
 const e_method=nodeEnum.Method//require('../../constant/enum/node').Method
@@ -26,32 +31,24 @@ const e_penalizeSubType=mongoEnum.PenalizeSubType.DB
 const e_intervalCheckPrefix=server_common_file_include.nodeEnum.IntervalCheckPrefix
 const e_searchRange=server_common_file_include.inputDataRuleType.SearchRange
 
-const controllerError=require(`./user_setting/user_controllerError`).controllerError
-const controllerSetting=require('./user_setting/user_setting').setting
+/**************  controller相关常量  ****************/
+const controllerError=require(`./folder_setting/folder_controllerError`).controllerError
+const controllerSetting=require('./folder_setting/folder_setting').setting
 
-const getUser_async=require('./user_logic/get_user').getUser_async
-const createUser_async=require('./user_logic/create_user').createUser_async
-const updateUser_async=require('./user_logic/update_user').updateUser_async
-const userLogin_async=require('./user_logic/user_login').login_async
-const userLogout_async=require('./user_logic/user_logout').logout_async
-const userMisc=require('./user_logic/user_misc_func')
-const uploadUserPhoto_async=userMisc.uploadDataUrlPhoto_async
+/**************  controller处理函数  ****************/
+const createFolder_async=require('./folder_logic/create_folder').createFolder_async
+const getFolder_async=require('./folder_logic/get_folder').getFolder_async
+const updateFolder_async=require('./folder_logic/update_folder').updateFolder_async
+const deleteFolder_async=require('./folder_logic/delete_folder').deleteFolder_async
 
-const uniqueCheck_async=userMisc.uniqueCheck_async
-const retrievePassword_async=userMisc.retrievePassword_async
-const changePassword_async=userMisc.changePassword_async
-const generateCaptcha_async=userMisc.generateCaptcha_async
 
-//对CRUD（输入参数带有method）操作调用对应的函数
+
+/*******************************************************************************/
+/***********    对CRUD（输入参数带有method）操作调用对应的函数  ****************/
+/*******************************************************************************/
 async function dispatcher_async(req){
 
-    //检查格式
-// ap.inf('req.route',req.route)
-//     ap.inf('req.originalUrl',req.originalUrl)
-//     ap.inf('req.baseUrl',req.baseUrl)
-//     ap.inf('req.path',req.path)
-//     ap.inf('req.route.stack[0].method',req.route.stack[0].method)
-
+    /***   初始化参数   ***/
     let userLoginCheck={
         //needCheck:false,
         // error:controllerError.userNotLoginCantCreateComment
@@ -67,12 +64,14 @@ async function dispatcher_async(req){
     let expectedPart
     let result=dispatchError.common.unknownRequestRul
 
-    //interval和robot检测
+    /***   1. interval和robot检测   ***/
     await controllerPreCheck.commonPreCheck_async({req:req,collName:collName})
     // ap.inf('commonPreCheck_async done')
+    /***   2. 根据method，以及url，进行对应的检查，最后调用处理函数   ***/
+    /**    检查包括：用户是否登录/用户是否被处罚/输入值的格式和范围是否正确（POST/PUT） **/
     switch (req.route.stack[0].method) {
         case 'get':
-            if(originalUrl==='/user' || originalUrl==='/user/') {
+/*            if(originalUrl==='/user' || originalUrl==='/user/') {
                 // ap.inf('start userStateCheck_async check')
                 await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
                 result= await getUser_async({req: req})
@@ -84,10 +83,14 @@ async function dispatcher_async(req){
                 // ap.inf('userStateCheck_async done')
                 result = await generateCaptcha_async({req: req})
                 return Promise.resolve(result)
-            }
+            }*/
             break;
         case 'post':
             if(originalUrl==='/user' || originalUrl==='/user/') {
+                userLoginCheck={
+                    needCheck:false,
+                    error:controllerError.userNotLoginCantCreateComment
+                }
                 await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
                 // ap.inf('create use userStateCheck_async done')
                 expectedPart=[e_part.RECORD_INFO,e_part.CAPTCHA]
@@ -128,15 +131,10 @@ async function dispatcher_async(req){
 
             break
         case 'delete':
-            if(originalUrl==='/user/logout' || originalUrl==='/user/logout/') {
-                result=await userLogout_async({req:req})
-                return Promise.resolve(result)
-            }
 
             break;
         case 'put':
             if(originalUrl==='/user' || originalUrl==='/user/') {
-                ap.inf('req.body.values',req.body.values)
                 userLoginCheck={
                     needCheck:true,
                     error:controllerError.dispatch.notLoginCantUpdateUserInfo

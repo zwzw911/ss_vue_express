@@ -87,7 +87,7 @@ async function userStateCheck_async({req,userLoginCheck={needCheck:false},penali
 /********************************************************************/
 /********************************************************************/
 /********************************************************************/
-/*  对输入的数据进行format和value的检测（防止XSS或者数据不合格）.置对POST有效（expressjs只能检查POST携带的参数，其他的method可能无法检测到参数）
+/*  对输入的数据进行format和value的检测（防止XSS或者数据不合格）.只对POST/PUT有效（browser只能在POST/PUT中携带额外参数，所以expressjs只检查POST/PUT携带的参数，其他的method可能无法检测到参数）
 *
 * */
 //validatePartValueFormat+validatePartValue

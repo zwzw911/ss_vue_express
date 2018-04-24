@@ -97,32 +97,45 @@ const hmac=function(string,hashType){
 
  };
 
-/* //产生[0-9a-f]的随机字符
- var asyncGenSalt=function(saltLength,cb){
-     return new Promise(function (resolve,reject) {
-         crypto.randomBytes(saltLength,(err,buf)=>{
-             if(err){
-                 reject(error.genSaltFail)
-             }else{
-                 resolve({rc:0,msg:buf.toString('hex')})
-             }
 
-         })
-     })
 
-}*/
 
-//console.log(hash('11111111','md5'))
-/*exports.hash=hash;
-exports.hmac=hmac;
-exports.crypt=crypt;
-exports.decrypt=decrypt;*/
+//对单个字段（objectId）的值进行加密，显示到页面
+function cryptSingleFieldValue({fieldValue,salt,cryptType}){
+    if (-1===validCryptType.indexOf(cryptType) || cryptType===null || cryptType===undefined || cryptType===''){
+        cryptType='blowfish'
+    }
+    let cryptResult
+    if(undefined!==salt){
+        cryptResult=crypt(fieldValue+salt,cryptType)
+    }else{
+        cryptResult=crypt(fieldValue,cryptType)
+    }
+
+    return cryptResult
+}
+
+//对单个字段（objectId）的值进行解密
+function decryptSingleFieldValue({fieldValue,salt,cryptType}){
+    if (-1===validCryptType.indexOf(cryptType) || cryptType===null || cryptType===undefined || cryptType===''){
+        cryptType='blowfish'
+    }
+    let decryptResult=decrypt(fieldValue,cryptType)
+    if(undefined!==salt){
+        decryptResult.msg=decryptResult.msg.replace(salt,'')
+    }
+    return decryptResult
+}
+
 module.exports={
     hash,
     hmac,
     crypt,
     decrypt,
     // asyncGenSalt,
+
+    cryptSingleFieldValue,
+    decryptSingleFieldValue
 }
 //exports.genSalt=genSalt;
 

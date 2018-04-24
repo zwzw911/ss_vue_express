@@ -1,8 +1,5 @@
 /**
- * Created by Ada on 2017/7/9.
- * url：
- *  1. /user，根据method的不同，调用不同的函数进行对应的处理
- *  2. /user/unique: 用户注册的时候，对应用户名/账号进行唯一性检查
+ * Created by 张伟 on 2018/04/23.
  */
 'use strict'
 
@@ -16,30 +13,32 @@ const server_common_file_require=require('../../../server_common_file_require')
 
 
 const genFinalReturnResult=server_common_file_require.misc.genFinalReturnResult//require('../../function/assist/misc').genFinalReturnResult
-const userDispatcher_async=require('./user_dispatcher').dispatcher_async
+const folderDispatcher_async=require('./folder_dispatcher').dispatcher_async
 
 
 //用来为uploadUserPhoto失败的req，在redis中设置对应的reject
 const controllerHelper=server_common_file_require.controllerHelper
 const e_intervalCheckPrefix=server_common_file_require.nodeEnum.IntervalCheckPrefix
 
+//create folder
 router.post('/',function(req,res,next){
-    userDispatcher_async(req).then(
+    folderDispatcher_async(req).then(
         (v)=>{
-            ap.inf(`user register success, result:  ${JSON.stringify(v)}`)
+            ap.inf(`create folder success, result:  ${JSON.stringify(v)}`)
             return res.json(v)
         },
         (err)=>{
-            ap.err(`user register fail: ${JSON.stringify(err)}`)
+            ap.err(`create folder fail: ${JSON.stringify(err)}`)
             return res.json(genFinalReturnResult(err))
         }
     )
     // next()
 })
+//update folder(包括folder改名，移动等)
 router.put('/',function(req,res,next){
-    userDispatcher_async(req).then(
+    folderDispatcher_async(req).then(
         (v)=>{
-            ap.inf(`user update success, result:  ${JSON.stringify(v)}`)
+            ap.inf(`update folder success, result:  ${JSON.stringify(v)}`)
             return res.json(v)
         },
         (err)=>{
@@ -49,22 +48,24 @@ router.put('/',function(req,res,next){
     )
     // next()
 })
+//delete folder
 router.delete('/',function(req,res,next){
-    userDispatcher_async(req).then(
+    folderDispatcher_async(req).then(
         (v)=>{
-            ap.inf(`user delete success, result:  ${JSON.stringify(v)}`)
+            ap.inf(`delete folder success, result:  ${JSON.stringify(v)}`)
             return res.json(v)
         },
         (err)=>{
-            ap.err(`user delete fail: ${JSON.stringify(err)}`)
+            ap.err(`delete folder fail: ${JSON.stringify(err)}`)
             return res.json(genFinalReturnResult(err))
         }
     )
     // next()
 })
-router.get('/',function(req,res,next){
+//read folder
+router.get('/;folderId',function(req,res,next){
     // ap.inf('match url')
-    userDispatcher_async(req).then(
+    folderDispatcher_async(req).then(
         (v)=>{
             ap.inf(`user get success, result:  ${JSON.stringify(v)}`)
             return res.json(v)
@@ -78,7 +79,7 @@ router.get('/',function(req,res,next){
 
 router.post('/login',function(req,res,next){
     // ap.inf('match url')
-    userDispatcher_async(req).then(
+    folderDispatcher_async(req).then(
         (v)=>{
             ap.inf(`user login success, result:  ${JSON.stringify(v)}`)
             return res.json(v)
@@ -89,21 +90,9 @@ router.post('/login',function(req,res,next){
         }
     )
 })
-router.delete('/logout',function(req,res,next){
-    // ap.inf('match url')
-    userDispatcher_async(req).then(
-        (v)=>{
-            ap.inf(`user logout success, result:  ${JSON.stringify(v)}`)
-            return res.json(v)
-        },
-        (err)=>{
-            ap.err(`user logout fail: ${JSON.stringify(err)}`)
-            return res.json(genFinalReturnResult(err))
-        }
-    )
-})
+
 router.post('/uniqueCheck',function(req,res,next){
-    userDispatcher_async(req).then(
+    folderDispatcher_async(req).then(
         (v)=>{
             ap.inf(`unique check  success, result:  ${JSON.stringify(v)}`)
             return res.json(v)
@@ -116,7 +105,7 @@ router.post('/uniqueCheck',function(req,res,next){
 })
 
 router.post('/retrievePassword',function(req,res,next){
-    userDispatcher_async(req).then(
+    folderDispatcher_async(req).then(
         (v)=>{
             ap.inf(`retrievePassword  success, result:  ${JSON.stringify(v)}`)
             return res.json(v)
@@ -129,7 +118,7 @@ router.post('/retrievePassword',function(req,res,next){
 })
 
 router.put('/changePassword',function(req,res,next){
-    userDispatcher_async(req).then(
+    folderDispatcher_async(req).then(
         (v)=>{
             ap.inf(`changePassword  success, result:  ${JSON.stringify(v)}`)
             return res.json(v)
@@ -143,7 +132,7 @@ router.put('/changePassword',function(req,res,next){
 
 router.put('/uploadUserPhoto',function(req,res,next){
     // ap.inf('put upload user photo in')
-    userDispatcher_async(req).then(
+    folderDispatcher_async(req).then(
         (v)=>{
             ap.inf(`upload photo  success, result:  ${JSON.stringify(v)}`)
             return res.json(v)
@@ -184,7 +173,7 @@ router.put('/uploadUserPhoto',function(req,res,next){
 
 router.get('/captcha',function(req,res,next){
 // ap.inf('router in')
-    userDispatcher_async(req).then(
+    folderDispatcher_async(req).then(
         (v)=>{
             ap.inf(`captcha  success, result:  ${JSON.stringify(v)}`)
             return res.json(v)

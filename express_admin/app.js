@@ -29,10 +29,10 @@ const server_common_file_require=require('./server_common_file_require')
 const currentEnv=require('./server/constant/config/appSetting').currentEnv*/
 
 // console.log(`=============app in=======`)
-const session=server_common_file_require.cookieSession
-session.setSessionDurationInMinute(480) //session duration is 8hours
+const session=server_common_file_require.session
+// session.setSessionDurationInMinute(480) //session duration is 8hours
 // let op=
-app.use(session.getSession())
+app.use(session.generateSessionStore({durationInMinute:480}))
 
 console.log(`app in`)
 /*const checkInterval_async=require('./server/function/assist/misc').checkInterval_async

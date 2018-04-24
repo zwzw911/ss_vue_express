@@ -33,7 +33,7 @@ const controllerHelper=require('../server_common/controller/controllerHelper')
 /*              function assist                */
 const awesomeCaptcha=require('../server_common/function/assist/awesomeCaptcha')
 const checkRobot=require('../server_common/function/assist/checkRobot')
-const cookieSession=require('../server_common/function/assist/cookieSession')
+const cookieSession=require('../server_common/function/assist/not_used_cookieSession')
 const crypt=require('../server_common/function/assist/crypt')
 const gmImage=require('../server_common/function/assist/gmImage')
 const misc=require('../server_common/function/assist/misc')

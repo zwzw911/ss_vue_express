@@ -170,7 +170,7 @@ async function retrievePassword_async({req}){
     }
     if(tmpResult.length===1){
         userId=tmpResult[0]['id']
-        newPwd=misc.generateRandomString(6,newPwdType)
+        newPwd=misc.generateRandomString({len:6,type:newPwdType})
     }
     //继续在usedAccount中查找
     if(tmpResult.length===0){
@@ -183,7 +183,7 @@ async function retrievePassword_async({req}){
                 return {rc:0}
             case 1:
                 userId=tmpResult[0]['id']
-                newPwd=misc.generateRandomString(6,newPwdType)
+                newPwd=misc.generateRandomString({len:6,type:newPwdType})
                 break
             default:
                 return Promise.reject(controllerError.accountNotUnique)

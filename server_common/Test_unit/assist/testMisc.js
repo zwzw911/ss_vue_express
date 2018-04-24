@@ -5,12 +5,12 @@
 //require("babel-polyfill");
 //require("babel-core/register")
 
-var testModule=require('../../server/assist/misc');
-var miscError=require('../../server/define/error/nodeError').nodeError.assistError.misc
-var gmError=require('../../server/define/error/nodeError').nodeError.assistError.gmImage
+const testModule=require('../../server/assist/misc');
+const miscError=require('../../server/define/error/nodeError').nodeError.assistError.misc
+const gmError=require('../../server/define/error/nodeError').nodeError.assistError.gmImage
 /*          for generateRandomString test       */
-var regex=require('../../server/define/regex/regex').regex
-var randomStringTypeEnum=require('../../server/define/enum/node').node.randomStringType
+const regex=require('../../server/define/regex/regex').regex
+const randomStringTypeEnum=require('../../server/define/enum/node').node.randomStringType
 
 
 
@@ -24,19 +24,19 @@ var generateRandomString=function(test){
     let value,result,tmp
     test.expect(4)
 
-    value=func.generateRandomString()
+    value=func.generateRandomString({})
     result=regex.randomString.normal.test(value)
     test.equal(result,true,'default parameter random string generate failed')
 
-    value=func.generateRandomString(4,randomStringTypeEnum.basic)
+    value=func.generateRandomString({len:4,type:randomStringTypeEnum.basic})
     result=regex.randomString.basic.test(value)
     test.equal(result,true,'basic random string generate failed')
 
-    value=func.generateRandomString(4,randomStringTypeEnum.normal)
+    value=func.generateRandomString({len:4,type:randomStringTypeEnum.normal})
     result=regex.randomString.normal.test(value)
     test.equal(result,true,'normal random string generate failed')
 
-    value=func.generateRandomString(4,randomStringTypeEnum.complicated)
+    value=func.generateRandomString({len:4,type:randomStringTypeEnum.complicated})
     result=regex.randomString.complicated.test(value)
     test.equal(result,true,'complicated random string generate failed')
 

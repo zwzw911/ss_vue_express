@@ -54,6 +54,32 @@ const session={
     },
 
 }*/
+const sessionOption={
+    cookieOption:{
+        path:'/', //域名下所有URL都可以使用session
+        domain:'127.0.0.1', //可以使用session的域名（可以是IP)
+        maxAge:900000, // 整数，ms。默认15分钟
+        secure:false, //只用https
+        httpOnly:false, //true：通过http传递cookie，但是client无法通过js感知；false，可以附加在url，但是browser可以感知到
+        sameSite:'lax', // strict/lax。 strict：在a.com中点击b.com的URL时，不会发送b.com的网页；lax：如果是GET操作，可以发送。
+    },
+
+    expressSessionOption:{
+        // name:'connectSid',
+        secret:'suibian', //进行加密的字符
+        resave:false, //即使session内容没有更改，都强制保存session内容到server。设为true，可能会导致竞争（用户开了2个窗口的话）
+        rolling:false,//每次请求，都重置session的cookie选项（主要是expiration重设为maxAge）
+        saveUninitialized:false, //强制保存新生成，但是尚未做过修改（即没有任何内容）的session保存到session store。设为false，可以减少对session store的占用。
+    },
+
+    sessionStoreOption:{
+        redis:{
+            ttl:900,// second,和cookie时间一致
+            db:0,//redis的db index
+            // prefix:'sess',//默认记录前缀，默认是'sess:'
+        },
+    }
+}
 
 const searchSetting={
     normal:{
@@ -660,6 +686,7 @@ const PublicGroup={
 // session,
 // pageSetting,
 module.exports={
+    sessionOption,
 	defaultSetting,
     searchSetting,
     paginationSetting,

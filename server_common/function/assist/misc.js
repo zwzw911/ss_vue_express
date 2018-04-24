@@ -113,7 +113,7 @@ const e_sizeUnit=require('../../constant/enum/nodeRuntimeEnum').FileSizeUnit
 
 //len:产生字符串的长度
 //type: basic(0-9A-Z)；normal(0-9A-Za-z); complicated(normal+特殊字符)
-function generateRandomString(len=4,type=e_randomStringType.NORMAL){
+function generateRandomString({len=4,type=e_randomStringType.NORMAL}){
     /*    if(undefined===len || false===dataTypeCheck.isInt(len)){
      len=4
      }*/
@@ -595,3 +595,4 @@ module.exports={
 ap.inf('k1,k2', objectPartlyDeepCopy({sourceObj:s,expectedKey:['k1','k100']}))*/
 /*let dataUrl='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAYzUlEQVR4nO2bZ1RU1/73/2vlSpkZpiCCilQVpUqXDjYQFWvsvcUSQVBQURALKqgoaq5JjCWJJWosiXqTqInd2LtYooBKBymKdJjP8+KMRCOW+0RzSZyz1nfxYu/Z++zf5+z9K4fzf7rtVlDf1NBvKW38p/C6q7SijOTcNM6nJvFz0ik2ntzLmiM7mPntCiK/TaSiqvK1Y7zLa1joSvS85/9Xa/+//7XxXwVEqVSS/+QRyTlpnPztEgevn2Lt0Z2sOriFqB0rmbY1gTHrYxi4ehpByyfhFTsM17kDMZ0SgMkUf0oqytRA/mu1T0TPPx69wAXo95yFfu8ZNO4XTMvBg4jauYqwzYsZu34OfVaFEbR8Eq5zB2If/SEmU/xfKzWQN3n6Oy7FoPc0DPqF0njQRJoOHYvhyBEYjh5Ks/H9MJrQB6PgIEwmd34jo6…YbUKbTWPqJW/YS5Ww8QqgyOk5G5THvJCyq/ZSi8FqiMP1UY3DEUmWukENO7xyB3ixaqv0/bVJPWynWG6gXNYlXBbyFyt9nInCOEyWvb41WZ7iLk7rNVv322FC9kwXL3GGFRzyz2qYGfglB4x6n8YBxy9znIXKarAAQ/02fR7+2u05E6hvxuPJcIVcV50UthPHXqco+5yFxnIHWcXMc9PQskXFX8XCDM6zEPWdtIoaCqAvZsu/qd+gvGjhfqU64zkDlORuYYUoeCa4uZtVXmtzS/GkidQDazLuURj5VKlHXqDgmjl9BSDeSvAjIXhVskCudQFE6T61AIchf1DvkLgTz1Ly/3D+ojSw3kfVYiT99zvFRP+7zludVA6pnUQOqZ1EDqmdRA6pnUQOqZ1EDqmdRA6pnUQOqZ1EDqmdRA6pnUQOqZ1EDqmdRA6pnUQOqZ1EDqmdRA6pnUQOqZ1EDqmdRA6pnUQOqZ/h/t8TWgRy1HLAAAAABJRU5ErkJggg=='
 dataUrl2File_async({dataUrl:dataUrl,fileNameWithoutExtension:`test`,filePath:'d:/'})*/
+// console.log(generateRandomString({}))

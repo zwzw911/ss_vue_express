@@ -64,8 +64,10 @@ const common_operation_model=require('../model/mongo/operation/common_operation_
 const common_operation_helper=require('../model/mongo/operation/common_operation_helper')
 
 // const misc=require('../function/assist/misc')
-const hash=require('../function/assist/crypt').hash
-
+const hashCrypt=require('../function/assist/crypt')
+const hash=hashCrypt.hash
+const cryptSingleFieldValue=hashCrypt.cryptSingleFieldValue
+const decryptSingleFieldValue=hashCrypt.decryptSingleFieldValue
 
 const browserInputRule=require('../constant/inputRule/browserInputRule').browserInputRule
 const internalInputRule=require('../constant/inputRule/internalInputRule').internalInputRule
@@ -79,6 +81,7 @@ const handleSystemError=require('../function/assist/system').handleSystemError
 const systemError=require('../constant/error/systemError').systemError
 
 // const e_iniSettingObject=require('../constant/genEnum/initSettingObject').iniSettingObject
+const dataTypeCheck=require('../function/validateInput/validateHelper').dataTypeCheck
 const uploadFile=require('../function/assist/upload')
 const convertFileSize=require('../function/assist/misc').convertFileSize
 const sanityHtml=require('../function/assist/sanityHtml').sanityHtml
@@ -774,7 +777,7 @@ function generateSugarAndHashPassword({ifAdminUser,ifUser,password}){
         return helperError.userTypeNotCorrect
     }
 
-    let sugar=misc.generateRandomString(randomStringLength)
+    let sugar=misc.generateRandomString({len:randomStringLength})
     let hashedPassword=hash(`${password}${sugar}`,hashType)
     if(hashedPassword.rc>0){return hashedPassword}
     return {rc:0,msg:{sugar:sugar,hashedPassword:hashedPassword.msg}}
@@ -789,7 +792,7 @@ async function setLoginUserInfo_async({req,userInfo}){
     if(undefined===userInfo){
         return Promise.reject(helperError.userInfoUndefine)
     }
-    let mandatoryFields=[e_userInfoField.USER_ID,e_userInfoField.USER_COLL_NAME,e_userInfoField.USER_TYPE]
+    let mandatoryFields=[e_userInfoField.USER_ID,e_userInfoField.USER_COLL_NAME,e_userInfoField.USER_TYPE,e_userInfoField.TEMP_SALT]
     for(let singleMandatoryField of mandatoryFields){
         if(undefined===userInfo[singleMandatoryField]){
             return Promise.reject(helperError.mandatoryFieldValueUndefine(singleMandatoryField))
@@ -1138,7 +1141,7 @@ async  function genCaptchaAdnSave_async({req,params}){
     // await controllerChecker.checkInterval_async({req:req,reqTypePrefix:'captcha'})
 
 // ap.inf('interval done')
-    let captchaString=misc.generateRandomString()
+    let captchaString=misc.generateRandomString({})
     // ap.inf('captchaString',captchaString)
     //获得session或者ip
     let userIdentify=await misc.getIdentify_async({req:req})
@@ -1181,8 +1184,36 @@ async function getCaptchaAndCheck_async({req}){
     // ap.inf('serverCaptcha',serverCaptcha)
 }
 
+//对单个记录的值(主要是objectId)进行加密
+//record必须是object，可能需要.toObject()方法转换
+//inputRule已经require，无需参数传递
+function cryptDecryptSingleRecord({record,collName,cryptDecryptType}){
+    let collRule=inputRule[collName]
+    for(let singleFieldName in collRule){
+        //当前，只对objectId的数据进行加解密
+        if(undefined!==collRule[singleFieldName][e_otherRuleFiledName.DATA_TYPE]){
+            let fieldRuleDefinition=collRule[singleFieldName][e_otherRuleFiledName.DATA_TYPE]
+            let fieldDataType=dataTypeCheck.isArray(fieldRuleDefinition) ? fieldRuleDefinition[0]:fieldRuleDefinition
+            if(e_serverDataType.OBJECT_ID===fieldDataType){
+                if(undefined!==record[singleFieldName]){
+                    if(cryptDecryptType==='crypt'){
+                        record[singleFieldName]=cryptSingleFieldValue({fieldValue:record[singleFieldName]})
+                    }
+                    if(cryptDecryptType==='decrypt'){
+                        record[singleFieldName]=decryptSingleFieldValue({fieldValue:record[singleFieldName]})
+                    }
+                }
+            }
+        }
+    }
+}
 
-
+function cryptRecordValue({record,collName}){
+    cryptDecryptSingleRecord({record:record,collName:collName,cryptDecryptType:'crypt'})
+}
+function decryptRecordValue({record,collName}){
+    cryptDecryptSingleRecord({record:record,collName:collName,cryptDecryptType:'decrypt'})
+}
 
 module.exports= {
     checkOptionPartExist,//检查option中那些part是存在
@@ -1245,7 +1276,8 @@ module.exports= {
     genCaptchaAdnSave_async,
     getCaptchaAndCheck_async,
 
-
+    cryptRecordValue,
+    decryptRecordValue,
 }
 
 

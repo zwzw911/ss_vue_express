@@ -12,7 +12,7 @@ const nodeRuntimeEnum=server_common_file_include.nodeRuntimeEnum
 // const nodeRuntimeEnum=server_common_file_include.nodeRuntimeEnum
 
 const common_operation_model=server_common_file_include.common_operation_model
-// const misc=server_common_file_include.misc
+const misc=server_common_file_include.misc
 // const gmImage=server_common_file_include.gmImage
 // const validateFormat=server_common_file_include.validateFormat
 
@@ -20,6 +20,7 @@ const e_part=nodeEnum.ValidatePart
 const e_hashType=nodeRuntimeEnum.HashType
 const e_userInfoField=nodeRuntimeEnum.UserInfoField
 const hash=server_common_file_include.crypt.hash
+
 // const e_randomStringType=nodeEnum.RandomStringType
 // const e_userState=nodeEnum.UserState
 // const e_fileSizeUnit=nodeEnum.fileSizeUnit
@@ -99,6 +100,7 @@ async function login_async({req}){
     userInfo[e_userInfoField.USER_ID]=userTmpResult[0]['id']
     userInfo[e_userInfoField.USER_TYPE]=userTmpResult[0][e_field.USER.USER_TYPE]
     userInfo[e_userInfoField.USER_COLL_NAME]=e_coll.USER
+    userInfo[e_userInfoField.TEMP_SALT]=misc.generateRandomString({})
     // console.log(`login result ======>${JSON.stringify(userInfo)}`)
     await controllerHelper.setLoginUserInfo_async({req:req,userInfo:userInfo})
     // console.log(`req.session after user login ==============>${JSON.stringify(req.session)}`)

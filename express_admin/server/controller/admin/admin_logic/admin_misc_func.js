@@ -415,7 +415,7 @@ async function generateCaptcha_async(req){
         }
     }
 
-    let captchaString=misc.generateRandomString()
+    let captchaString=misc.generateRandomString({})
     req.session.captcha.captcha=captchaString
 
     //产生dataURL并返回

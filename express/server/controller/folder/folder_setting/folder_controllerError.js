@@ -1,9 +1,9 @@
 /**
- * Created by ada on 2017/9/1.
+ * Created by 张伟 on 2018/04/23.
  */
 'use strict'
 
-
+//52000~52100
 const controllerError={
     dispatch:{
         notLoginCantRetrievePassword:{rc:50100,msg:`尚未登录，无法重置密码`},
@@ -21,11 +21,6 @@ const controllerError={
     loginFieldNumNotExpected:{rc:50107,msg:`输入字段字段数量不正确`},
     accountNotExist:{rc:50108,msg:`用户名或者密码不正确`},//不能泄露具体信息
     accountPasswordNotMatch:{rc:50110,msg:`用户名或者密码不正确`},
-
-    /*              logout_async            */
-    logout:{
-        destroySessionFailed:{rc:50111,msg:`退出失败`},
-    },
 
     /*              updateUser_async            */
     notLoginCantUpdate:{rc:50112,msg:`尚未登录，无法执行用户信息更改`},
