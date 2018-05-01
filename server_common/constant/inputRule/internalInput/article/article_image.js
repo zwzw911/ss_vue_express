@@ -18,61 +18,64 @@ const e_uploadFileDefinitionFieldName=require(`../../../../constant/enum/nodeEnu
 /*              upload file define          */
 const uploadFileDefine=require('../../../../constant/config/globalConfiguration').uploadFileDefine
 
+const baseJSErrorCode=101650
+const baseMongoErrorCode=201650
+
 const article_image= {
     name: {
         [otherRuleFiledName.CHINESE_NAME]: '文档图片名称',
         [otherRuleFiledName.DATA_TYPE]: serverDataType.STRING,
         [otherRuleFiledName.APPLY_RANGE]:[applyRange.CREATE],
-        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true}, error: {rc: 10260, msg: '文档图片名称不能为空'}, mongoError: {rc: 20260, msg: '文档图片名称不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true}, error: {rc: baseJSErrorCode, msg: '文档图片名称不能为空'}, mongoError: {rc: baseMongoErrorCode, msg: '文档图片名称不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         // [ruleFiledName.MIN_LENGTH]: {define: 4, error: {rc: 10262}, mongoError: {rc: 20262, msg: '文档图片名称至少4个字符'}},
         // [ruleFiledName.MAX_LENGTH]: {define: 255, error: {rc: 10264}, mongoError: {rc: 20264, msg: '文档名的长度不能超过255个字符'}},
-        [ruleFiledName.FORMAT]: {define: regex.imageName, error: {rc: 10266, msg: '文档名必须由4-255个字符组成'}, mongoError: {rc: 20266, msg: '文档名必须由4-255个字符组成'}} //server端使用
+        [ruleFiledName.FORMAT]: {define: regex.imageName, error: {rc: baseJSErrorCode+2, msg: '文档名必须由4-255个字符组成'}, mongoError: {rc: baseMongoErrorCode+2, msg: '文档名必须由4-255个字符组成'}} //server端使用
     },
     hashName: {
         [otherRuleFiledName.CHINESE_NAME]: '文档图片名称',
         [otherRuleFiledName.DATA_TYPE]: serverDataType.STRING,
         [otherRuleFiledName.APPLY_RANGE]:[applyRange.CREATE],
-        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true}, error: {rc: 10268, msg: '文档图片名称不能为空'}, mongoError: {rc: 20268, msg: '文档图片名称不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true}, error: {rc: baseJSErrorCode+4, msg: '文档图片名称不能为空'}, mongoError: {rc: baseMongoErrorCode+4, msg: '文档图片名称不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         // [ruleFiledName.MIN_LENGTH]: {define: 4, error: {rc: 10002}, mongoError: {rc: 30002, msg: '文档图片名称至少4个字符'}},
         // [ruleFiledName.MAX_LENGTH]: {define: 255, error: {rc: 10004}, mongoError: {rc: 30004, msg: '文档名的长度不能超过255个字符'}},
-        [ruleFiledName.FORMAT]: {define: regex.md5Image, error: {rc: 10270, msg: 'hash文档名必须由35~36个字符组成'}, mongoError: {rc: 20270, msg: 'hash文档名必须由35~36个字符组成'}} //server端使用
+        [ruleFiledName.FORMAT]: {define: regex.md5Image, error: {rc: baseJSErrorCode+6, msg: 'hash文档名必须由35~36个字符组成'}, mongoError: {rc: baseMongoErrorCode+6, msg: 'hash文档名必须由35~36个字符组成'}} //server端使用
     },
     pathId: {
         [otherRuleFiledName.CHINESE_NAME]: '存储路径',
         [otherRuleFiledName.DATA_TYPE]: serverDataType.OBJECT_ID,
         [otherRuleFiledName.APPLY_RANGE]:[applyRange.CREATE],
-        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true}, error: {rc: 10272, msg: '存储路径不能为空'}, mongoError: {rc: 20272, msg: '存储路径不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true}, error: {rc: baseJSErrorCode+8, msg: '存储路径不能为空'}, mongoError: {rc: baseMongoErrorCode+8, msg: '存储路径不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         // [ruleFiledName.MIN_LENGTH]: {define: 6, error: {rc: 10002}, mongoError: {rc: 20002, msg: '密码至少6个字符'}},
         // [ruleFiledName.MAX_LENGTH]: {define: 20, error: {rc: 10004}, mongoError: {rc: 20004, msg: '密码的长度不能超过20个字符'}},
-        [ruleFiledName.FORMAT]: {define: regex.objectId, error: {rc: 10274, msg: '存储路径必须是objectId'}, mongoError: {rc: 20274, msg: '存储路径必须是objectId'}} //server端使用
+        [ruleFiledName.FORMAT]: {define: regex.objectId, error: {rc: baseJSErrorCode+10, msg: '存储路径必须是objectId'}, mongoError: {rc: baseMongoErrorCode+10, msg: '存储路径必须是objectId'}} //server端使用
     },
     // in byte
     sizeInMb:{
         [otherRuleFiledName.CHINESE_NAME]: '图片大小',
         [otherRuleFiledName.DATA_TYPE]: serverDataType.INT,
         [otherRuleFiledName.APPLY_RANGE]:[applyRange.CREATE],
-        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true}, error: {rc: 10276, msg: '图片大小不能为空'}, mongoError: {rc: 20276, msg: '图片大小不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true}, error: {rc: baseJSErrorCode+12, msg: '图片大小不能为空'}, mongoError: {rc: baseMongoErrorCode+12, msg: '图片大小不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         // 'min': {define: 1, error: {rc: 10002}, mongoError: {rc: 20002, msg: '图片大小至少6个字符'}},
-        'max': {define: uploadFileDefine.article_image[e_uploadFileDefinitionFieldName.MAX_SIZE_IN_MB], error: {rc: 10278, msg: `图片大小不能超过${uploadFileDefine.article_image.maxSizeInMB}MB`}, mongoError: {rc: 20278, msg: `图片大小不能超过${uploadFileDefine.article_image.maxSizeInMB}MB`}},
+        'max': {define: uploadFileDefine.article_image[e_uploadFileDefinitionFieldName.MAX_SIZE_IN_MB], error: {rc: baseJSErrorCode+14, msg: `图片大小不能超过${uploadFileDefine.article_image.maxSizeInMB}MB`}, mongoError: {rc: baseMongoErrorCode+14, msg: `图片大小不能超过${uploadFileDefine.article_image.maxSizeInMB}MB`}},
         // [ruleFiledName.FORMAT]: {define: regex.objectId, error: {rc: 10005}, mongoError: {rc: 20005, msg: '存储路径必须是objectId'}} //server端使用
     },
     authorId: {
         [otherRuleFiledName.CHINESE_NAME]: '图片上传者',
         [otherRuleFiledName.DATA_TYPE]: serverDataType.OBJECT_ID,
         [otherRuleFiledName.APPLY_RANGE]:[applyRange.CREATE],
-        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true}, error: {rc: 10280, msg: '图片上传者不能为空'}, mongoError: {rc: 20280, msg: '图片上传者不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true}, error: {rc: baseJSErrorCode+16, msg: '图片上传者不能为空'}, mongoError: {rc: baseMongoErrorCode+16, msg: '图片上传者不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         // [ruleFiledName.MIN_LENGTH]: {define: 6, error: {rc: 10002}, mongoError: {rc: 20002, msg: '密码至少6个字符'}},
         // [ruleFiledName.MAX_LENGTH]: {define: 20, error: {rc: 10004}, mongoError: {rc: 20004, msg: '密码的长度不能超过20个字符'}},
-        [ruleFiledName.FORMAT]: {define: regex.objectId, error: {rc: 10282, msg: '图片上传者必须是objectId'}, mongoError: {rc: 20282, msg: '图片上传者必须是objectId'}} //server端使用
+        [ruleFiledName.FORMAT]: {define: regex.objectId, error: {rc: baseJSErrorCode+18, msg: '图片上传者必须是objectId'}, mongoError: {rc: baseMongoErrorCode+18, msg: '图片上传者必须是objectId'}} //server端使用
     },
     articleId: {
         [otherRuleFiledName.CHINESE_NAME]: '所属文档',
         [otherRuleFiledName.DATA_TYPE]: serverDataType.OBJECT_ID,
         [otherRuleFiledName.APPLY_RANGE]:[applyRange.CREATE],
-        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true}, error: {rc: 10284, msg: '所属文档不能为空'}, mongoError: {rc: 20284, msg: '所属文档不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true}, error: {rc: baseJSErrorCode+20, msg: '所属文档不能为空'}, mongoError: {rc: baseMongoErrorCode+20, msg: '所属文档不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         // [ruleFiledName.MIN_LENGTH]: {define: 6, error: {rc: 10002}, mongoError: {rc: 20002, msg: '密码至少6个字符'}},
         // [ruleFiledName.MAX_LENGTH]: {define: 20, error: {rc: 10004}, mongoError: {rc: 20004, msg: '密码的长度不能超过20个字符'}},
-        [ruleFiledName.FORMAT]: {define: regex.objectId, error: {rc: 10286, msg: '所属文档必须是objectId'}, mongoError: {rc: 20286, msg: '所属文档必须是objectId'}} //server端使用
+        [ruleFiledName.FORMAT]: {define: regex.objectId, error: {rc: baseJSErrorCode+22, msg: '所属文档必须是objectId'}, mongoError: {rc: baseMongoErrorCode+22, msg: '所属文档必须是objectId'}} //server端使用
     },
 
 

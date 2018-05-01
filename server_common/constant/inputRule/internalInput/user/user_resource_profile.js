@@ -1,5 +1,5 @@
 /**
- * Created by wzhan039 on 2017-06-09.
+ * Created by zhang wei on 2018-04-27.
  *  用户对应的inputRule（浏览器传递到server的数据）
  *  不包括server自动生成的数据，例如cDate等。因为默认程序自动生成的数据是正确的
  */
@@ -18,25 +18,25 @@ const regex=require('../../../regex/regex').regex
 // const mongoEnum=require('../../../enum/mongo')
 const enumValue=require('../../../../constant/genEnum//enumValue')
 
-/*              只能create，不能update*/
+/*              只能create，不能update       */
 const user_resource_profile= {
-    userId: {
-        [otherRuleFiledName.CHINESE_NAME]: '用户',
-        [otherRuleFiledName.DATA_TYPE]: serverDataType.OBJECT_ID,
+    startDate: {
+        [otherRuleFiledName.CHINESE_NAME]: '生效时间',
+        [otherRuleFiledName.DATA_TYPE]: serverDataType.DATE,
         [otherRuleFiledName.APPLY_RANGE]:[applyRange.CREATE],
-        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true}, error: {rc: 10760, msg: '用户不能为空'}, mongoError: {rc: 20760, msg: '用户不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true}, error: {rc: 10760, msg: '生效时间不能为空'}, mongoError: {rc: 20760, msg: '生效时间不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
 /*        'minLength': {define: 2, error: {rc: 10702}, mongoError: {rc: 20702, msg: '用户名至少2个字符'}},
         'maxLength': {define: 20, error: {rc: 10704}, mongoError: {rc: 20704, msg: '用户名的长度不能超过20个字符'}},*/
-        [ruleFiledName.FORMAT]: {define: regex.objectId, error: {rc: 10762, msg: '用户格式不正确'}, mongoError: {rc: 20762, msg: '用户格式不正确'}} //server端使用
+        // [ruleFiledName.FORMAT]: {define: regex.objectId, error: {rc: 10762, msg: '用户格式不正确'}, mongoError: {rc: 20762, msg: '用户格式不正确'}} //server端使用
     },
-    resource_profile_id: {
-        [otherRuleFiledName.CHINESE_NAME]: '资源配置',
-        [otherRuleFiledName.DATA_TYPE]: serverDataType.OBJECT_ID,
+    endDate: {
+        [otherRuleFiledName.CHINESE_NAME]: '结束时间',
+        [otherRuleFiledName.DATA_TYPE]: serverDataType.DATE,
         [otherRuleFiledName.APPLY_RANGE]:[applyRange.CREATE],
-        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true}, error: {rc: 10764, msg: '资源配置不能为空'}, mongoError: {rc: 20764, msg: '资源配置不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true}, error: {rc: 10764, msg: '结束时间不能为空'}, mongoError: {rc: 20764, msg: '结束时间不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
 /*        'minLength': {define: 2, error: {rc: 10710}, mongoError: {rc: 20710, msg: '用户名至少2个字符'}},
         'maxLength': {define: 20, error: {rc: 10712}, mongoError: {rc: 20712, msg: '用户名的长度不能超过20个字符'}},*/
-        [ruleFiledName.FORMAT]: {define: regex.objectId, error: {rc: 10766, msg: '资源配置格式不正确'}, mongoError: {rc: 20766, msg: '资源配置格式不正确'}} //server端使用
+        // [ruleFiledName.FORMAT]: {define: regex.objectId, error: {rc: 10766, msg: '资源配置格式不正确'}, mongoError: {rc: 20766, msg: '资源配置格式不正确'}} //server端使用
     },
 
 

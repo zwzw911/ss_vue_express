@@ -12,6 +12,8 @@ const applyRange=inputDataRuleType.ApplyRange
 const searchRange=inputDataRuleType.SearchRange
 const dataType=inputDataRuleType.ServerDataType
 
+const arr_ruleFiledName=require('../../constant/genEnum/inputDataRuleTypeValue').RuleFiledName
+
 const fs=require('fs'),path=require('path')
 const regex=require('../../constant/regex/regex').regex
 
@@ -124,6 +126,13 @@ function checkRule({collName,ruleDefinitionOfFile}){
     let tmpResult
 
     for(let singleFieldName in ruleDefinitionOfFile){
+        //检查error code eval后是否为整数
+        tmpResult=checkErrorCodeIsNumber({collName:collName,fieldName:singleFieldName,fieldRuleDefinition:ruleDefinitionOfFile[singleFieldName]})
+        if(tmpResult.rc>0){
+            // ap.err('tmpResult',tmpResult)
+            return tmpResult
+        }
+
         tmpResult=checkMandatoryFieldExists({collName:collName,fieldName:singleFieldName,fieldRuleDefinition:ruleDefinitionOfFile[singleFieldName]})
         if(tmpResult.rc>0){
             // ap.err('tmpResult',tmpResult)
@@ -172,6 +181,8 @@ function checkRule({collName,ruleDefinitionOfFile}){
             // ap.err('tmpResult',tmpResult)
             return tmpResult
         }
+
+
 
     }
 
@@ -405,6 +416,31 @@ function checkSearchRange({collName,fieldName,fieldRuleDefinition}){
     return rightResult
 }
 
+
+/* 因为rule的error code采用新方式，所以需要判别是否为数字，防止baseErrorCode没有设置真确
+ * @collName,fieldName:用来打印信息
+ * @fieldRuleDefinition：object。单个字段的rule定义
+ * */
+function checkErrorCodeIsNumber({collName,fieldName,fieldRuleDefinition}){
+    // ap.inf('collName',collName)
+    // ap.inf('fieldName',fieldName)
+    //值检查有error code的rule
+    for(let singleRuleName of arr_ruleFiledName){
+        // ap.inf('singleRuleName',singleRuleName)
+        // ap.inf('fieldRuleDefinition[singleRuleName]',fieldRuleDefinition[singleRuleName])
+        if(undefined!==fieldRuleDefinition[singleRuleName]){
+            if(false===dataTypeCheck.isInt(fieldRuleDefinition[singleRuleName]['error']['rc'])){
+                return checkRuleError.errorCodeNotNumber({collName:collName,fieldName:fieldName,ruleField:singleRuleName})
+            }
+            if(false===dataTypeCheck.isInt(fieldRuleDefinition[singleRuleName]['mongoError']['rc'])){
+                return checkRuleError.mongoErrorCodeNotNumber({collName:collName,fieldName:fieldName,ruleField:singleRuleName})
+            }
+        }
+    }
+    return rightResult
+}
+
+
 module.exports={
     readDirOrFileAndCheckFormat, //对一个目录或者一个文件，读取内容并进行rule check
     // readFileAndCheckFormat, //对一个文件，读取内容并进行rule check
@@ -415,7 +451,7 @@ module.exports={
 // readDirOrFileAndCheckFormat({rulePath:'D:/ss_vue_express/server_common/constant/inputRule/internalInput/admin/admin_penalize.js'})
 // tmpResult=readDirOrFileAndCheckFormat({rulePath:'D:/ss_vue_express/server_common/constant/inputRule/browserInput/friend/user_friend_group.js'})
 
-readDirOrFileAndCheckFormat({rulePath:'D:/ss_vue_express/server_common/constant/inputRule/browserInput/'})
+readDirOrFileAndCheckFormat({rulePath:'D:/ss_vue_express/server_common/constant/inputRule/browserInput/article/article.js'})
 // readDirOrFileAndCheckFormat({rulePath:'D:/ss_vue_express/server_common/constant/inputRule/internalInput/'})
 
 /*

@@ -112,3 +112,22 @@
 
 1. session中添加新字段tempSalt，用来混淆objectId（防止每个用户看到的objectId都一样）=========>done
 2. view中写新组件，用来执行logout的操作=====>done
+
+1. 完善函数inputValueLogicValidCheck_async的skip的处理过程===>done
+2. ifEnumHasDuplicateValue的参数从collRule改成collName（login处理文件就无需require rule文件，而是在controllerCHecker中一次包含）==>done
+
+1. 所有引用ifEnumHasDuplicateValue的地方同步修改(参数从collRule改成collName)
+2. 所有引用ifFieldInDocValueUnique_async的地方改名成ifSingleFieldValueUnique_async
+3. 所有引用ifCompoundFiledUnique_returnExistRecord_async改成ifCompoundFiledValueUnique_returnExistRecord_async
+
+
+1. 为了重写resoure check，需要重写user_profile的API（插入新profile，需要根据现存的profile的情况，自动计算startDate，而不是使用当前时间）
+2. controllerHelper中的2个函数chooseLastValidResourceProfile_async/findResourceProfileRecords_async，替换成resourceCheck->findValidResourceProfiles_async。对应的引用必须修改
+2. resource检测的相关函数从controllerHelper剥离，放入独立文件resourceCheck
+3. article添加4个新字段，记录article的附件和图片的数量以及size（替代group操作）====》done
+4. 每次article添加/删除附件或者图片，要同步更新article的上述4个字段，以及user_resource_static
+5. 添加2个新collection，记录一次impeach中，某个用户（普通和管理员），单次impeach的attachment和image的num和size。总size和num通过group计算。
+6. 为inputRuel的error code应用新格式
+7. 为controller的error code应用新格式===》done
+9. 因为error code采用了新格式，需要预先eval，所以需要把所有的error源文件放到一个地方，然后重写到一个地方。除了节省CPU？也可以快速定位error code
+10. rule检测函数，需要添加一条，检测error code是否为数字

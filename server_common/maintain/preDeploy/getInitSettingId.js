@@ -87,7 +87,7 @@ async function generateInitSettingEnum_async(){
 }
 
 async function writeInitSettingEnum_async(destFileDir){
-    let description=`/*    gene by server/maintain/generateMongoEnum     */ \r\n \r\n`
+    let description=`/*    gene by server/maintain/getInitSettingId     */ \r\n \r\n`
     let indent=`\ \ \ \ `
     let useStrict=`"use strict"\r\n`
     let convertedEnum=''

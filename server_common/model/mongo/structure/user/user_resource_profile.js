@@ -39,10 +39,13 @@ const assist=require('../../common/assist')
 
 const collName='user_resource_profile'
 const collFieldDefine={
-        userId:{type:mongoose.Schema.Types.ObjectId},
-        resource_profile_id:{type:mongoose.Schema.Types.ObjectId},
-        duration:{type:Number},
+    userId:{type:mongoose.Schema.Types.ObjectId},
+    resource_profile_id:{type:mongoose.Schema.Types.ObjectId},
+    duration:{type:Number},
     //isActive: boolean   //当前的resource_profile是否还有效
+    startDate:{type:Date},//需要根据用户当前已有的同resourceProfile决定，而不是创建时间
+    endDate:{type:Date}, //冗余字段，startDate+duration
+
     cDate:{type:Date,default:Date.now},
     // uDate:{type:Date,default:Date.now},
     // dDate:{type:Date},

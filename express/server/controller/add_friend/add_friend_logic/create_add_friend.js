@@ -78,7 +78,7 @@ async  function createAddFriend_async({req}){
     let docValue=req.body.values[e_part.RECORD_INFO]
     let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
     // console.log(`userInfo===> ${JSON.stringify(userInfo)}`)
-    let {userId,userCollName,userType,userPriority}=userInfo
+    let {userId,userCollName,userType,userPriority,tempSalt}=userInfo
     // ap.print('docValue',docValue)
     /*******************************************************************************************/
     /*                                     用户类型和权限检测                                  */

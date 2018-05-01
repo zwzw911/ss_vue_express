@@ -94,6 +94,12 @@ const collFieldDefine={
     articleImagesId:{type:[mongoose.Schema.Types.ObjectId],ref:'article_image',validate:[image_arrayMaxLengthValidator]},
     articleAttachmentsId:{type:[mongoose.Schema.Types.ObjectId],ref:'article_attachment',validate:[attachment_arrayMaxLengthValidator]},
     articleCommentsId:{type:[mongoose.Schema.Types.ObjectId],ref:'article_comment',validate:[comment_arrayMaxLengthValidator]},
+
+    attachmentsNum:{type:Number, default:0},//记录文档中附件总数
+    attachmentsSizeInMb:{type:Number, default:0},//记录文档中附件总大小
+    imagesNum:{type:Number, default:0},//记录文档中图片总数
+    imagesSizeInMb:{type:Number, default:0},//记录文档中图片总大小
+
     readNum:{type:Number, default:0}, //记录文档被读取的次数（冗余字段，也可以从read_article中count得到）
     cDate:{type:Date,default:Date.now},
     uDate:{type:Date,default:Date.now},

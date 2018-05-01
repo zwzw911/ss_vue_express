@@ -78,6 +78,14 @@ const checkRule={
     searchRangeRedundant({collName,fieldName,ruleField}) {
         return {rc: 43034, msg: `coll:${collName}的字段${fieldName}中，searchRange已经定义了ALL，但是又定义了其他搜索范围`}
     },
+
+    //checkErrorCodeIsNumber
+    errorCodeNotNumber({collName,fieldName,ruleField}){
+        return {rc: 43036, msg: `coll:${collName}的字段${fieldName}中，rule ${ruleField}的error code不是整数`}
+    },
+    mongoErrorCodeNotNumber({collName,fieldName,ruleField}){
+        return {rc: 43036, msg: `coll:${collName}的字段${fieldName}中，rule ${ruleField}的mongo error code不是整数`}
+    }
 }
 
 const convertBrowserRuleError={

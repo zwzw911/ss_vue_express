@@ -14,7 +14,8 @@ const applyRange=inputDataRuleType.ApplyRange
 
 const regex=require('../../../regex/regex').regex
 
-
+const baseJSErrorCode=102650
+const baseMongoErrorCode=202650
 /*        field有enum才需要require        */
 // const mongoEnum=require('../../../enum/mongoEnum')
 /*              获得 某些设置值            */
@@ -24,10 +25,10 @@ const user_friend_group= {
         [otherRuleFiledName.CHINESE_NAME]: '用户',
         [otherRuleFiledName.DATA_TYPE]: serverDataType.OBJECT_ID,
         [otherRuleFiledName.APPLY_RANGE]:[applyRange.CREATE],
-        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true}, error: {rc: 10416, msg: '文档目录不能为空'}, mongoError: {rc: 20416, msg: '文档目录不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true}, error: {rc: baseJSErrorCode, msg: '文档目录不能为空'}, mongoError: {rc: baseMongoErrorCode, msg: '文档目录不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         // [ruleFiledName.MIN_LENGTH]: {define: 6, error: {rc: 10002}, mongoError: {rc: 20002, msg: '密码至少6个字符'}},
         // [ruleFiledName.MAX_LENGTH]: {define: 20, error: {rc: 10004}, mongoError: {rc: 20004, msg: '密码的长度不能超过20个字符'}},
-        [ruleFiledName.FORMAT]: {define: regex.objectId, error: {rc: 10418, msg: '文档目录必须是objectId'}, mongoError: {rc: 20418, msg: '文档目录必须是objectId'}} //server端使用
+        [ruleFiledName.FORMAT]: {define: regex.objectId, error: {rc: baseJSErrorCode+2, msg: '文档目录必须是objectId'}, mongoError: {rc: baseMongoErrorCode+2, msg: '文档目录必须是objectId'}} //server端使用
     },
 
 }

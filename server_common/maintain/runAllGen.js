@@ -109,14 +109,15 @@ function _genForGeneral_part2(absoluteDestDirForInputRule,absoluteDestDirForEnum
     //合并生成internal/browse/all inputRule
     //absoluteDestDirForInputRule:  server/inputRule
 
-    const generateAllRuleInOneFile=require('./generateFunction/generateAllRuleInOneFile').writeResult
-    ap.inf(`start generateAllRuleInOneFile for both`)
-    generateAllRuleInOneFile(modelCollRootDir,`${absoluteDestDirForInputRule}inputRule.js`,e_ruleType.BOTH,skipFilesArray,inputRuleBaseDir)
-    ap.inf(`start generateAllRuleInOneFile for browser`)
-    generateAllRuleInOneFile(modelCollRootDir,`${absoluteDestDirForInputRule}browserInputRule.js`,e_ruleType.BROWSER,skipFilesArray,inputRuleBaseDir)
-    ap.inf(`start generateAllRuleInOneFile for internal`)
-    generateAllRuleInOneFile(modelCollRootDir,`${absoluteDestDirForInputRule}internalInputRule.js`,e_ruleType.INTERNAL,skipFilesArray,inputRuleBaseDir)
+    const generateAllRuleInOneFile=require('./generateFunction/generateAllRuleInOneFile').combineRuleIntoOneFile
 
+    ap.inf(`start generateAllRuleInOneFile for browser`)
+    generateAllRuleInOneFile({inputRuleBaseDir:inputRuleBaseDir,resultAbsPath:`${absoluteDestDirForInputRule}browserInputRule.js`,ruleType:e_ruleType.BROWSER,skipFilesArray:skipFilesArray})
+    ap.inf(`start generateAllRuleInOneFile for internal`)
+    generateAllRuleInOneFile({inputRuleBaseDir:inputRuleBaseDir,resultAbsPath:`${absoluteDestDirForInputRule}internalInputRule.js`,ruleType:e_ruleType.INTERNAL,skipFilesArray:skipFilesArray})
+    ap.inf(`start generateAllRuleInOneFile for both`)
+    //generateAllRuleInOneFile(modelCollRootDir,`${absoluteDestDirForInputRule}inputRule.js`,e_ruleType.BOTH,skipFilesArray,inputRuleBaseDir)
+    generateAllRuleInOneFile({inputRuleBaseDir:inputRuleBaseDir,resultAbsPath:`${absoluteDestDirForInputRule}inputRule.js`,ruleType:e_ruleType.BOTH,skipFilesArray:skipFilesArray})
 
     ap.inf(`start generateMongoInternalFieldToEnum`)
     const generateMongoInternalFieldToEnum=require('./generateFunction/generateMongoInternalFieldToEnum').writeFinalResult

@@ -163,7 +163,9 @@ const maxNumber={
     article:{
         tagNumberPerArticle:5,//每篇文档5个关键字
         imagesNumberPerArticle:5,//每篇文档最多内插图片数量
+        imageSizeInMb:2,
         attachmentNumberPerArticle:5,//每篇文档最多附件数量
+        attachmentSizeInMb:12,
         commentNumberPerArticle:500,
 
     },

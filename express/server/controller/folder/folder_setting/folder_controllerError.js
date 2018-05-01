@@ -6,10 +6,21 @@
 //52000~52100
 const controllerError={
     dispatch:{
-        notLoginCantRetrievePassword:{rc:50100,msg:`尚未登录，无法重置密码`},
-        notLoginCantUpdateUserInfo:{rc:50100,msg:`尚未登录，无法更新用户信息`},
-        notLoginCantUpdatePassword:{rc:50100,msg:`尚未登录，无法更新密码`},
-        notLoginCantUpdateUserPhoto:{rc:50100,msg:`尚未登录，无法上传头像`},
+        get: {
+            notLoginCantGetFolder: {rc: 52000, msg: `尚未登录，无法读取目录信息`},
+        },
+        post:{
+            notLoginCantCreateFolder:{rc:52000,msg:`尚未登录，无法创建目录`},
+            userInPenalizeCantCreateComment:{rc:52002,msg:`管理员禁止创建目录`}
+        },
+        put:{
+            notLoginCantUpdateFolder:{rc:52000,msg:`尚未登录，无法更新目录`},
+            userInPenalizeCantUpdateComment:{rc:52002,msg:`管理员禁止更新目录`}
+        },
+        delete: {
+            notLoginCantDeleteFolder: {rc: 52000, msg: `尚未登录，无法删除目录`},
+        },
+
     },
     /*              common                          */
 

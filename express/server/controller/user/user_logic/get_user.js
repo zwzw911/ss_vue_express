@@ -30,7 +30,7 @@ async function operationSpecificCheck({req}){
         let origUrl=req.originalUrl
         //1. 如果没有带id，说明是获取自己的信息
 
-            //1.1 检测是否登录（session中有userId）
+            //1.1 获得登录信息（从session中）
         let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
         let {userId,userCollName,userType,userPriority}=userInfo
     // ap.inf('userid',userId)

@@ -55,7 +55,7 @@ const e_field=require('../constant/genEnum/DB_field').Field
 const e_internal_field=require('../constant/genEnum/DB_internal_field').Field
 
 
-const calcResourceCriteria=require(`../constant/define/calcResourceConfig`).calcResourceCriteria
+// const calcResourceCriteria=require(`../constant/define/calcResourceConfig`).calcResourceCriteria
 /*                      error               */
 const helperError=require('../constant/error/controller/helperError').helper
 
@@ -822,11 +822,11 @@ function deleteNotChangedValue({inputValue,originalValue}){
     }
 }
 
-/*  根据profileRange和userId，为普通用户，选择最近一个active的resourceProfile。
+/*/!*  根据profileRange和userId，为普通用户，选择最近一个active的resourceProfile。
  * @ resourceProfileRange: perArticle/perPerson
  *
  * return: 返回合适的记录
- * */
+ * *!/
 async function chooseLastValidResourceProfile_async({resourceProfileRange,userId}){
     // console.log(`chooseLastValidResourceProfile_async in ===========>`)
     let resourceProfileIdInUse,tmpResult,condition={},options={}
@@ -884,11 +884,12 @@ async function chooseLastValidResourceProfile_async({resourceProfileRange,userId
     tmpResult=await common_operation_model.findById_returnRecord_async({dbModel:e_dbModel.resource_profile,id:resourceProfileIdInUse})
     // console.log(`active resource_profile===========>${JSON.stringify(tmpResult.msg)}`)
     return Promise.resolve(tmpResult)
-}
+}*/
 
-/*  根据传入的resourceProfileRange,直接在admin的resource_profile 中查找到对应的记录。适用于common的resource查询
+/*/!*  根据传入的resourceProfileRange,直接在admin的resource_profile 中查找到对应的记录(资源定义的记录)。适用于common的resource查询
 * @arr_resourceProfileRange:数组，要查询的resourceRange
-* */
+* @userResourceType:
+* *!/
 async function findResourceProfileRecords_async({arr_resourceProfileRange}){
     let condition={"$or":[]}
     for(let singleResourceProfileRange of arr_resourceProfileRange){
@@ -901,7 +902,8 @@ async function findResourceProfileRecords_async({arr_resourceProfileRange}){
     }
 
     return Promise.resolve(resourceResult)
-}
+}*/
+
 
 /*  对于某些可有可无的part（例如EDIT_SUB_FIELD），如果req中有对应的值，那么加入到expectedPart进行检查
 *   @req
@@ -1232,7 +1234,9 @@ module.exports= {
 
 
     chooseStorePath_async,//根据某种算法（平均法），选择合适的storePath来存储文件
-    chooseLastValidResourceProfile_async,//查找最近可用的resourceProfile
+
+
+
     setStorePathStatus,//根据原始storePath和新的usedSize，判断是否需要设置status为read only
 
     chooseProperAdminUser_async,//根据权限选择合适的adminUser
@@ -1262,7 +1266,9 @@ module.exports= {
 
     deleteNotChangedValue,
 
-    findResourceProfileRecords_async,
+    //chooseLastValidResourceProfile_async,//不再使用，用findValidResourceProfiles_async代替
+    // findResourceProfileRecords_async, //不再使用，用findValidResourceProfiles_async代替
+    //findValidResourceProfiles_async, //findResourceProfileRecords_async的改进版。移动到resourceCheck下
 
     pushOptionalPartIntoExpectedPart_noReturn,
 

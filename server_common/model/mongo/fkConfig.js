@@ -6,7 +6,7 @@
  * @ forSelect: select的时候，返回哪个field
  * @ forSetValue： 设置外键值，对应设置到哪个field
  * @ validCriteria: 判断外键是否存在的时候，使用的标准（查询条件）
- * @ fkCollOwnerField: 在检测edit_sub_field的时候，如果eleArray为object，那么如果要检查其对应的record是否可以被当前用户操作，需要其中一个字段来比较(relatedColl+fkCollOwnerField)
+ * @ fkCollOwnerFields: 数组。 外键记录中，可能不止一个字段可以用来判断是否有权修改（例如，修改article，除了作者自己，还可能邀请其他人一起修改）
  */
 
 const e_coll=require('../../constant/genEnum/DB_Coll').Coll
@@ -133,7 +133,7 @@ const fkConfig={
     /****************       user friend group      *****************/
     /****************************************************************/
     [e_coll.USER_FRIEND_GROUP]:{
-        [e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP]:{relatedColl:e_coll.USER,forSelect:`${e_field.USER.NAME}`,forSetValue:[e_field.USER.NAME],validCriteria:undefined,fkCollOwnerField:undefined},
+        [e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP]:{relatedColl:e_coll.USER,forSelect:`${e_field.USER.NAME}`,forSetValue:[e_field.USER.NAME],validCriteria:undefined,fkCollOwnerFields:undefined},
         // [e_field.ADMIN_PENALIZE.PUNISHED_ID]:{relatedColl:e_coll.USER,forSelect:`${e_field.USER.NAME}`,forSetValue:[e_field.USER.NAME]},
     },
 
@@ -141,17 +141,25 @@ const fkConfig={
     /****************           ADD  FRIEND        *****************/
     /****************************************************************/
     [e_coll.ADD_FRIEND]:{
-        [e_field.ADD_FRIEND.RECEIVER]:{relatedColl:e_coll.USER,forSelect:`${e_field.USER.NAME}`,forSetValue:[e_field.USER.NAME],validCriteria:undefined,fkCollOwnerField:undefined}
+        [e_field.ADD_FRIEND.RECEIVER]:{relatedColl:e_coll.USER,forSelect:`${e_field.USER.NAME}`,forSetValue:[e_field.USER.NAME],validCriteria:undefined,fkCollOwnerFields:undefined}
     },
 
     /****************************************************************/
     /****************          PUBLIC GROUP        *****************/
     /****************************************************************/
     [e_coll.PUBLIC_GROUP]:{
-        [e_field.PUBLIC_GROUP.CREATOR_ID]:{relatedColl:e_coll.USER,forSelect:`${e_field.USER.NAME}`,forSetValue:[e_field.USER.NAME],validCriteria:undefined,fkCollOwnerField:undefined},
-        [e_field.PUBLIC_GROUP.ADMINS_ID]:{relatedColl:e_coll.USER,forSelect:`${e_field.USER.NAME}`,forSetValue:[e_field.USER.NAME],validCriteria:undefined,fkCollOwnerField:undefined},
-        [e_field.PUBLIC_GROUP.MEMBERS_ID]:{relatedColl:e_coll.USER,forSelect:`${e_field.USER.NAME}`,forSetValue:[e_field.USER.NAME],validCriteria:undefined,fkCollOwnerField:undefined}
-    }
+        [e_field.PUBLIC_GROUP.CREATOR_ID]:{relatedColl:e_coll.USER,forSelect:`${e_field.USER.NAME}`,forSetValue:[e_field.USER.NAME],validCriteria:undefined,fkCollOwnerFields:undefined},
+        [e_field.PUBLIC_GROUP.ADMINS_ID]:{relatedColl:e_coll.USER,forSelect:`${e_field.USER.NAME}`,forSetValue:[e_field.USER.NAME],validCriteria:undefined,fkCollOwnerFields:undefined},
+        [e_field.PUBLIC_GROUP.MEMBERS_ID]:{relatedColl:e_coll.USER,forSelect:`${e_field.USER.NAME}`,forSetValue:[e_field.USER.NAME],validCriteria:undefined,fkCollOwnerFields:undefined}
+    },
+
+    /****************************************************************/
+    /****************          FOLDER              *****************/
+    /****************************************************************/
+    [e_coll.FOLDER]:{
+        [e_field.FOLDER.AUTHOR_ID]:{relatedColl:e_coll.USER,forSelect:`${e_field.USER.NAME}`,forSetValue:[e_field.USER.NAME],validCriteria:{'dDate':{$exists:false}},fkCollOwnerFields:undefined},
+        [e_field.FOLDER.PARENT_FOLDER_ID]:{relatedColl:e_coll.USER,forSelect:`${e_field.FOLDER.NAME}`,forSetValue:[e_field.FOLDER.NAME],validCriteria:{'dDate':{$exists:false}},fkCollOwnerFields:[e_field.FOLDER.AUTHOR_ID]},
+    },
 }
 
 // console.log(`${JSON.stringify(fkConfig)}`)

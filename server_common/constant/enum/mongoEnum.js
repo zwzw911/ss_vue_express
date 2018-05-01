@@ -153,6 +153,9 @@ const PenalizeType={
 
         //user:upload_photo
         NO_UPLOAD_USER_PHOTO:'10',
+
+        //folder
+        NO_FOLDER:'11',
     },
     SHOW:{
         NO_ARTICLE: '禁止文档',
@@ -172,6 +175,9 @@ const PenalizeType={
 
         //user:upload_photo
         NO_UPLOAD_USER_PHOTO:'禁止上传头像',
+
+        //folder
+        NO_FOLDER:'禁止目录相关操作',
     },
 
 }
@@ -394,15 +400,17 @@ const ResourceProfileRange={
         IMAGE_PER_PERSON_FOR_WHOLE_IMPEACH:'举报中的用户',  //整个举报中，每个用户
     },
 }
+
+//某种资源的级别
 const ResourceProfileType={
     DB:{
-        DEFAULT:'1',
+        BASIC:'1',
         ADVANCED:'2',
 
     },
     SHOW:{
-        DEFAULT:'默认资源配置',//对文档起作用
-        ADVANCED:'高级资源配置',//对用户起作用
+        BASIC:'基本资源配置',
+        ADVANCED:'高级资源配置',
     },
 }
 
