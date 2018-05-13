@@ -388,6 +388,8 @@ const ResourceProfileRange={
 
         IMAGE_PER_IMPEACH_OR_COMMENT:'5', //每个impeach或者comment的图片
         IMAGE_PER_PERSON_FOR_WHOLE_IMPEACH:'7', //每个用户，在整个impeach和comment的图片
+
+        FOLDER_NUM:'8', //最大目录数量
     },
     SHOW:{
         IMAGE_PER_ARTICLE:'文档图片',//对文档起作用
@@ -398,6 +400,8 @@ const ResourceProfileRange={
         IMAGE_PER_IMPEACH_OR_COMMENT:'举报（或者评论）图片', //举报或者举报评论
         // IMAGE_PER_COMMENT:'举报图片', //举报或者举报出路
         IMAGE_PER_PERSON_FOR_WHOLE_IMPEACH:'举报中的用户',  //整个举报中，每个用户
+
+        FOLDER_NUM:'最大目录数量', //
     },
 }
 

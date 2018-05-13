@@ -525,7 +525,7 @@ const constructCreateCriteria=function(formattedValues){
 
 //对update传入的参数进行检测，如果设置为null或者空对象/数字/字符，就认为对应的field是要删除的，放入$unset中（如果此field是外键，还要把对应的冗余字段$unset掉）
 //formattedValues: 经过convertClientValueToServerFormat处理的输入条件
-const constructUpdateCriteria=function(formattedValues,singleCollFKConfig){
+const constructUpdateCriteria=function(formattedValues){
     // console.log(`fkconfig is ${JSON.stringify(singleCollFKConfig)}`)
     for(let key in formattedValues){
         if(formattedValues[key]===null || dataTypeCheck.isEmpty(formattedValues[key])){
@@ -557,8 +557,8 @@ const convertToClient=function(document,skipFields){
     return clientDoc
 }
 
-//问了实现validateCreateRecorderValue/validateUpdateRecorderValue的验证，需要将{field:val}=====》{field:{value:val}}
-const addSubFieldKeyValue=function(obj){
+//为了实现validateCreateRecorderValue/validateUpdateRecorderValue的验证，需要将{field:val}=====》{field:{value:val}}
+/*const addSubFieldKeyValue=function(obj){
     let newValue={}
     for(let fieldName in obj){
         // newValue[fieldName]={'value':obj[fieldName]}
@@ -566,7 +566,7 @@ const addSubFieldKeyValue=function(obj){
     }
 
     return newValue
-}
+}*/
 
 function convertToObjectId(str){
     return mongoose.Types.ObjectId(str)
@@ -724,8 +724,8 @@ module.exports={
     constructUpdateCriteria,
     convertToClient,
 
-    //只在dev环境下使用
-    addSubFieldKeyValue,
+    //只在dev环境下使用。//无需使用，recordInfo格式已经改成field:value
+    // addSubFieldKeyValue,
 
     convertToObjectId,
 

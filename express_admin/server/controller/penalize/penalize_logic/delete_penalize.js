@@ -2,79 +2,89 @@
  * Created by ada on 2017/9/1.
  */
 'use strict'
-/*                      controller setting                */
+/******************    内置lib和第三方lib  **************/
+const ap=require('awesomeprint')
+/**************  controller相关常量  ****************/
 const controller_setting=require('../penalize_setting/penalize_setting').setting
 const controllerError=require('../penalize_setting/penalize_controllerError').controllerError
 
-const ap=require('awesomeprint')
-
-/*                      specify: genEnum                */
+/***************  数据库相关常量   ****************/
 const e_uniqueField=require('../../../constant/genEnum/DB_uniqueField').UniqueField
 const e_chineseName=require('../../../constant/genEnum/inputRule_field_chineseName').ChineseName
 const e_coll=require('../../../constant/genEnum/DB_Coll').Coll
 const e_field=require('../../../constant/genEnum/DB_field').Field
 const e_dbModel=require('../../../constant/genEnum/dbModel')
-// const e_iniSettingObject=require('../../../constant/genEnum/initSettingObject').iniSettingObject
+const e_iniSettingObject=require('../../../constant/genEnum/initSettingObject').iniSettingObject
+/********************  rule   ********************/
+const inputRule=require('../../../constant/inputRule/inputRule').inputRule
+const internalInputRule=require('../../../constant/inputRule/internalInputRule').internalInputRule
+const browserInputRule=require('../../../constant/inputRule/browserInputRule').browserInputRule
+
 
 /*                      server common                                           */
 const server_common_file_require=require('../../../../server_common_file_require')
-
+/**************  公共常量   ******************/
 const nodeEnum=server_common_file_require.nodeEnum
-const mongoEnum=server_common_file_require.mongoEnum
-const e_adminUserType=mongoEnum.AdminUserType.DB
-const e_adminPriorityType=mongoEnum.AdminPriorityType.DB
-const e_part=nodeEnum.ValidatePart
 const e_env=nodeEnum.Env
+const e_part=nodeEnum.ValidatePart
+
+const nodeRuntimeEnum=server_common_file_require.nodeRuntimeEnum
+const e_inputValueLogicCheckStep=nodeRuntimeEnum.InputValueLogicCheckStep
+
+const mongoEnum=server_common_file_require.mongoEnum
+const e_docStatus=mongoEnum.DocStatus.DB
+const e_adminPriorityType=mongoEnum.AdminPriorityType.DB
 const e_allUserType=mongoEnum.AllUserType.DB
 
-/*                      server common：function                                       */
+const e_applyRange=server_common_file_require.inputDataRuleType.ApplyRange
+/**************  公共函数   ******************/
+const dataConvert=server_common_file_require.dataConvert
 const controllerHelper=server_common_file_require.controllerHelper
 const controllerChecker=server_common_file_require.controllerChecker
 const common_operation_model=server_common_file_require.common_operation_model
 const misc=server_common_file_require.misc
-const miscConfiguration=server_common_file_require.globalConfiguration.misc
-const maxNumber=server_common_file_require.globalConfiguration.maxNumber
-const fkConfig=server_common_file_require.fkConfig
-const hash=server_common_file_require.crypt.hash
-
+const inputValueLogicValidCheck_async=server_common_file_require.controllerInputValueLogicCheck.inputValueLogicValidCheck_async
+/*************** 配置信息 *********************/
 const currentEnv=server_common_file_require.appSetting.currentEnv
-// const e_accountType=server_common_file_require.mongoEnum.AccountType.DB
+const fkConfig=server_common_file_require.fkConfig.fkConfig
 
 //实际复用 update的dispatch，因为除了recordId还需要额外的recordInfo
-async function deletePenalize_async(req){
+async function deletePenalize_async({req}){
     // console.log(`deleteUser_async in`)
     // console.log(`req.session ${JSON.stringify(req.session)}`)
     // console.log(`data.body==============>${JSON.stringify(req.body)}`)
-    /*******************************************************************************************/
-    /*                                          define variant                                 */
-    /*******************************************************************************************/
+    /********************************************************/
+    /*************      define variant        ***************/
+    /********************************************************/
     let tmpResult,collName=controller_setting.MAIN_HANDLED_COLL_NAME
     let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
     let {userId,userCollName,userType,userPriority}=userInfo
-    /*              client数据转换                  */
+    /**********************************************/
+    /********  删除null/undefined的字段  *********/
+    /*********************************************/
     let recordToBeDeleted=req.body.values[e_part.RECORD_ID]
     let docValue=req.body.values[e_part.RECORD_INFO]
     // console.log(`docVlue0 =====>${JSON.stringify(docValue)}`)
 
-    /*******************************************************************************************/
-    /*                                       authorization check                               */
-    /*******************************************************************************************/
+    /*********************************************/
+    /*************    用户类型检测    ************/
+    /*********************************************/
     //检测当前用户是否为adminUser
     await controllerChecker.ifExpectedUserType_async({req:req,arr_expectedUserType:[e_allUserType.ADMIN_NORMAL,e_allUserType.ADMIN_ROOT]})
     let hasCreatePriority=await controllerChecker.ifAdminUserHasExpectedPriority_async({userPriority:userPriority,arr_expectedPriority:[e_adminPriorityType.REVOKE_PENALIZE]})
     // console.log(`hasCreatePriority===>${JSON.stringify(hasCreatePriority)}`)
     if(false===hasCreatePriority){
-        return Promise.reject(controllerError.currentUserHasNotPriorityToRevokePenalize)
+        return Promise.reject(controllerError.delete.currentUserHasNotPriorityToRevokePenalize)
     }
     /*******************************************************************************************/
     /*                                     specific field check                             */
     /*******************************************************************************************/
     //recordinfo中只能并且必须存在单个field:revokeReason
     if(Object.keys(docValue).length!==1){
-        return Promise.reject(controllerError.deleteRecordInfoFieldNumIncorrect)
+        return Promise.reject(controllerError.delete.deleteRecordInfoFieldNumIncorrect)
     }
     if(undefined===docValue[e_field.ADMIN_PENALIZE.REVOKE_REASON]){
-        return Promise.reject(controllerError.missMandatoryFieldRevokeReason)
+        return Promise.reject(controllerError.delete.missMandatoryFieldRevokeReason)
     }
     // console.log(`docVlue======>${JSON.stringify(docValue)}`)
     /*******************************************************************************************/

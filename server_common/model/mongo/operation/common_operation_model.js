@@ -330,6 +330,28 @@ async function findByIdAndUpdate_returnRecord_async({dbModel,id,updateFieldsValu
     }*/
 }
 
+/*  逻辑删除（设置dDate）*/
+async function findByIdAndDelete_async({dbModel,id}){
+    // console.log(`find by id :${id}`)
+    let updateFieldsValue={'dDate':Date.now()}
+    let result=await dbModel.findByIdAndUpdate(id,updateFieldsValue)
+        .catch(
+            function(err){
+                // console.log(`findbyid errr is ${JSON.stringify(err)}`)
+                // console.log(`converted err is ${JSON.stringify(mongooseErrorHandler(mongooseOpEnum.findById,err))}`)
+                return Promise.reject(mongooseErrorHandler(err))
+            })
+    // let finalResult=result.toObject()
+    // delete finalResult.__v
+    // console.log(`findbyid result is ${JSON.stringify(result)}`)
+    return Promise.resolve(result)
+    /*    if(returnResult){
+     return Promise.resolve({rc:0,msg:result})
+     }else{
+     return Promise.resolve({rc:0})
+     }*/
+}
+
 async function findByIdAndRemove_async({dbModel,id,deleteOption}){
     // console.log(`find by id :${id}`)
     let result=await dbModel.findByIdAndRemove(id,deleteOption)
@@ -632,7 +654,8 @@ module.exports= {
     findById_returnRecord_async,
     find_returnRecords_async,
     findByIdAndUpdate_returnRecord_async,
-    findByIdAndRemove_async,
+    findByIdAndDelete_async, //逻辑删除
+    findByIdAndRemove_async, //真正删除
     findOneAndUpdate_returnRecord_async,
     countRec_returnNumber_async,
     count_async,

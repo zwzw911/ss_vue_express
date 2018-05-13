@@ -5,6 +5,7 @@
 const appSetting=require('../server_common/constant/config/appSetting.js')
 const globalConfiguration=require('../server_common/constant/config/globalConfiguration.js')
 const calcResourceConfig=require('../server_common/constant/define/calcResourceConfig.js')
+const not_used_calcResourceConfig=require('../server_common/constant/define/not_used_calcResourceConfig.js')
 const collEnum=require('../server_common/constant/enum/collEnum.js')
 const inputDataRuleType=require('../server_common/constant/enum/inputDataRuleType.js')
 const mongoEnum=require('../server_common/constant/enum/mongoEnum.js')
@@ -22,16 +23,18 @@ const validateError=require('../server_common/constant/error/validateError.js')
 const regex=require('../server_common/constant/regex/regex.js')
 const controllerChecker=require('../server_common/controller/controllerChecker.js')
 const controllerHelper=require('../server_common/controller/controllerHelper.js')
+const controllerInputValueLogicCheck=require('../server_common/controller/controllerInputValueLogicCheck.js')
 const controllerPreCheck=require('../server_common/controller/controllerPreCheck.js')
 const dataConvert=require('../server_common/controller/dataConvert.js')
+const resourceCheck=require('../server_common/controller/resourceCheck.js')
 const array=require('../server_common/function/assist/array.js')
 const awesomeCaptcha=require('../server_common/function/assist/awesomeCaptcha.js')
 const checkRobot=require('../server_common/function/assist/checkRobot.js')
-const cookieSession=require('../server_common/function/assist/not_used_cookieSession.js')
 const crypt=require('../server_common/function/assist/crypt.js')
 const file=require('../server_common/function/assist/file.js')
 const gmImage=require('../server_common/function/assist/gmImage.js')
 const misc=require('../server_common/function/assist/misc.js')
+const not_used_cookieSession=require('../server_common/function/assist/not_used_cookieSession.js')
 const pagination=require('../server_common/function/assist/pagination.js')
 const sanityHtml=require('../server_common/function/assist/sanityHtml.js')
 const session=require('../server_common/function/assist/session.js')
@@ -39,6 +42,7 @@ const string=require('../server_common/function/assist/string.js')
 const system=require('../server_common/function/assist/system.js')
 const upload=require('../server_common/function/assist/upload.js')
 const interval=require('../server_common/function/security/interval.js')
+const supervisor=require('../server_common/function/supervisor/supervisor.js')
 const validateFormat=require('../server_common/function/validateInput/validateFormat.js')
 const validateHelper=require('../server_common/function/validateInput/validateHelper.js')
 const validateSearchFormat=require('../server_common/function/validateInput/validateSearchFormat.js')
@@ -63,6 +67,7 @@ module.exports={
     appSetting,
     globalConfiguration,
     calcResourceConfig,
+    not_used_calcResourceConfig,
     collEnum,
     inputDataRuleType,
     mongoEnum,
@@ -80,16 +85,18 @@ module.exports={
     regex,
     controllerChecker,
     controllerHelper,
+    controllerInputValueLogicCheck,
     controllerPreCheck,
     dataConvert,
+    resourceCheck,
     array,
     awesomeCaptcha,
     checkRobot,
-    cookieSession,
     crypt,
     file,
     gmImage,
     misc,
+    not_used_cookieSession,
     pagination,
     sanityHtml,
     session,
@@ -97,6 +104,7 @@ module.exports={
     system,
     upload,
     interval,
+    supervisor,
     validateFormat,
     validateHelper,
     validateSearchFormat,

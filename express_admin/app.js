@@ -6,11 +6,15 @@ const logger = require('morgan');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 
+const ap=require('awesomeprint')
+const appSetting=require('./server_common_file_require').appSetting
+const e_env=require('./server_common_file_require').nodeEnum.Env
 // const index = require('./routes/index');
 // var users = require('./routes/users');
 
 const app = express();
 
+const e_intervalCheckPrefix=require('./server_common_file_require').nodeEnum.IntervalCheckPrefix
 // view engine setup
 /*app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');*/
@@ -22,7 +26,8 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+app.set('trust proxy',appSetting['trust_proxy'])
+// app.use(express.static(path.join(__dirname, 'public')));
 
 const server_common_file_require=require('./server_common_file_require')
 /*const e_env=require('./server/constant/enum/node').Env
@@ -34,7 +39,33 @@ const session=server_common_file_require.session
 // let op=
 app.use(session.generateSessionStore({durationInMinute:480}))
 
-console.log(`app in`)
+//只有在生产环境，才需要强制设置session，然后进行interval check
+// if(appSetting.currentEnv===e_env.PROD){
+    app.use(function(req, res, next) {
+        server_common_file_require.controllerHelper.setSessionByServer_async({req}).then(function(result){
+            // ap.inf('method',req.route)
+            //ap.inf('ap.use result',result)
+            next();
+        },function(err){
+            ap.inf('ap.use err',err)
+            return res.json(err)
+        })
+    });
+// }
+
+
+/*app.use(function(req, res, next) {
+    // ap.inf('req.session',req.session)
+    server_common_file_require.interval.getIntervalPrefix_async({req:req}).then(function(result){
+        ap.inf('ap.use result',result)
+        next();
+    },function(err){
+        ap.inf('ap.use err',err)
+        return res.json(err)
+    })
+
+});*/
+// await controllerHelper.checkInterval_async({req:req,reqTypePrefix:e_intervalCheckPrefix.CPATCHA})
 /*const checkInterval_async=require('./server/function/assist/misc').checkInterval_async
 /!*                      预处理                 *!/
 app.use(function(req,res,next){

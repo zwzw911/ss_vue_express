@@ -88,7 +88,7 @@ async function uploadImpeachCommentFile_async({req}){
     /*                                       authorization check                               */
     /*******************************************************************************************/
     //当前要上传图片/附件的文档是否为作者本人
-    tmpResult=await controllerChecker.ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({dbModel:e_dbModel[collName],recordId:recordId,ownerFieldName:e_field.IMPEACH.CREATOR_ID,ownerFieldValue:userId,additionalCondition:undefined})
+    tmpResult=await controllerChecker.ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({dbModel:e_dbModel[collName],recordId:recordId,ownerFieldName:e_field.IMPEACH.CREATOR_ID,userId:userId,additionalCondition:undefined})
     if(false===tmpResult){
         return Promise.reject(controllerError.notImpeachCreatorCantUploadFile)
     }

@@ -49,6 +49,24 @@ const UserInfoField={
     USER_PRIORITY:'userPriority',//adminUser权限
     TEMP_SALT:'tempSalt', //临时salt，用来加密显示给用户的敏感信息（例如objectId）
 }
+
+const DataTypeInfoFieldName={
+    DATA_TYPE:'dataType',
+    IS_ARRAY:'isArray',
+    IS_ENUM:'isEnum',
+}
+
+const InputValueLogicCheckStep={
+    //单个字段级别
+    FK_EXIST_AND_PRIORITY:'fkExistsAndHasPriority',
+    ENUM_DUPLICATE:'enumDuplicate',
+    SINGLE_FIELD_VALUE_UNIQUE:'singleFieldValueUnique',
+    XSS:'xss',
+    //整个记录
+    COMPOUND_VALUE_UNIQUE:'compoundValueUnique',
+    DISK_USAGE:'diskUsage',
+
+}
 module.exports={
     HashType,
     CryptType,
@@ -56,4 +74,6 @@ module.exports={
     GmCommand,
     FileSizeUnit,
     UserInfoField,
+    DataTypeInfoFieldName,
+    InputValueLogicCheckStep,
 }

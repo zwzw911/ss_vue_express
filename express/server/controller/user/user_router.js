@@ -154,33 +154,6 @@ router.put('/uploadUserPhoto',function(req,res,next){
         }
     )
 })
-/*router.post('/uploadUserPhoto',function(req,res,next){
-// console.log(`uploadPhoto in`)
-    userMiscFunc.uploadDataUrlPhoto_async({req}).then(
-        (v)=>{
-            console.log(`uploadPhoto  success, result:  ${JSON.stringify(v)}`)
-            return res.json(v)
-        },
-        (err)=>{
-            console.log(`uploadPhoto  fail: ${JSON.stringify(err)}`)
-            return res.json(genFinalReturnResult(err))
-           /!* //因为uploadPhoto是直接暴露出来的，可能会引发攻击，因此任何错误都将被视为reject（一刀切，将内部引发的错误也算攻击...）
-            controllerHelper.setReject_async({req:req,reqTypePrefix:e_intervalCheckPrefix.UPLOAD_USER_PHOTO}).then(function(result){
-                console.log(`uploadPhoto  reject, please try ${result} seconds later`)
-                return res.json(genFinalReturnResult(err))
-            },function(err){
-                console.log(`uploadPhoto  fail: ${JSON.stringify(err)}`)
-                return res.json(genFinalReturnResult(err))
-            })*!/
-
-
-
-        }
-    )
-})*/
-
-
-
 
 router.get('/captcha',function(req,res,next){
 // ap.inf('router in')
@@ -194,17 +167,7 @@ router.get('/captcha',function(req,res,next){
             return res.json(genFinalReturnResult(err))
         }
     )
-    /*userMiscFunc.generateCaptcha_async({req:req}).then(
-        (v)=>{
-            console.log(`captcha  success, result:  ${JSON.stringify(v)}`)
-            return res.json(v)
-        },
-        (err)=>{
-            console.log(`captcha  fail: ${JSON.stringify(err)}`)
-            return res.json(genFinalReturnResult(err))
 
-        }
-    )*/
 })
 
 module.exports={router}

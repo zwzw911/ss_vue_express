@@ -8,6 +8,7 @@ const bodyParser = require('body-parser');
 
 const ap=require('awesomeprint')
 const appSetting=require('./server_common_file_require').appSetting
+const e_env=require('./server_common_file_require').nodeEnum.Env
 // const index = require('./routes/index');
 // var users = require('./routes/users');
 // ap.inf('app in ')
@@ -41,19 +42,20 @@ const session=server_common_file_require.session
 // let op=
 app.use(session.generateSessionStore({durationInMinute:480}))
 
+//只有在生产环境，才需要强制设置session，然后进行interval check
+// if(appSetting.currentEnv===e_env.PROD){
+    app.use(function(req, res, next) {
+        server_common_file_require.controllerHelper.setSessionByServer_async({req}).then(function(result){
+            // ap.inf('method',req.route)
+            //ap.inf('ap.use result',result)
+            next();
+        },function(err){
+            ap.inf('ap.use err',err)
+            return res.json(err)
+        })
+    });
+// }
 
-
-app.use(function(req, res, next) {
-    server_common_file_require.controllerHelper.setSessionByServer_async({req}).then(function(result){
-        // ap.inf('method',req.route)
-        //ap.inf('ap.use result',result)
-        next();
-    },function(err){
-        ap.inf('ap.use err',err)
-        return res.json(err)
-    })
-
-});
 
 /*app.use(function(req, res, next) {
     // ap.inf('req.session',req.session)

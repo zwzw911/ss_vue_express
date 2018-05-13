@@ -2,78 +2,65 @@
  * Created by wzhan039 on 2017/9/1.
  */
 'use strict'
-/*                      controller setting                */
+/******************    内置lib和第三方lib  **************/
+const ap=require('awesomeprint')
+/**************  controller相关常量  ****************/
 const controller_setting=require('../admin_setting/admin_setting').setting
+const controllerError=require('../admin_setting/admin_user_controllerError').controllerError
+/***************  数据库相关常量   ****************/
+const e_coll=require('../../../constant/genEnum/DB_Coll').Coll
+const e_field=require('../../../constant/genEnum/DB_field').Field
+const e_dbModel=require('../../../constant/genEnum/dbModel')
 
-const server_common_file_include=require('../../../../server_common_file_require')
-const controllerHelper=server_common_file_include.controllerHelper
-const dataConvert=server_common_file_include.dataConvert
 
-const nodeEnum=server_common_file_include.nodeEnum
-const mongoEnum=server_common_file_include.mongoEnum
-const nodeRuntimeEnum=server_common_file_include.nodeRuntimeEnum
-// const nodeRuntimeEnum=server_common_file_include.nodeRuntimeEnum
+const server_common_file_require=require('../../../../server_common_file_require')
+/**************  公共常量   ******************/
+const mongoEnum=server_common_file_require.mongoEnum
+const e_docStatus=mongoEnum.DocStatus.DB
 
-const common_operation_model=server_common_file_include.common_operation_model
-// const misc=server_common_file_include.misc
-// const gmImage=server_common_file_include.gmImage
-// const validateFormat=server_common_file_include.validateFormat
-
+const nodeEnum=server_common_file_require.nodeEnum
 const e_part=nodeEnum.ValidatePart
+
+const nodeRuntimeEnum=server_common_file_require.nodeRuntimeEnum
 const e_hashType=nodeRuntimeEnum.HashType
 const e_userInfoField=nodeRuntimeEnum.UserInfoField
 
-const hash=server_common_file_include.crypt.hash
-// const e_randomStringType=nodeEnum.RandomStringType
-// const e_userState=nodeEnum.UserState
-// const e_fileSizeUnit=nodeEnum.fileSizeUnit
-// const e_storePathUsage=nodeEnum.StorePathUsage
-// const e_gmCommand=nodeRuntimeEnum.GmCommand
-// const e_gmGetter=nodeRuntimeEnum.GmGetter
+const e_applyRange=server_common_file_require.inputDataRuleType.ApplyRange
 
-const e_docStatus=mongoEnum.DocStatus.DB
-//
-const e_coll=require('../../../constant/genEnum/DB_Coll').Coll
-const e_field=require('../../../constant/genEnum/DB_field').Field
-
-// const e_uniqueField=require('../../../constant/genEnum/DB_uniqueField').UniqueField
-// const e_chineseName=require('../../../constant/genEnum/inputRule_field_chineseName').ChineseName
-//
-//
-// const userPhotoConfiguration=server_common_file_include.globalConfiguration.uploadFileDefine.user_thumb
-// const captchaIntervalConfiguration=server_common_file_include.globalConfiguration.intervalCheckConfiguration.captcha
-// const mailOption=server_common_file_include.globalConfiguration.mailOption
-
-const e_dbModel=require('../../../constant/genEnum/dbModel')
-// const e_iniSettingObject=require('../../../constant/genEnum/initSettingObject').iniSettingObject
-
-const controllerError=require('../admin_setting/admin_user_controllerError').controllerError
+/**************  公共函数   ******************/
+const controllerHelper=server_common_file_require.controllerHelper
+const dataConvert=server_common_file_require.dataConvert
+const hash=server_common_file_require.crypt.hash
+const common_operation_model=server_common_file_require.common_operation_model
+const misc=server_common_file_require.misc
 
 
-async function login_async(req){
-    // console.log(`admin user login in========>`)
-    /*                              logic                                   */
-    /*              略有不同，需要确定字段有且只有账号和密码                */
-    // let usedColl=e_coll.USER
-    let docValue = req.body.values[e_part.RECORD_INFO],tmpResult
-    /*              参数转为server格式            */
-    //dataConvert.convertCreateUpdateValueToServerFormat(docValue)
-    // dataConvert.constructCreateCriteria(docValue)
+async function login_async({req}){
+    /*************************************************/
+    /************     首先检查captcha     ***********/
+    /************************************************/
+    await controllerHelper.getCaptchaAndCheck_async({req:req,db:8})
+    /********************************************************/
+    /*************      define variant        ***************/
+    /********************************************************/
+    let docValue = req.body.values[e_part.RECORD_INFO]
+
 
     /*              login对输入字段使用update的方式进行检查，但是必须确保只有name和password都被输入           */
     let expectedField = [e_field.ADMIN_USER.NAME, e_field.ADMIN_USER.PASSWORD]
     if(Object.keys(docValue).length!==expectedField.length){
-        return Promise.reject(controllerError.loginFieldNumNotExpected)
+        return Promise.reject(controllerError.login.loginFieldNumNotExpected)
     }
     for (let singleInputFieldName of expectedField) {
         if (false === singleInputFieldName in docValue) {
-            return Promise.reject(controllerError.loginMandatoryFieldNotExist(singleInputFieldName))
+            return Promise.reject(controllerError.login.loginMandatoryFieldNotExist(singleInputFieldName))
         }
     }
-// console.log(`converted doc value ${JSON.stringify(docValue)}`)
-    /*              判断user是否存在且password正确                      */
-//    读取sugar，并和输入的password进行运算，得到的结果进行比较
-    //根据姓名查找用户，用户状态为DONE，且没有dDate
+    /********************************************************/
+    /*************          login 过程           ************/
+    /********************************************************/
+    //首先根据用户名（唯一，admin无需账号）查找记录是否存在，用户状态为DONE，且没有dDate
+    //读取sugar，并和输入的password进行运算，得到的结果进行比较
     let condition={
         [e_field.ADMIN_USER.NAME]:docValue[e_field.ADMIN_USER.NAME],
         [e_field.ADMIN_USER.DOC_STATUS]:e_docStatus.DONE,
@@ -85,7 +72,7 @@ async function login_async(req){
     //     return Promise.reject(userTmpResult)
     // }
     if(0===userTmpResult.length){
-        return Promise.reject(controllerError.userNameNotExist)
+        return Promise.reject(controllerError.login.userNameNotExist)
     }
 // console.log(`userTmpResult ${JSON.stringify(userTmpResult)}`)
     condition={userId:userTmpResult[0]['id']}
@@ -105,7 +92,7 @@ async function login_async(req){
 
     // console.log(`user/pwd  ${docValue[e_field.USER.ACCOUNT]}///${encryptPassword.msg}`)
     if(userTmpResult[0][e_field.ADMIN_USER.PASSWORD]!==encryptPassword['msg']){
-        return Promise.reject(controllerError.passwordNotMatch)
+        return Promise.reject(controllerError.login.passwordNotMatch)
     }
 
     /*
@@ -117,7 +104,7 @@ async function login_async(req){
     userInfo[e_userInfoField.USER_TYPE]=userTmpResult[0][e_field.ADMIN_USER.USER_TYPE]
     userInfo[e_userInfoField.USER_COLL_NAME]=e_coll.ADMIN_USER
     userInfo[e_userInfoField.USER_PRIORITY]=userTmpResult[0][e_field.ADMIN_USER.USER_PRIORITY]
-// console.log(`admin user login ============>${JSON.stringify(userInfo)}`)
+    userInfo[e_userInfoField.TEMP_SALT]=misc.generateRandomString({})
     await controllerHelper.setLoginUserInfo_async({req:req,userInfo:userInfo})
 
 

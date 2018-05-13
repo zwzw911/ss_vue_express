@@ -43,8 +43,8 @@ const collFieldDefine={
     name:{type:String,unique:true},
     range:{type:String,},
     type:{type:String},
-    maxFileNum:{type:Number},//最大文件数量
-    totalFileSizeInMb:{type:Number},//最大（能使用）的磁盘容量（MB）
+    maxNum:{type:Number},//最大数量（文件，目录等）
+    maxDiskSpaceInMb:{type:Number},//最大（能使用）的磁盘容量（MB）
     cDate:{type:Date,default:Date.now()}
 }
 

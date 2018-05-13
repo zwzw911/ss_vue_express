@@ -10,27 +10,28 @@
 const ap=require('awesomeprint')
 
 
-const server_common_file_include=require('../../../server_common_file_require')
+const server_common_file_require=require('../../../server_common_file_require')
 /****************   公共函数   ******************/
-const controllerPreCheck=server_common_file_include.controllerPreCheck
+const controllerPreCheck=server_common_file_require.controllerPreCheck
 /****************   公共常量   ******************/
 //error
-const dispatchError=server_common_file_include.helperError.dispatch
-const controllerHelper=server_common_file_include.controllerHelper
+const dispatchError=server_common_file_require.helperError.dispatch
+const controllerHelper=server_common_file_require.controllerHelper
 //enum
-const nodeEnum=server_common_file_include.nodeEnum
-const mongoEnum=server_common_file_include.mongoEnum
+const nodeEnum=server_common_file_require.nodeEnum
+const mongoEnum=server_common_file_require.mongoEnum
 // const e_userState=require('../../constant/enum/node').UserState
 const e_part=nodeEnum.ValidatePart
-const e_method=nodeEnum.Method//require('../../constant/enum/node').Method
+const e_applyRange=nodeEnum.ApplyRange//require('../../constant/enum/node').Method
 const e_coll=require('../../constant/genEnum/DB_Coll').Coll
 
 const e_penalizeType=mongoEnum.PenalizeType.DB
 const e_penalizeSubType=mongoEnum.PenalizeSubType.DB
 
-const e_intervalCheckPrefix=server_common_file_include.nodeEnum.IntervalCheckPrefix
-const e_searchRange=server_common_file_include.inputDataRuleType.SearchRange
+const e_intervalCheckPrefix=server_common_file_require.nodeEnum.IntervalCheckPrefix
+const e_searchRange=server_common_file_require.inputDataRuleType.SearchRange
 
+const e_applyRange=server_common_file_require.inputDataRuleType.ApplyRange
 /**************  controller相关常量  ****************/
 const controllerError=require(`./folder_setting/folder_controllerError`).controllerError
 const controllerSetting=require('./folder_setting/folder_setting').setting
@@ -99,7 +100,7 @@ async function dispatcher_async(req){
                 await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
                 // ap.inf('create use userStateCheck_async done')
                 expectedPart=[e_part.RECORD_INFO]
-                result=controllerPreCheck.inputPreCheck({req:req,expectedPart:expectedPart,collName:collName,method:e_method.CREATE,arr_currentSearchRange:arr_currentSearchRange})
+                result=controllerPreCheck.inputPreCheck({req:req,expectedPart:expectedPart,collName:collName,applyRange:e_applyRange.CREATE,arr_currentSearchRange:arr_currentSearchRange})
                 // ap.inf('create use inputPreCheck result',result)
                 if(result.rc>0){return Promise.reject(result)}
                 result = await createFolder_async({req: req})
@@ -135,7 +136,7 @@ async function dispatcher_async(req){
                 await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
                 // ap.inf('create use userStateCheck_async done')
                 expectedPart=[e_part.RECORD_INFO]
-                result=controllerPreCheck.inputPreCheck({req:req,expectedPart:expectedPart,collName:collName,method:e_method.UPDATE,arr_currentSearchRange:arr_currentSearchRange})
+                result=controllerPreCheck.inputPreCheck({req:req,expectedPart:expectedPart,collName:collName,applyRange:e_applyRange.UPDATE_SCALAR,arr_currentSearchRange:arr_currentSearchRange})
                 // ap.inf('create use inputPreCheck result',result)
                 if(result.rc>0){return Promise.reject(result)}
                 result = await updateFolder_async({req: req})

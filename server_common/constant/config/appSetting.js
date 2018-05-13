@@ -32,7 +32,7 @@ const appSetting={
     }
 }
 
-const currentEnv=e_env.PROD
+const currentEnv=e_env.DEV
 const currentAppSetting=appSetting[currentEnv]
 
 
@@ -51,11 +51,11 @@ const generalCookieSetting={
 }
 
 const absolutePath={
-    'express':'D:/ss_vue_express/express/',
-    'express_admin':'D:/ss_vue_express/express_admin/',
-    'server_common':'D:/ss_vue_express/server_common/',
-    'image_path_for_test':'D:/ss_vue_express/test_data/',
-    'tmpImage':'D:/ss_vue_express/tmp/',//临时存储图片的目录（userPhoto上传为dataUrl，临时转换成图片后获得解析度，然后删除）
+    'express':'H:/ss_vue_express/express/',
+    'express_admin':'H:/ss_vue_express/express_admin/',
+    'server_common':'H:/ss_vue_express/server_common/',
+    'image_path_for_test':'H:/ss_vue_express/test_data/',
+    'tmpImage':'H:/ss_vue_express/tmp/',//临时存储图片的目录（userPhoto上传为dataUrl，临时转换成图片后获得解析度，然后删除）
 }
 module.exports={
     currentEnv,

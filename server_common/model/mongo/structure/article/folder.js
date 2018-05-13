@@ -41,6 +41,7 @@ const collFieldDefine={
         name:{type:String,},
         authorId:{type:mongoose.Schema.Types.ObjectId,ref:"user"}, //
         parentFolderId:{type:mongoose.Schema.Types.ObjectId,ref:"folder"}, //
+        level:{type:Number},//记录目录的层级，判断是否达到最大层数
         cDate:{type:Date,default:Date.now},
         uDate:{type:Date,default:Date.now},
         dDate:{type:Date},

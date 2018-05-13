@@ -25,6 +25,15 @@ const folder= {
         // [ruleFiledName.MAX_LENGTH]: {define: 20, error: {rc: 10004}, mongoError: {rc: 20004, msg: '用户名的长度不能超过20个字符'}},
         [ruleFiledName.FORMAT]: {define: regex.objectId, error: {rc: baseJSErrorCode+2, msg: '创建人必须是objectId'}, mongoError: {rc: baseMongoErrorCode+2, msg: '创建人必须是objectId'}} //server端使用
     },
+    level: {
+        [otherRuleFiledName.CHINESE_NAME]: '目录层级',
+        [otherRuleFiledName.DATA_TYPE]: serverDataType.INT,
+        [otherRuleFiledName.APPLY_RANGE]:[applyRange.CREATE,applyRange.UPDATE_SCALAR],
+        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true,[applyRange.UPDATE_SCALAR]:false}, error: {rc: baseJSErrorCode, msg: '目录层级不能为空'}, mongoError: {rc: baseMongoErrorCode, msg: '目录层级不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        // [ruleFiledName.MIN_LENGTH]: {define: 2, error: {rc: 10002}, mongoError: {rc: 20002, msg: '创建人户名至少2个字符'}},
+        // [ruleFiledName.MAX_LENGTH]: {define: 20, error: {rc: 10004}, mongoError: {rc: 20004, msg: '用户名的长度不能超过20个字符'}},
+        [ruleFiledName.MIN]: {define: 1, error: {rc: baseJSErrorCode+2, msg: '目录层级最小为1'}, mongoError: {rc: baseMongoErrorCode+2, msg: '目录层级最小为1'}} //server端使用
+    },
 }
 
 module.exports={

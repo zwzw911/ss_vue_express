@@ -6,7 +6,7 @@
  */
 'use strict'
 
-
+const ap=require('awesomeprint')
 
 const express = require('express');
 //var app=express()
@@ -18,90 +18,140 @@ const server_common_file_require=require('../../../server_common_file_require')
 const genFinalReturnResult=server_common_file_require.misc.genFinalReturnResult//require('../../function/assist/misc').genFinalReturnResult
 const userDispatcher_async=require('./admin_dispatcher').dispatcher_async
 const userMiscFunc=require('./admin_logic/admin_misc_func')
-/*        通过method，判断是CRUDM中的那个操作
-*   C: register
-*   M: match(login)
-* */
+/*let originalUrl=req.originalUrl
+ap.inf('originalUrl',originalUrl)*/
+/*              create          */
 router.post('/',function(req,res,next){
-//     console.log(`req in`)
-// console.log(`req is ${JSON.stringify(req.body)}`)
     userDispatcher_async(req).then(
         (v)=>{
-            // console.log(`create   admin register   success, result:  ${JSON.stringify(v)}`)
             return res.json(v)
         },
         (err)=>{
-            // console.log(`create  admin register    fail: ${JSON.stringify(err)}`)
             return res.json(genFinalReturnResult(err))
 
         }
     )
 })
 
-router.post('/uniqueCheck_async',function(req,res,next){
-
-    userMiscFunc.uniqueCheck_async(req).then(
+/*              update          */
+router.put('/',function(req,res,next){
+    userDispatcher_async(req).then(
         (v)=>{
-            console.log(`unique check  success, result:  ${JSON.stringify(v)}`)
             return res.json(v)
         },
         (err)=>{
-            console.log(`unique check  fail: ${JSON.stringify(err)}`)
             return res.json(genFinalReturnResult(err))
 
         }
     )
 })
 
-/*router.post('/retrievePassword',function(req,res,next){
-
-    userMiscFunc.retrievePassword_async(req).then(
+/*              delete          */
+router.delete('/',function(req,res,next){
+    userDispatcher_async(req).then(
         (v)=>{
-            console.log(`retrievePassword  success, result:  ${JSON.stringify(v)}`)
             return res.json(v)
         },
         (err)=>{
-            console.log(`retrievePassword  fail: ${JSON.stringify(err)}`)
             return res.json(genFinalReturnResult(err))
 
         }
     )
-})*/
+})
 
 
-
-
-/*router.post('/uploadPhoto',function(req,res,next){
-// console.log(`uploadPhoto in`)
-    userMiscFunc.uploadPhoto_async(req).then(
+router.post('/login',function(req,res,next){
+    // ap.inf('match url')
+    userDispatcher_async(req).then(
         (v)=>{
-            console.log(`uploadPhoto  success, result:  ${JSON.stringify(v)}`)
+            ap.inf(`user login success, result:  ${JSON.stringify(v)}`)
             return res.json(v)
         },
         (err)=>{
-            console.log(`uploadPhoto  fail: ${JSON.stringify(err)}`)
+            ap.err(`user login fail: ${JSON.stringify(err)}`)
             return res.json(genFinalReturnResult(err))
-
         }
     )
-})*/
-
-
-
-
-router.post('/captcha',function(req,res,next){
-
-    userMiscFunc.generateCaptcha_async(req).then(
+})
+router.delete('/logout',function(req,res,next){
+    // ap.inf('match url')
+    userDispatcher_async(req).then(
         (v)=>{
-            console.log(`captcha  success, result:  ${JSON.stringify(v)}`)
+            ap.inf(`user logout success, result:  ${JSON.stringify(v)}`)
             return res.json(v)
         },
         (err)=>{
-            console.log(`captcha  fail: ${JSON.stringify(err)}`)
+            ap.err(`user logout fail: ${JSON.stringify(err)}`)
             return res.json(genFinalReturnResult(err))
-
         }
     )
+})
+router.post('/uniqueCheck',function(req,res,next){
+    userDispatcher_async(req).then(
+        (v)=>{
+            ap.inf(`unique check  success, result:  ${JSON.stringify(v)}`)
+            return res.json(v)
+        },
+        (err)=>{
+            ap.err(`unique check  fail: ${JSON.stringify(err)}`)
+            return res.json(genFinalReturnResult(err))
+        }
+    )
+})
+
+router.post('/retrievePassword',function(req,res,next){
+    userDispatcher_async(req).then(
+        (v)=>{
+            ap.inf(`retrievePassword  success, result:  ${JSON.stringify(v)}`)
+            return res.json(v)
+        },
+        (err)=>{
+            ap.err(`retrievePassword  fail: ${JSON.stringify(err)}`)
+            return res.json(genFinalReturnResult(err))
+        }
+    )
+})
+
+router.put('/changePassword',function(req,res,next){
+    userDispatcher_async(req).then(
+        (v)=>{
+            ap.inf(`changePassword  success, result:  ${JSON.stringify(v)}`)
+            return res.json(v)
+        },
+        (err)=>{
+            ap.err(`changePassword  fail: ${JSON.stringify(err)}`)
+            return res.json(genFinalReturnResult(err))
+        }
+    )
+})
+
+router.put('/uploadUserPhoto',function(req,res,next){
+    // ap.inf('put upload user photo in')
+    userDispatcher_async(req).then(
+        (v)=>{
+            ap.inf(`upload photo  success, result:  ${JSON.stringify(v)}`)
+            return res.json(v)
+        },
+        (err)=>{
+            ap.err(`upload photo  fail: ${JSON.stringify(err)}`)
+            return res.json(genFinalReturnResult(err))
+        }
+    )
+})
+
+router.get('/captcha',function(req,res,next){
+// ap.inf('router captcha in')
+    userDispatcher_async(req).then(
+        (v)=>{
+            ap.inf(`captcha  success, result:  ${JSON.stringify(v)}`)
+            return res.json(v)
+        },
+        (err)=>{
+            ap.err(`captcha  fail: ${JSON.stringify(err)}`)
+            return res.json(genFinalReturnResult(err))
+        }
+    )
+
 })
 
 module.exports={router}

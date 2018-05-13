@@ -10,17 +10,20 @@ const controllerError={
         notLoginCantUpdateUserInfo:{rc:50100,msg:`尚未登录，无法更新用户信息`},
         notLoginCantUpdatePassword:{rc:50100,msg:`尚未登录，无法更新密码`},
         notLoginCantUpdateUserPhoto:{rc:50100,msg:`尚未登录，无法上传头像`},
+        userInPenalizeNoPhotoUpload:{rc:50131,msg:`您被禁止上传头像`},
     },
     /*              common                          */
 
     nameAlreadyExists:{rc:50100,msg:`用户名已经存在`}, //key名字必须固定为 field+AlreadyExists
     accountAlreadyExists:{rc:50102,msg:`账号已经存在`},
     fieldNotSupport:{rc:50104,msg:`字段名称不正确`},
-    /*              login_async               */
-    loginMandatoryFieldNotExist(fieldName){return {rc:50106,msg:`缺少字段${fieldName}`}},
-    loginFieldNumNotExpected:{rc:50107,msg:`输入字段字段数量不正确`},
-    accountNotExist:{rc:50108,msg:`用户名或者密码不正确`},//不能泄露具体信息
-    accountPasswordNotMatch:{rc:50110,msg:`用户名或者密码不正确`},
+    login:{
+        loginMandatoryFieldNotExist(fieldName){return {rc:50106,msg:`缺少字段${fieldName}`}},
+        loginFieldNumNotExpected:{rc:50107,msg:`输入字段字段数量不正确`},
+        accountNotExist:{rc:50108,msg:`用户名或者密码不正确`},//不能泄露具体信息
+        accountPasswordNotMatch:{rc:50110,msg:`用户名或者密码不正确`},
+    },
+
 
     /*              logout_async            */
     logout:{
@@ -38,10 +41,14 @@ const controllerError={
     accountNotUnique:{rc:50122,msg:`账号错误，请联系管理员`},
 
     /*              upload user photo               */
-    notLoginCantUpload:{rc:50130,msg:`尚未登录，无法上传头像`},
-    userInPenalizeNoPhotoUpload:{rc:50131,msg:`您被禁止上传头像`},
-    imageSizeInvalid:{rc:50132,msg:`头像的宽度或者高度超出最大值`},
-    imageFormatInvalid:{rc:50133,msg:`头像的格式不正确`},
+    uploadUserPhoto:{
+        expectedFieldValueUndefined:{rc:50132,msg:`头像的值为空`},
+        notLoginCantUpload:{rc:50130,msg:`尚未登录，无法上传头像`},
+
+        imageSizeInvalid:{rc:50132,msg:`头像的宽度或者高度超出最大值`},
+        imageFormatInvalid:{rc:50133,msg:`头像的格式不正确`},
+    },
+
     /*              captcha                          */
     intervalBetween2CaptchaTooShort:{rc:50134,msg:`请求过于频繁，请稍候再试`},
     captchaReqNumInDurationExceed:{rc:50135,msg:`请求次数过多，请稍候再试`},

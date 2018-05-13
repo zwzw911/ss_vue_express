@@ -28,9 +28,12 @@ const misc=server_common_file_require.misc
 const miscConfiguration=server_common_file_require.globalConfiguration.misc
 const maxNumber=server_common_file_require.globalConfiguration.maxNumber
 const fkConfig=server_common_file_require.fkConfig
-const hash=server_common_file_require.crypt.hash
+const crypt=server_common_file_require.crypt
 /****************  公共常量 ********************/
-const e_docStatus=server_common_file_require.mongoEnum.DocStatus.DB
+const mongoEnum=server_common_file_require.mongoEnum
+const e_docStatus=mongoEnum.DocStatus.DB
+const e_allUserType=mongoEnum.AllUserType.DB
+
 const e_hashType=server_common_file_require.nodeRuntimeEnum.HashType
 const e_part=server_common_file_require.nodeEnum.ValidatePart
 
@@ -45,7 +48,69 @@ const currentEnv=server_common_file_require.appSetting.currentEnv
 /*************************************************************/
 /***************   主函数      *******************************/
 /*************************************************************/
-async function deleteFolder_async({req}){}
+async function deleteFolder_async({req}){
+    /**********************************************/
+    /***********    define variant      ***********/
+    /**********************************************/
+    let tmpResult,condition,option
+    let collName=controller_setting.MAIN_HANDLED_COLL_NAME
+    let recordId=req.body.params.recordId
+    let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
+    let {userId,userCollName,userType,userPriority}=userInfo
+
+    /*********************************************/
+    /*************    用户类型检测    ************/
+    /*********************************************/
+    await controllerChecker.ifExpectedUserType_async({req:req,arr_expectedUserType:[e_allUserType.USER_NORMAL]})
+    /*********************************************/
+    /************    解密recordId    ************/
+    /*********************************************/
+    recordId=crypt.cryptSingleFieldValue({fieldValue:recordId})
+    /*******************************************************************************************/
+    /****************  当前用户为普通用户，检测是否为recordId对应的创建者    *******************/
+    /*******************************************************************************************/
+    if(e_allUserType.USER_NORMAL===userType){
+        tmpResult=await controllerChecker.ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({
+            dbModel:e_dbModel.folder,
+            recordId:recordId,
+            ownerFieldName:e_field.FOLDER.AUTHOR_ID,
+            userId:userId,
+            additionalCondition:undefined,
+        })
+        if(false===tmpResult){
+            return Promise.reject(controllerError.delete.notAuthorCantDeleteFolder)
+        }
+    }
+
+    await businessSpecificCheck_async({recordId:recordId})
+
+    await businessLogic_async({collName:collName,recordId:recordId})
+
+    return Promise.resolve({rc:0})
+
+}
+
+/*************************************************************/
+/***************   业务特定逻辑检查    ***********************/
+/*************************************************************/
+async function businessSpecificCheck_async({recordId}){
+    //1. folder下不能有任何文档
+    let condition={
+        [e_field.ARTICLE.FOLDER_ID]:recordId,
+        'dDate':{$exists:false}
+    }
+    let articleNum=common_operation_model.count_async({dbModel:e_dbModel.article,condition:condition})
+    if(articleNum>0){
+        return Promise.reject(controllerError.delete.articleInFolderCanDelete)
+    }
+}
+/*************************************************************/
+/***************   业务处理    *******************************/
+/*************************************************************/
+async function businessLogic_async({recordId}){
+    await common_operation_model.findByIdAndDelete_async({dbModel:e_dbModel.folder,id:recordId})
+}
+
 module.exports={
     deleteFolder_async,
 }

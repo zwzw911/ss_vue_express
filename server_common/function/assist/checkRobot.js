@@ -6,7 +6,7 @@
 'use strict'
 
 const e_coll=require('../../constant/genEnum/DB_Coll').Coll
-const e_method=require('../../constant/enum/nodeEnum').Method
+// const e_method=require('../../constant/enum/nodeEnum').Method
 
 /*          检查create article的请求是否为robot发起的
 * return: boolean
@@ -35,12 +35,12 @@ async function createComment_async({userId}){
 
 let checkRobot_async={}
 
-checkRobot_async[e_coll.ARTICLE]={}
-checkRobot_async[e_coll.ARTICLE][e_method.CREATE]=createArticle_async
-checkRobot_async[e_coll.ARTICLE][e_method.UPDATE]=updateArticle_async
-
-checkRobot_async[e_coll.ARTICLE_COMMENT]={}
-checkRobot_async[e_coll.ARTICLE_COMMENT][e_method.CREATE]=createComment_async
+// checkRobot_async[e_coll.ARTICLE]={}
+// checkRobot_async[e_coll.ARTICLE][e_method.CREATE]=createArticle_async
+// checkRobot_async[e_coll.ARTICLE][e_method.UPDATE]=updateArticle_async
+//
+// checkRobot_async[e_coll.ARTICLE_COMMENT]={}
+// checkRobot_async[e_coll.ARTICLE_COMMENT][e_method.CREATE]=createComment_async
 
 // console.log(`typeof======>${typeof checkRobot_async[e_coll.ARTICLE][e_method.CREATE] }`)
 // console.log(`${JSON.stringify(checkRobot_async)}`)

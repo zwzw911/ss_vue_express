@@ -11,6 +11,7 @@ const checkerBaseErrorCode=baseErrorCode+100
 const preCheckBaseErrorCode=baseErrorCode+200
 const dispatchBaseErrorCode=baseErrorCode+300
 const resourceCheckBaseErrorCode=baseErrorCode+400
+const inputValueLogicCheckError=baseErrorCode+500
 
 const helper={
     /*              checkOptionPartExist            */
@@ -22,15 +23,7 @@ const helper={
     undefinedBaseRuleType:{rc:helperBaseErrorCode+4,msg:{client:'参数错误',server:'非预定义的baseType'}},
     unknownPartInValueCheck:{rc:helperBaseErrorCode+6,msg:{client:'输入数据错误',server:'输入数据中有未知的part'}},
 
-    /*              checkIfFkExist_async            */
-    ifFkValueExist_And_FkHasPriority_async:{
-        fkValueNotExist(chineseFieldName,fieldInputValue){
-            return {rc:helperBaseErrorCode+8,msg:{client:`${chineseFieldName}不存在`, server:`字段:${chineseFieldName}  的外键值${fieldInputValue}不存在`}}
-        },
-        notHasPriorityForFkField(chineseFieldName,fieldInputValue){
-            return {rc:helperBaseErrorCode+10,msg:{client:`无权对${chineseFieldName}的值进行操作`, server:`当前用户无权对外键字段:${chineseFieldName}  的值${fieldInputValue}所对应的记录进行操作`}}
-        },
-    },
+
 
 
 
@@ -90,7 +83,7 @@ const helper={
     undefinedMethod:{rc:helperBaseErrorCode+48,msg:{'client':"内部错误，请联系管理员",server:`不支持的method`}},
 
     /*      setSessionByServer_async                    */
-    sessionNotSet:{rc:helperBaseErrorCode+50,msg:{client:`请刷新页面重试`,server:`session尚未设置，请重发请求`}},
+    sessionNotSet:{rc:helperBaseErrorCode+50,msg:{client:`尚未登录，请登录后重试`,server:`session尚未设置，请重发请求`}},
 
     /*         getCaptchaAndCheck_async                 */
     captchaNotMatch:{rc:helperBaseErrorCode+52,msg:{client:`图形验证码错误`,server:`captcha和server端存储的内容不一致`}},
@@ -100,15 +93,7 @@ const helper={
 
 const checker={
 
-    ifEnumHasDuplicateValue:{
-        'collRuleNotDefinedCantCheckEnumArray':{rc:checkerBaseErrorCode,msg:{client:'内部错误',server:'collRule未定义，无法检测对应的collValue中是否有enum array'}},
-        containDuplicateValue({fieldName}){
-            return {rc:checkerBaseErrorCode+2,msg:{client:`${fieldName}的值有重复`,server:`${fieldName}的值有重复`}}
-        },
-        fieldInValueNoMatchedRule({fieldName}){
-            return {rc:checkerBaseErrorCode+4,msg:{client:`未知字段${fieldName}`,server:`${fieldName}在对应的collRule中没有对应的rule`}}
-        },
-    },
+
 
 
     'adminUserPriorityCantBeEmpty':{rc:checkerBaseErrorCode+6,msg:{client:`待检测的用户权限不能为空`,server:`待检测的用户权限不能为空`}},
@@ -119,7 +104,7 @@ const checker={
 
     /*          unique check            */
     //collName和fieldName都根据constant/enum/DB_uniqueField而来
-    fieldValueUniqueCheckError({collName,fieldName,fieldChineseName,fieldValue}){
+    /*fieldValueUniqueCheckError({collName,fieldName,fieldChineseName,fieldValue}){
         switch (collName){
             case "admin_user":
                 switch (fieldName){
@@ -209,7 +194,7 @@ const checker={
 
         }
         return {rc:0}
-    },
+    },*/
 
     /*          compound field unique check                 */
     compoundFieldHasMultipleDuplicateRecord({collName,arr_compoundField}){
@@ -253,7 +238,67 @@ const resourceCheck={
     calcUserTotalResourceUsage_async:{
         userNotExistCantGetUsage:{rc:resourceCheckBaseErrorCode+6,msg:{client:'内部错误，请联系管理员',server:'无法查找到用户的资源使用记录'}},
     },
+    ifEnoughResource_async:{
+        articleAttachmentDiskUsageExceed({resourceProfileRangeSizeInMb}){
+            return {rc:resourceCheckBaseErrorCode+8,msg:{client:`文档最多容纳${resourceProfileRangeSizeInMb}MB的附件，剩余空间无法存储当前上传的文件`}}
+        },
+        articleAttachmentNumExceed({resourceProfileNum}){
+            return {rc:resourceCheckBaseErrorCode+10,msg:{client:`文档最多容纳${resourceProfileNum}个附件，当前上传的附件的数量大于剩余文件数量`}}
+        },
+        articleImageDiskUsageExceed({resourceProfileRangeSizeInMb}){
+            return {rc:resourceCheckBaseErrorCode+12,msg:{client:`文档最多容纳${resourceProfileRangeSizeInMb}MB的图片，剩余空间无法存储当前上传的图片`}}
+        },
+        articleImageNumExceed({resourceProfileNum}){
+            return {rc:resourceCheckBaseErrorCode+14,msg:{client:`文档最多容纳${resourceProfileNum}个图片，当前上传的图片的数量大于剩余文件数量`}}
+        },
+        userTotalDiskUsageExceed({resourceProfileRangeSizeInMb}){
+            return {rc:resourceCheckBaseErrorCode+16,msg:{client:`您的总存储空间为${resourceProfileRangeSizeInMb}MB，剩余空间无法存储当前上传的文件`}}
+        },
+        userTotalFileNumExceed({resourceProfileNum}){
+            return {rc:resourceCheckBaseErrorCode+18,msg:{client:`您的总存储文件数量为${resourceProfileNum}，当前上传的文件的数量大于剩余文件数量`}}
+        },
 
+        totalFolderNumExceed({resourceProfileNum}){
+            return {rc:resourceCheckBaseErrorCode+18,msg:{client:`您已达到最大可以创建的目录数量${resourceProfileNum}，无法新建目录`}}
+        },
+    }
+}
+
+const inputValueLogicCheck={
+    getFieldDataTypeInfo:{
+        dataTypeUndefined({collName,fieldName}) {
+            return {rc:inputValueLogicCheckError,msg:{client:`内部错误，请联系管理员`, server:`无法获得表${collName}的字段${fieldName}的数据类型`}}
+        }
+    },
+    /*              checkIfFkExist_async            */
+    ifFkValueExist_And_FkHasPriority_async:{
+        fkValueNotExist(chineseFieldName,fieldInputValue){
+            return {rc:inputValueLogicCheckError+8,msg:{client:`${chineseFieldName}不存在`, server:`字段:${chineseFieldName}  的外键值${fieldInputValue}不存在`}}
+        },
+        notHasPriorityForFkField(chineseFieldName,fieldInputValue){
+            return {rc:inputValueLogicCheckError+10,msg:{client:`无权对${chineseFieldName}的值进行操作`, server:`当前用户无权对外键字段:${chineseFieldName}  的值${fieldInputValue}所对应的记录进行操作`}}
+        },
+    },
+
+    ifEnumHasDuplicateValue:{
+        // 'collRuleNotDefinedCantCheckEnumArray':{rc:checkerBaseErrorCode,msg:{client:'内部错误',server:'collRule未定义，无法检测对应的collValue中是否有enum array'}},
+        containDuplicateValue({fieldName}){
+            return {rc:inputValueLogicCheckError+2,msg:{client:`${fieldName}的值有重复`,server:`${fieldName}的值有重复`}}
+        },
+/*        fieldInValueNoMatchedRule({fieldName}){
+            return {rc:inputValueLogicCheckError+4,msg:{client:`未知字段${fieldName}`,server:`${fieldName}在对应的collRule中没有对应的rule`}}
+        },*/
+    },
+    ifSingleFieldValueUnique_async:{
+        fieldValueNotUnique({collName,fieldName,fieldChineseName,fieldValue}){
+            return {rc:inputValueLogicCheckError+26,msg:{client:`${fieldChineseName} ${fieldValue}已经存在`,server:`集合${collName}的字段${fieldName}，值${fieldValue}已经存在`}}
+        }
+    },
+    ifValueXSS:{
+        fieldValueXSS({fieldName}){
+            return {rc:inputValueLogicCheckError+2,msg:{client:`${fieldName}的值包含有害内容`,server:`${fieldName}的值有XSS内容`}}
+        }
+    },
 }
 module.exports={
     helper,
@@ -261,4 +306,5 @@ module.exports={
     preCheck,
     dispatch,
     resourceCheck,
+    inputValueLogicCheck,
 }

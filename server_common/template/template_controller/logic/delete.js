@@ -73,7 +73,7 @@ async function deleteImpeach_async({req}){
         dbModel:e_dbModel[collName],
         recordId:recordId,
         ownerFieldName:e_field.IMPEACH.CREATOR_ID,
-        ownerFieldValue:userId,
+        userId:userId,
         additionalCondition:undefined
     })
     if(false===tmpResult){

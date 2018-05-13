@@ -99,7 +99,7 @@ async function updatePublicGroup_async({req,expectedPart}){
     /*                                       authorization check                               */
     /*******************************************************************************************/
     //当前用户必须是public_group的admin，且public_group未被删除
-    tmpResult=await controllerChecker.ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({dbModel:e_dbModel.public_group,recordId:recordId,ownerFieldName:e_field.PUBLIC_GROUP.ADMINS_ID,ownerFieldValue:userId,additionalCondition:undefined})
+    tmpResult=await controllerChecker.ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({dbModel:e_dbModel.public_group,recordId:recordId,ownerFieldName:e_field.PUBLIC_GROUP.ADMINS_ID,userId:userId,additionalCondition:undefined})
     if(false===tmpResult){
         return Promise.reject(controllerError.notUserGroupAdminCantUpdate)
     }

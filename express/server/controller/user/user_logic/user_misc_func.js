@@ -2,130 +2,125 @@
  * Created by ada on 2017/9/1.
  */
 'use strict'
-
+/******************    内置lib和第三方lib  **************/
 const fs=require('fs')
 const ap=require(`awesomeprint`)
-
+/**************  controller相关常量  ****************/
+const controllerError=require('../user_setting/user_controllerError').controllerError
+/**************  rule   ******************/
 const inputRule=require('../../../constant/inputRule/inputRule').inputRule
 const internalInputRule=require('../../../constant/inputRule/internalInputRule').internalInputRule
 const browserInputRule=require('../../../constant/inputRule/browserInputRule').browserInputRule
 
+/***************  数据库相关常量   ****************/
+const e_coll=require('../../../constant/genEnum/DB_Coll').Coll
+const e_field=require('../../../constant/genEnum/DB_field').Field
+const e_uniqueField=require('../../../constant/genEnum/DB_uniqueField').UniqueField
+const e_chineseName=require('../../../constant/genEnum/inputRule_field_chineseName').ChineseName
+const dbModel=require('../../../constant/genEnum/dbModel')
 
 const server_common_file_require=require('../../../../server_common_file_require')
+/**************  公共常量   ******************/
+const nodeEnum=server_common_file_require.nodeEnum
+const e_part=nodeEnum.ValidatePart
+const e_method=nodeEnum.Method
+const e_randomStringType=nodeEnum.RandomStringType
+const e_userState=nodeEnum.UserState
+const e_env=nodeEnum.Env
+const e_intervalCheckPrefix=nodeEnum.IntervalCheckPrefix
+
+const mongoEnum=server_common_file_require.mongoEnum
+const e_storePathUsage=mongoEnum.StorePathUsage
+const e_docStatus=mongoEnum.DocStatus.DB
+
+const nodeRuntimeEnum=server_common_file_require.nodeRuntimeEnum
+const e_fileSizeUnit=nodeRuntimeEnum.FileSizeUnit
+const e_gmCommand=nodeRuntimeEnum.GmCommand
+const e_gmGetter=nodeRuntimeEnum.GmGetter
+const e_inputValueLogicCheckStep=nodeRuntimeEnum.InputValueLogicCheckStep
+const e_applyRange=server_common_file_require.inputDataRuleType.ApplyRange
+/**************  公共函数   ******************/
 const controllerHelper=server_common_file_require.controllerHelper
 const controllerChecker=server_common_file_require.controllerChecker
 const interval=server_common_file_require.interval
-
-const e_applyRange=server_common_file_require.inputDataRuleType.ApplyRange
-
 const dataConvert=server_common_file_require.dataConvert
-
-const nodeEnum=server_common_file_require.nodeEnum
-const mongoEnum=server_common_file_require.mongoEnum
-const nodeRuntimeEnum=server_common_file_require.nodeRuntimeEnum
-
 const common_operation_model=server_common_file_require.common_operation_model
 const misc=server_common_file_require.misc
 const gmImage=server_common_file_require.gmImage
 const validateFormat=server_common_file_require.validateFormat
 const validateValue=server_common_file_require.validateValue
-
-const e_part=nodeEnum.ValidatePart
-const e_method=nodeEnum.Method
-
-const e_randomStringType=nodeEnum.RandomStringType
-const e_userState=nodeEnum.UserState
-const e_fileSizeUnit=nodeRuntimeEnum.FileSizeUnit
-const e_storePathUsage=mongoEnum.StorePathUsage
-const e_gmCommand=nodeRuntimeEnum.GmCommand
-const e_gmGetter=nodeRuntimeEnum.GmGetter
-const e_env=nodeEnum.Env
-
-
-const e_uploadFileDefinitionFieldName=nodeEnum.UploadFileDefinitionFieldName
-
-// const e_method=e_method=nodeEnum.Method
-
 const e_hashType=server_common_file_require.nodeRuntimeEnum.HashType
-const e_docStatus=mongoEnum.DocStatus.DB
+const hash=server_common_file_require.crypt.hash
+const valueTypeCheck=server_common_file_require.validateHelper.valueTypeCheck
+const inputValueLogicValidCheck_async=server_common_file_require.controllerInputValueLogicCheck.inputValueLogicValidCheck_async
+const redisOperation=server_common_file_require.redis_common_operation
 
-const e_coll=require('../../../constant/genEnum/DB_Coll').Coll
-const e_field=require('../../../constant/genEnum/DB_field').Field
-
-const e_uniqueField=require('../../../constant/genEnum/DB_uniqueField').UniqueField
-const e_chineseName=require('../../../constant/genEnum/inputRule_field_chineseName').ChineseName
-
-const e_intervalCheckPrefix=nodeEnum.IntervalCheckPrefix
-
+/*************** 配置信息 *********************/
+const e_uploadFileDefinitionFieldName=nodeEnum.UploadFileDefinitionFieldName
 const userPhotoConfiguration=server_common_file_require.globalConfiguration.uploadFileDefine.user_photo
 const userThumbImageType=server_common_file_require.globalConfiguration.uploadFileDefine.common.userPhotoType
 const captchaIntervalConfiguration=server_common_file_require.globalConfiguration.intervalCheckConfiguration.captcha
 const mailOption=server_common_file_require.globalConfiguration.mailOption
+const mailAccount=server_common_file_require.globalConfiguration.mailAccount
 const currentEnv=server_common_file_require.appSetting.currentEnv
 const absolutePath=server_common_file_require.appSetting.absolutePath
 
-const dbModel=require('../../../constant/genEnum/dbModel')
+
 const e_iniSettingObject=require('../../../constant/genEnum/initSettingObject').iniSettingObject
 
-const redisOperation=server_common_file_require.redis_common_operation
-const controllerError=require('../user_setting/user_controllerError').controllerError
-
-const hash=server_common_file_require.crypt.hash
 
 
-const valueTypeCheck=server_common_file_require.validateHelper.valueTypeCheck
+
 
 /*                      检查用户名/账号的唯一性                           */
 async  function  uniqueCheck_async({req}) {
-    // console.log(`unique check values =========> ${JSON.stringify(req.body.values)} `)
-// ap.inf('uniqueCheck_async in')
+    /********************************************************/
+    /*************      define variant        ***************/
+    /********************************************************/
     let collName=e_coll.USER
-    /*let collName=e_coll.USER
-
-    let userLoginCheck={
-        needCheck:false,
-        // error:controllerError.userNotLoginCantCreateComment
-    }
-    let penalizeCheck={
-        /!*                penalizeType:e_penalizeType.NO_ARTICLE,
-         penalizeSubType:e_penalizeSubType.CREATE,
-         penalizeCheckError:controllerError.userInPenalizeNoCommentCreate*!/
-    }
-    let expectedPart=[e_part.SINGLE_FIELD]
-    // console.log(`before precheck =====.`)
-    await controllerHelper.preCheck_async({req:req,collName:collName,method:undefined,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
-// console.log(`precheck done=====.`)
-*/
-    /*                  logic               */
-    // ap.inf('req.body.values',req.body.values)
     let docValue = req.body.values[e_part.SINGLE_FIELD]
-    // ap.inf('docValue',docValue)
-    /*              参数转为server格式（SINGLE_FIELD和RECORD_INFO格式一致）            */
-    //dataConvert.convertCreateUpdateValueToServerFormat(docValue)
-    // dataConvert.constructCreateCriteria(docValue)
-// console.log(`docValue ${JSON.stringify(docValue)}`)
 
-    //读取字段名，进行不同的操作（userUnique或者passowrd格式,只支持一个field）
+    let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
+    let {userId,userCollName,userType,userPriority}=userInfo
+    /********************************************************/
+    /*************         接受的字段         ***************/
+    /********************************************************/
     let fieldName=Object.keys(docValue)[0]
-    // ap.inf('fieldName',fieldName)
-    // let fieldValue=Object.values(docValue)[0]
-    // let condition
-    // let uniqueCheck_asynctmpResult
-// console.log(`fieldName ${fieldName}`)
-//     console.log(`fieldValue ${fieldValue}`)
-//     console.log(`e_uniqueField[e_coll] ${JSON.stringify(e_uniqueField[e_coll.USER])}`)
     if(-1===e_uniqueField[e_coll.USER].indexOf(fieldName)){
         return Promise.reject(controllerError.fieldNotSupport)
     }
-// ap.inf(`indexof check done`)
-    if(undefined!==e_uniqueField[collName] &&  e_uniqueField[collName].length>0) {
+    /**********************************************/
+    /**  CALL FUNCTION:inputValueLogicValidCheck **/
+    /**********************************************/
+    let singleUniqueAdditionalCondition
+    //已经登录，unique检查需要排除自己的记录
+    if(undefined!==userId){
+        singleUniqueAdditionalCondition={[e_field.USER.DOC_STATUS]:e_docStatus.DONE,[e_field.USER.ID]:{'$not':userId}}
+    }else{
+        singleUniqueAdditionalCondition={[e_field.USER.DOC_STATUS]:e_docStatus.DONE}
+    }
+    let commonParam={docValue:docValue,userId:undefined,collName:collName}
+    let stepParam={
+        [e_inputValueLogicCheckStep.FK_EXIST_AND_PRIORITY]:{flag:false,optionalParam:undefined},
+        [e_inputValueLogicCheckStep.ENUM_DUPLICATE]:{flag:false,optionalParam:undefined},
+        //object：coll中，对单个字段进行unique检测，需要的额外查询条件
+        [e_inputValueLogicCheckStep.SINGLE_FIELD_VALUE_UNIQUE]:{true:true,optionalParam:{singleValueUniqueCheckAdditionalCondition:singleUniqueAdditionalCondition}},
+        //数组，元素是字段名。默认对所有dataType===string的字段进行XSS检测，但是可以通过此变量，只选择部分字段
+        [e_inputValueLogicCheckStep.XSS]:{flag:true,optionalParam:{expectedXSSFields:undefined}},
+        //object，对compoundField进行unique检测需要的额外条件，key从model->mongo->compound_unique_field_config.js中获得
+        [e_inputValueLogicCheckStep.COMPOUND_VALUE_UNIQUE]:{flag:true,optionalParam:{compoundFiledValueUniqueCheckAdditionalCheckCondition:undefined}},
+        //Object，配置resourceCheck的一些参数,{requiredResource,resourceProfileRange,userId,containerId}
+        [e_inputValueLogicCheckStep.DISK_USAGE]:{flag:false,optionalParam:{resourceUsageOption:undefined}},
+    }
+    await inputValueLogicValidCheck_async({commonParam:commonParam,stepParam:stepParam})
+    /*if(undefined!==e_uniqueField[collName] &&  e_uniqueField[collName].length>0) {
         //unique check，还要考虑到DOC_STATUS为done（不为done的可以重复）
-        /*                if(collName===e_coll.USER){
+        /!*                if(collName===e_coll.USER){
          condition[e_field.USER.DOC_STATUS]=e_docStatus.DONE
-         }*/
+         }*!/
         let additionalCheckCondition={[e_field.USER.DOC_STATUS]:e_docStatus.DONE}
         await controllerChecker.ifFieldInDocValueUnique_async({collName: collName, docValue: docValue,additionalCheckCondition:additionalCheckCondition})
-    }
+    }*/
 
     // ap.inf(`indexof 111 check done`)
     return Promise.resolve({rc:0})
@@ -133,12 +128,14 @@ async  function  uniqueCheck_async({req}) {
 }
 
 async function retrievePassword_async({req}){
+    /********************************************************/
+    /*************      define variant        ***************/
+    /********************************************************/
     //新产生的密码,账号对应的记录
     let tmpResult,newPwd,userId,newPwdType=e_randomStringType.NORMAL
-
     let condition={},condition1={}  //for account/ usedAccount
     /*          格式/值检查        */
-    tmpResult=controllerHelper.nonCRUDPreCheck({
+/*    tmpResult=controllerHelper.nonCRUDPreCheck({
         req:req,
         expectUserState:e_userState.NO_SESS,
         expectPart:[e_part.SINGLE_FIELD],
@@ -147,7 +144,7 @@ async function retrievePassword_async({req}){
     })
     if(tmpResult.rc>0){
         return Promise.reject(tmpResult)
-    }
+    }*/
 
 
     /*                  logic               */
@@ -227,8 +224,11 @@ async function uploadDataUrlPhoto_async({req}){
     let userId=userInfo.userId
 
     let tmpResult
+    if(undefined===req.body.values[e_part.SINGLE_FIELD][e_field.USER.PHOTO_DATA_URL]){
+        return Promise.reject(controllerError.uploadUserPhoto.expectedFieldValueUndefined)
+    }
     //转换成文件，以便gm读取解析度
-    let dataUrl=req.body.values[e_part.RECORD_INFO][e_field.USER.PHOTO_DATA_URL]
+    let dataUrl=req.body.values[e_part.SINGLE_FIELD][e_field.USER.PHOTO_DATA_URL]
     let fileNameWithoutExtension=`${userId}_${Date.now()}`
     let filePath=absolutePath.tmpImage
     // ap.inf('uploadPhoto_async in')
@@ -242,7 +242,7 @@ async function uploadDataUrlPhoto_async({req}){
     // ap.inf('size',tmpResult)
     if(tmpResult.width>userPhotoConfiguration.maxWidth || tmpResult.height>userPhotoConfiguration.maxHeight){
         fs.unlinkSync(fileAbsPath)
-        return Promise.reject(controllerError.imageSizeInvalid)
+        return Promise.reject(controllerError.uploadUserPhoto.imageSizeInvalid)
     }
 // ap.inf('size done')
     //检查文件大小
@@ -251,7 +251,7 @@ async function uploadDataUrlPhoto_async({req}){
     tmpResult=misc.convertFileSize({num:tmpSize,unit:tmpUnit,newUnit:undefined})
     if(tmpResult.msg>userPhotoConfiguration.maxSizeInByte){
         fs.unlinkSync(fileAbsPath)
-        return Promise.reject(controllerError.imageSizeInvalid)
+        return Promise.reject(controllerError.uploadUserPhoto.imageSizeInvalid)
     }
     // ap.inf('file size done')
     //格式不同，返回错误
@@ -259,12 +259,12 @@ async function uploadDataUrlPhoto_async({req}){
     // console.log(`tmpResult ==== ${JSON.stringify(tmpResult)}`)
     if(-1===userThumbImageType.indexOf(tmpResult)){
         fs.unlinkSync(fileAbsPath)
-        return Promise.reject(controllerError.imageFormatInvalid)
+        return Promise.reject(controllerError.uploadUserPhoto.imageFormatInvalid)
     }
 
 
     fs.unlinkSync(fileAbsPath)
-    ap.inf('format done')
+    // ap.inf('format done')
 
     //存储到db中
 
@@ -495,22 +495,25 @@ async function generateCaptcha_async({req}){
     //captcha为constant/config/globalConfiguration下intervalCheckConfiguration的一个键值
     // await interval.checkInterval_async({req:req,reqTypePrefix:e_intervalCheckPrefix.CPATCHA})
 // ap.inf('checkInterval_async pass')
-    let result=await controllerHelper.genCaptchaAdnSave_async({req:req,params:{height:33}})
+    let result=await controllerHelper.genCaptchaAdnSave_async({req:req,params:{height:33},db:2})
     // ap.inf('genCaptchaAdnSave_async result',result)
     return Promise.resolve({rc:0,msg:result})
     // return Promise.resolve({rc:0,msg:'test'})
 }
 
-async function checkCaptcha_async({req}){
+/*async function checkCaptcha_async({req}){
     await controllerHelper.getCaptchaAndCheck_async({req:req})
-/*    let clientInputCaptcha=req.body.values[e_part.CAPTCHA]
-    let serverCaptcha=*/
-}
+/!*    let clientInputCaptcha=req.body.values[e_part.CAPTCHA]
+    let serverCaptcha=*!/
+}*/
 /*
 * 输入只能包含RECORD_INFO，RECORD_INFO中只能包含oldPassword/newPassword
 *
 * */
 async function changePassword_async({req}){
+    /********************************************************/
+    /***                自定义 对 RECORD_INFO 检查        ***/
+    /********************************************************/
     //检查需要的部分是否存在：recordInfo
     let inputValue=req.body.values
     if(undefined===req.body.values
@@ -560,6 +563,9 @@ async function changePassword_async({req}){
         return Promise.resolve({rc:0})
     }
 
+    /**********************************************/
+    /********            业务逻辑        *********/
+    /*********************************************/
     //检查oldPassword是否正确
     let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
     // console.log(`userInfo===> ${JSON.stringify(userInfo)}`)
@@ -597,7 +603,7 @@ module.exports={
     uploadFilePhoto_async,
 
     generateCaptcha_async,
-    checkCaptcha_async,
+    // checkCaptcha_async,
 
     changePassword_async,
 }

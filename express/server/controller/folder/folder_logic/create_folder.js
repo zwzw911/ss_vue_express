@@ -23,21 +23,27 @@ const server_common_file_require=require('../../../../server_common_file_require
 const dataConvert=server_common_file_require.dataConvert
 const controllerHelper=server_common_file_require.controllerHelper
 const controllerChecker=server_common_file_require.controllerChecker
+const inputValueLogicValidCheck_async=server_common_file_require.controllerInputValueLogicCheck.inputValueLogicValidCheck_async
 const common_operation_model=server_common_file_require.common_operation_model
 const misc=server_common_file_require.misc
 
 
 const hash=server_common_file_require.crypt.hash
 /****************  公共常量 ********************/
-const e_docStatus=server_common_file_require.mongoEnum.DocStatus.DB
-const e_hashType=server_common_file_require.nodeRuntimeEnum.HashType
-const e_part=server_common_file_require.nodeEnum.ValidatePart
+const mongoEnum=server_common_file_require.mongoEnum
+const e_docStatus=mongoEnum.DocStatus.DB
+const e_resourceProfileRange=server_common_file_require.mongoEnum.ResourceProfileRange.DB
+const e_allUserType=mongoEnum.AllUserType.DB
+
+const nodeRuntimeEnum=server_common_file_require.nodeRuntimeEnum
+const e_inputValueLogicCheckStep=nodeRuntimeEnum.InputValueLogicCheckStep
 
 const nodeEnum=server_common_file_require.nodeEnum
 const e_env=nodeEnum.Env
+const e_part=nodeEnum.ValidatePart
+const e_resourceFieldName=nodeEnum.ResourceFieldName
 
-
-
+const e_applyRange=server_common_file_require.inputDataRuleType.ApplyRange
 /*************** 配置信息 *********************/
 const currentEnv=server_common_file_require.appSetting.currentEnv
 const miscConfiguration=server_common_file_require.globalConfiguration.misc
@@ -48,99 +54,88 @@ const maxNumber=server_common_file_require.globalConfiguration.maxNumber
 /***************   主函数      *******************************/
 /*************************************************************/
 async function createFolder_async({req}){
-    /*******************************************************************************************/
-    /************************           define variant                    **********************/
-    /*******************************************************************************************/
+    /********************************************************/
+    /*************      define variant        ***************/
+    /********************************************************/
     let tmpResult,condition,option
     let collName=controller_setting.MAIN_HANDLED_COLL_NAME
-    // let collFkConfig=fkConfig[collName]
     let docValue=req.body.values[e_part.RECORD_INFO]
     let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
-    // console.log(`userInfo===> ${JSON.stringify(userInfo)}`)
     let {userId,userCollName,userType,userPriority}=userInfo
 
-    let inputValueLogicValidCheckSkip //数组，inputValueLogicValidCheck函数中，需要skip的步骤
 
-    let uniqueCheckAdditionalCondition //object：key从DB_unqiueField.js或者compound_uniqueFIeld_config.js中获得，value是查询条件。进行unique检测（singleField和compoundField），需要的额外检测条件。
-    /*******************************************************************************************/
-    /*************************            参数转为server格式           ************************/
-    /*******************************************************************************************/
+
+    //={requiredResource:{sizeInMb:xxx,num:yyy,filesAbsPath:['如果检测失败，需要删除文件']},resourceProfileRange,containerId}
+        =
+    /**********************************************/
+    /********  删除null/undefined的字段  *********/
+    /*********************************************/
     dataConvert.constructCreateCriteria(docValue)
 
-    /*******************************************************************************************/
-    /******************           传入的敏感数据（objectId）解密           ********************/
-    /*******************************************************************************************/
+    /**********************************************/
+    /****** 传入的敏感数据（objectId）解密  ******/
+    /*********************************************/
     controllerHelper.decryptRecordValue({record:docValue,collName:collName})
 
-    /*******************************************************************************************/
-    /*************************              用户类型检测              *************************/
-    /*******************************************************************************************/
+    /**********************************************/
+    /***********    用户类型检测    **************/
+    /*********************************************/
     await controllerChecker.ifExpectedUserType_async({req:req,arr_expectedUserType:[e_allUserType.USER_NORMAL]})
 
-    /*******************************************************************************************/
-    /******************     CALL FUNCTION:inputValueLogicValidCheck        *********************/
-    /*******************************************************************************************/
-    await inputValueLogicValidCheck_async({
-        docValue:docValue,
-        userId:userId,collName:collName,
-        skipStep:inputValueLogicValidCheckSkip, //数组，需要skip的函数名称。undefined，不进行skip
-        uniqueCheckAdditionalCondition:uniqueCheckAdditionalCondition, //object。undefined，只对field的value进行unique的检查
-    })
+    /**********************************************/
+    /**  CALL FUNCTION:inputValueLogicValidCheck **/
+    /**********************************************/
+    let commonParam={docValue:docValue,userId:undefined,collName:collName}
+    let stepParam={
+        [e_inputValueLogicCheckStep.FK_EXIST_AND_PRIORITY]:{flag:true,optionalParam:undefined},
+        [e_inputValueLogicCheckStep.ENUM_DUPLICATE]:{flag:true,optionalParam:undefined},
+        //object：coll中，对单个字段进行unique检测，需要的额外查询条件
+        [e_inputValueLogicCheckStep.SINGLE_FIELD_VALUE_UNIQUE]:{flag:true,optionalParam:{singleValueUniqueCheckAdditionalCondition:undefined}},
+        //数组，元素是字段名。默认对所有dataType===string的字段进行XSS检测，但是可以通过此变量，只选择部分字段
+        [e_inputValueLogicCheckStep.XSS]:{flag:true,optionalParam:{expectedXSSFields:undefined}},
+        //object，对compoundField进行unique检测需要的额外条件，key从model->mongo->compound_unique_field_config.js中获得
+        [e_inputValueLogicCheckStep.COMPOUND_VALUE_UNIQUE]:{flag:true,optionalParam:{compoundFiledValueUniqueCheckAdditionalCheckCondition:undefined}},
+        //Object，配置resourceCheck的一些参数,{requiredResource,resourceProfileRange,userId,containerId}
+        [e_inputValueLogicCheckStep.DISK_USAGE]:{flag:true,optionalParam:{resourceUsageOption:{requiredResource:{[e_resourceFieldName.USED_NUM]:1},resourceProfileRange:e_resourceProfileRange.FOLDER_NUM,userId:userId,containerId:undefined}}},
+    }
+    await inputValueLogicValidCheck_async({commonParam:commonParam,stepParam:stepParam})
+
+    let createdRecord=await businessLogic_async({docValue:docValue,collName:collName})
+    return Promise.resolve(createdRecord)
 }
 
-async function  inputValueLogicValidCheck_async({docValue,userId,collName,skipStep,uniqueCheckAdditionalCondition}){
-    let tmpResult
 
-    //创建显式flag，默认false，即都要执行
-    let skipStepFlag={
-        ifFkValueExist_And_FkHasPriority_async:false,
-        ifEnumHasDuplicateValue:false,
+/*************************************************************/
+/***************   业务处理    *******************************/
+/*************************************************************/
+async function businessLogic_async({docValue,collName}){
+    // ap.inf('businessLogic_async in')
+    //添加internal value
+    let internalValue={}
+    if(undefined!==docValue[e_field.FOLDER.PARENT_FOLDER_ID]){
+        let parentFolder=await common_operation_model.findById_returnRecord_async({dbModel:e_dbModel.folder,id:docValue[e_field.FOLDER.PARENT_FOLDER_ID]})
+        internalValue[e_field.FOLDER.LEVEL]=parentFolder[e_field.FOLDER.LEVEL]+1
+    }else{
+        internalValue[e_field.FOLDER.LEVEL]=1
     }
-    if(undefined!==skipStep){
-        for(let singleSkipStep of skipStep){
-            skipStepFlag[singleSkipStep]=true
-        }
-    }
-    /*******************************************************************************************/
-    /******************          fk value exists and owner check                    ************/
-    /*******************************************************************************************/
-    if(false===skipStepFlag['ifFkValueExist_And_FkHasPriority_async']){
-        await controllerChecker.ifFkValueExist_And_FkHasPriority_async({docValue:docValue,userId:userId,collName:collName})
-    }
+    //判断level是否超出定义
+    if(internalValue[e_field.FOLDER.LEVEL]>maxNumber.folder.folderLevel){
 
-    /*******************************************************************************************/
-    /******************              enum(array) unique check                       ************/
-    /*******************************************************************************************/
-    if(false===skipStepFlag['ifEnumHasDuplicateValue']) {
-        tmpResult = controllerChecker.ifEnumHasDuplicateValue({
-            collValue: docValue,
-            collRule: collName,
-        })
-        // console.log(`duplicate check result ==========> ${JSON.stringify(tmpResult)}`)
-        if (tmpResult.rc > 0) {
+    }
+    /*              对内部产生的值进行检测（开发时使用，上线后为了减低负荷，无需使用）           */
+    if(e_env.DEV===currentEnv){
+        //ap.inf('req.body.values',req.body.values)
+        let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInternalRule:internalInputRule[collName],applyRange:e_applyRange.CREATE})
+        // console.log(`internalValue check result====>   ${JSON.stringify(tmpResult)}`)
+        if(tmpResult.rc>0){
             return Promise.reject(tmpResult)
         }
     }
+    Object.assign(docValue,internalValue)
 
-    /*******************************************************************************************/
-    /******************          single field value unique check                    ************/
-    /*******************************************************************************************/
-    if(false===skipStepFlag['ifSingleFieldValueUnique_async']) {
-        await controllerChecker.ifSingleFieldValueUnique_async({
-            collName:collName,
-            docValue:docValue,
-            additionalCheckCondition:uniqueCheckAdditionalCondition})
-    }
-
-    /*******************************************************************************************/
-    /******************          compound field value unique check                  ************/
-    /*******************************************************************************************/
-    if(false===skipStepFlag['ifSingleFieldValueUnique_async']) {
-        await controllerChecker.ifCompoundFiledValueUnique_returnExistRecord_async({
-            collName:collName,
-            docValue:docValue,
-            additionalCheckCondition:uniqueCheckAdditionalCondition})
-    }
+    /*              数据库操作               */
+    let createdRecord=await common_operation_model.create_returnRecord_async({dbModel:e_dbModel.folder,value:docValue})
+    return Promise.resolve(createdRecord)
 }
 module.exports={
     createFolder_async,

@@ -63,7 +63,7 @@ async function deletePublicGroup_async({req}){
     /*                                       authorization check                               */
     /*******************************************************************************************/
     //1. 创建者本身  2. 无其他用户  才能删除举报
-    tmpResult=await controllerChecker.ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({dbModel:e_dbModel[collName],recordId:recordId,ownerFieldName:e_field.PUBLIC_GROUP.CREATOR_ID,ownerFieldValue:userId,additionalCondition:undefined})
+    tmpResult=await controllerChecker.ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({dbModel:e_dbModel[collName],recordId:recordId,ownerFieldName:e_field.PUBLIC_GROUP.CREATOR_ID,userId:userId,additionalCondition:undefined})
     if(false===tmpResult){
         return Promise.reject(controllerError.notGroupCreatorCantDelete)
     }

@@ -130,4 +130,5 @@
 6. 为inputRuel的error code应用新格式
 7. 为controller的error code应用新格式===》done
 9. 因为error code采用了新格式，需要预先eval，所以需要把所有的error源文件放到一个地方，然后重写到一个地方。除了节省CPU？也可以快速定位error code
-10. rule检测函数，需要添加一条，检测error code是否为数字
+10. rule检测函数，需要添加一条，检测error code是否为数字===>done (如果为undefined，会报语法错误；如果非undefined且类型不正确，那么正常运行)
+11. disk usage检查函数，参数为resourceProfileType,userId,containerId。containerId指对某个对象（article/impeach）所包含的disk usage（附件，图片等）进行检查

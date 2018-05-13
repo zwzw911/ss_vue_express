@@ -2,12 +2,13 @@
  * Created by ada on 2017/9/1.
  */
 'use strict'
-
+/******************    内置lib和第三方lib  **************/
 const ap=require('awesomeprint')
-/*                      controller setting                */
+/**************  controller相关常量  ****************/
 const controller_setting=require('../admin_setting/admin_setting').setting
+const controllerError=require('../admin_setting/admin_user_controllerError').controllerError
 
-/*                      specify: genEnum                */
+/***************  数据库相关常量   ****************/
 const e_uniqueField=require('../../../constant/genEnum/DB_uniqueField').UniqueField
 // const e_chineseName=require('../../../constant/genEnum/inputRule_field_chineseName').ChineseName
 const e_coll=require('../../../constant/genEnum/DB_Coll').Coll
@@ -15,68 +16,110 @@ const e_field=require('../../../constant/genEnum/DB_field').Field
 const e_dbModel=require('../../../constant/genEnum/dbModel')
 const e_iniSettingObject=require('../../../constant/genEnum/initSettingObject').iniSettingObject
 
-/*                      specify: inputRule                */
+/********************  rule   ********************/
 const inputRule=require('../../../constant/inputRule/inputRule').inputRule
 const internalInputRule=require('../../../constant/inputRule/internalInputRule').internalInputRule
 const browserInputRule=require('../../../constant/inputRule/browserInputRule').browserInputRule
-/*                      specify: controllerError                */
-const controllerError=require('../admin_setting/admin_user_controllerError').controllerError
-/*                      server common                                           */
+
 const server_common_file_require=require('../../../../server_common_file_require')
+/**************  公共常量   ******************/
+const mongoEnum=server_common_file_require.mongoEnum
+const e_accountType=mongoEnum.AccountType.DB
+const e_docStatus=mongoEnum.DocStatus.DB
+const e_adminUserType=mongoEnum.AdminUserType.DB
+const e_adminPriorityType=mongoEnum.AdminPriorityType.DB
+const e_allUserType=mongoEnum.AllUserType.DB
+
 const nodeEnum=server_common_file_require.nodeEnum
-/*                      server common：function                                       */
+const e_env=nodeEnum.Env
+const e_part=server_common_file_require.nodeEnum.ValidatePart
+
+const nodeRuntimeEnum=server_common_file_require.nodeRuntimeEnum
+const e_hashType=nodeRuntimeEnum.HashType
+const e_inputValueLogicCheckStep=nodeRuntimeEnum.InputValueLogicCheckStep
+
+const e_applyRange=server_common_file_require.inputDataRuleType.ApplyRange
+
+/**************  公共函数   ******************/
 const dataConvert=server_common_file_require.dataConvert
 const controllerHelper=server_common_file_require.controllerHelper
 const controllerChecker=server_common_file_require.controllerChecker
 const common_operation_model=server_common_file_require.common_operation_model
+const inputValueLogicValidCheck_async=server_common_file_require.controllerInputValueLogicCheck.inputValueLogicValidCheck_async
 
 const misc=server_common_file_require.misc
 const arr=server_common_file_require.array
 
 const hash=server_common_file_require.crypt.hash
-/*                      server common：enum                                       */
-const e_accountType=server_common_file_require.mongoEnum.AccountType.DB
-const e_docStatus=server_common_file_require.mongoEnum.DocStatus.DB
-const e_env=nodeEnum.Env
-const e_part=server_common_file_require.nodeEnum.ValidatePart
-const e_hashType=server_common_file_require.nodeRuntimeEnum.HashType
-const e_adminUserType=server_common_file_require.mongoEnum.AdminUserType.DB
-const e_adminPriorityType=server_common_file_require.mongoEnum.AdminPriorityType.DB
-/*                      server common：other                                       */
-const regex=server_common_file_require.regex.regex
+/*************** 配置信息 *********************/
 const currentEnv=server_common_file_require.appSetting.currentEnv
 
+const regex=server_common_file_require.regex.regex
 
 //添加内部产生的值（hash password）
 //对内部产生的值进行检测（开发时使用，上线后为了减低负荷，无需使用）
 //对数值逻辑进行判断（外键是否有对应的记录等）
 //执行db操作并返回结果
-async  function createUser_async(req){
-    // console.log(`create user in`)
-    let tmpResult
+async  function createUser_async({req}){
+    /*************************************************/
+    /************     首先检查captcha     ***********/
+    /************************************************/
+    await controllerHelper.getCaptchaAndCheck_async({req:req})
+    /********************************************************/
+    /*************      define variant        ***************/
+    /********************************************************/
     let collName=controller_setting.MAIN_HANDLED_COLL_NAME
     let docValue=req.body.values[e_part.RECORD_INFO]
 
     let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
-    let userId=userInfo.userId
-    let userPriority=userInfo.userPriority
-// console.log(`docValue===> ${JSON.stringify(docValue)}`)
-// console.log(`userId===> ${JSON.stringify(userId)}`)
-    /*              参数转为server格式            */
-    // dataConvert.convertCreateUpdateValueToServerFormat(docValue)
+    let {userId,userCollName,userType,userPriority}=userInfo
+    /**********************************************/
+    /********  删除null/undefined的字段  *********/
+    /*********************************************/
     dataConvert.constructCreateCriteria(docValue)
+
+    /*********************************************/
+    /*************    用户类型检测    ************/
+    /*********************************************/
+    await controllerChecker.ifExpectedUserType_async({req:req,arr_expectedUserType:[e_allUserType.ADMIN_ROOT]})
 
     /*              不能通过API创建ROOT           */
     if(e_adminUserType.ADMIN_ROOT===docValue[e_field.ADMIN_USER.USER_TYPE]){
-        return Promise.reject(controllerError.cantCreateRootUserByAPI)
+        return Promise.reject(controllerError.create.cantCreateRootUserByAPI)
     }
     /*              当前用户是否有创建用户的权限      */
     let hasCreatePriority=await controllerChecker.ifAdminUserHasExpectedPriority_async({userPriority:userPriority,arr_expectedPriority:[e_adminPriorityType.CREATE_ADMIN_USER]})
     if(false===hasCreatePriority){
-        return Promise.reject(controllerError.currentUserHasNotPriorityToCreateUser)
+        return Promise.reject(controllerError.create.currentUserHasNotPriorityToCreateUser)
     }
 
-    /*              检测enum+array的字段是否有重复值       */
+    /************************************************/
+    /*** CALL FUNCTION:inputValueLogicValidCheck ****/
+    /************************************************/
+    let commonParam={docValue:docValue,userId:undefined,collName:collName}
+    let stepParam={
+        [e_inputValueLogicCheckStep.FK_EXIST_AND_PRIORITY]:{flag:true,optionalParam:undefined},
+        [e_inputValueLogicCheckStep.ENUM_DUPLICATE]:{flag:true,optionalParam:undefined},
+        //object：coll中，对单个字段进行unique检测，需要的额外查询条件
+        [e_inputValueLogicCheckStep.SINGLE_FIELD_VALUE_UNIQUE]:{flag:true,optionalParam:{singleValueUniqueCheckAdditionalCondition:{[e_field.ADMIN_USER.DOC_STATUS]:e_docStatus.DONE}}},
+        //数组，元素是字段名。默认对所有dataType===string的字段进行XSS检测，但是可以通过此变量，只选择部分字段
+        [e_inputValueLogicCheckStep.XSS]:{flag:true,optionalParam:{expectedXSSFields:undefined}},
+        //object，对compoundField进行unique检测需要的额外条件，key从model->mongo->compound_unique_field_config.js中获得
+        [e_inputValueLogicCheckStep.COMPOUND_VALUE_UNIQUE]:{flag:true,optionalParam:{compoundFiledValueUniqueCheckAdditionalCheckCondition:undefined}},
+        //Object，配置resourceCheck的一些参数,{requiredResource,resourceProfileRange,userId,containerId}
+        [e_inputValueLogicCheckStep.DISK_USAGE]:{flag:false,optionalParam:{resourceUsageOption:undefined}},
+    }
+
+/*    //object：coll中，对单个字段进行unique检测，需要的额外查询条件
+    let singleValueUniqueCheckAdditionalCondition={[e_field.ADMIN_USER.DOC_STATUS]:e_docStatus.DONE}
+    //object，对compoundField进行unique检测需要的额外条件，key从model->mongo->compound_unique_field_config.js中获得
+    let compoundFiledValueUniqueCheckAdditionalCheckCondition
+    //数组，元素是字段名。默认对所有dataType===string的字段进行XSS检测，但是可以通过此变量，只选择部分字段
+    let expectedXSSFields
+    //Object，配置resourceCheck的一些参数
+    let resourceUsageOption*/
+
+/*    /!*              检测enum+array的字段是否有重复值       *!/
     // console.log(`browserInputRule[collName]==========> ${JSON.stringify(browserInputRule[collName])}`)
     // console.log(`docValue==========> ${JSON.stringify(docValue)}`)
     tmpResult=controllerChecker.ifEnumHasDuplicateValue({collValue:docValue,collRule:browserInputRule[collName]})
@@ -85,11 +128,12 @@ async  function createUser_async(req){
         return Promise.reject(tmpResult)
     }
 // console.log(`createUser_async docValue===> ${JSON.stringify(docValue)}`)
-    /*      因为name是unique，所以要检查用户名是否存在(unique check)     */
+    /!*      因为name是unique，所以要检查用户名是否存在(unique check)     *!/
     if(undefined!==e_uniqueField[collName] &&  e_uniqueField[collName].length>0) {
         let additionalCheckCondition={[e_field.ADMIN_USER.DOC_STATUS]:e_docStatus.DONE}
         await controllerChecker.ifFieldInDocValueUnique_async({collName: collName, docValue: docValue,additionalCheckCondition:additionalCheckCondition})
-    }
+    }*/
+    await inputValueLogicValidCheck_async({commonParam:commonParam,stepParam:stepParam})
 // console.log(`ifFieldInDocValueUnique_async done===>`)
     /*******************************************************************************************/
     /*                                       特定字段的处理（检查）                            */
@@ -102,12 +146,12 @@ async  function createUser_async(req){
 
         //权限在预订范围内
         if(false===arr.ifArrayContainArray({parentArray:userPriority,childArray:docValue[e_field.ADMIN_USER.USER_PRIORITY]})){
-            return Promise.reject(controllerError.createUserPriorityNotInheritedFromParent)
+            return Promise.reject(controllerError.create.createUserPriorityNotInheritedFromParent)
         }
-        //权限是否重复
-        if(true===arr.ifArrayHasDuplicate(docValue[e_field.ADMIN_USER.USER_PRIORITY])){
-            return Promise.reject(controllerError.createUserPriorityCantDuplicate)
-        }
+        //权限是否重复(权限为enum。重复检测已经包含在inputValueLogicValidCheck_async中)
+/*        if(true===arr.ifArrayHasDuplicate(docValue[e_field.ADMIN_USER.USER_PRIORITY])){
+            return Promise.reject(controllerError.create.createUserPriorityCantDuplicate)
+        }*/
     }
 
 
@@ -160,7 +204,7 @@ async  function createUser_async(req){
     // console.log(`collInputRule =======> ${JSON.stringify(inputRule[e_coll.USER])}`)
     // console.log(`collInternalRule =======> ${JSON.stringify(internalInputRule[e_coll.USER])}`)
     if(e_env.DEV===currentEnv){
-        let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInputRule:inputRule[collName],collInternalRule:internalInputRule[collName],method:req.body.values[e_part.METHOD]})
+        let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInputRule:inputRule[collName],collInternalRule:internalInputRule[collName],applyRange:e_applyRange.CREATE})
         // console.log(`internalValue check result====>   ${JSON.stringify(tmpResult)}`)
         if(tmpResult.rc>0){
             return Promise.reject(tmpResult)

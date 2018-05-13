@@ -3,51 +3,60 @@
  */
 'use strict'
 
-// const controllerError=require('./user_controllerError').controllerError
+/******************    内置lib和第三方lib  **************/
 const ap=require(`awesomeprint`)
+
+/**************  controller相关常量  ****************/
 const controller_setting=require('../user_setting/user_setting').setting
 const controllerError=require('../user_setting/user_controllerError').controllerError
 
-/*                      specify: genEnum                */
+/***************  数据库相关常量   ****************/
 const e_uniqueField=require('../../../constant/genEnum/DB_uniqueField').UniqueField
-// const e_chineseName=require('../../../constant/genEnum/inputRule_field_chineseName').ChineseName
 const e_coll=require('../../../constant/genEnum/DB_Coll').Coll
 const e_field=require('../../../constant/genEnum/DB_field').Field
 const e_dbModel=require('../../../constant/genEnum/dbModel')
 const e_iniSettingObject=require('../../../constant/genEnum/initSettingObject').iniSettingObject
-/*                      specify: inputRule                */
+/***************  rule   ****************/
 const inputRule=require('../../../constant/inputRule/inputRule').inputRule
 const internalInputRule=require('../../../constant/inputRule/internalInputRule').internalInputRule
 
-/*                      server common                                           */
 const server_common_file_require=require('../../../../server_common_file_require')
-const nodeEnum=server_common_file_require.nodeEnum
+/**************  公共常量   ******************/
 const mongoEnum=server_common_file_require.mongoEnum
+const e_accountType=mongoEnum.AccountType.DB
+const e_docStatus=mongoEnum.DocStatus.DB
+const e_userType=mongoEnum.UserType.DB
+const e_resourceType=mongoEnum.ResourceType.DB
 
-/*                      server common：function                                       */
+const nodeEnum=server_common_file_require.nodeEnum
+const e_env=nodeEnum.Env
+const e_part=nodeEnum.ValidatePart
+
+const nodeRuntimeEnum=server_common_file_require.nodeRuntimeEnum
+const e_hashType=nodeRuntimeEnum.HashType
+const e_inputValueLogicCheckStep=nodeRuntimeEnum.InputValueLogicCheckStep
+
+const e_applyRange=server_common_file_require.inputDataRuleType.ApplyRange
+
+
+
+/**************  公共函数   ******************/
+const inputValueLogicValidCheck_async=server_common_file_require.controllerInputValueLogicCheck.inputValueLogicValidCheck_async
 const dataConvert=server_common_file_require.dataConvert
 const controllerHelper=server_common_file_require.controllerHelper
 const controllerChecker=server_common_file_require.controllerChecker
 const common_operation_model=server_common_file_require.common_operation_model
 const misc=server_common_file_require.misc
 const hash=server_common_file_require.crypt.hash
-/*                      server common：enum                                       */
-const e_accountType=mongoEnum.AccountType.DB
-const e_docStatus=mongoEnum.DocStatus.DB
-const e_userType=mongoEnum.UserType.DB
 
-const e_env=nodeEnum.Env
-const e_part=nodeEnum.ValidatePart
-
-const e_hashType=server_common_file_require.nodeRuntimeEnum.HashType
-
-const e_resourceType=mongoEnum.ResourceType.DB
-/*                      server common：other                                       */
-const regex=server_common_file_require.regex.regex
+/*************** 配置信息 *********************/
 const currentEnv=server_common_file_require.appSetting.currentEnv
-
 const globalConfiguration=server_common_file_require.globalConfiguration
+
+const regex=server_common_file_require.regex.regex
 const user_misc_func=require('./user_misc_func')
+
+
 //添加内部产生的值（hash password）
 //对内部产生的值进行检测（开发时使用，上线后为了减低负荷，无需使用）
 //对数值逻辑进行判断（外键是否有对应的记录等）
@@ -55,24 +64,55 @@ const user_misc_func=require('./user_misc_func')
 async  function createUser_async({req}){
     // console.log(`create user in`)
     // ap.inf('create use in')
-    /*                  首先检查captcha                 */
-    await user_misc_func.checkCaptcha_async({req:req})
+    /*************************************************/
+    /************     首先检查captcha     ***********/
+    /************************************************/
+    await controllerHelper.getCaptchaAndCheck_async({req:req,db:2})
 
+
+    /*************************************************/
+    /************      define variant     ***********/
+    /************************************************/
     let collName=e_coll.USER
-    /*                      logic                               */
     let docValue=req.body.values[e_part.RECORD_INFO]
-// console.log(`docValue===> ${JSON.stringify(docValue)}`)
 
-    /*              参数转为server格式            */
-    //dataConvert.convertCreateUpdateValueToServerFormat(docValue)
+
+    /**********************************************/
+    /********  参数转为server格式      ***********/
+    /*********************************************/
     dataConvert.constructCreateCriteria(docValue)
-// console.log(`createUser_async docValue===> ${JSON.stringify(docValue)}`)
 
-    /*      因为name是unique，所以要检查用户名是否存在(unique check)     */
+    /**********************************************/
+    /****** 传入的敏感数据（objectId）解密  ******/
+    /*********************************************/
+
+    /**********************************************/
+    /***********    用户类型检测    **************/
+    /*********************************************/
+    // ap.inf('efore user input check pass')
+    /*******************************************************************************************/
+    /******************     CALL FUNCTION:inputValueLogicValidCheck        *********************/
+    /*******************************************************************************************/
+    let commonParam={docValue:docValue,userId:undefined,collName:collName}
+    let stepParam={
+        [e_inputValueLogicCheckStep.FK_EXIST_AND_PRIORITY]:{flag:true,optionalParam:undefined},
+        [e_inputValueLogicCheckStep.ENUM_DUPLICATE]:{flag:true,optionalParam:undefined},
+        //object：coll中，对单个字段进行unique检测，需要的额外查询条件
+        [e_inputValueLogicCheckStep.SINGLE_FIELD_VALUE_UNIQUE]:{flag:true,optionalParam:{singleValueUniqueCheckAdditionalCondition:{[e_field.USER.DOC_STATUS]:e_docStatus.DONE}}},
+        //数组，元素是字段名。默认对所有dataType===string的字段进行XSS检测，但是可以通过此变量，只选择部分字段
+        [e_inputValueLogicCheckStep.XSS]:{flag:true,optionalParam:{expectedXSSFields:undefined}},
+        //object，对compoundField进行unique检测需要的额外条件，key从model->mongo->compound_unique_field_config.js中获得
+        [e_inputValueLogicCheckStep.COMPOUND_VALUE_UNIQUE]:{flag:true,optionalParam:{compoundFiledValueUniqueCheckAdditionalCheckCondition:undefined}},
+        //Object，配置resourceCheck的一些参数,{requiredResource,resourceProfileRange,userId,containerId}
+        [e_inputValueLogicCheckStep.DISK_USAGE]:{flag:false,optionalParam:{resourceUsageOption:undefined}},
+    }
+    await inputValueLogicValidCheck_async({commonParam:commonParam,stepParam:stepParam})
+// ap.inf('user input check pass')
+/*    /!*      因为name是unique，所以要检查用户名是否存在(unique check)     *!/
     if(undefined!==e_uniqueField[collName] &&  e_uniqueField[collName].length>0) {
         let additionalCheckCondition={[e_field.USER.DOC_STATUS]:e_docStatus.DONE}
         await controllerChecker.ifFieldInDocValueUnique_async({collName: collName, docValue: docValue,additionalCheckCondition:additionalCheckCondition})
-    }
+    }*/
 // console.log(`ifFiledInDocValueUnique_async done===>`)
 
     //如果用户在db中存在，但是创建到一半，则删除用户(然后重新开始流程)
@@ -130,9 +170,13 @@ async  function createUser_async({req}){
     // console.log(`internalValue =======> ${JSON.stringify(internalValue)}`)
     // console.log(`collInputRule =======> ${JSON.stringify(inputRule[e_coll.USER])}`)
     // console.log(`collInternalRule =======> ${JSON.stringify(internalInputRule[e_coll.USER])}`)
+    // ap.inf('after interval',internalValue)
     if(e_env.DEV===currentEnv){
-        //ap.inf('req.body.values',req.body.values)
-        let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInputRule:inputRule[collName],collInternalRule:internalInputRule[collName],method:req.body.values[e_part.METHOD]})
+        // ap.inf('req.body.values',req.body.values)
+        // ap.inf('internalValue',internalValue)
+        // ap.inf('collInternalRule',internalInputRule[collName])
+        // ap.inf('applyRange',e_applyRange.CREATE)
+        let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInternalRule:internalInputRule[collName],applyRange:e_applyRange.CREATE})
         // console.log(`internalValue check result====>   ${JSON.stringify(tmpResult)}`)
         if(tmpResult.rc>0){
             return Promise.reject(tmpResult)
@@ -156,7 +200,7 @@ async  function createUser_async({req}){
     let sugarValue={userId:userCreateTmpResult._id,sugar:sugar}
     // console.log(`sugarValue ${JSON.stringify(sugarValue)}`)
     await common_operation_model.create_returnRecord_async({dbModel:e_dbModel.sugar,value:sugarValue})
-    // console.log(`tmpResult is ${JSON.stringify(tmpResult)}`)
+    // ap.inf('sugarValue insert done')
 
 
     //对关联表user_friend_group进行insert操作
@@ -173,20 +217,20 @@ async  function createUser_async({req}){
             [e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP]:[]
         }
     ]
-    // ap.print('userFriendGroupValue',userFriendGroupValue)
+    // ap.inf('userFriendGroupValue',userFriendGroupValue)
     await common_operation_model.insertMany_returnRecord_async({dbModel:e_dbModel.user_friend_group,docs:userFriendGroupValue})
     // await common_operation_model.create_returnRecord_async({dbModel:e_dbModel.user_friend_group,value:userFriendGroupValue})
     // console.log(`tmpResult is ${JSON.stringify(tmpResult)}`)
 
     //对关联表folder进行insert操作
-    let folderValue={authorId:userCreateTmpResult._id,name:'我的文档'}
+    let folderValue={authorId:userCreateTmpResult._id,name:'我的文档',[e_field.FOLDER.LEVEL]:1}
     // console.log(`sugarValue ${JSON.stringify(sugarValue)}`)
     await common_operation_model.create_returnRecord_async({dbModel:e_dbModel.folder,value:folderValue})
 
     //对关联表user_resource_profile进行insert操作,插入默认资源设置
     let userResourceProfile=[]
     // console.log(`e_iniSettingObject.resource_profile.DEFAULT==========>${JSON.stringify(e_iniSettingObject.resource_profile.DEFAULT)}`)
-    for(let defaultResourceProfile of Object.values(e_iniSettingObject.resource_profile.DEFAULT)){
+    for(let defaultResourceProfile of Object.values(e_iniSettingObject.resource_profile.BASIC)){
         // for(let resourceProfileId)
         // console.log(`defaultResourceProfile==========>${JSON.stringify(defaultResourceProfile)}`)
         let tmp={}
@@ -194,7 +238,10 @@ async  function createUser_async({req}){
 // console.log(`defaultResourceProfile==========>${JSON.stringify(defaultResourceProfile)}`)
         tmp[e_field.USER_RESOURCE_PROFILE.RESOURCE_PROFILE_ID]=defaultResourceProfile
         tmp[e_field.USER_RESOURCE_PROFILE.DURATION]=0
+        tmp[e_field.USER_RESOURCE_PROFILE.START_DATE]=Date.now()
+        tmp[e_field.USER_RESOURCE_PROFILE.END_DATE]=new Date('2099')
         userResourceProfile.push(tmp)
+        // ap.inf('folder result',tmp)
     }
     await common_operation_model.insertMany_returnRecord_async({dbModel:e_dbModel.user_resource_profile,docs:userResourceProfile})
 

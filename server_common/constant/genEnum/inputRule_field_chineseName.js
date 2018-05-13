@@ -31,8 +31,8 @@ const ChineseName={
         'name':'资源配置名称',
         'range':'资源配置范围',
         'type':'资源配置类型',
-        'maxFileNum':'最大文件数量',
-        'totalFileSizeInMb':'最大存储空间',
+        'maxNum':'最大文件数量',
+        'maxDiskSpaceInMb':'最大存储空间',
     },
     store_path:{
         'name':'存储路径名称',
@@ -69,6 +69,7 @@ const ChineseName={
         'name':'目录名称',
         'parentFolderId':'上级目录',
         'authorId':'创建人',
+        'level':'目录层级',
     },
     like_dislike:{
         'articleId':'文档',

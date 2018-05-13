@@ -93,7 +93,7 @@ async function updateAddFriend_async({req,expectedPart}){
         dbModel:e_dbModel.add_friend,
         recordId:recordId,
         ownerFieldName:e_field.ADD_FRIEND.RECEIVER,
-        ownerFieldValue:userId,
+        userId:userId,
         additionalCondition:{[e_field.ADD_FRIEND.STATUS]:e_addFriendStatus.UNTREATED}, //添加朋友的记录必须是未被处理
     })
     // ap.inf('tmpResult',tmpResult)

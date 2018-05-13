@@ -49,7 +49,7 @@ router.put('/',function(req,res,next){
     // next()
 })
 //delete folder
-router.delete('/',function(req,res,next){
+router.delete('/:recordId',function(req,res,next){
     folderDispatcher_async(req).then(
         (v)=>{
             ap.inf(`delete folder success, result:  ${JSON.stringify(v)}`)

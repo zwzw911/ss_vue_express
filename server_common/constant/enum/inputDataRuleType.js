@@ -54,8 +54,8 @@ const OtherRuleFiledName={
 //只用于CU
 const ApplyRange={
     CREATE:'create',
-    UPDATE_SCALAR:'update_scalar',//适用recordInfo
-    UPDATE_ARRAY:'update_array',//适用editSubField
+    UPDATE_SCALAR:'update_scalar',//适用recordInfo，无论字段数据类型是否数组，都做整体替换
+    UPDATE_ARRAY:'update_array',//适用editSubField。如果字段数据类型是数组，只能做内部调整（即数组元素级别调整）
     DELETE:'delete',
     UPLOAD:'upload',
 }

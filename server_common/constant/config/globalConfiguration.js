@@ -169,6 +169,9 @@ const maxNumber={
         commentNumberPerArticle:500,
 
     },
+    folder:{
+        folderLevel:3,//目录最大成熟
+    },
     friend:{
         maxFriendsNumberPerGroup:500, //每个朋友分组最多500人
         maxMemberNumberPerPublicGroup:200,//每个群最多200人

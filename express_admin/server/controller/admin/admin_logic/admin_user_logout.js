@@ -1,9 +1,11 @@
 /**
- * Created by 张伟 on 2018/4/23.
+ * Created by wzhan039 on 2017/9/1.
  */
 'use strict'
-const ap=require('awesomeprint')
-const controllerError=require('../user_setting/user_controllerError').controllerError
+
+
+const controllerError=require('../admin_setting/admin_user_controllerError').controllerError
+
 
 
 async function logout_async({req}){

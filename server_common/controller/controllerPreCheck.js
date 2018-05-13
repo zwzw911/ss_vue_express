@@ -14,7 +14,7 @@ const validateSearchFormat=require('../function/validateInput/validateSearchForm
 const validateValue=require('../function/validateInput/validateValue')
 
 const inputRule=require('../constant/inputRule/inputRule').inputRule
-const browserInputRule=require('../constant/inputRule/browserInputRule')
+const browserInputRule=require('../constant/inputRule/browserInputRule').browserInputRule
 const collValue=require('../constant/genEnum/DB_CollValue').Coll
 const fkConfig=require('../model/mongo/fkConfig').fkConfig
 
@@ -22,20 +22,25 @@ const e_part=require('../constant/enum/nodeEnum').ValidatePart
 const e_method=require('../constant/enum/nodeEnum').Method
 const e_applyRange=require('../constant/enum/inputDataRuleType').ApplyRange
 
+const currentEnv=require('../constant/config/appSetting').currentEnv
+const e_env=require('../constant/enum/nodeEnum').Env
 async function commonPreCheck_async({req,collName}){
-    //1. interval检测
-    //1.1 获得prefix
-    let prefix=interval.getIntervalPrefix({req:req})
-    // ap.inf('get prefix',prefix)
-    //1.2 检查prefix对应的interval
-    await interval.checkInterval_async({req:req,reqTypePrefix:prefix})
+    if(currentEnv===e_env.PROD){
+        //1. interval检测
+        //1.1 获得prefix
+        let prefix=interval.getIntervalPrefix({req:req})
+        // ap.inf('get prefix',prefix)
+        //1.2 检查prefix对应的interval
+        await interval.checkInterval_async({req:req,reqTypePrefix:prefix})
 // ap.inf('checkInterval_async done')
-/*    //2 请求是否为robot
-    if(undefined!==checkRobot_async[collName] && undefined!==checkRobot_async[collName][method]){
-        await checkRobot_async[collName][method]({userId:req.session.userInfo.userId})
-        // console.log(`====robot check done====`)
-    }*/
-    return Promise.resolve()
+        /*    //2 请求是否为robot
+            if(undefined!==checkRobot_async[collName] && undefined!==checkRobot_async[collName][method]){
+                await checkRobot_async[collName][method]({userId:req.session.userInfo.userId})
+                // console.log(`====robot check done====`)
+            }*/
+        return Promise.resolve()
+    }
+
 }
 
 
@@ -91,7 +96,7 @@ async function userStateCheck_async({req,userLoginCheck={needCheck:false},penali
 *
 * */
 //validatePartValueFormat+validatePartValue
-function inputPreCheck({req,expectedPart,collName,method,arr_currentSearchRange}){
+function inputPreCheck({req,expectedPart,collName,arr_currentSearchRange,applyRange}){
     let result
     // ap.inf('inputPreCheck in')
     if(expectedPart.length>0){
@@ -104,15 +109,15 @@ function inputPreCheck({req,expectedPart,collName,method,arr_currentSearchRange}
         // ap.inf('collValue done')
         //检查输入参数中part的值（格式预先检查好，某些part的值简单。例如method/currentPage，同时检测了value）
         result = inputCommonCheck({req:req, expectedPart:expectedPart})
-        inputCommonCheck({req,expectedPart})
+        // inputCommonCheck({req,expectedPart})
         if (result.rc > 0) {
             return result
         }
         // ap.inf('inputCommonCheck done')
         //对每个partValue进行整体检查
-        result=validateFormat.validatePartFormat(req.body.values,expectedPart)
-        // console.log(`validatePartFormat result ====>${JSON.stringify(result)}`)
-        if(result.rc>0){return result}
+        // result=validateFormat.validatePartFormat(req.body.values,expectedPart)
+        // // console.log(`validatePartFormat result ====>${JSON.stringify(result)}`)
+        // if(result.rc>0){return result}
         // ap.inf('validatePartFormat done')
         //检查输入参数格式是否正确
         // ap.inf('expectedPart',expectedPart)
@@ -136,7 +141,7 @@ function inputPreCheck({req,expectedPart,collName,method,arr_currentSearchRange}
         //检查输入参数是否正确
         //part是recordInfo
 
-        result = validatePartValue({req: req,expectedPart:expectedPart,collName: collName,method:method,fkConfig: fkConfig})
+        result = validatePartValue({req: req,expectedPart:expectedPart,collName: collName,applyRange:applyRange,fkConfig: fkConfig})
         // ap.inf('validatePartValue result ',result)
 
 
@@ -195,7 +200,7 @@ function validatePartValueFormat({req,expectedPart,collName,fkConfig,arr_current
             case e_part.RECORD_INFO:
                 // ap.inf('recordInfo in')
                 // console.log('=====>recordInfo in')
-                checkPartFormatResult=validateFormat.validateCURecordInfoFormat(req.body.values[e_part.RECORD_INFO],inputRule[collName])
+                checkPartFormatResult=validateFormat.validateCURecordInfoFormat(req.body.values[e_part.RECORD_INFO],browserInputRule[collName])
 // console.log(`RECORD_INFO ====> ${JSON.stringify(checkPartFormatResult)}`)
                 if(checkPartFormatResult.rc>0){
                     /*            returnResult(checkResult[singleField])
@@ -216,7 +221,7 @@ function validatePartValueFormat({req,expectedPart,collName,fkConfig,arr_current
                 break;
             case e_part.SINGLE_FIELD:
                 // console.log('=====>in')
-                checkPartFormatResult=validateFormat.validateSingleFieldFormat(req.body.values[e_part.SINGLE_FIELD],inputRule[collName])
+                checkPartFormatResult=validateFormat.validateSingleFieldFormat(req.body.values[e_part.SINGLE_FIELD],browserInputRule[collName])
 // console.log(`RECORD_INFO ====> ${JSON.stringify(checkPartFormatResult)}`)
                 if(checkPartFormatResult.rc>0){
                     /*            returnResult(checkResult[singleField])
@@ -263,7 +268,7 @@ function validatePartValueFormat({req,expectedPart,collName,fkConfig,arr_current
 * @inputRule:如果需要检查的part中有RECORD_INFO/FILTER_VALUE/SEARCH_PARAMS，需要inputRule，可能只有一个coll，也有可能多个coll（如果有外键，需要把外键对应的Rule加入）
 * @method：和part结合，产生对应的applyRange
 * */
-function validatePartValue({req,expectedPart,collName,method,fkConfig}){
+function validatePartValue({req,expectedPart,collName,applyRange,fkConfig}){
     // ap.inf(`validatePartValue in`)
     // ap.inf('expectedPart',expectedPart)
     // ap.inf(`req.bady.values`,req.body.values)
@@ -304,13 +309,17 @@ function validatePartValue({req,expectedPart,collName,method,fkConfig}){
                 // }
                 break;
             case e_part.RECORD_INFO:
+                if(undefined!==applyRange && undefined!==req.body.values[e_part.RECORD_INFO]){
+                    checkPartValueResult=validateValue.validateScalarInputValue({inputValue:req.body.values[e_part.RECORD_INFO],collRule:browserInputRule[collName],p_applyRange:applyRange})
+                }
+
                 // ap.inf('record info in')
                 // ap.inf('method',method)
                 // console.log(`record info in ===================> `)
                 // console.log(`methos is ${JSON.stringify(recordInfoBaseRule)}`)
-                switch (method){
+                /*switch (method){
                     case e_method.CREATE://create
-                        ap.inf('method is create')
+                        // ap.inf('method is create')
                         checkPartValueResult=validateValue.validateScalarInputValue({inputValue:req.body.values[e_part.RECORD_INFO],collRule:browserInputRule[collName],p_applyRange:e_applyRange.CREATE})
                         break;
                     // case 1://search
@@ -336,7 +345,7 @@ function validatePartValue({req,expectedPart,collName,method,fkConfig}){
                     default:
                         // ap.inf('method',method)
                         return helperError.undefinedBaseRuleType
-                }
+                }*/
                 // ap.inf('record nfo result',checkPartValueResult)
                 // console.log(`record nfo result ===================> ${JSON.stringify(checkPartValueResult)}`)
                 for(let singleField in checkPartValueResult){

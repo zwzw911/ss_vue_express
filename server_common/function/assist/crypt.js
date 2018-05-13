@@ -3,6 +3,7 @@
 'use strict'
 const crypto=require('crypto');
 const fs=require('fs');
+const ap=require('awesomeprint')
 
 const error=require('../../constant/error/assistError').crypt
 
@@ -10,7 +11,7 @@ const error=require('../../constant/error/assistError').crypt
 
 const validHashType=['md5','sha1','sha256','sha512','ripemd160'];
 
-const pemKeyPath=`../../constant/key/key.pem`
+const pemKeyPath=require('../../constant/config/appSetting').absolutePath.server_common+`constant/key/key.pem`
 
 const validCryptType=['blowfish','aes192'];
 //hashType放在string后（因为string是必填，而hashTye是可选）
@@ -71,12 +72,17 @@ const hmac=function(string,hashType){
      }
      //var pemFilePath='../../../other/key/key.pem';
      let pem=fs.readFileSync(pemKeyPath);
+     // ap.inf('pem',pem)
          //if (err) throw err;
      let key=pem.toString('ascii');
+     // ap.inf('key',key)
      let inst=crypto.createCipher(cryptType,key);
-     let result=inst.update(string,'utf8','hex');
+     // ap.inf('string',typeof(string))
+     let result=inst.update(string.toString(),'utf8','hex');
+     // ap.inf('result',result)
      result+=inst.final('hex');
-     return {rc:0,msg:`${result}`}
+     // ap.inf('result',result)
+     return {rc:0,msg:result}
  }
 
  const decrypt=function(string,cryptType){
@@ -86,7 +92,7 @@ const hmac=function(string,hashType){
          return error.unknownCryptType
      }
      //var pemFilePath='../../../other/key/key.pem';
-     const pem=fs.readFileSync(pemKeyPath);
+     let pem=fs.readFileSync(pemKeyPath);
          //if (err) throw err;
         let key=pem.toString('ascii');
         let inst=crypto.createDecipher(cryptType,key);
@@ -106,6 +112,8 @@ function cryptSingleFieldValue({fieldValue,salt,cryptType}){
         cryptType='blowfish'
     }
     let cryptResult
+    // ap.inf('fieldValue',fieldValue)
+    // ap.inf('salt',salt)
     if(undefined!==salt){
         cryptResult=crypt(fieldValue+salt,cryptType)
     }else{

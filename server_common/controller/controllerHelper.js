@@ -298,23 +298,25 @@ async function chooseProperAdminUser_async({arr_priorityType}){
 }
 
 /*  对内部产生的值进行format和value的检测
-*
+* @applyRange：确定是何种操作，一般create(recordInfo): e_applyRange.CREATE, update(recordInfo): e_applyRange.UPDATE_SCALAR
 *  @method：用来产生applyRange,给validateScalarInputValue用
 * */
-function checkInternalValue({internalValue,collInputRule,collInternalRule,method}){
+function checkInternalValue({internalValue,collInternalRule,applyRange}){
 
         let tmpResult
 
-        let newDocValue=dataConvert.addSubFieldKeyValue(internalValue)
-        // console.log(`newDocValue =============> ${JSON.stringify(newDocValue)}`)
-        tmpResult=validateFormat.validateCURecordInfoFormat(newDocValue,collInputRule)
+// ap.inf('interval value ', internalValue)
+//     ap.inf('applyRange', applyRange)
+    //格式检查。只对internalValue check，所以rule
+    // 也是internalRule
+        tmpResult=validateFormat.validateCURecordInfoFormat(internalValue,collInternalRule)
     // console.log(`internal check format=============> ${JSON.stringify(tmpResult)}`)
         if(tmpResult.rc>0){
             return tmpResult
         }
 
-        let applyRange
-        switch (method){
+        // let applyRange
+        /*switch (method){
             case e_method.CREATE:
                 applyRange=e_applyRange.CREATE
                 break;
@@ -326,8 +328,9 @@ function checkInternalValue({internalValue,collInputRule,collInternalRule,method
                 break;
             default:
                 return helperError.undefinedMethod
-        }
-        tmpResult=validateValue.validateScalarInputValue({inputValue:newDocValue,collRule:collInternalRule,p_applyRange:applyRange})
+        }*/
+        //字段值是整体创建/替换
+        tmpResult=validateValue.validateScalarInputValue({inputValue:internalValue,collRule:collInternalRule,p_applyRange:applyRange})
     // console.log(`internal check format=============> ${JSON.stringify(tmpResult)}`)
         for(let singleFieldName in tmpResult){
             if(tmpResult[singleFieldName]['rc']>0){
@@ -1139,12 +1142,13 @@ async function setSessionByServer_async({req}){
 
 /*  产生captcha，并保存到redis
 * */
-async  function genCaptchaAdnSave_async({req,params}){
+async  function genCaptchaAdnSave_async({req,params,db=2}){
     // await controllerChecker.checkInterval_async({req:req,reqTypePrefix:'captcha'})
-
+ap.inf('params',params)
+    ap.inf('db',db)
 // ap.inf('interval done')
     let captchaString=misc.generateRandomString({})
-    // ap.inf('captchaString',captchaString)
+    ap.inf('captchaString',captchaString)
     //获得session或者ip
     let userIdentify=await misc.getIdentify_async({req:req})
     // ap.inf('userIdentify for setCaptcha_async',userIdentify)
@@ -1153,23 +1157,24 @@ async  function genCaptchaAdnSave_async({req,params}){
     let expireTime=globalConfiguration.defaultSetting.miscellaneous.captchaExpire.value
 
     // ap.inf('expireTime',expireTime)
-    await redisOperation.set_async({db:2,key:`${userIdentify[0]}:captcha`,value:captchaString,expireTime:expireTime,expireUnit:'s'})
+    //暂时使用session作为prefix
+    await redisOperation.set_async({db:db,key:`${userIdentify[0]}:captcha`,value:captchaString,expireTime:expireTime,expireUnit:'s'})
 
     // await misc.setCaptcha_async({req:req,captchaString:captchaString})
-    // ap.inf('save captchaString to db done')
+    ap.inf('save captchaString to db done')
     //产生dataURL并返回
     let dataURL=await captcha_async({params:params,captchaString:captchaString})
     return Promise.resolve(dataURL)
 }
 
 /*  从req中提取captcha并和redis中的比较       */
-async function getCaptchaAndCheck_async({req}){
+async function getCaptchaAndCheck_async({req,db=2}){
     let clientCaptcha=req.body.values[e_part.CAPTCHA]
 
     //获得session或者ip
     let userIdentify=await misc.getIdentify_async({req:req})
 
-    let serverCaptcha= await redisOperation.get_async({db:2,key:`${userIdentify[0]}:captcha`})
+    let serverCaptcha= await redisOperation.get_async({db:db,key:`${userIdentify[0]}:captcha`})
     // ap.inf('serverCaptcha',serverCaptcha)
     if(null===serverCaptcha){
         return Promise.reject(helperError.captchaExpire)
@@ -1196,13 +1201,16 @@ function cryptDecryptSingleRecord({record,collName,cryptDecryptType}){
         if(undefined!==collRule[singleFieldName][e_otherRuleFiledName.DATA_TYPE]){
             let fieldRuleDefinition=collRule[singleFieldName][e_otherRuleFiledName.DATA_TYPE]
             let fieldDataType=dataTypeCheck.isArray(fieldRuleDefinition) ? fieldRuleDefinition[0]:fieldRuleDefinition
+            // ap.inf('fieldDataType',fieldDataType)
             if(e_serverDataType.OBJECT_ID===fieldDataType){
+                // ap.inf('fieldDataType is objId')
                 if(undefined!==record[singleFieldName]){
                     if(cryptDecryptType==='crypt'){
-                        record[singleFieldName]=cryptSingleFieldValue({fieldValue:record[singleFieldName]})
+                        // ap.inf('cryptSingleFieldValue({fieldValue:record[singleFieldName]}).msg',cryptSingleFieldValue({fieldValue:record[singleFieldName]}).msg)
+                        record[singleFieldName]=cryptSingleFieldValue({fieldValue:record[singleFieldName]}).msg
                     }
                     if(cryptDecryptType==='decrypt'){
-                        record[singleFieldName]=decryptSingleFieldValue({fieldValue:record[singleFieldName]})
+                        record[singleFieldName]=decryptSingleFieldValue({fieldValue:record[singleFieldName]}).msg
                     }
                 }
             }

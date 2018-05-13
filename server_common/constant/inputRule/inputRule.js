@@ -1,4 +1,4 @@
-/*    gene by D:\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-4-30   */ 
+/*    gene by D:\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-5-3   */ 
  
 "use strict"
 const inputRule={
@@ -162,17 +162,17 @@ const inputRule={
             require:{"define":{"create":true},"error":{"rc":100510,"msg":"资源配置类型不能为空"},"mongoError":{"rc":200510,"msg":"资源配置类型不能为空"}},
             enum:{"define":["1","2"],"error":{"rc":100512,"msg":"资源配置类型的值类型不正确"},"mongoError":{"rc":200512,"msg":"资源配置类型的值类型不正确"}},
         },
-        maxFileNum:{
+        maxNum:{
             chineseName:"最大文件数量",
             dataType:"number",
             applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":100514,"msg":"最大文件数量不能为空"},"mongoError":{"rc":200514,"msg":"最大文件数量不能为空"}},
+            require:{"define":{"create":false},"error":{"rc":100514,"msg":"最大文件数量不能为空"},"mongoError":{"rc":200514,"msg":"最大文件数量不能为空"}},
         },
-        totalFileSizeInMb:{
+        maxDiskSpaceInMb:{
             chineseName:"最大存储空间",
             dataType:"number",
             applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":100516,"msg":"最大存储空间不能为空"},"mongoError":{"rc":200516,"msg":"最大存储空间不能为空"}},
+            require:{"define":{"create":false},"error":{"rc":100516,"msg":"最大存储空间不能为空"},"mongoError":{"rc":200516,"msg":"最大存储空间不能为空"}},
         },
     },
     store_path:{
@@ -389,6 +389,13 @@ const inputRule={
             applyRange:["create"],
             require:{"define":{"create":true},"error":{"rc":101250,"msg":"创建人不能为空"},"mongoError":{"rc":201250,"msg":"创建人不能为空"}},
             format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":101252,"msg":"创建人必须是objectId"},"mongoError":{"rc":201252,"msg":"创建人必须是objectId"}},
+        },
+        level:{
+            chineseName:"目录层级",
+            dataType:"int",
+            applyRange:["create","update_scalar"],
+            require:{"define":{"create":true,"update_scalar":false},"error":{"rc":101250,"msg":"目录层级不能为空"},"mongoError":{"rc":201250,"msg":"目录层级不能为空"}},
+            min:{"define":1,"error":{"rc":101252,"msg":"目录层级最小为1"},"mongoError":{"rc":201252,"msg":"目录层级最小为1"}},
         },
     },
     like_dislike:{

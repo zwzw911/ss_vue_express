@@ -112,49 +112,52 @@ const storePath= {
 const category= {
         other: 'other',
         LTE_A: 'LTE_A',
-    }
+}
+/*
+*   resourceProfile中，各个资源分配分开配置，如此可以获得灵活性（一个用户可以对不同的资源有不同的级别，例如，folder数量可以是高级，但是article attachment是普通）
+* */
 const resource_profile= [
     {
         [e_field.RESOURCE_PROFILE.NAME]:"普通用户单个文档图片资源设定",
         [e_field.RESOURCE_PROFILE.RANGE]:e_resourceProfileRange.IMAGE_PER_ARTICLE,
         [e_field.RESOURCE_PROFILE.TYPE]:e_resourceProfileType.BASIC,
-        [e_field.RESOURCE_PROFILE.MAX_FILE_NUM]:10,
-        [e_field.RESOURCE_PROFILE.TOTAL_FILE_SIZE_IN_MB]:20, //假设每个文件大小为2M
+        [e_field.RESOURCE_PROFILE.MAX_NUM]:10,
+        [e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]:20, //假设每个文件大小为2M
     },
     {
         [e_field.RESOURCE_PROFILE.NAME]:"普通用户单个文档附件资源设定",
         [e_field.RESOURCE_PROFILE.RANGE]:e_resourceProfileRange.ATTACHMENT_PER_ARTICLE,
         [e_field.RESOURCE_PROFILE.TYPE]:e_resourceProfileType.BASIC,
-        [e_field.RESOURCE_PROFILE.MAX_FILE_NUM]:5,
-        [e_field.RESOURCE_PROFILE.TOTAL_FILE_SIZE_IN_MB]:100, //假设每个文件大小为20M
+        [e_field.RESOURCE_PROFILE.MAX_NUM]:5,
+        [e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]:100, //假设每个文件大小为20M
     },
     {
         [e_field.RESOURCE_PROFILE.NAME]:"普通用户所有文档资源设定",
         [e_field.RESOURCE_PROFILE.RANGE]:e_resourceProfileRange.WHOLE_RESOURCE_PER_PERSON_FOR_ALL_ARTICLE,
         [e_field.RESOURCE_PROFILE.TYPE]:e_resourceProfileType.BASIC,
-        [e_field.RESOURCE_PROFILE.MAX_FILE_NUM]:1000,
-        [e_field.RESOURCE_PROFILE.TOTAL_FILE_SIZE_IN_MB]:1000,
+        [e_field.RESOURCE_PROFILE.MAX_NUM]:1000,
+        [e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]:1000,
     },
     {
         [e_field.RESOURCE_PROFILE.NAME]:"升级用户单个文档图片设定",
         [e_field.RESOURCE_PROFILE.RANGE]:e_resourceProfileRange.IMAGE_PER_ARTICLE,
         [e_field.RESOURCE_PROFILE.TYPE]:e_resourceProfileType.ADVANCED,
-        [e_field.RESOURCE_PROFILE.MAX_FILE_NUM]:20,
-        [e_field.RESOURCE_PROFILE.TOTAL_FILE_SIZE_IN_MB]:40, //假设每个文件大小为200M
+        [e_field.RESOURCE_PROFILE.MAX_NUM]:20,
+        [e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]:40, //假设每个文件大小为200M
     },
     {
         [e_field.RESOURCE_PROFILE.NAME]:"升级用户单个文档附件设定",
         [e_field.RESOURCE_PROFILE.RANGE]:e_resourceProfileRange.ATTACHMENT_PER_ARTICLE,
         [e_field.RESOURCE_PROFILE.TYPE]:e_resourceProfileType.ADVANCED,
-        [e_field.RESOURCE_PROFILE.MAX_FILE_NUM]:10,
-        [e_field.RESOURCE_PROFILE.TOTAL_FILE_SIZE_IN_MB]:200, //假设每个文件大小为20M
+        [e_field.RESOURCE_PROFILE.MAX_NUM]:10,
+        [e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]:200, //假设每个文件大小为20M
     },
     {
         [e_field.RESOURCE_PROFILE.NAME]:"升级用户总体资源设定",
         [e_field.RESOURCE_PROFILE.RANGE]:e_resourceProfileRange.WHOLE_RESOURCE_PER_PERSON_FOR_ALL_ARTICLE,
         [e_field.RESOURCE_PROFILE.TYPE]:e_resourceProfileType.ADVANCED,
-        [e_field.RESOURCE_PROFILE.MAX_FILE_NUM]:2000,
-        [e_field.RESOURCE_PROFILE.TOTAL_FILE_SIZE_IN_MB]:2000, //假设每个文件大小为20M
+        [e_field.RESOURCE_PROFILE.MAX_NUM]:2000,
+        [e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]:2000, //假设每个文件大小为20M
     },
 
 
@@ -162,15 +165,30 @@ const resource_profile= [
         [e_field.RESOURCE_PROFILE.NAME]:"单个举报资源设定",
         [e_field.RESOURCE_PROFILE.RANGE]:e_resourceProfileRange.IMAGE_PER_IMPEACH_OR_COMMENT,
         [e_field.RESOURCE_PROFILE.TYPE]:e_resourceProfileType.BASIC,
-        [e_field.RESOURCE_PROFILE.MAX_FILE_NUM]:10,
-        [e_field.RESOURCE_PROFILE.TOTAL_FILE_SIZE_IN_MB]:20, //假设每个文件大小为2M
+        [e_field.RESOURCE_PROFILE.MAX_NUM]:10,
+        [e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]:20, //假设每个文件大小为2M
     },
     {
         [e_field.RESOURCE_PROFILE.NAME]:"用户举报总体资源设定", //假设一次举报中，用户总共进行了10次（发起，回复）的操作，每个操作10文件，20M
         [e_field.RESOURCE_PROFILE.RANGE]:e_resourceProfileRange.IMAGE_PER_PERSON_FOR_WHOLE_IMPEACH,
         [e_field.RESOURCE_PROFILE.TYPE]:e_resourceProfileType.BASIC,
-        [e_field.RESOURCE_PROFILE.MAX_FILE_NUM]:100,
-        [e_field.RESOURCE_PROFILE.TOTAL_FILE_SIZE_IN_MB]:200, //假设每个文件大小为2M
+        [e_field.RESOURCE_PROFILE.MAX_NUM]:100,
+        [e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]:200, //假设每个文件大小为2M
+    },
+
+    {
+        [e_field.RESOURCE_PROFILE.NAME]:"普通用户最大目录数",
+        [e_field.RESOURCE_PROFILE.RANGE]:e_resourceProfileRange.FOLDER_NUM,
+        [e_field.RESOURCE_PROFILE.TYPE]:e_resourceProfileType.BASIC,
+        [e_field.RESOURCE_PROFILE.MAX_NUM]:100,
+        //[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]:20, //假设每个文件大小为2M
+    },
+    {
+        [e_field.RESOURCE_PROFILE.NAME]:"高级用户最大目录数",
+        [e_field.RESOURCE_PROFILE.RANGE]:e_resourceProfileRange.FOLDER_NUM,
+        [e_field.RESOURCE_PROFILE.TYPE]:e_resourceProfileType.ADVANCED,
+        [e_field.RESOURCE_PROFILE.MAX_NUM]:500,
+        //[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]:20, //假设每个文件大小为2M
     },
 ]
 

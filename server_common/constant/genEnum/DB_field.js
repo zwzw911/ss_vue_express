@@ -40,8 +40,8 @@ const Field={
         NAME:'name',
         RANGE:'range',
         TYPE:'type',
-        MAX_FILE_NUM:'maxFileNum',
-        TOTAL_FILE_SIZE_IN_MB:'totalFileSizeInMb',
+        MAX_NUM:'maxNum',
+        MAX_DISK_SPACE_IN_MB:'maxDiskSpaceInMb',
     },
     STORE_PATH:{
         ID:'id',
@@ -101,6 +101,7 @@ const Field={
         NAME:'name',
         AUTHOR_ID:'authorId',
         PARENT_FOLDER_ID:'parentFolderId',
+        LEVEL:'level',
     },
     LIKE_DISLIKE:{
         ID:'id',

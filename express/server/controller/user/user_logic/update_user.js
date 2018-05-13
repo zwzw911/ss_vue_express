@@ -2,9 +2,11 @@
  * Created by ada on 2017/9/1.
  */
 'use strict'
-
+/******************    内置lib和第三方lib  **************/
+const ap=require(`awesomeprint`)
+/**************  controller相关常量  ****************/
 const controllerError=require('../user_setting/user_controllerError').controllerError
-
+/***************  数据库相关常量   ****************/
 const e_uniqueField=require('../../../constant/genEnum/DB_uniqueField').UniqueField
 const e_chineseName=require('../../../constant/genEnum/inputRule_field_chineseName').ChineseName
 const e_coll=require('../../../constant/genEnum/DB_Coll').Coll
@@ -14,22 +16,29 @@ const e_dbModel=require('../../../constant/genEnum/dbModel')
 
 
 const server_common_file_require=require('../../../../server_common_file_require')
+/**************  公共常量   ******************/
 const nodeEnum=server_common_file_require.nodeEnum
+const e_part=nodeEnum.ValidatePart
+const e_env=nodeEnum.Env
+
+const mongoEnum=server_common_file_require.mongoEnum
+const e_docStatus=mongoEnum.DocStatus.DB
+
+const nodeRuntimeEnum=server_common_file_require.nodeRuntimeEnum
+const e_hashType=nodeRuntimeEnum.HashType
+const e_inputValueLogicCheckStep=nodeRuntimeEnum.InputValueLogicCheckStep
+/**************  公共函数   ******************/
+const inputValueLogicValidCheck_async=server_common_file_require.controllerInputValueLogicCheck.inputValueLogicValidCheck_async
 const dataConvert=server_common_file_require.dataConvert
 const controllerHelper=server_common_file_require.controllerHelper
 const controllerChecker=server_common_file_require.controllerChecker
 const common_operation_model=server_common_file_require.common_operation_model
 const misc=server_common_file_require.misc
-const miscConfiguration=server_common_file_require.globalConfiguration.misc
+const hash=server_common_file_require.crypt.hash
+/*************** 配置信息 *********************/
 const maxNumber=server_common_file_require.globalConfiguration.maxNumber
 const fkConfig=server_common_file_require.fkConfig
-const hash=server_common_file_require.crypt.hash
-
-const e_docStatus=server_common_file_require.mongoEnum.DocStatus.DB
-const e_hashType=server_common_file_require.nodeRuntimeEnum.HashType
-const e_part=server_common_file_require.nodeEnum.ValidatePart
-const e_env=nodeEnum.Env
-
+const miscConfiguration=server_common_file_require.globalConfiguration.misc
 const currentEnv=server_common_file_require.appSetting.currentEnv
 // const e_accountType=server_common_file_require.mongoEnum.AccountType.DB
 
@@ -38,79 +47,70 @@ const currentEnv=server_common_file_require.appSetting.currentEnv
  * 1. 需要对比req中的userId和session中的id是否一致
  * */
 async function updateUser_async({req}){
-    // console.log(`updateUser_async in`)
-    // console.log(`req.session ${JSON.stringify(req.session)}`)
-    /*                  要更改的记录的owner是否为发出req的用户本身                            */
+    /********************************************************/
+    /*************      define variant        ***************/
+    /********************************************************/
     let tmpResult,collName=e_coll.USER
-// console.log()
     let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
-    let userId=userInfo.userId
-
-    /*              client数据转换                  */
+    let {userId,userCollName,userType,userPriority}=userInfo
     let docValue=req.body.values[e_part.RECORD_INFO]
-    // console.log(`befreo dataConvert`)
-    //dataConvert.convertCreateUpdateValueToServerFormat(docValue)
-    // console.log(`fkConfig[e_coll.USER] ${JSON.stringify(fkConfig[e_coll.USER])}`)
-    dataConvert.constructUpdateCriteria(docValue,fkConfig[e_coll.USER])
+    /********************************************************/
+    /***  剔除需要通过单独函数来update的字段（password） ***/
+    /********************************************************/
+    delete docValue[e_field.USER.PASSWORD]
+    delete docValue[e_field.USER.PHOTO_DATA_URL]
+    /**********************************************/
+    /********  删除null/undefined的字段  *********/
+    /*********************************************/
+    dataConvert.constructUpdateCriteria(docValue)
 
     // let tmpResult=await common_operation_model.findById({dbModel:dbModel[e_coll.USER],id:objectId})
     // let userId=tmpResult.msg[e_field.USER.]
 
-    /*              剔除需要通过单独函数来update的字段（password）            */
-    delete docValue[e_field.USER.PASSWORD]
 
 
-    /*              剔除value没有变化的field            */
-// console.log(`befreo check ${JSON.stringify(docValue)}`)
+
+    /**********************************************/
+    /********  删除值不变的字段（可选）  *********/
+    /*********************************************/
     //查找对应的记录（docStatus必须是done且未被删除）
-    let condition={_id:userId,docStatus:e_docStatus.DONE,dDate:{$exists:false}}
-    tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.user,condition:condition})
-    // console.log(`tmpResult====》 ${JSON.stringify(tmpResult)}`)
-    // console.log(`condition====》 ${JSON.stringify(condition)}`)
-    // console.log(`null===tmpResult.msg====》 ${JSON.stringify(null===tmpResult.msg)}`)
-    if(0===tmpResult.length){return Promise.reject(controllerError.userNotExist)}
-    let originUserInfo=tmpResult[0]
-    //如果传入了password，hash后覆盖原始值
-    /*if(e_field.USER.PASSWORD in docValue){
-        let sugarTmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.sugar,condition:{ userId:originUserInfo.id}})
-        if(null===sugarTmpResult){
-            return Promise.reject(controllerError.userNoMatchSugar)
-        }
-        // console.log(`sugarTmpResult=====> ${JSON.stringify(sugarTmpResult)}`)
-        let sugar=sugarTmpResult[0]['sugar']
-//console.log(`sugar=====> ${JSON.stringify(sugar)}`)
-//         console.log(`password value =====> ${JSON.stringify(docValue[e_field.USER.PASSWORD])}`)
-//         console.log(`mix value =====> ${docValue[e_field.USER.PASSWORD]}${sugar}`)
-        let hashPasswordTmpResult=hash(`${docValue[e_field.USER.PASSWORD]}${sugar}`,e_hashType.SHA256)
-        if(hashPasswordTmpResult.rc>0){
-            return Promise.reject(hashPasswordTmpResult)
-        }
-        // console.log(`hash password is ====>${hashPassword}`)
-        docValue[e_field.USER.PASSWORD]=hashPasswordTmpResult.msg
-        // console.log(` after hash password====> ${JSON.stringify(docValue)}`)
-
-    }*/
-    // console.log(`updateUser after compare with origin value ${JSON.stringify(docValue)}`)
-    // console.log(`originUserInfo value ${JSON.stringify(originUserInfo)}`)
+    // let condition={_id:userId,docStatus:e_docStatus.DONE,dDate:{$exists:false}}
+    tmpResult=await common_operation_model.findById_returnRecord_async({dbModel:e_dbModel.user,id:userId})
+    if(null===tmpResult){return Promise.reject(controllerError.userNotExist)}
+    let originUserInfo=tmpResult
     for(let singleFieldName in docValue){
         if(docValue[singleFieldName]===originUserInfo[singleFieldName]){
             delete docValue[singleFieldName]
         }
     }
-
-    // console.log(`updateUser after compare with origin value ${JSON.stringify(docValue)}`)
-
-
     if(0===Object.keys(docValue).length){
         return {rc:0}
     }
-    // console.log(`after check =========>${JSON.stringify(docValue)}`)
-    // console.log(`collName =========>${JSON.stringify(collName)}`)
-    /*              如果有unique字段，需要预先检查unique            */
-    if(undefined!==e_uniqueField[collName] && e_uniqueField[collName].length>0) {
-	    let additionalCheckCondition={[e_field.USER.DOC_STATUS]:e_docStatus.DONE}
-        await controllerChecker.ifFieldInDocValueUnique_async({collName: collName, docValue: docValue,additionalCheckCondition:additionalCheckCondition})
+
+    let commonParam={docValue:docValue,userId:undefined,collName:collName}
+    let stepParam={
+        [e_inputValueLogicCheckStep.FK_EXIST_AND_PRIORITY]:{flag:true,optionalParam:undefined},
+        [e_inputValueLogicCheckStep.ENUM_DUPLICATE]:{flag:true,optionalParam:undefined},
+        //object：coll中，对单个字段进行unique检测，需要的额外查询条件
+        //在注册完毕，且不是自己的用户中查找，是否有重复的字段值
+        [e_inputValueLogicCheckStep.SINGLE_FIELD_VALUE_UNIQUE]:{flag:true,optionalParam:{singleValueUniqueCheckAdditionalCondition:{[e_field.USER.DOC_STATUS]:e_docStatus.DONE,[e_field.USER.ID]:{'$not':userId}}}},
+        //数组，元素是字段名。默认对所有dataType===string的字段进行XSS检测，但是可以通过此变量，只选择部分字段
+        [e_inputValueLogicCheckStep.XSS]:{flag:true,optionalParam:{expectedXSSFields:undefined}},
+        //object，对compoundField进行unique检测需要的额外条件，key从model->mongo->compound_unique_field_config.js中获得
+        [e_inputValueLogicCheckStep.COMPOUND_VALUE_UNIQUE]:{flag:true,optionalParam:{compoundFiledValueUniqueCheckAdditionalCheckCondition:undefined}},
+        //Object，配置resourceCheck的一些参数,{requiredResource,resourceProfileRange,userId,containerId}
+        [e_inputValueLogicCheckStep.DISK_USAGE]:{flag:false,optionalParam:{resourceUsageOption:undefined}},
     }
+    /*******************************************************************************************/
+    /******************     CALL FUNCTION:inputValueLogicValidCheck        *********************/
+    /*******************************************************************************************/
+    await inputValueLogicValidCheck_async({commonParam:commonParam,stepParam:stepParam})
+    /*              如果有unique字段，需要预先检查unique            */
+/*    if(undefined!==e_uniqueField[collName] && e_uniqueField[collName].length>0) {
+
+	    let additionalCheckCondition={[e_field.USER.DOC_STATUS]:e_docStatus.DONE,[e_field.USER.ID]:{'$not':userId}}
+        await controllerChecker.ifFieldInDocValueUnique_async({collName: collName, docValue: docValue,additionalCheckCondition:additionalCheckCondition})
+    }*/
     /*if(undefined!==e_uniqueField[e_coll.USER]) {
      for (let singleFieldName in docValue) {
      if (-1 !== e_uniqueField[e_coll.USER].indexOf(singleFieldName)) {

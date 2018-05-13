@@ -46,21 +46,21 @@ const resource_profile= {
         [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true}, error: {rc: baseJSErrorCode+10, msg: '资源配置类型不能为空'}, mongoError: {rc: baseMongoErrorCode+10, msg: '资源配置类型不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         [ruleFiledName.ENUM]:{define:enumValue.ResourceProfileType,error:{rc:baseJSErrorCode+12,msg:'资源配置类型的值类型不正确'},mongoError:{rc:baseMongoErrorCode+12,msg:'资源配置类型的值类型不正确'}},//server端使用
     },
-    maxFileNum: {
+    maxNum: {
         [otherRuleFiledName.CHINESE_NAME]: '最大文件数量',
         [otherRuleFiledName.DATA_TYPE]: serverDataType.NUMBER,
         [otherRuleFiledName.APPLY_RANGE]:[applyRange.CREATE,], //只能create，不能update
-        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true}, error: {rc: baseJSErrorCode+14, msg: '最大文件数量不能为空'}, mongoError: {rc: baseMongoErrorCode+14, msg: '最大文件数量不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:false}, error: {rc: baseJSErrorCode+14, msg: '最大文件数量不能为空'}, mongoError: {rc: baseMongoErrorCode+14, msg: '最大文件数量不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         // 'max': {define: 1000*1000, error: {rc: 10071}, mongoError: {rc: 20071, msg: '容量最多1000M'}},
         // 'minLength': {define: 1, error: {rc: 10002}, mongoError: {rc: 30002, msg: '分类名至少1个字符'}},
         // [ruleFiledName.MAX_LENGTH]: {define: 50, error: {rc: 10004}, mongoError: {rc: 30004, msg: '分类名的长度不能超过50个字符'}},
         // 'format': {define: regex.folderName, error: {rc: 10005}, mongoError: {rc: 30005, msg: '目录名必须由12-255个字符组成'}} //server端使用
     },
-    totalFileSizeInMb: {
+    maxDiskSpaceInMb: {
         [otherRuleFiledName.CHINESE_NAME]: '最大存储空间',
         [otherRuleFiledName.DATA_TYPE]: serverDataType.NUMBER,
         [otherRuleFiledName.APPLY_RANGE]:[applyRange.CREATE,], //只能create，不能update
-        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true}, error: {rc: baseJSErrorCode+16, msg: '最大存储空间不能为空'}, mongoError: {rc: baseMongoErrorCode+16, msg: '最大存储空间不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:false}, error: {rc: baseJSErrorCode+16, msg: '最大存储空间不能为空'}, mongoError: {rc: baseMongoErrorCode+16, msg: '最大存储空间不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         // 'min': {define: 1, error: {rc: 10314}, mongoError: {rc: 20314, msg: '处罚时间最少1天'}},
         // 'max': {define: 1000*1000, error: {rc: 10071}, mongoError: {rc: 20071, msg: '容量最多1000M'}},
         // 'minLength': {define: 1, error: {rc: 10002}, mongoError: {rc: 30002, msg: '分类名至少1个字符'}},

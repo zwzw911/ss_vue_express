@@ -6,136 +6,137 @@
  */
 'use strict'
 
+const ap=require('awesomeprint')
 
-
-
-// const fs=require('fs')
-//const maxSearchKeyNum=require('../../constant/config/globalConfiguration').searchSetting.maxKeyNum
-//const maxSearchPageNum=require('../../constant/config/globalConfiguration').searchMaxPage.readName
-
-// const e_dbModel=require('../../constant/genEnum/dbModel')
-
-
-const server_common_file_include=require('../../../server_common_file_require')
-
-const nodeEnum=server_common_file_include.nodeEnum
-const controllerHelper=server_common_file_include.controllerHelper
-
+/**********  dispatch相关常量  ***********/
 const controllerError=require('./admin_setting/admin_user_controllerError').controllerError
+const controllerSetting=require('./admin_setting/admin_setting').setting
 
+const server_common_file_require=require('../../../server_common_file_require')
+
+/*************   公共函数 ************/
+const controllerHelper=server_common_file_require.controllerHelper
+const controllerPreCheck=server_common_file_require.controllerPreCheck
+
+/************   公共常量 ***************/
+const nodeEnum=server_common_file_require.nodeEnum
 // const e_userState=require('../../constant/enum/node').UserState
 const e_part=nodeEnum.ValidatePart
-const e_method=nodeEnum.Method//require('../../constant/enum/node').Method
+// const e_method=nodeEnum.Method//require('../../constant/enum/node').Method
+const e_applyRange=server_common_file_require.inputDataRuleType.ApplyRange
 
 const e_coll=require('../../constant/genEnum/DB_Coll').Coll
-
+/*************   其他常量   ************/
+const e_searchRange=server_common_file_require.inputDataRuleType.SearchRange
+const dispatchError=server_common_file_require.helperError.dispatch
 
 const createUser_async=require('./admin_logic/create_admin_user').createUser_async
 const updateUser_async=require('./admin_logic/update_admin_user').updateUser_async
 const deleteUser_async=require('./admin_logic/delete_admin_user').deleteUser_async
 const userLogin_async=require('./admin_logic/admin_user_login').login_async
+const userLogout_async=require('./admin_logic/admin_user_logout').logout_async
+const userUniqueCheck_async=require('./admin_logic/admin_misc_func').uniqueCheck_async
+const generateCaptcha_async=require('./admin_logic/admin_misc_func').generateCaptcha_async
 //对CRUD（输入参数带有method）操作调用对应的函数
 async function dispatcher_async(req){
-    //检查格式
-    // console.log(`req is ${JSON.stringify(req.body)}`)
-    // console.log(`dispatcher in`)
-    //  console.log(`req.body.values===========> ${JSON.stringify(req.body.values)}`)
-    // if(req.body.values[e_part.RECORD_INFO]['userPriority']){
-    //     console.log(`req.body.values[e_part.RECORD_INFO]['userPriority']===========> ${JSON.stringify(req.body.values[e_part.RECORD_INFO]['userPriority'])}`)
-    //     console.log(`req.body.values[userPriority] type===========> ${JSON.stringify(typeof req.body.values[e_part.RECORD_INFO]['userPriority'])}`)
-    // }
-
-    let collName=e_coll.ADMIN_USER,tmpResult
+    let userLoginCheck={
+        //needCheck:false,
+        // error:controllerError.userNotLoginCantCreateComment
+    }
+    let penalizeCheck={
+        /*                penalizeType:e_penalizeType.NO_ARTICLE,
+                        penalizeSubType:e_penalizeSubType.CREATE,
+                        penalizeCheckError:controllerError.userInPenalizeNoCommentCreate*/
+    }
+    let arr_currentSearchRange=[e_searchRange.ALL]
+    let originalUrl=req.originalUrl
+    // ap.inf('originalUrl',originalUrl)
+    let collName=controllerSetting.MAIN_HANDLED_COLL_NAME
+    let expectedPart
+    let result=dispatchError.common.unknownRequestRul
 
     //dispatcher只检测req的结构，以及req中method的格式和值，以便后续可以直接根据method进行调用
-    tmpResult=controllerHelper.checkMethod({req:req})
-    if(tmpResult.rc>0){
-        return Promise.reject(tmpResult)
-    }
+    //interval和robot检测
+    await controllerPreCheck.commonPreCheck_async({req:req,collName:collName})
 
+    switch (req.route.stack[0].method){
+        case 'put':
+            if(originalUrl==='/admin_user/' || originalUrl==='/admin_user/') {
+                userLoginCheck={
+                    needCheck:true,
+                    error:controllerError.dispatch.notLoginCantUpdateUser
+                }
+                await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
+                expectedPart=[e_part.RECORD_INFO,e_part.RECORD_ID] //有权限的用户可以更改其他admin账号的信息
+                result=controllerPreCheck.inputPreCheck({req:req,expectedPart:expectedPart,collName:collName,applyRange:e_applyRange.UPDATE_SCALAR,arr_currentSearchRange:arr_currentSearchRange})
+                if(result.rc>0){return Promise.reject(result)}
+                result = await updateUser_async({req: req})
+                return Promise.resolve(result)
+            }
+            break
+        case 'post':
+            if(originalUrl==='/admin_user/' || originalUrl==='/admin_user/') {
+                userLoginCheck={
+                    needCheck:true,
+                    error:controllerError.dispatch.notLoginCantCreateUser
+                }
+                await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
+                expectedPart=[e_part.RECORD_INFO,e_part.CAPTCHA]
+                result=controllerPreCheck.inputPreCheck({req:req,expectedPart:expectedPart,collName:collName,applyRange:e_applyRange.CREATE,arr_currentSearchRange:arr_currentSearchRange})
+                if(result.rc>0){return Promise.reject(result)}
+                result = await createUser_async({req: req})
+                return Promise.resolve(result)
+            }
 
-    //因为method已经检测过，所有要从req.body.values中删除，防止重复检查
-    let method=req.body.values[e_part.METHOD]
-    delete req.body.values[e_part.METHOD]
+            if(originalUrl==='/admin_user/login' || originalUrl==='/admin_user/login/') {
+                // ap.inf('req.body.values',req.body.values)
+                await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
+                expectedPart=[e_part.RECORD_INFO,e_part.CAPTCHA]
+                result=controllerPreCheck.inputPreCheck({req:req,expectedPart:expectedPart,collName:collName,applyRange:undefined,arr_currentSearchRange:arr_currentSearchRange})
+                if(result.rc>0){return Promise.reject(result)}
+                result = await userLogin_async({req: req})
+                return Promise.resolve(result)
+            }
 
-    let userLoginCheck,penalizeCheck,expectedPart
-    switch (method){
-        case e_method.CREATE: //create
-            // console.log(`create in`)
-            userLoginCheck={
-                needCheck:true,
-                error:controllerError.notLoginCantCreateUser
+            if(originalUrl==='/admin_user/uniqueCheck' || originalUrl==='/admin_user/uniqueCheck/') {
+                await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
+                expectedPart=[e_part.SINGLE_FIELD]
+                result=controllerPreCheck.inputPreCheck({req:req,expectedPart:expectedPart,collName:collName,applyRange:undefined,arr_currentSearchRange:arr_currentSearchRange})
+                if(result.rc>0){return Promise.reject(result)}
+                result = await userUniqueCheck_async({req: req})
+                return Promise.resolve(result)
             }
-            penalizeCheck={
-/*                penalizeType:e_penalizeType.NO_ARTICLE,
-                penalizeSubType:e_penalizeSubType.CREATE,
-                penalizeCheckError:controllerError.userInPenalizeNoCommentCreate*/
+            break
+        case 'get':
+
+            if(originalUrl==='/admin_user/captcha' || originalUrl==='/admin_user/captcha/') {
+
+                //captcha一般在注册或者登录时候使用，此时用户尚未登录
+                await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
+                // ap.inf('userStateCheck_async done')
+                result = await generateCaptcha_async({req: req})
+                return Promise.resolve(result)
             }
-            expectedPart=[e_part.RECORD_INFO]
-            // console.log(`before precheck done=====.`)
-            await controllerHelper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
-	    //await helper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart,e_field:e_field,e_coll:e_coll,e_internal_field:e_internal_field,maxSearchKeyNum:maxSearchKeyNum,maxSearchPageNum:maxSearchPageNum})
-// console.log(`precheck done=====.`)
-            tmpResult=await createUser_async(req)
-            // console.log(`create  tmpResult ${JSON.stringify(tmpResult)}`)
             break;
-        case e_method.SEARCH:// search
-            break;
-        case e_method.UPDATE: //update
-            userLoginCheck={
-                needCheck:true,
-                error:controllerError.notLoginCantUpdateUser
+        case 'delete':
+            if(originalUrl==='/admin_user/' || originalUrl==='/admin_user/') {
+                userLoginCheck={
+                    needCheck:true,
+                    error:controllerError.dispatch.notLoginCantDeleteUser
+                }
+                await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
+                expectedPart=[e_part.RECORD_ID]
+                result=controllerPreCheck.inputPreCheck({req:req,expectedPart:expectedPart,collName:collName,applyRange:e_applyRange.DELETE,arr_currentSearchRange:arr_currentSearchRange})
+                if(result.rc>0){return Promise.reject(result)}
+                result = await deleteUser_async({req: req})
+                return Promise.resolve(result)
             }
-            penalizeCheck={
-                /*                penalizeType:e_penalizeType.NO_ARTICLE,
-                                penalizeSubType:e_penalizeSubType.CREATE,
-                                penalizeCheckError:controllerError.userInPenalizeNoCommentCreate*/
+
+            if(originalUrl==='/admin_user/logout' || originalUrl==='/admin_user/logout/') {
+                result=await userLogout_async({req:req})
+                return Promise.resolve(result)
             }
-            expectedPart=[e_part.RECORD_INFO,e_part.RECORD_ID]
-            // console.log(`before precheck done=====.`)
-            await controllerHelper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
-            // console.log(`after precheck done=====.`)
-            //await helper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart,e_field:e_field,e_coll:e_coll,e_internal_field:e_internal_field,maxSearchKeyNum:maxSearchKeyNum,maxSearchPageNum:maxSearchPageNum})
-         //    console.log(`req.session indisp ${JSON.stringify(req.session)}`)
-            tmpResult=await updateUser_async(req)
-            break;
-        case e_method.DELETE: //delete
-            userLoginCheck={
-                needCheck:true,
-                error:controllerError.notLoginCantDeleteUser
-            }
-            penalizeCheck={
-                /*                penalizeType:e_penalizeType.NO_ARTICLE,
-                 penalizeSubType:e_penalizeSubType.CREATE,
-                 penalizeCheckError:controllerError.userInPenalizeNoCommentCreate*/
-            }
-            expectedPart=[e_part.RECORD_ID]
-            // console.log(`before precheck done=====.`)
-            await controllerHelper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
-            //await helper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart,e_field:e_field,e_coll:e_coll,e_internal_field:e_internal_field,maxSearchKeyNum:maxSearchKeyNum,maxSearchPageNum:maxSearchPageNum})
-            // console.log(`after precheck done=====.`)
-            tmpResult=await deleteUser_async(req)
-            break;
-        case e_method.MATCH: //match(login_async)
-            userLoginCheck={
-                needCheck:false,
-                // error:controllerError.userNotLoginCantCreateComment
-            }
-            penalizeCheck={
-                /*                penalizeType:e_penalizeType.NO_ARTICLE,
-                                penalizeSubType:e_penalizeSubType.CREATE,
-                                penalizeCheckError:controllerError.userInPenalizeNoCommentCreate*/
-            }
-            expectedPart=[e_part.RECORD_INFO]
-            // console.log(`before precheck done=====.`)
-            await controllerHelper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
-	    //await helper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart,e_field:e_field,e_coll:e_coll,e_internal_field:e_internal_field,maxSearchKeyNum:maxSearchKeyNum,maxSearchPageNum:maxSearchPageNum})
-         //    console.log(`after precheck done=====.`)
-            tmpResult=await userLogin_async(req)
-            break;
-        default:
-            console.log(`======>ERR:Wont in cause method check before`)
-            // console.log(`match tmpResult ${JSON.stringify(tmpResult)}`)
+            break
     }
     
     return Promise.resolve({rc:0})

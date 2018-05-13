@@ -6,24 +6,34 @@
 
 const controllerError={
     /*              dispatch                        */
-    notLoginCantCreatePenalize:{rc:51200,msg:`尚未登录，无法处罚用户`},
-    notLoginCantDeletePenalize:{rc:51201,msg:`尚未登录，无法撤销处罚`},
-    methodNotSupport:{rc:51202,msg:`未知操作`},
+    dispatch:{
+        notLoginCantCreatePenalize:{rc:51200,msg:`尚未登录，无法处罚用户`},
+        notLoginCantDeletePenalize:{rc:51201,msg:`尚未登录，无法撤销处罚`},
+        methodNotSupport:{rc:51202,msg:`未知操作`},
+    },
+
+
     // methodMatchNotSupport:{rc:51203,msg:`不能登录`},
-    methodUnknown:{rc:51204,msg:`未定义操作`},
+    // methodUnknown:{rc:51204,msg:`未定义操作`},
     /*              create                          */
-    onlyAdminUserCanCreatePenalize:{rc:51210,msg:`管理员才能处罚用户`},
-    currentUserHasNotPriorityToCreatePenalize:{rc:51214,msg:`您无权处罚用户`},
-    currentUserHasValidPenalizeRecord:{rc:51216,msg:`当前用户已有处罚记录，无需继续添加处罚记录`},
+    create:{
+        // onlyAdminUserCanCreatePenalize:{rc:51210,msg:`管理员才能处罚用户`},
+        currentUserHasNotPriorityToCreatePenalize:{rc:51214,msg:`您无权处罚用户`},
+        currentUserHasValidPenalizeRecord:{rc:51216,msg:`当前用户已有处罚记录，无需继续添加处罚记录`},
+    },
+
 
     // nameAlreadyExists:{rc:50100,msg:`用户名已经存在`}, //key名字必须固定为 field+AlreadyExists
     // accountAlreadyExists:{rc:50102,msg:`账号已经存在`},
     // fieldNotSupport:{rc:50104,msg:`字段名称不正确`},
     /*              delete_async               */
-    onlyAdminUserCanRevokePenalize:{rc:51220,msg:`管理员才能撤销处罚`},
-    currentUserHasNotPriorityToRevokePenalize:{rc:51222,msg:`您无权撤销处罚`},
-    deleteRecordInfoFieldNumIncorrect:{rc:51223,msg:`输入的数据格式不正确`},
-    missMandatoryFieldRevokeReason:{rc:51224,msg:`必须填写撤销原因`},
+    'delete':{
+        onlyAdminUserCanRevokePenalize:{rc:51220,msg:`管理员才能撤销处罚`},
+        currentUserHasNotPriorityToRevokePenalize:{rc:51222,msg:`您无权撤销处罚`},
+        deleteRecordInfoFieldNumIncorrect:{rc:51223,msg:`输入的数据格式不正确`},
+        missMandatoryFieldRevokeReason:{rc:51224,msg:`必须填写撤销原因`},
+    },
+
     // accountNotExist:{rc:51108,msg:`用户或者密码不正确`},//不能泄露具体信息
     // accountPasswordNotMatch:{rc:50110,msg:`用户或者密码不正确`},
     //

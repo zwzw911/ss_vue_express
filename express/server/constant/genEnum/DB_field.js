@@ -25,8 +25,8 @@ const Field={
         NAME:'name',
         RANGE:'range',
         TYPE:'type',
-        MAX_FILE_NUM:'maxFileNum',
-        TOTAL_FILE_SIZE_IN_MB:'totalFileSizeInMb',
+        MAX_NUM:'maxNum',
+        MAX_DISK_SPACE_IN_MB:'maxDiskSpaceInMb',
     },
     STORE_PATH:{
         ID:'id',
@@ -51,6 +51,10 @@ const Field={
         ARTICLE_IMAGES_ID:'articleImagesId',
         ARTICLE_ATTACHMENTS_ID:'articleAttachmentsId',
         ARTICLE_COMMENTS_ID:'articleCommentsId',
+        ATTACHMENTS_NUM:'attachmentsNum',
+        ATTACHMENTS_SIZE_IN_MB:'attachmentsSizeInMb',
+        IMAGES_NUM:'imagesNum',
+        IMAGES_SIZE_IN_MB:'imagesSizeInMb',
         READ_NUM:'readNum',
     },
     ARTICLE_ATTACHMENT:{
@@ -82,6 +86,7 @@ const Field={
         NAME:'name',
         AUTHOR_ID:'authorId',
         PARENT_FOLDER_ID:'parentFolderId',
+        LEVEL:'level',
     },
     LIKE_DISLIKE:{
         ID:'id',
@@ -234,6 +239,8 @@ const Field={
         USER_ID:'userId',
         RESOURCE_PROFILE_ID:'resource_profile_id',
         DURATION:'duration',
+        START_DATE:'startDate',
+        END_DATE:'endDate',
     },
     READ_ARTICLE:{
         ID:'id',

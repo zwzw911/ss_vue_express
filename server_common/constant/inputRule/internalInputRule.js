@@ -1,4 +1,4 @@
-/*    gene by D:\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-4-30   */ 
+/*    gene by D:\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-5-3   */ 
  
 "use strict"
 const internalInputRule={
@@ -248,6 +248,13 @@ const internalInputRule={
             applyRange:["create"],
             require:{"define":{"create":true},"error":{"rc":101250,"msg":"创建人不能为空"},"mongoError":{"rc":201250,"msg":"创建人不能为空"}},
             format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":101252,"msg":"创建人必须是objectId"},"mongoError":{"rc":201252,"msg":"创建人必须是objectId"}},
+        },
+        level:{
+            chineseName:"目录层级",
+            dataType:"int",
+            applyRange:["create","update_scalar"],
+            require:{"define":{"create":true,"update_scalar":false},"error":{"rc":101250,"msg":"目录层级不能为空"},"mongoError":{"rc":201250,"msg":"目录层级不能为空"}},
+            min:{"define":1,"error":{"rc":101252,"msg":"目录层级最小为1"},"mongoError":{"rc":201252,"msg":"目录层级最小为1"}},
         },
     },
     like_dislike:{

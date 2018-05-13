@@ -1,4 +1,4 @@
-/*    gene by D:\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-4-30   */ 
+/*    gene by D:\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-5-3   */ 
  
 "use strict"
 const browserInputRule={
@@ -123,17 +123,17 @@ const browserInputRule={
             require:{"define":{"create":true},"error":{"rc":100510,"msg":"资源配置类型不能为空"},"mongoError":{"rc":200510,"msg":"资源配置类型不能为空"}},
             enum:{"define":["1","2"],"error":{"rc":100512,"msg":"资源配置类型的值类型不正确"},"mongoError":{"rc":200512,"msg":"资源配置类型的值类型不正确"}},
         },
-        maxFileNum:{
+        maxNum:{
             chineseName:"最大文件数量",
             dataType:"number",
             applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":100514,"msg":"最大文件数量不能为空"},"mongoError":{"rc":200514,"msg":"最大文件数量不能为空"}},
+            require:{"define":{"create":false},"error":{"rc":100514,"msg":"最大文件数量不能为空"},"mongoError":{"rc":200514,"msg":"最大文件数量不能为空"}},
         },
-        totalFileSizeInMb:{
+        maxDiskSpaceInMb:{
             chineseName:"最大存储空间",
             dataType:"number",
             applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":100516,"msg":"最大存储空间不能为空"},"mongoError":{"rc":200516,"msg":"最大存储空间不能为空"}},
+            require:{"define":{"create":false},"error":{"rc":100516,"msg":"最大存储空间不能为空"},"mongoError":{"rc":200516,"msg":"最大存储空间不能为空"}},
         },
     },
     store_path:{

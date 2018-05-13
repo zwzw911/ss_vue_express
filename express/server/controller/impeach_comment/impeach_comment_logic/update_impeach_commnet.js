@@ -116,7 +116,7 @@ async function updateImpeachComment_async({req}){
     /*                                       authorization check                               */
     /*******************************************************************************************/
     //当前用户必须是impeach comment的创建人，且impeach comment未被删除
-    tmpResult=await controllerChecker.ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({dbModel:e_dbModel.impeach_comment,recordId:recordId,ownerFieldName:e_field.IMPEACH_COMMENT.AUTHOR_ID,ownerFieldValue:userId,additionalCondition:undefined})
+    tmpResult=await controllerChecker.ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({dbModel:e_dbModel.impeach_comment,recordId:recordId,ownerFieldName:e_field.IMPEACH_COMMENT.AUTHOR_ID,userId:userId,additionalCondition:undefined})
     if(false===tmpResult){
         return Promise.reject(controllerError.notImpeachCreatorCantUpdateComment)
     }

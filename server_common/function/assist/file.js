@@ -130,8 +130,15 @@ function recursiveRequireAllFileInDir(filesArray,absoluteDestFilePath) {
 
 }
 
+//删除数组中指定的文件
+function deleteFiles({arr_fileAbsPath}){
+    for(let singleFilePath of arr_fileAbsPath){
+        fs.unlink(singleFilePath)
+    }
+}
 module.exports={
     recursiveReadFileAbsPath,//递归读取一个目录下所有文件的路径
     readFileExportItem,
     recursiveRequireAllFileInDir,//将数组中所有文件名require到指定文件中
+    deleteFiles,//
 }

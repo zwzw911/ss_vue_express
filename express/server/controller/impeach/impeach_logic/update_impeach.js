@@ -96,7 +96,7 @@ async function updateImpeach_async({req}){
     let originalDoc=misc.objectDeepCopy({},tmpResult[0])*/
 
     //当前用户必须是impeach comment的创建人，且impeach comment未被删除
-    tmpResult=await controllerChecker.ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({dbModel:e_dbModel[collName],recordId:recordId,ownerFieldName:e_field.IMPEACH.CREATOR_ID,ownerFieldValue:userId,additionalCondition:undefined})
+    tmpResult=await controllerChecker.ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({dbModel:e_dbModel[collName],recordId:recordId,ownerFieldName:e_field.IMPEACH.CREATOR_ID,userId:userId,additionalCondition:undefined})
     if(false===tmpResult){
         return Promise.reject(controllerError.notAuthorized)
     }

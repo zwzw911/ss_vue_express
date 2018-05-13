@@ -87,14 +87,14 @@ const KeyForSearchParams={
     DELETE:'delete'//3
 }*/
 
-const Method={
+/*const Method={
     CREATE:'0',//0 'create'
     SEARCH:'1',//1 'search'
     UPDATE:'2',//2  'update'
     DELETE:'3', //3 'delete'
     MATCH:'4',// 4 用于确定输入记录是否和db中的匹配（例如登录）
     UPLOAD:'5',//5 上传文件（图片，附件等）
-}
+}*/
 
 const InputFieldCheckType={
     BASE_INPUT_RULE:'1',//以inputRule为base进行检测（记录必须完整，一般用在create新纪录时）
@@ -114,10 +114,10 @@ const UploadFileType={
     IMPEACH_COMMENT:'impeach_comment',
 }*/
 
-//field name和resourceProfile中的字段名称一致
+//计算得到资源的字段
 const ResourceFieldName={
-    TOTAL_FILE_SIZE_IN_MB:'totalSizeInMb',
-    MAX_FILE_NUM:'maxFileNum',
+    DISK_USAGE_SIZE_IN_MB:'diskUsageSizeInMb',
+    USED_NUM:'usedNum',
 }
 
 //为不同的resourceType/resourceRange设置calcResourceConfig的时候，使用的字段
@@ -198,7 +198,7 @@ module.exports={
     ValidatePart,
     KeyForSearchParams,
     TimeUnit,
-    Method,
+    // Method,
     InputFieldCheckType,
     UploadFileType,
 

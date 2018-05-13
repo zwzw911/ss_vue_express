@@ -102,7 +102,7 @@ async  function createImpeachComment_async({req}){
     /*                                       authorization check                               */
     /*******************************************************************************************/
     //当前用户必须是impeach的创建人
-    tmpResult=await controllerChecker.ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({dbModel:e_dbModel.impeach,recordId:docValue[e_field.IMPEACH_COMMENT.IMPEACH_ID],ownerFieldName:[e_field.IMPEACH.CREATOR_ID],ownerFieldValue:userId,})
+    tmpResult=await controllerChecker.ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({dbModel:e_dbModel.impeach,recordId:docValue[e_field.IMPEACH_COMMENT.IMPEACH_ID],ownerFieldName:[e_field.IMPEACH.CREATOR_ID],userId:userId,})
     if(false===tmpResult){
         return Promise.reject(controllerError.notImpeachCreatorCantCreateComment)
     }

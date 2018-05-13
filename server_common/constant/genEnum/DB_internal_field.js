@@ -11,7 +11,7 @@ const Field={
     article_attachment:['name','hashName','pathId','sizeInMb','authorId','articleId',],
     article_comment:['authorId',],
     article_image:['name','hashName','pathId','sizeInMb','authorId','articleId',],
-    folder:['authorId',],
+    folder:['authorId','level',],
     like_dislike:['authorId',],
     add_friend:['originator',],
     member_penalize:['creatorId',],

@@ -6,15 +6,20 @@
  */
 'use strict'
 const ap=require('awesomeprint')
+/**********  dispatch相关常量  ***********/
+const controllerError=require(`./user_setting/user_controllerError`).controllerError
+const controllerSetting=require('./user_setting/user_setting').setting
 
+const server_common_file_require=require('../../../server_common_file_require')
 
-const server_common_file_include=require('../../../server_common_file_require')
-const controllerPreCheck=server_common_file_include.controllerPreCheck
-const dispatchError=server_common_file_include.helperError.dispatch
+/************   公共函数 ***************/
+const controllerPreCheck=server_common_file_require.controllerPreCheck
+const dispatchError=server_common_file_require.helperError.dispatch
 
-const nodeEnum=server_common_file_include.nodeEnum
-const mongoEnum=server_common_file_include.mongoEnum
-const controllerHelper=server_common_file_include.controllerHelper
+/************   公共常量 ***************/
+const nodeEnum=server_common_file_require.nodeEnum
+const mongoEnum=server_common_file_require.mongoEnum
+const controllerHelper=server_common_file_require.controllerHelper
 // const e_userState=require('../../constant/enum/node').UserState
 const e_part=nodeEnum.ValidatePart
 const e_method=nodeEnum.Method//require('../../constant/enum/node').Method
@@ -23,11 +28,10 @@ const e_coll=require('../../constant/genEnum/DB_Coll').Coll
 const e_penalizeType=mongoEnum.PenalizeType.DB
 const e_penalizeSubType=mongoEnum.PenalizeSubType.DB
 
-const e_intervalCheckPrefix=server_common_file_include.nodeEnum.IntervalCheckPrefix
-const e_searchRange=server_common_file_include.inputDataRuleType.SearchRange
+const e_intervalCheckPrefix=server_common_file_require.nodeEnum.IntervalCheckPrefix
+const e_searchRange=server_common_file_require.inputDataRuleType.SearchRange
 
-const controllerError=require(`./user_setting/user_controllerError`).controllerError
-const controllerSetting=require('./user_setting/user_setting').setting
+const e_applyRange=server_common_file_require.inputDataRuleType.ApplyRange
 
 const getUser_async=require('./user_logic/get_user').getUser_async
 const createUser_async=require('./user_logic/create_user').createUser_async
@@ -91,7 +95,7 @@ async function dispatcher_async(req){
                 await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
                 // ap.inf('create use userStateCheck_async done')
                 expectedPart=[e_part.RECORD_INFO,e_part.CAPTCHA]
-                result=controllerPreCheck.inputPreCheck({req:req,expectedPart:expectedPart,collName:collName,method:e_method.CREATE,arr_currentSearchRange:arr_currentSearchRange})
+                result=controllerPreCheck.inputPreCheck({req:req,expectedPart:expectedPart,collName:collName,applyRange:e_applyRange.CREATE,arr_currentSearchRange:arr_currentSearchRange})
                 // ap.inf('create use inputPreCheck result',result)
                 if(result.rc>0){return Promise.reject(result)}
                 result = await createUser_async({req: req})
@@ -99,10 +103,11 @@ async function dispatcher_async(req){
             }
             if(originalUrl==='/user/login' || originalUrl==='/user/login/') {
                 await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
-                ap.inf('login userStateCheck_async done')
+                // ap.inf('login userStateCheck_async done')
                 expectedPart=[e_part.RECORD_INFO,e_part.CAPTCHA]
-                result=controllerPreCheck.inputPreCheck({req:req,expectedPart:expectedPart,collName:collName,method:e_method.MATCH,arr_currentSearchRange:arr_currentSearchRange})
-                ap.inf('inputPreCehck result',result)
+                //applyRange===undefined，说明即使有recordInfo，也不进行对应的rule检查
+                result=controllerPreCheck.inputPreCheck({req:req,expectedPart:expectedPart,collName:collName,applyRange:undefined,arr_currentSearchRange:arr_currentSearchRange})
+                // ap.inf('inputPreCehck result',result)
                 if(result.rc>0){return Promise.reject(result)}
                 result = await userLogin_async({req: req})
                 return Promise.resolve(result)
@@ -110,7 +115,7 @@ async function dispatcher_async(req){
             if(originalUrl==='/user/uniqueCheck' || originalUrl==='/user/uniqueCheck/') {
                 await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
                 expectedPart=[e_part.SINGLE_FIELD]
-                result=controllerPreCheck.inputPreCheck({req:req,expectedPart:expectedPart,collName:collName,method:e_method.CREATE,arr_currentSearchRange:arr_currentSearchRange})
+                result=controllerPreCheck.inputPreCheck({req:req,expectedPart:expectedPart,collName:collName,applyRange:e_applyRange.CREATE,arr_currentSearchRange:arr_currentSearchRange})
                 // ap.inf('create use inputPreCheck result',result)
                 if(result.rc>0){return Promise.reject(result)}
                 result = await uniqueCheck_async({req: req})
@@ -136,14 +141,14 @@ async function dispatcher_async(req){
             break;
         case 'put':
             if(originalUrl==='/user' || originalUrl==='/user/') {
-                ap.inf('req.body.values',req.body.values)
+                // ap.inf('req.body.values',req.body.values)
                 userLoginCheck={
                     needCheck:true,
                     error:controllerError.dispatch.notLoginCantUpdateUserInfo
                 }
                 await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
                 expectedPart=[e_part.RECORD_INFO]
-                result=controllerPreCheck.inputPreCheck({req:req,expectedPart:expectedPart,collName:collName,method:e_method.UPDATE,arr_currentSearchRange:arr_currentSearchRange})
+                result=controllerPreCheck.inputPreCheck({req:req,expectedPart:expectedPart,collName:collName,applyRange:e_applyRange.UPDATE_SCALAR,arr_currentSearchRange:arr_currentSearchRange})
                 if(result.rc>0){return Promise.reject(result)}
                 result = await updateUser_async({req: req})
                 return Promise.resolve(result)
@@ -158,15 +163,20 @@ async function dispatcher_async(req){
                 return Promise.resolve(result)
             }
             if(originalUrl==='/user/uploadUserPhoto' || originalUrl==='/user/uploadUserPhoto/') {
-                ap.inf('upload in')
+                // ap.inf('upload in')
                 userLoginCheck={
                     needCheck:true,
                     error:controllerError.dispatch.notLoginCantUpdateUserPhoto
                 }
+                penalizeCheck={
+                    penalizeType:e_penalizeType.NO_UPLOAD_USER_PHOTO,
+                    penalizeSubType:e_penalizeSubType.UPDATE,
+                    penalizeCheckError:controllerError.dispatch.userInPenalizeNoPhotoUpload
+                }
                 await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
                 // ap.inf('userStateCheck_async done')
-                expectedPart=[e_part.RECORD_INFO]
-                result=controllerPreCheck.inputPreCheck({req:req,expectedPart:expectedPart,collName:collName,method:e_method.UPLOAD,arr_currentSearchRange:arr_currentSearchRange})
+                expectedPart=[e_part.SINGLE_FIELD]
+                result=controllerPreCheck.inputPreCheck({req:req,expectedPart:expectedPart,collName:collName,applyRange:e_applyRange.UPDATE_SCALAR,arr_currentSearchRange:arr_currentSearchRange})
                 // ap.inf('inputPreCheck result',result)
                 if(result.rc>0){return Promise.reject(result)}
                 result = await uploadUserPhoto_async({req: req})

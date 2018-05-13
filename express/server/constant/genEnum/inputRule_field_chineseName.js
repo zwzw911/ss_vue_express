@@ -36,7 +36,7 @@ const ChineseName={
         'status':'存储路径状态',
     },
     article:{
-        'name':'文档名',
+        'name':'文档标题',
         'status':'文档状态',
         'folderId':'文档目录',
         'htmlContent':'文档内容',
@@ -46,27 +46,15 @@ const ChineseName={
         'articleImagesId':'文档图片',
         'articleAttachmentsId':'文档附件',
         'articleCommentsId':'留言',
-    },
-    article_attachment:{
-        'name':'文档附件名称',
-        'hashName':'文档附件名称',
-        'pathId':'存储路径',
-        'sizeInMb':'附件大小',
-        'authorId':'附件上传者',
-        'articleId':'所属文档',
+        'attachmentsNum':'文档附件总数',
+        'attachmentsSizeInMb':'文档附件总大小',
+        'imagesNum':'文档图片总数',
+        'imagesSizeInMb':'文档图片总大小',
     },
     article_comment:{
         'articleId':'文档',
         'content':'评论内容',
         'authorId':'评论作者',
-    },
-    article_image:{
-        'name':'文档图片名称',
-        'hashName':'文档图片名称',
-        'pathId':'存储路径',
-        'sizeInMb':'图片大小',
-        'authorId':'图片上传者',
-        'articleId':'所属文档',
     },
     folder:{
         'name':'目录名称',
@@ -119,10 +107,6 @@ const ChineseName={
         'friendsInGroup':'好友分组',
         'ownerUserId':'用户',
     },
-    user_public_group:{
-        'userId':'用户',
-        'currentJoinGroup':'用户所处群',
-    },
     impeach:{
         'title':'举报名',
         'content':'举报内容',
@@ -144,13 +128,6 @@ const ChineseName={
         'creatorId':'状态改变人',
         'creatorColl':'状态改变人表',
     },
-    impeach_attachment:{
-        'name':'举报附件名称',
-        'hashName':'举报附件名称',
-        'authorId':'附件上传者',
-        'sizeInMb':'附件大小',
-        'pathId':'存储路径',
-    },
     impeach_comment:{
         'impeachId':'举报',
         'content':'评论内容',
@@ -168,13 +145,6 @@ const ChineseName={
         'pathId':'存储路径',
         'sizeInMb':'图片大小',
         'authorId':'图片上传者',
-    },
-    like_dislike_static:{
-        'articleId':'文档',
-    },
-    user_resource_static:{
-    },
-    sugar:{
     },
     user:{
         'name':'昵称',
@@ -195,10 +165,8 @@ const ChineseName={
         'userId':'用户',
         'resource_profile_id':'资源配置',
         'duration':'资源配置有效期',
-    },
-    read_article:{
-    },
-    user_input_keyword:{
+        'startDate':'生效时间',
+        'endDate':'结束时间',
     },
     collection:{
         'name':'收藏夹名',
@@ -218,6 +186,40 @@ const ChineseName={
         'desc':'系列描述',
         'articlesId':'系列文档',
         'creatorId':'创建人',
+    },
+    article_attachment:{
+        'name':'文档附件名称',
+        'hashName':'文档附件名称',
+        'pathId':'存储路径',
+        'sizeInMb':'附件大小',
+        'authorId':'附件上传者',
+        'articleId':'所属文档',
+    },
+    article_image:{
+        'name':'文档图片名称',
+        'hashName':'文档图片名称',
+        'pathId':'存储路径',
+        'sizeInMb':'图片大小',
+        'authorId':'图片上传者',
+        'articleId':'所属文档',
+    },
+    user_public_group:{
+        'userId':'用户',
+        'currentJoinGroup':'用户所处群',
+    },
+    impeach_attachment:{
+        'name':'举报附件名称',
+        'hashName':'举报附件名称',
+        'authorId':'附件上传者',
+        'sizeInMb':'附件大小',
+        'pathId':'存储路径',
+    },
+    like_dislike_static:{
+        'articleId':'文档',
+    },
+    user_resource_static:{
+    },
+    suagr:{
     },
 }
 

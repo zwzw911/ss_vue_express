@@ -22,13 +22,36 @@ async function reCreateUser_returnSessUserId_async({userData,app}){
     //删除用户
     // ap.inf('start to del account',userData.account)
     await db_operation_helper.deleteUserAndRelatedInfo_async({account:userData.account,name:userData.name})
+    //获得sessionId
+    let sess=await API_helper.getFirstSession({app})
+    //生成并获得captcha
+    await API_helper.genCaptcha({sess:sess,app:app})
+    let captcha=await API_helper.getCaptcha({sess:sess})
     //建立用户
-    await API_helper.createUser_async({userData:userData,app:app})
+    await API_helper.createUser_async({userData:userData,captcha:captcha,app:app,sess:sess})
     //获得userId
     let userId=await db_operation_helper.getUserId_async({userAccount:userData.account})
+    //生成并获得captcha
+    await API_helper.genCaptcha({sess:sess,app:app})
+    captcha=await API_helper.getCaptcha({sess:sess})
+    ap.inf('userDate',userData)
     //登录获得sess
-    let sess=await API_helper.userLogin_returnSess_async({userData:userData,app:app})
+    sess=await API_helper.userLogin_returnSess_async({userData:userData,app:app,captcha:captcha,sess:sess})
     return Promise.resolve({userId:userId,sess:sess})
+}
+
+//因为登录需要captcha，所以做成一个函数（包含获得cpatcha，发送captcha）
+async function adminUserLogin_returnSess_async({userData,adminApp}){
+    // ap.inf('adminUserLogin_returnSess_async in')
+    //获得sessionId
+    let sess=await API_helper.getFirstAdminSession({adminApp:adminApp})
+    //生成并获得captcha
+    // ap.inf('gen admin cpatcha in')
+    await API_helper.genAdminCaptcha({sess:sess,adminApp:adminApp})
+    let captcha=await API_helper.getAdminCaptcha({sess:sess})
+    // ap.inf('captcha',captcha)
+    sess=await API_helper.adminUserLogin_returnSess_async({userData:userData,captcha:captcha,sess:sess,adminApp:adminApp})
+    return Promise.resolve(sess)
 }
 
 async function createArticle_setToFinish_returnArticleId_async({userSess,app}){
@@ -88,6 +111,7 @@ async function getAdminUserSessUserId({userData,adminApp}){
 
 module.exports={
     reCreateUser_returnSessUserId_async,
+    adminUserLogin_returnSess_async,//获得captcha并发送
     createArticle_setToFinish_returnArticleId_async,
     reCreateAdminUser_returnSessUserId_async,
 
