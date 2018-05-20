@@ -137,6 +137,7 @@ const validateFormat={
         /*      searchParamsNonIdCheck_async        */
         partValueCantEmpty:{rc:40242,msg:{client:`查询值格式错误`,server:`searchParams不能为空对象`}},
         illegalCollName:{rc:40244,msg:{client:`查询值格式错误`,server:`searchParams中包含禁止collName`}},
+        searchValueDataTypeUnknownOrNotSupport:{rc:40245,msg:{client:`查询值格式错误`,server:`searchParams中的查询的字段值的数据类型位置或者不支持（当前支持数字，字符，日期）`}},
 
         /*          collValueFormatCheck_async          */
         collValueMustBeObject:{rc:40246,msg:{client:`查询值格式错误`,server:`searchParams中coll的值，必须是对象`}},

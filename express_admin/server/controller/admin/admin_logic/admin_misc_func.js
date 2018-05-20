@@ -379,7 +379,7 @@ async function uploadPhoto_async(req){
 //      firstTimeInDuration: duration中，第一次captcha的时间
 //      numberInDuration:在定义的时间段中，产生的次数
 async function generateCaptcha_async({req}){
-    ap.inf('generateCaptcha_async in')
+    // ap.inf('generateCaptcha_async in')
     let result=await controllerHelper.genCaptchaAdnSave_async({req:req,params:{height:33},db:8})
     // ap.inf('genCaptchaAdnSave_async result',result)
     return Promise.resolve({rc:0,msg:result})

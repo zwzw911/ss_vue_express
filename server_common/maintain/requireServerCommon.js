@@ -58,6 +58,18 @@ function requireServerCommon(serverCommonRelateBaseDir,absoluteDestFilePath,fina
     //lua脚本sha化，并载入
     filesArray.push(`${serverCommonRelateBaseDir}maintain/genLuaSHA.js`)
 
+    //某些包含特定字符的文件要被排除
+    let fileToBeDeletedIdx=[]
+    for(let idx in filesArray){
+        if(-1!==filesArray[idx].indexOf('not_used')){
+            fileToBeDeletedIdx.push(idx)
+        }
+    }
+    if(fileToBeDeletedIdx.length>0){
+        fileToBeDeletedIdx.reverse()
+        for(let fileIdx of fileToBeDeletedIdx)
+        filesArray.splice(fileIdx,1)
+    }
 
     //把基于执行脚本的相对路径改成基于最终require文件的相对路径
     let filesArrayToStr=filesArray.join(',')

@@ -5,7 +5,7 @@
 /******************    内置lib和第三方lib  **************/
 const ap=require('awesomeprint')
 /**************  controller相关常量  ****************/
-const controller_setting=require('../penalize_setting/penalize_setting').setting
+const controllerSetting=require('../penalize_setting/penalize_setting').setting
 const controllerError=require('../penalize_setting/penalize_controllerError').controllerError
 
 /***************  数据库相关常量   ****************/
@@ -43,6 +43,7 @@ const controllerHelper=server_common_file_require.controllerHelper
 const controllerChecker=server_common_file_require.controllerChecker
 const common_operation_model=server_common_file_require.common_operation_model
 const misc=server_common_file_require.misc
+const crypt=server_common_file_require.crypt
 const inputValueLogicValidCheck_async=server_common_file_require.controllerInputValueLogicCheck.inputValueLogicValidCheck_async
 /*************** 配置信息 *********************/
 const currentEnv=server_common_file_require.appSetting.currentEnv
@@ -56,16 +57,20 @@ async function deletePenalize_async({req}){
     /********************************************************/
     /*************      define variant        ***************/
     /********************************************************/
-    let tmpResult,collName=controller_setting.MAIN_HANDLED_COLL_NAME
+    let tmpResult,collName=controllerSetting.MAIN_HANDLED_COLL_NAME
     let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
-    let {userId,userCollName,userType,userPriority}=userInfo
+    let {userId,userCollName,userType,userPriority,tempSalt}=userInfo
     /**********************************************/
     /********  删除null/undefined的字段  *********/
     /*********************************************/
     let recordToBeDeleted=req.body.values[e_part.RECORD_ID]
     let docValue=req.body.values[e_part.RECORD_INFO]
     // console.log(`docVlue0 =====>${JSON.stringify(docValue)}`)
-
+/*    /!************************************************!/
+    /!******   传入的敏感数据（recordId）解密，recordInfo中的objectId在dispatch中解密   ******!/
+    /!************************************************!/
+    // controllerHelper.decryptRecordValue({record:docValue,collName:collName})
+    recordToBeDeleted=crypt.decryptSingleFieldValue({fieldValue:recordToBeDeleted,salt:tempSalt})*/
     /*********************************************/
     /*************    用户类型检测    ************/
     /*********************************************/

@@ -10,6 +10,10 @@ const ap=require('awesomeprint')
 const controllerError=require('../folder_setting/folder_controllerError').controllerError
 const controllerSetting=require('../folder_setting/folder_setting').setting
 
+/**************      rule             *************/
+const inputRule=require('../../../constant/inputRule/inputRule').inputRule
+const internalInputRule=require('../../../constant/inputRule/internalInputRule').internalInputRule
+
 /***************  数据库相关常量   ****************/
 const e_uniqueField=require('../../../constant/genEnum/DB_uniqueField').UniqueField
 const e_chineseName=require('../../../constant/genEnum/inputRule_field_chineseName').ChineseName
@@ -59,13 +63,13 @@ async function updateFolder_async({req}){
     /**************   define variant   *************/
     /***********************************************/
     let tmpResult,condition,option
-    let collName=controller_setting.MAIN_HANDLED_COLL_NAME
+    let collName=controllerSetting.MAIN_HANDLED_COLL_NAME
     // let collFkConfig=fkConfig[collName]
     let docValue=req.body.values[e_part.RECORD_INFO]
     let recordId=req.body.values[e_part.RECORD_ID]
     let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
     // console.log(`userInfo===> ${JSON.stringify(userInfo)}`)
-    let {userId,userCollName,userType,userPriority}=userInfo
+    let {userId,userCollName,userType,userPriority,tempSalt}=userInfo
 
 
     /************************************************/
@@ -74,19 +78,39 @@ async function updateFolder_async({req}){
     dataConvert.constructUpdateCriteria(docValue)
 
     /************************************************/
-    /******   传入的敏感数据（objectId）解密   ******/
-    /************************************************/
-    controllerHelper.decryptRecordValue({record:docValue,collName:collName})
-    recordId=crypt.cryptSingleFieldValue({fieldValue:recordId})
-    /************************************************/
     /*****************  用户类型检测     ************/
     /************************************************/
     await controllerChecker.ifExpectedUserType_async({req:req,arr_expectedUserType:[e_allUserType.USER_NORMAL]})
 
+/*    /!************************************************!/
+    /!******   传入的敏感数据（recordId）解密，recordInfo中的objectId在dispatch中解密   ******!/
+    /!************************************************!/
+    // controllerHelper.decryptRecordValue({record:docValue,collName:collName})
+    recordId=crypt.decryptSingleFieldValue({fieldValue:recordId,salt:tempSalt})
+    if(false===regex.objectId.test(recordId)){
+        return Promise.reject(controllerError.update.inValidFolderId)
+    }*/
+    /**********************************************/
+    /***********    用户权限检测    **************/
+    /*********************************************/
+    if(userType===e_allUserType.USER_NORMAL){
+        let result=await controllerChecker.ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({
+            dbModel:e_dbModel.folder,
+            recordId:recordId,
+            ownerFieldName:e_field.FOLDER.AUTHOR_ID,
+            userId:userId,
+            additionalCondition:undefined,
+        })
+        if(false===result){
+            return Promise.reject(controllerError.update.notAuthorCantUpdateFolder)
+        }
+    }
+
+
     /************************************************/
     /*** CALL FUNCTION:inputValueLogicValidCheck ****/
     /************************************************/
-    let commonParam={docValue:docValue,userId:undefined,collName:collName}
+    let commonParam={docValue:docValue,userId:userId,collName:collName}
     let stepParam={
         [e_inputValueLogicCheckStep.FK_EXIST_AND_PRIORITY]:{flag:true,optionalParam:undefined},
         [e_inputValueLogicCheckStep.ENUM_DUPLICATE]:{flag:true,optionalParam:undefined},

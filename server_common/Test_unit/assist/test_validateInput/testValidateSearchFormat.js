@@ -57,6 +57,12 @@ describe('searchParamsNonIdCheck', async function() {
         result=func({arr_allowCollNameForSearch:allowColl,obj_searchParams:searchParams,arr_currentSearchRange:allowSearchRange,bool_allowSearchAll:false})
         assert.deepStrictEqual(result.rc,validateFormatError.illegalCollName.rc)
     })
+
+/*    it(`searchParams must be object: cant be {}`,async function(){
+        searchParams={notExistColl:{}}
+        result=func({arr_allowCollNameForSearch:allowColl,obj_searchParams:searchParams,arr_currentSearchRange:allowSearchRange,bool_allowSearchAll:false})
+        assert.deepStrictEqual(result.rc,validateFormatError.illegalCollName.rc)
+    })*/
 })
 
 /***************************************************************************/

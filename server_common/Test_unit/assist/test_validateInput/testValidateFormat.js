@@ -133,93 +133,93 @@ describe('validateReqBody:values', function() {
 /***************************************************************************/
 /***************   e_partFormat   *******************/
 /***************************************************************************/
-describe('validate part', function() {
+describe('3. validate part', function() {
     let func=testModule.validatePartFormat
     let inputValue,expectPart
     // test.expect(12)
 
 
-    it(`inputValue part exceed expectPart`,function(done){
-        inputValue={[e_part.METHOD]:e_method.CREATE}
+    it(`3.1 inputValue part exceed expectPart`,function(done){
+        inputValue={[e_part.CAPTCHA]:'test'}
         expectPart=[]
         assert.deepStrictEqual(func(inputValue,expectPart).rc,validateFormatError.inputValuePartNumNotExpected.rc)
         done();
     })
-    it(`expectPart unknown`,function(done){
-        inputValue={[e_part.METHOD]:e_method.CREATE}
+    it(`3.2 expectPart unknown`,function(done){
+        inputValue={[e_part.CAPTCHA]:'test'}
         expectPart=['unknownPart']
         assert.deepStrictEqual(func(inputValue,expectPart).rc,validateFormatError.inputValueExceptedPartNotValid.rc)
         done();
     })
-    it(`miss part define in expectPart`,function(done){
-        inputValue={[e_part.METHOD]:e_method.CREATE}
+    it(`3.3 miss part define in expectPart`,function(done){
+        inputValue={[e_part.CAPTCHA]:'test'}
         expectPart=[e_part.RECORD_ID]
         assert.deepStrictEqual(func(inputValue,expectPart).rc,validateFormatError.inputValuePartNotMatch.rc)
         done();
     })
 
 
-    it(`part:currentPage value is not int`,function(done){
+    it(`3.4 part:currentPage value is not int`,function(done){
         inputValue={[e_part.CURRENT_PAGE]:1.1}
         expectPart=[e_part.CURRENT_PAGE]
         assert.deepStrictEqual(func(inputValue,expectPart).rc,validateFormatError.inputValuePartCurrentPageValueFormatWrong.rc)
         done();
     })
 
-    it(`part:recorderId value is null`,function(done){
+    it(`3.5part:recorderId value is null`,function(done){
         inputValue={[e_part.RECORD_ID]:null}
         expectPart=[e_part.RECORD_ID]
         assert.deepStrictEqual(func(inputValue,expectPart).rc,validateFormatError.inputValuePartRecordIdValueFormatWrong.rc)
         done();
     })
-    it(`part:recorderId value is not string`,function(done){
+    it(`3.6 part:recorderId value is not string`,function(done){
         inputValue={[e_part.RECORD_ID]:1.1}
         expectPart=[e_part.RECORD_ID]
         assert.deepStrictEqual(func(inputValue,expectPart).rc,validateFormatError.inputValuePartRecordIdValueFormatWrong.rc)
         done();
     })
-    it(`part:recorderId value is string, but not objectId`,function(done){
+    it(`3.7 part:recorderId value is string, but not objectId`,function(done){
         inputValue={[e_part.RECORD_ID]:'1.1'}
         expectPart=[e_part.RECORD_ID]
         assert.deepStrictEqual(func(inputValue,expectPart).rc,validateFormatError.inputValuePartRecordIdValueFormatWrong.rc)
         done();
     })
-    it(`part:recorderId value is undefined, not objectId`,function(done){
+    it(`3.8 part:recorderId value is undefined, not objectId`,function(done){
         inputValue={[e_part.RECORD_ID]:undefined}
         expectPart=[e_part.RECORD_ID]
         assert.deepStrictEqual(func(inputValue,expectPart).rc,validateFormatError.inputValuePartRecordIdValueFormatWrong.rc)
         done();
     })
 
-    it(`part:recorderInfo value is not object`,function(done){
+    it(`3.9 part:recorderInfo value is not object`,function(done){
         inputValue={[e_part.RECORD_INFO]:'1.1'}
         expectPart=[e_part.RECORD_INFO]
         assert.deepStrictEqual(func(inputValue,expectPart).rc,validateFormatError.inputValuePartRecordInfoValueFormatWrong.rc)
         done();
     })
 
-    it(`part:searchParams value is not object`,function(done){
+    it(`3.10 part:searchParams value is not object`,function(done){
         inputValue={[e_part.SEARCH_PARAMS]:'1.1'}
         expectPart=[e_part.SEARCH_PARAMS]
-        assert.deepStrictEqual(func(inputValue,expectPart).rc,validateFormatError.inputValuePartSearchParamsValueFormatWrong.rc)
+        assert.deepStrictEqual(func(inputValue,expectPart).rc,validateFormatError.searchParams.partValueFormatWrong.rc)
         done();
     })
 
-    it(`part:recIdArr value is not array`,function(done){
+    it(`3.11 part:recIdArr value is not array`,function(done){
         inputValue={[e_part.RECORD_ID_ARRAY]:'1.1'}
         expectPart=[e_part.RECORD_ID_ARRAY]
         assert.deepStrictEqual(func(inputValue,expectPart).rc,validateFormatError.inputValuePartRecIdArrValueFormatWrong.rc)
         done();
     })
 
-    it(`part:singleField value is not object`,function(done){
+    it(`3.12 part:singleField value is not object`,function(done){
         inputValue={[e_part.SINGLE_FIELD]:'1.1'}
         expectPart=[e_part.SINGLE_FIELD]
         assert.deepStrictEqual(func(inputValue,expectPart).rc,validateFormatError.inputValuePartSingleFieldValueFormatWrong.rc)
         done();
     })
 
-    it(`part:'all 5 part check success'`,function(done){
+    it(`3.13 part:'all 5 part check success'`,function(done){
         inputValue={'currentPage':1,'recordInfo':{},'searchParams':{},[e_part.RECORD_ID_ARRAY]:[],[e_part.SINGLE_FIELD]:{}}
         expectPart=[e_part.CURRENT_PAGE,e_part.RECORD_INFO,e_part.SEARCH_PARAMS,e_part.RECORD_ID_ARRAY,e_part.SINGLE_FIELD]
         assert.deepStrictEqual(func(inputValue,expectPart).rc,0)
@@ -232,33 +232,33 @@ describe('validate part', function() {
 /***************************************************************************/
 /***************  validateRecorderInfoFormat   *******************/
 /***************************************************************************/
-describe('validateCURecordInfoFormat', function() {
+describe('4. validateCURecordInfoFormat', function() {
     let func=testModule.validateCURecordInfoFormat
     let value,rules
 
 
-    it(`recordInfo empty object`,function(done){
+    it(`4.1 recordInfo empty object`,function(done){
         rules={field1:{}}//只是为了检测是否有对应的rule存在
         value={}
         assert.deepStrictEqual(func(value,rules).rc,validateFormatError.recordInfoCantEmpty.rc)
         done();
     })
 
-    it(`recordInfo has more fields than rule`,function(done){
+    it(`4.2 recordInfo has more fields than rule`,function(done){
         rules={name:{}}//只是为了检测是否有对应的rule存在
         value={name:{value:'a'},age:{value:10}}
         assert.deepStrictEqual(func(value,rules).rc,validateFormatError.recordInfoFieldNumExceed.rc)
         done();
     })
 
-    it(`recordInfo has fields not define in rule`,function(done){
+    it(`4.3 recordInfo has fields not define in rule`,function(done){
         rules={name:{}}//只是为了检测是否有对应的rule存在
         value={age:{value:10}}
         assert.deepStrictEqual(func(value,rules).rc,validateFormatError.recordInfoFiledRuleNotDefine.rc)
         done();
     })
 
-    it(`recordInfo:field value allow to be object`,function(done){
+    it(`4.4 recordInfo:field value allow to be object`,function(done){
         rules={name:{
             type:e_serverDataType.OBJECT
         }}//只是为了检测是否有对应的rule存在
@@ -317,9 +317,11 @@ describe('validateSingleFieldFormat', function() {
     })
 })
 
-/***************************************************************************/
-/***************  part: searchParamsFormat   *******************/
-/***************************************************************************/
+/** searchparam 使用单独文件重新定义**/
+
+/*/!***************************************************************************!/
+/!***************  part: searchParamsFormat   *******************!/
+/!***************************************************************************!/
 describe('validateSearchParamsFormat', function() {
     let func = testModule.validateSearchParamsFormat
     //let error = miscError.validateFunc.validateInputSearchFormat
@@ -415,9 +417,9 @@ describe('validateSearchParamsFormat', function() {
     })
 
 })
-/***************************************************************************/
-/***************   singleSearchParams   *******************/
-/***************************************************************************/
+/!***************************************************************************!/
+/!***************   singleSearchParams   *******************!/
+/!***************************************************************************!/
 describe('validateSingleSearchParamsFormat', function() {
     // test.expect(2)
     let func = testModule.validateSingleSearchParamsFormat
@@ -428,7 +430,7 @@ describe('validateSingleSearchParamsFormat', function() {
     let singleSearchField,value
     let collRule=rules['billType']
 
-    /*              对象的value必须是数组           */
+    /!*              对象的value必须是数组           *!/
     it(`singleSearchField is {}, not array`,function(done){
         singleSearchField={name:{}}
         assert.deepStrictEqual(func(singleSearchField['name'],collRule['name']).rc,validateFormatError.singleSearchParamsValueMustBeArray.rc)
@@ -468,7 +470,7 @@ describe('validateSingleSearchParamsFormat', function() {
         done();
     })
 
-    /*              必须包含value这个key                                        */
+    /!*              必须包含value这个key                                        *!/
     it(`singleSearchField array element must be object,and key number not exceed 2(value and comp)`,function(done){
         singleSearchField = {name: [{key1: 1, key2: 2, key3: 3}]}
         assert.deepStrictEqual(func(singleSearchField['name'],collRule['name']).rc,validateFormatError.singleSearchParamsElementKeysLengthExceed.rc)
@@ -481,7 +483,7 @@ describe('validateSingleSearchParamsFormat', function() {
         done();
     })
 
-    /*              类型为数字或者日期的字段，必须有compOp                      */
+    /!*              类型为数字或者日期的字段，必须有compOp                      *!/
     it(`singleSearchField array element is number, must contain compOp`,function(done){
         singleSearchField = {age: [{value: 12}]}
         assert.deepStrictEqual(func(singleSearchField['age'],collRule['age']).rc,validateFormatError.singleSearchParamsElementMissKeyCompOp.rc)
@@ -507,7 +509,7 @@ describe('validateSingleSearchParamsFormat', function() {
         done();
     })
 
-})
+})*/
 
 /*                  filterFieldValue    {field1:keyword} or {billType:{name:keyword}}
 *   被测试的值，是part FILTER_FILED的值

@@ -30,6 +30,7 @@ const e_penalizeSubType=require('../constant/enum/mongoEnum').PenalizeSubType.DB
 
 const e_userInfoField=require(`../constant/enum/nodeRuntimeEnum`).UserInfoField
 const e_subField=require(`../constant/enum/nodeEnum`).SubField
+const e_part=require(`../constant/enum/nodeEnum`).ValidatePart
 
 const allAdminPriorityType=require('../constant/genEnum/enumValue').AdminPriorityType
 
@@ -37,6 +38,7 @@ const e_uniqueField=require('../constant/genEnum/DB_uniqueField').UniqueField
 const compound_unique_field_config=require(`../model/mongo/compound_unique_field_config`).compound_unique_field_config
 const fkConfig=require('../model/mongo/fkConfig').fkConfig
 
+const e_dataType=require('../constant/enum/inputDataRuleType').ServerDataType
 /****************  公共函数  ********************/
 const misc=require('../function/assist/misc')
 const arr=require('../function/assist/array')
@@ -47,8 +49,9 @@ const appSetting=require('../constant/config/appSetting').currentAppSetting
 
 /****************  其他  ********************/
 const inputRule=require('../constant/inputRule/inputRule').inputRule
+// const browserInputRule=require('../constant/inputRule/browserInputRule').browserInputRule
 
-
+const regex=require('../constant/regex/regex').regex
 /*************************************************************************/
 /**********************    not used         ******************************/
 /*************************************************************************/
@@ -255,12 +258,12 @@ async function ifAdminUserHasExpectedPriority_async({userPriority,arr_expectedPr
     return Promise.resolve(true)
 }
 //判断当前用户的类型是否为期望的
-async function ifExpectedUserType_async({req,arr_expectedUserType}){
-    if(undefined===req.session.userInfo || undefined===req.session.userInfo[e_userInfoField.USER_TYPE]){
+async function ifExpectedUserType_async({currentUserType,arr_expectedUserType}){
+/*    if(undefined===req.session.userInfo || undefined===req.session.userInfo[e_userInfoField.USER_TYPE]){
         return Promise.reject(checkerError.userInfoUndefined)
     }
 
-    let currentUserType=req.session.userInfo[e_userInfoField.USER_TYPE]
+    let currentUserType=req.session.userInfo[e_userInfoField.USER_TYPE]*/
 
     if(-1===arr_expectedUserType.indexOf(currentUserType)){
         return Promise.reject(checkerError.userTypeNotExpected)
@@ -375,6 +378,10 @@ async function ifFileSuffixMatchContentType_returnSuffixOrFalse_async({uploadFil
     }
 }
 
+/*//解密后的objectId（一般在get/delete/update中的recordId）是否合格
+async function ifDecryptedObjectIdValid({objectId}){
+    if()
+}*/
 
 /*  检查用户req是否合格（防止DoS）。默认使用复杂方式检测
 * @reqTypePrefix:用于生成key的前缀，格式为sessionId.reqTypePrefix;keyname。为constant/config/globalConfiguration下intervalCheckConfiguration的一个键值
@@ -397,7 +404,56 @@ async function ifFileSuffixMatchContentType_returnSuffixOrFalse_async({uploadFil
     return Promise.resolve({rc:0})
 }*/
 
-
+/********************************************************************/
+/**      使用在dispatch中，检查加密的objectId的格式是否正确       ****/
+/********************************************************************/
+function ifObjectIdCrypted_async({req,expectedPart,browserCollRule}){
+    //目前只需要检测recordId和RecordInfo中的objectId
+    for(let singlePart of expectedPart){
+        switch (singlePart){
+            case e_part.RECORD_ID:
+                //非空，才进行格式检查，否则扔给后续代码处理
+                if(false===dataTypeCheck.isEmpty(req.body.values[singlePart])){
+                    if(false===regex.cryptedObjectId.test(req.body.values[singlePart])){
+                        return Promise.reject(checkerError.ifObjectIdCrypted.recordIdFormatWrong)
+                    }
+                }
+                break;
+            case e_part.RECORD_INFO:
+            //非空，才进行格式检查，否则扔给后续代码处理
+                if(false===dataTypeCheck.isEmpty(req.body.values[singlePart])){
+                    //对每个字段进行判别，类型是否为objectId，是的话，格式判断
+                    let recordInfoValue=req.body.values[singlePart]
+                    for(let singleFieldName in recordInfoValue){
+                        let singleFieldDataTypeInRule=browserCollRule[singleFieldName][e_otherRuleFiledName.DATA_TYPE]
+                        let dataTypeArrayFlag=dataTypeCheck.isArray(singleFieldDataTypeInRule)
+                        let dataType= dataTypeArrayFlag ? singleFieldDataTypeInRule[0]:singleFieldDataTypeInRule
+                        //字段类型是objectId
+                        if(e_dataType.OBJECT_ID===dataType){
+                            //数组，对每个元素进行判别
+                            if(true===dataTypeArrayFlag){
+                                if(recordInfoValue[singleFieldName].length>0){
+                                    for(let singleEle of recordInfoValue[singleFieldName]){
+                                        if(false===regex.cryptedObjectId.test(singleEle)){
+                                            return Promise.reject(checkerError.ifObjectIdCrypted.recordInfoContainInvalidObjectId)
+                                        }
+                                    }
+                                }
+                            }else{
+                                if(false===regex.cryptedObjectId.test(recordInfoValue[singleFieldName])){
+                                    return Promise.reject(checkerError.ifObjectIdCrypted.recordInfoContainInvalidObjectId)
+                                }
+                            }
+                        }
+                    }
+                }
+                break
+            default:
+                break
+        }
+    }
+    return Promise.resolve(true)
+}
 
 module.exports= {
     // ifFieldValueExistInColl_async,// 检测字段值是否已经在db中存在
@@ -424,6 +480,6 @@ module.exports= {
 
     ifFileSuffixMatchContentType_returnSuffixOrFalse_async,
 
-
+    ifObjectIdCrypted_async,
     // checkInterval_async,
 }

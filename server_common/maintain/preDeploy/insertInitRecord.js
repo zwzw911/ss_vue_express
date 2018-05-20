@@ -99,8 +99,17 @@ async function createRoot(){
     let sugarResult=await  common_operation_model.create_returnRecord_async(({dbModel:e_dbModel.admin_sugar,value:{sugar:sugar,[e_field.ADMIN_SUGAR.USER_ID]:userId}}))
 }
 
+/*async  function removeAll(){
+    await common_operation_model.removeAll_async({dbModel:e_dbModel.store_path})
+    await common_operation_model.removeAll_async({dbModel:e_dbModel.category})
+    await common_operation_model.removeAll_async({dbModel:e_dbModel.resource_profile})
+    await common_operation_model.removeAll_async({dbModel:e_dbModel.admin_user})
+    await common_operation_model.removeAll_async({dbModel:e_dbModel.admin_sugar})
+}*/
+
 
 async function all(){
+    // await removeAll().catch(e=>{console.log(`remove all failed with cause ${JSON.stringify(e)}`)})
     await storePath().catch(e=>{console.log(`storePath failed with cause ${JSON.stringify(e)}`)})
     await category().catch(e=>{console.log(`category failed with cause ${JSON.stringify(e)}`)})
     await resourceProfile().catch(e=>{console.log(`resourceProfile failed with cause ${JSON.stringify(e)}`)})

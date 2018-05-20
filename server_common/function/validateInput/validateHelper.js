@@ -234,7 +234,7 @@ function valueTypeCheck(value, type){
             return dataTypeCheck.isObject(value)
             // return true
         case serverDataType.OBJECT_ID://在validateValue中通过format进行判断
-            return dataTypeCheck.isString(value)
+            return dataTypeCheck.isString(value) && regex.objectId.test(value)
             // return true
         case serverDataType.FILE: //必须是string，，才能判断
             return (dataTypeCheck.isString(value) && dataTypeCheck.isFile(value));

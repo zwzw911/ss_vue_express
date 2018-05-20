@@ -81,11 +81,11 @@ async function updateUser_async({req}){
     /*********************************************/
     dataConvert.constructUpdateCriteria(docValue)
 
-    /************************************************/
-    /******   传入的敏感数据（objectId）解密   ******/
-    /************************************************/
-    controllerHelper.decryptRecordValue({record:docValue,collName:collName})
-    recordId=crypt.cryptSingleFieldValue({fieldValue:recordId})
+/*    /!************************************************!/
+    /!******   传入的敏感数据（objectId）解密   ******!/
+    /!************************************************!/
+    // controllerHelper.decryptRecordValue({record:docValue,collName:collName})
+    recordId=crypt.cryptSingleFieldValue({fieldValue:recordId})*/
 
     /*              如果是root，则只有root可以修改自己（specific）              */
     let userToBeUpdate=await common_operation_model.findById_returnRecord_async({dbModel:e_dbModel.admin_user,id:recordId})
@@ -99,7 +99,7 @@ async function updateUser_async({req}){
     /************************************************/
     /*** CALL FUNCTION:inputValueLogicValidCheck ****/
     /************************************************/
-    let commonParam={docValue:docValue,userId:undefined,collName:collName}
+    let commonParam={docValue:docValue,userId:userId,collName:collName}
     let stepParam={
         [e_inputValueLogicCheckStep.FK_EXIST_AND_PRIORITY]:{flag:true,optionalParam:undefined},
         [e_inputValueLogicCheckStep.ENUM_DUPLICATE]:{flag:true,optionalParam:undefined},

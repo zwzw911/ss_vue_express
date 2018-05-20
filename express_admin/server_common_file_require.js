@@ -5,13 +5,11 @@
 const globalConfiguration=require('../server_common/constant/config/globalConfiguration.js')
 const appSetting=require('../server_common/constant/config/appSetting.js')
 const calcResourceConfig=require('../server_common/constant/define/calcResourceConfig.js')
-const not_used_calcResourceConfig=require('../server_common/constant/define/not_used_calcResourceConfig.js')
 const collEnum=require('../server_common/constant/enum/collEnum.js')
 const inputDataRuleType=require('../server_common/constant/enum/inputDataRuleType.js')
 const mongoEnum=require('../server_common/constant/enum/mongoEnum.js')
-const nodeEnum=require('../server_common/constant/enum/nodeEnum.js')
-const not_used_compoundUniqueField=require('../server_common/constant/enum/not_used_compoundUniqueField.js')
 const nodeRuntimeEnum=require('../server_common/constant/enum/nodeRuntimeEnum.js')
+const nodeEnum=require('../server_common/constant/enum/nodeEnum.js')
 const helperError=require('../server_common/constant/error/controller/helperError.js')
 const mongoError=require('../server_common/constant/error/mongo/mongoError.js')
 const redisError=require('../server_common/constant/error/redis/redisError.js')
@@ -22,40 +20,48 @@ const systemError=require('../server_common/constant/error/systemError.js')
 const validateError=require('../server_common/constant/error/validateError.js')
 const regex=require('../server_common/constant/regex/regex.js')
 const controllerChecker=require('../server_common/controller/controllerChecker.js')
+const controllerHelper=require('../server_common/controller/controllerHelper.js')
+const controllerInputValueLogicCheck=require('../server_common/controller/controllerInputValueLogicCheck.js')
 const controllerPreCheck=require('../server_common/controller/controllerPreCheck.js')
 const dataConvert=require('../server_common/controller/dataConvert.js')
 const resourceCheck=require('../server_common/controller/resourceCheck.js')
-const controllerInputValueLogicCheck=require('../server_common/controller/controllerInputValueLogicCheck.js')
-const controllerHelper=require('../server_common/controller/controllerHelper.js')
 const array=require('../server_common/function/assist/array.js')
 const awesomeCaptcha=require('../server_common/function/assist/awesomeCaptcha.js')
-const checkRobot=require('../server_common/function/assist/checkRobot.js')
-const crypt=require('../server_common/function/assist/crypt.js')
 const file=require('../server_common/function/assist/file.js')
 const gmImage=require('../server_common/function/assist/gmImage.js')
 const misc=require('../server_common/function/assist/misc.js')
-const not_used_cookieSession=require('../server_common/function/assist/not_used_cookieSession.js')
 const pagination=require('../server_common/function/assist/pagination.js')
 const sanityHtml=require('../server_common/function/assist/sanityHtml.js')
 const session=require('../server_common/function/assist/session.js')
 const string=require('../server_common/function/assist/string.js')
 const system=require('../server_common/function/assist/system.js')
 const upload=require('../server_common/function/assist/upload.js')
+const checkRobot=require('../server_common/function/assist/checkRobot.js')
+const crypt=require('../server_common/function/assist/crypt.js')
 const interval=require('../server_common/function/security/interval.js')
 const supervisor=require('../server_common/function/supervisor/supervisor.js')
-const validateFormat=require('../server_common/function/validateInput/validateFormat.js')
 const validateHelper=require('../server_common/function/validateInput/validateHelper.js')
 const validateSearchFormat=require('../server_common/function/validateInput/validateSearchFormat.js')
 const validateValue=require('../server_common/function/validateInput/validateValue.js')
-const db_operation_helper=require('../server_common/Test/db_operation_helper.js')
+const validateFormat=require('../server_common/function/validateInput/validateFormat.js')
 const generateTestData_API=require('../server_common/Test/generateTestData_API.js')
-const inputRule_API_tester=require('../server_common/Test/inputRule_API_tester.js')
-const misc_helper=require('../server_common/Test/misc_helper.js')
 const testData=require('../server_common/Test/testData.js')
-const component_function=require('../server_common/Test/component_function.js')
-const API_helper=require('../server_common/Test/API_helper.js')
-const redis_common_operation=require('../server_common/model/redis/operation/redis_common_operation.js')
+const misc_helper=require('../server_common/Test/misc_helper.js')
+const db_operation_helper=require('../server_common/Test/db_operation_helper.js')
+const impeach_and_comment_API=require('../server_common/Test/API/express/impeach_and_comment_API.js')
+const friend_group_API=require('../server_common/Test/API/express/friend_group_API.js')
+const article_API=require('../server_common/Test/API/express/article_API.js')
+const folder_API=require('../server_common/Test/API/express/folder_API.js')
+const friend_API=require('../server_common/Test/API/express/friend_API.js')
+const penalize_API=require('../server_common/Test/API/express/penalize_API.js')
+const user_API=require('../server_common/Test/API/express/user_API.js')
+const admin_user_API=require('../server_common/Test/API/express_admin/admin_user_API.js')
+const common_API=require('../server_common/Test/API/common_API.js')
+const user_component_function=require('../server_common/Test/component_function/express/user_component_function.js')
+const article_component_function=require('../server_common/Test/component_function/express/article_component_function.js')
+const admin_user_component_function=require('../server_common/Test/component_function/express_admin/admin_user_component_function.js')
 const redis_common_script=require('../server_common/model/redis/operation/redis_common_script.js')
+const redis_common_operation=require('../server_common/model/redis/operation/redis_common_operation.js')
 const testCaseEnum=require('../server_common/constant/testCaseEnum/testCaseEnum.js')
 const common_operation_model=require('../server_common/model/mongo/operation/common_operation_model.js')
 const common_operation_helper=require('../server_common/model/mongo/operation/common_operation_helper.js')
@@ -68,13 +74,11 @@ module.exports={
     globalConfiguration,
     appSetting,
     calcResourceConfig,
-    not_used_calcResourceConfig,
     collEnum,
     inputDataRuleType,
     mongoEnum,
-    nodeEnum,
-    not_used_compoundUniqueField,
     nodeRuntimeEnum,
+    nodeEnum,
     helperError,
     mongoError,
     redisError,
@@ -85,40 +89,48 @@ module.exports={
     validateError,
     regex,
     controllerChecker,
+    controllerHelper,
+    controllerInputValueLogicCheck,
     controllerPreCheck,
     dataConvert,
     resourceCheck,
-    controllerInputValueLogicCheck,
-    controllerHelper,
     array,
     awesomeCaptcha,
-    checkRobot,
-    crypt,
     file,
     gmImage,
     misc,
-    not_used_cookieSession,
     pagination,
     sanityHtml,
     session,
     string,
     system,
     upload,
+    checkRobot,
+    crypt,
     interval,
     supervisor,
-    validateFormat,
     validateHelper,
     validateSearchFormat,
     validateValue,
-    db_operation_helper,
+    validateFormat,
     generateTestData_API,
-    inputRule_API_tester,
-    misc_helper,
     testData,
-    component_function,
-    API_helper,
-    redis_common_operation,
+    misc_helper,
+    db_operation_helper,
+    impeach_and_comment_API,
+    friend_group_API,
+    article_API,
+    folder_API,
+    friend_API,
+    penalize_API,
+    user_API,
+    admin_user_API,
+    common_API,
+    user_component_function,
+    article_component_function,
+    admin_user_component_function,
     redis_common_script,
+    redis_common_operation,
     testCaseEnum,
     common_operation_model,
     common_operation_helper,

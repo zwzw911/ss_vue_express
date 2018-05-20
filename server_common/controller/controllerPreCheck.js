@@ -74,7 +74,7 @@ async function userStateCheck_async({req,userLoginCheck={needCheck:false},penali
     }
     if(undefined!==penalizeType || undefined!==penalizeSubType || undefined!==penalizeCheckError){
         //用户是否登录
-        if(undefined===req.session.userInfo || undefined!==req.session.userInfo.userId){
+        if(undefined===req.session.userInfo || undefined===req.session.userInfo.userId){
             return Promise.reject(preCheckError.userStateCheck.demandPenalizeCheckButUserNotLogin)
         }
 
@@ -97,8 +97,9 @@ async function userStateCheck_async({req,userLoginCheck={needCheck:false},penali
 * */
 //validatePartValueFormat+validatePartValue
 function inputPreCheck({req,expectedPart,collName,arr_currentSearchRange,applyRange}){
-    let result
     // ap.inf('inputPreCheck in')
+    let result
+
     if(expectedPart.length>0){
 
         //检查参数，要操作的coll是否为预定义
@@ -108,17 +109,12 @@ function inputPreCheck({req,expectedPart,collName,arr_currentSearchRange,applyRa
 
         // ap.inf('collValue done')
         //检查输入参数中part的值（格式预先检查好，某些part的值简单。例如method/currentPage，同时检测了value）
-        result = inputCommonCheck({req:req, expectedPart:expectedPart})
+/*        result = inputCommonCheck({req:req, expectedPart:expectedPart})
         // inputCommonCheck({req,expectedPart})
         if (result.rc > 0) {
             return result
-        }
-        // ap.inf('inputCommonCheck done')
-        //对每个partValue进行整体检查
-        // result=validateFormat.validatePartFormat(req.body.values,expectedPart)
-        // // console.log(`validatePartFormat result ====>${JSON.stringify(result)}`)
-        // if(result.rc>0){return result}
-        // ap.inf('validatePartFormat done')
+        }*/
+
         //检查输入参数格式是否正确
         // ap.inf('expectedPart',expectedPart)
         // ap.inf('collName',collName)
@@ -364,7 +360,7 @@ function validatePartValue({req,expectedPart,collName,applyRange,fkConfig}){
                 let fieldInputRule=inputRule[collName][singleFieldName]
                 // console.log(`fieldInputValue ${JSON.stringify(fieldInputValue)}`)
                 // console.log(`fieldInputRule ${JSON.stringify(fieldInputRule)}`)
-                checkPartValueResult=validateValue.validateSingleRecorderFieldValue(fieldInputValue,fieldInputRule)
+                checkPartValueResult=validateValue.validateSingleRecorderFieldValue({fieldValue:fieldInputValue,fieldRule:fieldInputRule})
                 // console.log(   `checkFilterFieldValueResult check result is  ${JSON.stringify(checkFilterFieldValueResult)}`)
                 if(checkPartValueResult.rc>0){
                     return checkPartValueResult
@@ -416,6 +412,7 @@ function validatePartValue({req,expectedPart,collName,applyRange,fkConfig}){
 /********************************************************************/
 /********************************************************************/
 module.exports={
+    inputCommonCheck,
     commonPreCheck_async,
     userStateCheck_async,
     inputPreCheck,

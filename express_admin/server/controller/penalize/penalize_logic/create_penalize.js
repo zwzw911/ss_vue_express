@@ -6,7 +6,7 @@
 /******************    内置lib和第三方lib  **************/
 const ap=require('awesomeprint')
 /**************  controller相关常量  ****************/
-const controller_setting=require('../penalize_setting/penalize_setting').setting
+const controllerSetting=require('../penalize_setting/penalize_setting').setting
 const controllerError=require('../penalize_setting/penalize_controllerError').controllerError
 
 /***************  数据库相关常量   ****************/
@@ -55,14 +55,15 @@ const fkConfig=server_common_file_require.fkConfig.fkConfig
 //对数值逻辑进行判断（外键是否有对应的记录等）
 //执行db操作并返回结果
 async  function createPenalize_async({req}){
+    // ap.inf('createPenalize_async in ')
     /********************************************************/
     /*************      define variant        ***************/
     /********************************************************/
     let tmpResult
-    let collName=controller_setting.MAIN_HANDLED_COLL_NAME
+    let collName=controllerSetting.MAIN_HANDLED_COLL_NAME
     let docValue=req.body.values[e_part.RECORD_INFO]
     let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
-    let {userId,userCollName,userType,userPriority}=userInfo
+    let {userId,userCollName,userType,userPriority,tempSalt}=userInfo
 // console.log(`userInfo===> ${JSON.stringify(userInfo)}`)
 // console.log(`userId===> ${JSON.stringify(userId)}`)
     /**********************************************/
@@ -75,7 +76,7 @@ async  function createPenalize_async({req}){
     /*************    用户类型检测    ************/
     /*********************************************/
     //检测当前用户是否为adminUser
-    await controllerChecker.ifExpectedUserType_async({req:req,arr_expectedUserType:[e_allUserType.ADMIN_ROOT,e_allUserType.ADMIN_NORMAL]})
+    await controllerChecker.ifExpectedUserType_async({currentUserType:userType,arr_expectedUserType:[e_allUserType.ADMIN_ROOT,e_allUserType.ADMIN_NORMAL]})
     //当前adminUser是否有权限实施（create）处罚
     let hasCreatePriority=await controllerChecker.ifAdminUserHasExpectedPriority_async({userPriority:userPriority,arr_expectedPriority:[e_adminPriorityType.PENALIZE_USER]})
     // console.log(`hasCreatePriority===>${JSON.stringify(hasCreatePriority)}`)
@@ -85,7 +86,7 @@ async  function createPenalize_async({req}){
     /************************************************/
     /*** CALL FUNCTION:inputValueLogicValidCheck ****/
     /************************************************/
-    let commonParam={docValue:docValue,userId:undefined,collName:collName}
+    let commonParam={docValue:docValue,userId:userId,collName:collName}
     let stepParam={
         [e_inputValueLogicCheckStep.FK_EXIST_AND_PRIORITY]:{flag:true,optionalParam:undefined},
         [e_inputValueLogicCheckStep.ENUM_DUPLICATE]:{flag:true,optionalParam:undefined},
@@ -156,11 +157,16 @@ async  function createPenalize_async({req}){
     /*******************************************************************************************/
     // ap.inf('start to logic check')
     let createdRecord=await businessLogic_async({userId:userId,docValue:docValue,collName:collName})
+    // ap.inf('created penalize record',createdRecord)
+    /*********************************************/
+    /**********      加密 敏感数据       *********/
+    /*********************************************/
     createdRecord=createdRecord.toObject()
-    // ap.inf('createdRecord',createdRecord)
-    controllerHelper.cryptRecordValue({record:createdRecord,collName:collName})
-    // ap.inf('crypt createdRecord',createdRecord)
+    controllerHelper.cryptRecordValue({record:createdRecord,salt:tempSalt,collName:collName})
+    // ap.inf('encryoted penalize record',createdRecord)
     return Promise.resolve({rc:0,msg:createdRecord})
+
+
 }
 /*************************************************************/
 /***************   业务处理    *******************************/

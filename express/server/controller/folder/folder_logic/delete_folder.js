@@ -10,6 +10,10 @@ const ap=require('awesomeprint')
 const controllerError=require('../folder_setting/folder_controllerError').controllerError
 const controllerSetting=require('../folder_setting/folder_setting').setting
 
+/**************      rule             *************/
+const inputRule=require('../../../constant/inputRule/inputRule').inputRule
+const internalInputRule=require('../../../constant/inputRule/internalInputRule').internalInputRule
+
 /***************  数据库相关常量   ****************/
 const e_uniqueField=require('../../../constant/genEnum/DB_uniqueField').UniqueField
 const e_chineseName=require('../../../constant/genEnum/inputRule_field_chineseName').ChineseName
@@ -53,19 +57,22 @@ async function deleteFolder_async({req}){
     /***********    define variant      ***********/
     /**********************************************/
     let tmpResult,condition,option
-    let collName=controller_setting.MAIN_HANDLED_COLL_NAME
+    let collName=controllerSetting.MAIN_HANDLED_COLL_NAME
     let recordId=req.body.params.recordId
     let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
-    let {userId,userCollName,userType,userPriority}=userInfo
+    let {userId,userCollName,userType,userPriority,tempSalt,}=userInfo
 
     /*********************************************/
     /*************    用户类型检测    ************/
     /*********************************************/
-    await controllerChecker.ifExpectedUserType_async({req:req,arr_expectedUserType:[e_allUserType.USER_NORMAL]})
-    /*********************************************/
-    /************    解密recordId    ************/
-    /*********************************************/
-    recordId=crypt.cryptSingleFieldValue({fieldValue:recordId})
+    await controllerChecker.ifExpectedUserType_async({currentUserType:userType,arr_expectedUserType:[e_allUserType.USER_NORMAL]})
+/*    /!*********************************************!/
+    /!************    解密recordId    ************!/
+    /!*********************************************!/
+    recordId=crypt.cryptSingleFieldValue({fieldValue:recordId,salt:tempSalt})
+    if(false===regex.objectId.test(recordId)){
+        return Promise.reject(controllerError.delete.inValidFolderId)
+    }*/
     /*******************************************************************************************/
     /****************  当前用户为普通用户，检测是否为recordId对应的创建者    *******************/
     /*******************************************************************************************/

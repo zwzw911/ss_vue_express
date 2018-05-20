@@ -359,7 +359,7 @@ function validateSingleFieldFormat(singleField,collRule){
  *    @  4. inputRules: object      所有的inputRule（因为不能确定外键对应的coll，所以提供全部inputRule，在函数中动态选取）
  *           返回{rc:0,msg:'xxxx}
  * */
-function validateSearchParamsFormat(searchParams,collFKConfig,collName,inputRulesForSearch) {
+/*function validateSearchParamsFormat(searchParams,collFKConfig,collName,inputRulesForSearch) {
     let inputValueFields=Object.keys(searchParams)
     if(undefined===inputRulesForSearch[collName]){
         return validateFormatError.searchParamsCollNoRelatedRule
@@ -376,13 +376,13 @@ function validateSearchParamsFormat(searchParams,collFKConfig,collName,inputRule
         return validateFormatError.searchParamsFieldsExceed
         // return result
     }
-/*    //2. 判断输入值中的字段是否在inputRule中有定义
+/!*    //2. 判断输入值中的字段是否在inputRule中有定义
     for(let fieldName in searchParams){
         if(undefined===inputRules[collName][fieldName]){
             result=validateValueError.unexceptSearchField(fieldName)
             return result
         }
-    }*/
+    }*!/
     // if(false===dataTypeCheck.isEmpty(searchParams)){
         for (let singleFieldName in searchParams) {
             let fieldRule
@@ -393,10 +393,10 @@ function validateSearchParamsFormat(searchParams,collFKConfig,collName,inputRule
                 if (false === singleFieldName in inputRulesForSearch[collName]) {
                     return validateFormatError.searchParamsFieldNoRelatedRule
                 }
-/*                //4 普通field的值，是否为array
+/!*                //4 普通field的值，是否为array
                 if(false===dataTypeCheck.isArray(searchParams[singleFieldName])){
                     return validateFormatError.searchParamsFiledValueMustBeArray
-                }*/
+                }*!/
                 //5 检测是否字段值为空(空的话根本就无需字段了嘛)，无论是否为外键字段，参数格式都是一致的。有server端判断是否为FK，并作出相应的转换
                 if(true===dataTypeCheck.isEmpty(searchParams[singleFieldName])){
                     return validateFormatError.searchParamsFiledValueCantEmpty
@@ -427,10 +427,10 @@ function validateSearchParamsFormat(searchParams,collFKConfig,collName,inputRule
                     if(-1===collFKConfig[singleFieldName]['relatedFields'].indexOf(singleFieldForFK)){
                         return validateFormatError.searchParamsFKRelatedFieldInvalid
                     }
-/*                    //4.2 值必须是array
+/!*                    //4.2 值必须是array
                     if(false===dataTypeCheck.isArray(searchParams[singleFieldName][singleFieldForFK])){
                         return validateFormatError.searchParamsFKFiledRelatedKeyValueMustBeArray
-                    }*/
+                    }*!/
 
                     //5 字段值是否为空
                     if(dataTypeCheck.isEmpty(searchParams[singleFieldName][singleFieldForFK])){
@@ -453,7 +453,7 @@ function validateSearchParamsFormat(searchParams,collFKConfig,collName,inputRule
 
 
 
-            /*//普通字段，
+            /!*!//普通字段，
             if(!collFKConfig[singleFieldName]){
                 //5 调用validateSingleSearchParamsFormat检查冗余字段的值的格式
 // console.log(`single search params field is ${JSON.stringify(searchParams[singleFieldName])}`)
@@ -485,12 +485,12 @@ function validateSearchParamsFormat(searchParams,collFKConfig,collName,inputRule
                         return singleFiledValueCheckResult
                     }
                 }
-            }*/
+            }*!/
         }
     // }
 
     return rightResult
-}
+}*/
 
 
 /*
@@ -503,7 +503,7 @@ function validateSearchParamsFormat(searchParams,collFKConfig,collName,inputRule
  * 1 @fieldValue：单个搜索字段的输入值（普通字段或者外键的冗余字段）数组
  * 2 @fieldRule：fieldValue对应的rule
  * */
-function validateSingleSearchParamsFormat(fieldValue,fieldRule){
+/*function validateSingleSearchParamsFormat(fieldValue,fieldRule){
     // let expectKey=["value","compOp"]
     // console.log(`input fieldValue ${JSON.stringify(fieldValue)}`)
     //1 是否为数组
@@ -521,8 +521,8 @@ function validateSingleSearchParamsFormat(fieldValue,fieldRule){
     }
 //console.log(`fieldValue is ${fieldValue}`)
     for(let singleElement of fieldValue) {
-        /*        console.log(`singleElement is ${singleElement}`)
-         console.log(`isobject result is ${dataTypeCheck.isObject(singleElement)}`)*/
+        /!*        console.log(`singleElement is ${singleElement}`)
+         console.log(`isobject result is ${dataTypeCheck.isObject(singleElement)}`)*!/
         //4. 数组中的每个元素必须是对象
         if (false === dataTypeCheck.isObject(singleElement)) {
             //console.log(`not object is ${singleElement}`)
@@ -564,7 +564,7 @@ function validateSingleSearchParamsFormat(fieldValue,fieldRule){
 
     }
     return rightResult
-}
+}*/
 
 
 /*
@@ -894,8 +894,8 @@ module.exports={
     validateSingleFieldFormat,//对单个字段进行检查，格式和RecordInfo类似，只是只有一个字段
 
     // validateSearchInputFormat, //检查总体格式，调用validatePartFormat
-    validateSearchParamsFormat,
-    validateSingleSearchParamsFormat,
+    // validateSearchParamsFormat,  //searchParams采用单独函数validateSearchFormat检测
+    // validateSingleSearchParamsFormat,
 
     validateFilterFieldValueFormat, //对ilterFieldValue（为单个字段提供autoComplete的功能） {field1:{value:keyword}} or {billType:{name:{value:keyword}}}
     // validateStaticInputFormat,

@@ -70,7 +70,7 @@ async function del_async({db=0,key}){
                 ap.wrn('delete err', err)
                 reject(generalError.getError)
             }
-            ap.inf('get delete ',result)
+            // ap.inf('get delete ',result)
             //get位于multi的第二个命令
             resolve(result[1][1])
         })

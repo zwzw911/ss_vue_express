@@ -159,7 +159,7 @@ function validateScalarInputValue({inputValue,collRule,p_applyRange}){
                         break
                     }
 
-                    let tmpRc=validateSingleRecorderFieldValue(singleFieldValue,fieldRule)
+                    let tmpRc=validateSingleRecorderFieldValue({fieldValue:singleFieldValue,fieldRule:fieldRule})
                     if(tmpRc.rc>0){
                         rc[fieldName]=tmpRc
                         break
@@ -168,7 +168,7 @@ function validateScalarInputValue({inputValue,collRule,p_applyRange}){
 
             }else{
                 // console.log(`2`)
-                rc[fieldName]=validateSingleRecorderFieldValue(fieldValue,fieldRule)
+                rc[fieldName]=validateSingleRecorderFieldValue({fieldValue:fieldValue,fieldRule:fieldRule})
                 // console.log(`2 result is ${JSON.stringify(rc)}` )
             }
             // console.log(`validate result of single field is ${JSON.stringify(rc)}`)
@@ -184,7 +184,6 @@ function validateScalarInputValue({inputValue,collRule,p_applyRange}){
  *           因为记录要存储到db，所以field的值必须严格的符合field对应的所有rule
  *           _id/id，以及equalTo要用单独的函数进行判断
  * param：
- * 0. chineseName： 用来产生error msg
  * 1. fieldValue; 单个字段的值
  * 2. fieldRule：单个字段对应的rule
  *
@@ -197,7 +196,7 @@ function validateScalarInputValue({inputValue,collRule,p_applyRange}){
  * 5. 检查剩余rule
  *
  * */
-function validateSingleRecorderFieldValue(fieldValue,fieldRule){
+function validateSingleRecorderFieldValue({fieldValue,fieldRule}){
     let rc={rc:0}
     let chineseName=fieldRule['chineseName']
 
@@ -210,6 +209,10 @@ function validateSingleRecorderFieldValue(fieldValue,fieldRule){
     }else{
         valueTypeCheckResult= valueTypeCheck(fieldValue,fieldRule[e_otherRuleFiledName.DATA_TYPE])
     }
+    // ap.inf('fieldRule[e_otherRuleFiledName.DATA_TYPE]',fieldRule[e_otherRuleFiledName.DATA_TYPE])
+    // ap.inf('valueTypeCheckResult',valueTypeCheckResult)
+    // ap.inf('fieldValue',fieldValue)
+    // ap.inf('fieldRule',fieldRule)
     if(valueTypeCheckResult.rc && 0<valueTypeCheckResult.rc){
         rc['rc']=valueTypeCheckResult.rc
         rc['msg']=`${chineseName}${valueTypeCheckResult.msg}`
@@ -310,9 +313,9 @@ function validateSingleRecorderFieldValue(fieldValue,fieldRule){
 
 
 
+// searchParamValue 的check已经由文件validateSearchFormat下的2个函数arrayValueStringLogicCheck/arrayValueDigitLogicCheck 完成
 
-
-/*
+/*/!*
  * 对输入的查询 参数进行 检验，不对输入进行任何修改（即，如果参数的值不符合要求，直接报错，而不是试着更正。如此可以防止恶意输入）
  * 分成3个函数，好处是层次清楚：
  *       主函数负责把输入拆解成field:[{value:xx,compOp:'gt'},{value:yyy,compOp:'lt'}]的格式，
@@ -336,7 +339,7 @@ function validateSingleRecorderFieldValue(fieldValue,fieldRule){
  *           4 inputRules
  *           整个inputRule，因为外键可能对应在其他coll
  * 返回: {field1:{rc:0},field2:{rc:9123.msg:'值不正确'}}
- * */
+ * *!/
 function validateSearchParamsValue(searchParams,fkConfig,collName,inputRules){
     let result={}
 
@@ -425,11 +428,11 @@ function validateSingleSearchFieldValue(fieldValue,fieldRule){
         if( fieldRule[e_serverRuleType.MAX_LENGTH] &&result.rc===fieldRule[e_serverRuleType.MAX_LENGTH]['error']['rc']){
             fieldValue.splice(idx,1)
             continue
-/*            //删除搜索值之后，如果为空数组，则把对应的field也删除
+/!*            //删除搜索值之后，如果为空数组，则把对应的field也删除
             if(fieldValue.length===0){
                 fieldValue=undefined
                 break
-            }*/
+            }*!/
         }
         //其他错误（例如空值），返回client（搜索不继续）
         if(result.rc>0){
@@ -443,7 +446,7 @@ function validateSingleSearchFieldValue(fieldValue,fieldRule){
 //需要单独定义成一个函数，在提供autoCoplete的时候，需要对单个搜索值（字符串）进行判断，就是用此函数
 //searchElement: 要检查的元素，如果是是指或者日期，可能还有比较符号{value:xxx,CompOp:'yy'}（字符/数字/日期，非数组或者对象）
 //singleFieldRule： 对应的rule定义
-/*  对单个搜索值进行检测，和validateSingleRecorderInfoValue不同在于：如果不符合enum/min/max/maxLength/format，返回rc，告知删除此搜索值（因为不在范围内，肯定没有对应记录）
+/!*  对单个搜索值进行检测，和validateSingleRecorderInfoValue不同在于：如果不符合enum/min/max/maxLength/format，返回rc，告知删除此搜索值（因为不在范围内，肯定没有对应记录）
 *params
 * 1. searchValue： 待检测的值
 * 2, fieldRule：对应的搜索rule
@@ -453,7 +456,7 @@ function validateSingleSearchFieldValue(fieldValue,fieldRule){
 * 2. 类型是否匹配，不匹配，返回rc，告知错误(2种返回值，不匹配；未知类型)  validateValueError.STypeWrong/validateHelperError.unknownDataType
 * 3. objectId/format/maxLength/enum，不符合，返回错误，maxlength返回删除
 * 4.  XXXXXXXmaxLength/min/max：不符合，删除XXXXXXXX   数值比较超出范围无所谓
-* */
+* *!/
 function _validateSingleSearchElementValue(searchElement,fieldRule){
     // console.log(`function checkSingleSearchValue called`)
     let searchValue=searchElement['value']
@@ -538,7 +541,9 @@ function _validateSingleSearchValue(searchValue,fieldRule){
     }
 
     return rc
-}
+}*/
+
+/**     暂时不需要       **/
 /*              为单个字段（不仅仅是fk的name）提供autoComplete            */
 /*  field是否为FK，通过查询fkconfig
 * 输入格式如下，xxxx只能接受字符/数字/日期
@@ -585,7 +590,7 @@ function validateFilterFieldValue(filterFieldValue,collFkConfig,collName,inputRu
     }
     // console.log(`value to be check is ${JSON.stringify(fieldValue)}`)
     // console.log(`fieldRule is ${JSON.stringify(fieldRule)}`)
-    result=_validateSingleSearchValue(fieldValue,fieldRule)
+/*    result=_validateSingleSearchValue(fieldValue,fieldRule)
     // console.log(` field value with rule check is ${JSON.stringify(result)}`)
 
     //maxLength/min/max，则直接返回空数组
@@ -594,7 +599,7 @@ function validateFilterFieldValue(filterFieldValue,collFkConfig,collName,inputRu
         (fieldRule[e_serverRuleType.MIN] &&result.rc===fieldRule[e_serverRuleType.MIN]['error']['rc'])){
         //返回这个错误，说明无需执行 搜索 操作，直接返回空数组即可（）
         return validateValueError.filterFieldValueOutRange
-    }
+    }*/
 
     return result
 }
@@ -1022,8 +1027,9 @@ module.exports= {
     // validateUpdateRecorderValue,        //调用_validateRecorderValue
     validateSingleRecorderFieldValue,   //validateRecorderValue=>validateSingleRecorderFieldValue
 
-    validateSearchParamsValue,
-    validateSingleSearchFieldValue,//辅助函数，一般不直接使用
+    // searchParamValue 的check已经由文件validateSearchFormat下的2个函数arrayValueStringLogicCheck/arrayValueDigitLogicCheck 完成
+/*    validateSearchParamsValue,
+    validateSingleSearchFieldValue,//辅助函数，一般不直接使用*/
     //_validateSingleSearchElementValue, //私有函数
 
     validateFilterFieldValue,//{field:xxxx}  {field:{fk:xxxxx}}    用来给单个字段（不仅仅是外键的name）提供autoComplete值，接受字符/数字。因为都是搜索，所以调用_validateSingleSearchElementValue对值检测

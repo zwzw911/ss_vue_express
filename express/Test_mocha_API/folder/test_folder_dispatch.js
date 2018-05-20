@@ -1,5 +1,5 @@
 /**
- * Created by Ada on 2017/7/11.
+ * Created by Ada on 2019/5/11.
  */
 'use strict'
 
@@ -61,7 +61,8 @@ const objectDeepCopy=server_common_file_require.misc.objectDeepCopy
 
 const db_operation_helper= server_common_file_require.db_operation_helper
 const testData=server_common_file_require.testData//require('../testData')
-const API_helper=server_common_file_require.API_helper//require('../API_helper/API_helper')
+const userAPI=server_common_file_require.user_API//require('../API_helper/API_helper')
+const penalizeAPI=server_common_file_require.penalize_API
 const component_function=server_common_file_require.component_function
 const misc_helper=server_common_file_require.misc_helper
 
@@ -81,32 +82,13 @@ let adminRootSess,adminRootId,data={values:{}}
 let recordId1,recordId2,recordId3,expectedErrorRc
 
 let normalRecord={
-    [e_field.FOLDER.AUTHOR_ID]:undefined,
-    [e_field.FOLDER.LEVEL]:undefined,
+    // [e_field.FOLDER.AUTHOR_ID]:undefined,
+    // [e_field.FOLDER.LEVEL]:undefined,
     [e_field.FOLDER.NAME]:undefined,
     [e_field.FOLDER.PARENT_FOLDER_ID]:undefined,
 }
 
 
-/*/!*
- * @sess：是否需要sess
- * @sessErrorRc：测试sess是否存在时，使用的error
- * @APIUrl:测试使用的URL
- * @penalizeRelatedInfo: {penalizeType:,penalizeSubType:,penalizedUserData:,penalizedError:,rootSess:,adminApp}
- * @reqBodyValues: 各个part。包含recordInfo/recordId/searchParams等
- * @skipParts：某些特殊情况下，需要skip掉的某些part
- * @collName: 获得collRule，进行collName的对比等
- * *!/
-let parameter={
-    [e_parameterPart.SESS]:undefined,
-    [e_parameterPart.SESS_ERROR_RC]:undefined,
-    [e_parameterPart.API_URL]:undefined,
-    [e_parameterPart.PENALIZE_RELATED_INFO]:{penalizeType:e_penalizeType.NO_USER_FRIEND_GROUP,penalizeSubType:e_penalizeSubType.CREATE,penalizedUserData:testData.user.user1,penalizedError:controllerError.inPenalizeCantCreateUserFriendGroup,adminApp:adminApp},
-    [e_parameterPart.REQ_BODY_VALUES]:{[e_part.RECORD_INFO]:normalRecord},
-    [e_parameterPart.COLL_NAME]:e_coll.USER_FRIEND_GROUP,
-    [e_parameterPart.SKIP_PARTS]:undefined,
-    [e_parameterPart.APP]:app,
-}*/
 describe('dispatch', function() {
 
     before('user1/2/3  login and create article and impeach', async function(){
@@ -132,6 +114,7 @@ describe('dispatch', function() {
         user2Sess=user2Info[`sess`]
 
         user3Info =await component_function.reCreateUser_returnSessUserId_async({userData:testData.user.user3,app:app})
+        // ap.inf('user3Info',user3Info)
         user3Id=user3Info[`userId`]
         user3Sess=user3Info[`sess`]
 
@@ -140,7 +123,7 @@ describe('dispatch', function() {
         adminRootId=db_operation_helper.getAdminUserId_async({userName:testData.admin_user.adminRoot.name})
 
         //create penalize for user3
-        await API_helper.createPenalize_returnPenalizeId_async({adminUserSess:adminRootSess,penalizeInfo:penalizeInfoForUser3,penalizedUserData:testData.user.user3,adminApp:adminApp})
+        await penalizeAPI.createPenalize_returnPenalizeId_async({adminUserSess:adminRootSess,penalizeInfo:penalizeInfoForUser3,penalizedUserId:user3Id,adminApp:adminApp})
         console.log(`==============================================================`)
         console.log(`=================    before all done      ====================`)
         console.log(`==============================================================`)
@@ -157,10 +140,88 @@ describe('dispatch', function() {
         await API_helper.createPenalize_async({adminUserSess:rootSess,penalizeInfo:penalizeInfo,pernalizedUserData:testData.user.user1,adminApp:adminApp})
     })*/
     /*              create                      */
-    it('1. not login cant create', async function() {
+    it('1. user type chekc', async function() {
         expectedErrorRc=controllerError.dispatch.post.notLoginCantCreateFolder.rc
-        let sess=await API_helper.getFirstSession({app})
+        let sess=await userAPI.getFirstSession({app})
+        // ap.inf('sess',sess)
         await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+    });
+    it('2. user in penalize cant create', async function() {
+        expectedErrorRc=controllerError.dispatch.post.userInPenalizeCantCreateComment.rc
+        // let sess=await API_helper.getFirstSession({app})
+        // ap.inf('sess',sess)
+        await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user3Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+    });
+    it('3.1 inputValue: req.body undefined', async function() {
+        expectedErrorRc=validateError.validateFormat.valuesUndefined.rc
+        data=undefined
+        // let sess=await API_helper.getFirstSession({app})
+        // ap.inf('sess',sess)
+        await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+    });
+    it('3.1.2 inputValue: req.body not object', async function() {
+        expectedErrorRc=validateError.validateFormat.reqBodyMustBeObject.rc
+        data=[]
+        await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+    });
+    it('3.2 inputValue: req.body no key values', async function() {
+        expectedErrorRc=validateError.validateFormat.valuesUndefined.rc
+        data={testkey:1234}
+        await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+    });
+    it('3.2.2 inputValue: req.body.values undefined', async function() {
+        expectedErrorRc=validateError.validateFormat.valuesUndefined.rc
+        data={values:undefined}
+        await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+    });
+    it('3.2.3 inputValue: req.body.values not object', async function() {
+        expectedErrorRc=validateError.validateFormat.valueMustBeObject.rc
+        data={values:[]}
+        await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+    });
+
+    it('3.3.1 inputValue: req.body.values part number not expected', async function() {
+        expectedErrorRc=validateError.validateFormat.inputValuePartNumNotExpected.rc
+        data={values:{}}
+        await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+    });
+    //cant be tested
+/*    it('3.3.2 inputValue: expected part not pre-defined', async function() {
+        expectedErrorRc=validateError.validateFormat.inputValueExceptedPartNotValid.rc
+        data={values:{'unexpectedPart':'test'}}
+        await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+    });*/
+    it('3.3.3 inputValue: req.body.values part not expected', async function() {
+        expectedErrorRc=validateError.validateFormat.inputValuePartNotMatch.rc
+        data={values:{[e_part.CAPTCHA]:'test'}}
+        await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+    });
+
+    it('4.1 inputValue: req.body.values part RECORDINFO null', async function() {
+        expectedErrorRc=validateError.validateFormat.inputValuePartRecordInfoValueFormatWrong.rc
+        data={values:{[e_part.RECORD_INFO]:null}}
+        await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+    });
+/*    it('4.1.1 inputValue: req.body.values part RECORDINFO undefined', async function() {
+        expectedErrorRc=validateError.validateFormat.inputValuePartRecordInfoValueFormatWrong.rc
+        data={values:{[e_part.RECORD_INFO]:undefined}}
+        await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+    });*/
+    it('4.2 inputValue: req.body.values part RECORDINFO not objectId', async function() {
+        expectedErrorRc=validateError.validateFormat.inputValuePartRecordInfoValueFormatWrong.rc
+        data={values:{[e_part.RECORD_INFO]:[]}}
+        await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+    });
+
+    it('5.1 inputValue: req.body.values part->fieldValue to be decrypt not string', async function() {
+        expectedErrorRc=helperError.cryptDecryptSingleRecord.encryptedObjectIdInvalid.rc
+        data={values:{[e_part.RECORD_INFO]:{[e_field.FOLDER.AUTHOR_ID]:1234}}}
+        await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+    });
+    it('5.2 inputValue: req.body.values part->fieldValue to be decrypt is string, but regex check failed', async function() {
+        expectedErrorRc=helperError.cryptDecryptSingleRecord.encryptedObjectIdInvalid.rc
+        data={values:{[e_part.RECORD_INFO]:{[e_field.FOLDER.AUTHOR_ID]:'1234'}}}
+        await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
     });
 
 

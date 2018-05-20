@@ -62,20 +62,34 @@ router.delete('/:recordId',function(req,res,next){
     )
     // next()
 })
+
 //read folder
-router.get('/;folderId',function(req,res,next){
-    // ap.inf('match url')
+//GET  /folder/folderId    or     GET /folder
+router.get('/:folderId',function(req,res,next){
+    // ap.inf('folderId',req.params.folderId)
     folderDispatcher_async(req).then(
         (v)=>{
-            ap.inf(`user get success, result:  ${JSON.stringify(v)}`)
+            ap.inf(`folderId get success, result:  ${JSON.stringify(v)}`)
             return res.json(v)
         },
         (err)=>{
-            ap.err(`user get fail: ${JSON.stringify(err)}`)
+            ap.err(`folderId get fail: ${JSON.stringify(err)}`)
             return res.json(genFinalReturnResult(err))
         }
     )
 })
-
+router.get('/',function(req,res,next){
+    // ap.inf('match url')
+    folderDispatcher_async(req).then(
+        (v)=>{
+            ap.inf(`folder get success, result:  ${JSON.stringify(v)}`)
+            return res.json(v)
+        },
+        (err)=>{
+            ap.err(`folder get fail: ${JSON.stringify(err)}`)
+            return res.json(genFinalReturnResult(err))
+        }
+    )
+})
 
 module.exports={router}

@@ -1,6 +1,7 @@
 /**
  * Created by zhang wei on 2018/3/19.
  * 查询参数只需要验证format，但是比较复杂，需要单独文件包含所有函数（功能）
+ * searchParam Value 的check由2个函数arrayValueStringLogicCheck/arrayValueDigitLogicCheck 完成
  * Coll1:{
         fieldOp: AND或者OR   enum
         searchValue:{
@@ -124,10 +125,11 @@ function searchParamsNonIdCheck({arr_allowCollNameForSearch,obj_searchParams,arr
             if(fieldDataType===dataType.DATE || fieldDataType===dataType.NUMBER || fieldDataType===dataType.INT || fieldDataType===dataType.FLOAT){
                 tmpResult=arrayValueDigitLogicCheck({arr_arrayCompOp:arr_arrayCompOpValue,arr_arrayValue:arr_arrayValue,fieldDataType:fieldDataType,fieldRule:undefined})
                 if(tmpResult.rc>0){return tmpResult}
-            }
-            if(fieldDataType===dataType.OBJECT_ID || fieldDataType===dataType.STRING){
+            }else if(fieldDataType===dataType.OBJECT_ID || fieldDataType===dataType.STRING){
                 tmpResult=arrayValueStringLogicCheck({arr_arrayCompOp:arr_arrayCompOpValue,arr_arrayValue:arr_arrayValue,fieldDataType:fieldDataType,fieldRule:undefined})
                 if(tmpResult.rc>0){return tmpResult}
+            }else{
+                return validateFormatError.searchValueDataTypeUnknownOrNotSupport
             }
         }
         // ap.inf('fieldValueFormatCheck done')

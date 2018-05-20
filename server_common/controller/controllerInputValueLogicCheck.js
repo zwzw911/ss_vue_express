@@ -458,6 +458,7 @@ async function  inputValueLogicValidCheck_async({commonParam,stepParam}){
         if(undefined!==commonParam.userId){
             if(undefined!==stepParam[e_inputValueLogicCheckStep.DISK_USAGE]['optionalParam']){
                 let resourceUsageOption=stepParam[e_inputValueLogicCheckStep.DISK_USAGE]['optionalParam']['resourceUsageOption']
+                // ap.inf('stepParam[e_inputValueLogicCheckStep.DISK_USAGE][\'optionalParam\'][\'resourceUsageOption\']',stepParam[e_inputValueLogicCheckStep.DISK_USAGE]['optionalParam']['resourceUsageOption'])
                 await ifEnoughResource_async({
                     requiredResource:resourceUsageOption.requiredResource,//{num:xx,sizeInMb;yy,filesAbsPath:[]}
                     resourceProfileRange:resourceUsageOption.resourceProfileRange,

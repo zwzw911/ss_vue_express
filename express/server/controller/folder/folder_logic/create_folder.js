@@ -10,6 +10,10 @@ const ap=require('awesomeprint')
 const controllerError=require('../folder_setting/folder_controllerError').controllerError
 const controllerSetting=require('../folder_setting/folder_setting').setting
 
+/**************      rule             *************/
+const inputRule=require('../../../constant/inputRule/inputRule').inputRule
+const internalInputRule=require('../../../constant/inputRule/internalInputRule').internalInputRule
+
 /***************  数据库相关常量   ****************/
 const e_uniqueField=require('../../../constant/genEnum/DB_uniqueField').UniqueField
 const e_chineseName=require('../../../constant/genEnum/inputRule_field_chineseName').ChineseName
@@ -54,38 +58,41 @@ const maxNumber=server_common_file_require.globalConfiguration.maxNumber
 /***************   主函数      *******************************/
 /*************************************************************/
 async function createFolder_async({req}){
+    // ap.inf('in')
     /********************************************************/
     /*************      define variant        ***************/
     /********************************************************/
     let tmpResult,condition,option
-    let collName=controller_setting.MAIN_HANDLED_COLL_NAME
+    // ap.inf('controller_setting.MAIN_HANDLED_COLL_NAME',controllerSetting)
+    let collName=controllerSetting.MAIN_HANDLED_COLL_NAME
+    // ap.inf('collName',collName)
     let docValue=req.body.values[e_part.RECORD_INFO]
+    // ap.inf('docValue',docValue)
     let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
-    let {userId,userCollName,userType,userPriority}=userInfo
+    // ap.inf('userInfo',userInfo)
+    let {userId,userCollName,userType,userPriority,tempSalt}=userInfo
 
 
 
     //={requiredResource:{sizeInMb:xxx,num:yyy,filesAbsPath:['如果检测失败，需要删除文件']},resourceProfileRange,containerId}
-        =
+
     /**********************************************/
     /********  删除null/undefined的字段  *********/
     /*********************************************/
+    // ap.inf('docValue',docValue)
     dataConvert.constructCreateCriteria(docValue)
-
-    /**********************************************/
-    /****** 传入的敏感数据（objectId）解密  ******/
-    /*********************************************/
-    controllerHelper.decryptRecordValue({record:docValue,collName:collName})
+    // ap.inf('null/undefined done')
 
     /**********************************************/
     /***********    用户类型检测    **************/
     /*********************************************/
-    await controllerChecker.ifExpectedUserType_async({req:req,arr_expectedUserType:[e_allUserType.USER_NORMAL]})
-
+    await controllerChecker.ifExpectedUserType_async({currentUserType:userType,arr_expectedUserType:[e_allUserType.USER_NORMAL]})
+    // ap.inf('用户类型检测 done')
     /**********************************************/
     /**  CALL FUNCTION:inputValueLogicValidCheck **/
     /**********************************************/
-    let commonParam={docValue:docValue,userId:undefined,collName:collName}
+    let commonParam={docValue:docValue,userId:userId,collName:collName}
+    // ap.inf('userId',userId)
     let stepParam={
         [e_inputValueLogicCheckStep.FK_EXIST_AND_PRIORITY]:{flag:true,optionalParam:undefined},
         [e_inputValueLogicCheckStep.ENUM_DUPLICATE]:{flag:true,optionalParam:undefined},
@@ -96,19 +103,20 @@ async function createFolder_async({req}){
         //object，对compoundField进行unique检测需要的额外条件，key从model->mongo->compound_unique_field_config.js中获得
         [e_inputValueLogicCheckStep.COMPOUND_VALUE_UNIQUE]:{flag:true,optionalParam:{compoundFiledValueUniqueCheckAdditionalCheckCondition:undefined}},
         //Object，配置resourceCheck的一些参数,{requiredResource,resourceProfileRange,userId,containerId}
-        [e_inputValueLogicCheckStep.DISK_USAGE]:{flag:true,optionalParam:{resourceUsageOption:{requiredResource:{[e_resourceFieldName.USED_NUM]:1},resourceProfileRange:e_resourceProfileRange.FOLDER_NUM,userId:userId,containerId:undefined}}},
+        [e_inputValueLogicCheckStep.DISK_USAGE]:{flag:true,optionalParam:{resourceUsageOption:{requiredResource:{[e_resourceFieldName.USED_NUM]:1},resourceProfileRange:[e_resourceProfileRange.FOLDER_NUM],userId:userId,containerId:undefined}}},
     }
     await inputValueLogicValidCheck_async({commonParam:commonParam,stepParam:stepParam})
-
-    let createdRecord=await businessLogic_async({docValue:docValue,collName:collName})
-    return Promise.resolve(createdRecord)
+    // ap.inf('inputValueLogicValidCheck_async done')
+    let createdRecord=await businessLogic_async({docValue:docValue,collName:collName,userId:userId})
+    // ap.inf('businessLogic_async done')
+    return Promise.resolve({rc:0,msg:createdRecord})
 }
 
 
 /*************************************************************/
 /***************   业务处理    *******************************/
 /*************************************************************/
-async function businessLogic_async({docValue,collName}){
+async function businessLogic_async({docValue,collName,userId}){
     // ap.inf('businessLogic_async in')
     //添加internal value
     let internalValue={}
@@ -120,8 +128,12 @@ async function businessLogic_async({docValue,collName}){
     }
     //判断level是否超出定义
     if(internalValue[e_field.FOLDER.LEVEL]>maxNumber.folder.folderLevel){
-
+        return Promise.reject(controllerError.create.folderLevelExceed)
     }
+
+    //添加创建人
+    internalValue[e_field.FOLDER.AUTHOR_ID]=userId
+    // ap.inf('interval check before')
     /*              对内部产生的值进行检测（开发时使用，上线后为了减低负荷，无需使用）           */
     if(e_env.DEV===currentEnv){
         //ap.inf('req.body.values',req.body.values)
@@ -132,7 +144,7 @@ async function businessLogic_async({docValue,collName}){
         }
     }
     Object.assign(docValue,internalValue)
-
+    //ap.inf('docValue mergerd',docValue)
     /*              数据库操作               */
     let createdRecord=await common_operation_model.create_returnRecord_async({dbModel:e_dbModel.folder,value:docValue})
     return Promise.resolve(createdRecord)

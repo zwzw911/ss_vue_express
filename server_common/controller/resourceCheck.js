@@ -176,27 +176,36 @@ const calcResourceCriteria={
 * return：singleResourceProfileRange对应的一条记录
 * */
 async function findValidResourceProfiles_async({singleResourceProfileRange,userId}){
+    // ap.inf('findValidResourceProfiles_async in')
     let validResourceProfileRecord
     //为每种resourceProfileRange查找valida的resourceProfile
     // for(let singleResourceProfileRange of arr_resourceProfileRange){
     let condition={"$and":[{'dDate':{$exists:false}}]}
+    // ap.inf('findValidResourceProfiles_async->condition',condition)
     //首先在resourceProfile中，根据resourceRange查找所有对应的resourceProfile（包括所有type（当前为basic和advanced））
-    condition.push({[e_field.RESOURCE_PROFILE.RANGE]:singleResourceProfileRange})
-    let resourceProfileResult=common_operation_model.find_returnRecords_async({dbModel:e_dbModel.resource_profile,condition:condition})
-    //根据所有查找到的resourceProfile id，在user_profile查找所有对应的记录
+    condition["$and"].push({[e_field.RESOURCE_PROFILE.RANGE]:singleResourceProfileRange})
+    // ap.inf('findValidResourceProfiles_async->condition',condition)
+    let resourceProfileResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.resource_profile,condition:condition})
+    ap.inf('findValidResourceProfiles_async->resourceProfileResult',resourceProfileResult)
+    //根据所有查找到的resourceProfile id，在user_profile查找所有对应的，且尚未过期的记录
     let currentDate=new Date()
     let userResourceProfileCondition={"$and":[
             {[e_field.USER_RESOURCE_PROFILE.RESOURCE_PROFILE_ID]:{'$in':[]}},
-            {[e_field.USER_RESOURCE_PROFILE.END_DATE]:{$lt:currentDate}},
-            {[e_field.USER_RESOURCE_PROFILE.START_DATE]:{$gt:currentDate}},
+            {[e_field.USER_RESOURCE_PROFILE.END_DATE]:{$gt:currentDate}},
+            // {[e_field.USER_RESOURCE_PROFILE.START_DATE]:{$gt:currentDate}},
             {[e_field.USER_RESOURCE_PROFILE.USER_ID]:userId},
         ]}
     let userResourceProfileSelectFields='-uDate' //包含所有field的值
     let option={$sort:{[e_field.USER_RESOURCE_PROFILE.ID]:-1}} //按照cDate递减，方便返回结果取值（idx=0为第一条）
-    for(let singleResourceProfileResult of resourceProfileResult){
-        userResourceProfileCondition[e_field.USER_RESOURCE_PROFILE.RESOURCE_PROFILE_ID]['$in'].push(singleResourceProfileResult[e_field.RESOURCE_PROFILE.ID])
+    ap.inf('findValidResourceProfiles_async->userResourceProfileCondition',userResourceProfileCondition)
+    for(let idx in resourceProfileResult){
+        let singleResourceProfileResult=resourceProfileResult[idx]
+        ap.inf('singleResourceProfileResult',singleResourceProfileResult)
+        ap.inf('userResourceProfileCondition["$and"][0][\'$in\']',userResourceProfileCondition["$and"][0][e_field.USER_RESOURCE_PROFILE.RESOURCE_PROFILE_ID]['$in'])
+        userResourceProfileCondition["$and"][0][e_field.USER_RESOURCE_PROFILE.RESOURCE_PROFILE_ID]['$in'].push(singleResourceProfileResult[e_field.RESOURCE_PROFILE.ID])
     }
-    let validResultForSingleResourceProfileRange=common_operation_model.find_returnRecords_async({
+    ap.inf('findValidResourceProfiles_async->userResourceProfileCondition',userResourceProfileCondition)
+    let validResultForSingleResourceProfileRange=await common_operation_model.find_returnRecords_async({
         dbModel:e_dbModel.user_resource_profile,
         selectedFields:userResourceProfileSelectFields,
         options:option,
@@ -308,12 +317,15 @@ async function calcFolderNum_async({userId}){
 * return: boolean
 * */
 async function ifEnoughResource_async({requiredResource,resourceProfileRange,userId,containerId}){
+    ap.inf('resourceProfileRange',resourceProfileRange)
     for(let singleResourceProfileRange of resourceProfileRange){
         //1. 根据resourceProfileRange获得对应的当前可用的 资源配置文件（valid resourceProfile）
-        let resourceProfile=await findValidResourceProfiles_async({singleResourceProfileRange:singleResourceProfileRange})
+        let resourceProfile=await findValidResourceProfiles_async({singleResourceProfileRange:singleResourceProfileRange,userId:userId})
         //2. 根据resourceProfileRange和（或） userId/containerId，获得当前使用资源量
         let usedResource,spaceExceedFlag,numExceedFlag
+        ap.inf('singleResourceProfileRange',singleResourceProfileRange)
         switch (singleResourceProfileRange){
+
             case e_resourceProfileRange.ATTACHMENT_PER_ARTICLE:
                 usedResource=await calcArticleResourceUsage_async({singleResourceProfileRange:singleResourceProfileRange,articleId:containerId})
                 spaceExceedFlag=ifSpaceExceed({currentUsedSpace:usedResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],requiredSpace:requiredResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],resourceProfileRecord:[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]})
@@ -357,7 +369,10 @@ async function ifEnoughResource_async({requiredResource,resourceProfileRange,use
                 }
                 break
             case e_resourceProfileRange.FOLDER_NUM:
+                ap.inf('FOLDER_NUM')
                 usedResource=await calcFolderNum_async({userId:userId})
+                ap.inf('usedResource',usedResource)
+                ap.inf('usedResource[e_resourceFieldName.USED_NUM]',usedResource[e_resourceFieldName.USED_NUM])
                 //folder只要检测数量
                 numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:[e_field.RESOURCE_PROFILE.MAX_NUM]})
                 if(true===numExceedFlag){

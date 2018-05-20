@@ -79,6 +79,8 @@ const regex={
     appRouteUrl:/app\.use\('(\/.*?)',.*?\)/g,
 
     SMS:/^\d{6}$/,
+
+    cryptedObjectId:/^[0-9a-fA-F]{64}$/,
 }
 
 module.exports= {

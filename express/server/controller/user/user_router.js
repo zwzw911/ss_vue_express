@@ -159,7 +159,7 @@ router.get('/captcha',function(req,res,next){
 // ap.inf('router in')
     userDispatcher_async(req).then(
         (v)=>{
-            ap.inf(`captcha  success, result:  ${JSON.stringify(v)}`)
+            ap.inf(`captcha  success, `)//result:  ${JSON.stringify(v)}
             return res.json(v)
         },
         (err)=>{

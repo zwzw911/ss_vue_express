@@ -230,6 +230,7 @@ async  function createUser_async({req}){
     //对关联表user_resource_profile进行insert操作,插入默认资源设置
     let userResourceProfile=[]
     // console.log(`e_iniSettingObject.resource_profile.DEFAULT==========>${JSON.stringify(e_iniSettingObject.resource_profile.DEFAULT)}`)
+    //从数据库读，而不是
     for(let defaultResourceProfile of Object.values(e_iniSettingObject.resource_profile.BASIC)){
         // for(let resourceProfileId)
         // console.log(`defaultResourceProfile==========>${JSON.stringify(defaultResourceProfile)}`)

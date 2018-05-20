@@ -38,6 +38,7 @@ const controllerChecker=server_common_file_require.controllerChecker
 const common_operation_model=server_common_file_require.common_operation_model
 const misc=server_common_file_require.misc
 const miscConfiguration=server_common_file_require.globalConfiguration.misc
+const crypt=server_common_file_require.crypt
 const inputValueLogicValidCheck_async=server_common_file_require.controllerInputValueLogicCheck.inputValueLogicValidCheck_async
 /*************** 配置信息 *********************/
 const currentEnv=server_common_file_require.appSetting.currentEnv
@@ -62,13 +63,18 @@ async function deleteUser_async(req){
     /********************************************************/
     let tmpResult,collName=controller_setting.MAIN_HANDLED_COLL_NAME
     let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
-    let {userId,userCollName,userType,userPriority}=userInfo
+    let {userId,userCollName,userType,userPriority,tempSalt}=userInfo
     /*              client数据转换                  */
     let recordId=req.body.values[e_part.RECORD_ID]
     /**********************************************/
     /***********    用户类型检测    **************/
     /*********************************************/
     await controllerChecker.ifExpectedUserType_async({req:req,arr_expectedUserType:[e_allUserType.ADMIN_NORMAL,e_allUserType.ADMIN_ROOT]})
+    /************************************************/
+    /******   传入的敏感数据（recordId）解密，recordInfo中的objectId在dispatch中解密   ******/
+    /************************************************/
+    // controllerHelper.decryptRecordValue({record:docValue,collName:collName})
+    recordId=crypt.decryptSingleFieldValue({fieldValue:recordId,salt:tempSalt})
     /**********************************************/
     /******    当前用户是否有创建用户的权限   ****/
     /*********************************************/

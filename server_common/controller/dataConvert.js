@@ -724,7 +724,7 @@ module.exports={
     constructUpdateCriteria,
     convertToClient,
 
-    //只在dev环境下使用。//无需使用，recordInfo格式已经改成field:value
+    //无需使用，recordInfo格式已经改成field:value
     // addSubFieldKeyValue,
 
     convertToObjectId,

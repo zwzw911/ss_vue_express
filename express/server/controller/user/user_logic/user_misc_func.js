@@ -417,7 +417,7 @@ async function uploadFilePhoto_async({req}){
 //     console.log(`currentEnv ${currentEnv}`)
     if(e_env.DEV===currentEnv){
         // ap.inf('updateFieldsValueForModel',updateFieldsValueForModel)
-        let newDocValue=dataConvert.addSubFieldKeyValue(updateFieldsValueForModel)
+        // let newDocValue=dataConvert.addSubFieldKeyValue(updateFieldsValueForModel)
         // ap.inf('newDocValue',newDocValue)
         // console.log(`newDocValue===>${JSON.stringify(newDocValue)}`)
         tmpResult=validateFormat.validateCURecordInfoFormat(newDocValue,inputRule[e_coll.USER])

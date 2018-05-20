@@ -5,6 +5,7 @@
  * 被express/express_admin的genCollFieldEnum调用，server_common没有使用，但是为了照顾test/db_operation_helper中的格式，还是需要产生
  */
 'use strict'
+const ap=require('awesomeprint')
 // const server_common_file_require=require('../../../express/server_common_file_require')
 const common_operation_model=require(`../../model/mongo/operation/common_operation_model`)//server_common_file_require.common_operation_model
 
@@ -66,6 +67,7 @@ async function generateInitSettingEnum_async(){
 
     result[e_coll.RESOURCE_PROFILE]={}
     tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.resource_profile,condition:{}})
+    // ap.inf('tmpResult',tmpResult)
     for(let singleRecord of tmpResult){
         // console.log(`single record ====>${JSON.stringify(singleRecord)}`)
         // console.log(`mongoEnumKVExchange['ResourceType'] ====>${JSON.stringify(mongoEnumKVExchange['ResourceType'])}`)
@@ -87,7 +89,8 @@ async function generateInitSettingEnum_async(){
 }
 
 async function writeInitSettingEnum_async(destFileDir){
-    let description=`/*    gene by server/maintain/getInitSettingId     */ \r\n \r\n`
+    // ap.inf('writeInitSettingEnum_async in')
+    let description=`/*    gene by server/maintain/getInitSettingId  in ${new Date().toLocaleDateString()}   */ \r\n \r\n`
     let indent=`\ \ \ \ `
     let useStrict=`"use strict"\r\n`
     let convertedEnum=''

@@ -52,7 +52,7 @@ async function updateUser_async({req}){
     /********************************************************/
     let tmpResult,collName=e_coll.USER
     let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
-    let {userId,userCollName,userType,userPriority}=userInfo
+    let {userId,userCollName,userType,userPriority,tempSalt}=userInfo
     let docValue=req.body.values[e_part.RECORD_INFO]
     /********************************************************/
     /***  剔除需要通过单独函数来update的字段（password） ***/
@@ -87,7 +87,7 @@ async function updateUser_async({req}){
         return {rc:0}
     }
 
-    let commonParam={docValue:docValue,userId:undefined,collName:collName}
+    let commonParam={docValue:docValue,userId:userId,collName:collName}
     let stepParam={
         [e_inputValueLogicCheckStep.FK_EXIST_AND_PRIORITY]:{flag:true,optionalParam:undefined},
         [e_inputValueLogicCheckStep.ENUM_DUPLICATE]:{flag:true,optionalParam:undefined},

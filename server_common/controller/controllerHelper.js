@@ -74,7 +74,7 @@ const internalInputRule=require('../constant/inputRule/internalInputRule').inter
 const inputRule=require('../constant/inputRule/inputRule').inputRule
 
 const fkConfig=require('../model/mongo/fkConfig').fkConfig
-
+const e_dataType=require('../constant/enum/inputDataRuleType').ServerDataType
 
 
 const handleSystemError=require('../function/assist/system').handleSystemError
@@ -1144,11 +1144,11 @@ async function setSessionByServer_async({req}){
 * */
 async  function genCaptchaAdnSave_async({req,params,db=2}){
     // await controllerChecker.checkInterval_async({req:req,reqTypePrefix:'captcha'})
-ap.inf('params',params)
-    ap.inf('db',db)
+// ap.inf('params',params)
+//     ap.inf('db',db)
 // ap.inf('interval done')
     let captchaString=misc.generateRandomString({})
-    ap.inf('captchaString',captchaString)
+    // ap.inf('captchaString',captchaString)
     //获得session或者ip
     let userIdentify=await misc.getIdentify_async({req:req})
     // ap.inf('userIdentify for setCaptcha_async',userIdentify)
@@ -1161,7 +1161,7 @@ ap.inf('params',params)
     await redisOperation.set_async({db:db,key:`${userIdentify[0]}:captcha`,value:captchaString,expireTime:expireTime,expireUnit:'s'})
 
     // await misc.setCaptcha_async({req:req,captchaString:captchaString})
-    ap.inf('save captchaString to db done')
+    // ap.inf('save captchaString to db done')
     //产生dataURL并返回
     let dataURL=await captcha_async({params:params,captchaString:captchaString})
     return Promise.resolve(dataURL)
@@ -1194,7 +1194,7 @@ async function getCaptchaAndCheck_async({req,db=2}){
 //对单个记录的值(主要是objectId)进行加密
 //record必须是object，可能需要.toObject()方法转换
 //inputRule已经require，无需参数传递
-function cryptDecryptSingleRecord({record,collName,cryptDecryptType}){
+function cryptDecryptSingleRecord({record,collName,salt,cryptDecryptType}){
     let collRule=inputRule[collName]
     for(let singleFieldName in collRule){
         //当前，只对objectId的数据进行加解密
@@ -1207,24 +1207,66 @@ function cryptDecryptSingleRecord({record,collName,cryptDecryptType}){
                 if(undefined!==record[singleFieldName]){
                     if(cryptDecryptType==='crypt'){
                         // ap.inf('cryptSingleFieldValue({fieldValue:record[singleFieldName]}).msg',cryptSingleFieldValue({fieldValue:record[singleFieldName]}).msg)
-                        record[singleFieldName]=cryptSingleFieldValue({fieldValue:record[singleFieldName]}).msg
+                        record[singleFieldName]=cryptSingleFieldValue({fieldValue:record[singleFieldName],salt:salt}).msg
                     }
                     if(cryptDecryptType==='decrypt'){
-                        record[singleFieldName]=decryptSingleFieldValue({fieldValue:record[singleFieldName]}).msg
+                        //传入的objectId必须符合条件；1. string，2. 长度64
+                        // ap.inf('singleFieldName',singleFieldName)
+                        // ap.inf('record[singleFieldName]',record[singleFieldName])
+                        if(false===dataTypeCheck.isString(record[singleFieldName]) || false===regex.cryptedObjectId.test(record[singleFieldName])){
+                            return helperError.cryptDecryptSingleRecord.encryptedObjectIdInvalid
+                        }
+                        record[singleFieldName]=decryptSingleFieldValue({fieldValue:record[singleFieldName],salt:salt}).msg
                     }
                 }
             }
         }
     }
+    return {rc:0}
 }
 
-function cryptRecordValue({record,collName}){
-    cryptDecryptSingleRecord({record:record,collName:collName,cryptDecryptType:'crypt'})
+function cryptRecordValue({record,collName,salt}){
+    return cryptDecryptSingleRecord({record:record,salt:salt,collName:collName,cryptDecryptType:'crypt'})
+    // return result
 }
-function decryptRecordValue({record,collName}){
-    cryptDecryptSingleRecord({record:record,collName:collName,cryptDecryptType:'decrypt'})
+function decryptRecordValue({record,collName,salt}){
+    return cryptDecryptSingleRecord({record:record,salt:salt,collName:collName,cryptDecryptType:'decrypt'})
 }
 
+/****************************************************************/
+/********    对inputValue中加密的objectId进行解密       *********/
+/****************************************************************/
+//目前只支持recordId和recordInfo
+function decryptInputValue({req,expectedPart,salt,browserCollRule}){
+    for(let singlePart of expectedPart){
+        switch (singlePart){
+            case e_part.RECORD_ID:
+                req[singlePart]=decryptSingleFieldValue({fieldValue:req[singlePart],salt:salt}).msg
+                break;
+            case e_part.RECORD_INFO:
+                let recordInfoValue=req.body.values[singlePart]
+                for(let singleFieldName in recordInfoValue){
+                    let singleFieldDataTypeInRule=browserCollRule[singleFieldName][e_otherRuleFiledName.DATA_TYPE]
+                    let dataTypeArrayFlag=dataTypeCheck.isArray(singleFieldDataTypeInRule)
+                    let dataType= dataTypeArrayFlag ? singleFieldDataTypeInRule[0]:singleFieldDataTypeInRule
+                    if(e_dataType.OBJECT_ID===dataType){
+                        //数组，对每个元素进行解密
+                        if(true===dataTypeArrayFlag){
+                            for(let idx in recordInfoValue[singleFieldName]){
+                                recordInfoValue[singleFieldName][idx]=decryptSingleFieldValue({fieldValue:recordInfoValue[singleFieldName][idx],salt:salt}).msg
+                            }
+                        }else{
+                            recordInfoValue[singleFieldName]=decryptSingleFieldValue({fieldValue:recordInfoValue[singleFieldName],salt:salt}).msg
+                        }
+                    }
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+}
 module.exports= {
     checkOptionPartExist,//检查option中那些part是存在
     // inputCommonCheck,//每个请求进来是，都要进行的操作（时间间隔检查等）
@@ -1292,6 +1334,8 @@ module.exports= {
 
     cryptRecordValue,
     decryptRecordValue,
+
+    decryptInputValue,
 }
 
 

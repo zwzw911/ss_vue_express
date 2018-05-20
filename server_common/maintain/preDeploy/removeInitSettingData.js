@@ -8,7 +8,7 @@ const e_dbModel=require('../../constant/genEnum/dbModel')
 const dbModelArray=require('../../constant/genEnum/dbModelInArray')
 
 async function remove_all_init_data_async(){
-    let dbModelInArray=[e_dbModel.store_path,e_dbModel.category,e_dbModel.resource_profile,e_dbModel.admin_user]
+    let dbModelInArray=[e_dbModel.store_path,e_dbModel.category,e_dbModel.resource_profile,e_dbModel.admin_user,e_dbModel.admin_sugar]
     for(let singleDbModel of dbModelInArray){
         await common_operation_model.removeAll_async({dbModel:singleDbModel})
     }

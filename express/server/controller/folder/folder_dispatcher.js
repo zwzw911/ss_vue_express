@@ -13,16 +13,18 @@ const ap=require('awesomeprint')
 const server_common_file_require=require('../../../server_common_file_require')
 /****************   公共函数   ******************/
 const controllerPreCheck=server_common_file_require.controllerPreCheck
+const controllerHelper=server_common_file_require.controllerHelper
+const controllerChecker=server_common_file_require.controllerChecker
 /****************   公共常量   ******************/
 //error
 const dispatchError=server_common_file_require.helperError.dispatch
-const controllerHelper=server_common_file_require.controllerHelper
+
 //enum
 const nodeEnum=server_common_file_require.nodeEnum
 const mongoEnum=server_common_file_require.mongoEnum
 // const e_userState=require('../../constant/enum/node').UserState
 const e_part=nodeEnum.ValidatePart
-const e_applyRange=nodeEnum.ApplyRange//require('../../constant/enum/node').Method
+//require('../../constant/enum/node').Method
 const e_coll=require('../../constant/genEnum/DB_Coll').Coll
 
 const e_penalizeType=mongoEnum.PenalizeType.DB
@@ -30,15 +32,20 @@ const e_penalizeSubType=mongoEnum.PenalizeSubType.DB
 
 const e_intervalCheckPrefix=server_common_file_require.nodeEnum.IntervalCheckPrefix
 const e_searchRange=server_common_file_require.inputDataRuleType.SearchRange
-
 const e_applyRange=server_common_file_require.inputDataRuleType.ApplyRange
+// const e_applyRange=server_common_file_require.inputDataRuleType.ApplyRange
+
+/**************  rule  ****************/
+const browserInputRule=require('../../constant/inputRule/browserInputRule').browserInputRule
+
 /**************  controller相关常量  ****************/
 const controllerError=require(`./folder_setting/folder_controllerError`).controllerError
 const controllerSetting=require('./folder_setting/folder_setting').setting
 
 /**************  controller处理函数  ****************/
 const createFolder_async=require('./folder_logic/create_folder').createFolder_async
-const getFolder_async=require('./folder_logic/get_folder').getFolder_async
+const getRootFolder_async=require('./folder_logic/get_folder').getRootFolder_async
+const getNonRootFolder_async=require('./folder_logic/get_folder').getNonRootFolder_async
 const updateFolder_async=require('./folder_logic/update_folder').updateFolder_async
 const deleteFolder_async=require('./folder_logic/delete_folder').deleteFolder_async
 
@@ -64,7 +71,7 @@ async function dispatcher_async(req){
     let collName=controllerSetting.MAIN_HANDLED_COLL_NAME
     let expectedPart
     let result=dispatchError.common.unknownRequestRul
-
+    // let tmpResult
     /***   1. interval和robot检测   ***/
     await controllerPreCheck.commonPreCheck_async({req:req,collName:collName})
     // ap.inf('commonPreCheck_async done')
@@ -73,19 +80,27 @@ async function dispatcher_async(req){
     switch (req.route.stack[0].method) {
         case 'get':
             //get只能在url中包含参数，所以无inputPreCheck
-            if(originalUrl==='/folder' || originalUrl==='/folder/') {
-                userLoginCheck={
-                    needCheck:true,
-                    error:controllerError.dispatch.get.notLoginCantGetFolder
-                }
-
-                await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
-
-                if(result.rc>0){return Promise.reject(result)}
-                result = await getFolder_async({req: req})
-                return Promise.resolve(result)
+            // ap.inf('get originalUrl',originalUrl)
+            // ap.inf('req.params',req.params)
+            // if(originalUrl==='/folder' || originalUrl==='/folder/') {
+            userLoginCheck={
+                needCheck:true,
+                error:controllerError.dispatch.get.notLoginCantGetFolder
             }
-            break;
+
+            await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
+
+            if(undefined===req.params.folderId){
+                result = await getRootFolder_async({req: req})
+
+            }else{
+                result = await getNonRootFolder_async({req: req})
+            }
+            return Promise.resolve(result)
+            // if(result.rc>0){return Promise.reject(result)}
+
+            // }
+            // break;
         case 'post':
             if(originalUrl==='/folder' || originalUrl==='/folder/') {
                 userLoginCheck={
@@ -100,6 +115,19 @@ async function dispatcher_async(req){
                 await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
                 // ap.inf('create use userStateCheck_async done')
                 expectedPart=[e_part.RECORD_INFO]
+                //是否为期望的part
+                result = controllerPreCheck.inputCommonCheck({req:req, expectedPart:expectedPart})
+                if (result.rc > 0) {return Promise.reject(result)}
+
+                //对req中的recordId和recordInfo进行objectId（加密过的）格式判断
+                await controllerChecker.ifObjectIdCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName]})
+
+                //对req中的recordId和recordInfo中加密的objectId进行解密
+                let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
+                let tempSalt=userInfo.tempSalt
+                controllerHelper.decryptInputValue({req:req,expectedPart:expectedPart,salt:tempSalt,browserCollRule:browserInputRule[collName]})
+// ap.inf('after decrypt',req.body.values[e_part.RECORD_INFO])
+                //recordInfo的检查
                 result=controllerPreCheck.inputPreCheck({req:req,expectedPart:expectedPart,collName:collName,applyRange:e_applyRange.CREATE,arr_currentSearchRange:arr_currentSearchRange})
                 // ap.inf('create use inputPreCheck result',result)
                 if(result.rc>0){return Promise.reject(result)}
@@ -108,7 +136,7 @@ async function dispatcher_async(req){
             }
             break
         case 'delete':
-            //get只能在url中包含参数，所以无inputPreCheck
+            //delete只能在url中包含参数，所以无inputPreCheck
             if(originalUrl==='/folder' || originalUrl==='/folder/') {
                 userLoginCheck={
                     needCheck:true,
@@ -116,8 +144,16 @@ async function dispatcher_async(req){
                 }
 
                 await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
-
                 if(result.rc>0){return Promise.reject(result)}
+
+                //对req中的recordId和recordInfo进行objectId（加密过的）格式判断
+                await controllerChecker.ifObjectIdCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName]})
+
+                //对req中的recordId和recordInfo中加密的objectId进行解密
+                let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
+                let tempSalt=userInfo.tempSalt
+                controllerHelper.decryptInputValue({req:req,expectedPart:expectedPart,salt:tempSalt,browserCollRule:browserInputRule[collName]})
+
                 result = await deleteFolder_async({req: req})
                 return Promise.resolve(result)
             }
@@ -136,6 +172,19 @@ async function dispatcher_async(req){
                 await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
                 // ap.inf('create use userStateCheck_async done')
                 expectedPart=[e_part.RECORD_INFO]
+                //是否为期望的part
+                result = controllerPreCheck.inputCommonCheck({req:req, expectedPart:expectedPart})
+                if (result.rc > 0) {return Promise.reject(result)}
+
+                //对req中的recordId和recordInfo进行objectId（加密过的）格式判断
+                await controllerChecker.ifObjectIdCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName]})
+
+                //对req中的recordId和recordInfo中加密的objectId进行解密
+                let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
+                let tempSalt=userInfo.tempSalt
+                controllerHelper.decryptInputValue({req:req,expectedPart:expectedPart,salt:tempSalt,browserCollRule:browserInputRule[collName]})
+
+                //对输入值进行检测（此时objectId已经解密）
                 result=controllerPreCheck.inputPreCheck({req:req,expectedPart:expectedPart,collName:collName,applyRange:e_applyRange.UPDATE_SCALAR,arr_currentSearchRange:arr_currentSearchRange})
                 // ap.inf('create use inputPreCheck result',result)
                 if(result.rc>0){return Promise.reject(result)}

@@ -1,7 +1,8 @@
 /**
- * Created by Ada on 2017/7/11.
+ * Created by Ada on 2019/5/11.
  */
 'use strict'
+
 /**************  controller相关常量  ****************/
 const controllerError=require('../../server/controller/folder/folder_setting/folder_controllerError').controllerError
 
@@ -60,8 +61,11 @@ const objectDeepCopy=server_common_file_require.misc.objectDeepCopy
 
 const db_operation_helper= server_common_file_require.db_operation_helper
 const testData=server_common_file_require.testData//require('../testData')
-const API_helper=server_common_file_require.API_helper//require('../API_helper/API_helper')
-const component_function=server_common_file_require.component_function
+const commonAPI=server_common_file_require.common_API//require('../API_helper/API_helper')
+const penalizeAPI=server_common_file_require.penalize_API
+const userAPI=server_common_file_require.user_API
+const userComponentFunction=server_common_file_require.user_component_function
+const adminUserComponentFunction=server_common_file_require.admin_user_component_function
 const misc_helper=server_common_file_require.misc_helper
 
 /****************  全局设置 ********************/
@@ -80,221 +84,92 @@ let adminRootSess,adminRootId,data={values:{}}
 let recordId1,recordId2,recordId3,expectedErrorRc
 
 let normalRecord={
-    [e_field.FOLDER.AUTHOR_ID]:undefined,
-    [e_field.FOLDER.LEVEL]:undefined,
-    [e_field.FOLDER.NAME]:undefined,
+    // [e_field.FOLDER.AUTHOR_ID]:undefined,
+    // [e_field.FOLDER.LEVEL]:undefined,
+    [e_field.FOLDER.NAME]:'test',
     [e_field.FOLDER.PARENT_FOLDER_ID]:undefined,
 }
 
 
+describe('dispatch', function() {
 
-
-
-/*              create_folder               */
-describe('create folder:', async function() {
-    data={values:{method:e_method.CREATE}}
-    let impeachId,impeachId2
     before('user1/2/3  login and create article and impeach', async function(){
         url=''
         // parameter[`APIUrl`]=finalUrl
         finalUrl=baseUrl+url
+
+        let penalizeInfoForUser3={
+            penalizeType:e_penalizeType.NO_FOLDER,
+            penalizeSubType:e_penalizeSubType.ALL,
+            // penalizedError:undefined, //错误根据具体method定义
+            [e_field.ADMIN_PENALIZE.DURATION]:0,
+            [e_field.ADMIN_PENALIZE.REASON]:'test reason, no indication',
+        }
+        // ap.inf('test')
         // parameter[`APIUrl`]=finalUrl
-        user1Info =await component_function.reCreateUser_returnSessUserId_async({userData:testData.user.user1,app:app})
+        user1Info =await userComponentFunction.reCreateUser_returnSessUserId_async({userData:testData.user.user1,app:app})
         user1Id=user1Info[`userId`]
         user1Sess=user1Info[`sess`]
-
-        user2Info =await component_function.reCreateUser_returnSessUserId_async({userData:testData.user.user2,app:app})
+        // ap.inf('test123')
+        user2Info =await userComponentFunction.reCreateUser_returnSessUserId_async({userData:testData.user.user2,app:app})
         user2Id=user2Info[`userId`]
         user2Sess=user2Info[`sess`]
 
-        user3Info =await component_function.reCreateUser_returnSessUserId_async({userData:testData.user.user3,app:app})
+        user3Info =await userComponentFunction.reCreateUser_returnSessUserId_async({userData:testData.user.user3,app:app})
+        // ap.inf('user3Info',user3Info)
         user3Id=user3Info[`userId`]
         user3Sess=user3Info[`sess`]
 
-        adminRootSess=await API_helper.adminUserLogin_returnSess_async({userData:testData.admin_user.adminRoot,adminApp:adminApp})
+        // adminRootSess=await API_helper.adminUserLogin_returnSess_async({userData:testData.admin_user.adminRoot,adminApp:adminApp})
+        adminRootSess=await adminUserComponentFunction.adminUserLogin_returnSess_async({userData:testData.admin_user.adminRoot,adminApp:adminApp})
         adminRootId=db_operation_helper.getAdminUserId_async({userName:testData.admin_user.adminRoot.name})
 
         //create penalize for user3
-        await API_helper.createPenalize_returnPenalizeId_async({adminUserSess:adminRootSess,penalizeInfo,penalizedUserData:user3Data,adminApp:adminApp})
+        await penalizeAPI.createPenalize_returnPenalizeId_async({adminUserSess:adminRootSess,penalizeInfo:penalizeInfoForUser3,penalizedUserId:user3Id,adminApp:adminApp})
+
+        data.values={[e_part.RECORD_INFO]:normalRecord}
+        // ap.inf('data',data)
+        let folderResult=await commonAPI.generalCreate_returnRecord_async({userData:data,sess:user1Sess,app:app,url:finalUrl})
+        // ap.inf('folderResult',folderResult)
         console.log(`==============================================================`)
         console.log(`=================    before all done      ====================`)
         console.log(`==============================================================`)
     });
 
+    /*    it(`penalize check`,async function(){
+            //reason:,penalizeType:,penalizeSubype:,duration:
+            let penalizeInfo={
+                [e_field.ADMIN_PENALIZE.REASON]:'test for test test test',
+                [e_field.ADMIN_PENALIZE.PENALIZE_TYPE]:e_penalizeType.NO_IMPEACH,
+                [e_field.ADMIN_PENALIZE.PENALIZE_SUB_TYPE]:e_penalizeSubType.CREATE,
+                [e_field.ADMIN_PENALIZE.DURATION]:1,
+            }
+            await API_helper.createPenalize_async({adminUserSess:rootSess,penalizeInfo:penalizeInfo,pernalizedUserData:testData.user.user1,adminApp:adminApp})
+        })*/
     /*              create                      */
+
     it('1. not login cant create', async function() {
-        expectedErrorRc=controllerError.dispatch.post.notLoginCantCreateFolder.rc
-        await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
-    });
-   /* it('Group My Friend reach max', async function() {
-        data.values={}
-        normalRecord={}
-        normalRecord[e_field.ADD_FRIEND.RECEIVER]=user2Id
-        data.values[e_part.RECORD_INFO]=normalRecord
-        data.values[e_part.METHOD]=e_method.CREATE
-        globalConfiguration.userGroupFriend.max.maxUserPerDefaultGroup=0
-        expectedErrorRc=controllerError.defaultGroupNumberExceed.rc
-        await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
-    });*/
-
-    it('fk:receiver not exist', async function() {
-        data.values={}
-        copyNormalRecord=objectDeepCopy(normalRecord)
-        copyNormalRecord[e_field.ADD_FRIEND.RECEIVER]=testData.unExistObjectId
-        data.values[e_part.RECORD_INFO]=copyNormalRecord
-        data.values[e_part.METHOD]=e_method.CREATE
-
-        expectedErrorRc=controllerHelperError.fkValueNotExist(e_chineseFieldName.impeach_action.impeachId,normalRecord[e_field.IMPEACH_ACTION.IMPEACH_ID]).rc
-        await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
-    });
-    it('user1 add user2 already, user 2 not handle, then user1 add again', async function() {
-        data.values={}
-        normalRecord={}
-        normalRecord[e_field.ADD_FRIEND.RECEIVER]=user2Id
-        // copyNormalRecord[e_field.ADD_FRIEND.]
-        data.values[e_part.RECORD_INFO]=normalRecord
-        data.values[e_part.METHOD]=e_method.CREATE
-        expectedErrorRc=0
-        await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
-        // normalRecord[e_field.IMPEACH_ACTION.ACTION]=e_impeachUserAction.SUBMIT
-    });
-    it('user1 add user2 already, user 2 accept, then user1 add again', async function() {
-        userData={
-            [e_field.ADD_FRIEND.STATUS]:e_addFriendStatus.ACCEPT
-        }
-        await API_helper.updateAddFriend_returnRecord_async({userData:userData,recordId:recordId1,sess:user2Sess,app:app})
-
-        data.values={}
-        normalRecord={}
-        normalRecord[e_field.ADD_FRIEND.RECEIVER]=user2Id
-        // copyNormalRecord[e_field.ADD_FRIEND.]
-        data.values[e_part.RECORD_INFO]=normalRecord
-        data.values[e_part.METHOD]=e_method.CREATE
-        expectedErrorRc=controllerError.receiverAlreadyBeFriend('user1').rc
-        await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
-        // normalRecord[e_field.IMPEACH_ACTION.ACTION]=e_impeachUserAction.SUBMIT
-    });
-    it('user1 add user2 already, user 2 reject, then user1 add again', async function() {
-        await common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel.add_friend,id:recordId1,updateFieldsValue:{[e_field.ADD_FRIEND.STATUS]:e_addFriendStatus.UNTREATED}})
-        userData={
-            [e_field.ADD_FRIEND.STATUS]:e_addFriendStatus.REJECT
-        }
-        await API_helper.updateAddFriend_returnRecord_async({userData:userData,recordId:recordId1,sess:user2Sess,app:app})
-
-        data.values={}
-        normalRecord={}
-        normalRecord[e_field.ADD_FRIEND.RECEIVER]=user2Id
-        // copyNormalRecord[e_field.ADD_FRIEND.]
-        data.values[e_part.RECORD_INFO]=normalRecord
-        data.values[e_part.METHOD]=e_method.CREATE
-        expectedErrorRc=0
-        await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
-        // normalRecord[e_field.IMPEACH_ACTION.ACTION]=e_impeachUserAction.SUBMIT
-    });
-
-
-    /*              update                      */
-    it('userType check, admin not allow for update', async function() {
-        data.values={}
-        normalRecord={}
-        normalRecord[e_field.ADD_FRIEND.STATUS]=e_addFriendStatus.REJECT
-        // copyNormalRecord[e_field.ADD_FRIEND.]
-        data.values[e_part.RECORD_INFO]=normalRecord
-        data.values[e_part.RECORD_ID]=recordId1
-        data.values[e_part.METHOD]=e_method.UPDATE
         expectedErrorRc=controllerCheckerError.userTypeNotExpected.rc
-        await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:adminRootSess,data:data,expectedErrorRc:expectedErrorRc,app:app})
-        // normalRecord[e_field.IMPEACH_ACTION.ACTION]=e_impeachUserAction.SUBMIT
+        let sess=await userAPI.getFirstSession({app})
+        data.values={[e_part.RECORD_INFO]:normalRecord}
+        await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:adminRootSess,data:data,expectedErrorRc:expectedErrorRc,app:app})
     });
-    it('user3 try to update record that user1 add user2', async function() {
-        data.values={}
-        normalRecord={}
-        normalRecord[e_field.ADD_FRIEND.STATUS]=e_addFriendStatus.REJECT
-        data.values[e_part.RECORD_INFO]=normalRecord
-        data.values[e_part.RECORD_ID]=recordId1
-        data.values[e_part.METHOD]=e_method.UPDATE
-        expectedErrorRc=controllerError.notReceiverCantUpdate.rc
-        await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user3Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
-        // normalRecord[e_field.IMPEACH_ACTION.ACTION]=e_impeachUserAction.SUBMIT
+
+    it('2. get', async function() {
+        // expectedErrorRc=controllerCheckerError.userTypeNotExpected.rc
+        // let sess=await userAPI.getFirstSession({app})
+        // data.values={[e_part.RECORD_INFO]:normalRecord}
+        await misc_helper.getDataFromAPI_async({APIUrl:finalUrl,sess:adminRootSess,data:data,expectedErrorRc:expectedErrorRc,app:app})
     });
-    it('user3 try to update record that user1 add user3, and user3 already reject/accept', async function() {
-        userData={
-            [e_field.ADD_FRIEND.STATUS]:e_addFriendStatus.REJECT
-        }
-        await API_helper.updateAddFriend_returnRecord_async({userData:userData,recordId:recordId2,sess:user3Sess,app:app})
-
-        data.values={}
-        normalRecord={}
-        normalRecord[e_field.ADD_FRIEND.STATUS]=e_addFriendStatus.REJECT
-        data.values[e_part.RECORD_INFO]=normalRecord
-        data.values[e_part.RECORD_ID]=recordId2
-        data.values[e_part.METHOD]=e_method.UPDATE
-        expectedErrorRc=controllerError.notReceiverCantUpdate.rc
-        await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user3Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
-        // normalRecord[e_field.IMPEACH_ACTION.ACTION]=e_impeachUserAction.SUBMIT
-    });
-    it('user3 try to update record that user2 add user3 with not allow field', async function() {
-        data.values={}
-        normalRecord={}
-        // normalRecord[e_field.ADD_FRIEND.STATUS]=e_addFriendStatus.REJECT
-        normalRecord[e_field.ADD_FRIEND.RECEIVER]=user3Id
-        data.values[e_part.RECORD_INFO]=normalRecord
-        data.values[e_part.RECORD_ID]=recordId3
-        data.values[e_part.METHOD]=e_method.UPDATE
-        expectedErrorRc=validateError.validateValue.fieldValueShouldNotExistSinceNoRelateApplyRange({fieldName:'receiver',applyRange:e_applyRange.UPDATE_SCALAR}).rc
-        await misc_helper.sendDataToAPI_compareFieldRc_async({APIUrl:finalUrl,sess:user3Sess,data:data,expectedErrorRc:expectedErrorRc,fieldName:e_field.ADD_FRIEND.RECEIVER,app:app})
-        // normalRecord[e_field.IMPEACH_ACTION.ACTION]=e_impeachUserAction.SUBMIT
-    });
-    it('user3 try to update record that user2 add user3 miss mandatory field', async function() {
-        data.values={}
-        normalRecord={}
-        // normalRecord[e_field.ADD_FRIEND.STATUS]=e_addFriendStatus.REJECT
-        normalRecord[e_field.ADD_FRIEND.RECEIVER]=user3Id
-        data.values[e_part.RECORD_INFO]=normalRecord
-        data.values[e_part.RECORD_ID]=recordId3
-        data.values[e_part.METHOD]=e_method.UPDATE
-        expectedErrorRc=browserInputRule.add_friend.status.require.error.rc
-        await misc_helper.sendDataToAPI_compareFieldRc_async({APIUrl:finalUrl,sess:user3Sess,data:data,expectedErrorRc:expectedErrorRc,fieldName:e_field.ADD_FRIEND.STATUS,app:app})
-        // normalRecord[e_field.IMPEACH_ACTION.ACTION]=e_impeachUserAction.SUBMIT
-    });
-    /*//browser字段太少，无法测试
-    it('user3 try to update record that user2 add user3 without necessary field', async function() {
-        data.values={}
-        // normalRecord[e_field.ADD_FRIEND.STATUS]=e_addFriendStatus.REJECT
-        // normalRecord[e_field.ADD_FRIEND.RECEIVER]=user3Id
-        data.values[e_part.RECORD_INFO]={}
-        data.values[e_part.RECORD_ID]=recordId3
-        data.values[e_part.METHOD]=e_method.UPDATE
-        expectedErrorRc=controllerError.mandatoryFieldNotExist.rc
-        await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user3Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
-        // normalRecord[e_field.IMPEACH_ACTION.ACTION]=e_impeachUserAction.SUBMIT
-    });*/
-    /*//无法测试，因为如果输入为UNTREATED，那么会被认为没有改变的数据而直接返回rc:0
-    it('user3 try to update record that user2 add user3 with invalid status', async function() {
-        data.values={}
-        normalRecord[e_field.ADD_FRIEND.STATUS]=4
-        // normalRecord[e_field.ADD_FRIEND.RECEIVER]=user3Id
-        data.values[e_part.RECORD_INFO]=normalRecord
-        data.values[e_part.RECORD_ID]=recordId3
-        data.values[e_part.METHOD]=e_method.UPDATE
-        expectedErrorRc=controllerError.statusValueInvalid.rc
-        await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user3Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
-        // normalRecord[e_field.IMPEACH_ACTION.ACTION]=e_impeachUserAction.SUBMIT
-    });*/
-
-    it('user3  update record that user2 add user3 success', async function() {
-        data.values={}
-        normalRecord={}
-        normalRecord[e_field.ADD_FRIEND.STATUS]=e_addFriendStatus.ACCEPT
-        // normalRecord[e_field.ADD_FRIEND.RECEIVER]=user3Id
-        data.values[e_part.RECORD_INFO]=normalRecord
-        data.values[e_part.RECORD_ID]=recordId3
-        data.values[e_part.METHOD]=e_method.UPDATE
-        expectedErrorRc=0
-        await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user3Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
-
-
-
+    it('2. get', async function() {
+        url='12345243535636576785'
+        finalUrl=baseUrl+url
+        // expectedErrorRc=controllerCheckerError.userTypeNotExpected.rc
+        // let sess=await userAPI.getFirstSession({app})
+        // data.values={[e_part.RECORD_INFO]:normalRecord}
+        await misc_helper.getDataFromAPI_async({APIUrl:finalUrl,sess:adminRootSess,data:data,expectedErrorRc:expectedErrorRc,app:app})
     });
 })
+
+
 

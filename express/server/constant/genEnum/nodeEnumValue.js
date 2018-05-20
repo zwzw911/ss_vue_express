@@ -8,11 +8,10 @@ const MongooseOp=["insertMany","updateMany","findById","findByIdAndUpdate","remo
 const ValidatePart=["searchParams","recordInfo","recordId","currentPage","filterFieldValue","recIdArr","editSubField","event","singleField","manipulateArray","method","captcha","sms",] 
 const KeyForSearchParams=["value","compOp",] 
 const TimeUnit=["ms","second","minute","hour",] 
-const Method=["0","1","2","3","4","5",] 
 const InputFieldCheckType=["1","2",] 
 const UploadFileType=["image","attachment",] 
 const ResourceConfigFieldName=["collName","resourceType","dbModel","rawDocFilter","rawDocGroup",] 
-const ResourceFieldName=["totalSizeInMb","maxFileNum",] 
+const ResourceFieldName=["diskUsageSizeInMb","usedNum",] 
 const UploadFileDefinitionFieldName=["maxSizeInByte","maxSizeInMB","maxWidth","maxHeight",] 
 const EventField=["eventId","sourceId","targetId","status","cDate",] 
 const SubField=["from","to","eleArray",] 
@@ -29,7 +28,6 @@ module.exports={
     ValidatePart,
     KeyForSearchParams,
     TimeUnit,
-    Method,
     InputFieldCheckType,
     UploadFileType,
     ResourceConfigFieldName,

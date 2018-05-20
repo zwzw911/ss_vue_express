@@ -41,9 +41,9 @@ async function deleteUserAndRelatedInfo_async({account,name}){
         // ap.inf('delete use account',account)
         await common_operation_model.deleteOne_returnRecord_async({dbModel:e_dbModel.user,condition:{_id:userId}})
         await common_operation_model.deleteOne_returnRecord_async({dbModel:e_dbModel.sugar,condition:{userId:userId}})
-        await common_operation_model.deleteOne_returnRecord_async({dbModel:e_dbModel.user_friend_group,condition:{userId:userId}})
-        await common_operation_model.deleteOne_returnRecord_async({dbModel:e_dbModel.folder,condition:{authorId:userId}})
-        await common_operation_model.deleteOne_returnRecord_async({dbModel:e_dbModel.user_resource_profile,condition:{userId:userId}})
+        await common_operation_model.deleteMany_async({dbModel:e_dbModel.user_friend_group,condition:{userId:userId}})
+        await common_operation_model.deleteMany_async({dbModel:e_dbModel.folder,condition:{authorId:userId}})
+        await common_operation_model.deleteMany_async({dbModel:e_dbModel.user_resource_profile,condition:{userId:userId}})
         //删除所有添加朋友
         await common_operation_model.deleteMany_async({dbModel:e_dbModel.add_friend,condition:{[e_field.ADD_FRIEND.ORIGINATOR]:userId}})
         //删除所有好友分组（以及其中的朋友）

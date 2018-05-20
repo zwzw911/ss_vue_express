@@ -188,7 +188,7 @@ describe('validateScalarInputValue', function() {
         result=func({inputValue:value,collRule:rule,p_applyRange:e_applyRange.CREATE})
         // ap.inf('result',result)
         assert.deepStrictEqual(result.rembuiser.rc,expectRc)
-        // assert.deepStrictEqual(func(value,rule).rembuiser.rc,validateValueError.CUDTypeWrong.rc)
+        // assert.deepStrictEqual(func(value,rule).rc,validateValueError.CUDTypeWrong.rc)
         done()
     })
     it(`data type is array && ObjectId, but the ele value type is object`,function(done){
@@ -197,7 +197,7 @@ describe('validateScalarInputValue', function() {
         result=func({inputValue:value,collRule:rule,p_applyRange:e_applyRange.CREATE})
         // ap.inf('result',result)
         assert.deepStrictEqual(result.rembuiser.rc,expectRc)
-        // assert.deepStrictEqual(func(value,rule).rembuiser.rc,validateValueError.CUDTypeWrong.rc)
+        // assert.deepStrictEqual(func(value,rule).rc,validateValueError.CUDTypeWrong.rc)
         done()
     })
     it(`data type is array && ObjectId, the ele value type is objectId`,function(done){
@@ -206,7 +206,7 @@ describe('validateScalarInputValue', function() {
         result=func({inputValue:value,collRule:rule,p_applyRange:e_applyRange.CREATE})
         // ap.inf('result',result)
         assert.deepStrictEqual(result.rembuiser.rc,expectRc)
-        // assert.deepStrictEqual(func(value,rule).rembuiser.rc,validateValueError.CUDTypeWrong.rc)
+        // assert.deepStrictEqual(func(value,rule).rc,validateValueError.CUDTypeWrong.rc)
         done()
     })
 
@@ -217,7 +217,7 @@ describe('validateScalarInputValue', function() {
         result=func({inputValue:value,collRule:rule,p_applyRange:e_applyRange.CREATE})
         // ap.inf('result',result)
         assert.deepStrictEqual(result.inOutEnum.rc,expectRc)
-        // assert.deepStrictEqual(func(value,rule).rembuiser.rc,validateValueError.CUDTypeWrong.rc)
+        // assert.deepStrictEqual(func(value,rule).rc,validateValueError.CUDTypeWrong.rc)
         done()
     })
     it(`data type is array && enumString, but ele value type is int`,function(done){
@@ -226,7 +226,7 @@ describe('validateScalarInputValue', function() {
         result=func({inputValue:value,collRule:rule,p_applyRange:e_applyRange.CREATE})
         // ap.inf('result',result)
         assert.deepStrictEqual(result.inOutEnum.rc,expectRc)
-        // assert.deepStrictEqual(func(value,rule).rembuiser.rc,validateValueError.CUDTypeWrong.rc)
+        // assert.deepStrictEqual(func(value,rule).rc,validateValueError.CUDTypeWrong.rc)
         done()
     })
     it(`data type is array && enumString, but ele value invalid`,function(done){
@@ -235,18 +235,19 @@ describe('validateScalarInputValue', function() {
         result=func({inputValue:value,collRule:rule,p_applyRange:e_applyRange.CREATE})
         // ap.inf('result',result)
         assert.deepStrictEqual(result.inOutEnum.rc,expectRc)
-        // assert.deepStrictEqual(func(value,rule).rembuiser.rc,validateValueError.CUDTypeWrong.rc)
+        // assert.deepStrictEqual(func(value,rule).rc,validateValueError.CUDTypeWrong.rc)
         done()
     })
 
     /*              other rule              */
     it(`format check`,function(done){
         value={name:"asdf",rembuiser:['asdfasdfsadfasdfasdf']}
-        expectRc=rule.rembuiser.format.error.rc
+        // expectRc=rule.rembuiser.format.error.rc
+        expectRc=validateValueError.CUDTypeWrong.rc
         result=func({inputValue:value,collRule:rule,p_applyRange:e_applyRange.CREATE})
         // ap.inf('result',result)
         assert.deepStrictEqual(result.rembuiser.rc,expectRc)
-        // assert.deepStrictEqual(func(value,rule).rembuiser.rc,validateValueError.CUDTypeWrong.rc)
+        // assert.deepStrictEqual(func(value,rule).rc,validateValueError.CUDTypeWrong.rc)
         done()
     })
 
@@ -256,7 +257,7 @@ describe('validateScalarInputValue', function() {
         result=func({inputValue:value,collRule:rule,p_applyRange:e_applyRange.CREATE})
         // ap.inf('result',result)
         assert.deepStrictEqual(result.name.rc,expectRc)
-        // assert.deepStrictEqual(func(value,rule).rembuiser.rc,validateValueError.CUDTypeWrong.rc)
+        // assert.deepStrictEqual(func(value,rule).rc,validateValueError.CUDTypeWrong.rc)
         done()
     })
 
@@ -365,26 +366,26 @@ describe('validateRecIdArr', function() {
 })
 
 
-/*              目的是测试validateSingleRecorderFieldValue，但是必须通过validateCreateRecorderValue调用       */
+/*              value的值默认不是undefined或者null       */
 describe('validateSingleRecorderFieldValue', function() {
-    let func=testModule.validateCreateRecorderValue
-    let funcUpdate=testModule.validateUpdateRecorderValue
-    // let funcUpdate=testModule.validateUpdateRecorderValue
+    let func=testModule.validateSingleRecorderFieldValue
+    // let func=testModule.validateSingleRecorderFieldValue
+    // let func=testModule.validateUpdateRecorderValue
     //let preFunc=testModule.validate._private.checkRuleBaseOnRuleDefine
-    let rule,value,tmpDataType,result,tmp
+    let rule,value,tmpDataType,result,tmp,fieldRule
 
     rule={
         mandatoryField1:{
             chineseName:'必填字段1',
             'require': {define: true, error: {rc: 10020},mongoError:{rc:20020,msg:'必填字段1不能为空'}},
-            type:e_serverDataType.STRING,
+            [e_otherRuleFiledName.DATA_TYPE]:e_serverDataType.STRING,
             'minLength':{define:2,error:{rc:10021},mongoError:{rc:20021,msg:'必填字段1名至少2个字符'}},
             'maxLength':{define:10,error:{rc:10022},mongoError:{rc:20022,msg:'必填字段1名最多20个字符'}},
         },
         optionalField1:{
             chineseName:'可选字段1',
             'require': {define: false, error: {rc: 10025},mongoError:{rc:20025,msg:'可选字段1不能为空'}},
-            type:e_serverDataType.INT,
+            [e_otherRuleFiledName.DATA_TYPE]:e_serverDataType.INT,
             'min':{define:1,error:{rc:10026},mongoError:{rc:20026,msg:'可选字段1名至少2个字符'}},
             'max':{define:100,error:{rc:10027},mongoError:{rc:20027,msg:'可选字段1名最多20个字符'}},
             format:{define:regex.pageNum,error:{rc:10028},mongoError:{rc:20028,msg:'页数必须由1-4个数字组成'}}
@@ -392,129 +393,133 @@ describe('validateSingleRecorderFieldValue', function() {
         typeUnknownField:{
             chineseName:'类型未知字段1',
             'require': {define: false, error: {rc: 10030},mongoError:{rc:20030,msg:'可选字段1不能为空'}},
-            type:'unknown',
+            [e_otherRuleFiledName.DATA_TYPE]:'unknown',
         },
         typeObjectId:{
             chineseName:'字段objectId',
             'require': {define: false, error: {rc: 10040},mongoError:{rc:20040,msg:'可选字段1不能为空'}},
-            type:e_serverDataType.OBJECT_ID,
+            [e_otherRuleFiledName.DATA_TYPE]:e_serverDataType.OBJECT_ID,
             'format':{define:regex.objectId,error:{rc:10041},mongoError:{rc:20041,msg:'所属部门的id格式不正确'}},
         },
         enumField:{
             chineseName:'枚举字段',
             'require': {define: false, error: {rc: 10050},mongoError:{rc:20050,msg:'可选字段1不能为空'}},
-            type:e_serverDataType.STRING,
+            [e_otherRuleFiledName.DATA_TYPE]:e_serverDataType.STRING,
             'enum':{define:['male','female'],error:{rc:10051},mongoError:{rc:20051,msg:'性别不正确'}},
         },
     }
 
     //1, create: require=true的字段输入为null
-    it(`create:required field value is null`,function(done){
+   /* it(`create:required field value is null`,function(done){
         value={mandatoryField1:null}
-        assert.deepStrictEqual(func(value,rule).mandatoryField1.rc,rule.mandatoryField1.require.error.rc)
+        ap.inf('func(value,rule)',func(value,rule))
+        assert.deepStrictEqual(func(value,rule).rc,rule.mandatoryField1.require.error.rc)
         done()
     })
     //2, update: require=true的字段输入为null
     it(`update:required field value is null`,function(done){
         value={mandatoryField1:null}
-        assert.deepStrictEqual(funcUpdate(value,rule).mandatoryField1.rc,rule.mandatoryField1.require.error.rc)
+        assert.deepStrictEqual(func(value,rule).rc,rule.mandatoryField1.require.error.rc)
         done()
     })
     //3, update: require=false的字段输入为null，不报错
     it(`create:optional field value is null is OK`,function(done){
         value={optionalField1:null}
-        assert.deepStrictEqual(funcUpdate(value,rule).optionalField1.rc,0)
+        assert.deepStrictEqual(func(value,rule).rc,0)
         done()
-    })
+    })*/
     //4. type unknown field
-    it(`update: field data type unknown`,function(done){
+/*    it(`update: field data type unknown`,function(done){
         value={typeUnknownField:1}
-        assert.deepStrictEqual(funcUpdate(value,rule).typeUnknownField.rc,validateHelperError.unknownDataType.rc)
+        assert.deepStrictEqual(func(value,rule).rc,validateHelperError.unknownDataType.rc)
         done()
-    })
+    })*/
     //5.  create:field value类型错误
     it(`create: field data type wrong`,function(done){
         value={mandatoryField1:1}
-        assert.deepStrictEqual(func(value,rule).mandatoryField1.rc,validateValueError.CUDTypeWrong.rc)
+        fieldRule=rule.mandatoryField1
+        assert.deepStrictEqual(func({fieldValue:Object.values(value)[0],fieldRule:rule[Object.keys(value)[0]]}).rc,validateValueError.CUDTypeWrong.rc)
         done()
     })
     //5.  update: field value类型错误
     it(`update: field data type wrong`,function(done){
         value={optionalField1:[1]}
-        assert.deepStrictEqual(funcUpdate(value,rule).optionalField1.rc,validateValueError.CUDTypeWrong.rc)
+        assert.deepStrictEqual(func({fieldValue:Object.values(value)[0],fieldRule:rule[Object.keys(value)[0]]}).rc,validateValueError.CUDTypeWrong.rc)
         done()
     })
     //5.  update: field value类型错误
     it(`update: field data type wrong:not string`,function(done){
         value={typeObjectId:1}
-        assert.deepStrictEqual(funcUpdate(value,rule).typeObjectId.rc,validateValueError.CUDTypeWrong.rc)
+        assert.deepStrictEqual(func({fieldValue:Object.values(value)[0],fieldRule:rule[Object.keys(value)[0]]}).rc,validateValueError.CUDTypeWrong.rc)
         done()
     })
     it(`update: field data not match object`,function(done){
         value={typeObjectId:'asdf'}
-        assert.deepStrictEqual(funcUpdate(value,rule).typeObjectId.rc,rule.typeObjectId.format.error.rc)
+        assert.deepStrictEqual(func({fieldValue:Object.values(value)[0],fieldRule:rule[Object.keys(value)[0]]}).rc,validateValueError.CUDTypeWrong.rc)
         done()
     })
     //5.  update: format check
-    it(`update: field data type format wrong`,function(done){
+    it(`update: field data type correct, but format wrong`,function(done){
         value={optionalField1:111111}
-        assert.deepStrictEqual(funcUpdate(value,rule).optionalField1.rc,rule.optionalField1.format.error.rc)
+        assert.deepStrictEqual(func({fieldValue:Object.values(value)[0],fieldRule:rule[Object.keys(value)[0]]}).rc,rule.optionalField1.format.error.rc)
         done()
     })
     //5.  update: format check,for int, match format, not match min
     it(`update: field data type format,the field value is not match min`,function(done){
         value={optionalField1:0}
-        assert.deepStrictEqual(funcUpdate(value,rule).optionalField1.rc,rule.optionalField1.min.error.rc)
+        // fieldRule=rule.optionalField1
+        // ap.inf('Object.values(value)',Object.values(value))
+        assert.deepStrictEqual(func({fieldValue:Object.values(value)[0],fieldRule:rule[Object.keys(value)[0]]}).rc,rule.optionalField1.min.error.rc)
         done()
     })
     //5.  update: format check,for int, match format, not match max
     it(`update: field data type format,the field value is not match max`,function(done){
         value={optionalField1:999}
-        assert.deepStrictEqual(funcUpdate(value,rule).optionalField1.rc,rule.optionalField1.max.error.rc)
+        assert.deepStrictEqual(func({fieldValue:Object.values(value)[0],fieldRule:rule[Object.keys(value)[0]]}).rc,rule.optionalField1.max.error.rc)
         done()
     })
 
     //5.  update: format check, match format ok
     it(`update: field data type format,the field value is not match max`,function(done){
         value={optionalField1:99}
-        assert.deepStrictEqual(funcUpdate(value,rule).optionalField1.rc,0)
+        assert.deepStrictEqual(func({fieldValue:Object.values(value)[0],fieldRule:rule[Object.keys(value)[0]]}).rc,0)
         done()
     })
 
     //5.  create: format check, match format ok
     it(`create: field data type format,the field value is not match max`,function(done){
         value={mandatoryField1:'12345678901'}
-        assert.deepStrictEqual(func(value,rule).mandatoryField1.rc,rule.mandatoryField1.maxLength.error.rc)
+        assert.deepStrictEqual(func({fieldValue:Object.values(value)[0],fieldRule:rule[Object.keys(value)[0]]}).rc,rule.mandatoryField1.maxLength.error.rc)
         done()
     })
 
     //5.  create: 检查minLength属性
     it(`create: field data type ,field value length exceed minLength`,function(done){
         value={mandatoryField1:'1'}
-        assert.deepStrictEqual(func(value,rule).mandatoryField1.rc,rule.mandatoryField1.minLength.error.rc)
+        assert.deepStrictEqual(func({fieldValue:Object.values(value)[0],fieldRule:rule[Object.keys(value)[0]]}).rc,rule.mandatoryField1.minLength.error.rc)
         done()
     })
 
     //5.  update: enum value invalid
     it(`update: field data type ,field value is invalid value`,function(done){
         value={enumField:'any'}
-        assert.deepStrictEqual(funcUpdate(value,rule).enumField.rc,rule.enumField.enum.error.rc)
+        assert.deepStrictEqual(func({fieldValue:Object.values(value)[0],fieldRule:rule[Object.keys(value)[0]]}).rc,rule.enumField.enum.error.rc)
         done()
     })
 
     //5.  update: enum value valid
     it(`update: field data type ,field value is invalid value`,function(done){
         value={enumField:'male'}
-        assert.deepStrictEqual(funcUpdate(value,rule).enumField.rc,0)
+        assert.deepStrictEqual(func({fieldValue:Object.values(value)[0],fieldRule:rule[Object.keys(value)[0]]}).rc,0)
         done()
     })
 })
 
 
 
-
+// searchParamValue 的check已经由文件validateSearchFormat下的2个函数arrayValueStringLogicCheck/arrayValueDigitLogicCheck 完成
 /*                  searchParams check              */
-describe('validateSingleRecorderFieldValue', function() {
+/*describe('validateSearchParamsValue', function() {
     let func=testModule.validateSearchParamsValue
     let value,result,tmp
 
@@ -528,7 +533,7 @@ describe('validateSingleRecorderFieldValue', function() {
     rules.billType.formatField={
         chineseName:'可选字段1',
         'require': {define: false, error: {rc: 10025},mongoError:{rc:20025,msg:'可选字段1不能为空'}},
-        type:e_serverDataType.INT,
+        [e_otherRuleFiledName.DATA_TYPE]:e_serverDataType.INT,
         'min':{define:1,error:{rc:10026},mongoError:{rc:20026,msg:'可选字段1名至少2个字符'}},
         'max':{define:100,error:{rc:10027},mongoError:{rc:20027,msg:'可选字段1名最多20个字符'}},
         format:{define:regex.pageNum,error:{rc:10028},mongoError:{rc:20028,msg:'页数必须由1-4个数字组成'}}
@@ -651,10 +656,10 @@ describe('validateSingleRecorderFieldValue', function() {
         assert.deepStrictEqual(func(value,fkAdditionalFieldsConfig,'billType',rules).parentBillType.age.rc,0)
         done()
     })
-})
+})*/
 
-
-describe('validateFilterFieldValue', function() {
+/**     暂时不需要       **/
+/*describe('validateFilterFieldValue', function() {
     let func=testModule.validateFilterFieldValue
     let value,result,collName='billType'
 
@@ -683,7 +688,7 @@ describe('validateFilterFieldValue', function() {
         assert.deepStrictEqual(func(value,fkConfig,collName,rules).rc,validateValueError.STypeWrong.rc)
         done()
     })
-})
+})*/
 
 /***************************************************************************/
 /***************   editSubField   *******************/

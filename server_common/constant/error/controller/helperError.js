@@ -89,6 +89,10 @@ const helper={
     captchaNotMatch:{rc:helperBaseErrorCode+52,msg:{client:`图形验证码错误`,server:`captcha和server端存储的内容不一致`}},
     captchaExpire:{rc:helperBaseErrorCode+54,msg:{client:`图形验证码超时`,server:`redis中没有capatcha`}},
 
+    cryptDecryptSingleRecord:{
+        encryptedObjectIdInvalid:{rc:helperBaseErrorCode+56,msg:{client:`输入的值不正确`,server:`输入的字段值是加密过的objectId，但是格式不正确`}},
+    },
+
 }
 
 const checker={
@@ -203,6 +207,11 @@ const checker={
 
     /*      ifFileSuffixMatchContentType_async          */
     uploadFileHasNoSuffix:{rc:checkerBaseErrorCode+52,msg:{client:`上传文件没有后缀，无法区分文件类型`}},
+    ifObjectIdCrypted:{
+        recordIdFormatWrong:{rc:checkerBaseErrorCode+54,msg:{client:`参数错误`,server:'加密的recordId的格式不正确'}},
+        recordInfoContainInvalidObjectId:{rc:checkerBaseErrorCode+56,msg:{client:`参数错误`,server:'recordInfo中，类型为objectId的字段，值的格式不正确'}},
+        // unSupportPart:{rc:checkerBaseErrorCode+58,msg:{client:`内部错误，请联系`,server:'recordInfo中，类型为objectId的字段，值的格式不正确'}}
+    },
 
 }
 
