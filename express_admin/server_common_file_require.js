@@ -4,12 +4,11 @@
 
 const globalConfiguration=require('../server_common/constant/config/globalConfiguration.js')
 const appSetting=require('../server_common/constant/config/appSetting.js')
-const calcResourceConfig=require('../server_common/constant/define/calcResourceConfig.js')
 const collEnum=require('../server_common/constant/enum/collEnum.js')
 const inputDataRuleType=require('../server_common/constant/enum/inputDataRuleType.js')
-const mongoEnum=require('../server_common/constant/enum/mongoEnum.js')
-const nodeRuntimeEnum=require('../server_common/constant/enum/nodeRuntimeEnum.js')
 const nodeEnum=require('../server_common/constant/enum/nodeEnum.js')
+const nodeRuntimeEnum=require('../server_common/constant/enum/nodeRuntimeEnum.js')
+const mongoEnum=require('../server_common/constant/enum/mongoEnum.js')
 const helperError=require('../server_common/constant/error/controller/helperError.js')
 const mongoError=require('../server_common/constant/error/mongo/mongoError.js')
 const redisError=require('../server_common/constant/error/redis/redisError.js')
@@ -45,21 +44,21 @@ const validateSearchFormat=require('../server_common/function/validateInput/vali
 const validateValue=require('../server_common/function/validateInput/validateValue.js')
 const validateFormat=require('../server_common/function/validateInput/validateFormat.js')
 const generateTestData_API=require('../server_common/Test/generateTestData_API.js')
-const testData=require('../server_common/Test/testData.js')
-const misc_helper=require('../server_common/Test/misc_helper.js')
 const db_operation_helper=require('../server_common/Test/db_operation_helper.js')
-const impeach_and_comment_API=require('../server_common/Test/API/express/impeach_and_comment_API.js')
 const friend_group_API=require('../server_common/Test/API/express/friend_group_API.js')
-const article_API=require('../server_common/Test/API/express/article_API.js')
-const folder_API=require('../server_common/Test/API/express/folder_API.js')
 const friend_API=require('../server_common/Test/API/express/friend_API.js')
+const impeach_and_comment_API=require('../server_common/Test/API/express/impeach_and_comment_API.js')
+const article_API=require('../server_common/Test/API/express/article_API.js')
 const penalize_API=require('../server_common/Test/API/express/penalize_API.js')
+const folder_API=require('../server_common/Test/API/express/folder_API.js')
 const user_API=require('../server_common/Test/API/express/user_API.js')
 const admin_user_API=require('../server_common/Test/API/express_admin/admin_user_API.js')
 const common_API=require('../server_common/Test/API/common_API.js')
-const user_component_function=require('../server_common/Test/component_function/express/user_component_function.js')
 const article_component_function=require('../server_common/Test/component_function/express/article_component_function.js')
+const user_component_function=require('../server_common/Test/component_function/express/user_component_function.js')
 const admin_user_component_function=require('../server_common/Test/component_function/express_admin/admin_user_component_function.js')
+const testData=require('../server_common/Test/testData.js')
+const misc_helper=require('../server_common/Test/misc_helper.js')
 const redis_common_script=require('../server_common/model/redis/operation/redis_common_script.js')
 const redis_common_operation=require('../server_common/model/redis/operation/redis_common_operation.js')
 const testCaseEnum=require('../server_common/constant/testCaseEnum/testCaseEnum.js')
@@ -73,12 +72,11 @@ const genLuaSHA=require('../server_common/maintain/genLuaSHA.js')
 module.exports={
     globalConfiguration,
     appSetting,
-    calcResourceConfig,
     collEnum,
     inputDataRuleType,
-    mongoEnum,
-    nodeRuntimeEnum,
     nodeEnum,
+    nodeRuntimeEnum,
+    mongoEnum,
     helperError,
     mongoError,
     redisError,
@@ -114,21 +112,21 @@ module.exports={
     validateValue,
     validateFormat,
     generateTestData_API,
-    testData,
-    misc_helper,
     db_operation_helper,
-    impeach_and_comment_API,
     friend_group_API,
-    article_API,
-    folder_API,
     friend_API,
+    impeach_and_comment_API,
+    article_API,
     penalize_API,
+    folder_API,
     user_API,
     admin_user_API,
     common_API,
-    user_component_function,
     article_component_function,
+    user_component_function,
     admin_user_component_function,
+    testData,
+    misc_helper,
     redis_common_script,
     redis_common_operation,
     testCaseEnum,

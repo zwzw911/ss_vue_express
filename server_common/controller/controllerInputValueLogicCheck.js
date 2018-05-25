@@ -107,7 +107,7 @@ async function ifFkValueExist_And_FkHasPriority_async({fieldName,fieldValue,user
         if(false===dataTypeCheck.isEmpty(fieldValue)){
             // let fieldValue=docValue[singleFkFieldName]
             let fkFieldRelatedColl=collFkConfig[fieldName]['relatedColl']
-            let fkCollOwnerFields=collFkConfig['fkCollOwnerFields']
+            let fkCollOwnerFields=collFkConfig[fieldName]['fkCollOwnerFields']
 
             let tmpResult
             //如果查询外键是否存在，需要额外的条件，需要使用find
@@ -127,10 +127,11 @@ async function ifFkValueExist_And_FkHasPriority_async({fieldName,fieldValue,user
                 // return Promise.resolve({rc:0,msg:false})
             }
 
+            /*************   外键对应的记录，当前用户是否有权使用（例如，用户创建文集，使用的文档的作者是否为自己） *****************/
             //根据是否设置了validCriteria，可能调用findById或者find，所以需要判断采用什么方式调用查询到的外键记录
             let fkRecord= dataTypeCheck.isArray(tmpResult) ? tmpResult[0]:tmpResult
             //fk有对应记录，且userId不为空，则进行权限（owner）检查
-            if(undefined!==collFkConfig[fieldName][`fkCollOwnerFields`] && undefined!==userId){
+            if(undefined!==fkCollOwnerFields && undefined!==userId){
                 //对每个字段都要检查
                 for(let singleFkOwnerFieldName of fkCollOwnerFields){
                     let fkCollFieldDataType=inputRule[fkFieldRelatedColl][singleFkOwnerFieldName][e_otherRuleFiledName.DATA_TYPE]
@@ -249,6 +250,9 @@ async function ifSingleFieldValueUnique_async({fieldName,fieldValue,collName,sin
 * @expectedXSSFields: 数组。默认会对所有数据类型为string的字段进行check，如果设置了expectedFields，字段还的必须位于expectedFields中
 * */
 function ifValueXSS({fieldDataTypeInfo,fieldName,fieldValue,expectedXSSFields}){
+    // ap.inf('ifValueXSS in')
+    // ap.inf('fieldName in',fieldName)
+    // fieldName
     //如果不是string，无需XSS
     if(fieldDataTypeInfo[e_dataTypeInfoFieldName.DATA_TYPE]!==e_serverDataType.STRING){
         return {rc:0}
@@ -259,10 +263,12 @@ function ifValueXSS({fieldDataTypeInfo,fieldName,fieldValue,expectedXSSFields}){
             return {rc:0}
         }
     }
+    // ap.inf('1')
     //字段值不能为空
     if(true===dataTypeCheck.isEmpty(fieldValue)){
         return {rc:0}
     }
+    // ap.inf('2')
     //如果字段是数组，遍历数组
     if(true===fieldDataTypeInfo[e_dataTypeInfoFieldName.IS_ARRAY]){
         for(let singleEle of fieldValue){
@@ -272,6 +278,8 @@ function ifValueXSS({fieldDataTypeInfo,fieldName,fieldValue,expectedXSSFields}){
         }
         return true
     }else{
+        // ap.inf('3')
+        // ap.inf('DOMPurify.sanitize(fieldValue)',DOMPurify.sanitize(fieldValue))
         return DOMPurify.sanitize(fieldValue)!==fieldValue
     }
 
@@ -350,7 +358,7 @@ async function ifCompoundFiledValueUnique_returnExistRecord_async({collName,docV
                                                     expectedXSSFields,resourceUsageOption}){*/
 // docValue,userId,collName,skipStep,singleValueUniqueCheckAdditionalCondition,compoundFiledValueUniqueCheckAdditionalCheckCondition,expectedXSSFields,resourceUsageOption
 async function  inputValueLogicValidCheck_async({commonParam,stepParam}){
-    // ap.inf('commonParam')
+    // ap.inf('commonParam',commonParam)
     let {docValue,userId,collName}=commonParam
     let tmpResult
     let collRule=browserInputRule[collName]
@@ -363,7 +371,7 @@ async function  inputValueLogicValidCheck_async({commonParam,stepParam}){
         [e_inputValueLogicCheckStep.XSS]:true,
 
         [e_inputValueLogicCheckStep.COMPOUND_VALUE_UNIQUE]:true,
-        [e_inputValueLogicCheckStep.DISK_USAGE]:true,
+        [e_inputValueLogicCheckStep.RESOURCE_USAGE]:true,
     }
     if(undefined!==stepParam){
         for(let singleStepName in stepParam){
@@ -377,6 +385,10 @@ async function  inputValueLogicValidCheck_async({commonParam,stepParam}){
     for(let singleFieldName in docValue){
         let singleFieldValue=docValue[singleFieldName]
         let fieldDataTypeInfo
+        //字段在collRule中不存在，直接跳过。（可能是因为field值为null，导致被放入key=>$unset之中）
+        if(undefined===collRule[singleFieldName]){
+            continue
+        }
         /*******************************************************************************************/
         /**************************       获得dataTypeInfo            ******************************/
         /*******************************************************************************************/
@@ -453,12 +465,12 @@ async function  inputValueLogicValidCheck_async({commonParam,stepParam}){
     /*******************************************************************************************/
     /******************                   disk usage check                         ************/
     /*******************************************************************************************/
-    if(true===runStepFlag[e_inputValueLogicCheckStep.DISK_USAGE]) {
+    if(true===runStepFlag[e_inputValueLogicCheckStep.RESOURCE_USAGE]) {
         //user尚未登录，无需（法）检测resourceUsage
         if(undefined!==commonParam.userId){
-            if(undefined!==stepParam[e_inputValueLogicCheckStep.DISK_USAGE]['optionalParam']){
-                let resourceUsageOption=stepParam[e_inputValueLogicCheckStep.DISK_USAGE]['optionalParam']['resourceUsageOption']
-                // ap.inf('stepParam[e_inputValueLogicCheckStep.DISK_USAGE][\'optionalParam\'][\'resourceUsageOption\']',stepParam[e_inputValueLogicCheckStep.DISK_USAGE]['optionalParam']['resourceUsageOption'])
+            if(undefined!==stepParam[e_inputValueLogicCheckStep.RESOURCE_USAGE]['optionalParam']){
+                let resourceUsageOption=stepParam[e_inputValueLogicCheckStep.RESOURCE_USAGE]['optionalParam']['resourceUsageOption']
+                // ap.inf('stepParam[e_inputValueLogicCheckStep.RESOURCE_USAGE][\'optionalParam\'][\'resourceUsageOption\']',stepParam[e_inputValueLogicCheckStep.RESOURCE_USAGE]['optionalParam']['resourceUsageOption'])
                 await ifEnoughResource_async({
                     requiredResource:resourceUsageOption.requiredResource,//{num:xx,sizeInMb;yy,filesAbsPath:[]}
                     resourceProfileRange:resourceUsageOption.resourceProfileRange,

@@ -438,79 +438,89 @@ describe('validateSingleRecorderFieldValue', function() {
     it(`create: field data type wrong`,function(done){
         value={mandatoryField1:1}
         fieldRule=rule.mandatoryField1
-        assert.deepStrictEqual(func({fieldValue:Object.values(value)[0],fieldRule:rule[Object.keys(value)[0]]}).rc,validateValueError.CUDTypeWrong.rc)
+        assert.deepStrictEqual(func({fieldValue:Object.values(value)[0],fieldRule:rule[Object.keys(value)[0]],applyRange:e_applyRange.CREATE}).rc,validateValueError.CUDTypeWrong.rc)
         done()
     })
     //5.  update: field value类型错误
     it(`update: field data type wrong`,function(done){
         value={optionalField1:[1]}
-        assert.deepStrictEqual(func({fieldValue:Object.values(value)[0],fieldRule:rule[Object.keys(value)[0]]}).rc,validateValueError.CUDTypeWrong.rc)
+        assert.deepStrictEqual(func({fieldValue:Object.values(value)[0],fieldRule:rule[Object.keys(value)[0]],applyRange:e_applyRange.UPDATE_SCALAR}).rc,validateValueError.CUDTypeWrong.rc)
         done()
     })
     //5.  update: field value类型错误
     it(`update: field data type wrong:not string`,function(done){
         value={typeObjectId:1}
-        assert.deepStrictEqual(func({fieldValue:Object.values(value)[0],fieldRule:rule[Object.keys(value)[0]]}).rc,validateValueError.CUDTypeWrong.rc)
+        assert.deepStrictEqual(func({fieldValue:Object.values(value)[0],fieldRule:rule[Object.keys(value)[0]],applyRange:e_applyRange.UPDATE_SCALAR}).rc,validateValueError.CUDTypeWrong.rc)
         done()
     })
     it(`update: field data not match object`,function(done){
         value={typeObjectId:'asdf'}
-        assert.deepStrictEqual(func({fieldValue:Object.values(value)[0],fieldRule:rule[Object.keys(value)[0]]}).rc,validateValueError.CUDTypeWrong.rc)
+        assert.deepStrictEqual(func({fieldValue:Object.values(value)[0],fieldRule:rule[Object.keys(value)[0]],applyRange:e_applyRange.UPDATE_SCALAR}).rc,rule.typeObjectId.format.error.rc)
         done()
     })
     //5.  update: format check
     it(`update: field data type correct, but format wrong`,function(done){
         value={optionalField1:111111}
-        assert.deepStrictEqual(func({fieldValue:Object.values(value)[0],fieldRule:rule[Object.keys(value)[0]]}).rc,rule.optionalField1.format.error.rc)
+        assert.deepStrictEqual(func({fieldValue:Object.values(value)[0],fieldRule:rule[Object.keys(value)[0]],applyRange:e_applyRange.UPDATE_SCALAR}).rc,rule.optionalField1.format.error.rc)
         done()
     })
+    it(`update: field value null allow`,function(done){
+        value={optionalField1:null}
+        assert.deepStrictEqual(func({fieldValue:Object.values(value)[0],fieldRule:rule[Object.keys(value)[0]],applyRange:e_applyRange.UPDATE_SCALAR}).rc,0)
+        done()
+    })
+/*    it(`update: mandatory field value null allow`,function(done){
+        value={optionalField1:null}
+        assert.deepStrictEqual(func({fieldValue:Object.values(value)[0],fieldRule:rule[Object.keys(value)[0]],applyRange:e_applyRange.UPDATE_SCALAR}).rc,0)
+        done()
+    })*/
     //5.  update: format check,for int, match format, not match min
     it(`update: field data type format,the field value is not match min`,function(done){
         value={optionalField1:0}
         // fieldRule=rule.optionalField1
         // ap.inf('Object.values(value)',Object.values(value))
-        assert.deepStrictEqual(func({fieldValue:Object.values(value)[0],fieldRule:rule[Object.keys(value)[0]]}).rc,rule.optionalField1.min.error.rc)
+        assert.deepStrictEqual(func({fieldValue:Object.values(value)[0],fieldRule:rule[Object.keys(value)[0]],applyRange:e_applyRange.UPDATE_SCALAR}).rc,rule.optionalField1.min.error.rc)
         done()
     })
     //5.  update: format check,for int, match format, not match max
     it(`update: field data type format,the field value is not match max`,function(done){
         value={optionalField1:999}
-        assert.deepStrictEqual(func({fieldValue:Object.values(value)[0],fieldRule:rule[Object.keys(value)[0]]}).rc,rule.optionalField1.max.error.rc)
+        assert.deepStrictEqual(func({fieldValue:Object.values(value)[0],fieldRule:rule[Object.keys(value)[0]],applyRange:e_applyRange.UPDATE_SCALAR}).rc,rule.optionalField1.max.error.rc)
         done()
     })
 
     //5.  update: format check, match format ok
     it(`update: field data type format,the field value is not match max`,function(done){
         value={optionalField1:99}
-        assert.deepStrictEqual(func({fieldValue:Object.values(value)[0],fieldRule:rule[Object.keys(value)[0]]}).rc,0)
+        assert.deepStrictEqual(func({fieldValue:Object.values(value)[0],fieldRule:rule[Object.keys(value)[0]],applyRange:e_applyRange.UPDATE_SCALAR}).rc,0)
         done()
     })
 
     //5.  create: format check, match format ok
     it(`create: field data type format,the field value is not match max`,function(done){
         value={mandatoryField1:'12345678901'}
-        assert.deepStrictEqual(func({fieldValue:Object.values(value)[0],fieldRule:rule[Object.keys(value)[0]]}).rc,rule.mandatoryField1.maxLength.error.rc)
+        assert.deepStrictEqual(func({fieldValue:Object.values(value)[0],fieldRule:rule[Object.keys(value)[0]],applyRange:e_applyRange.CREATE}).rc,rule.mandatoryField1.maxLength.error.rc)
         done()
     })
 
     //5.  create: 检查minLength属性
     it(`create: field data type ,field value length exceed minLength`,function(done){
         value={mandatoryField1:'1'}
-        assert.deepStrictEqual(func({fieldValue:Object.values(value)[0],fieldRule:rule[Object.keys(value)[0]]}).rc,rule.mandatoryField1.minLength.error.rc)
+        assert.deepStrictEqual(func({fieldValue:Object.values(value)[0],fieldRule:rule[Object.keys(value)[0]],applyRange:e_applyRange.CREATE}).rc,rule.mandatoryField1.minLength.error.rc)
         done()
     })
 
     //5.  update: enum value invalid
     it(`update: field data type ,field value is invalid value`,function(done){
         value={enumField:'any'}
-        assert.deepStrictEqual(func({fieldValue:Object.values(value)[0],fieldRule:rule[Object.keys(value)[0]]}).rc,rule.enumField.enum.error.rc)
+        assert.deepStrictEqual(func({fieldValue:Object.values(value)[0],fieldRule:rule[Object.keys(value)[0]],applyRange:e_applyRange.UPDATE_SCALAR}).rc,rule.enumField.enum.error.rc)
         done()
     })
 
     //5.  update: enum value valid
     it(`update: field data type ,field value is invalid value`,function(done){
         value={enumField:'male'}
-        assert.deepStrictEqual(func({fieldValue:Object.values(value)[0],fieldRule:rule[Object.keys(value)[0]]}).rc,0)
+        assert.deepStrictEqual(func({fieldValue:Object.values(value)[0],fieldRule:rule[Object.keys(value)[0]],applyRange:e_applyRange.UPDATE_SCALAR}).rc,0)
         done()
     })
 })

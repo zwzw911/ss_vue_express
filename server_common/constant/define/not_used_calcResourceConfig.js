@@ -13,7 +13,7 @@ const e_resourceFieldName=require(`../enum/nodeEnum`).ResourceFieldName
 const e_resourceConfigFieldName=require(`../enum/nodeEnum`).ResourceConfigFieldName
 
 const e_resourceType=require(`../enum/mongoEnum`).ResourceType.DB
-const e_resourceRange=require(`../enum/mongoEnum`).ResourceProfileRange.DB
+const e_resourceRange=require(`../enum/mongoEnum`).ResourceRange.DB
 
 //日常：计算总体资源，修正可能出现的资源统计错误
 //当前只计算用户的article中的image和attachment的总数，以便确定用户总的使用空间

@@ -5,8 +5,8 @@ const Coll={
     /*       admin           */
     ADMIN_PENALIZE:'admin_penalize',
     CATEGORY:'category',
-    RESOURCE_PROFILE:'resource_profile',
     STORE_PATH:'store_path',
+    RESOURCE_PROFILE:'resource_profile',
     /*       article           */
     ARTICLE:'article',
     ARTICLE_ATTACHMENT:'article_attachment',

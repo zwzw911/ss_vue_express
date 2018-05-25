@@ -57,7 +57,7 @@ async function deletePublicGroup_async({req}){
     /*******************************************************************************************/
     /*                                     用户类型和权限检测                                  */
     /*******************************************************************************************/
-    await controllerChecker.ifExpectedUserType_async({req:req,arr_expectedUserType:[e_allUserType.USER_NORMAL]})
+    await controllerChecker.ifExpectedUserType_async({currentUserType:userType,arr_expectedUserType:[e_allUserType.USER_NORMAL]})
     // ap.print('ifExpectedUserType_async done')
     /*******************************************************************************************/
     /*                                       authorization check                               */

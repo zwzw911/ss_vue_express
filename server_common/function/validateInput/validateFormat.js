@@ -96,7 +96,7 @@ function  validatePartFormat (inputValue,expectedParts){
     return rightResult
 }
 
-/*  对每个part的value进行整体format的验证
+/*  对每个part的value进行整体format的验证(objectId解密之前)
 *
 * */
 function validatePartValueFormat({part,partValue}){
@@ -109,8 +109,8 @@ function validatePartValueFormat({part,partValue}){
             }
             break
         case e_validatePart.RECORD_ID:
-            if(false===dataTypeCheck.isString(partValue) || false===regex.objectId.test(partValue)) {
-                return validateFormatError.inputValuePartRecordIdValueFormatWrong
+            if(false===dataTypeCheck.isString(partValue) || false===regex.cryptedObjectId.test(partValue)) {
+                return validateFormatError.inputValuePartRecordIdCryptedValueFormatWrong
             }
             break
         case e_validatePart.RECORD_ID_ARRAY:
@@ -250,6 +250,10 @@ function validateCURecordInfoFormat(recordInfo,rule){
                 // ap.inf('single field name',singleFieldName)
                 return validateFormatError.recordInfoFiledRuleNotDefine
             }
+        }
+        //id/_id不允许传入
+        if(singleFieldName==='_id' || singleFieldName ==='id'){
+            return validateFormatError.recordInfoIdForbid
         }
     }
 

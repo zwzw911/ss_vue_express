@@ -79,7 +79,7 @@ async  function createImpeachAction_async(req){
     /*******************************************************************************************/
     /*                                     用户类型检查                                        */
     /*******************************************************************************************/
-    await controllerChecker.ifExpectedUserType_async({req:req,arr_expectedUserType:[e_allUserType.ADMIN_NORMAL,e_allUserType.ADMIN_ROOT]})
+    await controllerChecker.ifExpectedUserType_async({currentUserType:userType,arr_expectedUserType:[e_allUserType.ADMIN_NORMAL,e_allUserType.ADMIN_ROOT]})
     /*******************************************************************************************/
     /*                         传入的action是否为此类型用户可以操作                            */
     /*******************************************************************************************/

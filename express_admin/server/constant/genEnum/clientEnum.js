@@ -52,13 +52,10 @@ const StorePathUsage=
 const StorePathStatus=
     {"1":"只读","2":"读写"}
 
-const ResourceType=
-    {"1":"文档图片","2":"文档附件","3":"评论图片","4":"评论附件"}
-
-const ResourceProfileRange=
+const ResourceRange=
     {"1":"文档图片","2":"文档附件","3":"用户文档所有资源","5":"举报（或者评论）图片","7":"举报中的用户","8":"最大目录数量"}
 
-const ResourceProfileType=
+const ResourceType=
     {"1":"基本资源配置","2":"高级资源配置"}
 
 const DocumentStatus=
@@ -85,9 +82,8 @@ module.exports={
     ImpeachState,
     StorePathUsage,
     StorePathStatus,
+    ResourceRange,
     ResourceType,
-    ResourceProfileRange,
-    ResourceProfileType,
     DocumentStatus,
     AddFriendStatus,
 }

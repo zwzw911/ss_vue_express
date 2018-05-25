@@ -35,7 +35,7 @@ const e_applyRange=inputDataRuleType.ApplyRange
 // const e_requireType=inputDataRuleType.RequireType
 // const  e_validatePart=require('../../constant/enum/nodeEnum').ValidatePart
 const e_inputFieldCheckType=require('../../constant/enum/nodeEnum').InputFieldCheckType
-const e_method=require('../../constant/enum/nodeEnum').Method
+// const e_method=require('../../constant/enum/nodeEnum').Method
 
 const regex=require('../../constant/regex/regex').regex
 
@@ -159,7 +159,7 @@ function validateScalarInputValue({inputValue,collRule,p_applyRange}){
                         break
                     }
 
-                    let tmpRc=validateSingleRecorderFieldValue({fieldValue:singleFieldValue,fieldRule:fieldRule})
+                    let tmpRc=validateSingleRecorderFieldValue({fieldValue:singleFieldValue,fieldRule:fieldRule,applyRange:p_applyRange})
                     if(tmpRc.rc>0){
                         rc[fieldName]=tmpRc
                         break
@@ -168,7 +168,7 @@ function validateScalarInputValue({inputValue,collRule,p_applyRange}){
 
             }else{
                 // console.log(`2`)
-                rc[fieldName]=validateSingleRecorderFieldValue({fieldValue:fieldValue,fieldRule:fieldRule})
+                rc[fieldName]=validateSingleRecorderFieldValue({fieldValue:fieldValue,fieldRule:fieldRule,applyRange:p_applyRange})
                 // console.log(`2 result is ${JSON.stringify(rc)}` )
             }
             // console.log(`validate result of single field is ${JSON.stringify(rc)}`)
@@ -196,10 +196,14 @@ function validateScalarInputValue({inputValue,collRule,p_applyRange}){
  * 5. 检查剩余rule
  *
  * */
-function validateSingleRecorderFieldValue({fieldValue,fieldRule}){
+function validateSingleRecorderFieldValue({fieldValue,fieldRule,applyRange}){
     let rc={rc:0}
     let chineseName=fieldRule['chineseName']
 
+    //update的时候，允许传入null，表明需要删除字段值
+    if(e_applyRange.UPDATE_SCALAR===applyRange && null===fieldValue){
+        return rightResult
+    }
     //2 检查value的类型是否符合type中的定义
     let valueTypeCheckResult
     // console.log(`fieldRule is ${JSON.stringify(fieldRule)}`)
@@ -219,7 +223,7 @@ function validateSingleRecorderFieldValue({fieldValue,fieldRule}){
         return rc
     }
     if(false===valueTypeCheckResult){
-        // ap.inf('in')
+        ap.inf('in')
         rc['rc']=validateValueError.CUDTypeWrong.rc
         rc['msg']=`${chineseName}${validateValueError.CUDTypeWrong.msg}`
         return rc

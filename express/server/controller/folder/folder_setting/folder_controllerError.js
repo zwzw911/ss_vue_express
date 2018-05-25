@@ -9,17 +9,19 @@ const controllerError={
     'dispatch':{
         'get': {
             notLoginCantGetFolder: {rc: 52000, msg: `尚未登录，无法读取目录信息`},
+            cryptedFolderIdFormatInvalid:{rc: 52002, msg: {client:`目录不正确`,server:'加密的目录objectId格式不正确'}},
+            decryptedFolderIdFormatInvalid:{rc: 52003, msg: {client:`目录不正确`,server:'解密的目录objectId格式不正确'}},
         },
         'post':{
-            notLoginCantCreateFolder:{rc:52002,msg:`尚未登录，无法创建目录`},
-            userInPenalizeCantCreateComment:{rc:52004,msg:`管理员禁止创建目录`}
+            notLoginCantCreateFolder:{rc:52004,msg:`尚未登录，无法创建目录`},
+            userInPenalizeCantCreateComment:{rc:52006,msg:`管理员禁止创建目录`}
         },
         'put':{
-            notLoginCantUpdateFolder:{rc:52006,msg:`尚未登录，无法更新目录`},
-            userInPenalizeCantUpdateComment:{rc:52008,msg:`管理员禁止更新目录`}
+            notLoginCantUpdateFolder:{rc:52010,msg:`尚未登录，无法更新目录`},
+            userInPenalizeCantUpdateComment:{rc:52012,msg:`管理员禁止更新目录`}
         },
         'delete': {
-            notLoginCantDeleteFolder: {rc: 52010, msg: `尚未登录，无法删除目录`},
+            notLoginCantDeleteFolder: {rc: 52016, msg: `尚未登录，无法删除目录`},
         },
 
     },

@@ -62,6 +62,7 @@ const randomObject={
     objectId3:'5a2f50bd0410d020fc69e9fc',
     objectId4:'5a2f50bd0410d020fc69e9fd',
 }
+const cryptedObjectId='16c8277c10df1212212acd05acd64f7b8acb644469a8a008c23c7dd76da06863'
 module.exports={
     user,
     tag,
@@ -69,4 +70,5 @@ module.exports={
     impeach_image,
     unExistObjectId,
     randomObject,
+    cryptedObjectId,
 }

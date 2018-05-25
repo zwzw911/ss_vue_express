@@ -75,7 +75,7 @@ async function deletePenalize_async({req}){
     /*************    用户类型检测    ************/
     /*********************************************/
     //检测当前用户是否为adminUser
-    await controllerChecker.ifExpectedUserType_async({req:req,arr_expectedUserType:[e_allUserType.ADMIN_NORMAL,e_allUserType.ADMIN_ROOT]})
+    await controllerChecker.ifExpectedUserType_async({currentUserType:userType,arr_expectedUserType:[e_allUserType.ADMIN_NORMAL,e_allUserType.ADMIN_ROOT]})
     let hasCreatePriority=await controllerChecker.ifAdminUserHasExpectedPriority_async({userPriority:userPriority,arr_expectedPriority:[e_adminPriorityType.REVOKE_PENALIZE]})
     // console.log(`hasCreatePriority===>${JSON.stringify(hasCreatePriority)}`)
     if(false===hasCreatePriority){

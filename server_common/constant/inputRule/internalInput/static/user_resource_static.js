@@ -24,14 +24,14 @@ const resource_profile_static= {
         // [ruleFiledName.MAX_LENGTH]: {define: 20, error: {rc: 10004}, mongoError: {rc: 20004, msg: '密码的长度不能超过20个字符'}},
         [ruleFiledName.FORMAT]: {define: regex.objectId, error: {rc: 11212, msg: '用户必须是objectId'}, mongoError: {rc: 21212, msg: '用户必须是objectId'}} //server端使用
     },
-    resourceType: {
+    resourceRange: {
         [otherRuleFiledName.CHINESE_NAME]: '统计资源类别',
         [otherRuleFiledName.DATA_TYPE]: serverDataType.STRING,
         [otherRuleFiledName.APPLY_RANGE]:[applyRange.CREATE],
         [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true}, error: {rc: 11214, msg: '统计资源类别不能为空'}, mongoError: {rc: 21214, msg: '统计资源类别不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         // [ruleFiledName.MIN_LENGTH]: {define: 6, error: {rc: 10002}, mongoError: {rc: 20002, msg: '密码至少6个字符'}},
         // [ruleFiledName.MAX_LENGTH]: {define: 20, error: {rc: 10004}, mongoError: {rc: 20004, msg: '密码的长度不能超过20个字符'}},
-        [ruleFiledName.ENUM]:{define:enumValue.ResourceType,error:{rc:10020,msg:'用户权限不正确'},mongoError:{rc:20020,msg:'用户权限不正确'}},
+        [ruleFiledName.ENUM]:{define:enumValue.ResourceRange,error:{rc:10020,msg:'用户权限不正确'},mongoError:{rc:20020,msg:'用户权限不正确'}},
     },
     uploadedFileNum: {
         [otherRuleFiledName.CHINESE_NAME]: '上传文件数量',

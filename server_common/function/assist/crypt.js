@@ -77,7 +77,7 @@ const hmac=function(string,hashType){
      let key=pem.toString('ascii');
      // ap.inf('key',key)
      let inst=crypto.createCipher(cryptType,key);
-     // ap.inf('string',typeof(string))
+     // ap.inf('cryptstring',string)
      let result=inst.update(string.toString(),'utf8','hex');
      // ap.inf('result',result)
      result+=inst.final('hex');
@@ -97,7 +97,12 @@ const hmac=function(string,hashType){
         let key=pem.toString('ascii');
         let inst=crypto.createDecipher(cryptType,key);
         let result=inst.update(string,'hex','utf8');
-        result+=inst.final('utf8');
+     //    ap.inf('decrypt->result',result)
+     // ap.inf('decrypt->cryptType',cryptType)
+     // try{inst.final('utf8')}catch(err){ap.err('err',err)}
+     // ap.inf('inst.final(\'utf8\');',inst.final('utf8'))
+     //    result+=inst.final('utf8');//非正常字符解密报错
+     // ap.inf('decrypt->result',result)
         return {rc:0,msg:result};
      //});
 
@@ -113,14 +118,19 @@ function cryptSingleFieldValue({fieldValue,salt,cryptType}){
     }
     let cryptResult
     // ap.inf('fieldValue',fieldValue)
-    // ap.inf('salt',salt)
+    // ap.inf('cryptSingleFieldValue->salt',salt)
     if(undefined!==salt){
-        cryptResult=crypt(fieldValue+salt,cryptType)
-    }else{
-        cryptResult=crypt(fieldValue,cryptType)
+        fieldValue+=salt
+        // cryptResult=crypt(fieldValue+salt,cryptType)
     }
+    // ap.inf('to be crypted value',fieldValue)
+    let inst=crypto.createCipher(cryptType,salt);
+    let result=inst.update(fieldValue.toString(),'utf8','hex');
+    // ap.inf('result',result)
+    result+=inst.final('hex');
+    // cryptResult=crypt(fieldValue,cryptType)
 
-    return cryptResult
+    return {rc:0,msg:result}
 }
 
 //对单个字段（objectId）的值进行解密
@@ -128,11 +138,21 @@ function decryptSingleFieldValue({fieldValue,salt,cryptType}){
     if (-1===validCryptType.indexOf(cryptType) || cryptType===null || cryptType===undefined || cryptType===''){
         cryptType='blowfish'
     }
-    let decryptResult=decrypt(fieldValue,cryptType)
+    // ap.inf('decryptSingleFieldValue->value',fieldValue)
+    // ap.inf('decryptSingleFieldValue->salt',salt)
+
+    // let decryptResult=decrypt(fieldValue,cryptType)
+    // let key=pem.toString('ascii');
+    let inst=crypto.createDecipher(cryptType,salt);
+    let result=inst.update(fieldValue,'hex','utf8');
+    // ap.inf('decryptResult',result)
+/*    if(decryptResult.rc>0){
+        return decryptResult
+    }*/
     if(undefined!==salt){
-        decryptResult.msg=decryptResult.msg.replace(salt,'')
+        result=result.replace(salt,'')
     }
-    return decryptResult
+    return {rc:0,msg:result}
 }
 
 module.exports={
@@ -152,3 +172,22 @@ genSalt(16,function(err,result){
 	console.log(err)
 	console.log(result)
 })*/
+
+
+
+/*let cryptedstr=cryptSingleFieldValue({fieldValue:'asdf1234',salt:'5678'})
+ap.inf('cryptedstr',cryptedstr)
+let start=new Date().getTime()
+let decryptedstr=decryptSingleFieldValue({fieldValue:cryptedstr,salt:'5678'})
+ap.inf('decryptedstr',decryptedstr)
+let end=new Date().getTime()
+let normal=start-end*/
+
+/*start=new Date().getTime()
+decryptedstr=decrypt('0987654321098765432109876543210987654321098765432109876543211234','blowfish').msg
+ap.inf('decryptedstr',decryptedstr)
+end=new Date().getTime()
+let abnormal=start-end*/
+
+// ap.inf('normal',normal)
+// ap.inf('abnormal',abnormal)

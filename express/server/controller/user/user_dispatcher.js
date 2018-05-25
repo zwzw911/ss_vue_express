@@ -194,7 +194,7 @@ async function dispatcher_async(req){
                 if (result.rc > 0) {return Promise.reject(result)}
 
                 //对req中的recordId和recordInfo进行objectId（加密过的）格式判断
-                await controllerChecker.ifObjectIdCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName]})
+                await controllerChecker.ifObjectIdInPartCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName]})
 
                 //对req中的recordId和recordInfo中加密的objectId进行解密
                 let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})

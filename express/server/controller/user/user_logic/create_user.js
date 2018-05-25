@@ -78,13 +78,10 @@ async  function createUser_async({req}){
 
 
     /**********************************************/
-    /********  参数转为server格式      ***********/
+    /********  删除undefined/null字段  ***********/
     /*********************************************/
     dataConvert.constructCreateCriteria(docValue)
 
-    /**********************************************/
-    /****** 传入的敏感数据（objectId）解密  ******/
-    /*********************************************/
 
     /**********************************************/
     /***********    用户类型检测    **************/
@@ -100,11 +97,11 @@ async  function createUser_async({req}){
         //object：coll中，对单个字段进行unique检测，需要的额外查询条件
         [e_inputValueLogicCheckStep.SINGLE_FIELD_VALUE_UNIQUE]:{flag:true,optionalParam:{singleValueUniqueCheckAdditionalCondition:{[e_field.USER.DOC_STATUS]:e_docStatus.DONE}}},
         //数组，元素是字段名。默认对所有dataType===string的字段进行XSS检测，但是可以通过此变量，只选择部分字段
-        [e_inputValueLogicCheckStep.XSS]:{flag:true,optionalParam:{expectedXSSFields:undefined}},
+        [e_inputValueLogicCheckStep.XSS]:{flag:true,optionalParam:{expectedXSSFields:{optionalParam:undefined}}},
         //object，对compoundField进行unique检测需要的额外条件，key从model->mongo->compound_unique_field_config.js中获得
         [e_inputValueLogicCheckStep.COMPOUND_VALUE_UNIQUE]:{flag:true,optionalParam:{compoundFiledValueUniqueCheckAdditionalCheckCondition:undefined}},
         //Object，配置resourceCheck的一些参数,{requiredResource,resourceProfileRange,userId,containerId}
-        [e_inputValueLogicCheckStep.DISK_USAGE]:{flag:false,optionalParam:{resourceUsageOption:undefined}},
+        [e_inputValueLogicCheckStep.RESOURCE_USAGE]:{flag:false,optionalParam:{resourceUsageOption:undefined}},
     }
     await inputValueLogicValidCheck_async({commonParam:commonParam,stepParam:stepParam})
 // ap.inf('user input check pass')
@@ -230,14 +227,18 @@ async  function createUser_async({req}){
     //对关联表user_resource_profile进行insert操作,插入默认资源设置
     let userResourceProfile=[]
     // console.log(`e_iniSettingObject.resource_profile.DEFAULT==========>${JSON.stringify(e_iniSettingObject.resource_profile.DEFAULT)}`)
-    //从数据库读，而不是
-    for(let defaultResourceProfile of Object.values(e_iniSettingObject.resource_profile.BASIC)){
+    //从数据库读，而不是文件中获得(获得一致性)
+    condition={[e_field.RESOURCE_PROFILE.RESOURCE_TYPE]:e_resourceType.BASIC}
+    // ap.inf('condition',condition)
+    let allBasicResourceProfile=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.resource_profile,condition:condition})
+    // ap.inf('user profile',allBasicResourceProfile)
+    for(let defaultResourceProfile of allBasicResourceProfile){
         // for(let resourceProfileId)
         // console.log(`defaultResourceProfile==========>${JSON.stringify(defaultResourceProfile)}`)
+        let defaultResourceProfileId=defaultResourceProfile['id']
         let tmp={}
         tmp[e_field.USER_RESOURCE_PROFILE.USER_ID]=userCreateTmpResult._id
-// console.log(`defaultResourceProfile==========>${JSON.stringify(defaultResourceProfile)}`)
-        tmp[e_field.USER_RESOURCE_PROFILE.RESOURCE_PROFILE_ID]=defaultResourceProfile
+        tmp[e_field.USER_RESOURCE_PROFILE.RESOURCE_PROFILE_ID]=defaultResourceProfileId
         tmp[e_field.USER_RESOURCE_PROFILE.DURATION]=0
         tmp[e_field.USER_RESOURCE_PROFILE.START_DATE]=Date.now()
         tmp[e_field.USER_RESOURCE_PROFILE.END_DATE]=new Date('2099')

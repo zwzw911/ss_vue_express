@@ -43,6 +43,7 @@ async function createPenalize_returnPenalizeId_async({adminUserSess,penalizeInfo
     // console.log(`data.values ===>${JSON.stringify(data.values)}`)
     // data.values[e_part.METHOD]=e_method.CREATE
     data.values[e_part.RECORD_INFO]=penalizeInfo
+    ap.inf('create penalize data',data.values)
     // console.log(`data.values ===>${JSON.stringify(data.values)}`)
     return new Promise(function(resolve,reject){
         request(adminApp).post('/admin_penalize/').set('Accept', 'application/json').set('Cookie',[adminUserSess]).send(data)
@@ -53,8 +54,9 @@ async function createPenalize_returnPenalizeId_async({adminUserSess,penalizeInfo
                 // console.log(`parsedRes ios ${JSON.stringify(parsedRes)}`)
                 // console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
                 // articleId=
+                ap.inf('result of create penalize',parsedRes)
                 assert.deepStrictEqual(parsedRes.rc,0)
-                return resolve(parsedRes.msg['_id'])
+                return resolve(parsedRes.msg['id'])
                 // assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.require.error.rc)
                 // done();
             });

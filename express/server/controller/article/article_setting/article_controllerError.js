@@ -17,6 +17,9 @@ const controllerError={
     userInPenalizeNoArticleCreate:{rc:50206,msg:`管理员禁止创建文档`},
 
     /*          update article              */
+    update:{
+        notAuthorCantUpdateArticle:{rc:50207,msg:`无权修改文档`}
+    },
     userNotLoginCantUpdate:{rc:50208,msg:`用户尚未登录，无法更改文档`},
     userInPenalizeNoArticleUpdate:{rc:50209,msg:`管理员禁止更新文档`},
     // htmlContentSanityFailed:{rc:50210,msg:`文档内容中包含有害信息`},

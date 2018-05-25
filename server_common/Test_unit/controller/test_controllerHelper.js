@@ -20,8 +20,8 @@ const e_field=require('../../server/constant/genEnum/DB_field').Field
 const e_coll=require('../../server/constant/genEnum/DB_Coll').Coll
 // const e_articleStatus=mongoEnum.ArticleStatus.DB
 
-// const e_resourceProfileType=mongoEnum.ResourceProfileType.DB
-const e_resourceProfileRange=mongoEnum.ResourceProfileRange.DB
+// const e_resourceType=mongoEnum.ResourceType.DB
+const e_resourceRange=mongoEnum.ResourceRange.DB
 const e_resourceType=nodeEnum.ResourceType
 
 const e_impeachType=mongoEnum.ImpeachType.DB
@@ -149,19 +149,19 @@ describe('help=>calcExistResource_async ', async function() {
         //2. 根据resourceType+resourceRange，设置group时候使用的过滤参数
         let fieldsFilterGroup = {
             [e_resourceType.IMAGE]: {
-                [e_resourceProfileRange.PER_PERSON_IN_IMPEACH]: {
+                [e_resourceRange.PER_PERSON_IN_IMPEACH]: {
                     [e_field.IMPEACH_IMAGE.AUTHOR_ID]: user2Id
                 },
-                [e_resourceProfileRange.PER_IMPEACH_OR_COMMENT]: {
+                [e_resourceRange.PER_IMPEACH_OR_COMMENT]: {
                     [e_field.IMPEACH_IMAGE.AUTHOR_ID]: user2Id,
                     [e_field.IMPEACH_IMAGE.REFERENCE_ID]: impeachId
                 },
             },
             [e_resourceType.ATTACHMENT]: {
-                [e_resourceProfileRange.PER_PERSON_IN_IMPEACH]:{
+                [e_resourceRange.PER_PERSON_IN_IMPEACH]:{
                     [e_field.IMPEACH_ATTACHMENT.AUTHOR_ID]: user2Id
                 },
-                [e_resourceProfileRange.PER_IMPEACH_OR_COMMENT]:{
+                [e_resourceRange.PER_IMPEACH_OR_COMMENT]:{
                     [e_field.IMPEACH_ATTACHMENT.AUTHOR_ID]: user2Id,
                     [e_field.IMPEACH_ATTACHMENT.REFERENCE_ID]: impeachId
                 },
@@ -171,7 +171,7 @@ describe('help=>calcExistResource_async ', async function() {
 // console.log(`resourceFieldName =================> ${JSON.stringify(calcResourceConfig.resourceFileFieldName[e_coll.IMPEACH_IMAGE])}`)
 
         let currentResourceResult=await controllerHelper.calcExistResource_async({
-            resourceProfileRange:e_resourceProfileRange.PER_IMPEACH_OR_COMMENT,
+            resourceProfileRange:e_resourceRange.PER_IMPEACH_OR_COMMENT,
             resourceFileFieldName:calcResourceConfig.resourceFileFieldName[e_coll.IMPEACH_IMAGE],
             fieldsValueToFilterGroup:calcResourceConfig.fieldsValueToFilterGroup({impeach:{userId:user2Id,referenceId:impeachId}})[e_coll.IMPEACH_IMAGE],
         })
@@ -183,7 +183,7 @@ describe('help=>calcExistResource_async ', async function() {
         //需要检查的资源范围
         let resourceProfile={}
 
-        let validResourceProfileRange=[e_resourceProfileRange.PER_PERSON_IN_IMPEACH]
+        let validResourceProfileRange=[e_resourceRange.PER_PERSON_IN_IMPEACH]
         for(let singleResourceProfileRange of validResourceProfileRange){
             resourceProfile[singleResourceProfileRange]=await controllerHelper.chooseLastValidResourceProfile_async({resourceProfileRange:singleResourceProfileRange,userId:user2Id})
 
@@ -253,22 +253,24 @@ describe('help=>contentDbDeleteNotExistImage_async ', async function() {
 
     it('contentDbDeleteNotExistImage_async==>image in content not in db', async function () {
         let inputContent='test <img src="http://127.0.0.1/912ec803b2ce49e4a541068d495ab570.png">'
-        let convertContent=await controllerHelper.contentDbDeleteNotExistImage_async({
+        let {content,deletedFileNum,deletedFileSize}=await controllerHelper.contentDbDeleteNotExistImage_async({
             content:inputContent,
             recordId:impeachId,
             collConfig:collConfig,
             collImageConfig:collImageConfig,
         })
+        let convertContent=content
         assert.deepStrictEqual(convertContent, 'test ')
     })
     it('contentDbDeleteNotExistImage_async==>image in content not own site', async function () {
         let inputContent='test <img src="http://xss.org/912ec803b2ce49e4a541068d495ab570.png">'
-        let convertContent=await controllerHelper.contentDbDeleteNotExistImage_async({
+        let {content,deletedFileNum,deletedFileSize}=await controllerHelper.contentDbDeleteNotExistImage_async({
             content:inputContent,
             recordId:impeachId,
             collConfig:collConfig,
             collImageConfig:collImageConfig,
         })
+        let convertContent=content
         assert.deepStrictEqual(convertContent, 'test ')
     })
     it('contentDbDeleteNotExistImage_async==>image in db but not in content(user already delete image)', async function () {
@@ -285,12 +287,13 @@ describe('help=>contentDbDeleteNotExistImage_async ', async function() {
         assert.deepStrictEqual(impeachWithImageInsert[e_field.IMPEACH.IMPEACH_IMAGES_ID].length, 1)
 
         //db中的
-        let convertContent=await controllerHelper.contentDbDeleteNotExistImage_async({
+        let {content,deletedFileNum,deletedFileSize}=await controllerHelper.contentDbDeleteNotExistImage_async({
             content:inputContent,
             recordId:impeachId,
             collConfig:collConfig,
             collImageConfig:collImageConfig,
         })
+        let convertContent=content
         let impeachWithImageDelete=await common_operation_model.findById_returnRecord_async({dbModel:e_dbModel[e_coll.IMPEACH],id:impeachId})
 
         assert.deepStrictEqual(convertContent, 'test ')

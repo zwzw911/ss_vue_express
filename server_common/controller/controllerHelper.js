@@ -34,9 +34,9 @@ const e_storePathUsage=mongoEnum.StorePathUsage.DB
 const e_storePathStatus=mongoEnum.StorePathStatus.DB
 const e_penalizeSubType=mongoEnum.PenalizeSubType.DB
 const e_adminPriorityType=mongoEnum.AdminPriorityType.DB
-const e_resourceProfileRange=mongoEnum.ResourceProfileRange.DB
+const e_resourceRange=mongoEnum.ResourceRange.DB
 const e_userType=mongoEnum.UserType.DB
-const e_resourceType=mongoEnum.ResourceType.DB
+// const e_resourceType=mongoEnum.ResourceType.DB
 
 const nodeRuntimeEnum=require('../constant/enum/nodeRuntimeEnum')
 const e_hashType=nodeRuntimeEnum.HashType
@@ -545,7 +545,34 @@ function removeImageDataUrl({content}){
     return content.replace(regex.imageDataUrl,'')
 }*/
 
+/**********  获取字符串中，本网址的图片DOM  ***********/
+//返回值，对象：key为图片的hash值，value为图片的DOM
+function getOwnSiteImgDOM({content}){
+    let validMd5ImageNameInContent={}
+    //获得所有image的DOM
+    let innerImageInContent=content.match(regex.imageDOM)
+    //设置正则，判断src的内容是否为本网站的图片(域名+图片格式)
+    let convertedHostDomain=currentAppSetting['hostDomain'].replace('.',`\.`)
+    let srcReg=new RegExp(`src="https?://${convertedHostDomain}/.*([0-9a-f]{32}\.(jpg|jpeg|png))"`)
+    //对每个DOM的src进行正则检查，不合格的直接删除，合格的保存并返回
+    if(null!==innerImageInContent){
+        for(let singleImageDOM of innerImageInContent){
+            //判断img的src是否为本站地址+文件图片是否为md5，不是，则删除
+            let tmpMatchResult=singleImageDOM.match(srcReg)
+            // console.log(`tmpMatchResult==========>${JSON.stringify(tmpMatchResult)}`)
+            if(null===tmpMatchResult){
+                content=content.replace(singleImageDOM,'')
+                continue
+            }
 
+            //获得本站 md5图片名称，用对象表示，格式   =>    md5：DOM   方便直接删除content
+            validMd5ImageNameInContent[tmpMatchResult[1]]=singleImageDOM
+
+        }
+    }
+
+    return validMd5ImageNameInContent
+}
 /*      只能用在update中，因为函数需要使用recordId获得imageRecord，然后和content中img DOM进行比较
         如果用户在client删除了图片，不会直接通知server，而是要在server端，通过比较content中image和db（自己和关联，例如article和article_image）中，决定是否要删除（磁盘文件）和db内容
 *@content：输入的内容
@@ -558,33 +585,11 @@ function removeImageDataUrl({content}){
 *
 * return: 处理过的content，删除了dataUrl，和content中存在，但是db中没有的IMG DOM
 * */
-async function contentDbDeleteNotExistImage_async({content,recordId,collConfig,collImageConfig,resourceType}){
-    let tmpResult,validMd5ImageNameInContent={}
-    //获得所有<img/>DOM
-    let innerImageInContent=content.match(regex.imageDOM)
-// console.log(`innerImageInContent==========>${JSON.stringify(innerImageInContent)}`)
+async function contentDbDeleteNotExistImage_async({content,recordId,collConfig,collImageConfig,resourceRange}){
+    let tmpResult
+    //获得合格的md5文件名和DOM的键值对
+    let validMd5ImageNameInContent=getOwnSiteImgDOM({content:content})
 
-
-    //IMG DOM中，scr的domain必须是本站地址，且文件名为md5
-    //转换成正则格式（.=====>\.）
-    let convertedHostDomain=currentAppSetting['hostDomain'].replace('.',`\.`)
-    let srcReg=new RegExp(`src="https?://${convertedHostDomain}/.*([0-9a-f]{32}\.(jpg|jpeg|png))"`)
-// console.log(`convertedHostDomain==========>${JSON.stringify(convertedHostDomain)}`)
-    if(null!==innerImageInContent){
-        for(let singleImageDOM of innerImageInContent){
-            //如果DOM中，src不是本站地址，且文件图片不是md5，删除
-            let tmpMatchResult=singleImageDOM.match(srcReg)
-            // console.log(`tmpMatchResult==========>${JSON.stringify(tmpMatchResult)}`)
-            if(null===tmpMatchResult){
-                content=content.replace(singleImageDOM,'')
-                continue
-            }
-
-            //获得本站 md5图片名称，用对象表示，格式=>md5：DOM   方便直接删除content
-            validMd5ImageNameInContent[tmpMatchResult[1]]=singleImageDOM
-
-        }
-    }
 
 // console.log(`afte r delete not own image==============>${JSON.stringify(content)}`)
     /*          检查md5是否在collImage中存在            */
@@ -619,6 +624,7 @@ async function contentDbDeleteNotExistImage_async({content,recordId,collConfig,c
     }
 // console.log(`deletedImageId============>${JSON.stringify(deletedImageId)}`)
     //如果比较结果，content中无，而db中有（用户在client删除了image），则对db进行删除操作
+    let deletedFileNum=0,deletedFileSize=0
     if(deletedImageId.length>0){
         let conditionForImageColl={'_id':{$in:deletedImageId}}
         let conditionForReferenceColl={'_id':recordId}
@@ -629,17 +635,17 @@ async function contentDbDeleteNotExistImage_async({content,recordId,collConfig,c
         await  common_operation_model.deleteMany_async({dbModel:e_dbModel[collImageConfig.collName],condition:conditionForImageColl})
 
         await  common_operation_model.deleteArrayFieldValue_async({dbModel:e_dbModel[collConfig.collName],condition:conditionForReferenceColl,arrayFieldName:collConfig.fkFieldName,arrayFieldValue:deletedImageId})
-        let deletedFileNum=0,deletedFileSize=0
+
         for(let singleDeletedImageRecord of deletedImageRecord){
             fs.unlink(singleDeletedImageRecord[collImageConfig.storePathPopulateOpt[0][`path`]][collImageConfig.storePathPopulateOpt[0][`select`]])
             deletedFileNum+=1
             deletedFileSize+=singleDeletedImageRecord[collImageConfig.sizeFieldName]
         }
         //更改user_resource_static
-        if(undefined!==resourceType){
+        if(undefined!==resourceRange){
             await e_dbModel.user_resource_static.update({
                 [e_field.USER_RESOURCE_STATIC.USER_ID]:userId,
-                [e_field.USER_RESOURCE_STATIC.RESOURCE_TYPE]:resourceType
+                [e_field.USER_RESOURCE_STATIC.RESOURCE_RANGE]:resourceRange,
             },{
                 $inc:{
                     [e_field.USER_RESOURCE_STATIC.UPLOADED_FILE_NUM]:-deletedFileNum,
@@ -657,7 +663,7 @@ async function contentDbDeleteNotExistImage_async({content,recordId,collConfig,c
         }
     }
 
-    return Promise.resolve(content)
+    return Promise.resolve({content:content,deletedFileNum:deletedFileNum,deletedFileSize:deletedFileSize})
 }
 
 
@@ -720,25 +726,25 @@ async function calcExistResource_async({resourceProfileRange,userId,articleId,im
     /*          检查对应的参数是否都存在            */
 
     switch (resourceProfileRange) {
-        case e_resourceProfileRange.IMAGE_PER_ARTICLE:
+        case e_resourceRange.IMAGE_PER_ARTICLE:
             if(undefined===articleId || null===articleId){return Promise.reject(helperError.missParameter(`articleId`))}
             break;
-        case e_resourceProfileRange.ATTACHMENT_PER_ARTICLE:
+        case e_resourceRange.ATTACHMENT_PER_ARTICLE:
             if(undefined===articleId || null===articleId){return Promise.reject(helperError.missParameter(`articleId`))}
             break;
-        case e_resourceProfileRange.WHOLE_RESOURCE_PER_PERSON_FOR_ALL_ARTICLE:
+        case e_resourceRange.WHOLE_RESOURCE_PER_PERSON_FOR_ALL_ARTICLE:
             if(undefined===userId || null===userId){return Promise.reject(helperError.missParameter(`userId`))}
             break;
-/*        case e_resourceProfileRange.ATTACHMENT_PER_PERSON_FOR_ALL_ARTICLE:
+/*        case e_resourceRange.ATTACHMENT_PER_PERSON_FOR_ALL_ARTICLE:
             if(undefined===userId || null===userId){return Promise.reject(helperError.missParameter(`userId`))}
             break;*/
-        case e_resourceProfileRange.IMAGE_PER_IMPEACH_OR_COMMENT:
+        case e_resourceRange.IMAGE_PER_IMPEACH_OR_COMMENT:
             if(undefined===impeach_comment_id || null===impeach_comment_id){return Promise.reject(helperError.missParameter(`impeach_comment_id`))}
             break;
-/*        case e_resourceProfileRange.IMAGE_PER_COMMENT:
+/*        case e_resourceRange.IMAGE_PER_COMMENT:
             // if(undefined===impeachCommentId || null===impeachCommentId){return Promise.reject(helperError.missParameter(`impeachCommentId`))}
             break;*/
-        case e_resourceProfileRange.IMAGE_PER_PERSON_FOR_WHOLE_IMPEACH:
+        case e_resourceRange.IMAGE_PER_PERSON_FOR_WHOLE_IMPEACH:
             if(undefined===userId || null===userId){return Promise.reject(helperError.missParameter(`userId`))}
             if(undefined===arr_impeach_and_comment_id || null===arr_impeach_and_comment_id){return Promise.reject(helperError.missParameter(`arr_impeach_and_comment_id`))}
             break;
@@ -808,6 +814,9 @@ async function setLoginUserInfo_async({req,userInfo}){
 }
 
 async function getLoginUserInfo_async({req}){
+    // ap.inf('getLoginUserInfo_async in')
+    // ap.inf('req.session',req.session)
+    // ap.inf('req.session.userInfo',req.session.userInfo)
     // console.log(`req.session===========》${JSON.stringify(req.session)}`)
     // console.log(`req.session.userInfo===========.${JSON.stringify(req.session.userInfo)}`)
     if(undefined===req.session || undefined===req.session.userInfo){
@@ -1196,29 +1205,36 @@ async function getCaptchaAndCheck_async({req,db=2}){
 //inputRule已经require，无需参数传递
 function cryptDecryptSingleRecord({record,collName,salt,cryptDecryptType}){
     let collRule=inputRule[collName]
-    for(let singleFieldName in collRule){
+    for(let singleFieldName in record){
         //当前，只对objectId的数据进行加解密
-        if(undefined!==collRule[singleFieldName][e_otherRuleFiledName.DATA_TYPE]){
+        let objectIdFlag=false
+        if( 'id'===singleFieldName || '_id'===singleFieldName){
+            objectIdFlag=true
+        }
+        if(undefined!==collRule[singleFieldName] && undefined!==collRule[singleFieldName][e_otherRuleFiledName.DATA_TYPE] ){
             let fieldRuleDefinition=collRule[singleFieldName][e_otherRuleFiledName.DATA_TYPE]
             let fieldDataType=dataTypeCheck.isArray(fieldRuleDefinition) ? fieldRuleDefinition[0]:fieldRuleDefinition
             // ap.inf('fieldDataType',fieldDataType)
             if(e_serverDataType.OBJECT_ID===fieldDataType){
                 // ap.inf('fieldDataType is objId')
-                if(undefined!==record[singleFieldName]){
-                    if(cryptDecryptType==='crypt'){
-                        // ap.inf('cryptSingleFieldValue({fieldValue:record[singleFieldName]}).msg',cryptSingleFieldValue({fieldValue:record[singleFieldName]}).msg)
-                        record[singleFieldName]=cryptSingleFieldValue({fieldValue:record[singleFieldName],salt:salt}).msg
-                    }
-                    if(cryptDecryptType==='decrypt'){
-                        //传入的objectId必须符合条件；1. string，2. 长度64
-                        // ap.inf('singleFieldName',singleFieldName)
-                        // ap.inf('record[singleFieldName]',record[singleFieldName])
-                        if(false===dataTypeCheck.isString(record[singleFieldName]) || false===regex.cryptedObjectId.test(record[singleFieldName])){
-                            return helperError.cryptDecryptSingleRecord.encryptedObjectIdInvalid
-                        }
-                        record[singleFieldName]=decryptSingleFieldValue({fieldValue:record[singleFieldName],salt:salt}).msg
-                    }
+                objectIdFlag=true
+            }
+        }
+
+
+        if(true===objectIdFlag && undefined!==record[singleFieldName]){
+            if(cryptDecryptType==='crypt'){
+                // ap.inf('cryptSingleFieldValue({fieldValue:record[singleFieldName]}).msg',cryptSingleFieldValue({fieldValue:record[singleFieldName]}).msg)
+                record[singleFieldName]=cryptSingleFieldValue({fieldValue:record[singleFieldName],salt:salt}).msg
+            }
+            if(cryptDecryptType==='decrypt'){
+                //传入的objectId必须符合条件；1. string，2. 长度64
+                // ap.inf('singleFieldName',singleFieldName)
+                // ap.inf('record[singleFieldName]',record[singleFieldName])
+                if(false===dataTypeCheck.isString(record[singleFieldName]) || false===regex.cryptedObjectId.test(record[singleFieldName])){
+                    return helperError.cryptDecryptSingleRecord.encryptedObjectIdInvalid
                 }
+                record[singleFieldName]=decryptSingleFieldValue({fieldValue:record[singleFieldName],salt:salt}).msg
             }
         }
     }
@@ -1238,35 +1254,82 @@ function decryptRecordValue({record,collName,salt}){
 /****************************************************************/
 //目前只支持recordId和recordInfo
 function decryptInputValue({req,expectedPart,salt,browserCollRule}){
+    // ap.inf('decryptInputValue=>salt',salt)
     for(let singlePart of expectedPart){
-        switch (singlePart){
-            case e_part.RECORD_ID:
-                req[singlePart]=decryptSingleFieldValue({fieldValue:req[singlePart],salt:salt}).msg
-                break;
-            case e_part.RECORD_INFO:
-                let recordInfoValue=req.body.values[singlePart]
-                for(let singleFieldName in recordInfoValue){
-                    let singleFieldDataTypeInRule=browserCollRule[singleFieldName][e_otherRuleFiledName.DATA_TYPE]
-                    let dataTypeArrayFlag=dataTypeCheck.isArray(singleFieldDataTypeInRule)
-                    let dataType= dataTypeArrayFlag ? singleFieldDataTypeInRule[0]:singleFieldDataTypeInRule
-                    if(e_dataType.OBJECT_ID===dataType){
-                        //数组，对每个元素进行解密
-                        if(true===dataTypeArrayFlag){
-                            for(let idx in recordInfoValue[singleFieldName]){
-                                recordInfoValue[singleFieldName][idx]=decryptSingleFieldValue({fieldValue:recordInfoValue[singleFieldName][idx],salt:salt}).msg
+        if(true===dataTypeCheck.isSetValue(req.body.values[singlePart])){
+            let partValue=req.body.values[singlePart]
+            switch (singlePart){
+                case e_part.RECORD_ID:
+                    //recordId非object，所以是非引用，需要赋值
+                    req.body.values[singlePart]=decryptSingleFieldValue({fieldValue:partValue,salt:salt}).msg
+                    break;
+                case e_part.RECORD_INFO:
+                    // let recordInfoValue=req.body.values[singlePart]
+                    // ap.inf('RECORD_INFO in')
+                    for(let singleFieldName in partValue){
+                        // ap.inf('singleFieldName',singleFieldName)
+                        if(undefined!==browserCollRule[singleFieldName]){
+                            let singleFieldDataTypeInRule=browserCollRule[singleFieldName][e_otherRuleFiledName.DATA_TYPE]
+                            let dataTypeArrayFlag=dataTypeCheck.isArray(singleFieldDataTypeInRule)
+                            let dataType= dataTypeArrayFlag ? singleFieldDataTypeInRule[0]:singleFieldDataTypeInRule
+                            // ap.inf('dataType',dataType)
+                            if(e_dataType.OBJECT_ID===dataType){
+                                //数组，对每个元素进行解密
+                                if(true===dataTypeArrayFlag){
+                                    for(let idx in partValue[singleFieldName]){
+                                        //非空值才进行解密
+                                        if(true===dataTypeCheck.isSetValue(partValue[singleFieldName][idx])){
+                                            partValue[singleFieldName][idx]=decryptSingleFieldValue({fieldValue:partValue[singleFieldName][idx],salt:salt}).msg
+                                        }
+
+                                    }
+                                }else{
+                                    // ap.inf('before decryptSingleFieldValue  partValue[singleFieldName]',partValue[singleFieldName])
+                                    // ap.inf('before decryptSingleFieldValue  salt',salt)
+                                    // ap.inf('decryptSingleFieldValue({fieldValue:partValue[singleFieldName],salt:salt})',decryptSingleFieldValue({fieldValue:partValue[singleFieldName],salt:salt}))
+                                    //非空值才进行解密
+                                    if(true===dataTypeCheck.isSetValue(partValue[singleFieldName])){
+                                        partValue[singleFieldName]=decryptSingleFieldValue({fieldValue:partValue[singleFieldName],salt:salt}).msg
+                                    }
+
+                                }
                             }
-                        }else{
-                            recordInfoValue[singleFieldName]=decryptSingleFieldValue({fieldValue:recordInfoValue[singleFieldName],salt:salt}).msg
                         }
+
                     }
-                }
-                break;
-            default:
-                break;
+                    break;
+                default:
+                    break;
+            }
         }
+
+    }
+}
+/*  在一个record中删除指定的字段 */
+//record:必须是Object
+function deleteFieldInRecord({record,fieldsToBeDeleted}){
+    if(undefined===fieldsToBeDeleted){
+        fieldsToBeDeleted=['_id']
+    }else if(-1===fieldsToBeDeleted.indexOf('_id')){
+        fieldsToBeDeleted.push('_id')
     }
 
+    for(let singleFieldName of fieldsToBeDeleted){
+        delete record[singleFieldName]
+    }
 }
+
+/*  在一个record中保留指定的字段 */
+//record:必须是Object
+function keepFieldInRecord({record,fieldsToBeKeep}){
+    for(let singleFieldName of record){
+        if(-1===fieldsToBeKeep.indexOf(singleFieldName)){
+            delete record[singleFieldName]
+        }
+    }
+}
+
+
 module.exports= {
     checkOptionPartExist,//检查option中那些part是存在
     // inputCommonCheck,//每个请求进来是，都要进行的操作（时间间隔检查等）
@@ -1336,7 +1399,10 @@ module.exports= {
     decryptRecordValue,
 
     decryptInputValue,
+
+    deleteFieldInRecord,
+    keepFieldInRecord,
 }
 
 
-// chooseLastValidResourceProfile_async({resourceProfileRange:e_resourceProfileRange.DB.PER_ARTICLE, userId:'598a60bcdf548d0b3c2a7cd6'})
+// chooseLastValidResourceProfile_async({resourceProfileRange:e_resourceRange.DB.PER_ARTICLE, userId:'598a60bcdf548d0b3c2a7cd6'})

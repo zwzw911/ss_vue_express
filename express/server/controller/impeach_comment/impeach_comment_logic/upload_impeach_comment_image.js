@@ -32,10 +32,10 @@ const e_resourceFieldName=nodeEnum.ResourceFieldName
 const e_uploadFileType=nodeEnum.UploadFileType
 const e_uploadFileDefinitionFieldName=nodeEnum.UploadFileDefinitionFieldName
 
-// const e_resourceProfileRange=nodeEnum.Resource
+// const e_resourceRange=nodeEnum.Resource
 const e_fileSizeUnit=nodeRuntimeEnum.FileSizeUnit
 
-const e_resourceProfileRange=mongoEnum.ResourceProfileRange.DB
+const e_resourceRange=mongoEnum.ResourceRange.DB
 const e_impeachState=mongoEnum.ImpeachState.DB
 const e_documentStatus=mongoEnum.DocumentStatus.DB
 const e_storePathUsage=mongoEnum.StorePathUsage.DB
@@ -78,7 +78,7 @@ async function uploadImpeachCommentFile_async({req}){
     /*******************************************************************************************/
     /*                                     用户类型和权限检测                                  */
     /*******************************************************************************************/
-    await controllerChecker.ifExpectedUserType_async({req:req,arr_expectedUserType:[e_allUserType.USER_NORMAL]})
+    await controllerChecker.ifExpectedUserType_async({currentUserType:userType,arr_expectedUserType:[e_allUserType.USER_NORMAL]})
     /*******************************************************************************************/
     /*                                     参数过滤                                           */
     /*******************************************************************************************/
@@ -154,7 +154,7 @@ async function uploadImpeachCommentFile_async({req}){
     /*                               resource check （impeachComment）                         */
     /*******************************************************************************************/
     /*              获得通用资源配置，并检查当前占用的资源（磁盘空间）+文件的资源（sizeInMB）后，还小于==>所有<==的资源配置（）                         */
-    let resourceProfileRangeToBeCheck=[e_resourceProfileRange.IMAGE_PER_IMPEACH_OR_COMMENT,e_resourceProfileRange.IMAGE_PER_PERSON_FOR_WHOLE_IMPEACH]
+    let resourceProfileRangeToBeCheck=[e_resourceRange.IMAGE_PER_IMPEACH_OR_COMMENT,e_resourceRange.IMAGE_PER_PERSON_FOR_WHOLE_IMPEACH]
     //查找对应的resource profile
     let resourceResult=await controllerHelper.findResourceProfileRecords_async({arr_resourceProfileRange:resourceProfileRangeToBeCheck})
 
@@ -162,8 +162,8 @@ async function uploadImpeachCommentFile_async({req}){
     let calcResult
     for(let singleResourceProfileRecord of resourceResult){
         switch (singleResourceProfileRecord[e_field.RESOURCE_PROFILE.RANGE]){
-            case e_resourceProfileRange.IMAGE_PER_IMPEACH_OR_COMMENT:
-                calcResult=await controllerHelper.calcExistResource_async({resourceProfileRange:e_resourceProfileRange.IMAGE_PER_IMPEACH_OR_COMMENT,impeach_comment_id:recordId})
+            case e_resourceRange.IMAGE_PER_IMPEACH_OR_COMMENT:
+                calcResult=await controllerHelper.calcExistResource_async({resourceProfileRange:e_resourceRange.IMAGE_PER_IMPEACH_OR_COMMENT,impeach_comment_id:recordId})
                 if(singleResourceProfileRecord[e_resourceFieldName.MAX_FILE_NUM]<calcResult[e_resourceFieldName.MAX_FILE_NUM]+1)
                 {
                     fs.unlink(path)
@@ -175,7 +175,7 @@ async function uploadImpeachCommentFile_async({req}){
                     return Promise.reject(controllerError.impeachCommentImageSizeExceed)
                 }
                 break;
-            case e_resourceProfileRange.IMAGE_PER_PERSON_FOR_WHOLE_IMPEACH:
+            case e_resourceRange.IMAGE_PER_PERSON_FOR_WHOLE_IMPEACH:
                 //根据impeachCommentId查找对应impeachId
                 let impeachId=originalDoc[e_field.IMPEACH_COMMENT.IMPEACH_ID]
                 //根据impeachId在impeach_comment查找所有对应的comment
@@ -189,7 +189,7 @@ async function uploadImpeachCommentFile_async({req}){
                     }
                 }
                 //计算impeach和comment的image
-                calcResult=await controllerHelper.calcExistResource_async({resourceProfileRange:e_resourceProfileRange.IMAGE_PER_PERSON_FOR_WHOLE_IMPEACH,userId:userId,arr_impeach_and_comment_id:arr_impeach_and_comment_id})
+                calcResult=await controllerHelper.calcExistResource_async({resourceProfileRange:e_resourceRange.IMAGE_PER_PERSON_FOR_WHOLE_IMPEACH,userId:userId,arr_impeach_and_comment_id:arr_impeach_and_comment_id})
                 if(singleResourceProfileRecord[e_resourceFieldName.MAX_FILE_NUM]<calcResult[e_resourceFieldName.MAX_FILE_NUM])
                 {
                     fs.unlink(path)

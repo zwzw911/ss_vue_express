@@ -68,7 +68,7 @@ async function reCreateAdminUser_returnSessUserId_async({userData,rootSess,admin
     //获得userId
     let userId=await db_operation_helper.getAdminUserId_async({userName:userData.name})
     //获得tempSalt
-    let tempSalt=await commonAPI.getTempSalt({sess:rootSess})
+    let tempSalt=await commonAPI.getTempSalt_async({sess:rootSess})
     //模拟加密objectId
     userId=cryptSingleFieldValue({fieldValue:userId,salt:tempSalt}).msg
 

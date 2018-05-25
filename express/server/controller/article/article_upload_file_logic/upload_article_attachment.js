@@ -33,10 +33,10 @@ const e_resourceFieldName=nodeEnum.ResourceFieldName
 const e_uploadFileType=nodeEnum.UploadFileType
 const e_uploadFileDefinitionFieldName=nodeEnum.UploadFileDefinitionFieldName
 
-// const e_resourceProfileRange=nodeEnum.Resource
+// const e_resourceRange=nodeEnum.Resource
 const e_fileSizeUnit=nodeRuntimeEnum.FileSizeUnit
 
-const e_resourceProfileRange=mongoEnum.ResourceProfileRange.DB
+const e_resourceRange=mongoEnum.ResourceRange.DB
 // const e_resourceRange=mongoEnum.AdminUserType.DB
 const e_storePathUsage=mongoEnum.StorePathUsage.DB
 const e_resourceType=mongoEnum.ResourceType.DB
@@ -146,15 +146,15 @@ async function uploadArticleAttachment_async({req}){
     /*                                       resource check                                    */
     /*******************************************************************************************/
     /*              获得用户当前的所有资源配置，并检查当前占用的资源（磁盘空间）+文件的资源（sizeInMB）后，还小于==>所有<==的资源配置（）                         */
-    let resourceProfileRangeToBeCheck=[e_resourceProfileRange.ATTACHMENT_PER_ARTICLE,e_resourceProfileRange.WHOLE_RESOURCE_PER_PERSON_FOR_ALL_ARTICLE]
+    let resourceProfileRangeToBeCheck=[e_resourceRange.ATTACHMENT_PER_ARTICLE,e_resourceRange.WHOLE_RESOURCE_PER_PERSON_FOR_ALL_ARTICLE]
     let resourceResult=await controllerHelper.findResourceProfileRecords_async({arr_resourceProfileRange:resourceProfileRangeToBeCheck})
 
     let calcResult
     //recordId是articleId
     for(let singleResourceProfileRecord of resourceResult){
         switch (singleResourceProfileRecord[e_field.RESOURCE_PROFILE.RANGE]){
-            case e_resourceProfileRange.ATTACHMENT_PER_ARTICLE:
-                calcResult=await controllerHelper.calcExistResource_async({resourceProfileRange:e_resourceProfileRange.ATTACHMENT_PER_ARTICLE,articleId:recordId})
+            case e_resourceRange.ATTACHMENT_PER_ARTICLE:
+                calcResult=await controllerHelper.calcExistResource_async({resourceProfileRange:e_resourceRange.ATTACHMENT_PER_ARTICLE,articleId:recordId})
                 if(singleResourceProfileRecord[e_resourceFieldName.MAX_FILE_NUM]<calcResult[e_resourceFieldName.MAX_FILE_NUM]+1)
                 {
                     fs.unlink(path)
@@ -166,9 +166,9 @@ async function uploadArticleAttachment_async({req}){
                     return Promise.reject(controllerError.articleAttachmentSizeExceed)
                 }
                 break;
-            case e_resourceProfileRange.WHOLE_RESOURCE_PER_PERSON_FOR_ALL_ARTICLE:
+            case e_resourceRange.WHOLE_RESOURCE_PER_PERSON_FOR_ALL_ARTICLE:
                 //从user_resource_static中group查询得到 总资源值
-                calcResult=await controllerHelper.calcExistResource_async({resourceProfileRange:e_resourceProfileRange.WHOLE_RESOURCE_PER_PERSON_FOR_ALL_ARTICLE,userId:userId})
+                calcResult=await controllerHelper.calcExistResource_async({resourceProfileRange:e_resourceRange.WHOLE_RESOURCE_PER_PERSON_FOR_ALL_ARTICLE,userId:userId})
                 if(singleResourceProfileRecord[e_resourceFieldName.MAX_FILE_NUM]<calcResult[e_resourceFieldName.MAX_FILE_NUM])
                 {
                     fs.unlink(path)

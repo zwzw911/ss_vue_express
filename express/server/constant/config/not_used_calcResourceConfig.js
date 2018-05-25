@@ -8,7 +8,7 @@
 const server_common_file_require=require('../../../server_common_file_require')
 // const e_resourceType=require('../constant/enum/node').ResourceType.DB  //上传文件的类型：image or attachment
 const mongoEnum=server_common_file_require.mongoEnum
-const e_resourceProfileRange=mongoEnum.ResourceProfileRange.DB//require('../../constant/enum/mongo').ResourceProfileRange.DB //检查资源的范围： PER_PERSON/PER_ARTICLE
+const e_resourceRange=mongoEnum.ResourceRange.DB//require('../../constant/enum/mongo').ResourceRange.DB //检查资源的范围： PER_PERSON/PER_ARTICLE
 
 const e_coll=require('../../constant/genEnum/DB_Coll').Coll
 const e_field=require('../../constant/genEnum/DB_field').Field
@@ -35,19 +35,19 @@ let resourceFileFieldName = {
 function fieldsValueToFilterGroup({impeach}){
     return {
         [e_coll.IMPEACH_IMAGE]: {
-            [e_resourceProfileRange.PER_PERSON_IN_IMPEACH]: {
+            [e_resourceRange.PER_PERSON_IN_IMPEACH]: {
                 [e_field.IMPEACH_IMAGE.AUTHOR_ID]: impeach.userId
             },
-            [e_resourceProfileRange.PER_IMPEACH_OR_COMMENT]: {
+            [e_resourceRange.PER_IMPEACH_OR_COMMENT]: {
                 [e_field.IMPEACH_IMAGE.AUTHOR_ID]: impeach.userId,
                 [e_field.IMPEACH_IMAGE.REFERENCE_ID]: impeach.referenceId
             },
         },
         [e_coll.IMPEACH_ATTACHMENT]: {
-            [e_resourceProfileRange.PER_PERSON_IN_IMPEACH]:{
+            [e_resourceRange.PER_PERSON_IN_IMPEACH]:{
                 [e_field.IMPEACH_ATTACHMENT.AUTHOR_ID]: impeach.userId
             },
-            [e_resourceProfileRange.PER_IMPEACH_OR_COMMENT]:{
+            [e_resourceRange.PER_IMPEACH_OR_COMMENT]:{
                 [e_field.IMPEACH_ATTACHMENT.AUTHOR_ID]: impeach.userId,
                 [e_field.IMPEACH_ATTACHMENT.REFERENCE_ID]: impeach.referenceId
             },

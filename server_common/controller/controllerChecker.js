@@ -264,7 +264,8 @@ async function ifExpectedUserType_async({currentUserType,arr_expectedUserType}){
     }
 
     let currentUserType=req.session.userInfo[e_userInfoField.USER_TYPE]*/
-
+// ap.inf('currentUserType',currentUserType)
+//     ap.inf('arr_expectedUserType',arr_expectedUserType)
     if(-1===arr_expectedUserType.indexOf(currentUserType)){
         return Promise.reject(checkerError.userTypeNotExpected)
     }
@@ -306,18 +307,23 @@ async function ifPenalizeOngoing_async({userId, penalizeType,penalizeSubType}){
 *
 * return: 如果recordId对应的记录的拥有者（创建者）当前用户，返回record，以便后续做field value是否变更的比较；否则返回false
 * */
-async function ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({dbModel,recordId,ownerFieldName, userId,additionalCondition}){
+async function ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({dbModel,recordId,ownerFieldsName, userId,additionalCondition}){
     let tmpResult,condition
     //当前用户必须是impeach的创建人
     condition={
-        [ownerFieldName]:userId,
+        // [ownerFieldName]:userId,
         '_id':recordId,
         'dDate':{$exists:false},//未被删除的记录
+    }
+    for(let singleFieldName of ownerFieldsName){
+        condition[singleFieldName]=userId
     }
     if(undefined!==additionalCondition){
         Object.assign(condition,additionalCondition)
     }
+    // ap.inf('condition',condition)
     tmpResult=await  common_operation_model.find_returnRecords_async({dbModel:dbModel,condition:condition})
+    // ap.inf('result',tmpResult)
     if(tmpResult.length===1){
         return Promise.resolve(tmpResult[0])
     }else{
@@ -404,53 +410,104 @@ async function ifDecryptedObjectIdValid({objectId}){
     return Promise.resolve({rc:0})
 }*/
 
+function ifObjectIdCrypted({objectId}){
+    return regex.cryptedObjectId.test(objectId)
+}
 /********************************************************************/
 /**      使用在dispatch中，检查加密的objectId的格式是否正确       ****/
 /********************************************************************/
-function ifObjectIdCrypted_async({req,expectedPart,browserCollRule}){
-    //目前只需要检测recordId和RecordInfo中的objectId
+async function ifObjectIdInPartCrypted_async({req,expectedPart,browserCollRule}){
+    //目前只需要检测recordId/RecordInfo/singleField中的objectId
     for(let singlePart of expectedPart){
-        switch (singlePart){
-            case e_part.RECORD_ID:
-                //非空，才进行格式检查，否则扔给后续代码处理
-                if(false===dataTypeCheck.isEmpty(req.body.values[singlePart])){
-                    if(false===regex.cryptedObjectId.test(req.body.values[singlePart])){
+        //非空，才进行格式检查，否则扔给后续代码处理
+        // ap.inf('singlePart',singlePart)
+        // ap.inf('req.body.values[singlePart]',req.body.values[singlePart])
+        if(true===dataTypeCheck.isSetValue(req.body.values[singlePart])){
+            let partValue=req.body.values[singlePart]
+            switch (singlePart){
+                case e_part.RECORD_ID:
+                    if(false===ifObjectIdCrypted({objectId:partValue})){
                         return Promise.reject(checkerError.ifObjectIdCrypted.recordIdFormatWrong)
                     }
-                }
-                break;
-            case e_part.RECORD_INFO:
-            //非空，才进行格式检查，否则扔给后续代码处理
-                if(false===dataTypeCheck.isEmpty(req.body.values[singlePart])){
-                    //对每个字段进行判别，类型是否为objectId，是的话，格式判断
-                    let recordInfoValue=req.body.values[singlePart]
-                    for(let singleFieldName in recordInfoValue){
-                        let singleFieldDataTypeInRule=browserCollRule[singleFieldName][e_otherRuleFiledName.DATA_TYPE]
-                        let dataTypeArrayFlag=dataTypeCheck.isArray(singleFieldDataTypeInRule)
-                        let dataType= dataTypeArrayFlag ? singleFieldDataTypeInRule[0]:singleFieldDataTypeInRule
+                    break;
+                case e_part.SINGLE_FIELD:
+                    //获得field的名称
+                    let fieldName=Object.keys(partValue)[0]
+                    //fieldName是有效的（在rule中有定义）
+                    if(true===dataTypeCheck.isSetValue(fieldName) && undefined!==browserCollRule[fieldName]){
+                        // let singleFieldValue=req.body.values[singlePart]
+                        //获得field的类型
+                        let fieldDataTypeInRule=browserCollRule[fieldName][e_otherRuleFiledName.DATA_TYPE]
+                        let dataTypeArrayFlag=dataTypeCheck.isArray(fieldDataTypeInRule)
+                        let dataType= dataTypeArrayFlag ? fieldDataTypeInRule[0]:fieldDataTypeInRule
                         //字段类型是objectId
                         if(e_dataType.OBJECT_ID===dataType){
                             //数组，对每个元素进行判别
                             if(true===dataTypeArrayFlag){
-                                if(recordInfoValue[singleFieldName].length>0){
-                                    for(let singleEle of recordInfoValue[singleFieldName]){
-                                        if(false===regex.cryptedObjectId.test(singleEle)){
-                                            return Promise.reject(checkerError.ifObjectIdCrypted.recordInfoContainInvalidObjectId)
+                                if(partValue[fieldName].length>0){
+                                    for(let singleEle of partValue[fieldName]){
+                                        if(false===ifObjectIdCrypted({objectId:singleEle})){
+                                            return Promise.reject(checkerError.ifObjectIdCrypted.singleFieldValueContainInvalidObjectId)
                                         }
                                     }
                                 }
                             }else{
-                                if(false===regex.cryptedObjectId.test(recordInfoValue[singleFieldName])){
-                                    return Promise.reject(checkerError.ifObjectIdCrypted.recordInfoContainInvalidObjectId)
+                                if(false===ifObjectIdCrypted({objectId:partValue[fieldName]})){
+                                    return Promise.reject(checkerError.ifObjectIdCrypted.singleFieldValueContainInvalidObjectId)
                                 }
                             }
                         }
                     }
-                }
-                break
-            default:
-                break
+
+                    break;
+                case e_part.RECORD_INFO:
+                    //非空，才进行格式检查，否则扔给后续代码处理
+
+                    //对每个字段进行判别，类型是否为objectId，是的话，格式判断
+                    // let recordInfoValue=req.body.values[singlePart]
+                    for(let singleFieldName in partValue){
+                        // ap.inf('singleFieldName',singleFieldName)
+                        // ap.inf('partValue',partValue)
+                        // ap.inf('partValue[singleFieldName]',partValue[singleFieldName])
+                        //字段有对应的rule
+                        if(undefined!==browserCollRule[singleFieldName] ){
+                            //字段值不为空（空值交给后续代码处理，而不在解密代码中处理）
+                            // ap.inf('partValue[singleFieldName]',partValue[singleFieldName])
+                            if(true===dataTypeCheck.isSetValue(partValue[singleFieldName])){
+                                // ap.inf('partValue[singleFieldName]',partValue[singleFieldName])
+                                let singleFieldDataTypeInRule=browserCollRule[singleFieldName][e_otherRuleFiledName.DATA_TYPE]
+                                let dataTypeArrayFlag=dataTypeCheck.isArray(singleFieldDataTypeInRule)
+                                let dataType= dataTypeArrayFlag ? singleFieldDataTypeInRule[0]:singleFieldDataTypeInRule
+                                // ap.inf('dataType',dataType)
+                                //字段类型是objectId
+                                if(e_dataType.OBJECT_ID===dataType){
+                                    //数组，对每个元素进行判别
+                                    if(true===dataTypeArrayFlag){
+                                        if(partValue[singleFieldName].length>0){
+                                            for(let singleEle of partValue[singleFieldName]){
+                                                if(false===ifObjectIdCrypted({objectId:singleEle})){
+                                                    return Promise.reject(checkerError.ifObjectIdCrypted.recordInfoContainInvalidObjectId)
+                                                }
+                                            }
+                                        }
+                                    }else{
+                                        if(false===ifObjectIdCrypted({objectId:partValue[singleFieldName]})){
+                                            return Promise.reject(checkerError.ifObjectIdCrypted.recordInfoContainInvalidObjectId)
+                                        }
+                                    }
+                                }
+                            }
+
+                        }
+
+                    }
+
+                    break
+                default:
+                    break
+            }
         }
+
     }
     return Promise.resolve(true)
 }
@@ -480,6 +537,7 @@ module.exports= {
 
     ifFileSuffixMatchContentType_returnSuffixOrFalse_async,
 
-    ifObjectIdCrypted_async,
+    ifObjectIdCrypted,
+    ifObjectIdInPartCrypted_async,
     // checkInterval_async,
 }

@@ -56,6 +56,7 @@ const fkConfig=server_common_file_require.fkConfig.fkConfig
 //执行db操作并返回结果
 async  function createPenalize_async({req}){
     // ap.inf('createPenalize_async in ')
+    // ap.inf('req ',req.body.values)
     /********************************************************/
     /*************      define variant        ***************/
     /********************************************************/
@@ -93,11 +94,11 @@ async  function createPenalize_async({req}){
         //object：coll中，对单个字段进行unique检测，需要的额外查询条件
         [e_inputValueLogicCheckStep.SINGLE_FIELD_VALUE_UNIQUE]:{flag:true,optionalParam:{singleValueUniqueCheckAdditionalCondition:undefined}},
         //数组，元素是字段名。默认对所有dataType===string的字段进行XSS检测，但是可以通过此变量，只选择部分字段
-        [e_inputValueLogicCheckStep.XSS]:{flag:true,optionalParam:{expectedXSSFields:undefined}},
+        [e_inputValueLogicCheckStep.XSS]:{flag:true,optionalParam:{expectedXSSFields:{optionalParam:undefined}}},
         //object，对compoundField进行unique检测需要的额外条件，key从model->mongo->compound_unique_field_config.js中获得
         [e_inputValueLogicCheckStep.COMPOUND_VALUE_UNIQUE]:{flag:true,optionalParam:{compoundFiledValueUniqueCheckAdditionalCheckCondition:undefined}},
         //Object，配置resourceCheck的一些参数,{requiredResource,resourceProfileRange,userId,containerId}
-        [e_inputValueLogicCheckStep.DISK_USAGE]:{flag:false,optionalParam:{resourceUsageOption:undefined}},
+        [e_inputValueLogicCheckStep.RESOURCE_USAGE]:{flag:false,optionalParam:{resourceUsageOption:undefined}},
     }
     await inputValueLogicValidCheck_async({commonParam:commonParam,stepParam:stepParam})
     /*******************************************************************************************/
@@ -158,12 +159,20 @@ async  function createPenalize_async({req}){
     // ap.inf('start to logic check')
     let createdRecord=await businessLogic_async({userId:userId,docValue:docValue,collName:collName})
     // ap.inf('created penalize record',createdRecord)
+
+    /*********************************************/
+    /**********      删除指定字段       *********/
+    /*********************************************/
+    controllerHelper.deleteFieldInRecord({record:createdRecord,fieldsToBeDeleted:undefined})
+
     /*********************************************/
     /**********      加密 敏感数据       *********/
     /*********************************************/
-    createdRecord=createdRecord.toObject()
+    // createdRecord=createdRecord.toObject()
     controllerHelper.cryptRecordValue({record:createdRecord,salt:tempSalt,collName:collName})
-    // ap.inf('encryoted penalize record',createdRecord)
+
+
+
     return Promise.resolve({rc:0,msg:createdRecord})
 
 
@@ -202,10 +211,13 @@ async function businessLogic_async({userId,docValue,collName}){
 
 
     // console.log(`docValue ${JSON.stringify(docValue)}`)
-    //用户插入 db
+    /***        数据库操作            ****/
     let userCreateTmpResult= await common_operation_model.create_returnRecord_async({dbModel:e_dbModel.admin_penalize,value:docValue})
-    // console.log(`user created  ==========> ${JSON.stringify(userCreateTmpResult)}`)
-    return Promise.resolve(userCreateTmpResult)
+    /*****  转换格式 *******/
+    // for(let idx in userCreateTmpResult) {
+    //     userCreateTmpResult[idx] = userCreateTmpResult[idx].toObject()
+    // }
+    return Promise.resolve(userCreateTmpResult.toObject())
 }
 module.exports={
     createPenalize_async,

@@ -7,8 +7,8 @@ const Coll={
     ADMIN_SUGAR:'admin_sugar',
     ADMIN_USER:'admin_user',
     CATEGORY:'category',
-    RESOURCE_PROFILE:'resource_profile',
     STORE_PATH:'store_path',
+    RESOURCE_PROFILE:'resource_profile',
     /*       article           */
     ARTICLE:'article',
     ARTICLE_ATTACHMENT:'article_attachment',

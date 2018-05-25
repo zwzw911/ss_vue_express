@@ -36,7 +36,7 @@ const crypt=server_common_file_require.crypt
 /****************  公共常量 ********************/
 const mongoEnum=server_common_file_require.mongoEnum
 const e_docStatus=mongoEnum.DocStatus.DB
-const e_resourceProfileRange=mongoEnum.ResourceProfileRange.DB
+const e_resourceRange=mongoEnum.ResourceRange.DB
 const e_allUserType=mongoEnum.AllUserType.DB
 
 const nodeRuntimeEnum=server_common_file_require.nodeRuntimeEnum
@@ -76,12 +76,12 @@ async function updateFolder_async({req}){
     /***********    参数转为server格式    **********/
     /************************************************/
     dataConvert.constructUpdateCriteria(docValue)
-
+    // ap.inf('constructUpdateCriteria done',docValue)
     /************************************************/
-    /*****************  用户类型检测     ************/
+    /************* 删除undefined/null字段  **********/
     /************************************************/
-    await controllerChecker.ifExpectedUserType_async({req:req,arr_expectedUserType:[e_allUserType.USER_NORMAL]})
-
+    await controllerChecker.ifExpectedUserType_async({currentUserType:userType,arr_expectedUserType:[e_allUserType.USER_NORMAL]})
+    // ap.inf('ifExpectedUserType_async done',docValue)
 /*    /!************************************************!/
     /!******   传入的敏感数据（recordId）解密，recordInfo中的objectId在dispatch中解密   ******!/
     /!************************************************!/
@@ -93,20 +93,30 @@ async function updateFolder_async({req}){
     /**********************************************/
     /***********    用户权限检测    **************/
     /*********************************************/
+    let originalDoc
     if(userType===e_allUserType.USER_NORMAL){
-        let result=await controllerChecker.ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({
+        originalDoc=await controllerChecker.ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({
             dbModel:e_dbModel.folder,
             recordId:recordId,
-            ownerFieldName:e_field.FOLDER.AUTHOR_ID,
+            ownerFieldsName:[e_field.FOLDER.AUTHOR_ID],
             userId:userId,
             additionalCondition:undefined,
         })
-        if(false===result){
+        // ap.inf('originalDoc',originalDoc)
+        if(false===originalDoc){
             return Promise.reject(controllerError.update.notAuthorCantUpdateFolder)
         }
     }
-
-
+    // ap.inf('priority check done',docValue)
+    /**********************************************/
+    /*********    是否未做任何更改    ************/
+    /*********************************************/
+    controllerHelper.deleteNotChangedValue({inputValue:docValue,originalValue:originalDoc})
+    //如果删除完 值没有变化 和 不能更改的字段后，docValue为空，则无需任何修改，直接返回0
+    if(0===Object.keys(docValue).length){
+        return {rc:0}
+    }
+// ap.inf('delete not change done',docValue)
     /************************************************/
     /*** CALL FUNCTION:inputValueLogicValidCheck ****/
     /************************************************/
@@ -117,15 +127,24 @@ async function updateFolder_async({req}){
         //object：coll中，对单个字段进行unique检测，需要的额外查询条件
         [e_inputValueLogicCheckStep.SINGLE_FIELD_VALUE_UNIQUE]:{flag:true,optionalParam:{singleValueUniqueCheckAdditionalCondition:undefined}},
         //数组，元素是字段名。默认对所有dataType===string的字段进行XSS检测，但是可以通过此变量，只选择部分字段
-        [e_inputValueLogicCheckStep.XSS]:{flag:true,optionalParam:{expectedXSSFields:undefined}},
+        [e_inputValueLogicCheckStep.XSS]:{flag:true,optionalParam:{expectedXSSFields:{optionalParam:undefined}}},
         //object，对compoundField进行unique检测需要的额外条件，key从model->mongo->compound_unique_field_config.js中获得
         [e_inputValueLogicCheckStep.COMPOUND_VALUE_UNIQUE]:{flag:true,optionalParam:{compoundFiledValueUniqueCheckAdditionalCheckCondition:undefined}},
         //Object，配置resourceCheck的一些参数,{requiredResource,resourceProfileRange,userId,containerId}
-        [e_inputValueLogicCheckStep.DISK_USAGE]:{flag:true,optionalParam:{resourceUsageOption:{requiredResource:undefined}}},
+        [e_inputValueLogicCheckStep.RESOURCE_USAGE]:{flag:false,optionalParam:{resourceUsageOption:{requiredResource:undefined}}},
     }
     await inputValueLogicValidCheck_async({commonParam:commonParam,stepParam:stepParam})
-
+    // ap.inf('inputValueLogicValidCheck_async done',docValue)
     let updatedRecord=await businessLogic_async({docValue:docValue,collName:collName,recordId:recordId})
+    /*********************************************/
+    /**********      加密 敏感数据       *********/
+    /*********************************************/
+    controllerHelper.cryptRecordValue({record:updatedRecord,salt:tempSalt,collName:collName})
+    /*********************************************/
+    /**********      删除指定字段       *********/
+    /*********************************************/
+    controllerHelper.deleteFieldInRecord({record:updatedRecord,fieldsToBeDeleted:undefined})
+
     return Promise.resolve(updatedRecord)
 }
 
@@ -157,9 +176,13 @@ async function businessLogic_async({docValue,collName,recordId}){
     }
     Object.assign(docValue,internalValue)
 
-    /*              数据库操作               */
+    /***         数据库操作            ***/
     let updatedRecord=await common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel.folder,id:recordId,updateFieldsValue:docValue,updateOption:undefined})
-    return Promise.resolve(updatedRecord)
+/*    /!*****  转换格式 *******!/
+    for(let idx in updatedRecord) {
+        updatedRecord[idx] = updatedRecord[idx].toObject()
+    }*/
+    return Promise.resolve(updatedRecord.toObject())
 }
 module.exports={
     updateFolder_async,

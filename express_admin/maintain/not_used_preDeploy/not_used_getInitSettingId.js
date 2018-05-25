@@ -9,7 +9,7 @@ const common_operation_model=server_common_file_require.common_operation_model
 const mongoEnum=server_common_file_require.mongoEnum
 const e_storePathUsage=mongoEnum.StorePathUsage
 const e_storePathStatus=mongoEnum.StorePathStatus
-const e_resourceProfileRange=mongoEnum.ResourceProfileRange
+const e_resourceRange=mongoEnum.ResourceRange
 
 const e_dbModel=require('../../constant/genEnum/dbModel')
 const e_coll=require('../../constant/genEnum/DB_Coll').Coll
@@ -69,7 +69,7 @@ async function generateInitSettingEnum_async(){
 
         let typeInNumber=singleRecord[e_field.RESOURCE_PROFILE.TYPE]
         // console.log(`typeInNumber ====>${JSON.stringify(typeInNumber)}`)
-        let typeInKey=mongoEnumKVExchange.ResourceProfileType[typeInNumber]
+        let typeInKey=mongoEnumKVExchange.ResourceType[typeInNumber]
         // console.log(`typeInKey ====>${JSON.stringify(typeInKey)}`)
         if(undefined===result[e_coll.RESOURCE_PROFILE][typeInKey]){
             result[e_coll.RESOURCE_PROFILE][typeInKey]={}

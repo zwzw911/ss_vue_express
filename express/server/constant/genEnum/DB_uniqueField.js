@@ -4,8 +4,8 @@
 
 const UniqueField={
     category:["name",],
-    resource_profile:["name",],
     store_path:["name","path",],
+    resource_profile:["name",],
     tag:["name",],
     public_group:["name",],
     sugar:["userId",],

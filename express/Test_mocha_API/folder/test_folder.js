@@ -64,10 +64,11 @@ const testData=server_common_file_require.testData//require('../testData')
 const commonAPI=server_common_file_require.common_API//require('../API_helper/API_helper')
 const penalizeAPI=server_common_file_require.penalize_API
 const userAPI=server_common_file_require.user_API
+const folderAPI=server_common_file_require.folder_API
 const userComponentFunction=server_common_file_require.user_component_function
 const adminUserComponentFunction=server_common_file_require.admin_user_component_function
 const misc_helper=server_common_file_require.misc_helper
-
+const crypt=server_common_file_require.crypt
 /****************  全局设置 ********************/
 let globalConfiguration=server_common_file_require.globalConfiguration
 
@@ -83,11 +84,13 @@ let adminRootSess,adminRootId,data={values:{}}
 
 let recordId1,recordId2,recordId3,expectedErrorRc
 
+let user1ParentFolderIdCrypted,user1ParentFolderIdGetByUser2Crypted
+
 let normalRecord={
     // [e_field.FOLDER.AUTHOR_ID]:undefined,
     // [e_field.FOLDER.LEVEL]:undefined,
     [e_field.FOLDER.NAME]:'test',
-    [e_field.FOLDER.PARENT_FOLDER_ID]:undefined,
+    [e_field.FOLDER.PARENT_FOLDER_ID]:null,
 }
 
 
@@ -110,14 +113,14 @@ describe('dispatch', function() {
         user1Info =await userComponentFunction.reCreateUser_returnSessUserId_async({userData:testData.user.user1,app:app})
         user1Id=user1Info[`userId`]
         user1Sess=user1Info[`sess`]
-        // ap.inf('test123')
+
         user2Info =await userComponentFunction.reCreateUser_returnSessUserId_async({userData:testData.user.user2,app:app})
         user2Id=user2Info[`userId`]
         user2Sess=user2Info[`sess`]
 
         user3Info =await userComponentFunction.reCreateUser_returnSessUserId_async({userData:testData.user.user3,app:app})
         // ap.inf('user3Info',user3Info)
-        user3Id=user3Info[`userId`]
+        user3Id=user3Info[`userId`]//非加密
         user3Sess=user3Info[`sess`]
 
         // adminRootSess=await API_helper.adminUserLogin_returnSess_async({userData:testData.admin_user.adminRoot,adminApp:adminApp})
@@ -125,12 +128,21 @@ describe('dispatch', function() {
         adminRootId=db_operation_helper.getAdminUserId_async({userName:testData.admin_user.adminRoot.name})
 
         //create penalize for user3
-        await penalizeAPI.createPenalize_returnPenalizeId_async({adminUserSess:adminRootSess,penalizeInfo:penalizeInfoForUser3,penalizedUserId:user3Id,adminApp:adminApp})
+        let adminRootSalt=await commonAPI.getTempSalt_async({sess:adminRootSess})
+        // ap.inf('root user salt',adminRootSalt)
+        let cryptedUser3Id=crypt.cryptSingleFieldValue({fieldValue:user3Id,salt:adminRootSalt}).msg
+        // ap.inf('cryptedUser3Id',cryptedUser3Id)
+        await penalizeAPI.createPenalize_returnPenalizeId_async({adminUserSess:adminRootSess,penalizeInfo:penalizeInfoForUser3,penalizedUserId:cryptedUser3Id,adminApp:adminApp})
 
-        data.values={[e_part.RECORD_INFO]:normalRecord}
-        // ap.inf('data',data)
-        let folderResult=await commonAPI.generalCreate_returnRecord_async({userData:data,sess:user1Sess,app:app,url:finalUrl})
-        // ap.inf('folderResult',folderResult)
+        // data.values={[e_part.RECORD_INFO]:normalRecord}
+        // // ap.inf('data',data)
+        let allTopLevelFolderResult=await folderAPI.getAllTopLevelFolder_async({sess:user1Sess,app:app})
+        user1ParentFolderIdCrypted=allTopLevelFolderResult['folder'][0][e_field.FOLDER.ID]
+
+        let tmpResult =await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.folder,condition:{[e_field.FOLDER.AUTHOR_ID]:user1Id},[e_field.FOLDER.LEVEL]:1})
+        let user1ParentFolderId=tmpResult[0]['id']
+        let user2Salt=await commonAPI.getTempSalt_async({sess:user2Sess})
+        user1ParentFolderIdGetByUser2Crypted=crypt.cryptSingleFieldValue({fieldValue:user1ParentFolderId,salt:user2Salt}).msg
         console.log(`==============================================================`)
         console.log(`=================    before all done      ====================`)
         console.log(`==============================================================`)
@@ -148,26 +160,55 @@ describe('dispatch', function() {
         })*/
     /*              create                      */
 
-    it('1. not login cant create', async function() {
+    it('1.1 create:unexpected user type', async function() {
         expectedErrorRc=controllerCheckerError.userTypeNotExpected.rc
-        let sess=await userAPI.getFirstSession({app})
+        // let sess=await userAPI.getFirstSession({app})
         data.values={[e_part.RECORD_INFO]:normalRecord}
         await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:adminRootSess,data:data,expectedErrorRc:expectedErrorRc,app:app})
     });
-
-    it('2. get', async function() {
-        // expectedErrorRc=controllerCheckerError.userTypeNotExpected.rc
+    it('1.2 update:delete null field', async function() {
+        expectedErrorRc=controllerCheckerError.userTypeNotExpected.rc
+        // let sess=await userAPI.getFirstSession({app})
+        data.values={[e_part.RECORD_INFO]:normalRecord}
+        await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+    });
+    it('2. get root folder', async function() {
+        expectedErrorRc=0
         // let sess=await userAPI.getFirstSession({app})
         // data.values={[e_part.RECORD_INFO]:normalRecord}
-        await misc_helper.getDataFromAPI_async({APIUrl:finalUrl,sess:adminRootSess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        await misc_helper.getDataFromAPI_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
     });
-    it('2. get', async function() {
+    it('3.1 get child folder: crypted folder id format invalid', async function() {
         url='12345243535636576785'
         finalUrl=baseUrl+url
-        // expectedErrorRc=controllerCheckerError.userTypeNotExpected.rc
+        expectedErrorRc=controllerError.dispatch.get.cryptedFolderIdFormatInvalid.rc
         // let sess=await userAPI.getFirstSession({app})
         // data.values={[e_part.RECORD_INFO]:normalRecord}
-        await misc_helper.getDataFromAPI_async({APIUrl:finalUrl,sess:adminRootSess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        await misc_helper.getDataFromAPI_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+    });
+    it('3.2 get child folder: decrypted folder id format valid', async function() {
+        // url=testData.cryptedObjectId //16c8277c10df1212212acd05acd64f7b8acb644469a8a008c23c7dd76da06863
+        url='3410cae041c38fcae905d65501cf7f776ea6b127850b0955269481f6a4db1b22'
+        finalUrl=baseUrl+url
+        expectedErrorRc=controllerError.dispatch.get.decryptedFolderIdFormatInvalid.rc
+        // let sess=await userAPI.getFirstSession({app})
+        // data.values={[e_part.RECORD_INFO]:normalRecord}
+        await misc_helper.getDataFromAPI_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+    });
+
+    /********** update   ***********/
+    it('5.5 inputValue: req.body.values part recordId, user not the owner of folderId ', async function() {
+        finalUrl=baseUrl
+        expectedErrorRc=controllerError.update.notAuthorCantUpdateFolder.rc
+        data={values:{[e_part.RECORD_ID]:user1ParentFolderIdGetByUser2Crypted,[e_part.RECORD_INFO]:{[e_field.FOLDER.NAME]:'test'}}}
+        await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user2Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+    });
+    it('3.2 update:delete null field', async function() {
+        finalUrl=baseUrl
+        expectedErrorRc=controllerCheckerError.userTypeNotExpected.rc
+        // let sess=await userAPI.getFirstSession({app})
+        data.values={[e_part.RECORD_INFO]:normalRecord,[e_part.RECORD_ID]:user1ParentFolderIdCrypted}
+        await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
     });
 })
 

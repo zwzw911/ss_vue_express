@@ -20,14 +20,6 @@ const Field={
         NAME:'name',
         PARENT_CATEGORY_ID:'parentCategoryId',
     },
-    RESOURCE_PROFILE:{
-        ID:'id',
-        NAME:'name',
-        RANGE:'range',
-        TYPE:'type',
-        MAX_NUM:'maxNum',
-        MAX_DISK_SPACE_IN_MB:'maxDiskSpaceInMb',
-    },
     STORE_PATH:{
         ID:'id',
         NAME:'name',
@@ -38,6 +30,14 @@ const Field={
         USED_SIZE:'usedSize',
         LOW_THRESHOLD:'lowThreshold',
         HIGH_THRESHOLD:'highThreshold',
+    },
+    RESOURCE_PROFILE:{
+        ID:'id',
+        NAME:'name',
+        RESOURCE_RANGE:'resourceRange',
+        RESOURCE_TYPE:'resourceType',
+        MAX_NUM:'maxNum',
+        MAX_DISK_SPACE_IN_MB:'maxDiskSpaceInMb',
     },
     ARTICLE:{
         ID:'id',
@@ -207,7 +207,7 @@ const Field={
     USER_RESOURCE_STATIC:{
         ID:'id',
         USER_ID:'userId',
-        RESOURCE_TYPE:'resourceType',
+        RESOURCE_RANGE:'resourceRange',
         UPLOADED_FILE_NUM:'uploadedFileNum',
         UPLOADED_FILE_SIZE_IN_MB:'uploadedFileSizeInMb',
         DAILY_CHECK_DATE:'dailyCheckDate',

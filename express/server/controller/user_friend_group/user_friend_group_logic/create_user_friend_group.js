@@ -73,7 +73,7 @@ async  function createUserFriendGroup_async({req}){
     /*******************************************************************************************/
     /*                                     用户类型和权限检测                                  */
     /*******************************************************************************************/
-    await controllerChecker.ifExpectedUserType_async({req:req,arr_expectedUserType:[e_allUserType.USER_NORMAL]})
+    await controllerChecker.ifExpectedUserType_async({currentUserType:userType,arr_expectedUserType:[e_allUserType.USER_NORMAL]})
     /*******************************************************************************************/
     /*                                     参数转为server格式                                  */
     /*******************************************************************************************/

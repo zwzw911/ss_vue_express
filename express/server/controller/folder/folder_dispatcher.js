@@ -15,6 +15,7 @@ const server_common_file_require=require('../../../server_common_file_require')
 const controllerPreCheck=server_common_file_require.controllerPreCheck
 const controllerHelper=server_common_file_require.controllerHelper
 const controllerChecker=server_common_file_require.controllerChecker
+const crypt=server_common_file_require.crypt
 /****************   公共常量   ******************/
 //error
 const dispatchError=server_common_file_require.helperError.dispatch
@@ -35,6 +36,8 @@ const e_searchRange=server_common_file_require.inputDataRuleType.SearchRange
 const e_applyRange=server_common_file_require.inputDataRuleType.ApplyRange
 // const e_applyRange=server_common_file_require.inputDataRuleType.ApplyRange
 
+
+const regex=server_common_file_require.regex.regex
 /**************  rule  ****************/
 const browserInputRule=require('../../constant/inputRule/browserInputRule').browserInputRule
 
@@ -71,7 +74,7 @@ async function dispatcher_async(req){
     let collName=controllerSetting.MAIN_HANDLED_COLL_NAME
     let expectedPart
     let result=dispatchError.common.unknownRequestRul
-    // let tmpResult
+    let tmpResult
     /***   1. interval和robot检测   ***/
     await controllerPreCheck.commonPreCheck_async({req:req,collName:collName})
     // ap.inf('commonPreCheck_async done')
@@ -90,10 +93,35 @@ async function dispatcher_async(req){
 
             await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
 
+            //获得顶级目录
             if(undefined===req.params.folderId){
                 result = await getRootFolder_async({req: req})
 
             }else{
+                //获得非顶层目录的内容
+                /*********  url（get）中的objectId的检查，不使用单一函数，因为需要具体的错误信息  *********/
+                let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
+                let tempSalt=userInfo.tempSalt
+                //判断加密的objectId格式
+                let cryptedObjectId=req.params.folderId
+                // ap.inf('cryptedObjectId',cryptedObjectId)
+                // ap.inf('tempSalt',tempSalt)
+                if(false===controllerChecker.ifObjectIdCrypted({objectId:cryptedObjectId})){
+                    return Promise.reject(controllerError.dispatch.get.cryptedFolderIdFormatInvalid)
+                }
+                //解密
+                tmpResult=crypt.decryptSingleFieldValue({fieldValue:cryptedObjectId,salt:tempSalt})
+                if(tmpResult.rc>0){
+                    return Promise.reject(tmpResult)
+                }
+                req.params.folderId=tmpResult.msg
+                // ap.inf('decryptedObjectId',req.params.folderId)
+                //判断解密的objectId
+                if(false===regex.objectId.test(req.params.folderId)){
+                    return Promise.reject(controllerError.dispatch.get.decryptedFolderIdFormatInvalid)
+                }
+// ap.inf('req.params',req.params)
+                //逻辑
                 result = await getNonRootFolder_async({req: req})
             }
             return Promise.resolve(result)
@@ -120,13 +148,16 @@ async function dispatcher_async(req){
                 if (result.rc > 0) {return Promise.reject(result)}
 
                 //对req中的recordId和recordInfo进行objectId（加密过的）格式判断
-                await controllerChecker.ifObjectIdCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName]})
-
+                ap.inf('before check decrypt',req.body.values[e_part.RECORD_INFO])
+                await controllerChecker.ifObjectIdInPartCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName]})
+                ap.inf('after check decrypt',req.body.values[e_part.RECORD_INFO])
                 //对req中的recordId和recordInfo中加密的objectId进行解密
                 let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
+                // ap.inf('userInfo',userInfo)
                 let tempSalt=userInfo.tempSalt
+                ap.inf('efore decrypt',req.body.values[e_part.RECORD_INFO])
                 controllerHelper.decryptInputValue({req:req,expectedPart:expectedPart,salt:tempSalt,browserCollRule:browserInputRule[collName]})
-// ap.inf('after decrypt',req.body.values[e_part.RECORD_INFO])
+ap.inf('after decrypt',req.body.values[e_part.RECORD_INFO])
                 //recordInfo的检查
                 result=controllerPreCheck.inputPreCheck({req:req,expectedPart:expectedPart,collName:collName,applyRange:e_applyRange.CREATE,arr_currentSearchRange:arr_currentSearchRange})
                 // ap.inf('create use inputPreCheck result',result)
@@ -147,7 +178,7 @@ async function dispatcher_async(req){
                 if(result.rc>0){return Promise.reject(result)}
 
                 //对req中的recordId和recordInfo进行objectId（加密过的）格式判断
-                await controllerChecker.ifObjectIdCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName]})
+                await controllerChecker.ifObjectIdInPartCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName]})
 
                 //对req中的recordId和recordInfo中加密的objectId进行解密
                 let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
@@ -160,6 +191,7 @@ async function dispatcher_async(req){
             break;
         case 'put':
             if(originalUrl==='/folder' || originalUrl==='/folder/') {
+                // ap.inf('put in')
                 userLoginCheck={
                     needCheck:true,
                     error:controllerError.dispatch.put.notLoginCantUpdateFolder
@@ -171,19 +203,23 @@ async function dispatcher_async(req){
                 }
                 await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
                 // ap.inf('create use userStateCheck_async done')
-                expectedPart=[e_part.RECORD_INFO]
+                expectedPart=[e_part.RECORD_INFO,e_part.RECORD_ID]
                 //是否为期望的part
                 result = controllerPreCheck.inputCommonCheck({req:req, expectedPart:expectedPart})
                 if (result.rc > 0) {return Promise.reject(result)}
 
                 //对req中的recordId和recordInfo进行objectId（加密过的）格式判断
-                await controllerChecker.ifObjectIdCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName]})
-
+                ap.inf('before check',req.body.values)
+                await controllerChecker.ifObjectIdInPartCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName]})
+                ap.inf('after check',req.body.values)
                 //对req中的recordId和recordInfo中加密的objectId进行解密
                 let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
+                // ap.inf('userInfo',userInfo)
                 let tempSalt=userInfo.tempSalt
+                // ap.inf('userInfo。tempSalt',userInfo.tempSalt)
+                ap.inf('before decrypt',req.body.values)
                 controllerHelper.decryptInputValue({req:req,expectedPart:expectedPart,salt:tempSalt,browserCollRule:browserInputRule[collName]})
-
+                ap.inf('after decrypt',req.body.values)
                 //对输入值进行检测（此时objectId已经解密）
                 result=controllerPreCheck.inputPreCheck({req:req,expectedPart:expectedPart,collName:collName,applyRange:e_applyRange.UPDATE_SCALAR,arr_currentSearchRange:arr_currentSearchRange})
                 // ap.inf('create use inputPreCheck result',result)

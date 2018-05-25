@@ -17,9 +17,9 @@ const e_dbModel=require(`../constant/genEnum/dbModel`)
 const e_resourceFieldName=require(`../constant/enum/nodeEnum`).ResourceFieldName
 const e_resourceConfigFieldName=require(`../constant/enum/nodeEnum`).ResourceConfigFieldName
 
-const e_resourceType=require(`../constant/enum/mongoEnum`).ResourceType.DB
+// const e_resourceType=require(`../constant/enum/mongoEnum`).ResourceType.DB
 
-const e_resourceProfileRange=require(`../constant/enum/mongoEnum`).ResourceProfileRange.DB
+const e_resourceRange=require(`../constant/enum/mongoEnum`).ResourceRange.DB
 /**********************************************************/
 /******************  普通函数     ***********************/
 /**********************************************************/
@@ -36,138 +36,138 @@ const helperError=require('../constant/error/controller/helperError')
 
 //日常：计算总体(total)资源，并存入user_resource_static,修正可能出现的资源统计错误
 //当前只计算用户的article中的image和attachment的总数，以便确定用户总的使用空间
-const daily={
-    [e_resourceType.ARTICLE_IMAGE]:function({arr_userId}){
-        let config={
-            [e_resourceConfigFieldName.COLL_NAME]:e_coll.ARTICLE_IMAGE,
-            [e_resourceConfigFieldName.RESOURCE_TYPE]:e_resourceType.ARTICLE_IMAGE,
-            [e_resourceConfigFieldName.DB_MODEL]:e_dbModel.article_image,
-            [e_resourceConfigFieldName.RAW_DOC_GROUP]:{
-                _id:`$${[e_field.ARTICLE_IMAGE.AUTHOR_ID]}`,
-                [e_resourceFieldName.TOTAL_FILE_SIZE_IN_MB]:{$sum:`$${e_field.ARTICLE_IMAGE.SIZE_IN_MB}`},
-                [e_resourceFieldName.MAX_FILE_NUM]:{$sum:1}
-            }
-        }
-        if(undefined!==arr_userId && arr_userId.length>0){
-            config[e_resourceConfigFieldName.RAW_DOC_FILTER]={[e_field.ARTICLE_IMAGE.AUTHOR_ID]:{$in:arr_userId}}
-        }
-        return config
-    },
-    [e_resourceType.ARTICLE_ATTACHMENT]:function({arr_userId}){
-        let config={
-            [e_resourceConfigFieldName.COLL_NAME]:e_coll.ARTICLE_ATTACHMENT,
-            [e_resourceConfigFieldName.RESOURCE_TYPE]:e_resourceType.ARTICLE_ATTACHMENT,
-            [e_resourceConfigFieldName.DB_MODEL]:e_dbModel.article_image,
-            [e_resourceConfigFieldName.RAW_DOC_GROUP]:{
-                _id:`$${[e_field.ARTICLE_ATTACHMENT.AUTHOR_ID]}`,
-                [e_resourceFieldName.TOTAL_FILE_SIZE_IN_MB]:{$sum:`$${e_field.ARTICLE_ATTACHMENT.SIZE_IN_MB}`},
-                [e_resourceFieldName.MAX_FILE_NUM]:{$sum:1}
-            }
-        }
-        if(undefined!==arr_userId && arr_userId.length>0){
-            config[e_resourceConfigFieldName.RAW_DOC_FILTER]={[e_field.ARTICLE_IMAGE.AUTHOR_ID]:{$in:arr_userId}}
-        }
-        return config
-    }
-}
+// const daily={
+//     [e_resourceType.ARTICLE_IMAGE]:function({arr_userId}){
+//         let config={
+//             [e_resourceConfigFieldName.COLL_NAME]:e_coll.ARTICLE_IMAGE,
+//             [e_resourceConfigFieldName.RESOURCE_TYPE]:e_resourceType.ARTICLE_IMAGE,
+//             [e_resourceConfigFieldName.DB_MODEL]:e_dbModel.article_image,
+//             [e_resourceConfigFieldName.RAW_DOC_GROUP]:{
+//                 _id:`$${[e_field.ARTICLE_IMAGE.AUTHOR_ID]}`,
+//                 [e_resourceFieldName.TOTAL_FILE_SIZE_IN_MB]:{$sum:`$${e_field.ARTICLE_IMAGE.SIZE_IN_MB}`},
+//                 [e_resourceFieldName.MAX_FILE_NUM]:{$sum:1}
+//             }
+//         }
+//         if(undefined!==arr_userId && arr_userId.length>0){
+//             config[e_resourceConfigFieldName.RAW_DOC_FILTER]={[e_field.ARTICLE_IMAGE.AUTHOR_ID]:{$in:arr_userId}}
+//         }
+//         return config
+//     },
+//     [e_resourceType.ARTICLE_ATTACHMENT]:function({arr_userId}){
+//         let config={
+//             [e_resourceConfigFieldName.COLL_NAME]:e_coll.ARTICLE_ATTACHMENT,
+//             [e_resourceConfigFieldName.RESOURCE_TYPE]:e_resourceType.ARTICLE_ATTACHMENT,
+//             [e_resourceConfigFieldName.DB_MODEL]:e_dbModel.article_image,
+//             [e_resourceConfigFieldName.RAW_DOC_GROUP]:{
+//                 _id:`$${[e_field.ARTICLE_ATTACHMENT.AUTHOR_ID]}`,
+//                 [e_resourceFieldName.TOTAL_FILE_SIZE_IN_MB]:{$sum:`$${e_field.ARTICLE_ATTACHMENT.SIZE_IN_MB}`},
+//                 [e_resourceFieldName.MAX_FILE_NUM]:{$sum:1}
+//             }
+//         }
+//         if(undefined!==arr_userId && arr_userId.length>0){
+//             config[e_resourceConfigFieldName.RAW_DOC_FILTER]={[e_field.ARTICLE_IMAGE.AUTHOR_ID]:{$in:arr_userId}}
+//         }
+//         return config
+//     }
+// }
 
-const calcResourceCriteria={
-    //用户在 单个 文档中的图片：需要实时获得
-    /*[e_resourceProfileRange.IMAGE_PER_ARTICLE]:({articleId})=>{
-        return [
-            {
-                collName:e_coll.ARTICLE_IMAGE,
-                match:{
-                    [e_field.ARTICLE_IMAGE.ARTICLE_ID]:articleId
-                },
-                group:{
-                    _id:`$${[e_field.ARTICLE_IMAGE.ARTICLE_ID]}`,
-                    [e_resourceFieldName.TOTAL_FILE_SIZE_IN_MB]:{$sum:`$${e_field.ARTICLE_IMAGE.SIZE_IN_MB}`},
-                    [e_resourceFieldName.MAX_FILE_NUM]:{$sum:1}
-                },
-            }
-        ]
-    },
-    //用户在 单个 文档中的附件：需要实时获得
-    [e_resourceProfileRange.ATTACHMENT_PER_ARTICLE]:({articleId})=>{
-        return [
-            {
-                collName:e_coll.ARTICLE_ATTACHMENT,
-                match:{
-                    [e_field.ARTICLE_ATTACHMENT.ARTICLE_ID]:articleId
-                },
-                group:{
-                    _id:`$${[e_field.ARTICLE_ATTACHMENT.ARTICLE_ID]}`,
-                    [e_resourceFieldName.TOTAL_FILE_SIZE_IN_MB]:{$sum:`$${e_field.ARTICLE_ATTACHMENT.SIZE_IN_MB}`},
-                    [e_resourceFieldName.MAX_FILE_NUM]:{$sum:1}
-                },
-            }
-        ]
-    },*/
-    //用户在 所有 文档中的资源，直接读取user_resource_static的内容
-    [e_resourceProfileRange.WHOLE_RESOURCE_PER_PERSON_FOR_ALL_ARTICLE]:({userId})=>{
-        return [
-            {
-                collName:e_coll.USER_RESOURCE_STATIC,
-                match:{
-                    [e_field.USER_RESOURCE_STATIC.USER_ID]:userId
-                },
-                group:{
-                    _id:`$${[e_field.USER_RESOURCE_STATIC.USER_ID]}`,
-                    [e_resourceFieldName.TOTAL_FILE_SIZE_IN_MB]:{$sum:`$${e_field.USER_RESOURCE_STATIC.UPLOADED_FILE_SIZE_IN_MB}`},
-                    [e_resourceFieldName.MAX_FILE_NUM]:{$sum:`$${e_field.USER_RESOURCE_STATIC.UPLOADED_FILE_NUM}`}
-                },
-            },
-            {
-                collName:e_coll.ARTICLE_ATTACHMENT,
-                match:{
-                    [e_field.ARTICLE_IMAGE.AUTHOR_ID]:userId
-                },
-                group:{
-                    _id:`$${[e_field.ARTICLE_IMAGE.AUTHOR_ID]}`,
-                    [e_resourceFieldName.TOTAL_FILE_SIZE_IN_MB]:{$sum:`$${e_field.ARTICLE_ATTACHMENT.SIZE_IN_MB}`},
-                    [e_resourceFieldName.MAX_FILE_NUM]:{$sum:1}
-                },
-            }
-        ]
-    },
-
-
-    //用户在 单个 举报中的图片：需要实时获得
-    [e_resourceProfileRange.IMAGE_PER_IMPEACH_OR_COMMENT]:({impeach_comment_Id})=>{
-        return [
-            {
-                collName:e_coll.IMPEACH_IMAGE,
-                match:{
-                    [e_field.IMPEACH_IMAGE.REFERENCE_ID]:impeach_comment_Id
-                },
-                group:{
-                    _id:`$${[e_field.IMPEACH_IMAGE.REFERENCE_ID]}`,
-                    [e_resourceFieldName.TOTAL_FILE_SIZE_IN_MB]:{$sum:`$${e_field.IMPEACH_IMAGE.SIZE_IN_MB}`},
-                    [e_resourceFieldName.MAX_FILE_NUM]:{$sum:1}
-                },
-            }
-        ]
-    },
-
-    //用户在 整个 举报和评论中的图片：需要实时获得
-    [e_resourceProfileRange.IMAGE_PER_PERSON_FOR_WHOLE_IMPEACH]:({userId,arr_impeach_and_comment_id})=>{
-        return [
-            {
-                collName:e_coll.IMPEACH_IMAGE,
-                match:{
-                    [e_field.IMPEACH_IMAGE.REFERENCE_ID]:{"$in":arr_impeach_and_comment_id},
-                    [e_field.IMPEACH_IMAGE.AUTHOR_ID]:userId,
-                },
-                group:{
-                    _id:`$${[e_field.IMPEACH_IMAGE.AUTHOR_ID]}`,
-                    [e_resourceFieldName.TOTAL_FILE_SIZE_IN_MB]:{$sum:`$${e_field.IMPEACH_IMAGE.SIZE_IN_MB}`},
-                    [e_resourceFieldName.MAX_FILE_NUM]:{$sum:1}
-                },
-            }
-        ]
-    },
-}
+// const calcResourceCriteria={
+//     //用户在 单个 文档中的图片：需要实时获得
+//     /*[e_resourceRange.IMAGE_PER_ARTICLE]:({articleId})=>{
+//         return [
+//             {
+//                 collName:e_coll.ARTICLE_IMAGE,
+//                 match:{
+//                     [e_field.ARTICLE_IMAGE.ARTICLE_ID]:articleId
+//                 },
+//                 group:{
+//                     _id:`$${[e_field.ARTICLE_IMAGE.ARTICLE_ID]}`,
+//                     [e_resourceFieldName.TOTAL_FILE_SIZE_IN_MB]:{$sum:`$${e_field.ARTICLE_IMAGE.SIZE_IN_MB}`},
+//                     [e_resourceFieldName.MAX_FILE_NUM]:{$sum:1}
+//                 },
+//             }
+//         ]
+//     },
+//     //用户在 单个 文档中的附件：需要实时获得
+//     [e_resourceRange.ATTACHMENT_PER_ARTICLE]:({articleId})=>{
+//         return [
+//             {
+//                 collName:e_coll.ARTICLE_ATTACHMENT,
+//                 match:{
+//                     [e_field.ARTICLE_ATTACHMENT.ARTICLE_ID]:articleId
+//                 },
+//                 group:{
+//                     _id:`$${[e_field.ARTICLE_ATTACHMENT.ARTICLE_ID]}`,
+//                     [e_resourceFieldName.TOTAL_FILE_SIZE_IN_MB]:{$sum:`$${e_field.ARTICLE_ATTACHMENT.SIZE_IN_MB}`},
+//                     [e_resourceFieldName.MAX_FILE_NUM]:{$sum:1}
+//                 },
+//             }
+//         ]
+//     },*/
+//     //用户在 所有 文档中的资源，直接读取user_resource_static的内容
+//     [e_resourceRange.WHOLE_RESOURCE_PER_PERSON_FOR_ALL_ARTICLE]:({userId})=>{
+//         return [
+//             {
+//                 collName:e_coll.USER_RESOURCE_STATIC,
+//                 match:{
+//                     [e_field.USER_RESOURCE_STATIC.USER_ID]:userId
+//                 },
+//                 group:{
+//                     _id:`$${[e_field.USER_RESOURCE_STATIC.USER_ID]}`,
+//                     [e_resourceFieldName.TOTAL_FILE_SIZE_IN_MB]:{$sum:`$${e_field.USER_RESOURCE_STATIC.UPLOADED_FILE_SIZE_IN_MB}`},
+//                     [e_resourceFieldName.MAX_FILE_NUM]:{$sum:`$${e_field.USER_RESOURCE_STATIC.UPLOADED_FILE_NUM}`}
+//                 },
+//             },
+//             {
+//                 collName:e_coll.ARTICLE_ATTACHMENT,
+//                 match:{
+//                     [e_field.ARTICLE_IMAGE.AUTHOR_ID]:userId
+//                 },
+//                 group:{
+//                     _id:`$${[e_field.ARTICLE_IMAGE.AUTHOR_ID]}`,
+//                     [e_resourceFieldName.TOTAL_FILE_SIZE_IN_MB]:{$sum:`$${e_field.ARTICLE_ATTACHMENT.SIZE_IN_MB}`},
+//                     [e_resourceFieldName.MAX_FILE_NUM]:{$sum:1}
+//                 },
+//             }
+//         ]
+//     },
+//
+//
+//     //用户在 单个 举报中的图片：需要实时获得
+//     [e_resourceRange.IMAGE_PER_IMPEACH_OR_COMMENT]:({impeach_comment_Id})=>{
+//         return [
+//             {
+//                 collName:e_coll.IMPEACH_IMAGE,
+//                 match:{
+//                     [e_field.IMPEACH_IMAGE.REFERENCE_ID]:impeach_comment_Id
+//                 },
+//                 group:{
+//                     _id:`$${[e_field.IMPEACH_IMAGE.REFERENCE_ID]}`,
+//                     [e_resourceFieldName.TOTAL_FILE_SIZE_IN_MB]:{$sum:`$${e_field.IMPEACH_IMAGE.SIZE_IN_MB}`},
+//                     [e_resourceFieldName.MAX_FILE_NUM]:{$sum:1}
+//                 },
+//             }
+//         ]
+//     },
+//
+//     //用户在 整个 举报和评论中的图片：需要实时获得
+//     [e_resourceRange.IMAGE_PER_PERSON_FOR_WHOLE_IMPEACH]:({userId,arr_impeach_and_comment_id})=>{
+//         return [
+//             {
+//                 collName:e_coll.IMPEACH_IMAGE,
+//                 match:{
+//                     [e_field.IMPEACH_IMAGE.REFERENCE_ID]:{"$in":arr_impeach_and_comment_id},
+//                     [e_field.IMPEACH_IMAGE.AUTHOR_ID]:userId,
+//                 },
+//                 group:{
+//                     _id:`$${[e_field.IMPEACH_IMAGE.AUTHOR_ID]}`,
+//                     [e_resourceFieldName.TOTAL_FILE_SIZE_IN_MB]:{$sum:`$${e_field.IMPEACH_IMAGE.SIZE_IN_MB}`},
+//                     [e_resourceFieldName.MAX_FILE_NUM]:{$sum:1}
+//                 },
+//             }
+//         ]
+//     },
+// }
 
 /*  为arr_resourceProfileRange中的每个resourceRange，获得当前valida的user_resource_profile(basic或者advanced)
 * @singleResourceProfileRange；需要获得profile的resource
@@ -183,10 +183,10 @@ async function findValidResourceProfiles_async({singleResourceProfileRange,userI
     let condition={"$and":[{'dDate':{$exists:false}}]}
     // ap.inf('findValidResourceProfiles_async->condition',condition)
     //首先在resourceProfile中，根据resourceRange查找所有对应的resourceProfile（包括所有type（当前为basic和advanced））
-    condition["$and"].push({[e_field.RESOURCE_PROFILE.RANGE]:singleResourceProfileRange})
+    condition["$and"].push({[e_field.RESOURCE_PROFILE.RESOURCE_RANGE]:singleResourceProfileRange})
     // ap.inf('findValidResourceProfiles_async->condition',condition)
     let resourceProfileResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.resource_profile,condition:condition})
-    ap.inf('findValidResourceProfiles_async->resourceProfileResult',resourceProfileResult)
+    //ap.inf('findValidResourceProfiles_async->resourceProfileResult',resourceProfileResult)
     //根据所有查找到的resourceProfile id，在user_profile查找所有对应的，且尚未过期的记录
     let currentDate=new Date()
     let userResourceProfileCondition={"$and":[
@@ -197,14 +197,14 @@ async function findValidResourceProfiles_async({singleResourceProfileRange,userI
         ]}
     let userResourceProfileSelectFields='-uDate' //包含所有field的值
     let option={$sort:{[e_field.USER_RESOURCE_PROFILE.ID]:-1}} //按照cDate递减，方便返回结果取值（idx=0为第一条）
-    ap.inf('findValidResourceProfiles_async->userResourceProfileCondition',userResourceProfileCondition)
+    //ap.inf('findValidResourceProfiles_async->userResourceProfileCondition',userResourceProfileCondition)
     for(let idx in resourceProfileResult){
         let singleResourceProfileResult=resourceProfileResult[idx]
-        ap.inf('singleResourceProfileResult',singleResourceProfileResult)
-        ap.inf('userResourceProfileCondition["$and"][0][\'$in\']',userResourceProfileCondition["$and"][0][e_field.USER_RESOURCE_PROFILE.RESOURCE_PROFILE_ID]['$in'])
+        //ap.inf('singleResourceProfileResult',singleResourceProfileResult)
+        //ap.inf('userResourceProfileCondition["$and"][0][\'$in\']',userResourceProfileCondition["$and"][0][e_field.USER_RESOURCE_PROFILE.RESOURCE_PROFILE_ID]['$in'])
         userResourceProfileCondition["$and"][0][e_field.USER_RESOURCE_PROFILE.RESOURCE_PROFILE_ID]['$in'].push(singleResourceProfileResult[e_field.RESOURCE_PROFILE.ID])
     }
-    ap.inf('findValidResourceProfiles_async->userResourceProfileCondition',userResourceProfileCondition)
+    // ap.inf('findValidResourceProfiles_async->userResourceProfileCondition',userResourceProfileCondition)
     let validResultForSingleResourceProfileRange=await common_operation_model.find_returnRecords_async({
         dbModel:e_dbModel.user_resource_profile,
         selectedFields:userResourceProfileSelectFields,
@@ -255,14 +255,14 @@ async function calcArticleResourceUsage_async({singleResourceProfileRange,articl
     //为每个resourceProfileRange获得统计信息
     // for(let singleResourceProfileRange of arr_resourceProfileRange){
         switch (singleResourceProfileRange){
-            case e_resourceProfileRange.IMAGE_PER_ARTICLE:
+            case e_resourceRange.IMAGE_PER_ARTICLE:
                 // result[singleResourceProfileRange]={
                 result={
                     [e_resourceFieldName.USED_NUM]:articleRecord[e_field.ARTICLE.IMAGES_NUM],
                     [e_resourceFieldName.DISK_USAGE_SIZE_IN_MB]:articleRecord[e_field.ARTICLE.IMAGES_SIZE_IN_MB],
                 }
                 break;
-            case e_resourceProfileRange.ATTACHMENT_PER_ARTICLE:
+            case e_resourceRange.ATTACHMENT_PER_ARTICLE:
                 // result[singleResourceProfileRange]=
                 result={
                     [e_resourceFieldName.USED_NUM]:articleRecord[e_field.ARTICLE.ATTACHMENTS_NUM],
@@ -283,13 +283,17 @@ async function calcArticleResourceUsage_async({singleResourceProfileRange,articl
 /*  直接读取user_resource_static中user的记录（当前记录的num和sizeInMb只包括article的image和attachment）
 * */
 async function calcUserTotalResourceUsage_async({userId}){
-    let result=await common_operation_model.findById_returnRecord_async({dbModel:e_dbModel.user_resource_static,id:userId})
+    let condition={
+        [e_field.USER_RESOURCE_STATIC.USER_ID]:userId,
+        [e_field.USER_RESOURCE_STATIC.RESOURCE_RANGE]:e_resourceRange.WHOLE_RESOURCE_PER_PERSON_FOR_ALL_ARTICLE,
+    }
+    let result=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.user_resource_static,condition:condition})
     if(null===result){
         await recordInternalError_async({})
         return Promise.reject(helperError.resourceCheck.calcUserTotalResourceUsage_async.userNotExistCantGetUsage)
     }
 
-    return Promise.resolve({num:result[e_field.USER_RESOURCE_STATIC.UPLOADED_FILE_NUM],sizeInMb:result[e_field.USER_RESOURCE_STATIC.UPLOADED_FILE_SIZE_IN_MB]})
+    return Promise.resolve({num:result[0][e_field.USER_RESOURCE_STATIC.UPLOADED_FILE_NUM],sizeInMb:result[0][e_field.USER_RESOURCE_STATIC.UPLOADED_FILE_SIZE_IN_MB]})
 }
 
 /**********************************************************************************/
@@ -317,16 +321,16 @@ async function calcFolderNum_async({userId}){
 * return: boolean
 * */
 async function ifEnoughResource_async({requiredResource,resourceProfileRange,userId,containerId}){
-    ap.inf('resourceProfileRange',resourceProfileRange)
+    //ap.inf('resourceProfileRange',resourceProfileRange)
     for(let singleResourceProfileRange of resourceProfileRange){
         //1. 根据resourceProfileRange获得对应的当前可用的 资源配置文件（valid resourceProfile）
         let resourceProfile=await findValidResourceProfiles_async({singleResourceProfileRange:singleResourceProfileRange,userId:userId})
         //2. 根据resourceProfileRange和（或） userId/containerId，获得当前使用资源量
         let usedResource,spaceExceedFlag,numExceedFlag
-        ap.inf('singleResourceProfileRange',singleResourceProfileRange)
+        //ap.inf('singleResourceProfileRange',singleResourceProfileRange)
         switch (singleResourceProfileRange){
 
-            case e_resourceProfileRange.ATTACHMENT_PER_ARTICLE:
+            case e_resourceRange.ATTACHMENT_PER_ARTICLE:
                 usedResource=await calcArticleResourceUsage_async({singleResourceProfileRange:singleResourceProfileRange,articleId:containerId})
                 spaceExceedFlag=ifSpaceExceed({currentUsedSpace:usedResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],requiredSpace:requiredResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],resourceProfileRecord:[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]})
                 if(true===spaceExceedFlag){
@@ -341,7 +345,7 @@ async function ifEnoughResource_async({requiredResource,resourceProfileRange,use
                     return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.articleAttachmentNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
                 }
                 break;
-            case e_resourceProfileRange.IMAGE_PER_ARTICLE:
+            case e_resourceRange.IMAGE_PER_ARTICLE:
                 usedResource=await calcArticleResourceUsage_async({singleResourceProfileRange:singleResourceProfileRange,articleId:containerId})
                 spaceExceedFlag=ifSpaceExceed({currentUsedSpace:usedResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],requiredSpace:requiredResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],resourceProfileRecord:[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]})
                 if(true===spaceExceedFlag){
@@ -355,7 +359,7 @@ async function ifEnoughResource_async({requiredResource,resourceProfileRange,use
                     return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.articleImageNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
                 }
                 break
-            case e_resourceProfileRange.WHOLE_RESOURCE_PER_PERSON_FOR_ALL_ARTICLE:
+            case e_resourceRange.WHOLE_RESOURCE_PER_PERSON_FOR_ALL_ARTICLE:
                 usedResource=await calcUserTotalResourceUsage_async({userId:userId})
                 spaceExceedFlag=ifSpaceExceed({currentUsedSpace:usedResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],requiredSpace:requiredResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],resourceProfileRecord:[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]})
                 if(true===spaceExceedFlag){
@@ -368,11 +372,11 @@ async function ifEnoughResource_async({requiredResource,resourceProfileRange,use
                     return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.userTotalFileNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
                 }
                 break
-            case e_resourceProfileRange.FOLDER_NUM:
-                ap.inf('FOLDER_NUM')
+            case e_resourceRange.FOLDER_NUM:
+                //ap.inf('FOLDER_NUM')
                 usedResource=await calcFolderNum_async({userId:userId})
-                ap.inf('usedResource',usedResource)
-                ap.inf('usedResource[e_resourceFieldName.USED_NUM]',usedResource[e_resourceFieldName.USED_NUM])
+                //ap.inf('usedResource',usedResource)
+                //ap.inf('usedResource[e_resourceFieldName.USED_NUM]',usedResource[e_resourceFieldName.USED_NUM])
                 //folder只要检测数量
                 numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:[e_field.RESOURCE_PROFILE.MAX_NUM]})
                 if(true===numExceedFlag){
@@ -380,7 +384,7 @@ async function ifEnoughResource_async({requiredResource,resourceProfileRange,use
                 }
                 break
             default:
-                ap.err(`ResourceProfileRange ${singleResourceProfileRange} no related method to calc resource usage`)
+                //ap.err(`ResourceRange ${singleResourceProfileRange} no related method to calc resource usage`)
         }
 
 

@@ -7,8 +7,10 @@ const ap=require('awesomeprint')
 const interval=require('../function/security/interval')
 const checkRobot_async=require('../function/assist/checkRobot').checkRobot_async
 const ifPenalizeOngoing_async=require(`./controllerChecker`).ifPenalizeOngoing_async
+const dataTypeCheck=require('../function/validateInput/validateHelper').dataTypeCheck
 
 const preCheckError=require('../constant/error/controller/helperError').preCheck
+const validateFormatError=require('../constant/error/validateError').validateFormat
 const validateFormat=require('../function/validateInput/validateFormat')
 const validateSearchFormat=require('../function/validateInput/validateSearchFormat')
 const validateValue=require('../function/validateInput/validateValue')
@@ -24,6 +26,9 @@ const e_applyRange=require('../constant/enum/inputDataRuleType').ApplyRange
 
 const currentEnv=require('../constant/config/appSetting').currentEnv
 const e_env=require('../constant/enum/nodeEnum').Env
+
+const regex=require('../constant/regex/regex').regex
+
 async function commonPreCheck_async({req,collName}){
     if(currentEnv===e_env.PROD){
         //1. interval检测
@@ -158,13 +163,14 @@ function inputCommonCheck({req,expectedPart}){
     return result
 }
 
-/*      对partValue进行细致的格式检查
+/*      对partValue进行细致的格式检查（objectId解密后）
 * */
 function validatePartValueFormat({req,expectedPart,collName,fkConfig,arr_currentSearchRange}){
     // ap.inf('expectedPart in',expectedPart)
     let checkPartFormatResult
     for(let singlePart of expectedPart){
         // ap.inf('current singlePart',singlePart)
+        let partValue=req.body.values[singlePart]
         switch (singlePart){
 
             case e_part.EVENT:
@@ -192,6 +198,7 @@ function validatePartValueFormat({req,expectedPart,collName,fkConfig,arr_current
                 // }
                 break;
             case e_part.RECORD_ID:
+
                 break;
             case e_part.RECORD_INFO:
                 // ap.inf('recordInfo in')
@@ -269,8 +276,10 @@ function validatePartValue({req,expectedPart,collName,applyRange,fkConfig}){
     // ap.inf('expectedPart',expectedPart)
     // ap.inf(`req.bady.values`,req.body.values)
     let checkPartValueResult
+
     for(let singlePart of expectedPart){
         // ap.inf(`singlePart`,singlePart)
+        let partValue=req.body.values[singlePart]
         switch (singlePart){
             case e_part.EVENT:
                 break;
@@ -298,6 +307,14 @@ function validatePartValue({req,expectedPart,collName,applyRange,fkConfig}){
                 }*/
                 break;
             case e_part.RECORD_ID:
+                //两次检查，第一次是validateFormat中，进行partValue（validatePartValueFormat）检查的时候，直接进行了加密objectId的检测
+                //第二次，在此进行解密后objectId的检测
+                // ap.inf('RECORD_ID in')
+                // ap.inf('partValue',partValue)
+                // ap.inf('regex.objectId.test(partValue)',regex.objectId.test(partValue))
+                if(false===dataTypeCheck.isString(partValue) || false===regex.objectId.test(partValue)) {
+                    return validateFormatError.inputValuePartRecordIdDecryptedValueFormatWrong
+                }
                 // 无需检测，直接在validateFormat中检测
                 // checkPartValueResult=validateValue.validateRecorderId(req.body.values[e_part.RECORD_ID])
                 // if(checkPartValueResult.rc>0){
@@ -360,7 +377,7 @@ function validatePartValue({req,expectedPart,collName,applyRange,fkConfig}){
                 let fieldInputRule=inputRule[collName][singleFieldName]
                 // console.log(`fieldInputValue ${JSON.stringify(fieldInputValue)}`)
                 // console.log(`fieldInputRule ${JSON.stringify(fieldInputRule)}`)
-                checkPartValueResult=validateValue.validateSingleRecorderFieldValue({fieldValue:fieldInputValue,fieldRule:fieldInputRule})
+                checkPartValueResult=validateValue.validateSingleRecorderFieldValue({fieldValue:fieldInputValue,fieldRule:fieldInputRule,applyRange:applyRange})
                 // console.log(   `checkFilterFieldValueResult check result is  ${JSON.stringify(checkFilterFieldValueResult)}`)
                 if(checkPartValueResult.rc>0){
                     return checkPartValueResult
@@ -408,6 +425,8 @@ function validatePartValue({req,expectedPart,collName,applyRange,fkConfig}){
     }
     return {rc:0}
 }
+
+
 /********************************************************************/
 /********************************************************************/
 /********************************************************************/

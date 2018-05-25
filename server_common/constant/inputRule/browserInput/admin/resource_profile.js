@@ -37,14 +37,14 @@ const resource_profile= {
         [otherRuleFiledName.DATA_TYPE]: serverDataType.STRING,
         [otherRuleFiledName.APPLY_RANGE]:[applyRange.CREATE,], //只能create，不能update
         [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true}, error: {rc: baseJSErrorCode+6, msg: '资源配置范围不能为空'}, mongoError: {rc: baseMongoErrorCode+6, msg: '资源配置范围不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
-        [ruleFiledName.ENUM]:{define:enumValue.ResourceProfileRange,error:{rc:baseJSErrorCode+8,msg:'资源配置范围的类型不正确'},mongoError:{rc:baseMongoErrorCode+8,msg:'资源配置范围的类型不正确'}},//server端使用
+        [ruleFiledName.ENUM]:{define:enumValue.ResourceRange,error:{rc:baseJSErrorCode+8,msg:'资源配置范围的类型不正确'},mongoError:{rc:baseMongoErrorCode+8,msg:'资源配置范围的类型不正确'}},//server端使用
     },
     type: {
         [otherRuleFiledName.CHINESE_NAME]: '资源配置类型',
         [otherRuleFiledName.DATA_TYPE]: serverDataType.STRING,
         [otherRuleFiledName.APPLY_RANGE]:[applyRange.CREATE,], //只能create，不能update
         [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true}, error: {rc: baseJSErrorCode+10, msg: '资源配置类型不能为空'}, mongoError: {rc: baseMongoErrorCode+10, msg: '资源配置类型不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
-        [ruleFiledName.ENUM]:{define:enumValue.ResourceProfileType,error:{rc:baseJSErrorCode+12,msg:'资源配置类型的值类型不正确'},mongoError:{rc:baseMongoErrorCode+12,msg:'资源配置类型的值类型不正确'}},//server端使用
+        [ruleFiledName.ENUM]:{define:enumValue.ResourceType,error:{rc:baseJSErrorCode+12,msg:'资源配置类型的值类型不正确'},mongoError:{rc:baseMongoErrorCode+12,msg:'资源配置类型的值类型不正确'}},//server端使用
     },
     maxNum: {
         [otherRuleFiledName.CHINESE_NAME]: '最大文件数量',

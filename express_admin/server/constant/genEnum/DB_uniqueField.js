@@ -5,8 +5,8 @@
 const UniqueField={
     admin_user:["name",],
     category:["name",],
-    resource_profile:["name",],
     store_path:["name","path",],
+    resource_profile:["name",],
     tag:["name",],
     public_group:["name",],
     user_input_keyword:["name",],

@@ -31,8 +31,8 @@ const e_penalizeType=server_common_file_require.mongoEnum.PenalizeType.DB
 const e_penalizeSubType=server_common_file_require.mongoEnum.PenalizeSubType.DB
 const e_iniSettingObject=require('../../constant/genEnum/initSettingObject').iniSettingObject
 const e_articleStatus=server_common_file_require.mongoEnum.ArticleStatus.DB
-const e_resourceProfileRange=server_common_file_require.mongoEnum.ResourceProfileRange.DB
-const e_resourceProfileType=server_common_file_require.mongoEnum.ResourceProfileType.DB
+const e_resourceRange=server_common_file_require.mongoEnum.ResourceRange.DB
+const e_resourceType=server_common_file_require.mongoEnum.ResourceType.DB
 const e_storePathUsage=server_common_file_require.mongoEnum.StorePathUsage.DB
 
 const e_fileSizeUnit=server_common_file_require.nodeRuntimeEnum.FileSizeUnit

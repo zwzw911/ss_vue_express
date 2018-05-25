@@ -48,6 +48,7 @@ const regex=server_common_file_require.regex
 /***************        获得所有一级目录      ****************/
 /*************************************************************/
 async function getRootFolder_async({req}){
+    // ap.inf('req.params.folder in get',req.params)
     /********************************************************/
     /*************      define variant        ***************/
     /********************************************************/
@@ -73,15 +74,23 @@ async function getRootFolder_async({req}){
     let getRecord=await businessLogic_async({userId:userId,folderId:undefined})
 
     /*********************************************/
+    /********        删除指定字段         *******/
+    /*********************************************/
+    // ap.inf('getRecord',getRecord)
+    for(let singleEle of getRecord['folder']){
+        controllerHelper.deleteFieldInRecord({record:singleEle,fieldsToBeDeleted:undefined})
+    }
+
+    /*********************************************/
     /**********      加密 敏感数据       *********/
     /*********************************************/
-    for(let idx in getRecord['folder']){
-        getRecord['folder'][idx]=getRecord['folder'][idx].toObject()
-        controllerHelper.cryptRecordValue({record:getRecord['folder'][idx],salt:tempSalt,collName:collName})
+    for(let singleEle of getRecord['folder']){
+        // getRecord['folder'][idx]=getRecord['folder'][idx].toObject()
+        controllerHelper.cryptRecordValue({record:singleEle,salt:tempSalt,collName:collName})
     }
-    for(let idx in getRecord['article']){
-        getRecord['article'][idx]=getRecord['article'][idx].toObject()
-        controllerHelper.cryptRecordValue({record:getRecord['article'][idx],salt:tempSalt,collName:collName})
+    for(let singleEle of getRecord['article']){
+        // getRecord['article'][idx]=getRecord['article'][idx].toObject()
+        controllerHelper.cryptRecordValue({record:singleEle,salt:tempSalt,collName:collName})
     }
 
     return Promise.resolve({rc:0,msg:getRecord})
@@ -103,7 +112,7 @@ async function getNonRootFolder_async({req}){
     let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
     // ap.inf('userInfo',userInfo)
     let {userId,userCollName,userType,userPriority,tempSalt}=userInfo
-    ap.inf('req.params',req.params)
+    // ap.inf('req.params',req.params)
     let recordId=req.params.folderId
 
 
@@ -157,6 +166,14 @@ async function businessLogic_async({folderId,userId}){
 
     let childFolderResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.folder,condition:childFolderCondition})
     let childArticleResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.article,condition:childFolderCondition})
+
+    /*****  转换格式 *******/
+    for(let idx in childFolderResult) {
+        childFolderResult[idx] = childFolderResult[idx].toObject()
+    }
+    for(let idx in childArticleResult) {
+        childArticleResult[idx] = childArticleResult[idx].toObject()
+    }
 
     return Promise.resolve({folder:childFolderResult,article:childArticleResult})
 }

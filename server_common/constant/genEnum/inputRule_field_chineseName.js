@@ -27,13 +27,6 @@ const ChineseName={
         'name':'分类名称',
         'parentCategoryId':'上级分类',
     },
-    resource_profile:{
-        'name':'资源配置名称',
-        'range':'资源配置范围',
-        'type':'资源配置类型',
-        'maxNum':'最大文件数量',
-        'maxDiskSpaceInMb':'最大存储空间',
-    },
     store_path:{
         'name':'存储路径名称',
         'path':'存储路径',
@@ -43,6 +36,13 @@ const ChineseName={
         'highThreshold':'容量上限值',
         'usedSize':'已使用容量',
         'status':'存储路径状态',
+    },
+    resource_profile:{
+        'name':'资源配置名称',
+        'range':'资源配置范围',
+        'type':'资源配置类型',
+        'maxNum':'最大文件数量',
+        'maxDiskSpaceInMb':'最大存储空间',
     },
     article:{
         'name':'文档标题',

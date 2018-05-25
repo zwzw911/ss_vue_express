@@ -80,7 +80,7 @@ async function deleteFolder_async({req}){
         tmpResult=await controllerChecker.ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({
             dbModel:e_dbModel.folder,
             recordId:recordId,
-            ownerFieldName:e_field.FOLDER.AUTHOR_ID,
+            ownerFieldsName:[e_field.FOLDER.AUTHOR_ID],
             userId:userId,
             additionalCondition:undefined,
         })

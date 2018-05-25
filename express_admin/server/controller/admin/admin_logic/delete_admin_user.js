@@ -69,12 +69,12 @@ async function deleteUser_async(req){
     /**********************************************/
     /***********    用户类型检测    **************/
     /*********************************************/
-    await controllerChecker.ifExpectedUserType_async({req:req,arr_expectedUserType:[e_allUserType.ADMIN_NORMAL,e_allUserType.ADMIN_ROOT]})
-    /************************************************/
-    /******   传入的敏感数据（recordId）解密，recordInfo中的objectId在dispatch中解密   ******/
-    /************************************************/
+    await controllerChecker.ifExpectedUserType_async({currentUserType:userType,arr_expectedUserType:[e_allUserType.ADMIN_NORMAL,e_allUserType.ADMIN_ROOT]})
+ /*   /!************************************************!/
+    /!******   传入的敏感数据（recordId）解密，recordInfo中的objectId在dispatch中解密   ******!/
+    /!************************************************!/
     // controllerHelper.decryptRecordValue({record:docValue,collName:collName})
-    recordId=crypt.decryptSingleFieldValue({fieldValue:recordId,salt:tempSalt})
+    recordId=crypt.decryptSingleFieldValue({fieldValue:recordId,salt:tempSalt})*/
     /**********************************************/
     /******    当前用户是否有创建用户的权限   ****/
     /*********************************************/

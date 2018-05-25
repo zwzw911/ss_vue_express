@@ -5,8 +5,8 @@
 /*       admin           */
 const admin_penalize=require('H:/ss_vue_express/server_common/model/mongo/structure/admin/admin_penalize.js').collModel
 const category=require('H:/ss_vue_express/server_common/model/mongo/structure/admin/category.js').collModel
-const resource_profile=require('H:/ss_vue_express/server_common/model/mongo/structure/admin/resource_profile.js').collModel
 const store_path=require('H:/ss_vue_express/server_common/model/mongo/structure/admin/store_path.js').collModel
+const resource_profile=require('H:/ss_vue_express/server_common/model/mongo/structure/admin/resource_profile.js').collModel
 /*       article           */
 const article=require('H:/ss_vue_express/server_common/model/mongo/structure/article/article.js').collModel
 const article_attachment=require('H:/ss_vue_express/server_common/model/mongo/structure/article/article_attachment.js').collModel
@@ -49,8 +49,8 @@ module.exports={
     /*       admin           */
     admin_penalize,
     category,
-    resource_profile,
     store_path,
+    resource_profile,
     /*       article           */
     article,
     article_attachment,

@@ -27,7 +27,7 @@ const fkConfig={
     /*          article         */
     [e_coll.ARTICLE]:{
         [e_field.ARTICLE.FOLDER_ID]:{
-            relatedColl:e_coll.FOLDER,forSelect:`${e_field.FOLDER.NAME}`,forSetValue:[e_field.FOLDER.NAME]
+            relatedColl:e_coll.FOLDER,forSelect:`${e_field.FOLDER.NAME}`,forSetValue:[e_field.FOLDER.NAME],validCriteria:{'dDate':{$exists:false}},fkCollOwnerFields:[e_field.FOLDER.AUTHOR_ID],
         },
         [e_field.ARTICLE.CATEGORY_ID]:{
             relatedColl:e_coll.CATEGORY,forSelect:`${e_field.CATEGORY.NAME}`,forSetValue:[e_field.CATEGORY.NAME]

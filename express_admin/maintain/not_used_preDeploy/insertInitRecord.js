@@ -16,8 +16,8 @@ const e_adminUserType=mongoEnum.AdminUserType.DB
 const allAdminPriorityType=require('../../server/constant/genEnum/enumValue').AdminPriorityType
 /*const e_storePathUsage=mongoEnum.StorePathUsage.DB
 const e_storePathStatus=mongoEnum.StorePathStatus.DB
-const e_resourceProfileRange=mongoEnum.ResourceProfileRange
-const e_resourceProfileType=mongoEnum.ResourceProfileType*/
+const e_resourceRange=mongoEnum.ResourceRange
+const e_resourceType=mongoEnum.ResourceType*/
 
 const e_dbModel=require('../../server/constant/genEnum/dbModel')
 const e_coll=require('../../server/constant/genEnum/DB_Coll').Coll

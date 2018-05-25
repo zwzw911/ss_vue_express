@@ -42,13 +42,14 @@ async function reCreateUser_returnSessUserId_async({userData,app}){
     sess=await userAPI.userLogin_returnSess_async({userData:userData,app:app,captcha:captcha,sess:sess})
     //获得userId
     let userId=await db_operation_helper.getUserId_async({userAccount:userData.account})
-    //获得tempSalt
-    let tempSalt=await commonAPI.getTempSalt({sess:sess})
-    // ap.inf('userId',userId)
-    // ap.inf('tempSalt',tempSalt)
+/*    //获得tempSalt
+    let tempSalt=await commonAPI.getTempSalt_async({sess:sess})
+    ap.inf('userId',userId)
+    ap.inf('tempSalt',tempSalt)
     //模拟加密objectId
     userId=cryptSingleFieldValue({fieldValue:userId,salt:tempSalt}).msg
 
+    ap.inf('crypted userId',userId)*/
     return Promise.resolve({userId:userId,sess:sess})
 }
 

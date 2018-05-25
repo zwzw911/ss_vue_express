@@ -233,8 +233,8 @@ function valueTypeCheck(value, type){
         case serverDataType.OBJECT:
             return dataTypeCheck.isObject(value)
             // return true
-        case serverDataType.OBJECT_ID://在validateValue中通过format进行判断
-            return dataTypeCheck.isString(value) && regex.objectId.test(value)
+        case serverDataType.OBJECT_ID://在validateValue中通过format进行判断,所以只进行string的判断，而不进行正则的判断
+            return dataTypeCheck.isString(value) //&& regex.objectId.test(value)
             // return true
         case serverDataType.FILE: //必须是string，，才能判断
             return (dataTypeCheck.isString(value) && dataTypeCheck.isFile(value));

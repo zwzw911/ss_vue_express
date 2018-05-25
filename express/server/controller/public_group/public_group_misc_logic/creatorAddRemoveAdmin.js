@@ -118,7 +118,7 @@ async function requestJoin_logic_async({req,expectedPart}){
     /*******************************************************************************************/
     /*                                     用户类型和权限检测                                  */
     /*******************************************************************************************/
-    await controllerChecker.ifExpectedUserType_async({req:req,arr_expectedUserType:[e_allUserType.USER_NORMAL]})
+    await controllerChecker.ifExpectedUserType_async({currentUserType:userType,arr_expectedUserType:[e_allUserType.USER_NORMAL]})
     //必须是creator
     // ap.inf('')
     if(groupRecord[e_field.PUBLIC_GROUP.CREATOR_ID].toString()!==userId){

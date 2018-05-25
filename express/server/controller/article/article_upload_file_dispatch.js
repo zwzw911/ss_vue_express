@@ -156,7 +156,7 @@ async function articleUploadFile_dispatch_async({req,type}){
 
     // console.log(`group start========>`)
     /!*              获得用户当前的所有资源配置，并检查当前占用的资源（磁盘空间）+文件的资源（sizeInMB）后，还小于==>所有<==的资源配置（）                         *!/
-    let resourceProfileRangeToBeCheck=[e_resourceProfileRange.PER_PERSON,e_resourceProfileRange.PER_ARTICLE]
+    let resourceProfileRangeToBeCheck=[e_resourceRange.PER_PERSON,e_resourceRange.PER_ARTICLE]
     //首先检查个人的（范围最大），然后检查article（范围小点的）
     for(let singleResourceProfileRange of resourceProfileRangeToBeCheck){
 	tmpResult=await controllerHelper.chooseLastValidResourceProfile_async({resourceProfileRange:singleResourceProfileRange,userId:userId})

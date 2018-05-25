@@ -38,6 +38,7 @@ const e_docStatus=mongoEnum.DocStatus.DB
 const e_adminUserType=mongoEnum.AdminUserType.DB
 const e_adminPriorityType=mongoEnum.AdminPriorityType.DB
 const e_resourceType=mongoEnum.ResourceType.DB
+const e_resourceRange=mongoEnum.ResourceRange.DB
 /*                      server common：function                                       */
 const dataConvert=server_common_file_require.dataConvert
 const controllerHelper=server_common_file_require.controllerHelper
@@ -147,8 +148,8 @@ async function updateImpeach_async({req}){
 
     //如果content存在，图片检测
     if(undefined!==docValue[e_field.IMPEACH.CONTENT]){
-        let content=docValue[e_field.IMPEACH.CONTENT]
-        await controllerHelper.contentXSSCheck_async({content:content,error:controllerError.inputSanityFailed})
+        let xssValue=docValue[e_field.IMPEACH.CONTENT]
+        await controllerHelper.contentXSSCheck_async({content:xssValue,error:controllerError.inputSanityFailed})
 
         let collConfig={
             collName:e_coll.IMPEACH,  //存储内容（包含图片DOM）的coll名字
@@ -163,13 +164,14 @@ async function updateImpeach_async({req}){
             imageHashFieldName:e_field.IMPEACH_IMAGE.HASH_NAME, //记录图片hash名字的字段名
             storePathPopulateOpt:[{path:e_field.IMPEACH_IMAGE.PATH_ID,select:e_field.STORE_PATH.PATH}], //需要storePath，以便执行fs.unlink
         }
-        docValue[e_field.IMPEACH.CONTENT]=await controllerHelper.contentDbDeleteNotExistImage_async({
+        let {content,deletedFileNum,deletedFileSize}=await controllerHelper.contentDbDeleteNotExistImage_async({
             content:content,
             recordId:recordId,
             collConfig:collConfig,
             collImageConfig:collImageConfig,
-            resourceType:e_resourceType.IMPEACH_COMMENT_IMAGE,//设置user_resource_static中resourceType字段，如果undefined，说明无需设置user_resource_static
+            resourceType:e_resourceRange.IMAGE_PER_IMPEACH_OR_COMMENT,//设置user_resource_static中resourceType字段，如果undefined，说明无需设置user_resource_static
         })
+        docValue[e_field.IMPEACH.CONTENT]=content
     }
 
     //impeachType是否为预定义的一种

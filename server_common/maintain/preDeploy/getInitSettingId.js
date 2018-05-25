@@ -12,7 +12,7 @@ const common_operation_model=require(`../../model/mongo/operation/common_operati
 const mongoEnum=require(`../../constant/enum/mongoEnum`)//server_common_file_require.mongoEnum
 const e_storePathUsage=mongoEnum.StorePathUsage
 const e_storePathStatus=mongoEnum.StorePathStatus
-const e_resourceProfileRange=mongoEnum.ResourceProfileRange
+const e_resourceRange=mongoEnum.ResourceRange
 
 const e_dbModel=require('../../../express/server/constant/genEnum/dbModel')
 const e_coll=require('../../../express/server/constant/genEnum/DB_Coll').Coll
@@ -64,8 +64,8 @@ async function generateInitSettingEnum_async(){
         result[e_coll.CATEGORY][name]=objectId
     }
 // console.log(`CATEGORY extract result =========> ${JSON.stringify(result[e_coll.CATEGORY])}`)
-
-    result[e_coll.RESOURCE_PROFILE]={}
+/******** resource profile no need to write into file, but just read from db **************/
+/*    result[e_coll.RESOURCE_PROFILE]={}
     tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.resource_profile,condition:{}})
     // ap.inf('tmpResult',tmpResult)
     for(let singleRecord of tmpResult){
@@ -74,7 +74,7 @@ async function generateInitSettingEnum_async(){
 
         let typeInNumber=singleRecord[e_field.RESOURCE_PROFILE.TYPE]
         // console.log(`typeInNumber ====>${JSON.stringify(typeInNumber)}`)
-        let typeInKey=mongoEnumKVExchange.ResourceProfileType[typeInNumber]
+        let typeInKey=mongoEnumKVExchange.ResourceType[typeInNumber]
         // console.log(`typeInKey ====>${JSON.stringify(typeInKey)}`)
         if(undefined===result[e_coll.RESOURCE_PROFILE][typeInKey]){
             result[e_coll.RESOURCE_PROFILE][typeInKey]={}
@@ -82,7 +82,7 @@ async function generateInitSettingEnum_async(){
         let name=singleRecord[e_field.RESOURCE_PROFILE.NAME]
         let objectId=singleRecord['id']
         result[e_coll.RESOURCE_PROFILE][typeInKey][name]=objectId
-    }
+    }*/
 // console.log(`e_coll.RESOURCE_PROFILE extract result =========> ${JSON.stringify(result[e_coll.RESOURCE_PROFILE])}`)
 //     console.log(`result is -====>${JSON.stringify(result)}`)
     return Promise.resolve(result)

@@ -10,8 +10,8 @@ const allAdminPriorityType=require('../../constant/genEnum/enumValue').AdminPrio
 const mongoEnum=require(`../../constant/enum/mongoEnum`)//server_common_file_require.mongoEnum
 const e_storePathUsage=mongoEnum.StorePathUsage.DB
 const e_storePathStatus=mongoEnum.StorePathStatus.DB
-const e_resourceProfileRange=mongoEnum.ResourceProfileRange.DB
-const e_resourceProfileType=mongoEnum.ResourceProfileType.DB
+const e_resourceRange=mongoEnum.ResourceRange.DB
+const e_resourceType=mongoEnum.ResourceType.DB
 const e_adminUserType=mongoEnum.AdminUserType.DB
 const e_docStatus=mongoEnum.DocStatus.DB
 
@@ -119,43 +119,43 @@ const category= {
 const resource_profile= [
     {
         [e_field.RESOURCE_PROFILE.NAME]:"普通用户单个文档图片资源设定",
-        [e_field.RESOURCE_PROFILE.RANGE]:e_resourceProfileRange.IMAGE_PER_ARTICLE,
-        [e_field.RESOURCE_PROFILE.TYPE]:e_resourceProfileType.BASIC,
+        [e_field.RESOURCE_PROFILE.RESOURCE_RANGE]:e_resourceRange.IMAGE_PER_ARTICLE,
+        [e_field.RESOURCE_PROFILE.RESOURCE_TYPE]:e_resourceType.BASIC,
         [e_field.RESOURCE_PROFILE.MAX_NUM]:10,
         [e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]:20, //假设每个文件大小为2M
     },
     {
         [e_field.RESOURCE_PROFILE.NAME]:"普通用户单个文档附件资源设定",
-        [e_field.RESOURCE_PROFILE.RANGE]:e_resourceProfileRange.ATTACHMENT_PER_ARTICLE,
-        [e_field.RESOURCE_PROFILE.TYPE]:e_resourceProfileType.BASIC,
+        [e_field.RESOURCE_PROFILE.RESOURCE_RANGE]:e_resourceRange.ATTACHMENT_PER_ARTICLE,
+        [e_field.RESOURCE_PROFILE.RESOURCE_TYPE]:e_resourceType.BASIC,
         [e_field.RESOURCE_PROFILE.MAX_NUM]:5,
         [e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]:100, //假设每个文件大小为20M
     },
     {
         [e_field.RESOURCE_PROFILE.NAME]:"普通用户所有文档资源设定",
-        [e_field.RESOURCE_PROFILE.RANGE]:e_resourceProfileRange.WHOLE_RESOURCE_PER_PERSON_FOR_ALL_ARTICLE,
-        [e_field.RESOURCE_PROFILE.TYPE]:e_resourceProfileType.BASIC,
+        [e_field.RESOURCE_PROFILE.RESOURCE_RANGE]:e_resourceRange.WHOLE_RESOURCE_PER_PERSON_FOR_ALL_ARTICLE,
+        [e_field.RESOURCE_PROFILE.RESOURCE_TYPE]:e_resourceType.BASIC,
         [e_field.RESOURCE_PROFILE.MAX_NUM]:1000,
         [e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]:1000,
     },
     {
         [e_field.RESOURCE_PROFILE.NAME]:"升级用户单个文档图片设定",
-        [e_field.RESOURCE_PROFILE.RANGE]:e_resourceProfileRange.IMAGE_PER_ARTICLE,
-        [e_field.RESOURCE_PROFILE.TYPE]:e_resourceProfileType.ADVANCED,
+        [e_field.RESOURCE_PROFILE.RESOURCE_RANGE]:e_resourceRange.IMAGE_PER_ARTICLE,
+        [e_field.RESOURCE_PROFILE.RESOURCE_TYPE]:e_resourceType.ADVANCED,
         [e_field.RESOURCE_PROFILE.MAX_NUM]:20,
         [e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]:40, //假设每个文件大小为200M
     },
     {
         [e_field.RESOURCE_PROFILE.NAME]:"升级用户单个文档附件设定",
-        [e_field.RESOURCE_PROFILE.RANGE]:e_resourceProfileRange.ATTACHMENT_PER_ARTICLE,
-        [e_field.RESOURCE_PROFILE.TYPE]:e_resourceProfileType.ADVANCED,
+        [e_field.RESOURCE_PROFILE.RESOURCE_RANGE]:e_resourceRange.ATTACHMENT_PER_ARTICLE,
+        [e_field.RESOURCE_PROFILE.RESOURCE_TYPE]:e_resourceType.ADVANCED,
         [e_field.RESOURCE_PROFILE.MAX_NUM]:10,
         [e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]:200, //假设每个文件大小为20M
     },
     {
         [e_field.RESOURCE_PROFILE.NAME]:"升级用户总体资源设定",
-        [e_field.RESOURCE_PROFILE.RANGE]:e_resourceProfileRange.WHOLE_RESOURCE_PER_PERSON_FOR_ALL_ARTICLE,
-        [e_field.RESOURCE_PROFILE.TYPE]:e_resourceProfileType.ADVANCED,
+        [e_field.RESOURCE_PROFILE.RESOURCE_RANGE]:e_resourceRange.WHOLE_RESOURCE_PER_PERSON_FOR_ALL_ARTICLE,
+        [e_field.RESOURCE_PROFILE.RESOURCE_TYPE]:e_resourceType.ADVANCED,
         [e_field.RESOURCE_PROFILE.MAX_NUM]:2000,
         [e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]:2000, //假设每个文件大小为20M
     },
@@ -163,30 +163,30 @@ const resource_profile= [
 
     {
         [e_field.RESOURCE_PROFILE.NAME]:"单个举报资源设定",
-        [e_field.RESOURCE_PROFILE.RANGE]:e_resourceProfileRange.IMAGE_PER_IMPEACH_OR_COMMENT,
-        [e_field.RESOURCE_PROFILE.TYPE]:e_resourceProfileType.BASIC,
+        [e_field.RESOURCE_PROFILE.RESOURCE_RANGE]:e_resourceRange.IMAGE_PER_IMPEACH_OR_COMMENT,
+        [e_field.RESOURCE_PROFILE.RESOURCE_TYPE]:e_resourceType.BASIC,
         [e_field.RESOURCE_PROFILE.MAX_NUM]:10,
         [e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]:20, //假设每个文件大小为2M
     },
     {
         [e_field.RESOURCE_PROFILE.NAME]:"用户举报总体资源设定", //假设一次举报中，用户总共进行了10次（发起，回复）的操作，每个操作10文件，20M
-        [e_field.RESOURCE_PROFILE.RANGE]:e_resourceProfileRange.IMAGE_PER_PERSON_FOR_WHOLE_IMPEACH,
-        [e_field.RESOURCE_PROFILE.TYPE]:e_resourceProfileType.BASIC,
+        [e_field.RESOURCE_PROFILE.RESOURCE_RANGE]:e_resourceRange.IMAGE_PER_PERSON_FOR_WHOLE_IMPEACH,
+        [e_field.RESOURCE_PROFILE.RESOURCE_TYPE]:e_resourceType.BASIC,
         [e_field.RESOURCE_PROFILE.MAX_NUM]:100,
         [e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]:200, //假设每个文件大小为2M
     },
 
     {
         [e_field.RESOURCE_PROFILE.NAME]:"普通用户最大目录数",
-        [e_field.RESOURCE_PROFILE.RANGE]:e_resourceProfileRange.FOLDER_NUM,
-        [e_field.RESOURCE_PROFILE.TYPE]:e_resourceProfileType.BASIC,
+        [e_field.RESOURCE_PROFILE.RESOURCE_RANGE]:e_resourceRange.FOLDER_NUM,
+        [e_field.RESOURCE_PROFILE.RESOURCE_TYPE]:e_resourceType.BASIC,
         [e_field.RESOURCE_PROFILE.MAX_NUM]:100,
         //[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]:20, //假设每个文件大小为2M
     },
     {
         [e_field.RESOURCE_PROFILE.NAME]:"高级用户最大目录数",
-        [e_field.RESOURCE_PROFILE.RANGE]:e_resourceProfileRange.FOLDER_NUM,
-        [e_field.RESOURCE_PROFILE.TYPE]:e_resourceProfileType.ADVANCED,
+        [e_field.RESOURCE_PROFILE.RESOURCE_RANGE]:e_resourceRange.FOLDER_NUM,
+        [e_field.RESOURCE_PROFILE.RESOURCE_TYPE]:e_resourceType.ADVANCED,
         [e_field.RESOURCE_PROFILE.MAX_NUM]:500,
         //[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]:20, //假设每个文件大小为2M
     },

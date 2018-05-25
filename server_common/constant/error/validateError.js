@@ -48,7 +48,8 @@ const validateFormat={
     inputValuePartCurrentPageValueFormatWrong:{rc:40114,msg:{client:`输入值格式错误`,server:`输入参数中，currentPage的值必须为整数`}},
     inputValuePartCurrentCollValueFormatWrong:{rc:40115,msg:{client:`输入值格式错误`,server:`输入参数中，currentColl的值必须为字符串`}},
     inputValuePartManipulateArrayValueFormatWrong:{rc:40116,msg:{client:`输入值格式错误`,server:`输入参数中，manipulate array的值必须为对象`}},
-    inputValuePartRecordIdValueFormatWrong:{rc:40118,msg:{client:`输入值格式错误`,server:`输入参数中，recordId的值不正确`}},//必须为字符，且为objectId
+    inputValuePartRecordIdCryptedValueFormatWrong:{rc:40118,msg:{client:`输入值格式错误`,server:`输入参数中，加密的recordId值不正确`}},//必须为字符，
+    inputValuePartRecordIdDecryptedValueFormatWrong:{rc:40119,msg:{client:`输入值格式错误`,server:`输入参数中，解密后的recordId的值不正确`}},//必须为字符，且为objectId
     inputValuePartFilterFieldValueFormatWrong:{rc:40120,msg:{client:`输入值格式错误`,server:`输入参数中，FilterFieldValue的值必须为对象`}},
     inputValuePartRecIdArrValueFormatWrong:{rc:40121,msg:{client:`输入值格式错误`,server:`输入参数中，recIdArr的值必须为数组`}},
     inputValuePartEventValueFormatWrong:{rc:40122,msg:{client:`输入值格式错误`,server:`输入参数中，event的值必须为对象`}},
@@ -61,6 +62,7 @@ const validateFormat={
     recordInfoValueMustBeObject:{rc:40130,msg:{client:'输入值格式错误',server:'recorderInfo的值必须是object'}},
     recordInfoHasDuplicateField:{rc:40132,msg:{client:'参数格式不正确',server:'参数中的有重复字段'}},
     recordInfoFiledRuleNotDefine:{rc:40134,msg:{client:'输入值格式错误',server:'待检测的输入值字段没有对应的检测规则'}},
+    recordInfoIdForbid:{rc:40134,msg:{client:'输入值格式错误',server:'不能传入字段：id'}},
     recordInfoSubObjectMustHasOnly1Field:{rc:40136,msg:{client:'输入值格式错误',server:'recorderInfo的值（object），每个子object必须只包含一个key'}}, //{field1:{value:'xxx'}}
     recordInfoSubObjectFiledNameWrong:{rc:40138,msg:{client:'输入值格式错误',server:'recorderInfo的值（object），每个子object的key必须是value'}}, //{field:{value;xxxx}}
     //recordInfoIncludeSkipFiled:{rc:69711,msg:'不能包含需要略过的字段'},

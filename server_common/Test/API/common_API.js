@@ -44,17 +44,20 @@ async function generalUpdate_returnRecord_async({userData,sess,app,url}){
     })
 }
 /****************       从session中获得sessionId，然后在db中直接查找tempSalt             *****************/
-async function getTempSalt({sess}){
+async function getTempSalt_async({sess}){
     let sessContent=sess.split('=')[1]
     let sessId=sessContent.split('.')[0].replace('s%3A','')
-    // ap.inf('key',`${sessId}:captcha`)
+    // ap.inf('key',`sess:${sessId}`)
     let sessValue= await redisOperation.get_async({db:0,key:`sess:${sessId}`})
-    // ap.inf('sessValue',sessValue.tempSalt)
-    return Promise.resolve(sessValue.tempSalt)
+    sessValue=JSON.parse(sessValue)
+    // ap.inf('sessValue',sessValue)
+    // ap.inf('typeof sessValue',typeof sessValue)
+    // ap.inf('sessValue.userInfo',sessValue.userInfo)
+    return Promise.resolve(sessValue.userInfo.tempSalt)
 }
 
 module.exports={
     generalCreate_returnRecord_async,
     generalUpdate_returnRecord_async,
-    getTempSalt,
+    getTempSalt_async,
 }

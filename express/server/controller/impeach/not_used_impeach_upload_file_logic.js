@@ -29,7 +29,7 @@ const e_penalizeType=mongoEnum.PenalizeType.DB
 const e_penalizeSubType=mongoEnum.PenalizeSubType.DB
 const e_iniSettingObject=require('../../constant/genEnum/initSettingObject').iniSettingObject
 
-const e_resourceProfileRange=mongoEnum.ResourceProfileRange.DB
+const e_resourceRange=mongoEnum.ResourceRange.DB
 const e_storePathUsage=mongoEnum.StorePathUsage.DB
 
 const e_fileSizeUnit=nodeRuntimeEnum.FileSizeUnit
@@ -254,7 +254,7 @@ async function uploadImpeachFile_async({req,uploadFileType,forColl}) {
     let currentResourceUsage={}
     let resourceProfile={}
     //定义需要检查的类型（按用户进行计算，按单个举报/举报处理计算）
-    let resourceProfileRangeToBeCheck = [e_resourceProfileRange.PER_PERSON_IN_IMPEACH, e_resourceProfileRange.PER_IMPEACH_OR_COMMENT]
+    let resourceProfileRangeToBeCheck = [e_resourceRange.PER_PERSON_IN_IMPEACH, e_resourceRange.PER_IMPEACH_OR_COMMENT]
     //对每个range进行计算时，要统计的资源所在的coll
     let resourceCollToBeCheck = [e_coll.IMPEACH_ATTACHMENT, e_coll.IMPEACH_IMAGE]
     for(let singleResourceRange of resourceProfileRangeToBeCheck){

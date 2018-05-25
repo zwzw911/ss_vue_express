@@ -1,4 +1,4 @@
-/*    gene by H:\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-5-17   */ 
+/*    gene by H:\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-5-24   */ 
  
 "use strict"
 const inputRule={
@@ -139,42 +139,6 @@ const inputRule={
             format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":100208,"msg":"上级分类必须是objectId"},"mongoError":{"rc":200208,"msg":"上级分类必须是objectId"}},
         },
     },
-    resource_profile:{
-        name:{
-            chineseName:"资源配置名称",
-            dataType:"string",
-            applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":100500,"msg":"资源配置名称不能为空"},"mongoError":{"rc":200500,"msg":"资源配置名称不能为空"}},
-            minLength:{"define":2,"error":{"rc":100502,"msg":"资源配置名称至少2个字符"},"mongoError":{"rc":200502,"msg":"资源配置名称至少2个字符"}},
-            maxLength:{"define":50,"error":{"rc":100504,"msg":"资源配置名称的长度不能超过50个字符"},"mongoError":{"rc":200504,"msg":"资源配置名称的长度不能超过50个字符"}},
-        },
-        range:{
-            chineseName:"资源配置范围",
-            dataType:"string",
-            applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":100506,"msg":"资源配置范围不能为空"},"mongoError":{"rc":200506,"msg":"资源配置范围不能为空"}},
-            enum:{"define":["1","2","3","5","7","8"],"error":{"rc":100508,"msg":"资源配置范围的类型不正确"},"mongoError":{"rc":200508,"msg":"资源配置范围的类型不正确"}},
-        },
-        type:{
-            chineseName:"资源配置类型",
-            dataType:"string",
-            applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":100510,"msg":"资源配置类型不能为空"},"mongoError":{"rc":200510,"msg":"资源配置类型不能为空"}},
-            enum:{"define":["1","2"],"error":{"rc":100512,"msg":"资源配置类型的值类型不正确"},"mongoError":{"rc":200512,"msg":"资源配置类型的值类型不正确"}},
-        },
-        maxNum:{
-            chineseName:"最大文件数量",
-            dataType:"number",
-            applyRange:["create"],
-            require:{"define":{"create":false},"error":{"rc":100514,"msg":"最大文件数量不能为空"},"mongoError":{"rc":200514,"msg":"最大文件数量不能为空"}},
-        },
-        maxDiskSpaceInMb:{
-            chineseName:"最大存储空间",
-            dataType:"number",
-            applyRange:["create"],
-            require:{"define":{"create":false},"error":{"rc":100516,"msg":"最大存储空间不能为空"},"mongoError":{"rc":200516,"msg":"最大存储空间不能为空"}},
-        },
-    },
     store_path:{
         name:{
             chineseName:"存储路径名称",
@@ -232,6 +196,42 @@ const inputRule={
             applyRange:["create","update_scalar"],
             require:{"define":{"create":true,"update_scalar":false},"error":{"rc":100352,"msg":"存储路径状态不能为空"},"mongoError":{"rc":200352,"msg":"存储路径状态不能为空"}},
             enum:{"define":["1","2"],"error":{"rc":100354,"msg":"存储路径状态不正确"},"mongoError":{"rc":200354,"msg":"存储路径状态不正确"}},
+        },
+    },
+    resource_profile:{
+        name:{
+            chineseName:"资源配置名称",
+            dataType:"string",
+            applyRange:["create"],
+            require:{"define":{"create":true},"error":{"rc":100500,"msg":"资源配置名称不能为空"},"mongoError":{"rc":200500,"msg":"资源配置名称不能为空"}},
+            minLength:{"define":2,"error":{"rc":100502,"msg":"资源配置名称至少2个字符"},"mongoError":{"rc":200502,"msg":"资源配置名称至少2个字符"}},
+            maxLength:{"define":50,"error":{"rc":100504,"msg":"资源配置名称的长度不能超过50个字符"},"mongoError":{"rc":200504,"msg":"资源配置名称的长度不能超过50个字符"}},
+        },
+        range:{
+            chineseName:"资源配置范围",
+            dataType:"string",
+            applyRange:["create"],
+            require:{"define":{"create":true},"error":{"rc":100506,"msg":"资源配置范围不能为空"},"mongoError":{"rc":200506,"msg":"资源配置范围不能为空"}},
+            enum:{"define":["1","2","3","5","7","8"],"error":{"rc":100508,"msg":"资源配置范围的类型不正确"},"mongoError":{"rc":200508,"msg":"资源配置范围的类型不正确"}},
+        },
+        type:{
+            chineseName:"资源配置类型",
+            dataType:"string",
+            applyRange:["create"],
+            require:{"define":{"create":true},"error":{"rc":100510,"msg":"资源配置类型不能为空"},"mongoError":{"rc":200510,"msg":"资源配置类型不能为空"}},
+            enum:{"define":["1","2"],"error":{"rc":100512,"msg":"资源配置类型的值类型不正确"},"mongoError":{"rc":200512,"msg":"资源配置类型的值类型不正确"}},
+        },
+        maxNum:{
+            chineseName:"最大文件数量",
+            dataType:"number",
+            applyRange:["create"],
+            require:{"define":{"create":false},"error":{"rc":100514,"msg":"最大文件数量不能为空"},"mongoError":{"rc":200514,"msg":"最大文件数量不能为空"}},
+        },
+        maxDiskSpaceInMb:{
+            chineseName:"最大存储空间",
+            dataType:"number",
+            applyRange:["create"],
+            require:{"define":{"create":false},"error":{"rc":100516,"msg":"最大存储空间不能为空"},"mongoError":{"rc":200516,"msg":"最大存储空间不能为空"}},
         },
     },
     article:{

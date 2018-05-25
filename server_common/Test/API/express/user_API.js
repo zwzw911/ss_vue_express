@@ -94,7 +94,7 @@ async function userLogin_returnSess_async({userData,captcha,sess,app}){
     // console.log(`userTmp====>${JSON.stringify(userTmp)}`)
     data.values[e_part.RECORD_INFO]=userTmp//,notExist:{value:123}
     data.values[e_part.CAPTCHA]=captcha
-    ap.inf('userLogin_returnSess_async data',data.values)
+    // ap.inf('userLogin_returnSess_async data',data.values)
     return new Promise(function(resolve,reject){
         request.agent(app).post('/user/login').set('Accept', 'application/json').set('Cookie', [sess]).send(data)
             .end(function(err, res) {

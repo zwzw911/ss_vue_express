@@ -6,7 +6,7 @@
   "dependencies": {
     "awesomeprint": "^1.0.2",
     "body-parser": "^1.18.2",
-    "canvas": "^1.6.9",
+    "canvas": "^1.6.11",
     "connect-redis": "^3.3.3",
     "cookie-parser": "^1.4.3",
     "debug": "^2.6.9",

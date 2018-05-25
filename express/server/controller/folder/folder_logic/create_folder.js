@@ -36,7 +36,7 @@ const hash=server_common_file_require.crypt.hash
 /****************  公共常量 ********************/
 const mongoEnum=server_common_file_require.mongoEnum
 const e_docStatus=mongoEnum.DocStatus.DB
-const e_resourceProfileRange=server_common_file_require.mongoEnum.ResourceProfileRange.DB
+const e_resourceRange=server_common_file_require.mongoEnum.ResourceRange.DB
 const e_allUserType=mongoEnum.AllUserType.DB
 
 const nodeRuntimeEnum=server_common_file_require.nodeRuntimeEnum
@@ -50,7 +50,7 @@ const e_resourceFieldName=nodeEnum.ResourceFieldName
 const e_applyRange=server_common_file_require.inputDataRuleType.ApplyRange
 /*************** 配置信息 *********************/
 const currentEnv=server_common_file_require.appSetting.currentEnv
-const miscConfiguration=server_common_file_require.globalConfiguration.misc
+const miscConfiguration=server_common_file_require.globalConfiguration.miscConfiguration
 const maxNumber=server_common_file_require.globalConfiguration.maxNumber
 
 
@@ -81,7 +81,7 @@ async function createFolder_async({req}){
     /*********************************************/
     // ap.inf('docValue',docValue)
     dataConvert.constructCreateCriteria(docValue)
-    // ap.inf('null/undefined done')
+    ap.inf('after constructCreateCriteria',docValue)
 
     /**********************************************/
     /***********    用户类型检测    **************/
@@ -99,15 +99,26 @@ async function createFolder_async({req}){
         //object：coll中，对单个字段进行unique检测，需要的额外查询条件
         [e_inputValueLogicCheckStep.SINGLE_FIELD_VALUE_UNIQUE]:{flag:true,optionalParam:{singleValueUniqueCheckAdditionalCondition:undefined}},
         //数组，元素是字段名。默认对所有dataType===string的字段进行XSS检测，但是可以通过此变量，只选择部分字段
-        [e_inputValueLogicCheckStep.XSS]:{flag:true,optionalParam:{expectedXSSFields:undefined}},
+        [e_inputValueLogicCheckStep.XSS]:{flag:true,optionalParam:{expectedXSSFields:{optionalParam:undefined}}},
         //object，对compoundField进行unique检测需要的额外条件，key从model->mongo->compound_unique_field_config.js中获得
         [e_inputValueLogicCheckStep.COMPOUND_VALUE_UNIQUE]:{flag:true,optionalParam:{compoundFiledValueUniqueCheckAdditionalCheckCondition:undefined}},
         //Object，配置resourceCheck的一些参数,{requiredResource,resourceProfileRange,userId,containerId}
-        [e_inputValueLogicCheckStep.DISK_USAGE]:{flag:true,optionalParam:{resourceUsageOption:{requiredResource:{[e_resourceFieldName.USED_NUM]:1},resourceProfileRange:[e_resourceProfileRange.FOLDER_NUM],userId:userId,containerId:undefined}}},
+        [e_inputValueLogicCheckStep.RESOURCE_USAGE]:{flag:true,optionalParam:{resourceUsageOption:{requiredResource:{[e_resourceFieldName.USED_NUM]:1},resourceProfileRange:[e_resourceRange.FOLDER_NUM],userId:userId,containerId:undefined}}},
     }
     await inputValueLogicValidCheck_async({commonParam:commonParam,stepParam:stepParam})
     // ap.inf('inputValueLogicValidCheck_async done')
+
     let createdRecord=await businessLogic_async({docValue:docValue,collName:collName,userId:userId})
+
+    /*********************************************/
+    /**********      删除指定字段       *********/
+    /*********************************************/
+    controllerHelper.deleteFieldInRecord({record:createdRecord,fieldsToBeDeleted:undefined})
+    /*********************************************/
+    /**********      加密 敏感数据       *********/
+    /*********************************************/
+    controllerHelper.cryptRecordValue({record:createdRecord,salt:tempSalt,collName:collName})
+
     // ap.inf('businessLogic_async done')
     return Promise.resolve({rc:0,msg:createdRecord})
 }
@@ -145,9 +156,14 @@ async function businessLogic_async({docValue,collName,userId}){
     }
     Object.assign(docValue,internalValue)
     //ap.inf('docValue mergerd',docValue)
-    /*              数据库操作               */
+    /***        数据库操作            ****/
     let createdRecord=await common_operation_model.create_returnRecord_async({dbModel:e_dbModel.folder,value:docValue})
-    return Promise.resolve(createdRecord)
+    // /*****  转换格式 *******/
+    // for(let idx in createdRecord) {
+    //     createdRecord[idx] = createdRecord[idx].toObject()
+    // }
+
+    return Promise.resolve(createdRecord.toObject())
 }
 module.exports={
     createFolder_async,

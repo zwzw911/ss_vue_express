@@ -362,8 +362,9 @@ const StorePathStatus={
 
 }
 
-//和uploadFileType一样，但是为了在计算resource不产生confuse，使用新名称
-const ResourceType={
+//和uploadFileType一样，但是为了在计算resource不产生confuse，使用新名称.
+// 不再使用
+/*const ResourceType={
     DB:{
         ARTICLE_IMAGE:'1',
         ARTICLE_ATTACHMENT:'2',
@@ -376,9 +377,9 @@ const ResourceType={
         IMPEACH_COMMENT_IMAGE:'评论图片',
         IMPEACH_COMMENT_ATTACHMENT:'评论附件',},
 
-}
+}*/
 
-const ResourceProfileRange={
+const ResourceRange={
     DB:{
         IMAGE_PER_ARTICLE:'1',  //每个文档的图片
         ATTACHMENT_PER_ARTICLE:'2', //每个文档的附件
@@ -406,7 +407,7 @@ const ResourceProfileRange={
 }
 
 //某种资源的级别
-const ResourceProfileType={
+const ResourceType={
     DB:{
         BASIC:'1',
         ADVANCED:'2',
@@ -474,9 +475,9 @@ module.exports={
     AccountType,
     StorePathUsage,
     StorePathStatus,
+    // ResourceType,
+    ResourceRange,
     ResourceType,
-    ResourceProfileRange,
-    ResourceProfileType,
     DocumentStatus,
     AddFriendStatus,
 }

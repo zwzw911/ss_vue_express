@@ -19,8 +19,8 @@ const e_field=require('../../constant/genEnum/DB_field').Field
 const e_coll=require('../../constant/genEnum/DB_Coll').Coll
 // const e_articleStatus=mongoEnum.ArticleStatus.DB
 
-// const e_resourceProfileType=mongoEnum.ResourceProfileType.DB
-const e_resourceProfileRange=mongoEnum.ResourceProfileRange.DB
+// const e_resourceType=mongoEnum.ResourceType.DB
+const e_resourceRange=mongoEnum.ResourceRange.DB
 const e_resourceType=nodeEnum.ResourceType
 
 const e_impeachType=mongoEnum.ImpeachType.DB

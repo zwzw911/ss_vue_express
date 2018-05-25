@@ -64,7 +64,7 @@ const InputValueLogicCheckStep={
     XSS:'xss',
     //整个记录
     COMPOUND_VALUE_UNIQUE:'compoundValueUnique',
-    DISK_USAGE:'diskUsage',
+    RESOURCE_USAGE:'diskUsage',
 
 }
 module.exports={
