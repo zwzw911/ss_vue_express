@@ -374,9 +374,12 @@ function validatePartValue({req,expectedPart,collName,applyRange,fkConfig}){
                 //获取单个字段的字段名
                 let singleFieldName=Object.keys(req.body.values[e_part.SINGLE_FIELD])[0]
                 let fieldInputValue=req.body.values[e_part.SINGLE_FIELD][singleFieldName]
-                let fieldInputRule=inputRule[collName][singleFieldName]
-                // console.log(`fieldInputValue ${JSON.stringify(fieldInputValue)}`)
-                // console.log(`fieldInputRule ${JSON.stringify(fieldInputRule)}`)
+                let fieldInputRule=browserInputRule[collName][singleFieldName]
+                // ap.inf('collName',collName)
+                // ap.inf('singleFieldName',singleFieldName)
+                // ap.inf('fieldInputValue',fieldInputValue)
+                // ap.inf('fieldInputRule',fieldInputRule)
+                // ap.inf('applyRange',applyRange)
                 checkPartValueResult=validateValue.validateSingleRecorderFieldValue({fieldValue:fieldInputValue,fieldRule:fieldInputRule,applyRange:applyRange})
                 // console.log(   `checkFilterFieldValueResult check result is  ${JSON.stringify(checkFilterFieldValueResult)}`)
                 if(checkPartValueResult.rc>0){

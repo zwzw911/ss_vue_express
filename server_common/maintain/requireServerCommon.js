@@ -52,6 +52,7 @@ function requireServerCommon(serverCommonRelateBaseDir,absoluteDestFilePath,fina
     filesArray.push(`${serverCommonRelateBaseDir}model/mongo/operation/common_operation_helper.js`)
     filesArray.push(`${serverCommonRelateBaseDir}model/mongo/operation/common_operation_document.js`)
 
+    filesArray.push(`${serverCommonRelateBaseDir}model/mongo/compound_unique_field_config.js`)
     filesArray.push(`${serverCommonRelateBaseDir}model/mongo/fkConfig.js`)
 
     filesArray.push(`${serverCommonRelateBaseDir}maintain/generateFunction/generateMongoEnumKeyValueExchange.js`)

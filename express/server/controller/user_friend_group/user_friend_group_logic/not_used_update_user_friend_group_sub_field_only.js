@@ -91,7 +91,13 @@ async function updateUserFriendGroup_async({req,expectedPart}){
     /*                                       authorization check                               */
     /*******************************************************************************************/
     //当前用户必须是user_group的创建人，且user_group未被删除
-    tmpResult=await controllerChecker.ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({dbModel:e_dbModel.user_friend_group,recordId:recordId,ownerFieldName:e_field.USER_FRIEND_GROUP.OWNER_USER_ID,userId:userId,additionalCondition:undefined})
+    tmpResult=await controllerChecker.ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({
+        dbModel:e_dbModel.user_friend_group,
+        recordId:recordId,
+        ownerFieldsName:[e_field.USER_FRIEND_GROUP.OWNER_USER_ID],
+        userId:userId,
+        additionalCondition:undefined
+    })
     if(false===tmpResult){
         return Promise.reject(controllerError.notUserGroupOwnerCantUpdate)
     }

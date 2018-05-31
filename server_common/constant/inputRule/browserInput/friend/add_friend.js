@@ -35,7 +35,7 @@ const add_friend= {
     },
 
 
-    status:{
+/*    status:{
         [otherRuleFiledName.CHINESE_NAME]: '当前请求所处状态',
         [otherRuleFiledName.DATA_TYPE]: serverDataType.STRING,
         [otherRuleFiledName.APPLY_RANGE]:[applyRange.UPDATE_SCALAR],
@@ -43,7 +43,7 @@ const add_friend= {
         // 'arrayMinLength': {define: 0, error: {rc: 10002}, mongoError: {rc: 20002, msg: '密码至少6个字符'}},
         // 'arrayMaxLength': {define: maxNumber.friend.maxFriendsNumberPerGroup, error: {rc: 10422}, mongoError: {rc: 20422, msg: `好友分组最多包含${maxNumber.friend.maxFriendsNumberPerGroup}个好友`}},
         [ruleFiledName.ENUM]: {define: enumValue.AddFriendStatus, error: {rc: baseJSErrorCode+6, msg: '状态未定义'}, mongoError: {rc: baseMongoErrorCode+6, msg: '状态未定义'}} //server端使用
-    },
+    },*/
 
 
 }

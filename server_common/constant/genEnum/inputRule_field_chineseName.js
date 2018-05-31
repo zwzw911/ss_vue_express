@@ -79,11 +79,6 @@ const ChineseName={
     tag:{
         'name':'标签名称',
     },
-    add_friend:{
-        'receiver':'添加的好友',
-        'status':'当前请求所处状态',
-        'originator':'发起人',
-    },
     member_penalize:{
         'publicGroupId':'群',
         'memberId':'成员',
@@ -116,6 +111,11 @@ const ChineseName={
         'friendGroupName':'朋友分组名',
         'friendsInGroup':'好友分组',
         'ownerUserId':'用户',
+    },
+    add_friend:{
+        'receiver':'添加的好友',
+        'originator':'发起人',
+        'status':'当前请求所处状态',
     },
     impeach:{
         'title':'举报名',

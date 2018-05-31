@@ -73,7 +73,7 @@ async function dispatcher_async(req){
     let originalUrl=req.originalUrl
     let collName=controllerSetting.MAIN_HANDLED_COLL_NAME
     let expectedPart
-    let result=dispatchError.common.unknownRequestRul
+    let result=dispatchError.common.unknownRequestUrl
 
     //interval和robot检测
     await controllerPreCheck.commonPreCheck_async({req:req,collName:collName})

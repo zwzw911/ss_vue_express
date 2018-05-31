@@ -44,7 +44,7 @@ const controllerHelper=server_common_file_require.controllerHelper
 const controllerChecker=server_common_file_require.controllerChecker
 const common_operation_model=server_common_file_require.common_operation_model
 const misc=server_common_file_require.misc
-const inputValueLogicValidCheck_async=server_common_file_require.controllerInputValueLogicCheck.inputValueLogicValidCheck_async
+const controllerInputValueLogicCheck=server_common_file_require.controllerInputValueLogicCheck
 /*************** 配置信息 *********************/
 const currentEnv=server_common_file_require.appSetting.currentEnv
 const fkConfig=server_common_file_require.fkConfig.fkConfig
@@ -96,11 +96,12 @@ async  function createPenalize_async({req}){
         //数组，元素是字段名。默认对所有dataType===string的字段进行XSS检测，但是可以通过此变量，只选择部分字段
         [e_inputValueLogicCheckStep.XSS]:{flag:true,optionalParam:{expectedXSSFields:{optionalParam:undefined}}},
         //object，对compoundField进行unique检测需要的额外条件，key从model->mongo->compound_unique_field_config.js中获得
-        [e_inputValueLogicCheckStep.COMPOUND_VALUE_UNIQUE]:{flag:true,optionalParam:{compoundFiledValueUniqueCheckAdditionalCheckCondition:undefined}},
+        //在internalValue之后执行
+        // [e_inputValueLogicCheckStep.COMPOUND_VALUE_UNIQUE]:{flag:true,optionalParam:{compoundFiledValueUniqueCheckAdditionalCheckCondition:undefined}},
         //Object，配置resourceCheck的一些参数,{requiredResource,resourceProfileRange,userId,containerId}
         [e_inputValueLogicCheckStep.RESOURCE_USAGE]:{flag:false,optionalParam:{resourceUsageOption:undefined}},
     }
-    await inputValueLogicValidCheck_async({commonParam:commonParam,stepParam:stepParam})
+    await controllerInputValueLogicCheck.inputValueLogicValidCheck_async({commonParam:commonParam,stepParam:stepParam})
     /*******************************************************************************************/
     /*                                  fk value是否存在                                       */
     /*******************************************************************************************/
@@ -202,13 +203,23 @@ async function businessLogic_async({userId,docValue,collName}){
             return Promise.reject(tmpResult)
         }
     }
-    // ap.inf('check interval done')
-    Object.assign(docValue,internalValue)
-    // console.log(`internal check  is ${JSON.stringify(docValue)}`)
-    // let currentColl=e_coll.USER_SUGAR
-    // console.log(`value to be insert is ${JSON.stringify(docValue)}`)
-    // let doc=new dbModel[currentColl](values[e_part.RECORD_INFO])
+    if(undefined===docValue){
+        docValue=internalValue
+    }else{
+        Object.assign(docValue,internalValue)
+    }
 
+    /*******************************************************************************************/
+    /******************          compound field value unique check                  ************/
+    /*******************************************************************************************/
+    if(undefined!==docValue){
+        let compoundFiledValueUniqueCheckAdditionalCheckCondition
+        await controllerInputValueLogicCheck.ifCompoundFiledValueUnique_returnExistRecord_async({
+            collName:collName,
+            docValue:docValue,
+            additionalCheckCondition:compoundFiledValueUniqueCheckAdditionalCheckCondition,
+        })
+    }
 
     // console.log(`docValue ${JSON.stringify(docValue)}`)
     /***        数据库操作            ****/

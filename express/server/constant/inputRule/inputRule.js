@@ -1,4 +1,4 @@
-/*    gene by H:\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-5-24   */ 
+/*    gene by H:\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-5-29   */ 
  
 "use strict"
 const inputRule={
@@ -161,7 +161,7 @@ const inputRule={
             dataType:"string",
             applyRange:["create"],
             require:{"define":{"create":true},"error":{"rc":100506,"msg":"资源配置范围不能为空"},"mongoError":{"rc":200506,"msg":"资源配置范围不能为空"}},
-            enum:{"define":["1","2","3","5","7","8"],"error":{"rc":100508,"msg":"资源配置范围的类型不正确"},"mongoError":{"rc":200508,"msg":"资源配置范围的类型不正确"}},
+            enum:{"define":["1","2","3","5","7","8","9","10","11","12"],"error":{"rc":100508,"msg":"资源配置范围的类型不正确"},"mongoError":{"rc":200508,"msg":"资源配置范围的类型不正确"}},
         },
         type:{
             chineseName:"资源配置类型",
@@ -343,8 +343,8 @@ const inputRule={
             chineseName:"目录层级",
             dataType:"int",
             applyRange:["create","update_scalar"],
-            require:{"define":{"create":true,"update_scalar":false},"error":{"rc":101250,"msg":"目录层级不能为空"},"mongoError":{"rc":201250,"msg":"目录层级不能为空"}},
-            min:{"define":1,"error":{"rc":101252,"msg":"目录层级最小为1"},"mongoError":{"rc":201252,"msg":"目录层级最小为1"}},
+            require:{"define":{"create":true,"update_scalar":false},"error":{"rc":101254,"msg":"目录层级不能为空"},"mongoError":{"rc":201254,"msg":"目录层级不能为空"}},
+            min:{"define":1,"error":{"rc":101256,"msg":"目录层级最小为1"},"mongoError":{"rc":201256,"msg":"目录层级最小为1"}},
         },
     },
     like_dislike:{
@@ -376,29 +376,6 @@ const inputRule={
             applyRange:["create"],
             require:{"define":{"create":true},"error":{"rc":101400,"msg":"标签名称不能为空"},"mongoError":{"rc":201400,"msg":"标签名称不能为空"}},
             format:{"define":/^[\u4E00-\u9FFF\w]{2,20}$/,"error":{"rc":101402,"msg":"标签名必须由2-20个字符组成"},"mongoError":{"rc":201402,"msg":"标签名必须由2-20个字符组成"}},
-        },
-    },
-    add_friend:{
-        receiver:{
-            chineseName:"添加的好友",
-            dataType:"objectId",
-            applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":102100,"msg":"添加好友不能为空"},"mongoError":{"rc":202100,"msg":"添加好友不能为空"}},
-            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":102102,"msg":"好友必须是objectId"},"mongoError":{"rc":202102,"msg":"好友必须是objectId"}},
-        },
-        status:{
-            chineseName:"当前请求所处状态",
-            dataType:"string",
-            applyRange:["update_scalar"],
-            require:{"define":{"update_scalar":true},"error":{"rc":102104,"msg":"状态不能为空"},"mongoError":{"rc":202104,"msg":"状态不能为空"}},
-            enum:{"define":["1","2","3"],"error":{"rc":102106,"msg":"状态未定义"},"mongoError":{"rc":202106,"msg":"状态未定义"}},
-        },
-        originator:{
-            chineseName:"发起人",
-            dataType:"objectId",
-            applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":102150,"msg":"发起人不能为空"},"mongoError":{"rc":202150,"msg":"发起人不能为空"}},
-            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":102152,"msg":"发起人必须是objectId"},"mongoError":{"rc":202152,"msg":"发起人必须是objectId"}},
         },
     },
     member_penalize:{
@@ -581,6 +558,29 @@ const inputRule={
             applyRange:["create"],
             require:{"define":{"create":true},"error":{"rc":102650,"msg":"文档目录不能为空"},"mongoError":{"rc":202650,"msg":"文档目录不能为空"}},
             format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":102652,"msg":"文档目录必须是objectId"},"mongoError":{"rc":202652,"msg":"文档目录必须是objectId"}},
+        },
+    },
+    add_friend:{
+        receiver:{
+            chineseName:"添加的好友",
+            dataType:"objectId",
+            applyRange:["create"],
+            require:{"define":{"create":true},"error":{"rc":102100,"msg":"添加好友不能为空"},"mongoError":{"rc":202100,"msg":"db添加好友不能为空"}},
+            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":102102,"msg":"好友必须是objectId"},"mongoError":{"rc":202102,"msg":"好友必须是objectId"}},
+        },
+        originator:{
+            chineseName:"发起人",
+            dataType:"objectId",
+            applyRange:["create"],
+            require:{"define":{"create":true},"error":{"rc":102150,"msg":"发起人不能为空"},"mongoError":{"rc":202150,"msg":"发起人不能为空"}},
+            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":102152,"msg":"发起人必须是objectId"},"mongoError":{"rc":202152,"msg":"发起人必须是objectId"}},
+        },
+        status:{
+            chineseName:"当前请求所处状态",
+            dataType:"string",
+            applyRange:["create","update_scalar"],
+            require:{"define":{"create":true,"update_scalar":true},"error":{"rc":102154,"msg":"状态不能为空"},"mongoError":{"rc":202154,"msg":"状态不能为空"}},
+            enum:{"define":["1","2","3","4"],"error":{"rc":102156,"msg":"状态未定义"},"mongoError":{"rc":202156,"msg":"状态未定义"}},
         },
     },
     impeach:{

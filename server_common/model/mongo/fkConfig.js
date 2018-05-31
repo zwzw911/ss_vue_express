@@ -141,7 +141,7 @@ const fkConfig={
     /****************           ADD  FRIEND        *****************/
     /****************************************************************/
     [e_coll.ADD_FRIEND]:{
-        [e_field.ADD_FRIEND.RECEIVER]:{relatedColl:e_coll.USER,forSelect:`${e_field.USER.NAME}`,forSetValue:[e_field.USER.NAME],validCriteria:undefined,fkCollOwnerFields:undefined}
+        [e_field.ADD_FRIEND.RECEIVER]:{relatedColl:e_coll.USER,forSelect:`${e_field.USER.NAME}`,forSetValue:[e_field.USER.NAME],validCriteria:undefined,fkCollOwnerFields:undefined},
     },
 
     /****************************************************************/
@@ -158,7 +158,7 @@ const fkConfig={
     /****************************************************************/
     [e_coll.FOLDER]:{
         [e_field.FOLDER.AUTHOR_ID]:{relatedColl:e_coll.USER,forSelect:`${e_field.USER.NAME}`,forSetValue:[e_field.USER.NAME],validCriteria:{'dDate':{$exists:false}},fkCollOwnerFields:undefined},
-        [e_field.FOLDER.PARENT_FOLDER_ID]:{relatedColl:e_coll.USER,forSelect:`${e_field.FOLDER.NAME}`,forSetValue:[e_field.FOLDER.NAME],validCriteria:{'dDate':{$exists:false}},fkCollOwnerFields:[e_field.FOLDER.AUTHOR_ID]},
+        [e_field.FOLDER.PARENT_FOLDER_ID]:{relatedColl:e_coll.FOLDER,forSelect:`${e_field.FOLDER.NAME}`,forSetValue:[e_field.FOLDER.NAME],validCriteria:{'dDate':{$exists:false}},fkCollOwnerFields:[e_field.FOLDER.AUTHOR_ID]},
     },
 }
 

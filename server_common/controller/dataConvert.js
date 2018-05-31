@@ -527,7 +527,9 @@ const constructCreateCriteria=function(formattedValues){
 //formattedValues: 经过convertClientValueToServerFormat处理的输入条件
 const constructUpdateCriteria=function(formattedValues){
     // console.log(`fkconfig is ${JSON.stringify(singleCollFKConfig)}`)
+    // ap.inf('formattedValues',formattedValues)
     for(let key in formattedValues){
+        // ap.inf('key',key)
         if(formattedValues[key]===null || dataTypeCheck.isEmpty(formattedValues[key])){
             //{field1:null,field2:xxx}======>{'$unset':{field1;any},field2:xxx}
             //如果没有$unset字段，则新建一个

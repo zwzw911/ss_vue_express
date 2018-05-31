@@ -84,7 +84,13 @@ async function uploadArticleImage_async({req}){
     /*                                       authorization check                               */
     /*******************************************************************************************/
     //当前要上传图片/附件的文档是否为作者本人
-    tmpResult=await controllerChecker.ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({dbModel:e_dbModel.article,recordId:recordId,ownerFieldName:e_field.ARTICLE.AUTHOR_ID,userId:userId,additionalCondition:undefined})
+    tmpResult=await controllerChecker.ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({
+        dbModel:e_dbModel.article,
+        recordId:recordId,
+        ownerFieldsName:[e_field.ARTICLE.AUTHOR_ID],
+        userId:userId,
+        additionalCondition:undefined
+    })
     if(false===tmpResult){
         return Promise.reject(controllerError.notArticleAuthorCantUploadImage)
     }

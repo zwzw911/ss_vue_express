@@ -1,14 +1,22 @@
 /**
  * Created by ada on 2017/9/1.
+ * 记录用户添加朋友的请求
+ * 当被请求者做出回应后（拒绝或者同意），设置相应的标志位（如果是同意，还要添加记录到friend_group；如果拒绝，在被添加人的页面上显示此条记录，并提供选项，可以再次同意）
  */
 'use strict'
-const ap=require(`awesomeprint`)
+/******************    内置lib和第三方lib  **************/
+const ap=require('awesomeprint')
 
-/*                      controller setting                */
+/**************  controller相关常量  ****************/
 const controller_setting=require('../add_friend_setting/add_friend_setting').setting
 const controllerError=require('../add_friend_setting/add_friend_controllerError').controllerError
 
-/*                      specify: genEnum                */
+/**************      rule             *************/
+const inputRule=require('../../../constant/inputRule/inputRule').inputRule
+const internalInputRule=require('../../../constant/inputRule/internalInputRule').internalInputRule
+const browserInputRule=require('../../../constant/inputRule/browserInputRule').browserInputRule
+
+/***************  数据库相关常量   ****************/
 const e_uniqueField=require('../../../constant/genEnum/DB_uniqueField').UniqueField
 const e_chineseName=require('../../../constant/genEnum/inputRule_field_chineseName').ChineseName
 const e_coll=require('../../../constant/genEnum/DB_Coll').Coll
@@ -16,24 +24,26 @@ const e_field=require('../../../constant/genEnum/DB_field').Field
 const e_dbModel=require('../../../constant/genEnum/dbModel')
 const enumValue=require(`../../../constant/genEnum/enumValue`)
 
-const e_iniSettingObject=require('../../../constant/genEnum/initSettingObject').iniSettingObject
-const inputRule=require('../../../constant/inputRule/inputRule').inputRule
-const internalInputRule=require('../../../constant/inputRule/internalInputRule').internalInputRule
-const browserInputRule=require('../../../constant/inputRule/browserInputRule').browserInputRule
-
-
-/*                      server common                                           */
+// const e_iniSettingObject=require('../../../constant/genEnum/initSettingObject').iniSettingObject
 const server_common_file_require=require('../../../../server_common_file_require')
-/*                      server common：enum                                       */
+/**************  公共函数   ******************/
+const dataConvert=server_common_file_require.dataConvert
+const controllerHelper=server_common_file_require.controllerHelper
+const controllerChecker=server_common_file_require.controllerChecker
+const common_operation_model=server_common_file_require.common_operation_model
+const misc=server_common_file_require.misc
+const crypt=server_common_file_require.crypt
+const controllerInputValueLogicCheck=server_common_file_require.controllerInputValueLogicCheck
+/****************  公共常量 ********************/
 const nodeEnum=server_common_file_require.nodeEnum
-const nodeRuntimeEnum=server_common_file_require.nodeRuntimeEnum
-const mongoEnum=server_common_file_require.mongoEnum
-// const e=server_common_file_require.enum
 const e_env=nodeEnum.Env
 const e_part=nodeEnum.ValidatePart
+const e_resourceFieldName=nodeEnum.ResourceFieldName
 
-// const e_hashType=nodeRuntimeEnum.
+const nodeRuntimeEnum=server_common_file_require.nodeRuntimeEnum
+const e_inputValueLogicCheckStep=nodeRuntimeEnum.InputValueLogicCheckStep
 
+const mongoEnum=server_common_file_require.mongoEnum
 const e_accountType=mongoEnum.AccountType.DB
 const e_docStatus=mongoEnum.DocStatus.DB
 const e_impeachType=mongoEnum.ImpeachType.DB
@@ -41,131 +51,96 @@ const e_impeachUserAction=mongoEnum.ImpeachUserAction.DB
 const e_impeachState=mongoEnum.ImpeachState.DB
 const e_addFriendStatus=mongoEnum.AddFriendStatus.DB
 const e_allUserType=mongoEnum.AllUserType.DB
+const e_resourceRange=mongoEnum.ResourceRange.DB
 
+const e_applyRange=server_common_file_require.inputDataRuleType.ApplyRange
 
-/*                      server common：function                                       */
-const dataConvert=server_common_file_require.dataConvert
-const controllerHelper=server_common_file_require.controllerHelper
-const controllerChecker=server_common_file_require.controllerChecker
-const common_operation_model=server_common_file_require.common_operation_model
-const misc=server_common_file_require.misc
-const hash=server_common_file_require.crypt.hash
-
-/*                      server common：other                                       */
+/*************** 配置信息 *********************/
 const regex=server_common_file_require.regex.regex
 const currentEnv=server_common_file_require.appSetting.currentEnv
 const fkConfig=server_common_file_require.fkConfig.fkConfig
 
-const common_operation_helper=server_common_file_require.common_operation_helper
+// const common_operation_helper=server_common_file_require.common_operation_helper
 
 /*                      globalConfig                      */
-const userGroupFriend=server_common_file_require.globalConfiguration.userGroupFriend
-//添加内部产生的值（hash password）
-//对内部产生的值进行检测（开发时使用，上线后为了减低负荷，无需使用）
-//对数值逻辑进行判断（外键是否有对应的记录等）
-//执行db操作并返回结果
-async  function createAddFriend_async({req}){
+// const userGroupFriend=server_common_file_require.globalConfiguration.userGroupFriend
+
+async  function createAddFriend_async({req,applyRange}){
     // console.log(`add friend in`)
-    /*******************************************************************************************/
-    /*                                          define variant                                 */
-    /*******************************************************************************************/
+    /********************************************************/
+    /*************      define variant        ***************/
+    /********************************************************/
     let tmpResult,condition,option
     let collName=controller_setting.MAIN_HANDLED_COLL_NAME
-/*    let docValue={
-        [e_field.IMPEACH.TITLE]:'新举报',
-        [e_field.IMPEACH.CONTENT]:'对文档/评论的内容进行举报',
-    }*/
-    let docValue=req.body.values[e_part.RECORD_INFO]
+    let docValue=req.body.values[e_part.SINGLE_FIELD]
     let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
     // console.log(`userInfo===> ${JSON.stringify(userInfo)}`)
     let {userId,userCollName,userType,userPriority,tempSalt}=userInfo
     // ap.print('docValue',docValue)
-    /*******************************************************************************************/
-    /*                                     用户类型和权限检测                                  */
-    /*******************************************************************************************/
-    await controllerChecker.ifExpectedUserType_async({currentUserType:userType,arr_expectedUserType:[e_allUserType.USER_NORMAL]})
-/*    let hasCreatePriority=await controllerChecker.ifAdminUserHasExpectedPriority_async({userPriority:userPriority,arr_expectedPriority:[e_adminPriorityType.CREATE_ADMIN_USER]})
-    if(false===hasCreatePriority){
-        return Promise.reject(controllerError.currentUserHasNotPriorityToCreateUser)
-    }*/
-    /*******************************************************************************************/
-    /*                                     参数转为server格式                                  */
-    /*******************************************************************************************/
+
+    /**********************************************/
+    /********  删除null/undefined的字段  *********/
+    /*********************************************/
+    // ap.inf('before constructCreateCriteria',docValue)
     dataConvert.constructCreateCriteria(docValue)
-    // ap.print('docValue',docValue)
-    /*******************************************************************************************/
-    /*                                     status设成UNTREATER                                 */
-    /*******************************************************************************************/
-    docValue[e_field.ADD_FRIEND.STATUS]=e_addFriendStatus.UNTREATED
-    // ap.print('docValue',docValue)
-    /*******************************************************************************************/
-    /*                                       authorization check                               */
-    /*******************************************************************************************/
+    // ap.inf('after constructCreateCriteria',docValue)
 
-    /*******************************************************************************************/
-    /*                                       resource check                                    */
-    /*******************************************************************************************/
-    //检查‘我的好友’是否已经达到上限
-    condition={
-        [e_field.USER_FRIEND_GROUP.OWNER_USER_ID]:userId,
-        [e_field.USER_FRIEND_GROUP.FRIEND_GROUP_NAME]:userGroupFriend.defaultGroupName.enumFormat.MyFriend,
-    }
-    // ap.print(`condition`,condition)
-    tmpResult=await common_operation_model.find_returnRecords_async({
-        dbModel:e_dbModel[e_coll.USER_FRIEND_GROUP],
-        condition:condition,
-        //selectedFields:[e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP]
-    })
-    // ap.print('tmpResult',tmpResult)
-    if(0===tmpResult.length){
-        return Promise.reject(controllerError.defaultGroupNotExist)
-    }
-    let count=tmpResult[0][e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP].length
-    // ap.print('count',count)
-    // ap.print('userGroupFriend.max.maxUserPerDefaultGroup',userGroupFriend.max.maxUserPerDefaultGroup)
-    if(count>=userGroupFriend.max.maxUserPerDefaultGroup){
-        return Promise.reject(controllerError.defaultGroupNumberExceed)
-    }
-    /*******************************************************************************************/
-    /*                                  fk value是否存在                                       */
-    /*******************************************************************************************/
-    //在fkConfig中定义的外键检查(fkConfig中设置查询条件)
-    if(undefined!==fkConfig[collName]) {
-        await controllerChecker.ifFkValueExist_async({
-            docValue: docValue,
-            collFkConfig: fkConfig[collName],
-            collFieldChineseName: e_chineseName[collName]
-        })
-    }
-    // console.log(`========================>fk value done<--------------------------`)
-    //自定义外键的检查
-    /*******************************************************************************************/
-    /*                                  enum unique check(enum in array)                       */
-    /*******************************************************************************************/
-    // console.log(`browserInputRule[collName]==========> ${JSON.stringify(browserInputRule[collName])}`)
-    // console.log(`docValue==========> ${JSON.stringify(docValue)}`)
-    tmpResult=controllerChecker.ifEnumHasDuplicateValue({collValue:docValue,collRule:browserInputRule[collName]})
-    // console.log(`duplicate check result ==========> ${JSON.stringify(tmpResult)}`)
-    if(tmpResult.rc>0){
-        return Promise.reject(tmpResult)
-    }
-    // console.log(`========================>enum unique check<--------------------------`)
-// console.log(`createUser_async docValue===> ${JSON.stringify(docValue)}`)
+    /**********************************************/
+    /***********    用户类型检测    **************/
+    /*********************************************/
+    await controllerChecker.ifExpectedUserType_async({currentUserType:userType,arr_expectedUserType:[e_allUserType.USER_NORMAL]})
+    // ap.inf('用户类型检测 done')
 
-    /*******************************************************************************************/
-    /*                 因为name是unique，所以要检查用户名是否存在(unique check)                */
-    /*******************************************************************************************/
-    if(undefined!==e_uniqueField[collName] &&  e_uniqueField[collName].length>0) {
-        // let additionalCheckCondition={[e_field.ADMIN_USER.DOC_STATUS]:e_docStatus.DONE}
-        // await controllerChecker.ifFieldInDocValueUnique_async({collName: collName, docValue: docValue,additionalCheckCondition:additionalCheckCondition})
-        await controllerChecker.ifFieldInDocValueUnique_async({collName: collName, docValue: docValue})
+    /**********************************************/
+    /**  CALL FUNCTION:inputValueLogicValidCheck **/
+    /**********************************************/
+    let commonParam={docValue:docValue,userId:userId,collName:collName}
+    // ap.inf('userId',userId)
+    let stepParam={
+        [e_inputValueLogicCheckStep.FK_EXIST_AND_PRIORITY]:{flag:true,optionalParam:undefined},
+        [e_inputValueLogicCheckStep.ENUM_DUPLICATE]:{flag:true,optionalParam:undefined},
+        //object：coll中，对单个字段进行unique检测，需要的额外查询条件
+        [e_inputValueLogicCheckStep.SINGLE_FIELD_VALUE_UNIQUE]:{flag:true,optionalParam:{singleValueUniqueCheckAdditionalCondition:undefined}},
+        //数组，元素是字段名。默认对所有dataType===string的字段进行XSS检测，但是可以通过此变量，只选择部分字段
+        [e_inputValueLogicCheckStep.XSS]:{flag:true,optionalParam:{expectedXSSFields:{optionalParam:undefined}}},
+        //object，对compoundField进行unique检测需要的额外条件，key从model->mongo->compound_unique_field_config.js中获得
+        //在internalValue之后执行
+        // [e_inputValueLogicCheckStep.COMPOUND_VALUE_UNIQUE]:{flag:true,optionalParam:{compoundFiledValueUniqueCheckAdditionalCheckCondition:undefined}},
+        //Object，配置resourceCheck的一些参数,{requiredResource,resourceProfileRange,userId,containerId}
+        /*** 特殊，需要同时判断为处理队列的数量 和 同意但是未分配队列的 数量 ***/
+        [e_inputValueLogicCheckStep.RESOURCE_USAGE]:{flag:true,optionalParam:{resourceUsageOption:{requiredResource:{[e_resourceFieldName.USED_NUM]:1},resourceProfileRange:[e_resourceRange.MAX_UNTREATED_ADD_FRIEND_REQUEST,e_resourceRange.MAX_ACCEPT_BUT_NOT_ASSIGN_ADD_FRIEND_REQUEST],userId:userId,containerId:undefined}}},
     }
-    // console.log(`========================>unique check<--------------------------`)
-    // console.log(`3`)
-// console.log(`ifFieldInDocValueUnique_async done===>`)
-    /*******************************************************************************************/
-    /*                              检查是否被添加用户已经为friend，或者被拒绝                 */
-    /*******************************************************************************************/
+    await controllerInputValueLogicCheck.inputValueLogicValidCheck_async({commonParam:commonParam,stepParam:stepParam})
+
+    /*************************************************************/
+    /***************   业务特定逻辑检查    ***********************/
+    /*************************************************************/
+    //不能把自己加为好友
+    if(userId.toString()===docValue[e_field.ADD_FRIEND.RECEIVER].toString()){
+        return Promise.reject(controllerError.create.cantAddSelfAsFriend)
+    }
+    /*************************************************************/
+    /***************   业务处理    *******************************/
+    /*************************************************************/
+    let createdRecord=await businessLogic_async({docValue:docValue,collName:collName,userId:userId,applyRange:applyRange})
+// ap.inf('createdRecord',createdRecord)
+    /*********************************************/
+    /**********      删除指定字段       *********/
+    /*********************************************/
+    controllerHelper.deleteFieldInRecord({record:createdRecord,fieldsToBeDeleted:undefined})
+    /*********************************************/
+    /**********      加密 敏感数据       *********/
+    /*********************************************/
+    controllerHelper.cryptRecordValue({record:createdRecord,salt:tempSalt,collName:collName})
+
+    // ap.inf('businessLogic_async done')
+    return Promise.resolve({rc:0,msg:createdRecord})
+
+    /***    通过COMPOUND_VALUE_UNIQUE，就可以知道是否已经添加过用户，如果添加过，报错退出   ***/
+
+   /* /!*******************************************************************************************!/
+    /!*                              检查是否被添加用户已经为friend，或者被拒绝                 *!/
+    /!*******************************************************************************************!/
     //是否已经添加过此朋友，
     //1. 查找最后（新）一条记录
     condition={
@@ -209,111 +184,53 @@ async  function createAddFriend_async({req}){
                 return Promise.resolve({rc:0})
                 // break
         }
-    }
-    /*//1. 未被处理，直接返回
-    condition={
-        [e_field.ADD_FRIEND.RECEIVER]:docValue[e_field.ADD_FRIEND.RECEIVER],
-        [e_field.ADD_FRIEND.ORIGINATOR]:userId,
-        [e_field.ADD_FRIEND.STATUS]:e_addFriendStatus.UNTREATED,
-    }
-    ap.print('condition',condition)
-    tmpResult=await  common_operation_model.find_returnRecords_async({dbModel:e_dbModel[collName],condition:condition})
-    ap.print('tmpResult',tmpResult)
-    if(tmpResult.length>0){
-        return Promise.resolve({rc:0})
-    }
-    //2. 已经被接受，返回错误，告知已经接受
-    condition={
-        [e_field.ADD_FRIEND.RECEIVER]:docValue[e_field.ADD_FRIEND.RECEIVER],
-        [e_field.ADD_FRIEND.ORIGINATOR]:userId,
-        [e_field.ADD_FRIEND.STATUS]:e_addFriendStatus.ACCEPT,
-    }
-    tmpResult=await  common_operation_model.find_returnRecords_async({dbModel:e_dbModel[collName],condition:condition})
-    //如果有记录，说明已经添加，无需再加
-    if(tmpResult.length>0){
-        tmpResult=await common_operation_helper.populateSingleDoc_async(tmpResult[0],[{path:[e_field.ADD_FRIEND.RECEIVER],select:[e_field.USER.NAME]}])
-        return Promise.reject(controllerError.receiverAlreadyBeFriend(tmpResult[e_field.USER.NAME]))
-    }
-    //3. 被拒绝，更新记录的status为untreated
-    condition={
-        [e_field.ADD_FRIEND.RECEIVER]:docValue[e_field.ADD_FRIEND.RECEIVER],
-        [e_field.ADD_FRIEND.ORIGINATOR]:userId,
-        [e_field.ADD_FRIEND.STATUS]:e_addFriendStatus.REJECT,
-    }
-    tmpResult=await  common_operation_model.find_returnRecords_async({dbModel:e_dbModel[collName],condition:condition})
-    //如果有记录，更改状态为untreated
-    if(tmpResult.length>0){
-        await  common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel[collName],id:tmpResult[0][`_id`],updateFieldsValue:{[e_field.ADD_FRIEND.STATUS]:e_addFriendStatus.UNTREATED}})
-        return Promise.resolve({rc:0})
     }*/
-    /*******************************************************************************************/
-    /*                                       特定字段的处理（检查）                            */
-    /*******************************************************************************************/
-    /*//content内容进行XSS检测
-    let XssCheckField=[e_field.IMPEACH.TITLE,e_field.IMPEACH.CONTENT]
-    await controllerHelper.inputFieldValueXSSCheck({docValue:docValue,collName:collName,expectedXSSCheckField:XssCheckField})
 
-    // console.log(`4`)
-    //impeachType是否为预定义的一种
-    if(-1===Object.values(enumValue.ImpeachType).indexOf(impeachType)){
-        return Promise.reject(controllerError.unknownImpeachType)
-    }*/
-    // console.log(`========================>special check done<--------------------------`)
-    /*******************************************************************************************/
-    /*                         添加internal field，然后检查                                    */
-    /*******************************************************************************************/
-    // console.log(`before hash is ${JSON.stringify(docValue)}`)
+}
+
+
+
+/*************************************************************/
+/***************   业务处理    *******************************/
+/*************************************************************/
+async function businessLogic_async({docValue,collName,userId,applyRange}){
     let internalValue={}
+    internalValue[e_field.ADD_FRIEND.STATUS]=e_addFriendStatus.UNTREATED
     internalValue[e_field.ADD_FRIEND.ORIGINATOR]=userId
     // internalValue[e_field.IMPEACH.CREATOR_ID]=userId
     // console.log(`7`)
     /*              对内部产生的值进行检测（开发时使用，上线后为了减低负荷，无需使用）           */
     if(e_env.DEV===currentEnv){
-        let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInputRule:inputRule[collName],collInternalRule:internalInputRule[collName],method:req.body.values[e_part.METHOD]})
+        let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInternalRule:internalInputRule[collName],applyRange:applyRange})
         // console.log(`internalValue check result====>   ${JSON.stringify(tmpResult)}`)
         if(tmpResult.rc>0){
             return Promise.reject(tmpResult)
         }
     }
-    Object.assign(docValue,internalValue)
-// console.log(`========================>internal check  done<--------------------------`)
-    /*******************************************************************************************/
-    /*                    复合字段unique check（需要internal field完成后）                     */
-    /*******************************************************************************************/
-    //根据compound_unique_field_config中的设置，进行唯一查询
-    //如果不唯一，返回已经存在的记录，以便进一步处理
-   /* let compoundUniqueCheckResult=await controllerChecker.ifCompoundFiledUnique_returnExistRecord_async({collName:collName,docValue:docValue})
-    // console.log(`compound field check result===================>${JSON.stringify(compoundUniqueCheckResult)}`)
-    //复合字段唯一返回true或者已有的doc
-    //有重复值，且重复记录数为1（大于1，已经直接reject）
-    if(true!==compoundUniqueCheckResult){
-        if(undefined!==docValue[e_field.IMPEACH.IMPEACHED_ARTICLE_ID]){
-            return Promise.reject(controllerError.articleAlreadyImpeached)
-        }
-        if(undefined!==docValue[e_field.IMPEACH.IMPEACHED_COMMENT_ID]){
-            return Promise.reject(controllerError.articleCommentAlreadyImpeached)
-        }
-    }*/
-    /*******************************************************************************************/
-    /*                                  db operation                                           */
-    /*******************************************************************************************/
-    //new impeach插入db
-    tmpResult= await common_operation_model.create_returnRecord_async({dbModel:e_dbModel[collName],value:docValue})
-// console.log(`create result is ====>${JSON.stringify(tmpResult)}`)
-
-   /* //插入关联数据（impeach action=create）
-    let impeachStateValue={
-        [e_field.IMPEACH_ACTION.IMPEACH_ID]:tmpResult['_id'],
-        // [e_field.IMPEACH_STATE.OWNER_ID]:userId,
-        // [e_field.IMPEACH_STATE.OWNER_COLL]:e_coll.USER,
-        [e_field.IMPEACH_ACTION.ACTION]:e_impeachUserAction.CREATE,
-        [e_field.IMPEACH_ACTION.CREATOR_ID]:userId,
-        [e_field.IMPEACH_ACTION.CREATOR_COLL]:e_coll.USER,
+    if(undefined===docValue){
+        docValue=internalValue
+    }else{
+        Object.assign(docValue,internalValue)
     }
-    await common_operation_model.create_returnRecord_async({dbModel:e_dbModel.impeach_action,value:impeachStateValue})*/
-    return Promise.resolve({rc:0,msg:tmpResult})
-}
+// ap.inf('after interval',docValue)
+    /*******************************************************************************************/
+    /******************          compound field value unique check                  ************/
+    /*******************************************************************************************/
+    if(undefined!==docValue){
+        let compoundFiledValueUniqueCheckAdditionalCheckCondition
+        await controllerInputValueLogicCheck.ifCompoundFiledValueUnique_returnExistRecord_async({
+            collName:collName,
+            docValue:docValue,
+            additionalCheckCondition:compoundFiledValueUniqueCheckAdditionalCheckCondition,
+        })
+    }
 
+    // ap.inf('after compound',docValue)
+    /***         数据库操作            ***/
+    let createdRecord= await common_operation_model.create_returnRecord_async({dbModel:e_dbModel[collName],value:docValue})
+
+    return Promise.resolve(createdRecord.toObject())
+}
 module.exports={
     createAddFriend_async,
 }

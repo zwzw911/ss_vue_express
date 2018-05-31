@@ -391,6 +391,12 @@ const ResourceRange={
         IMAGE_PER_PERSON_FOR_WHOLE_IMPEACH:'7', //每个用户，在整个impeach和comment的图片
 
         FOLDER_NUM:'8', //最大目录数量
+
+        FRIEND_GROUP_NUM:'9',//朋友群数量
+        MAX_PERSON_NUM_PER_FRIEND_GROUP:'10',//群中人数最大数量
+
+        MAX_UNTREATED_ADD_FRIEND_REQUEST:'11', //最大未处理的 添加朋友的请求数
+        MAX_ACCEPT_BUT_NOT_ASSIGN_ADD_FRIEND_REQUEST:'12', //最大已同意但是未被分配到某个朋友群的 添加朋友的请求数
     },
     SHOW:{
         IMAGE_PER_ARTICLE:'文档图片',//对文档起作用
@@ -403,6 +409,12 @@ const ResourceRange={
         IMAGE_PER_PERSON_FOR_WHOLE_IMPEACH:'举报中的用户',  //整个举报中，每个用户
 
         FOLDER_NUM:'最大目录数量', //
+
+        FRIEND_GROUP_NUM:'最大朋友群数量',//朋友群数量
+        MAX_PERSON_NUM_PER_FRIEND_GROUP:'群人数数量',//群中人数最大数量
+
+        MAX_UNTREATED_ADD_FRIEND_REQUEST:'最大未处理的添加朋友的请求数',
+        MAX_ACCEPT_BUT_NOT_ASSIGN_ADD_FRIEND_REQUEST:'最大已同意但是未被分配的添加朋友的请求数', //最大 已同意但是未被分配到某个朋友群的 添加朋友的请求数
     },
 }
 
@@ -443,12 +455,14 @@ const AddFriendStatus={
     DB:{
         UNTREATED:'1',
         ACCEPT:'2',
-        REJECT:'3',
+        DECLINE:'3',
+        ACCEPT_BUT_NOT_ASSIGN:'4',
     },
     SHOW:{
         UNTREATED:'尚未处理',
         ACCEPT:'接受',
-        REJECT:'拒绝',
+        DECLINE:'拒绝',
+        ACCEPT_BUT_NOT_ASSIGN:'接受但未分配',
     },
 }
 

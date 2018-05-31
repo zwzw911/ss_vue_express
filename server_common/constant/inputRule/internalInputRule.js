@@ -1,4 +1,4 @@
-/*    gene by H:\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-5-24   */ 
+/*    gene by H:\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-5-29   */ 
  
 "use strict"
 const internalInputRule={
@@ -241,6 +241,15 @@ const internalInputRule={
             format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":101672,"msg":"所属文档必须是objectId"},"mongoError":{"rc":201672,"msg":"所属文档必须是objectId"}},
         },
     },
+    like_dislike:{
+        authorId:{
+            chineseName:"提交者",
+            dataType:"objectId",
+            applyRange:["create"],
+            require:{"define":{"create":true},"error":{"rc":101350,"msg":"提交者不能为空"},"mongoError":{"rc":201350,"msg":"提交者不能为空"}},
+            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":101352,"msg":"提交者必须是objectId"},"mongoError":{"rc":201352,"msg":"提交者必须是objectId"}},
+        },
+    },
     folder:{
         authorId:{
             chineseName:"创建人",
@@ -253,26 +262,8 @@ const internalInputRule={
             chineseName:"目录层级",
             dataType:"int",
             applyRange:["create","update_scalar"],
-            require:{"define":{"create":true,"update_scalar":false},"error":{"rc":101250,"msg":"目录层级不能为空"},"mongoError":{"rc":201250,"msg":"目录层级不能为空"}},
-            min:{"define":1,"error":{"rc":101252,"msg":"目录层级最小为1"},"mongoError":{"rc":201252,"msg":"目录层级最小为1"}},
-        },
-    },
-    like_dislike:{
-        authorId:{
-            chineseName:"提交者",
-            dataType:"objectId",
-            applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":101350,"msg":"提交者不能为空"},"mongoError":{"rc":201350,"msg":"提交者不能为空"}},
-            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":101352,"msg":"提交者必须是objectId"},"mongoError":{"rc":201352,"msg":"提交者必须是objectId"}},
-        },
-    },
-    add_friend:{
-        originator:{
-            chineseName:"发起人",
-            dataType:"objectId",
-            applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":102150,"msg":"发起人不能为空"},"mongoError":{"rc":202150,"msg":"发起人不能为空"}},
-            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":102152,"msg":"发起人必须是objectId"},"mongoError":{"rc":202152,"msg":"发起人必须是objectId"}},
+            require:{"define":{"create":true,"update_scalar":false},"error":{"rc":101254,"msg":"目录层级不能为空"},"mongoError":{"rc":201254,"msg":"目录层级不能为空"}},
+            min:{"define":1,"error":{"rc":101256,"msg":"目录层级最小为1"},"mongoError":{"rc":201256,"msg":"目录层级最小为1"}},
         },
     },
     member_penalize:{
@@ -342,6 +333,22 @@ const internalInputRule={
             require:{"define":{"create":false,"update_scalar":false},"error":{"rc":102754,"msg":"用户所处群不能为空"},"mongoError":{"rc":202754,"msg":"用户所处群不能为空"}},
             arrayMaxLength:{"define":20,"error":{"rc":102756,"msg":"用户最多加入20个群"},"mongoError":{"rc":202756,"msg":"用户最多加入20个群"}},
             format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":102758,"msg":"用户所处群必须是objectId"},"mongoError":{"rc":202758,"msg":"用户所处群必须是objectId"}},
+        },
+    },
+    add_friend:{
+        originator:{
+            chineseName:"发起人",
+            dataType:"objectId",
+            applyRange:["create"],
+            require:{"define":{"create":true},"error":{"rc":102150,"msg":"发起人不能为空"},"mongoError":{"rc":202150,"msg":"发起人不能为空"}},
+            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":102152,"msg":"发起人必须是objectId"},"mongoError":{"rc":202152,"msg":"发起人必须是objectId"}},
+        },
+        status:{
+            chineseName:"当前请求所处状态",
+            dataType:"string",
+            applyRange:["create","update_scalar"],
+            require:{"define":{"create":true,"update_scalar":true},"error":{"rc":102154,"msg":"状态不能为空"},"mongoError":{"rc":202154,"msg":"状态不能为空"}},
+            enum:{"define":["1","2","3"],"error":{"rc":102156,"msg":"状态未定义"},"mongoError":{"rc":202156,"msg":"状态未定义"}},
         },
     },
     impeach:{

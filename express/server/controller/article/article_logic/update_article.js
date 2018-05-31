@@ -162,7 +162,7 @@ async function updateArticle_async({req}){
 // console.log(`inputFieldValueXSSCheck done`)
     //如果content存在，图片检测
     if(undefined!==docValue[e_field.ARTICLE.HTML_CONTENT]){
-        let content=docValue[e_field.ARTICLE.HTML_CONTENT]
+        // let content=docValue[e_field.ARTICLE.HTML_CONTENT]
         // console.log(`0`)
         // let content=docValue[e_field.ARTICLE.HTML_CONTENT]
         // await controllerHelper.contentXSSCheck_async({content:content,error:controllerError.htmlContentSanityFailed})

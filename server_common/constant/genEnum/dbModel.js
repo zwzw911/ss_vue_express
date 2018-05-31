@@ -18,13 +18,13 @@ const folder=require('H:/ss_vue_express/server_common/model/mongo/structure/arti
 const like_dislike=require('H:/ss_vue_express/server_common/model/mongo/structure/article/like_dislike.js').collModel
 const tag=require('H:/ss_vue_express/server_common/model/mongo/structure/article/tag.js').collModel
 /*       friend           */
-const add_friend=require('H:/ss_vue_express/server_common/model/mongo/structure/friend/add_friend.js').collModel
 const member_penalize=require('H:/ss_vue_express/server_common/model/mongo/structure/friend/member_penalize.js').collModel
 const public_group=require('H:/ss_vue_express/server_common/model/mongo/structure/friend/public_group.js').collModel
 const public_group_event=require('H:/ss_vue_express/server_common/model/mongo/structure/friend/public_group_event.js').collModel
 const public_group_interaction=require('H:/ss_vue_express/server_common/model/mongo/structure/friend/public_group_interaction.js').collModel
 const user_friend_group=require('H:/ss_vue_express/server_common/model/mongo/structure/friend/user_friend_group.js').collModel
 const user_public_group=require('H:/ss_vue_express/server_common/model/mongo/structure/friend/user_public_group.js').collModel
+const add_friend=require('H:/ss_vue_express/server_common/model/mongo/structure/friend/add_friend.js').collModel
 /*       impeach           */
 const impeach=require('H:/ss_vue_express/server_common/model/mongo/structure/impeach/impeach.js').collModel
 const impeach_action=require('H:/ss_vue_express/server_common/model/mongo/structure/impeach/impeach_action.js').collModel
@@ -64,13 +64,13 @@ module.exports={
     like_dislike,
     tag,
     /*       friend           */
-    add_friend,
     member_penalize,
     public_group,
     public_group_event,
     public_group_interaction,
     user_friend_group,
     user_public_group,
+    add_friend,
     /*       impeach           */
     impeach,
     impeach_action,

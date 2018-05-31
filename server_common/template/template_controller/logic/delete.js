@@ -72,7 +72,7 @@ async function deleteImpeach_async({req}){
     tmpResult=await controllerChecker.ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({
         dbModel:e_dbModel[collName],
         recordId:recordId,
-        ownerFieldName:e_field.IMPEACH.CREATOR_ID,
+        ownerFieldsName:[e_field.IMPEACH.CREATOR_ID],
         userId:userId,
         additionalCondition:undefined
     })

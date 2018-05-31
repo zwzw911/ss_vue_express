@@ -1,4 +1,4 @@
-/*    gene by H:\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-5-24   */ 
+/*    gene by H:\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-5-29   */ 
  
 "use strict"
 const browserInputRule={
@@ -290,22 +290,6 @@ const browserInputRule={
             format:{"define":/^[\u4E00-\u9FFF\w]{2,20}$/,"error":{"rc":101402,"msg":"标签名必须由2-20个字符组成"},"mongoError":{"rc":201402,"msg":"标签名必须由2-20个字符组成"}},
         },
     },
-    add_friend:{
-        receiver:{
-            chineseName:"添加的好友",
-            dataType:"objectId",
-            applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":102100,"msg":"添加好友不能为空"},"mongoError":{"rc":202100,"msg":"添加好友不能为空"}},
-            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":102102,"msg":"好友必须是objectId"},"mongoError":{"rc":202102,"msg":"好友必须是objectId"}},
-        },
-        status:{
-            chineseName:"当前请求所处状态",
-            dataType:"string",
-            applyRange:["update_scalar"],
-            require:{"define":{"update_scalar":true},"error":{"rc":102104,"msg":"状态不能为空"},"mongoError":{"rc":202104,"msg":"状态不能为空"}},
-            enum:{"define":["1","2","3"],"error":{"rc":102106,"msg":"状态未定义"},"mongoError":{"rc":202106,"msg":"状态未定义"}},
-        },
-    },
     member_penalize:{
         publicGroupId:{
             chineseName:"群",
@@ -444,6 +428,15 @@ const browserInputRule={
             require:{"define":{"update_array":false},"error":{"rc":102606,"msg":"好友分组不能为空"},"mongoError":{"rc":202606,"msg":"好友分组不能为空"}},
             arrayMaxLength:{"define":100,"error":{"rc":102608,"msg":"好友分组最多包含100个好友"},"mongoError":{"rc":202608,"msg":"好友分组最多包含100个好友"}},
             format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":102610,"msg":"好友必须是objectId"},"mongoError":{"rc":202610,"msg":"好友必须是objectId"}},
+        },
+    },
+    add_friend:{
+        receiver:{
+            chineseName:"添加的好友",
+            dataType:"objectId",
+            applyRange:["create"],
+            require:{"define":{"create":true},"error":{"rc":102100,"msg":"添加好友不能为空"},"mongoError":{"rc":202100,"msg":"添加好友不能为空"}},
+            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":102102,"msg":"好友必须是objectId"},"mongoError":{"rc":202102,"msg":"好友必须是objectId"}},
         },
     },
     impeach:{

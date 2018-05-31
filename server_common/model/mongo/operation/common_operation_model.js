@@ -14,9 +14,9 @@ const pagination=require('../../../function/assist/pagination').pagination
 
 const mongooseOpEnum=require('../../../constant/enum/nodeEnum').MongooseOp
 
-const updateOptions=require('../common/configuration').updateOptions
+const defaultUpdateOptions=require('../common/configuration').updateOptions
 
-
+const objectDeepCopy=require('../../../function/assist/misc').objectDeepCopy
 //无需返回任何paginationInfo，因为search已经返回，并存储在client端了
 async function create_returnRecord_async({dbModel,value}){
 //使用Promise方式，以便catch可能的错误
@@ -67,7 +67,7 @@ async function insertMany_returnRecord_async({dbModel,docs}){
      return Promise.resolve(result)
 }
 
-async function update_returnRecord_async({dbModel,updateOptions,id,values}){
+async function update_returnRecord_async({dbModel,id,values}){
     values['uDate']=Date.now()
     // console.log(`id is ${id}, values is ${JSON.stringify(values)}`)
     //无需执行exec返回一个promise就可以使用了？？？
@@ -114,8 +114,10 @@ async function update_returnRecord_async({dbModel,updateOptions,id,values}){
 /*              直接进行update          */
 async function updateDirect_returnRecord_async({dbModel,condition,updateOptions,values}){
     values['uDate']=Date.now()
+    let finalUpdateOptions=objectDeepCopy(defaultUpdateOptions)
+    Object.assign(finalUpdateOptions,updateOptions)
     return new Promise(function(resolve,reject){
-        dbModel.update(condition,values,updateOptions,function(err,result){
+        dbModel.update(condition,values,finalUpdateOptions,function(err,result){
             if(err){
                 return reject(err)
             }
@@ -138,15 +140,17 @@ async function removeBaseIdArray_async({dbModel,updateOptions,idArray}){
 /*    console.log(`delete value is ${JSON.stringify(values)}`)
     console.log(`id is ${JSON.stringify(id)}`)
     console.log(`dbModel is ${JSON.stringify(dbModel.modelName)}`)*/
+    let finalUpdateOptions=objectDeepCopy(defaultUpdateOptions)
+    Object.assign(finalUpdateOptions,updateOptions)
 	if(idArray.length===1){
-        await dbModel.findByIdAndUpdate(idArray[0],values,updateOptions).catch(
+        await dbModel.findByIdAndUpdate(idArray[0],values,finalUpdateOptions).catch(
             (err)=>{
                 return Promise.reject(mongooseErrorHandler(err))
             }
         )
 	}
 	if(idArray.length>1){
-		await dbModel.updateMany({_id:{$in:idArray}},values,updateOptions).catch(
+		await dbModel.updateMany({_id:{$in:idArray}},values,finalUpdateOptions).catch(
             (err)=>{
                 return Promise.reject(mongooseErrorHandler(err))
             }
@@ -312,7 +316,9 @@ async function find_returnRecords_async({dbModel,condition,selectedFields='-cDat
 
 async function findByIdAndUpdate_returnRecord_async({dbModel,id,updateFieldsValue,updateOption}){
     // console.log(`find by id :${id}`)
-    let result=await dbModel.findByIdAndUpdate(id,updateFieldsValue,updateOption)
+    let finalUpdateOptions=objectDeepCopy(defaultUpdateOptions)
+    Object.assign(finalUpdateOptions,updateOption)
+    let result=await dbModel.findByIdAndUpdate(id,updateFieldsValue,finalUpdateOptions)
         .catch(
             function(err){
                 // console.log(`findbyid errr is ${JSON.stringify(err)}`)
@@ -374,7 +380,9 @@ async function findByIdAndRemove_async({dbModel,id,deleteOption}){
 
 async function findOneAndUpdate_returnRecord_async({dbModel,condition,updateFieldsValue,updateOption}){
     // console.log(`find by id :${id}`)
-    let result=await dbModel.findOneAndUpdate(condition,updateFieldsValue,updateOption)
+    let finalUpdateOptions=objectDeepCopy(defaultUpdateOptions)
+    Object.assign(finalUpdateOptions,updateOption)
+    let result=await dbModel.findOneAndUpdate(condition,updateFieldsValue,finalUpdateOptions)
         .catch(
             function(err){
                 // console.log(`findbyid errr is ${JSON.stringify(err)}`)

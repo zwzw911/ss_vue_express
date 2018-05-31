@@ -17,6 +17,8 @@ const e_dbModel=require(`../constant/genEnum/dbModel`)
 const e_resourceFieldName=require(`../constant/enum/nodeEnum`).ResourceFieldName
 const e_resourceConfigFieldName=require(`../constant/enum/nodeEnum`).ResourceConfigFieldName
 
+const e_addFriendStatus=require('../constant/enum/mongoEnum').AddFriendStatus.DB
+// const e_=require('../constant/enum/mongoEnum').ResourceRange.DB
 // const e_resourceType=require(`../constant/enum/mongoEnum`).ResourceType.DB
 
 const e_resourceRange=require(`../constant/enum/mongoEnum`).ResourceRange.DB
@@ -169,7 +171,7 @@ const helperError=require('../constant/error/controller/helperError')
 //     },
 // }
 
-/*  为arr_resourceProfileRange中的每个resourceRange，获得当前valida的user_resource_profile(basic或者advanced)
+/*  为arr_resourceProfileRange中的每个resourceRange，获得当前valida的user_resource_profile(basic或者advanced)，并最终找到对应的resourceProfile
 * @singleResourceProfileRange；需要获得profile的resource
 * @userId：对哪个用户的resource检索profile
 *
@@ -177,7 +179,7 @@ const helperError=require('../constant/error/controller/helperError')
 * */
 async function findValidResourceProfiles_async({singleResourceProfileRange,userId}){
     // ap.inf('findValidResourceProfiles_async in')
-    let validResourceProfileRecord
+    let validUserResourceProfileRecord //userResourceProfile中的一个记录
     //为每种resourceProfileRange查找valida的resourceProfile
     // for(let singleResourceProfileRange of arr_resourceProfileRange){
     let condition={"$and":[{'dDate':{$exists:false}}]}
@@ -218,11 +220,11 @@ async function findValidResourceProfiles_async({singleResourceProfileRange,userI
     }
     //返回最后一条记录（如果只有一条，那就返回第一条（basic），多天返回advanced）
     else{
-        validResourceProfileRecord=validResultForSingleResourceProfileRange[0]//因为是按照id递减排列的，所以第一条为valid
+        validUserResourceProfileRecord=validResultForSingleResourceProfileRange[0]//因为是按照id递减排列的，所以第一条为valid
     }
     // }
 
-
+    let validResourceProfileRecord=await common_operation_model.findById_returnRecord_async({dbModel:e_dbModel.resource_profile,id:validUserResourceProfileRecord[e_field.USER_RESOURCE_PROFILE.RESOURCE_PROFILE_ID]})
     return Promise.resolve(validResourceProfileRecord)
 }
 
@@ -231,6 +233,9 @@ function ifSpaceExceed({currentUsedSpace,requiredSpace,resourceProfileRecord}){
     return currentUsedSpace+requiredSpace > resourceProfileRecord[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]
 }
 function ifNumExceed({currentUsedNum,requiredNum,resourceProfileRecord}){
+    ap.inf('currentUsedNum',currentUsedNum)
+    ap.inf('requiredNum',requiredNum)
+    ap.inf('resourceProfileRecord',resourceProfileRecord)
     return currentUsedNum+requiredNum > resourceProfileRecord[e_field.RESOURCE_PROFILE.MAX_NUM]
 }
 /**********************************************************************************/
@@ -293,7 +298,7 @@ async function calcUserTotalResourceUsage_async({userId}){
         return Promise.reject(helperError.resourceCheck.calcUserTotalResourceUsage_async.userNotExistCantGetUsage)
     }
 
-    return Promise.resolve({num:result[0][e_field.USER_RESOURCE_STATIC.UPLOADED_FILE_NUM],sizeInMb:result[0][e_field.USER_RESOURCE_STATIC.UPLOADED_FILE_SIZE_IN_MB]})
+    return Promise.resolve({[e_resourceFieldName.USED_NUM]:result[0][e_field.USER_RESOURCE_STATIC.UPLOADED_FILE_NUM],[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB]:result[0][e_field.USER_RESOURCE_STATIC.UPLOADED_FILE_SIZE_IN_MB]})
 }
 
 /**********************************************************************************/
@@ -307,9 +312,22 @@ async function calcFolderNum_async({userId}){
         'dDate':{$exists:false},
     }
     let folderNum=await common_operation_model.count_async({dbModel:e_dbModel.folder,condition:condition})
-    return Promise.resolve({num:folderNum})
+    return Promise.resolve({[e_resourceFieldName.USED_NUM]:folderNum})
 }
-
+/**********************************************************************************/
+/**********************      max add friend request   ****************************/
+/**********************************************************************************/
+/*  计算当前未处理的添加用户的请求数
+* */
+async function calcAddFriendNum_async({userId}){
+    let condition={
+        [e_field.ADD_FRIEND.ORIGINATOR]:userId,
+        [e_field.ADD_FRIEND.STATUS]:e_addFriendStatus.UNTREATED,
+        'dDate':{$exists:false},
+    }
+    let untreatedNum=await common_operation_model.count_async({dbModel:e_dbModel.add_friend,condition:condition})
+    return Promise.resolve({[e_resourceFieldName.USED_NUM]:untreatedNum})
+}
 /*******************************************************************************************/
 /******************         主函数，用来检测是否还是有disk space可用        ***************/
 /*******************************************************************************************/
@@ -339,7 +357,7 @@ async function ifEnoughResource_async({requiredResource,resourceProfileRange,use
                     return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.articleAttachmentDiskUsageExceed({resourceProfileRangeSizeInMb:resourceProfile[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]}))
                 }
 
-                numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:[e_field.RESOURCE_PROFILE.MAX_NUM]})
+                numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:resourceProfile})
                 if(true===numExceedFlag){
                     deleteFiles({arr_fileAbsPath:requiredResource.filesAbsPath})
                     return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.articleAttachmentNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
@@ -353,7 +371,7 @@ async function ifEnoughResource_async({requiredResource,resourceProfileRange,use
                     return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.articleImageDiskUsageExceed({resourceProfileRangeSizeInMb:resourceProfile[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]}))
                 }
 
-                numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:[e_field.RESOURCE_PROFILE.MAX_NUM]})
+                numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:resourceProfile})
                 if(true===numExceedFlag){
                     deleteFiles({arr_fileAbsPath:requiredResource.filesAbsPath})
                     return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.articleImageNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
@@ -366,23 +384,33 @@ async function ifEnoughResource_async({requiredResource,resourceProfileRange,use
                     deleteFiles({arr_fileAbsPath:requiredResource.filesAbsPath})
                     return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.userTotalDiskUsageExceed({resourceProfileRangeSizeInMb:resourceProfile[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]}))
                 }
-                numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:[e_field.RESOURCE_PROFILE.MAX_NUM]})
+                numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:resourceProfile})
                 if(true===numExceedFlag){
                     deleteFiles({arr_fileAbsPath:requiredResource.filesAbsPath})
                     return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.userTotalFileNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
                 }
                 break
             case e_resourceRange.FOLDER_NUM:
-                //ap.inf('FOLDER_NUM')
+                // ap.inf('FOLDER_NUM')
                 usedResource=await calcFolderNum_async({userId:userId})
-                //ap.inf('usedResource',usedResource)
-                //ap.inf('usedResource[e_resourceFieldName.USED_NUM]',usedResource[e_resourceFieldName.USED_NUM])
+                // ap.inf('usedResource',usedResource)
+                // ap.inf('resourceProfile',resourceProfile)
                 //folder只要检测数量
-                numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:[e_field.RESOURCE_PROFILE.MAX_NUM]})
+                numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:resourceProfile})
                 if(true===numExceedFlag){
                     return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.totalFolderNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
                 }
                 break
+            case e_resourceRange.MAX_UNTREATED_ADD_FRIEND_REQUEST:
+                usedResource=await calcAddFriendNum_async({userId:userId})
+                // ap.inf('usedResource',usedResource)
+                // ap.inf('resourceProfile',resourceProfile)
+                //只要检测数量
+                numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:resourceProfile})
+                if(true===numExceedFlag){
+                    return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.totalFolderNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
+                }
+                break;
             default:
                 //ap.err(`ResourceRange ${singleResourceProfileRange} no related method to calc resource usage`)
         }

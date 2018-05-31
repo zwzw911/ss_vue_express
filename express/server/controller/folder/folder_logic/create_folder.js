@@ -27,16 +27,15 @@ const server_common_file_require=require('../../../../server_common_file_require
 const dataConvert=server_common_file_require.dataConvert
 const controllerHelper=server_common_file_require.controllerHelper
 const controllerChecker=server_common_file_require.controllerChecker
-const inputValueLogicValidCheck_async=server_common_file_require.controllerInputValueLogicCheck.inputValueLogicValidCheck_async
+const controllerInputValueLogicCheck=server_common_file_require.controllerInputValueLogicCheck
 const common_operation_model=server_common_file_require.common_operation_model
 const misc=server_common_file_require.misc
-
-
 const hash=server_common_file_require.crypt.hash
+
 /****************  公共常量 ********************/
 const mongoEnum=server_common_file_require.mongoEnum
 const e_docStatus=mongoEnum.DocStatus.DB
-const e_resourceRange=server_common_file_require.mongoEnum.ResourceRange.DB
+const e_resourceRange=mongoEnum.ResourceRange.DB
 const e_allUserType=mongoEnum.AllUserType.DB
 
 const nodeRuntimeEnum=server_common_file_require.nodeRuntimeEnum
@@ -57,7 +56,7 @@ const maxNumber=server_common_file_require.globalConfiguration.maxNumber
 /*************************************************************/
 /***************   主函数      *******************************/
 /*************************************************************/
-async function createFolder_async({req}){
+async function createFolder_async({req,applyRange}){
     // ap.inf('in')
     /********************************************************/
     /*************      define variant        ***************/
@@ -79,9 +78,9 @@ async function createFolder_async({req}){
     /**********************************************/
     /********  删除null/undefined的字段  *********/
     /*********************************************/
-    // ap.inf('docValue',docValue)
+    // ap.inf('before constructCreateCriteria',docValue)
     dataConvert.constructCreateCriteria(docValue)
-    ap.inf('after constructCreateCriteria',docValue)
+    // ap.inf('after constructCreateCriteria',docValue)
 
     /**********************************************/
     /***********    用户类型检测    **************/
@@ -101,14 +100,15 @@ async function createFolder_async({req}){
         //数组，元素是字段名。默认对所有dataType===string的字段进行XSS检测，但是可以通过此变量，只选择部分字段
         [e_inputValueLogicCheckStep.XSS]:{flag:true,optionalParam:{expectedXSSFields:{optionalParam:undefined}}},
         //object，对compoundField进行unique检测需要的额外条件，key从model->mongo->compound_unique_field_config.js中获得
-        [e_inputValueLogicCheckStep.COMPOUND_VALUE_UNIQUE]:{flag:true,optionalParam:{compoundFiledValueUniqueCheckAdditionalCheckCondition:undefined}},
+        //在internalValue之后执行
+        // [e_inputValueLogicCheckStep.COMPOUND_VALUE_UNIQUE]:{flag:true,optionalParam:{compoundFiledValueUniqueCheckAdditionalCheckCondition:undefined}},
         //Object，配置resourceCheck的一些参数,{requiredResource,resourceProfileRange,userId,containerId}
         [e_inputValueLogicCheckStep.RESOURCE_USAGE]:{flag:true,optionalParam:{resourceUsageOption:{requiredResource:{[e_resourceFieldName.USED_NUM]:1},resourceProfileRange:[e_resourceRange.FOLDER_NUM],userId:userId,containerId:undefined}}},
     }
-    await inputValueLogicValidCheck_async({commonParam:commonParam,stepParam:stepParam})
+    await controllerInputValueLogicCheck.inputValueLogicValidCheck_async({commonParam:commonParam,stepParam:stepParam})
     // ap.inf('inputValueLogicValidCheck_async done')
 
-    let createdRecord=await businessLogic_async({docValue:docValue,collName:collName,userId:userId})
+    let createdRecord=await businessLogic_async({docValue:docValue,collName:collName,userId:userId,applyRange:applyRange})
 
     /*********************************************/
     /**********      删除指定字段       *********/
@@ -127,7 +127,7 @@ async function createFolder_async({req}){
 /*************************************************************/
 /***************   业务处理    *******************************/
 /*************************************************************/
-async function businessLogic_async({docValue,collName,userId}){
+async function businessLogic_async({docValue,collName,userId,applyRange}){
     // ap.inf('businessLogic_async in')
     //添加internal value
     let internalValue={}
@@ -148,14 +148,30 @@ async function businessLogic_async({docValue,collName,userId}){
     /*              对内部产生的值进行检测（开发时使用，上线后为了减低负荷，无需使用）           */
     if(e_env.DEV===currentEnv){
         //ap.inf('req.body.values',req.body.values)
-        let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInternalRule:internalInputRule[collName],applyRange:e_applyRange.CREATE})
+        let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInternalRule:internalInputRule[collName],applyRange:applyRange})
         // console.log(`internalValue check result====>   ${JSON.stringify(tmpResult)}`)
         if(tmpResult.rc>0){
             return Promise.reject(tmpResult)
         }
     }
-    Object.assign(docValue,internalValue)
+    if(undefined===docValue){
+        docValue=internalValue
+    }else{
+        Object.assign(docValue,internalValue)
+    }
     //ap.inf('docValue mergerd',docValue)
+    /*******************************************************************************************/
+    /******************          compound field value unique check                  ************/
+    /*******************************************************************************************/
+    if(undefined!==docValue){
+        let compoundFiledValueUniqueCheckAdditionalCheckCondition
+        await controllerInputValueLogicCheck.ifCompoundFiledValueUnique_returnExistRecord_async({
+            collName:collName,
+            docValue:docValue,
+            additionalCheckCondition:compoundFiledValueUniqueCheckAdditionalCheckCondition,
+        })
+    }
+
     /***        数据库操作            ****/
     let createdRecord=await common_operation_model.create_returnRecord_async({dbModel:e_dbModel.folder,value:docValue})
     // /*****  转换格式 *******/

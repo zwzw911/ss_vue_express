@@ -26,6 +26,7 @@ const e_docStatus=mongoEnum.DocStatus.DB
 const e_articleStatus=mongoEnum.ArticleStatus.DB
 const e_impeachType=mongoEnum.ImpeachType.DB
 const e_impeachState=mongoEnum.ImpeachState.DB
+const e_addFriendStatus=mongoEnum.AddFriendStatus.DB
 
 const initSettingObject=require('../constant/genEnum/initSettingObject').iniSettingObject
 
@@ -216,6 +217,31 @@ async function getUserFolderId_async(userData){
     // console.log(`folderis =====================>${JSON.stringify(tmpResult[0]['_id'].toString())}`)
     return Promise.resolve(tmpResult[0]['_id'].toString())
 }
+
+async function getAddFriendRequest_async({originatorId,receiverId}){
+    // let user1Tmp = {}
+    // user1Tmp[e_field.USER.ACCOUNT] = testData.user.user2[e_field.USER.ACCOUNT]
+    // user1Tmp[e_field.USER.PASSWORD] = testData.user.user2[e_field.USER.PASSWORD]
+
+    let condition = {
+        [e_field.ADD_FRIEND.RECEIVER]:receiverId,
+        [e_field.ADD_FRIEND.ORIGINATOR]:originatorId,
+        [e_field.ADD_FRIEND.STATUS]:e_addFriendStatus.UNTREATED,
+    }
+    // 查找userId
+    let tmpResult = await common_operation_model.find_returnRecords_async({dbModel: e_dbModel.add_friend, condition: condition})
+    // condition = {}
+    // condition[e_field.FOLDER.AUTHOR_ID] = tmpResult[0]['_id']
+    let options = {$sort: {cDate: 1}}
+    tmpResult = await common_operation_model.find_returnRecords_async({
+        dbModel: e_dbModel.add_friend,
+        condition: condition,
+        options: options
+    })
+    // ap.inf('getAddFriendRequest_async tmpResult',tmpResult)
+    // console.log(`folderis =====================>${JSON.stringify(tmpResult[0]['_id'].toString())}`)
+    return Promise.resolve(tmpResult[0]['_id'].toString())
+}
 /*async function findByIdAndUpdate_returnRecord_async({dbModel,id,updateFieldsValue,updateOption}){
     // console.log(`find by id :${id}`)
     let result=await dbModel.findByIdAndUpdate(id,updateFieldsValue,updateOption)
@@ -244,5 +270,7 @@ module.exports={
     getAdminUserId_async,
 
     getUserFolderId_async,
+
+    getAddFriendRequest_async,
     // findByIdAndUpdate_returnRecord_async,
 }

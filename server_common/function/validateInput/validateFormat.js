@@ -286,7 +286,7 @@ function validateCURecordInfoFormat(recordInfo,rule){
 function validateSingleFieldFormat(singleField,collRule){
     let inputValueFields=Object.keys(singleField)
     // let collRulesFields=Object.keys(collRule)
-
+// ap.inf('inputValueFields',inputValueFields)
     //1. 必须只能包含一个字段
     if(1!==inputValueFields.length){
         return validateFormatError.singleFieldMustOnlyOneField
@@ -294,6 +294,7 @@ function validateSingleFieldFormat(singleField,collRule){
 
     let singleFieldName=inputValueFields[0]
     //不能为undefined，可以为null（说明删除字段）
+    //以防万一。实际无法走到，undefined的话，会被消除。
     if(undefined===singleField[singleFieldName]){
         return validateFormatError.singleFieldValueCantUndefined
     }

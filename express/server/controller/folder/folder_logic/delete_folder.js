@@ -58,7 +58,7 @@ async function deleteFolder_async({req}){
     /**********************************************/
     let tmpResult,condition,option
     let collName=controllerSetting.MAIN_HANDLED_COLL_NAME
-    let recordId=req.body.params.recordId
+    let recordId=req.body.values.recordId
     let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
     let {userId,userCollName,userType,userPriority,tempSalt,}=userInfo
 
@@ -106,9 +106,20 @@ async function businessSpecificCheck_async({recordId}){
         [e_field.ARTICLE.FOLDER_ID]:recordId,
         'dDate':{$exists:false}
     }
-    let articleNum=common_operation_model.count_async({dbModel:e_dbModel.article,condition:condition})
+    let articleNum=await common_operation_model.count_async({dbModel:e_dbModel.article,condition:condition})
     if(articleNum>0){
         return Promise.reject(controllerError.delete.articleInFolderCanDelete)
+    }
+    //1. folder下不能有任何folder
+    condition={
+        [e_field.FOLDER.PARENT_FOLDER_ID]:recordId,
+        'dDate':{$exists:false}
+    }
+    // ap.inf('condition',condition)
+    let childFolderNum=await common_operation_model.count_async({dbModel:e_dbModel.folder,condition:condition})
+    // ap.inf('childFolderNum',childFolderNum)
+    if(childFolderNum>0){
+        return Promise.reject(controllerError.delete.childFolderInFolderCanDelete)
     }
 }
 /*************************************************************/

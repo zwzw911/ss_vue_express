@@ -63,7 +63,13 @@ async function deleteUserFriendGroup_async({req}){
     /*                                       authorization check                               */
     /*******************************************************************************************/
     //作者本身才能删除举报
-    tmpResult=await controllerChecker.ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({dbModel:e_dbModel[collName],recordId:recordId,ownerFieldName:e_field.USER_FRIEND_GROUP.OWNER_USER_ID,userId:userId,additionalCondition:undefined})
+    tmpResult=await controllerChecker.ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({
+        dbModel:e_dbModel[collName],
+        recordId:recordId,
+        ownerFieldsName:e_field.USER_FRIEND_GROUP.OWNER_USER_ID,
+        userId:userId,
+        additionalCondition:undefined
+    })
     if(false===tmpResult){
         return Promise.reject(controllerError.notUserGroupOwnerCantDelete)
     }

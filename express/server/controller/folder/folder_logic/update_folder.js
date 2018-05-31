@@ -27,7 +27,7 @@ const server_common_file_require=require('../../../../server_common_file_require
 const dataConvert=server_common_file_require.dataConvert
 const controllerHelper=server_common_file_require.controllerHelper
 const controllerChecker=server_common_file_require.controllerChecker
-const inputValueLogicValidCheck_async=server_common_file_require.controllerInputValueLogicCheck.inputValueLogicValidCheck_async
+const controllerInputValueLogicCheck=server_common_file_require.controllerInputValueLogicCheck
 const common_operation_model=server_common_file_require.common_operation_model
 const misc=server_common_file_require.misc
 
@@ -58,7 +58,7 @@ const maxNumber=server_common_file_require.globalConfiguration.maxNumber
 /*************************************************************/
 /***************   主函数      *******************************/
 /*************************************************************/
-async function updateFolder_async({req}){
+async function updateFolder_async({req,applyRange}){
     /************************************************/
     /**************   define variant   *************/
     /***********************************************/
@@ -67,18 +67,20 @@ async function updateFolder_async({req}){
     // let collFkConfig=fkConfig[collName]
     let docValue=req.body.values[e_part.RECORD_INFO]
     let recordId=req.body.values[e_part.RECORD_ID]
+    // let {docValue,recordId,subFieldValue}=controllerHelper.getPartValue({req:req,arr_expectedPart:expectedPart})
     let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
     // console.log(`userInfo===> ${JSON.stringify(userInfo)}`)
     let {userId,userCollName,userType,userPriority,tempSalt}=userInfo
 
 
     /************************************************/
-    /***********    参数转为server格式    **********/
+    /***********        转换null字段      **********/
     /************************************************/
+    // ap.inf('before constructUpdateCriteria done',docValue)
     dataConvert.constructUpdateCriteria(docValue)
-    // ap.inf('constructUpdateCriteria done',docValue)
+    // ap.inf('after constructUpdateCriteria done',docValue)
     /************************************************/
-    /************* 删除undefined/null字段  **********/
+    /*************        用户类型检测    **********/
     /************************************************/
     await controllerChecker.ifExpectedUserType_async({currentUserType:userType,arr_expectedUserType:[e_allUserType.USER_NORMAL]})
     // ap.inf('ifExpectedUserType_async done',docValue)
@@ -107,6 +109,12 @@ async function updateFolder_async({req}){
             return Promise.reject(controllerError.update.notAuthorCantUpdateFolder)
         }
     }
+    /**********************************************/
+    /*********    自连接，外键不能为自己   ********/
+    /*********************************************/
+    if(recordId===docValue[e_field.FOLDER.PARENT_FOLDER_ID]){
+        return Promise.reject(controllerError.update.parentFolderIdCantBeSelf)
+    }
     // ap.inf('priority check done',docValue)
     /**********************************************/
     /*********    是否未做任何更改    ************/
@@ -129,13 +137,17 @@ async function updateFolder_async({req}){
         //数组，元素是字段名。默认对所有dataType===string的字段进行XSS检测，但是可以通过此变量，只选择部分字段
         [e_inputValueLogicCheckStep.XSS]:{flag:true,optionalParam:{expectedXSSFields:{optionalParam:undefined}}},
         //object，对compoundField进行unique检测需要的额外条件，key从model->mongo->compound_unique_field_config.js中获得
-        [e_inputValueLogicCheckStep.COMPOUND_VALUE_UNIQUE]:{flag:true,optionalParam:{compoundFiledValueUniqueCheckAdditionalCheckCondition:undefined}},
+        //在internalValue之后执行
+        // [e_inputValueLogicCheckStep.COMPOUND_VALUE_UNIQUE]:{flag:true,optionalParam:{compoundFiledValueUniqueCheckAdditionalCheckCondition:undefined}},
         //Object，配置resourceCheck的一些参数,{requiredResource,resourceProfileRange,userId,containerId}
         [e_inputValueLogicCheckStep.RESOURCE_USAGE]:{flag:false,optionalParam:{resourceUsageOption:{requiredResource:undefined}}},
     }
-    await inputValueLogicValidCheck_async({commonParam:commonParam,stepParam:stepParam})
+    await controllerInputValueLogicCheck.inputValueLogicValidCheck_async({commonParam:commonParam,stepParam:stepParam})
     // ap.inf('inputValueLogicValidCheck_async done',docValue)
-    let updatedRecord=await businessLogic_async({docValue:docValue,collName:collName,recordId:recordId})
+    /*********************************************/
+    /**********          业务处理        *********/
+    /*********************************************/
+    let updatedRecord=await businessLogic_async({docValue:docValue,collName:collName,recordId:recordId,applyRange:applyRange})
     /*********************************************/
     /**********      加密 敏感数据       *********/
     /*********************************************/
@@ -152,7 +164,7 @@ async function updateFolder_async({req}){
 /*************************************************************/
 /***************   业务处理    *******************************/
 /*************************************************************/
-async function businessLogic_async({docValue,collName,recordId}){
+async function businessLogic_async({docValue,collName,recordId,applyRange}){
     //添加internal value
     let internalValue={}
     if(undefined!==docValue[e_field.FOLDER.PARENT_FOLDER_ID]){
@@ -163,19 +175,34 @@ async function businessLogic_async({docValue,collName,recordId}){
     }
     //判断level是否超出定义
     if(internalValue[e_field.FOLDER.LEVEL]>maxNumber.folder.folderLevel){
-
+        return Promise.reject(controllerError.update.folderLevelExceed)
     }
     /*              对内部产生的值进行检测（开发时使用，上线后为了减低负荷，无需使用）           */
     if(e_env.DEV===currentEnv){
         //ap.inf('req.body.values',req.body.values)
-        let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInternalRule:internalInputRule[collName],applyRange:e_applyRange.UPDATE_SCALAR})
+        let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInternalRule:internalInputRule[collName],applyRange:applyRange})
         // console.log(`internalValue check result====>   ${JSON.stringify(tmpResult)}`)
         if(tmpResult.rc>0){
             return Promise.reject(tmpResult)
         }
     }
-    Object.assign(docValue,internalValue)
+    if(undefined===docValue){
+        docValue=internalValue
+    }else{
+        Object.assign(docValue,internalValue)
+    }
 
+    /*******************************************************************************************/
+    /******************          compound field value unique check                  ************/
+    /*******************************************************************************************/
+    if(undefined!==docValue){
+        let compoundFiledValueUniqueCheckAdditionalCheckCondition
+        await controllerInputValueLogicCheck.ifCompoundFiledValueUnique_returnExistRecord_async({
+            collName:collName,
+            docValue:docValue,
+            additionalCheckCondition:compoundFiledValueUniqueCheckAdditionalCheckCondition,
+        })
+    }
     /***         数据库操作            ***/
     let updatedRecord=await common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel.folder,id:recordId,updateFieldsValue:docValue,updateOption:undefined})
 /*    /!*****  转换格式 *******!/

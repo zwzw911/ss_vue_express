@@ -296,12 +296,14 @@ function ifValueXSS({fieldDataTypeInfo,fieldName,fieldValue,expectedXSSFields}){
 * */
 async function ifCompoundFiledValueUnique_returnExistRecord_async({collName,docValue,compoundFiledValueUniqueCheckAdditionalCheckCondition}){
     //coll有对应的复合字段配置，才进行unique的检测
+
     if(undefined!==compound_unique_field_config[collName]){
         let collConfig=compound_unique_field_config[collName]
         // console.log(`collConfig===========>${JSON.stringify(collConfig)}`)
         for(let singleCompoundFieldName in collConfig){
             let singleCompound=collConfig[singleCompoundFieldName]
             // console.log(`singleCompound===========>${JSON.stringify(singleCompound)}`)
+            ap.inf('singleCompound',singleCompound)
             let condition={},allCompoundFiledAvailable=true
             //检测复合字段的每个字段都有值
             // let singleCompoundFields=Object.keys(singleCompound)
@@ -318,15 +320,23 @@ async function ifCompoundFiledValueUnique_returnExistRecord_async({collName,docV
                 condition[singleField]=docValue[singleField]
             }
             //检查单个compound field是否unique
+            ap.inf('allCompoundFiledAvailable',allCompoundFiledAvailable)
             if(true===allCompoundFiledAvailable){
-                //检查是否需要额外的查询条件
-                if(undefined!==compoundFiledValueUniqueCheckAdditionalCheckCondition[singleCompoundFieldName]){
-                    Object.assign(condition,compoundFiledValueUniqueCheckAdditionalCheckCondition[singleCompoundFieldName])
+                //检查是否需要额外的查询条件(除了docValue中字段作为查询值，是否还需要其他  {字段:值}  作为查询值)
+                if(undefined!==compoundFiledValueUniqueCheckAdditionalCheckCondition){
+                    for(let singleFieldName in compoundFiledValueUniqueCheckAdditionalCheckCondition){
+                        if(undefined!==compoundFiledValueUniqueCheckAdditionalCheckCondition[singleFieldName]){
+                            Object.assign(condition,compoundFiledValueUniqueCheckAdditionalCheckCondition[singleFieldName])
+                        }
+                    }
                 }
+
+                ap.inf('Compound condition',condition)
                 if(false===dataTypeCheck.isEmpty((condition))){
                     let results=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel[collName],condition:condition})
                     // console.log(`compound result=============>${JSON.stringify(results)}`)
-                    if(results.length>1){
+                    ap.inf('compound result',results)
+                    if(results.length>0){
                         return Promise.reject( checkerError.compoundFieldHasMultipleDuplicateRecord({collName:collName,arr_compoundField:Object.keys(condition)}))
                     }
                     if(results.length===1){
@@ -363,6 +373,11 @@ async function  inputValueLogicValidCheck_async({commonParam,stepParam}){
     let tmpResult
     let collRule=browserInputRule[collName]
 
+    //保护代码，如果docValue为空，则无需测试。后面的某些函数，例如compound unique检查，并未对docValue是否为空进行检查
+    if(false===dataTypeCheck.isSetValue(docValue) || true===dataTypeCheck.isEmpty(docValue)){
+        return Promise.resolve()
+    }
+    // ap.inf('docValue not empty')
     //创建显式flag，默认true，即都要执行
     let runStepFlag={
         [e_inputValueLogicCheckStep.FK_EXIST_AND_PRIORITY]:true,
@@ -370,7 +385,7 @@ async function  inputValueLogicValidCheck_async({commonParam,stepParam}){
         [e_inputValueLogicCheckStep.SINGLE_FIELD_VALUE_UNIQUE]:true,
         [e_inputValueLogicCheckStep.XSS]:true,
 
-        [e_inputValueLogicCheckStep.COMPOUND_VALUE_UNIQUE]:true,
+        // [e_inputValueLogicCheckStep.COMPOUND_VALUE_UNIQUE]:true,//在internal之后执行
         [e_inputValueLogicCheckStep.RESOURCE_USAGE]:true,
     }
     if(undefined!==stepParam){
@@ -380,9 +395,11 @@ async function  inputValueLogicValidCheck_async({commonParam,stepParam}){
         }
     }
 // ap.inf('after check runStep',runStepFlag)
+//     ap.inf('docValue',docValue)
     // ap.inf('single field loop check start')
     //将循环放在最外层，避免每个函数执行循环
     for(let singleFieldName in docValue){
+        // ap.inf('single check in')
         let singleFieldValue=docValue[singleFieldName]
         let fieldDataTypeInfo
         //字段在collRule中不存在，直接跳过。（可能是因为field值为null，导致被放入key=>$unset之中）
@@ -451,19 +468,20 @@ async function  inputValueLogicValidCheck_async({commonParam,stepParam}){
     }
     // ap.inf('single field loop check end')
 
-    /*******************************************************************************************/
-    /******************          compound field value unique check                  ************/
-    /*******************************************************************************************/
+    /****        在internal之后执行       ***/
+/*    /!*******************************************************************************************!/
+    /!******************          compound field value unique check                  ************!/
+    /!*******************************************************************************************!/
     if(true===runStepFlag[e_inputValueLogicCheckStep.COMPOUND_VALUE_UNIQUE]) {
         await ifCompoundFiledValueUnique_returnExistRecord_async({
             collName:collName,
             docValue:docValue,
             additionalCheckCondition:stepParam[e_inputValueLogicCheckStep.COMPOUND_VALUE_UNIQUE]['optionalParam']['compoundFiledValueUniqueCheckAdditionalCheckCondition'],
         })
-    }
+    }*/
     // ap.inf('CompoundFiledValueUnique end')
     /*******************************************************************************************/
-    /******************                   disk usage check                         ************/
+    /******************                   resource usage check                         ************/
     /*******************************************************************************************/
     if(true===runStepFlag[e_inputValueLogicCheckStep.RESOURCE_USAGE]) {
         //user尚未登录，无需（法）检测resourceUsage
@@ -491,6 +509,6 @@ module.exports={
     // ifEnumHasDuplicateValue,//数组是否可以包含重复值
     // ifSingleFieldValueUnique_async,//未使用ifFieldValueExistInColl_async，直接使用find方法对整个输入的字段进行unique检测
     // ifCompoundFiledValueUnique_returnExistRecord_async,
-
+    ifCompoundFiledValueUnique_returnExistRecord_async,//需要检查internal+browser之后的docValue
     inputValueLogicValidCheck_async,
 }

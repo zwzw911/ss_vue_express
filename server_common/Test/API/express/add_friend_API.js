@@ -21,15 +21,15 @@ const e_part=require('../../../constant/enum/nodeEnum').ValidatePart
 const e_field=require('../../../constant/genEnum/DB_field').Field
 
 /****************       CREATE ADD_FRIEND            *****************/
-async function createAddFriend_returnRecord_async({userData,sess,app}){
-    let data={values:{}}
-    let url='/add_friend/'
+async function createAddFriend_returnRecord_async({data,sess,app}){
+    // let data={values:{}}
+    // let url='/add_friend/'
 //     data.values[e_part.RECORD_INFO]=userData
 // // console.log(`userDate==============>${JSON.stringify(userData)}`)
 //     data.values[e_part.METHOD]=e_method.CREATE
     // console.log(`data.values==============>${JSON.stringify(data.values)}`)
     return new Promise(function(resolve,reject){
-        request(app).post(url).set('Accept', 'application/json').set('Cookie',[sess]).send(userData)
+        request(app).post('/add_friend').set('Accept', 'application/json').set('Cookie',[sess]).send(data)
             .end(function(err, res) {
                 let parsedRes=JSON.parse(res.text)
                 // console.log(`createAddFriend_async result =========> ${JSON.stringify(parsedRes)}`)
@@ -41,16 +41,16 @@ async function createAddFriend_returnRecord_async({userData,sess,app}){
 }
 
 //userData只能有一个字段status
-async function updateAddFriend_returnRecord_async({userData,sess,app}){
+async function acceptAddFriend_returnRecord_async({data,sess,app}){
     // let data={values:{}}
-    let url='/add_friend/'
+    // let url='/add_friend/'
     // data.values[e_part.RECORD_INFO]=userData
     // data.values[e_part.RECORD_ID]=recordId
     // ap.print('data.values[e_part.RECORD_INFO]',data.values[e_part.RECORD_INFO])
     // data.values[e_part.METHOD]=e_method.UPDATE
     // console.log(`data.values==============>${JSON.stringify(data.values)}`)
     return new Promise(function(resolve,reject){
-        request(app).post(url).set('Accept', 'application/json').set('Cookie',[sess]).send(userData)
+        request(app).put('/add_friend/accept').set('Accept', 'application/json').set('Cookie',[sess]).send(data)
             .end(function(err, res) {
                 let parsedRes=JSON.parse(res.text)
                 // console.log(`createAddFriend_async result =========> ${JSON.stringify(parsedRes)}`)
@@ -61,9 +61,28 @@ async function updateAddFriend_returnRecord_async({userData,sess,app}){
     })
 }
 
-
+async function declineAddFriend_returnRecord_async({data,sess,app}){
+    // let data={values:{}}
+    // let url='/add_friend/'
+    // data.values[e_part.RECORD_INFO]=userData
+    // data.values[e_part.RECORD_ID]=recordId
+    // ap.print('data.values[e_part.RECORD_INFO]',data.values[e_part.RECORD_INFO])
+    // data.values[e_part.METHOD]=e_method.UPDATE
+    // console.log(`data.values==============>${JSON.stringify(data.values)}`)
+    return new Promise(function(resolve,reject){
+        request(app).put('/add_friend/decline').set('Accept', 'application/json').set('Cookie',[sess]).send(data)
+            .end(function(err, res) {
+                let parsedRes=JSON.parse(res.text)
+                // console.log(`createAddFriend_async result =========> ${JSON.stringify(parsedRes)}`)
+                // ap.print(`parsedRes.msg`,parsedRes.msg)
+                assert.deepStrictEqual(parsedRes.rc,0)
+                return resolve(parsedRes.msg)
+            });
+    })
+}
 
 module.exports={
     createAddFriend_returnRecord_async,
-    updateAddFriend_returnRecord_async,
+    acceptAddFriend_returnRecord_async,
+    declineAddFriend_returnRecord_async,
 }

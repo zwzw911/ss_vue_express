@@ -190,6 +190,48 @@ const resource_profile= [
         [e_field.RESOURCE_PROFILE.MAX_NUM]:500,
         //[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]:20, //假设每个文件大小为2M
     },
+    {
+        [e_field.RESOURCE_PROFILE.NAME]:"普通用户最大群数量",
+        [e_field.RESOURCE_PROFILE.RESOURCE_RANGE]:e_resourceRange.FRIEND_GROUP_NUM,
+        [e_field.RESOURCE_PROFILE.RESOURCE_TYPE]:e_resourceType.BASIC,
+        [e_field.RESOURCE_PROFILE.MAX_NUM]:5,
+        //[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]:20, //假设每个文件大小为2M
+    },
+    {
+        [e_field.RESOURCE_PROFILE.NAME]:"高级用户最大群数量",
+        [e_field.RESOURCE_PROFILE.RESOURCE_RANGE]:e_resourceRange.FRIEND_GROUP_NUM,
+        [e_field.RESOURCE_PROFILE.RESOURCE_TYPE]:e_resourceType.ADVANCED,
+        [e_field.RESOURCE_PROFILE.MAX_NUM]:10,
+        //[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]:20, //假设每个文件大小为2M
+    },
+    {
+        [e_field.RESOURCE_PROFILE.NAME]:"普通用户群人数",
+        [e_field.RESOURCE_PROFILE.RESOURCE_RANGE]:e_resourceRange.MAX_PERSON_NUM_PER_FRIEND_GROUP,
+        [e_field.RESOURCE_PROFILE.RESOURCE_TYPE]:e_resourceType.BASIC,
+        [e_field.RESOURCE_PROFILE.MAX_NUM]:100,
+        //[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]:20, //假设每个文件大小为2M
+    },
+    {
+        [e_field.RESOURCE_PROFILE.NAME]:"高级用户群人数",
+        [e_field.RESOURCE_PROFILE.RESOURCE_RANGE]:e_resourceRange.MAX_PERSON_NUM_PER_FRIEND_GROUP,
+        [e_field.RESOURCE_PROFILE.RESOURCE_TYPE]:e_resourceType.ADVANCED,
+        [e_field.RESOURCE_PROFILE.MAX_NUM]:200,
+        //[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]:20, //假设每个文件大小为2M
+    },
+    //最大未处理的添加朋友的请求数只有basic，没有advanced（防止高级用户发起DDOS）
+    {
+        [e_field.RESOURCE_PROFILE.NAME]:"最大未处理的添加朋友的请求数",
+        [e_field.RESOURCE_PROFILE.RESOURCE_RANGE]:e_resourceRange.MAX_UNTREATED_ADD_FRIEND_REQUEST,
+        [e_field.RESOURCE_PROFILE.RESOURCE_TYPE]:e_resourceType.BASIC,
+        [e_field.RESOURCE_PROFILE.MAX_NUM]:100,
+    },
+    //同上，只有basic
+    {
+        [e_field.RESOURCE_PROFILE.NAME]:"最大已同意但是未分配的添加朋友的请求数",
+        [e_field.RESOURCE_PROFILE.RESOURCE_RANGE]:e_resourceRange.MAX_ACCEPT_BUT_NOT_ASSIGN_ADD_FRIEND_REQUEST,
+        [e_field.RESOURCE_PROFILE.RESOURCE_TYPE]:e_resourceType.BASIC,
+        [e_field.RESOURCE_PROFILE.MAX_NUM]:50,
+    },
 ]
 
 

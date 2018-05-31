@@ -28,7 +28,7 @@ const nodeRuntimeEnum=server_common_file_require.nodeRuntimeEnum
 const e_hashType=nodeRuntimeEnum.HashType
 const e_inputValueLogicCheckStep=nodeRuntimeEnum.InputValueLogicCheckStep
 /**************  公共函数   ******************/
-const inputValueLogicValidCheck_async=server_common_file_require.controllerInputValueLogicCheck.inputValueLogicValidCheck_async
+const controllerInputValueLogicCheck=server_common_file_require.controllerInputValueLogicCheck
 const dataConvert=server_common_file_require.dataConvert
 const controllerHelper=server_common_file_require.controllerHelper
 const controllerChecker=server_common_file_require.controllerChecker
@@ -97,14 +97,15 @@ async function updateUser_async({req}){
         //数组，元素是字段名。默认对所有dataType===string的字段进行XSS检测，但是可以通过此变量，只选择部分字段
         [e_inputValueLogicCheckStep.XSS]:{flag:true,optionalParam:{expectedXSSFields:{optionalParam:undefined}}},
         //object，对compoundField进行unique检测需要的额外条件，key从model->mongo->compound_unique_field_config.js中获得
-        [e_inputValueLogicCheckStep.COMPOUND_VALUE_UNIQUE]:{flag:true,optionalParam:{compoundFiledValueUniqueCheckAdditionalCheckCondition:undefined}},
+        //在internalValue之后执行
+        // [e_inputValueLogicCheckStep.COMPOUND_VALUE_UNIQUE]:{flag:true,optionalParam:{compoundFiledValueUniqueCheckAdditionalCheckCondition:undefined}},
         //Object，配置resourceCheck的一些参数,{requiredResource,resourceProfileRange,userId,containerId}
         [e_inputValueLogicCheckStep.RESOURCE_USAGE]:{flag:false,optionalParam:{resourceUsageOption:undefined}},
     }
     /*******************************************************************************************/
     /******************     CALL FUNCTION:inputValueLogicValidCheck        *********************/
     /*******************************************************************************************/
-    await inputValueLogicValidCheck_async({commonParam:commonParam,stepParam:stepParam})
+    await controllerInputValueLogicCheck.inputValueLogicValidCheck_async({commonParam:commonParam,stepParam:stepParam})
     /*              如果有unique字段，需要预先检查unique            */
 /*    if(undefined!==e_uniqueField[collName] && e_uniqueField[collName].length>0) {
 
@@ -169,7 +170,17 @@ async function updateUser_async({req}){
     }
 
 
-
+    /*******************************************************************************************/
+    /******************          compound field value unique check                  ************/
+    /*******************************************************************************************/
+    if(undefined!==docValue){
+        let compoundFiledValueUniqueCheckAdditionalCheckCondition
+        await controllerInputValueLogicCheck.ifCompoundFiledValueUnique_returnExistRecord_async({
+            collName:collName,
+            docValue:docValue,
+            additionalCheckCondition:compoundFiledValueUniqueCheckAdditionalCheckCondition,
+        })
+    }
 
 
     /*    /!*              如果有更改account，需要几率下来         *!/

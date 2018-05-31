@@ -33,7 +33,7 @@ const validateFormatError=require(`../constant/error/validateError`).validateFor
 
 const helperError=require(`../constant/error/controller/helperError`).helper
 
-const generateTestData_API=require(`./generateTestData_API`)
+const generateTestData_API=require(`./server_common/Test/not_used_generateTestData_API`)
 
 const browserInputRule=require(`../constant/inputRule/browserInputRule`).browserInputRule
 

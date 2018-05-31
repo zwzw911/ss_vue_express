@@ -113,12 +113,6 @@ const Field={
         ID:'id',
         NAME:'name',
     },
-    ADD_FRIEND:{
-        ID:'id',
-        ORIGINATOR:'originator',
-        RECEIVER:'receiver',
-        STATUS:'status',
-    },
     MEMBER_PENALIZE:{
         ID:'id',
         CREATOR_ID:'creatorId',
@@ -161,6 +155,12 @@ const Field={
         ID:'id',
         USER_ID:'userId',
         CURRENT_JOIN_GROUP:'currentJoinGroup',
+    },
+    ADD_FRIEND:{
+        ID:'id',
+        ORIGINATOR:'originator',
+        RECEIVER:'receiver',
+        STATUS:'status',
     },
     IMPEACH:{
         ID:'id',

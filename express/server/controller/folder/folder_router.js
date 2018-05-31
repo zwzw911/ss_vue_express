@@ -20,6 +20,12 @@ const folderDispatcher_async=require('./folder_dispatcher').dispatcher_async
 const controllerHelper=server_common_file_require.controllerHelper
 const e_intervalCheckPrefix=server_common_file_require.nodeEnum.IntervalCheckPrefix
 
+
+// let originalUrl=req.originalUrl
+// ap.inf('originalUrl',originalUrl)
+// ap.inf('req.route.stack[0].method',req.route.stack[0].method)
+ap.inf('router',router)
+
 //create folder
 router.post('/',function(req,res,next){
     folderDispatcher_async(req).then(
@@ -49,7 +55,24 @@ router.put('/',function(req,res,next){
     // next()
 })
 //delete folder
-router.delete('/:recordId',function(req,res,next){
+/*router.delete('/:recordId',function(req,res,next){
+    // ap.inf('delete in')
+    folderDispatcher_async(req).then(
+        (v)=>{
+            ap.inf(`delete folder success, result:  ${JSON.stringify(v)}`)
+            return res.json(v)
+        },
+        (err)=>{
+            ap.err(`delete folder fail: ${JSON.stringify(err)}`)
+            return res.json(genFinalReturnResult(err))
+        }
+    )
+    // next()
+})*/
+
+//delete可以传递参数，只需axios参数格式改成axios.delete(url,{data:data})
+router.delete('/',function(req,res,next){
+    // ap.inf('delete all in')
     folderDispatcher_async(req).then(
         (v)=>{
             ap.inf(`delete folder success, result:  ${JSON.stringify(v)}`)
@@ -62,7 +85,6 @@ router.delete('/:recordId',function(req,res,next){
     )
     // next()
 })
-
 //read folder
 //GET  /folder/folderId    or     GET /folder
 router.get('/:folderId',function(req,res,next){

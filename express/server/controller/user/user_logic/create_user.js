@@ -41,7 +41,7 @@ const e_applyRange=server_common_file_require.inputDataRuleType.ApplyRange
 
 
 /**************  公共函数   ******************/
-const inputValueLogicValidCheck_async=server_common_file_require.controllerInputValueLogicCheck.inputValueLogicValidCheck_async
+const controllerInputValueLogicCheck=server_common_file_require.controllerInputValueLogicCheck
 const dataConvert=server_common_file_require.dataConvert
 const controllerHelper=server_common_file_require.controllerHelper
 const controllerChecker=server_common_file_require.controllerChecker
@@ -99,11 +99,12 @@ async  function createUser_async({req}){
         //数组，元素是字段名。默认对所有dataType===string的字段进行XSS检测，但是可以通过此变量，只选择部分字段
         [e_inputValueLogicCheckStep.XSS]:{flag:true,optionalParam:{expectedXSSFields:{optionalParam:undefined}}},
         //object，对compoundField进行unique检测需要的额外条件，key从model->mongo->compound_unique_field_config.js中获得
-        [e_inputValueLogicCheckStep.COMPOUND_VALUE_UNIQUE]:{flag:true,optionalParam:{compoundFiledValueUniqueCheckAdditionalCheckCondition:undefined}},
+        //在internalValue之后执行
+        // [e_inputValueLogicCheckStep.COMPOUND_VALUE_UNIQUE]:{flag:true,optionalParam:{compoundFiledValueUniqueCheckAdditionalCheckCondition:undefined}},
         //Object，配置resourceCheck的一些参数,{requiredResource,resourceProfileRange,userId,containerId}
         [e_inputValueLogicCheckStep.RESOURCE_USAGE]:{flag:false,optionalParam:{resourceUsageOption:undefined}},
     }
-    await inputValueLogicValidCheck_async({commonParam:commonParam,stepParam:stepParam})
+    await controllerInputValueLogicCheck.inputValueLogicValidCheck_async({commonParam:commonParam,stepParam:stepParam})
 // ap.inf('user input check pass')
 /*    /!*      因为name是unique，所以要检查用户名是否存在(unique check)     *!/
     if(undefined!==e_uniqueField[collName] &&  e_uniqueField[collName].length>0) {
@@ -180,12 +181,23 @@ async  function createUser_async({req}){
         }
     }
     Object.assign(docValue,internalValue)
-    // console.log(`internal check  is ${JSON.stringify(docValue)}`)
-    // let currentColl=e_coll.USER_SUGAR
-    // console.log(`value to be insert is ${JSON.stringify(docValue)}`)
-    // let doc=new dbModel[currentColl](values[e_part.RECORD_INFO])
+    if(undefined===docValue){
+        docValue=internalValue
+    }else{
+        Object.assign(docValue,internalValue)
+    }
 
-
+    /*******************************************************************************************/
+    /******************          compound field value unique check                  ************/
+    /*******************************************************************************************/
+    if(undefined!==docValue){
+        let compoundFiledValueUniqueCheckAdditionalCheckCondition
+        await controllerInputValueLogicCheck.ifCompoundFiledValueUnique_returnExistRecord_async({
+            collName:collName,
+            docValue:docValue,
+            additionalCheckCondition:compoundFiledValueUniqueCheckAdditionalCheckCondition,
+        })
+    }
     // console.log(`docValue ${JSON.stringify(docValue)}`)
     //用户插入 db
     let userCreateTmpResult= await common_operation_model.create_returnRecord_async({dbModel:e_dbModel.user,value:docValue})

@@ -202,7 +202,7 @@ const checker={
 
     /*          compound field unique check                 */
     compoundFieldHasMultipleDuplicateRecord({collName,arr_compoundField}){
-        return {rc:checkerBaseErrorCode+50,msg:{client:`内部错误，请联系管理员`,server:`表${collName}的复合字段${arr_compoundField.join('+')}存在多个重复记录`}}
+        return {rc:checkerBaseErrorCode+50,msg:{client:`记录已经存在，无法重复添加`,server:`表${collName}的复合字段${arr_compoundField.join('+')}存在多个重复记录`}}
     },
 
     /*      ifFileSuffixMatchContentType_async          */
@@ -212,6 +212,9 @@ const checker={
         singleFieldValueContainInvalidObjectId:{rc:checkerBaseErrorCode+55,msg:{client:`参数错误`,server:'singleField中，类型为objectId，值的格式不正确'}},
         recordInfoContainInvalidObjectId:{rc:checkerBaseErrorCode+56,msg:{client:`参数错误`,server:'recordInfo中，类型为objectId的字段，值的格式不正确'}},
         // unSupportPart:{rc:checkerBaseErrorCode+58,msg:{client:`内部错误，请联系`,server:'recordInfo中，类型为objectId的字段，值的格式不正确'}}
+    },
+    ifObjectIdInGetCrypted:{
+        cryptedObjectIdInvalid:{rc:checkerBaseErrorCode+58,msg:{client:`参数错误`,server:'get的url中，objectId不是加密的objectId'}},
     },
 
 }
@@ -229,7 +232,7 @@ const preCheck={
 
 const dispatch={
     common:{
-        unknownRequestRul:{rc:dispatchBaseErrorCode,msg:{client:'网页不存在',server:'URL没有匹配的处理函数'}}
+        unknownRequestUrl:{rc:dispatchBaseErrorCode,msg:{client:'网页不存在',server:'URL没有匹配的处理函数'}}
     }
 }
 

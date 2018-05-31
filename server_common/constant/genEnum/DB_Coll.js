@@ -18,13 +18,13 @@ const Coll={
     LIKE_DISLIKE:'like_dislike',
     TAG:'tag',
     /*       friend           */
-    ADD_FRIEND:'add_friend',
     MEMBER_PENALIZE:'member_penalize',
     PUBLIC_GROUP:'public_group',
     PUBLIC_GROUP_EVENT:'public_group_event',
     PUBLIC_GROUP_INTERACTION:'public_group_interaction',
     USER_FRIEND_GROUP:'user_friend_group',
     USER_PUBLIC_GROUP:'user_public_group',
+    ADD_FRIEND:'add_friend',
     /*       impeach           */
     IMPEACH:'impeach',
     IMPEACH_ACTION:'impeach_action',

@@ -9,8 +9,8 @@ const controllerError=require('../../server/controller/folder/folder_setting/fol
 
 /******************    内置lib和第三方lib  **************/
 const ap=require('awesomeprint')
-const request=require('supertest')
-const assert=require('assert')
+// const request=require('supertest')
+// const assert=require('assert')
 
 /******************    待测函数  **************/
 const app=require('../../app')
@@ -29,7 +29,7 @@ const mongoEnum=server_common_file_require.mongoEnum
 const e_applyRange=server_common_file_require.inputDataRuleType.ApplyRange
 
 const e_part=nodeEnum.ValidatePart
-const e_method=nodeEnum.Method
+
 const e_coll=require('../../server/constant/genEnum/DB_Coll').Coll
 const e_field=require('../../server/constant/genEnum/DB_field').Field
 //for fkValue check
@@ -61,6 +61,7 @@ const objectDeepCopy=server_common_file_require.misc.objectDeepCopy
 
 const db_operation_helper= server_common_file_require.db_operation_helper
 const testData=server_common_file_require.testData//require('../testData')
+
 const userAPI=server_common_file_require.user_API//require('../API_helper/API_helper')
 const penalizeAPI=server_common_file_require.penalize_API
 const commonAPI=server_common_file_require.common_API

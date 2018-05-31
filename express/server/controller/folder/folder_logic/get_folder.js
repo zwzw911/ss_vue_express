@@ -84,10 +84,13 @@ async function getRootFolder_async({req}){
     /*********************************************/
     /**********      加密 敏感数据       *********/
     /*********************************************/
+    // ap.inf('before ecftypr getRecord[\'folder\']',getRecord['folder'])
+    // ap.inf('tempSalt',tempSalt)
     for(let singleEle of getRecord['folder']){
         // getRecord['folder'][idx]=getRecord['folder'][idx].toObject()
         controllerHelper.cryptRecordValue({record:singleEle,salt:tempSalt,collName:collName})
     }
+    // ap.inf('after ecftypr getRecord[\'folder\']',getRecord['folder'])
     for(let singleEle of getRecord['article']){
         // getRecord['article'][idx]=getRecord['article'][idx].toObject()
         controllerHelper.cryptRecordValue({record:singleEle,salt:tempSalt,collName:collName})
@@ -100,6 +103,7 @@ async function getRootFolder_async({req}){
 /***************        获得指定目录下所有目录和文档      ****************/
 /*************************************************************/
 async function getNonRootFolder_async({req}){
+    // ap.inf('getNonRootFolder_async in')
     /********************************************************/
     /*************      define variant        ***************/
     /********************************************************/
@@ -120,14 +124,14 @@ async function getNonRootFolder_async({req}){
     /***********    用户类型检测    **************/
     /*********************************************/
     await controllerChecker.ifExpectedUserType_async({currentUserType:userType,arr_expectedUserType:[e_allUserType.USER_NORMAL]})
-
-    /*********************************************/
-    /************    解密recordId    ************/
-    /*********************************************/
+    // ap.inf('ifExpectedUserType_async done')
+/*    /!*********************************************!/
+    /!************    解密recordId    ************!/
+    /!*********************************************!/
     recordId=crypt.decryptSingleFieldValue({fieldValue:recordId,salt:tempSalt})
     if(false===regex.objectId.test(recordId)){
         return Promise.reject(controllerError.get.inValidFolderId)
-    }
+    }*/
     /**********************************************/
     /***********    用户权限检测    **************/
     /*********************************************/
@@ -135,14 +139,45 @@ async function getNonRootFolder_async({req}){
         let result=await controllerChecker.ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({
             dbModel:e_dbModel.folder,
             recordId:recordId,
-            ownerFieldName:e_field.FOLDER.AUTHOR_ID,
+            ownerFieldsName:[e_field.FOLDER.AUTHOR_ID],
             userId:userId,
             additionalCondition:undefined,
         })
+        // ap.inf('ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async result',result)
         if(false===result){
             return Promise.reject(controllerError.get.notAuthorCantGetFolder)
         }
     }
+    // ap.inf('ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async done')
+    /*********************************************/
+    /**********        获得数据         *********/
+    /*********************************************/
+    let getRecord=await businessLogic_async({userId:userId,folderId:recordId})
+// ap.inf('folder result is',getRecord)
+    /*********************************************/
+    /********        删除指定字段         *******/
+    /*********************************************/
+    // ap.inf('getRecord',getRecord)
+    for(let singleEle of getRecord['folder']){
+        controllerHelper.deleteFieldInRecord({record:singleEle,fieldsToBeDeleted:undefined})
+    }
+
+    /*********************************************/
+    /**********      加密 敏感数据       *********/
+    /*********************************************/
+    // ap.inf('before ecftypr getRecord[\'folder\']',getRecord['folder'])
+    // ap.inf('tempSalt',tempSalt)
+    for(let singleEle of getRecord['folder']){
+        // getRecord['folder'][idx]=getRecord['folder'][idx].toObject()
+        controllerHelper.cryptRecordValue({record:singleEle,salt:tempSalt,collName:collName})
+    }
+    // ap.inf('after ecftypr getRecord[\'folder\']',getRecord['folder'])
+    for(let singleEle of getRecord['article']){
+        // getRecord['article'][idx]=getRecord['article'][idx].toObject()
+        controllerHelper.cryptRecordValue({record:singleEle,salt:tempSalt,collName:collName})
+    }
+
+    return Promise.resolve({rc:0,msg:getRecord})
 }
 
 /**************************************/
@@ -168,12 +203,18 @@ async function businessLogic_async({folderId,userId}){
     let childArticleResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.article,condition:childFolderCondition})
 
     /*****  转换格式 *******/
-    for(let idx in childFolderResult) {
-        childFolderResult[idx] = childFolderResult[idx].toObject()
+    if(childFolderResult.length>0){
+        for(let idx in childFolderResult) {
+            childFolderResult[idx] = childFolderResult[idx].toObject()
+        }
     }
-    for(let idx in childArticleResult) {
-        childArticleResult[idx] = childArticleResult[idx].toObject()
+
+    if(childArticleResult.length>0){
+        for(let idx in childArticleResult) {
+            childArticleResult[idx] = childArticleResult[idx].toObject()
+        }
     }
+
 
     return Promise.resolve({folder:childFolderResult,article:childArticleResult})
 }

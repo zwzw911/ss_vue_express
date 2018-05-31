@@ -57,7 +57,7 @@ async function dispatcher_async(req){
     // ap.inf('originalUrl',originalUrl)
     let collName=controllerSetting.MAIN_HANDLED_COLL_NAME
     let expectedPart
-    let result=dispatchError.common.unknownRequestRul
+    let result=dispatchError.common.unknownRequestUrl
     let tmpResult
     //dispatcher只检测req的结构，以及req中method的格式和值，以便后续可以直接根据method进行调用
     //interval和robot检测

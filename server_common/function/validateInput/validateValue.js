@@ -223,7 +223,7 @@ function validateSingleRecorderFieldValue({fieldValue,fieldRule,applyRange}){
         return rc
     }
     if(false===valueTypeCheckResult){
-        ap.inf('in')
+        // ap.inf('in')
         rc['rc']=validateValueError.CUDTypeWrong.rc
         rc['msg']=`${chineseName}${validateValueError.CUDTypeWrong.msg}`
         return rc

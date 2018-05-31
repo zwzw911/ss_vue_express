@@ -10,6 +10,8 @@ const assert=require('assert')
 const ap=require(`awesomeprint`)
 
 const redisOperation=require('../../model/redis/operation/redis_common_operation')
+
+const crypt=require('../../function/assist/crypt')
 /****************       GENERAL CREATE            *****************/
 async function generalCreate_returnRecord_async({userData,sess,app,url}){
     // let data={values:{}}
@@ -56,8 +58,24 @@ async function getTempSalt_async({sess}){
     return Promise.resolve(sessValue.userInfo.tempSalt)
 }
 
+
+/***  根据sess获得salt，对objectId加密 ***/
+async function cryptObjectId_async({objectId,sess}){
+    // ap.inf('sess',sess)
+    let tempSalt=await getTempSalt_async({sess:sess})
+    // ap.inf('tempSalt',tempSalt)
+    // ap.inf('objectId',objectId)
+    let cryptedValue=crypt.cryptSingleFieldValue({fieldValue:objectId,salt:tempSalt}).msg
+    return Promise.resolve(cryptedValue)
+}
+
+
 module.exports={
     generalCreate_returnRecord_async,
     generalUpdate_returnRecord_async,
     getTempSalt_async,
+
+    cryptObjectId_async,
+
+
 }

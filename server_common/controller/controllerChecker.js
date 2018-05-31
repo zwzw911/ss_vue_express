@@ -308,6 +308,7 @@ async function ifPenalizeOngoing_async({userId, penalizeType,penalizeSubType}){
 * return: 如果recordId对应的记录的拥有者（创建者）当前用户，返回record，以便后续做field value是否变更的比较；否则返回false
 * */
 async function ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({dbModel,recordId,ownerFieldsName, userId,additionalCondition}){
+    // ap.inf('ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async in')
     let tmpResult,condition
     //当前用户必须是impeach的创建人
     condition={
@@ -426,15 +427,21 @@ async function ifObjectIdInPartCrypted_async({req,expectedPart,browserCollRule})
             let partValue=req.body.values[singlePart]
             switch (singlePart){
                 case e_part.RECORD_ID:
-                    if(false===ifObjectIdCrypted({objectId:partValue})){
-                        return Promise.reject(checkerError.ifObjectIdCrypted.recordIdFormatWrong)
-                    }
+
+                        if(false===ifObjectIdCrypted({objectId:partValue})){
+                            return Promise.reject(checkerError.ifObjectIdCrypted.recordIdFormatWrong)
+                        }
+
                     break;
                 case e_part.SINGLE_FIELD:
                     //获得field的名称
+                    // ap.inf('partValue',partValue)
                     let fieldName=Object.keys(partValue)[0]
+                    // ap.inf('fieldName',fieldName)
+                    // ap.inf('dataTypeCheck.isSetValue(fieldName)',dataTypeCheck.isSetValue(fieldName))
+
                     //fieldName是有效的（在rule中有定义）
-                    if(true===dataTypeCheck.isSetValue(fieldName) && undefined!==browserCollRule[fieldName]){
+                    if(true===dataTypeCheck.isSetValue(partValue[fieldName]) && undefined!==browserCollRule[fieldName]){
                         // let singleFieldValue=req.body.values[singlePart]
                         //获得field的类型
                         let fieldDataTypeInRule=browserCollRule[fieldName][e_otherRuleFiledName.DATA_TYPE]
@@ -444,7 +451,7 @@ async function ifObjectIdInPartCrypted_async({req,expectedPart,browserCollRule})
                         if(e_dataType.OBJECT_ID===dataType){
                             //数组，对每个元素进行判别
                             if(true===dataTypeArrayFlag){
-                                if(partValue[fieldName].length>0){
+                                if(true===dataTypeCheck.isArray(partValue[fieldName]) && partValue[fieldName].length>0){
                                     for(let singleEle of partValue[fieldName]){
                                         if(false===ifObjectIdCrypted({objectId:singleEle})){
                                             return Promise.reject(checkerError.ifObjectIdCrypted.singleFieldValueContainInvalidObjectId)
@@ -483,7 +490,7 @@ async function ifObjectIdInPartCrypted_async({req,expectedPart,browserCollRule})
                                 if(e_dataType.OBJECT_ID===dataType){
                                     //数组，对每个元素进行判别
                                     if(true===dataTypeArrayFlag){
-                                        if(partValue[singleFieldName].length>0){
+                                        if(true===dataTypeCheck.isArray(partValue[singleFieldName]) &&  partValue[singleFieldName].length>0){
                                             for(let singleEle of partValue[singleFieldName]){
                                                 if(false===ifObjectIdCrypted({objectId:singleEle})){
                                                     return Promise.reject(checkerError.ifObjectIdCrypted.recordInfoContainInvalidObjectId)
@@ -512,6 +519,16 @@ async function ifObjectIdInPartCrypted_async({req,expectedPart,browserCollRule})
     return Promise.resolve(true)
 }
 
+/**     对get中的id 进行检测（是否加密）   ***/
+function ifObjectIdInGetCrypted({objectId}){
+    if(false===ifObjectIdCrypted({objectId:objectId})){
+        return Promise.reject(checkerError.ifObjectIdInGetCrypted.cryptedObjectIdInvalid)
+    }
+}
+
+
+
+
 module.exports= {
     // ifFieldValueExistInColl_async,// 检测字段值是否已经在db中存在
     ifSingleFieldFkValueExist_async, //根据coll中的2个字段（外键和外键对应coll），动态确定外键是否在指定的coll中存在
@@ -539,5 +556,6 @@ module.exports= {
 
     ifObjectIdCrypted,
     ifObjectIdInPartCrypted_async,
+    ifObjectIdInGetCrypted,
     // checkInterval_async,
 }

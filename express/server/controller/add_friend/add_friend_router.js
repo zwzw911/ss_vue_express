@@ -10,18 +10,16 @@ const server_common_file_require=require('../../../server_common_file_require')
 const genFinalReturnResult=server_common_file_require.misc.genFinalReturnResult//require('../../function/assist/misc').genFinalReturnResult
 
 /*              dispatch require                 */
-const dispatcher_async=require('./add_friend_dispatch').dispatcher_async
+const addFriendDispatcher_async=require('./add_friend_dispatch').dispatcher_async
 
-const nodeEnum=server_common_file_require.nodeEnum
-const e_uploadFileType=nodeEnum.UploadFileType
-/*        通过method，判断是CRUDM中的那个操作
- *   C: register
- *   M: match(login)
- * */
+// const nodeEnum=server_common_file_require.nodeEnum
+// const e_uploadFileType=nodeEnum.UploadFileType
+
+/*****  新建 添加朋友的请求    *******/
 router.post('/',function(req,res,next){
 //     console.log(`req in`)
 // console.log(`req is ${JSON.stringify(req.body)}`)
-    dispatcher_async({req:req}).then(
+    addFriendDispatcher_async({req:req}).then(
         (v)=>{
             console.log(`create   add friend    success, result:  ${JSON.stringify(v)}`)
             return res.json(v)
@@ -34,6 +32,35 @@ router.post('/',function(req,res,next){
     )
 })
 
+/*****  被请求人 拒绝/同意 添加朋友的请求    *******/
+router.put('/accept',function(req,res,next){
+//     console.log(`req in`)
+// console.log(`req is ${JSON.stringify(req.body)}`)
+    addFriendDispatcher_async({req:req}).then(
+        (v)=>{
+            console.log(`accept add friend success, result:  ${JSON.stringify(v)}`)
+            return res.json(v)
+        },
+        (err)=>{
+            console.log(`accept add friend fail: ${JSON.stringify(err)}`)
+            return res.json(genFinalReturnResult(err))
+        }
+    )
+})
+router.put('/decline',function(req,res,next){
+//     console.log(`req in`)
+// console.log(`req is ${JSON.stringify(req.body)}`)
+    addFriendDispatcher_async({req:req}).then(
+        (v)=>{
+            console.log(`decline add friend success, result:  ${JSON.stringify(v)}`)
+            return res.json(v)
+        },
+        (err)=>{
+            console.log(`decline add friend fail: ${JSON.stringify(err)}`)
+            return res.json(genFinalReturnResult(err))
+        }
+    )
+})
 /*router.post('/image',function(req,res,next){
 //     console.log(`req in`)
 // console.log(`req is ${JSON.stringify(req.body)}`)

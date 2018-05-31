@@ -88,7 +88,13 @@ async function uploadImpeachCommentFile_async({req}){
     /*                                       authorization check                               */
     /*******************************************************************************************/
     //当前要上传图片/附件的文档是否为作者本人
-    tmpResult=await controllerChecker.ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({dbModel:e_dbModel[collName],recordId:recordId,ownerFieldName:e_field.IMPEACH_COMMENT.AUTHOR_ID,userId:userId,additionalCondition:undefined})
+    tmpResult=await controllerChecker.ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({
+        dbModel:e_dbModel[collName],
+        recordId:recordId,
+        ownerFieldsName:[e_field.IMPEACH_COMMENT.AUTHOR_ID],
+        userId:userId,
+        additionalCondition:undefined
+    })
     if(false===tmpResult){
         return Promise.reject(controllerError.notImpeachCommentCreatorCantUploadFile)
     }
@@ -98,7 +104,7 @@ async function uploadImpeachCommentFile_async({req}){
     /*                                       upload  authorization check                       */
     /*******************************************************************************************/
     //impeachComment的documentStatus必须为NEW（而不是submit）。和impeach检查点不同
-    let impeachComment=common_operation_model.findById_returnRecord_async({dbModel:e_dbModel.impeach_comment,id:recordId})
+    let impeachComment=await common_operation_model.findById_returnRecord_async({dbModel:e_dbModel.impeach_comment,id:recordId})
     if(null!==impeachComment){
         if(impeachComment[e_field.IMPEACH_COMMENT.DOCUMENT_STATUS]!==e_impeachState.NEW){
             return Promise.reject(controllerError.cantUploadImageForNonNewImpeach)
@@ -179,7 +185,7 @@ async function uploadImpeachCommentFile_async({req}){
                 //根据impeachCommentId查找对应impeachId
                 let impeachId=originalDoc[e_field.IMPEACH_COMMENT.IMPEACH_ID]
                 //根据impeachId在impeach_comment查找所有对应的comment
-                tmpResult=common_operation_model.find_returnRecords_async({dbModel:e_dbModel.impeach_comment,condition:{[e_field.IMPEACH_COMMENT.IMPEACH_ID]:impeachId}})
+                tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.impeach_comment,condition:{[e_field.IMPEACH_COMMENT.IMPEACH_ID]:impeachId}})
                 //impeachId+commentId作为match条件传给calcExistResource_async
                 let arr_impeach_and_comment_id=[]
                 arr_impeach_and_comment_id.push(impeachId)

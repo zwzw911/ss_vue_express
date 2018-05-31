@@ -1263,6 +1263,33 @@ function decryptInputValue({req,expectedPart,salt,browserCollRule}){
                     //recordId非object，所以是非引用，需要赋值
                     req.body.values[singlePart]=decryptSingleFieldValue({fieldValue:partValue,salt:salt}).msg
                     break;
+                case e_part.SINGLE_FIELD:
+                    //获得field的名称
+                    let fieldName=Object.keys(partValue)[0]
+                    //fieldName是有效的（在rule中有定义）
+                    if(true===dataTypeCheck.isSetValue(partValue[fieldName]) && undefined!==browserCollRule[fieldName]){
+                        // let singleFieldValue=req.body.values[singlePart]
+                        //获得field的类型
+                        let fieldDataTypeInRule=browserCollRule[fieldName][e_otherRuleFiledName.DATA_TYPE]
+                        let dataTypeArrayFlag=dataTypeCheck.isArray(fieldDataTypeInRule)
+                        let dataType= dataTypeArrayFlag ? fieldDataTypeInRule[0]:fieldDataTypeInRule
+                        //字段类型是objectId
+                        if(e_dataType.OBJECT_ID===dataType){
+                            //数组，对每个元素进行判别
+                            if(true===dataTypeArrayFlag){
+                                if(partValue[fieldName].length>0){
+                                    for(let idx in partValue[fieldName]){
+                                        partValue[fieldName][idx]=decryptSingleFieldValue({fieldValue:partValue[fieldName][idx],salt:salt}).msg
+                                    }
+                                }
+                            }else{
+                                partValue[fieldName]=decryptSingleFieldValue({fieldValue:partValue[fieldName],salt:salt}).msg
+                            }
+                            // req.body.values[singlePart]=
+                        }
+                    }
+
+                    break;
                 case e_part.RECORD_INFO:
                     // let recordInfoValue=req.body.values[singlePart]
                     // ap.inf('RECORD_INFO in')

@@ -21,10 +21,10 @@ const DocStatus=["1","2","3",]
 const AccountType=["1","2",] 
 const StorePathUsage=["1","2","3","4","5",] 
 const StorePathStatus=["1","2",] 
-const ResourceRange=["1","2","3","5","7","8",] 
+const ResourceRange=["1","2","3","5","7","8","9","10","11","12",] 
 const ResourceType=["1","2",] 
 const DocumentStatus=["1","2",] 
-const AddFriendStatus=["1","2","3",] 
+const AddFriendStatus=["1","2","3","4",] 
 module.exports={
     ArticleStatus,
     AdminUserType,

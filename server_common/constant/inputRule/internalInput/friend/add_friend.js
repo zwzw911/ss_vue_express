@@ -14,7 +14,8 @@ const applyRange=inputDataRuleType.ApplyRange
 
 const regex=require('../../../regex/regex').regex
 
-
+/*        field有enum才需要require        */
+const enumValue=require('../../../../constant/genEnum/enumValue')
 /*        field有enum才需要require        */
 // const mongoEnum=require('../../../enum/mongo')
 /*              获得 某些设置值            */
@@ -24,6 +25,7 @@ const baseJSErrorCode=102150
 const baseMongoErrorCode=202150
 
 const add_friend= {
+
     originator: {
         [otherRuleFiledName.CHINESE_NAME]: '发起人',
         [otherRuleFiledName.DATA_TYPE]: serverDataType.OBJECT_ID,
@@ -33,8 +35,17 @@ const add_friend= {
         // [ruleFiledName.MAX_LENGTH]: {define: 20, error: {rc: 10414}, mongoError: {rc: 20414, msg: '朋友分组名的长度不能超过20个字符'}},
         [ruleFiledName.FORMAT]: {define: regex.objectId, error: {rc: baseJSErrorCode+2, msg: '发起人必须是objectId'}, mongoError: {rc: baseMongoErrorCode+2, msg: '发起人必须是objectId'}} //server端使用
     },
-
-
+/***  status不能由用户输入来确定，而是要通过server内部设置  ***/
+/*** 被请求者处理请求时，通过不同的URL来设置status（接受/拒绝 等）    ***/
+    status:{
+        [otherRuleFiledName.CHINESE_NAME]: '当前请求所处状态',
+        [otherRuleFiledName.DATA_TYPE]: serverDataType.STRING,
+        [otherRuleFiledName.APPLY_RANGE]:[applyRange.CREATE,applyRange.UPDATE_SCALAR],
+        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true,[applyRange.UPDATE_SCALAR]:true}, error: {rc: baseJSErrorCode+4, msg: '状态不能为空'}, mongoError: {rc: baseMongoErrorCode+4, msg: '状态不能为空'}},//
+        // 'arrayMinLength': {define: 0, error: {rc: 10002}, mongoError: {rc: 20002, msg: '密码至少6个字符'}},
+        // 'arrayMaxLength': {define: maxNumber.friend.maxFriendsNumberPerGroup, error: {rc: 10422}, mongoError: {rc: 20422, msg: `好友分组最多包含${maxNumber.friend.maxFriendsNumberPerGroup}个好友`}},
+        [ruleFiledName.ENUM]: {define: enumValue.AddFriendStatus, error: {rc: baseJSErrorCode+6, msg: '状态未定义'}, mongoError: {rc: baseMongoErrorCode+6, msg: '状态未定义'}} //server端使用
+    },
 
 }
 
