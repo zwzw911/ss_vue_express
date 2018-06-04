@@ -8,6 +8,7 @@ const express = require('express');
 const router = express.Router();
 const server_common_file_require=require('../../../server_common_file_require')
 const genFinalReturnResult=server_common_file_require.misc.genFinalReturnResult//require('../../function/assist/misc').genFinalReturnResult
+const systemError=server_common_file_require.systemError
 
 /*              dispatch require                 */
 const addFriendDispatcher_async=require('./add_friend_dispatch').dispatcher_async
@@ -60,6 +61,11 @@ router.put('/decline',function(req,res,next){
             return res.json(genFinalReturnResult(err))
         }
     )
+})
+
+router.all('*',function(req,res,next){
+    // ap.inf('systemError.systemError.noMatchRESTAPI',systemError.systemError.noMatchRESTAPI)
+    return res.json(genFinalReturnResult(systemError.systemError.noMatchRESTAPI))
 })
 /*router.post('/image',function(req,res,next){
 //     console.log(`req in`)

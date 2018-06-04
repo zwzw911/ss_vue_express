@@ -53,6 +53,14 @@ async function reCreateUser_returnSessUserId_async({userData,app}){
     return Promise.resolve({userId:userId,sess:sess})
 }
 
+// async function getCaptcha_async({app:app}){
+//     let sess=await userAPI.getFirstSession({app})
+//     //生成并获得captcha(for create user)
+//     await userAPI.genCaptcha({sess:sess,app:app})
+//     let captcha=await userAPI.getCaptcha({sess:sess})
+//     return Promise.resolve(captcha)
+// }
 module.exports={
     reCreateUser_returnSessUserId_async,
+    // getCaptcha_async,
 }

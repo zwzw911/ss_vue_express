@@ -209,8 +209,11 @@ function ifEnumHasDuplicateValue({fieldName,fieldValue,fieldDataTypeInfo}){
 //singleValueUniqueCheckAdditionalCondition: 对整个docValue进行检查时，额外需要的检测条件  {field: value1,field2:value2}
 //对传入的docValue中的每个字段进行unique的检测
 async function ifSingleFieldValueUnique_async({fieldName,fieldValue,collName,singleValueUniqueCheckAdditionalCondition}){
-    // ap.inf('singleValueUniqueCheckAdditionalCondition',singleValueUniqueCheckAdditionalCondition)
-    if(undefined!==e_uniqueField[collName] && undefined!==e_uniqueField[collName][fieldName]){
+    // ap.inf('[collName]',collName)
+    // ap.inf('[e_uniqueField]',e_uniqueField)
+    // ap.inf('fieldName',fieldName)
+    // ap.inf('e_uniqueField[collName]',e_uniqueField[collName])
+    if(undefined!==e_uniqueField[collName] && -1!==e_uniqueField[collName].indexOf(fieldName)){
         // for(let singleFieldName of e_uniqueField[collName]){
 
             // if(-1!==e_uniqueField[collName].indexOf(singleFieldName)){
@@ -225,10 +228,11 @@ async function ifSingleFieldValueUnique_async({fieldName,fieldValue,collName,sin
             if(undefined!==singleValueUniqueCheckAdditionalCondition && undefined!==singleValueUniqueCheckAdditionalCondition[fieldName]){
                 condition[fieldName]=singleValueUniqueCheckAdditionalCondition[fieldName]
             }
-
+// ap.inf('single field unique check condition',condition)
             //查询条件不为空，才进行find
             if(false===dataTypeCheck.isEmpty(condition)){
                 let uniqueCheckResult = await common_operation_model.find_returnRecords_async({dbModel: e_dbModel[collName], condition: condition})
+                // ap.inf('single field unique match result',uniqueCheckResult)
                 if(uniqueCheckResult.length>0){
                     let chineseName=e_chineseName[collName][fieldName]
 
@@ -320,7 +324,7 @@ async function ifCompoundFiledValueUnique_returnExistRecord_async({collName,docV
                 condition[singleField]=docValue[singleField]
             }
             //检查单个compound field是否unique
-            ap.inf('allCompoundFiledAvailable',allCompoundFiledAvailable)
+            // ap.inf('allCompoundFiledAvailable',allCompoundFiledAvailable)
             if(true===allCompoundFiledAvailable){
                 //检查是否需要额外的查询条件(除了docValue中字段作为查询值，是否还需要其他  {字段:值}  作为查询值)
                 if(undefined!==compoundFiledValueUniqueCheckAdditionalCheckCondition){
@@ -331,7 +335,7 @@ async function ifCompoundFiledValueUnique_returnExistRecord_async({collName,docV
                     }
                 }
 
-                ap.inf('Compound condition',condition)
+                // ap.inf('Compound condition',condition)
                 if(false===dataTypeCheck.isEmpty((condition))){
                     let results=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel[collName],condition:condition})
                     // console.log(`compound result=============>${JSON.stringify(results)}`)
@@ -349,6 +353,7 @@ async function ifCompoundFiledValueUnique_returnExistRecord_async({collName,docV
     }
 
 }
+
 
 /*******************************************************************************************/
 /**************************              主函数              ******************************/
@@ -441,10 +446,12 @@ async function  inputValueLogicValidCheck_async({commonParam,stepParam}){
         /******************          single field value unique check                    ************/
         /*******************************************************************************************/
         if(true===runStepFlag[e_inputValueLogicCheckStep.SINGLE_FIELD_VALUE_UNIQUE]) {
+// ap.inf('SINGLE_FIELD_VALUE_UNIQUE in')
 
             await ifSingleFieldValueUnique_async({
                 fieldName:singleFieldName,
                 fieldValue:singleFieldValue,
+                collName:collName,
                 singleValueUniqueCheckAdditionalCondition:stepParam[e_inputValueLogicCheckStep.SINGLE_FIELD_VALUE_UNIQUE]['optionalParam']['singleValueUniqueCheckAdditionalCondition'],
             })
         }

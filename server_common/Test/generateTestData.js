@@ -57,6 +57,7 @@ async function getUserCryotedUserId_async({app,adminApp}){
         user3IdCryptedByUser2:await commonAPI.cryptObjectId_async({objectId:user3Id,sess:user2Sess}),
         user3IdCryptedByUser3:await commonAPI.cryptObjectId_async({objectId:user3Id,sess:user3Sess}),
         user3IdCryptedByAdminRoot:await commonAPI.cryptObjectId_async({objectId:user3Id,sess:adminRootSess}),
+        adminRootIdCryptedByUser1:await commonAPI.cryptObjectId_async({objectId:adminRootId,sess:user1Sess}),
         user1Id:user1Id,
         user2Id:user2Id,
         user3Id:user3Id,

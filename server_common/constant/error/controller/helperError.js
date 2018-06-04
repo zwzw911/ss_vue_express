@@ -216,7 +216,9 @@ const checker={
     ifObjectIdInGetCrypted:{
         cryptedObjectIdInvalid:{rc:checkerBaseErrorCode+58,msg:{client:`参数错误`,server:'get的url中，objectId不是加密的objectId'}},
     },
-
+    ifSingleFieldContainExpectField:{
+        singleFieldNotContainExpectedField:{rc:checkerBaseErrorCode+60,msg:{client:`参数错误`,server:'singleField中的字段名称不是期望的字段'}},
+    },
 }
 
 const preCheck={

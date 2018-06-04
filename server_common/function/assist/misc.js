@@ -537,7 +537,7 @@ function genRejectKeyName({arr_userIdentify,prefix}){
 // }
 /* 将dataUrl转换成文件
 * */
-function dataUrl2File_returnFileAbsPath_async({dataUrl,fileNameWithoutExtension,filePath}){
+async function dataUrl2File_returnFileAbsPath_async({dataUrl,fileNameWithoutExtension,filePath}){
     return new Promise(function(resolve, reject){
         //1. 首先获得后缀（png/jpeg）
         let reg=/^data:image\/(png|jpg|jpeg);base64,/
@@ -549,7 +549,8 @@ function dataUrl2File_returnFileAbsPath_async({dataUrl,fileNameWithoutExtension,
         let ext=result[1]
         //2 删除前缀，然后写入文件
         let base64Data = dataUrl.replace(/^data:image\/\w+;base64,/, "");
-        let dataBuffer = new Buffer(base64Data, 'base64');
+        // let dataBuffer = new Buffer(base64Data, 'base64');
+        let dataBuffer = Buffer.from(base64Data, 'base64');
         fs.writeFile(`${filePath}${fileNameWithoutExtension}.${ext}`, dataBuffer, function(err) {
             if(err){
                 return reject(err);

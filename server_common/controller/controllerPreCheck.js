@@ -322,53 +322,21 @@ function validatePartValue({req,expectedPart,collName,applyRange,fkConfig}){
                 // }
                 break;
             case e_part.RECORD_INFO:
+                // ap.inf('applyRange',applyRange)
                 if(undefined!==applyRange && undefined!==req.body.values[e_part.RECORD_INFO]){
                     checkPartValueResult=validateValue.validateScalarInputValue({inputValue:req.body.values[e_part.RECORD_INFO],collRule:browserInputRule[collName],p_applyRange:applyRange})
-                }
-
-                // ap.inf('record info in')
-                // ap.inf('method',method)
-                // console.log(`record info in ===================> `)
-                // console.log(`methos is ${JSON.stringify(recordInfoBaseRule)}`)
-                /*switch (method){
-                    case e_method.CREATE://create
-                        // ap.inf('method is create')
-                        checkPartValueResult=validateValue.validateScalarInputValue({inputValue:req.body.values[e_part.RECORD_INFO],collRule:browserInputRule[collName],p_applyRange:e_applyRange.CREATE})
-                        break;
-                    // case 1://search
-                    //     break;
-                    case e_method.UPDATE://update
-                        checkPartValueResult=validateValue.validateScalarInputValue({inputValue:req.body.values[e_part.RECORD_INFO],collRule:browserInputRule[collName],p_applyRange:e_applyRange.UPDATE_SCALAR})
-                        break;
-                    case e_method.DELETE://delete在某些情况下也会用到recordInfo（例如penalize，需要记录revoke）
-
-                        // ap.inf('start delete validate recordinfo check')
-                        checkPartValueResult=validateValue.validateScalarInputValue({inputValue:req.body.values[e_part.RECORD_INFO],collRule:browserInputRule[collName],p_applyRange:e_applyRange.DELETE})
-                        break;
-                    case e_method.MATCH://match也使用recordInfo，但是无需进行检查，因为不是对db进行写操作
-                        // console.log(`record info uddate in===================> `)
-                        // console.log(`record info ===================>${JSON.stringify(req.body.values[e_part.RECORD_INFO])} `)
-                        // console.log(`record info =reule ==================>${JSON.stringify(inputRule[collName])} `)
-                        //checkPartValueResult=validateValue.validateScalarInputValue({inputValue:req.body.values[e_part.RECORD_INFO],browserCollRule:browserInputRule[collName],p_applyRange:e_applyRange.UPDATE_SCALAR})
-                        break;
-                    case e_method.UPLOAD://create
-
-                        checkPartValueResult=validateValue.validateScalarInputValue({inputValue:req.body.values[e_part.RECORD_INFO],collRule:browserInputRule[collName],p_applyRange:e_applyRange.UPLOAD})
-                        break;
-                    default:
-                        // ap.inf('method',method)
-                        return helperError.undefinedBaseRuleType
-                }*/
-                // ap.inf('record nfo result',checkPartValueResult)
-                // console.log(`record nfo result ===================> ${JSON.stringify(checkPartValueResult)}`)
-                for(let singleField in checkPartValueResult){
-                    if(checkPartValueResult[singleField].rc>0){
-                        /*            returnResult(checkResult[singleField])
-                         return res.json(checkResult[singleField])*/
-                        //return checkResult[singleField]
-                        return {rc:99999,msg:checkPartValueResult}//返回全部检查结果，为了统一格式，设置一个非0的rc
+                    for(let singleField in checkPartValueResult){
+                        if(checkPartValueResult[singleField].rc>0){
+                            /*            returnResult(checkResult[singleField])
+                             return res.json(checkResult[singleField])*/
+                            //return checkResult[singleField]
+                            return {rc:99999,msg:checkPartValueResult}//返回全部检查结果，为了统一格式，设置一个非0的rc
+                        }
                     }
                 }
+
+
+
                 break;
             case e_part.SINGLE_FIELD:
                 //获取单个字段的字段名

@@ -454,15 +454,17 @@ const DocumentStatus={
 const AddFriendStatus={
     DB:{
         UNTREATED:'1',
-        ACCEPT:'2',
-        DECLINE:'3',
-        ACCEPT_BUT_NOT_ASSIGN:'4',
+        DECLINE:'2',
+        ACCEPT_BUT_NOT_ASSIGN:'3', //被请求者已经同意，但是请求者没有进行处理（分配到某个group）
+        ACCEPT_AND_ASSIGN:'4',
+
+
     },
     SHOW:{
         UNTREATED:'尚未处理',
-        ACCEPT:'接受',
         DECLINE:'拒绝',
         ACCEPT_BUT_NOT_ASSIGN:'接受但未分配',
+        ACCEPT_AND_ASSIGN:'接受',
     },
 }
 

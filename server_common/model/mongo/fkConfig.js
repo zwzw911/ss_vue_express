@@ -17,7 +17,7 @@ const e_impeachState=require(`../../constant/enum/mongoEnum`).ImpeachState.DB
 
 
 const fkConfig={
-    /*          user            */
+    /**          user            **/
     [e_coll.SUGAR]:{
         [e_field.SUGAR.USER_ID]:{
             relatedColl:e_coll.USER,forSelect:`${e_field.USER.NAME}`,forSetValue:[e_field.USER.NAME],

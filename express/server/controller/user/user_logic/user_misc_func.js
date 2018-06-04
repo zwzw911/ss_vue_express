@@ -65,7 +65,7 @@ const mailAccount=server_common_file_require.globalConfiguration.mailAccount
 const currentEnv=server_common_file_require.appSetting.currentEnv
 const absolutePath=server_common_file_require.appSetting.absolutePath
 
-
+const regex=server_common_file_require.regex.regex
 const e_iniSettingObject=require('../../../constant/genEnum/initSettingObject').iniSettingObject
 
 
@@ -79,16 +79,27 @@ async  function  uniqueCheck_async({req}) {
     /********************************************************/
     let collName=e_coll.USER
     let docValue = req.body.values[e_part.SINGLE_FIELD]
+    let tmpResult
+    let userId
+    if(undefined!==req.session && undefined!==req.session.userInfo){
+        let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
+        userId=userInfo['userId']
+    }
 
-    let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
-    let {userId,userCollName,userType,userPriority}=userInfo
-    /********************************************************/
-    /*************         接受的字段         ***************/
-    /********************************************************/
+    /************************************************/
+    /****     singleField: accept field check   *****/
+    /************************************************/
+    tmpResult=controllerChecker.ifSingleFieldContainExpectField({singleFieldValue:docValue,expectedFieldNames:e_uniqueField[e_coll.USER]})
+    if(tmpResult.rc>0){
+        return Promise.reject(tmpResult)
+    }
+/*    /!********************************************************!/
+    /!*************         接受的字段         ***************!/
+    /!********************************************************!/
     let fieldName=Object.keys(docValue)[0]
     if(-1===e_uniqueField[e_coll.USER].indexOf(fieldName)){
         return Promise.reject(controllerError.fieldNotSupport)
-    }
+    }*/
     /**********************************************/
     /**  CALL FUNCTION:inputValueLogicValidCheck **/
     /**********************************************/
@@ -99,6 +110,7 @@ async  function  uniqueCheck_async({req}) {
     }else{
         singleUniqueAdditionalCondition={[e_field.USER.DOC_STATUS]:e_docStatus.DONE}
     }
+
     let commonParam={docValue:docValue,userId:undefined,collName:collName}
     let stepParam={
         [e_inputValueLogicCheckStep.FK_EXIST_AND_PRIORITY]:{flag:false,optionalParam:undefined},
@@ -134,18 +146,6 @@ async function retrievePassword_async({req}){
     //新产生的密码,账号对应的记录
     let tmpResult,newPwd,userId,newPwdType=e_randomStringType.NORMAL
     let condition={},condition1={}  //for account/ usedAccount
-    /*          格式/值检查        */
-/*    tmpResult=controllerHelper.nonCRUDPreCheck({
-        req:req,
-        expectUserState:e_userState.NO_SESS,
-        expectPart:[e_part.SINGLE_FIELD],
-        collName:e_coll.USER,
-        //e_coll:e_coll,
-    })
-    if(tmpResult.rc>0){
-        return Promise.reject(tmpResult)
-    }*/
-
 
     /*                  logic               */
     let docValue = req.body.values[e_part.SINGLE_FIELD]
@@ -153,33 +153,43 @@ async function retrievePassword_async({req}){
     //dataConvert.convertCreateUpdateValueToServerFormat(docValue)
 // console.log(`docValue ${JSON.stringify(docValue)}`)
 
-    //读取字段名，进行不同的操作（userUnique或者password格式）
+    /************************************************/
+    /****     singleField: accept field check   *****/
+    /************************************************/
+    tmpResult=controllerChecker.ifSingleFieldContainExpectField({singleFieldValue:docValue,expectedFieldNames:[e_field.USER.ACCOUNT]})
+    if(tmpResult.rc>0){
+        return Promise.reject(tmpResult)
+    }
+
+
     let fieldName=Object.keys(docValue)[0]
     let fieldValue=Object.values(docValue)[0]
 
 
     condition[e_field.USER.ACCOUNT]=fieldValue
     condition[e_field.USER.DOC_STATUS]=e_docStatus.DONE
-    tmpResult=await common_operation_model.find_returnRecords_async({dbModel:dbModel.user,condition:condition})
+    ap.inf('condition',condition)
+    let currentAccount=await common_operation_model.find_returnRecords_async({dbModel:dbModel.user,condition:condition})
+    ap.inf('retrieve ped: find current account',currentAccount)
     // console.log(`retrieve ped: find current account=====>${JSON.stringify(tmpResult)}`)
-    if(tmpResult.length>1){
-        return Promise.reject(controllerError.accountNotUnique)
+    if(currentAccount.length>1){
+        return Promise.reject(controllerError.retrievePassword.accountNotUnique)
     }
-    if(tmpResult.length===1){
-        userId=tmpResult[0]['id']
+    if(currentAccount.length===1){
+        userId=currentAccount[0]['id']
         newPwd=misc.generateRandomString({len:6,type:newPwdType})
     }
     //继续在usedAccount中查找
-    if(tmpResult.length===0){
+    if(currentAccount.length===0){
         condition1[e_field.USER.USED_ACCOUNT]=fieldValue
         condition1[e_field.USER.DOC_STATUS]=e_docStatus.DONE
-        tmpResult=await common_operation_model.find_returnRecords_async({dbModel:dbModel.user,condition:condition1})
+        let usedAccount=await common_operation_model.find_returnRecords_async({dbModel:dbModel.user,condition:condition1})
         // console.log(`retrieve ped: find used account=====>${JSON.stringify(tmpResult)}`)
-        switch (tmpResult.length){
+        switch (usedAccount.length){
             case 0:
                 return {rc:0}
             case 1:
-                userId=tmpResult[0]['id']
+                userId=usedAccount[0]['id']
                 newPwd=misc.generateRandomString({len:6,type:newPwdType})
                 break
             default:
@@ -189,14 +199,15 @@ async function retrievePassword_async({req}){
     // console.log(`retrieve ped: ready to hash new pwd ${JSON.stringify(newPwd)}`)
     // console.log(`userId ${JSON.stringify(userId)}`)
     //hash密码，保存到db，并发送给用户，并返回通知
-    tmpResult=hash(newPwd,e_hashType.SHA256)
-    if(tmpResult.rc>0){return Promise.reject(tmpResult)}
+    let hashedValue=hash(newPwd,e_hashType.SHA256)
+    if(hashedValue.rc>0){return Promise.reject(hashedValue)}
 
-    let hashedPassword=tmpResult.msg
+    let hashedPassword=hashedValue.msg
+    ap.inf('hashedPassword',hashedPassword)
     // console.log(`hashedPassword ${JSON.stringify(hashedPassword)}`)
     await common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:dbModel.user,id:userId,updateFieldsValue:{'password':hashedPassword}})
-    // console.log(`update pwd tmpResult ${JSON.stringify(tmpResult)}`)
-    if(regex.email.test(fieldValue)){
+    console.log(`update pwd tmpResult ${JSON.stringify(tmpResult)}`)
+    if(true===regex.email.test(fieldValue)){
         //通过mail发送新密码
         let message={}
         message['from']=mailAccount.qq
@@ -204,10 +215,11 @@ async function retrievePassword_async({req}){
         message['subject']='iShare重置密码'
         message['text']= `iShare为您重新设置了密码：${newPwd}。\r\n此邮件为自动发送，请勿回复。`
         message['html']=`<p>iShare为您重新设置了密码：${newPwd}。</p><p>此邮件为自动发送，请勿回复。</p>`
+        ap.inf('send mail0')
         tmpResult=await misc.sendVerificationCodeByEmail_async(message,mailOption)
         return Promise.resolve(tmpResult)
     }
-    if(regex.mobilePhone.test(fieldValue)){
+    if(true===regex.mobilePhone.test(fieldValue)){
         //通过手机发送新密码
 
     }
@@ -222,8 +234,17 @@ async function uploadDataUrlPhoto_async({req}){
     /*             检查用户是否在更新 自己 的头像           */
     let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
     let userId=userInfo.userId
-
     let tmpResult
+    let docValue=req.body.values[e_part.SINGLE_FIELD]
+    /************************************************/
+    /****     singleField: accept field check   *****/
+    /************************************************/
+    tmpResult=controllerChecker.ifSingleFieldContainExpectField({singleFieldValue:docValue,expectedFieldNames:[e_field.USER.PHOTO_DATA_URL]})
+    if(tmpResult.rc>0){
+        return Promise.reject(tmpResult)
+    }
+
+
     if(undefined===req.body.values[e_part.SINGLE_FIELD][e_field.USER.PHOTO_DATA_URL]){
         return Promise.reject(controllerError.uploadUserPhoto.expectedFieldValueUndefined)
     }

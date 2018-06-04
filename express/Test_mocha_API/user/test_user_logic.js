@@ -3,11 +3,16 @@
  */
 'use strict'
 
+/**************  controller相关常量  ****************/
+const controllerError=require('../../server/controller/user/user_setting/user_controllerError').controllerError
 
-const request=require('supertest')
-const app=require('../../app')
-const assert=require('assert')
+/******************    内置lib和第三方lib  **************/
 const ap=require(`awesomeprint`)
+/******************    待测函数  **************/
+const app=require('../../app')
+const adminApp=require(`../../../express_admin/app`)
+// const assert=require('assert')
+
 
 const server_common_file_require=require('../../server_common_file_require')
 const nodeEnum=server_common_file_require.nodeEnum
@@ -15,737 +20,629 @@ const nodeRuntimeEnum=server_common_file_require.nodeRuntimeEnum
 const mongoEnum=server_common_file_require.mongoEnum
 
 const e_part=nodeEnum.ValidatePart
-const e_method=nodeEnum.Method
+// const e_method=nodeEnum.Method
 const e_coll=require('../../server/constant/genEnum/DB_Coll').Coll
 const e_field=require('../../server/constant/genEnum/DB_field').Field
 
+const e_penalizeType=mongoEnum.PenalizeType.DB
+const e_penalizeSubType=mongoEnum.PenalizeSubType.DB
 // const common_operation_model=server_common_file_require.common_operation_model
 // const dbModel=require('../../server/constant/genEnum/dbModel')
 
 // const inputRule=require('../../server/constant/inputRule/inputRule').inputRule
 const browserInputRule=require('../../server/constant/inputRule/browserInputRule').browserInputRule
-
+/****************  公共错误 ********************/
 const validateError=server_common_file_require.validateError//require('../../server/constant/error/validateError').validateError
 const controllerHelperError=server_common_file_require.helperError.helper//require('../../server/constant/error/controller/helperError').helper
 const controllerCheckerError=server_common_file_require.helperError.checker
-
-const controllerError=require('../../server/controller/user/user_setting/user_controllerError').controllerError
-
+const inputValueLogicCheckError=server_common_file_require.helperError.inputValueLogicCheck
+const resourceCheckError=server_common_file_require.helperError.resourceCheck
+const systemError=server_common_file_require.systemError.systemError
+/****************  公共函数 ********************/
 const objectDeepCopy=server_common_file_require.misc.objectDeepCopy
-
 const db_operation_helper=server_common_file_require.db_operation_helper//require("../API_helper/db_operation_helper")
 const testData=server_common_file_require.testData//require('../testData')
-const API_helper=server_common_file_require.API_helper//require('../API_helper/API_helper')
-const component_function=server_common_file_require.component_function
+const userAPI=server_common_file_require.user_API//require('../API_helper/API_helper')
+const penalizeAPI=server_common_file_require.penalize_API//require('../API_helper/API_helper')
+const commonAPI=server_common_file_require.common_API
+const userComponentFunction=server_common_file_require.user_component_function
+const generateTestData=server_common_file_require.generateTestData
+const adminUserComponentFunction=server_common_file_require.admin_user_component_function
 
 const image_path_for_test=server_common_file_require.appSetting.absolutePath.image_path_for_test
 
-const misc_help=server_common_file_require.misc_helper
-// const misc_helper=server_common_file_require.misc_helper
-let baseUrl="/user/"
+const misc_helper=server_common_file_require.misc_helper
+const crypt=server_common_file_require.crypt
+
+
+
+let baseUrl="/user/",url='',finalUrl=baseUrl+url
 let userId  //create后存储对应的id，以便后续的update操作
 
-let adminUser1Info,adminUser2Info,adminUser3Info,adminUser1Id,adminUser2Id,adminUser3Id,adminUser1Sess,adminUser2Sess,adminUser3Sess,adminUser1Data,adminUser2Data,adminUser3Data
-let user1Info,user2Info,user3Info,user1Id,user2Id,user3Id,user1Sess,user2Sess,user3Sess,user1Data,user2Data,user3Data
-let userData,tmpResult,copyNormalRecord
+let recordId1,recordId2,recordId3,expectedErrorRc
+
+let user1IdCryptedByUser1,user1IdCryptedByUser2,user1IdCryptedByUser3,
+    user2IdCryptedByUser1,user2IdCryptedByUser2,user2IdCryptedByUser3,
+    user3IdCryptedByUser1,user3IdCryptedByUser2,user3IdCryptedByUser3,
+    user3IdCryptedByAdminRoot,adminRootIdCryptedByUser1,
+    user1Sess,user2Sess,user3Sess,adminRootSess,
+    user1Id,user2Id,user3Id,adminRootId
+
+let recordId2CryptedByAdminRoot,recordId1CryptedByUser2,recordId1CryptedByUser3,recordId2CryptedByUser2
+
+let data={values:{}}
 
 
+describe('user1 register unique check:',async  function() {
 
-describe('user1 register unique check:', function() {
-    let data = {values: {recordInfo: {}, method: e_method.CREATE}}, url = ``, finalUrl = baseUrl + url
     before('prepare', async function () {
-        await component_function.reCreateUser_returnSessUserId_async({userData:testData.user.user1,app:app})
-    });
-    it('register unique name check fail', function(done) {
-        data.values[e_part.RECORD_INFO]=testData.user.user1//
-        // console.log(``)
-        request(app).post(finalUrl).set('Accept', 'application/json').send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc, controllerCheckerError.fieldValueUniqueCheckError({collName:e_coll.USER, fieldName:e_field.USER.NAME}).rc)
-                // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
-                done();
-            });
-    });
-
-    it('register unique account check fail', function(done) {
-        let user1Tmp=objectDeepCopy(testData.user.user1)
-        user1Tmp['name']='19912341234'
-        data.values[e_part.RECORD_INFO]=user1Tmp
-        // console.log(` data.values[e_part.RECORD_INFO] ${JSON.stringify( data.values[e_part.RECORD_INFO])}`)
-        request(app).post(finalUrl).set('Accept', 'application/json').send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,controllerCheckerError.fieldValueUniqueCheckError({collName:e_coll.USER, fieldName:e_field.USER.ACCOUNT}).rc)
-                // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
-                done();
-            });
-    });
-})
-
-describe('POST /user/uniqueCheck_async ', function() {
-    let data={values:{}},url='uniqueCheck_async',finalUrl=baseUrl+url
-
-    it('single field unique name check', function(done) {
-        data.values[e_part.SINGLE_FIELD]={name:testData.user.user1.name}//,notExist:{value:123}
-        request(app).post(finalUrl).set('Accept', 'application/json').send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,controllerCheckerError.fieldValueUniqueCheckError({collName:e_coll.USER, fieldName:e_field.USER.NAME}).rc)
-                // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
-                done();
-            });
-    });
-
-    it('unique account check', function(done) {
-        data.values[e_part.SINGLE_FIELD]={account:testData.user.user1.account}//,notExist:{value:123}
-        request(app).post(finalUrl).set('Accept', 'application/json').send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,controllerCheckerError.fieldValueUniqueCheckError({collName:e_coll.USER, fieldName:e_field.USER.ACCOUNT}).rc)
-                // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
-                done();
-            });
-    });
-
-    it('unique: not support field check', function(done) {
-        data.values[e_part.SINGLE_FIELD]={password:'123456'}//,notExist:{value:123}
-        request(app).post(finalUrl).set('Accept', 'application/json').send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,controllerError.fieldNotSupport.rc)
-                // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
-                done();
-            });
-    });
-
-    it('unique name check ok', function(done) {
-        data.values[e_part.SINGLE_FIELD]={name:'notExistName'}//,notExist:{value:123}
-        request(app).post(finalUrl).set('Accept', 'application/json').send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,0)
-                // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
-                done();
-            });
-    });
-})
-
-
-
-describe('user1 login:', function() {
-    let data={values:{method:e_method.MATCH}},url='',finalUrl=baseUrl+url
-
-
-    it('user not exist', function(done) {
-        // console.log(`testData.user.userNotExist====>${JSON.stringify(testData.user.userNotExist)}`)
-        let notExistUserTmp=objectDeepCopy(testData.user.userNotExist)
-        // console.log(`notExistUserTmp====>${JSON.stringify(notExistUserTmp)}`)
-        delete notExistUserTmp['name']
-        delete notExistUserTmp['userType']
-        // console.log(`notExistUserTmp ${JSON.stringify(notExistUserTmp)}`)
-        data.values[e_part.RECORD_INFO]=notExistUserTmp//,notExist:{value:123}
-        request(app).post(finalUrl).set('Accept', 'application/json').send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,controllerError.accountNotExist.rc)
-                // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
-                done();
-            });
-    })
-
-    it('user login with wrong password', function(done) {
-        let user1Tmp=objectDeepCopy(testData.user.user1)
-        delete user1Tmp['name']        //使用账号登录
-        delete user1Tmp['userType']
-        // condition['account']['value']='12341234132'
-        // console.log(`testData.user.user1Tmp==============> ${JSON.stringify(testData.user.user1Tmp)}`)
-        user1Tmp['password']='12341234132'
-        // console.log(`testData.user.user1Tmp==============> ${JSON.stringify(testData.user.user1Tmp)}`)
-        // console.log(`testData.user.user1==============> ${JSON.stringify(testData.user.user1)}`)
-        data.values[e_part.RECORD_INFO]=user1Tmp//,notExist:{value:123}
-        request(app).post(finalUrl).set('Accept', 'application/json').send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,controllerError.accountPasswordNotMatch.rc)
-                // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
-                done();
-            });
-    })
-
-    it('user login field number not expected', function(done) {
-        let user1Tmp=objectDeepCopy(testData.user.user1)
-        // delete testData.user.user1Tmp['password']
-        data.values[e_part.RECORD_INFO]=user1Tmp//,notExist:{value:123}
-        request(app).post(finalUrl).set('Accept', 'application/json').send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,controllerError.loginFieldNumNotExpected.rc)
-                // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
-                done();
-            });
-    })
-
-    it('user login miss mandatory field', function(done) {
-        let user1Tmp=objectDeepCopy(testData.user.user1)
-        delete user1Tmp['password']
-        delete user1Tmp['userType']
-        data.values[e_part.RECORD_INFO]=user1Tmp//,notExist:{value:123}
-        request(app).post(finalUrl).set('Accept', 'application/json').send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,controllerError.loginMandatoryFieldNotExist('field').rc)
-                // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
-                done();
-            });
-    })
-
-
-
-
-    it('user login correct', function(done) {
-        console.log(`testData.user.user1 ${JSON.stringify(testData.user.user1)}`)
-        let user1Tmp=objectDeepCopy(testData.user.user1)
-        delete user1Tmp['name']
-        delete user1Tmp['userType']
-        data.values[e_part.RECORD_INFO]=user1Tmp//,notExist:{value:123}
-        // console.log(`data.values ${JSON.stringify(data.values)}`)
-
-        request.agent(app).post(finalUrl).set('Accept', 'application/json').send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-                // console.log(`res ${JSON.stringify(res['header']['set-cookie'][0])}`)
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,0)
-                // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
-                done();
-            });
-    })
-})
-
-
-describe('update user： ', function() {
-    let data = {values:{method:e_method.MATCH}}, url = '', finalUrl = baseUrl + url
-
-    let sess
-    before('user login first before update', async function() {
-        let userInfo=await component_function.reCreateUser_returnSessUserId_async({userData:testData.user.user1,app:app})
-        sess=userInfo['sess']
-        await db_operation_helper.deleteUserAndRelatedInfo_async({account:testData.user.user2.account,name:testData.user.user2.name})
-        // console.log(`sess ======>${JSON.stringify(sess)}`)
-    })
-/*    after('delete exist create testData.user.user2', async function() {
-        let testData.user.user2ModelTmp=objectDeepCopy(testData.user.user2ForModel)
-        delete testData.user.user2ModelTmp['name']
-        delete testData.user.user2ModelTmp['password']
-        // let condition={name:{value:'test'},account:{value:'12341234123'}}
-        // delete condition['password']
-        console.log(`testData.user.user2ModelTmp==============> ${JSON.stringify(testData.user.user2ModelTmp)}`)
-        let result=await common_operation_model.find({dbModel:dbModel.user,condition:testData.user.user2ModelTmp})
-        console.log(`find result==============> ${JSON.stringify(result)}`)
-        if(0===result.rc && result.msg[0]){
-            let userId=result.msg[0]['id']
-            // console.log(`find id ${JSON.stringify(userId)}`)
-            result=await common_operation_model.deleteOne({dbModel:dbModel.user,condition:testData.user.user2ModelTmp})
-            result=await common_operation_model.deleteOne({dbModel:dbModel.sugar,condition:{userId:userId}})
-            result=await common_operation_model.deleteOne({dbModel:dbModel.user_friend_group,condition:{userId:userId}})
-            // console.log(`delete result is ${JSON.stringify(result)}`)
-        }
-    })*/
-
-/*    it('user not exist in coll', function(done) {
-        data.values[e_part.RECORD_INFO]={account:{value:'15921776543'},password:{value:'123456'}}//,notExist:{value:123}
-        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[sess]).send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-                console.log(`res ${JSON.stringify(res['header']['set-cookie'][0].split(';')[0])}`)
-                sess=res['header']['set-cookie'][0].split(';')[0]
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,0)
-                // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
-                done();
-            });
-    })*/
-    it('update user1 with  upload photo png', function(done) {
-        let finalUrl='/user/uploadPhoto'
-        // data.values.method=e_method.UPDATE
-        // data.values[e_part.RECORD_INFO]={account:{value:testData.user.user1.account.value},name:{value:'anotherName'}}//,notExist:{value:123}
-        // console.log(`data.values ${JSON.stringify(data.values)}`)
-        // console.log(`image_path_for_test======> ${JSON.stringify(image_path_for_test)}`)
-        ap.wrn('${image_path_for_test}gm_test.png',`${image_path_for_test}gm_test.png`)
-        request(app).post(finalUrl).field('name','file')
-            // .attach('file','H:/ss_vue_express/培训结果1.png')
-            .attach('file',`${image_path_for_test}gm_test.png`)
-            // .attach('file','H:/ss_vue_express/gm_test.png')
-            .set('Cookie',[sess])
-            // .send(data)
-            .set('Accept', 'application/json')
-            .end(function(err, res) {
-                // if (err) return done(err);
-                // console.log(`res ${JSON.stringify(res['header']['set-cookie']['connect.sid'])}`)
-                console.log(`parsedRes ${JSON.stringify(res)}`)
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,0)
-                // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
-                done();
-            });
-    })
-    it('update user1 with  upload photo jpeg', function(done) {
-        let finalUrl='/user/uploadPhoto'
-        // data.values.method=e_method.UPDATE
-        // data.values[e_part.RECORD_INFO]={account:{value:testData.user.user1.account.value},name:{value:'anotherName'}}//,notExist:{value:123}
-        // console.log(`data.values ${JSON.stringify(data.values)}`)
-        // console.log(`sess ${JSON.stringify(sess)}`)
-        request(app).post(finalUrl).field('name','file')
-        // .attach('file','H:/ss_vue_express/培训结果1.png')
-            .attach('file',`${image_path_for_test}无标题.jpg`)
-            // .attach('file','H:/ss_vue_express/gm_test.png')
-            .set('Cookie',[sess])//.send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-                // console.log(`res ${JSON.stringify(res['header']['set-cookie']['connect.sid'])}`)
-                console.log(`parsedRes ${JSON.stringify(res)}`)
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,0)
-                // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
-                done();
-            });
-    })
-    it('update testData.user.user1 with account not change', function(done) {
-        data.values.method=e_method.UPDATE
-        data.values[e_part.RECORD_INFO]={account:testData.user.user1.account}//,notExist:{value:123}
-        // console.log(`data.values ${JSON.stringify(data.values)}`)
-        // console.log(`sess ${JSON.stringify(sess)}`)
-        request.agent(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[sess]).send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-                // console.log(`res ${JSON.stringify(res['header']['set-cookie']['connect.sid'])}`)
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,0)
-                // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
-                done();
-            });
-    })
-
-
-    let newPassword='asdf456'
-    it('update testData.user.user1 with  password change', function(done) {
-        data.values.method=e_method.UPDATE
-        data.values[e_part.RECORD_INFO]={password:newPassword}//,notExist:{value:123}
-        // console.log(`data.values ${JSON.stringify(data.values)}`)
-        console.log(`sess==============> ${JSON.stringify(sess)}`)
-        request.agent(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[sess]).send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-                // console.log(`res ${JSON.stringify(res['header']['set-cookie']['connect.sid'])}`)
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,0)
-                // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
-                done();
-            });
-    })
-    it('check new password of user1 by login', function(done) {
-        data.values.method=e_method.MATCH
-        let user1Tmp=objectDeepCopy(testData.user.user1)
-        delete user1Tmp['name']
-        delete user1Tmp['userType']
-        user1Tmp['password']=newPassword
-        // delete testData.user.user1Tmp['password']
-        data.values[e_part.RECORD_INFO]=user1Tmp//,notExist:{value:123}
-        request(app).post(finalUrl).set('Accept', 'application/json').send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-                // console.log(`res ${JSON.stringify(res['header']['set-cookie'][0].split(';')[0])}`)
-                // sess=res['header']['set-cookie'][0].split(';')[0]
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                // console.log(`sess==============> ${JSON.stringify(sess)}`)
-                assert.deepStrictEqual(parsedRes.rc,0)
-                // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
-                done();
-            });
-    })
-
-
-
-
-
-
-
-    it('user2(register)  correct value', function(done) {
-        data.values.method=e_method.CREATE
-        data.values[e_part.RECORD_INFO]=testData.user.user2//
-        request(app).post(finalUrl).set('Accept', 'application/json').send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,0)
-                // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
-                done();
-            });
-    });
-
-    it('update user1  with same account as user2', function(done) {
-        let user1UpdateTmp=objectDeepCopy(testData.user.user2)
-        delete user1UpdateTmp['name']
-        delete user1UpdateTmp['password']
-        delete user1UpdateTmp['userType']
-        data.values.method=e_method.UPDATE
-        data.values[e_part.RECORD_INFO]=user1UpdateTmp//,notExist:{value:123}
-        request.agent(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[sess]).send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-                // console.log(`res ${JSON.stringify(res['header']['set-cookie']['connect.sid'])}`)
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,controllerCheckerError.fieldValueUniqueCheckError({collName:e_coll.USER,fieldName:e_field.USER.ACCOUNT}).rc)
-                // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
-                done();
-            });
-    })
-
-    it('update testData.user.user1 account successfully(must disable duration check in updateUser_async)', function(done) {
-        data.values.method=e_method.UPDATE
-        data.values[e_part.RECORD_INFO]={account:'19912341234'}//,notExist:{value:123}
-        request.agent(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[sess]).send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-                // console.log(`res ${JSON.stringify(res['header']['set-cookie']['connect.sid'])}`)
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,0)
-                // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
-                done();
-            });
-    })
-
-    it('update testData.user.user1 account too frequently(must enable duration check in updateUser_async)', function(done) {
-        data.values.method=e_method.UPDATE
-        data.values[e_part.RECORD_INFO]={account:'11912341235'}//,notExist:{value:123}
-        request.agent(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[sess]).send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-                // console.log(`res ${JSON.stringify(res['header']['set-cookie']['connect.sid'])}`)
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,controllerError.accountCantChange.rc)
-                // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
-                done();
-            });
-    })
-
-    after("rollback testData.user.user1's update account", async function() {
-        await component_function.reCreateUser_returnSessUserId_async({userData:testData.user.user1,app:app})
-
-    })
-
-    after('delete new create user2', async function() {
-        await db_operation_helper.deleteUserAndRelatedInfo_async({account:testData.user.user2.account,name:testData.user.user2.name})
-
-    })
-})
-
-describe('change password:', function() {
-    let data = {}, url = 'changePassword', finalUrl = baseUrl + url
-    let newPassword='oiqier123'
-    let user1Sess
-    before('user login first before update', async function() {
-        await db_operation_helper.deleteUserAndRelatedInfo_async({account:testData.user.user1.account,name:testData.user.user1.name})
-        let userInfo=await component_function.reCreateUser_returnSessUserId_async({userData:testData.user.user1,app:app})
-        user1Sess=userInfo['sess']
-    })
-
-
-    it('inputValue miss mandatory recordInfo', async function() {
-        // let finalUrl='/user/uploadPhoto'
-        data={
-            values:{
-                [e_part.METHOD]:e_method.UPDATE,
-            }
-
-        }
-        let expectedErrorRc=controllerError.changePasswordInputRecordInfoFormatInCorrect.rc
-        await misc_help.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
-    })
-    it('inputValue miss mandatory recordInfo field oldPassword', async function() {
-        // let finalUrl='/user/uploadPhoto'
-        data={
-            values:{
-                [e_part.METHOD]:e_method.UPDATE,
-                [e_part.RECORD_INFO]:{
-                    'oldPassword':testData.user.user1.password,
-                    // 'newPassword':newPassword,
-                },
-            }
-
-        }
-        let expectedErrorRc=controllerError.changePasswordInputRecordInfoFormatInCorrect.rc
-        await misc_help.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
-    })
-    it('inputValue include extra method', async function() {
-        // let finalUrl='/user/uploadPhoto'
-        data={
-            values:{
-                [e_part.METHOD]:e_method.UPDATE,
-                [e_part.RECORD_INFO]:{
-                    'oldPassword':testData.user.user1.password,
-                    'newPassword':newPassword,
-                },
-            }
-        }
-        let expectedErrorRc=controllerError.changePasswordInputFormatNotExpected.rc
-        await misc_help.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
-    })
-
-    it('inputValue miss mandatory field value', async function() {
-        // let finalUrl='/user/uploadPhoto'
-        data={
-            values:{
-                // [e_part.METHOD]:e_method.UPDATE,
-                [e_part.RECORD_INFO]:{
-                    'oldPassword':testData.user.user1.password,
-                    'newPassword':null,
-                },
-            }
-        }
-        let expectedErrorRc=controllerError.missMandatoryField.rc
-        await misc_help.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
-    })
-
-    it('inputValue field value type incorrect', async function() {
-        // let finalUrl='/user/uploadPhoto'
-        data={
-            values:{
-                // [e_part.METHOD]:e_method.UPDATE,
-                [e_part.RECORD_INFO]:{
-                    'oldPassword':testData.user.user1.password,
-                    'newPassword':[newPassword],
-                },
-            }
-        }
-        let expectedErrorRc=controllerError.fieldValueTypeIncorrect.rc
-        await misc_help.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
-    })
-
-    it('inputValue field value pattern incorrect', async function() {
-        // let finalUrl='/user/uploadPhoto'
-        data={
-            values:{
-                // [e_part.METHOD]:e_method.UPDATE,
-                [e_part.RECORD_INFO]:{
-                    'oldPassword':testData.user.user1.password,
-                    'newPassword':'12',
-                },
-            }
-        }
-        let expectedErrorRc=controllerError.fieldValueFormatIncorrect.rc
-        await misc_help.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
-    })
-
-    it('inputValue old password incorrect', async function() {
-        // let finalUrl='/user/uploadPhoto'
-        data={
-            values:{
-                // [e_part.METHOD]:e_method.UPDATE,
-                [e_part.RECORD_INFO]:{
-                    'oldPassword':testData.user.user1.password+'1',
-                    'newPassword':newPassword,
-                },
-            }
-        }
-        let expectedErrorRc=controllerError.oldPasswordIncorrect.rc
-        await misc_help.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
-    })
-
-    it('inputValue not change ', async function() {
-        // let finalUrl='/user/uploadPhoto'
-        data={
-            values:{
-                // [e_part.METHOD]:e_method.UPDATE,
-                [e_part.RECORD_INFO]:{
-                    'oldPassword':testData.user.user1.password,
-                    'newPassword':testData.user.user1.password,
-                },
-            }
-        }
-        let expectedErrorRc=0
-        await misc_help.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
-    })
-
-    it('change password success ', async function() {
-        // let finalUrl='/user/uploadPhoto'
-        data={
-            values:{
-                // [e_part.METHOD]:e_method.UPDATE,
-                [e_part.RECORD_INFO]:{
-                    'oldPassword':testData.user.user1.password,
-                    'newPassword':newPassword,
-                },
-            }
-        }
-        let expectedErrorRc=0
-        await misc_help.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
-    })
-})
-
-
-describe('retrieve password: ', function() {
-    let data = {values:{}}, url = '', finalUrl = baseUrl + url,sess
-    before('recreate exist user3', async function(){
-        let userInfo=await component_function.reCreateUser_returnSessUserId_async({userData:testData.user.user3,app:app})
-        // console.log(`userInfo=======>${JSON.stringify(userInfo)}`)
-        sess=userInfo[`sess`]
-        // console.log(`sess=======>${JSON.stringify(sess)}`)
-    });
-
-
-    it('testData.user.user3 update new account', function(done) {
-        // console.log(`testData.user.user3 ${JSON.stringify(testData.user.user1)}`)
-        data.values.method=e_method.UPDATE
-        data.values[e_part.RECORD_INFO]={account:testData.user.user3NewAccount,}//,notExist:{value:123}
-        console.log(`data.values ${JSON.stringify(data.values)}`)
-        // console.log(`sess==============> ${JSON.stringify(sess)}`)
-        request.agent(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[sess]).send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-                // console.log(`res ${JSON.stringify(res['header']['set-cookie']['connect.sid'])}`)
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,0)
-                // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
-                done();
-            });
-
-    })
-
-
-
-    it('testData.user.user3 use old(qq) account retrieve password', function(done) {
-        // console.log(`testData.user.user3 ${JSON.stringify(testData.user.user1)}`)
-        url='retrievePassword'
-        finalUrl=baseUrl+url
-        delete data.values[e_part.METHOD]
-        delete data.values[e_part.RECORD_INFO]
-        data.values[e_part.SINGLE_FIELD]={account:testData.user.user3.account,}//,notExist:{value:123}
-        // console.log(`data.values ${JSON.stringify(data.values)}`)
-        // console.log(`sess==============> ${JSON.stringify(sess)}`)
-        request.agent(app).post(finalUrl).set('Accept', 'application/json').send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-                // console.log(`res ${JSON.stringify(res['header']['set-cookie']['connect.sid'])}`)
-                // console.log()
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,0)
-                // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
-                done();
-            });
-
-    })
-
-
-    after('delete new create testData.user.user3', async function() {
-        await db_operation_helper.deleteUserAndRelatedInfo_async({account:testData.user.user3NewAccount,name:testData.user.user3NewAccount.name})
-
-    })
-})
-
-
-
-describe('captcha: ', function() {
-    let url = 'captcha', finalUrl = baseUrl + url,sess
-    it('captcha', function(done) {
-        request.agent(app).post(finalUrl).set('Accept', 'application/json')
-            .end(function(err, res) {
-                // if (err) return done(err);
-                // console.log(`res ${JSON.stringify(res['header']['set-cookie']['connect.sid'])}`)
-                sess=res['header']['set-cookie'][0].split(';')[0]
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,0)
-                // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
-                done();
-            });
-
-    })
-
-    it('captcha interval check fail', function(done) {
-        request.agent(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[sess])
-            .end(function(err, res) {
-                // if (err) return done(err);
-                // console.log(`res ${JSON.stringify(res['header']['set-cookie']['connect.sid'])}`)
-
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                assert.deepStrictEqual(parsedRes.rc,controllerError.intervalBetween2CaptchaTooShort.rc)
-                // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
-                done();
-            });
-
-    })
-})
-
-
-describe('upload user photo by data url:', function() {
-    let data={values:{method:e_method.UPLOAD}}
-    let dataUrl='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAPb0lEQVR4nO3d+VOUd4LHcf6GqJPN6Uwllama3SRVmU02qWQnm5jRHK7GY3KMiZlEJ64Iyo3I2dw30tz3JZeczdnclwIiNwjddAOCaDK7M0mMHErT/d4fujE03dJgpoqu8FD1/kmt4ulXfaH70/2UFo+8FYmQ+WSx2d+AkABi1gkgZpYAYmYJIGaWAGJmCSBmlgBiZgkgZpYAYmYJIGaWAGJmCSBmlgBiZgkgZpYAYmYJIGaWAGJmCSBmlgBiZgkgZpYAYmYJIGaWAGJmCSBmllGQHbvEPP1BLP96OIkXPk7mhY+S+d3hJHZ+EMv2XeJN/6Z/yVn85+fB3O9oKG8dS+CISxF2IVX4JTYQlFxPQGIdXtHVWPkVs986nZc/Oa/7N0EPKITnD4Vt+sWZa9veDGLHG15GsygrDmA5SXEYZVWl9A3KUSgUyGQyRk…bYToSjlvXRduUJzcxONjQ1c7eqirbmGgbpzBifjPoj8LEsjlmjktgYYyG0RRwog6wAxHArvjYcwMtRJc3MzVVVVVFdX09LSQk11Kb3VzgYQyzO7Sn6WpWsndSD6GMhtBJD1g+hvU/eUIQwPdNLY2Eh1dTV1dXU0NTUhrSploM7DKAbKlSfExgAD+RkiI20FENMgq4dCL+5ORDMml9Hb20t7e/t9GElpIa0VQUYwXNCMe7A4cgr1qJXuhOhj3B06wZe2Lmx/WwBZEyQ90Y70RDvSdKUm2hMf74F7aCa2ojgsXSI44RjKcYdgjtn54+TuQlqCzapsSU2wJSXuFKnxVqTFn16RNYkxp/na8RxP7fnlf8hhvSC/fdOKV/edNcji2b2hrO6ZveHsfF/MU+9G8uSe8zy5J+J+T78bZvD3TfXMB6Fb4hMn6+6/wtn2ZojRhP+DyswSQMwsAcTMEkDMLAHEzBJAzCwBxMz6f9SU6ZZ2YGQaAAAAAElFTkSuQmCC'
-    data.values[e_part.RECORD_INFO]={[e_field.USER.PHOTO_DATA_URL]:dataUrl}
-    let finalUrl,url='',expectedErrorRc
-    before('user1 recreate and login ', async function() {
-        url = ''
-        finalUrl = baseUrl + url
-        // parameter[`APIUrl`]=finalUrl
-        let user1Info = await component_function.reCreateUser_returnSessUserId_async({
-            userData: testData.user.user1,
-            app: app
+        let tmpResult=await generateTestData.getUserCryotedUserId_async({app:app,adminApp:adminApp})
+
+        user1IdCryptedByUser1=tmpResult['user1IdCryptedByUser1']
+        user1IdCryptedByUser2=tmpResult['user1IdCryptedByUser2']
+        user1IdCryptedByUser3=tmpResult['user1IdCryptedByUser3']
+        user2IdCryptedByUser1=tmpResult['user2IdCryptedByUser1']
+        user2IdCryptedByUser2=tmpResult['user2IdCryptedByUser2']
+        user2IdCryptedByUser3=tmpResult['user2IdCryptedByUser3']
+        user3IdCryptedByUser1=tmpResult['user3IdCryptedByUser1']
+        user3IdCryptedByUser2=tmpResult['user3IdCryptedByUser2']
+        user3IdCryptedByUser3=tmpResult['user3IdCryptedByUser3']
+        user3IdCryptedByAdminRoot=tmpResult['user3IdCryptedByAdminRoot']
+        adminRootIdCryptedByUser1=tmpResult['adminRootIdCryptedByUser1']
+        user1Sess=tmpResult['user1Sess']
+        user2Sess=tmpResult['user2Sess']
+        user3Sess=tmpResult['user3Sess']
+        adminRootSess=tmpResult['adminRootSess']
+        user1Id=tmpResult['user1Id']
+        user2Id=tmpResult['user2Id']
+        user3Id=tmpResult['user3Id']
+        adminRootId=tmpResult['adminRootId']
+
+
+
+        /**     admin create penalize for user3     **/
+        adminRootSess = await adminUserComponentFunction.adminUserLogin_returnSess_async({
+            userData: testData.admin_user.adminRoot,
+            adminApp: adminApp
         })
-        user1Id = user1Info[`userId`]
-        user1Sess = user1Info[`sess`]
+        adminRootId = await db_operation_helper.getAdminUserId_async({userName: testData.admin_user.adminRoot.name})
+        //create penalize for user3
+        let adminRootSalt = await commonAPI.getTempSalt_async({sess: adminRootSess})
+        // ap.inf('root user salt',adminRootSalt)
+        let cryptedUser3Id = crypt.cryptSingleFieldValue({fieldValue: user3Id, salt: adminRootSalt}).msg
+        // ap.inf('cryptedUser3Id',cryptedUser3Id)
+        let penalizeInfoForUser3 = {
+            penalizeType: e_penalizeType.NO_UPLOAD_USER_PHOTO,
+            penalizeSubType: e_penalizeSubType.ALL,
+            // penalizedError:undefined, //错误根据具体method定义
+            [e_field.ADMIN_PENALIZE.DURATION]: 0,
+            [e_field.ADMIN_PENALIZE.REASON]: 'test reason, no indication',
+        }
+        await penalizeAPI.createPenalize_returnPenalizeId_async({
+            adminUserSess: adminRootSess,
+            penalizeInfo: penalizeInfoForUser3,
+            penalizedUserId: cryptedUser3Id,
+            adminApp: adminApp
+        })
+        console.log(`==============================================================`)
+        console.log(`=================    before all done      ====================`)
+        console.log(`==============================================================`)
+    });
+    /***        general      **/
+    describe('not match url', function() {
+        before('prepare', async function () {
+            url = 'uniqueCheck_async'
+            finalUrl = baseUrl + url
+        })
+        it('0.1 single field unique name check', async function () {
+            data.values = {}
+            data.values[e_part.SINGLE_FIELD] = {name: testData.user.user1.name}//,notExist:{value:123}
+            // ap.inf('finalUrl',finalUrl)
+            let sess = await userAPI.getFirstSession({app})
+            expectedErrorRc = systemError.noMatchRESTAPI.rc
+            await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl: finalUrl,sess: sess,data: data,expectedErrorRc: expectedErrorRc,app: app})
+        });
+    })
+    /***        create      **/
+    describe('create',async  function() {
+        before('prepare', async function () {
+            url = ''
+            finalUrl = baseUrl + url
+            data.values = {}
+        })
+        it('1.1 create: register unique name check fail', async function() {
+            let user1Tmp=objectDeepCopy(testData.user.user1)
+            user1Tmp['account']='19912341239'
+            data.values[e_part.RECORD_INFO]=user1Tmp
+            // data.values[e_part.RECORD_INFO]=testData.user.user1//
+            // data.values[e_part.CAPTCHA]=userComponentFunction.getCaptcha_async({app:app})
+            let sess=await userAPI.getFirstSession({app})
+            //生成并获得captcha(for create user)
+            await userAPI.genCaptcha({sess:sess,app:app})
+            let captcha=await userAPI.getCaptcha({sess:sess})
+            data.values[e_part.CAPTCHA]=captcha
+
+            expectedErrorRc=inputValueLogicCheckError.ifSingleFieldValueUnique_async.fieldValueNotUnique({}).rc
+            await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        });
+
+        it('1.2 create:register unique account check fail', async function() {
+            let user1Tmp=objectDeepCopy(testData.user.user1)
+            user1Tmp['name']='19912341234'
+            data.values[e_part.RECORD_INFO]=user1Tmp
+
+            let sess=await userAPI.getFirstSession({app})
+            //生成并获得captcha(for create user)
+            await userAPI.genCaptcha({sess:sess,app:app})
+            let captcha=await userAPI.getCaptcha({sess:sess})
+            data.values[e_part.CAPTCHA]=captcha
+
+            expectedErrorRc=inputValueLogicCheckError.ifSingleFieldValueUnique_async.fieldValueNotUnique({}).rc
+            await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+
+        });
+        //无法走到XSS，inputRule直接检查出来
+        it('1.3 create:name XSS check failed', async function() {
+            let user1Tmp=objectDeepCopy(testData.user.user1)
+            user1Tmp['name']='<alert>'
+            data.values[e_part.RECORD_INFO]=user1Tmp
+
+            let sess=await userAPI.getFirstSession({app})
+            //生成并获得captcha(for create user)
+            await userAPI.genCaptcha({sess:sess,app:app})
+            let captcha=await userAPI.getCaptcha({sess:sess})
+            data.values[e_part.CAPTCHA]=captcha
+
+            // expectedErrorRc=inputValueLogicCheckError.ifValueXSS.fieldValueXSS({fieldName:'name'}).rc
+            expectedErrorRc=browserInputRule.user.name.format.error.rc
+            await misc_helper.postDataToAPI_compareFieldRc_async({APIUrl:finalUrl,sess:sess,data:data,fieldName:'name',expectedErrorRc:expectedErrorRc,app:app})
+
+        });
+    })
+    describe('POST /user/uniqueCheck_async ', function() {
+        before('prepare', async function () {
+            url='uniqueCheck'
+            finalUrl=baseUrl+url
+        })
+        it('2.1.1 not login:single field unique name check', async function() {
+            data.values={}
+            data.values[e_part.SINGLE_FIELD]={name:testData.user.user1.name}//,notExist:{value:123}
+            // ap.inf('finalUrl',finalUrl)
+            let sess=await userAPI.getFirstSession({app})
+            expectedErrorRc=inputValueLogicCheckError.ifSingleFieldValueUnique_async.fieldValueNotUnique({}).rc
+            await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+
+        });
+
+        it('2.1.2 not login:unique account check', async function() {
+            data.values[e_part.SINGLE_FIELD]={account:testData.user.user1.account}//,notExist:{value:123}
+            let sess=await userAPI.getFirstSession({app})
+            expectedErrorRc=inputValueLogicCheckError.ifSingleFieldValueUnique_async.fieldValueNotUnique({}).rc
+            await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+
+        });
+
+        it('2.1.3 not login:unique: not support field check', async function() {
+            data.values[e_part.SINGLE_FIELD]={password:'123456'}//,notExist:{value:123}
+            let sess=await userAPI.getFirstSession({app})
+            // expectedErrorRc=controllerError.fieldNotSupport.rc
+            expectedErrorRc=controllerCheckerError.ifSingleFieldContainExpectField.singleFieldNotContainExpectedField.rc
+            await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        });
+
+        it('2.1.4 user login: unique name skip own name', async function() {
+            data.values[e_part.SINGLE_FIELD]={name:testData.user.user1.name}//,notExist:{value:123}
+            // let sess=await userAPI.getFirstSession({app})
+            expectedErrorRc=inputValueLogicCheckError.ifSingleFieldValueUnique_async.fieldValueNotUnique({}).rc
+            await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        });
+        it('2.1.5 user not login: unique name check all record', async function() {
+            data.values[e_part.SINGLE_FIELD]={name:testData.user.user1.name}//,notExist:{value:123}
+            let sess=await userAPI.getFirstSession({app})
+            expectedErrorRc=inputValueLogicCheckError.ifSingleFieldValueUnique_async.fieldValueNotUnique({}).rc
+            await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        });
+        it('2.1.6 user login: unique name XSS', async function() {
+            data.values[e_part.SINGLE_FIELD]={name:'<alert>'}//,notExist:{value:123}
+
+            expectedErrorRc=browserInputRule.user.name.format.error.rc
+            await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        });
     })
 
-    it('user upload data url', async function(){
-        url='uploadUserPhoto/'
-        finalUrl = baseUrl + url
-// ap.inf('user1Sess',user1Sess)
-        expectedErrorRc=0
-        await misc_help.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+    describe('upload photo ', function() {
+        before('prepare', async function () {
+            url='uploadUserPhoto'
+            finalUrl=baseUrl+url
+            data.values={}
+        })
+
+        it('2.2.1 upload photo: not login', async function() {
+            data.values[e_part.SINGLE_FIELD]={[e_field.USER.PHOTO_DATA_URL]:'123456'}//,notExist:{value:123}
+            let sess=await userAPI.getFirstSession({app})
+            expectedErrorRc=controllerError.dispatch.notLoginCantUpdateUserPhoto.rc
+            await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        })
+        it('2.2.2 upload photo: in penalize cant upload', async function() {
+
+            expectedErrorRc=controllerError.dispatch.put.userInPenalizeNoPhotoUpload.rc
+            // let sess=await API_helper.getFirstSession({app})
+            // ap.inf('sess',sess)
+            await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user3Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+            // ap.wrn('${image_path_for_test}gm_test.png',`${image_path_for_test}gm_test.png`)
+
+        })
+        it('2.2.3 upload photo: invalid single field name', async function() {
+            data.values[e_part.SINGLE_FIELD]={[e_field.USER.ACCOUNT]:'12341234123'}
+            expectedErrorRc=controllerCheckerError.ifSingleFieldContainExpectField.singleFieldNotContainExpectedField.rc
+            await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        })
+        it('2.2.4 upload photo: pci wh exceed', async function() {
+            data.values[e_part.SINGLE_FIELD]={[e_field.USER.PHOTO_DATA_URL]:testData.dataUrl.bigPicPNG}
+
+            expectedErrorRc=controllerError.uploadUserPhoto.imageSizeInvalid.rc
+            await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+
+        })
+/*        it('2.2.5 upload photo: pic format not allow(gif)', async function() {
+            data.values[e_part.SINGLE_FIELD]={[e_field.USER.PHOTO_DATA_URL]:testData.dataUrl.GIF}
+
+            expectedErrorRc=controllerError.uploadUserPhoto.imageFormatInvalid.rc
+            await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+
+        })*/
+        /**     rule检测出，而不是gm       **/
+        it('2.2.5 update user1 with  upload photo jpg failed', async  function() {
+            data.values[e_part.SINGLE_FIELD]={[e_field.USER.PHOTO_DATA_URL]:testData.dataUrl.iconJPG}
+            // ap.inf('data.values',data.values)
+            expectedErrorRc=browserInputRule.user.photoDataUrl.format.error.rc
+            await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        })
+        it('2.2.6 update user1 with  upload photo png successful', async  function() {
+            data.values[e_part.SINGLE_FIELD]={[e_field.USER.PHOTO_DATA_URL]:testData.dataUrl.iconPNG}
+            // ap.inf('data.values',data.values)
+            expectedErrorRc=0
+            await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        })
+    })
+
+
+    describe('user login:', function() {
+        let sess
+        before('prepare', async function () {
+            url='login'
+            finalUrl=baseUrl+url
+            data.values={}
+            sess=await userAPI.getFirstSession({app})
+        })
+
+
+        it('3.1 login:recordInfo contain less field than expected', async function() {
+            ap.inf('seee',sess)
+            // console.log(`notExistUserTmp ${JSON.stringify(notExistUserTmp)}`)
+            data.values[e_part.RECORD_INFO]={[e_field.USER.ACCOUNT]:testData.user.user1.account}//,notExist:{value:123}
+            await userAPI.genCaptcha({sess:sess,app:app})
+            let captcha=await userAPI.getCaptcha({sess:sess})
+            data.values[e_part.CAPTCHA]=captcha
+            expectedErrorRc=controllerError.login.loginFieldNumNotExpected.rc
+            await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+
+        })
+        it('3.2 login:recordInfo contain unexpected field', async function() {
+            let sess=await userAPI.getFirstSession({app})
+            // console.log(`notExistUserTmp ${JSON.stringify(notExistUserTmp)}`)
+            data.values[e_part.RECORD_INFO]={[e_field.USER.ACCOUNT]:testData.user.user1.account,[e_field.USER.NAME]:1234}//,notExist:{value:123}
+            await userAPI.genCaptcha({sess:sess,app:app})
+            let captcha=await userAPI.getCaptcha({sess:sess})
+            data.values[e_part.CAPTCHA]=captcha
+            expectedErrorRc=controllerError.login.loginMandatoryFieldNotExist().rc
+            await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+
+        })
+        it('3.3 user account/name not exist', async function() {
+            // console.log(`testData.user.userNotExist====>${JSON.stringify(testData.user.userNotExist)}`)
+            let notExistUserTmp=objectDeepCopy(testData.user.userNotExist)
+            // console.log(`notExistUserTmp====>${JSON.stringify(notExistUserTmp)}`)
+            delete notExistUserTmp['name']
+            delete notExistUserTmp['userType']
+            data.values[e_part.RECORD_INFO]=notExistUserTmp//,notExist:{value:123}
+            await userAPI.genCaptcha({sess:sess,app:app})
+            let captcha=await userAPI.getCaptcha({sess:sess})
+            data.values[e_part.CAPTCHA]=captcha
+            expectedErrorRc=controllerError.login.accountNotExist.rc
+            // console.log(`notExistUserTmp ${JSON.stringify(notExistUserTmp)}`)
+
+            await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+
+        })
+
+        it('3.4 user login with wrong password', async function() {
+            let user1Tmp=objectDeepCopy(testData.user.user1)
+            delete user1Tmp['name']        //使用账号登录
+            delete user1Tmp['userType']
+            // condition['account']['value']='12341234132'
+            // console.log(`testData.user.user1Tmp==============> ${JSON.stringify(testData.user.user1Tmp)}`)
+            user1Tmp['password']='12341234132'
+            // console.log(`testData.user.user1Tmp==============> ${JSON.stringify(testData.user.user1Tmp)}`)
+            // console.log(`testData.user.user1==============> ${JSON.stringify(testData.user.user1)}`)
+            data.values[e_part.RECORD_INFO]=user1Tmp//,notExist:{value:123}
+            await userAPI.genCaptcha({sess:sess,app:app})
+            let captcha=await userAPI.getCaptcha({sess:sess})
+            data.values[e_part.CAPTCHA]=captcha
+            expectedErrorRc=controllerError.login.accountPasswordNotMatch.rc
+            await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+
+        })
+        it('3.5 user login correct', async function() {
+            // console.log(`testData.user.user1 ${JSON.stringify(testData.user.user1)}`)
+            let user1Tmp=objectDeepCopy(testData.user.user1)
+            delete user1Tmp['name']
+            delete user1Tmp['userType']
+            data.values[e_part.RECORD_INFO]=user1Tmp//,notExist:{value:123}
+            await userAPI.genCaptcha({sess:sess,app:app})
+            let captcha=await userAPI.getCaptcha({sess:sess})
+            data.values[e_part.CAPTCHA]=captcha
+            expectedErrorRc=0
+            await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+
+        })
+    })
+
+    describe('update user： ', function() {
+        let sess
+        before('prepare', async function () {
+            url=''
+            finalUrl=baseUrl+url
+            data.values={}
+            sess=await userAPI.getFirstSession({app})
+        })
+        it('4.1 update: not login cant update',async  function() {
+            data.values={}//,notExist:{value:123}
+
+            expectedErrorRc=controllerError.dispatch.put.notLoginCantUpdateUserInfo.rc
+            await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        })
+        it('4.2 update: user1 with account not change', async function() {
+            // data.values.method=e_method.UPDATE
+            data.values[e_part.RECORD_INFO]={account:testData.user.user1.account}//,notExist:{value:123}
+            // console.log(`data.values ${JSON.stringify(data.values)}`)
+            // console.log(`sess ${JSON.stringify(sess)}`)
+            expectedErrorRc=0
+            await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+
+        })
+
+        it('4.3 update user1  with same account as user2',async  function() {
+            data.values[e_part.RECORD_INFO]={[e_field.USER.ACCOUNT]:testData.user.user2.account}//,notExist:{value:123}
+            expectedErrorRc=inputValueLogicCheckError.ifSingleFieldValueUnique_async.fieldValueNotUnique({}).rc
+            await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        })
+        /**         无法测试，无法构造出符合正则的XSS  **/
+/*        it('4.4 update： user1  XSS name',async  function() {
+            data.values[e_part.RECORD_INFO]={[e_field.USER.NAME]:'<alert>'}//,notExist:{value:123}
+            expectedErrorRc=inputValueLogicCheckError.ifValueXSS.fieldValueXSS({}).rc
+            await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        })*/
+
+        it('4.5 update testData.user.user1 with  password change', async  function() {
+            let newPassword='asdf456'
+            // data.values.method=e_method.UPDATE
+            data.values[e_part.RECORD_INFO]={password:newPassword}//,notExist:{value:123}
+            expectedErrorRc=0
+            await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+            // console.log(`data.values ${JSON.stringify(data.values)}`)
+            // console.log(`sess==============> ${JSON.stringify(sess)}`)
+
+        })
+
+
+        it('4.6 update testData.user.user1 account successfully(must disable duration check in updateUser_async)', async function() {
+            // data.values.method=e_method.UPDATE
+            data.values[e_part.RECORD_INFO]={account:'19912341234'}//,notExist:{value:123}
+            expectedErrorRc=0
+            await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+
+        })
+
+        it('4.7 update testData.user.user1 account too frequently(must enable duration check in updateUser_async)', async function() {
+            // data.values.method=e_method.UPDATE
+            data.values[e_part.RECORD_INFO]={account:'11912341235'}//,notExist:{value:123}
+            expectedErrorRc=controllerError.accountCantChange.rc
+            await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+
+        })
+
+
+    })
+
+    describe('change password:', function() {
+        let newPassword='oiqier123'
+        before('prepare', async function () {
+            url='changePassword'
+            finalUrl=baseUrl+url
+            data.values={}
+
+        })
+
+
+
+        it('5.1 inputValue miss mandatory recordInfo', async function() {
+            // let finalUrl='/user/uploadPhoto'
+            let expectedErrorRc=controllerError.changePasswordInputRecordInfoFormatInCorrect.rc
+            await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        })
+        it('5.2 inputValue miss mandatory recordInfo field oldPassword', async function() {
+            // let finalUrl='/user/uploadPhoto'
+            data={
+                values:{
+                    // [e_part.METHOD]:e_method.UPDATE,
+                    [e_part.RECORD_INFO]:{
+                        'oldPassword':testData.user.user1.password,
+                        // 'newPassword':newPassword,
+                    },
+                }
+
+            }
+            let expectedErrorRc=controllerError.changePasswordInputRecordInfoFormatInCorrect.rc
+            await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        })
+        it('5.3 inputValue include extra field', async function() {
+            // let finalUrl='/user/uploadPhoto'
+            data={
+                values:{
+                    // [e_part.METHOD]:e_method.UPDATE,
+                    [e_part.RECORD_INFO]:{
+                        'oldPassword':testData.user.user1.password,
+                        'newPassword':newPassword,
+                        'notExpected':1123,
+                    },
+                }
+            }
+            let expectedErrorRc=controllerError.changePasswordInputFormatNotExpected.rc
+            await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        })
+
+        it('5.4 inputValue miss mandatory field value', async function() {
+            // let finalUrl='/user/uploadPhoto'
+            data={
+                values:{
+                    // [e_part.METHOD]:e_method.UPDATE,
+                    [e_part.RECORD_INFO]:{
+                        'oldPassword':testData.user.user1.password,
+                        'newPassword':null,
+                    },
+                }
+            }
+            let expectedErrorRc=controllerError.missMandatoryField.rc
+            await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        })
+
+        it('5.5 inputValue field value type incorrect', async function() {
+            // let finalUrl='/user/uploadPhoto'
+            data={
+                values:{
+                    // [e_part.METHOD]:e_method.UPDATE,
+                    [e_part.RECORD_INFO]:{
+                        'oldPassword':testData.user.user1.password,
+                        'newPassword':[newPassword],
+                    },
+                }
+            }
+            let expectedErrorRc=controllerError.fieldValueTypeIncorrect.rc
+            await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        })
+
+        it('5.6 inputValue field value pattern incorrect', async function() {
+            // let finalUrl='/user/uploadPhoto'
+            data={
+                values:{
+                    // [e_part.METHOD]:e_method.UPDATE,
+                    [e_part.RECORD_INFO]:{
+                        'oldPassword':testData.user.user1.password,
+                        'newPassword':'12',
+                    },
+                }
+            }
+            let expectedErrorRc=controllerError.fieldValueFormatIncorrect.rc
+            await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        })
+        it('5.7 password not change', async function() {
+            // let finalUrl='/user/uploadPhoto'
+            data={
+                values:{
+                    // [e_part.METHOD]:e_method.UPDATE,
+                    [e_part.RECORD_INFO]:{
+                        'oldPassword':testData.user.user1.password,
+                        'newPassword':testData.user.user1.password,
+                    },
+                }
+            }
+            let expectedErrorRc=0
+            await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        })
+        it('5.8 inputValue old password incorrect', async function() {
+            // let finalUrl='/user/uploadPhoto'
+            data={
+                values:{
+                    // [e_part.METHOD]:e_method.UPDATE,
+                    [e_part.RECORD_INFO]:{
+                        'oldPassword':testData.user.user1.password+'1',
+                        'newPassword':newPassword,
+                    },
+                }
+            }
+            let expectedErrorRc=controllerError.oldPasswordIncorrect.rc
+            await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        })
+
+
+
+        it('5.9 change password success ', async function() {
+            // let finalUrl='/user/uploadPhoto'
+            data={
+                values:{
+                    // [e_part.METHOD]:e_method.UPDATE,
+                    [e_part.RECORD_INFO]:{
+                        'oldPassword':testData.user.user1.password,
+                        'newPassword':newPassword,
+                    },
+                }
+            }
+            let expectedErrorRc=0
+            await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        })
+    })
+
+    describe('retrieve password: ', function() {
+        before('prepare', async function () {
+            url='retrievePassword'
+            finalUrl=baseUrl+url
+            data.values={}
+
+        })
+/*        data = {values:{}}
+        url = 'retrievePassword'
+        finalUrl = baseUrl + url*/
+        /*    it('6.1 retrieve password: not login cant retrieve password',async  function() {
+                data.values={}//,notExist:{value:123}
+                let sess=await userAPI.getFirstSession({app})
+                expectedErrorRc=controllerError.dispatch.post.notLoginCantRetrievePassword.rc
+                await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+            })*/
+        it('6.1 wrong field', async  function() {
+            data.values[e_part.SINGLE_FIELD]={[e_field.USER.NAME]:testData.user.user3.name,}//,notExist:{value:123}
+            // ap.inf('data',data)
+            expectedErrorRc=controllerCheckerError.ifSingleFieldContainExpectField.singleFieldNotContainExpectedField.rc
+            await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user3Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        })
+        it('6.2 testData.user.user3 use  current account retrieve password', async  function() {
+            data.values[e_part.SINGLE_FIELD]={account:testData.user.user3.account,}//,notExist:{value:123}
+            expectedErrorRc=0
+            await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user3Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        })
+
+        it('6.3 retrieve password: testData.user.user3 user old account(qq) ', async  function() {
+
+            //update account
+            url = ''
+            finalUrl = baseUrl + url
+            data.values[e_part.RECORD_INFO]={account:testData.user.user3NewAccount,}//,notExist:{value:123}
+            expectedErrorRc=0
+            await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user3Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+
+            //retrieve password use not exist account, then will use old account
+            url = 'retrievePassword'
+            finalUrl = baseUrl + url
+            data = {values:{}}
+            data.values[e_part.SINGLE_FIELD]={account:testData.user.user3.account,}//,notExist:{value:123}
+            expectedErrorRc=0
+            await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user3Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        })
     })
 })
+
+
+
+
+
+

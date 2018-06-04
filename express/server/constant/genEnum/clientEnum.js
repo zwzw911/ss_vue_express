@@ -62,7 +62,7 @@ const DocumentStatus=
     {"1":"新建记录，但未提交","2":"新建记录，已经提交"}
 
 const AddFriendStatus=
-    {"1":"尚未处理","2":"接受","3":"拒绝","4":"接受但未分配"}
+    {"1":"尚未处理","2":"拒绝","3":"接受但未分配","4":"接受"}
 
 module.exports={
     ArticleStatus,

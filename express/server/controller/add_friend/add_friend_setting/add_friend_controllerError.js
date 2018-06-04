@@ -38,9 +38,11 @@ const controllerError={
     //51940~51960
     update:{
         notReceiverCantUpdate:{rc:51940,msg:`无权对他人添加朋友的请求进行处理`},
-        forbidUpdateFieldExist(fieldName){return {rc:51942,msg:{client:`输入错误`,server:`字段${fieldName}不允许被用户更新`}}},
-        mandatoryFieldNotExist:{rc:51944,msg:`必须字段不存在`},
-        statusValueInvalid:{rc:51946,msg:`状态的请求不正确`},
+        requestAlreadyBeTreatedCantDeclineAgain:{rc:51942,msg:{client:`添加好友请求已被处理`,server:`添加好友请求已经被处理，无法执行拒绝操作`}},
+        requestAlreadyBeAcceptCantAcceptAgain:{rc:51944,msg:{client:`添加好友请求已被同意`,server:`添加好友请求已经被同意，无法执行同意操作`}},
+        // forbidUpdateFieldExist(fieldName){return {rc:51942,msg:{client:`输入错误`,server:`字段${fieldName}不允许被用户更新`}}},
+        // mandatoryFieldNotExist:{rc:51944,msg:`必须字段不存在`},
+        // statusValueInvalid:{rc:51946,msg:`状态的请求不正确`},
     },
 
     //upload

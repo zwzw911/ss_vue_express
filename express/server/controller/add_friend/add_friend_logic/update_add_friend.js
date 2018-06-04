@@ -102,7 +102,7 @@ async function updateAddFriend_async({req,expectedPart,addFriendStatus,applyRang
     // dataConvert.constructUpdateCriteria(docValue,fkConfig[collName])
     // console.log(`docValue after constructUpdateCriteria============>${JSON.stringify(docValue)}`)
     /**********************************************/
-    /***********    用户权限检测    **************/
+    /***   用户权限检测(兼检查记录是否存在)    ****/
     /*********************************************/
     let originalDoc
     if(userType===e_allUserType.USER_NORMAL){
@@ -111,11 +111,26 @@ async function updateAddFriend_async({req,expectedPart,addFriendStatus,applyRang
             recordId:recordId,
             ownerFieldsName:[e_field.ADD_FRIEND.RECEIVER],
             userId:userId,
-            additionalCondition:{[e_field.ADD_FRIEND.STATUS]:e_addFriendStatus.UNTREATED}, //添加朋友的记录必须是未被处理
+            additionalCondition:undefined,//为了显示具体错误，不能设置额外条件{[e_field.ADD_FRIEND.STATUS]:{$in:[e_addFriendStatus.UNTREATED,e_addFriendStatus.DECLINE]}}, //
         })
         // ap.inf('originalDoc',originalDoc)
         if(false===originalDoc){
             return Promise.reject(controllerError.update.notReceiverCantUpdate)
+        }
+    }
+    /******************************************************************************************/
+    /*******   特定逻辑检查(可以在inputValueLogicValidCheck，因为没有recordInfo传入)    ******/
+    /*****************************************************************************************/
+    //如果被请求者要执行 拒绝 操作，那么原始请求的状态只能为UNTREATED
+    if(e_addFriendStatus.DECLINE===addFriendStatus){
+        if(originalDoc[e_field.ADD_FRIEND.STATUS]!==e_addFriendStatus.UNTREATED){
+            return Promise.reject(controllerError.update.requestAlreadyBeTreatedCantDeclineAgain)
+        }
+    }
+    //如果被请求者要执行 同意 操作，那么原始请求的状态只能为UNTREATED/REJECT（被请求者拒绝后，又同意）
+    if(e_addFriendStatus.ACCEPT_BUT_NOT_ASSIGN===addFriendStatus){
+        if(originalDoc[e_field.ADD_FRIEND.STATUS]!==e_addFriendStatus.UNTREATED && originalDoc[e_field.ADD_FRIEND.STATUS]!==e_addFriendStatus.DECLINE){
+            return Promise.reject(controllerError.update.requestAlreadyBeAcceptCantAcceptAgain)
         }
     }
 

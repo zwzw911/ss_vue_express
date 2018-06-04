@@ -39,6 +39,7 @@ const browserInputRule=require('../../constant/inputRule/browserInputRule').brow
 
 
 const getUser_async=require('./user_logic/get_user').getUser_async
+// const getOtherUser_async=require('./user_logic/get_user').getOtherUser_async
 const createUser_async=require('./user_logic/create_user').createUser_async
 const updateUser_async=require('./user_logic/update_user').updateUser_async
 const userLogin_async=require('./user_logic/user_login').login_async
@@ -74,15 +75,49 @@ async function dispatcher_async(req){
     let collName=controllerSetting.MAIN_HANDLED_COLL_NAME
     let expectedPart
     let result=dispatchError.common.unknownRequestUrl
-
+    let tmpResult
     //interval和robot检测
     await controllerPreCheck.commonPreCheck_async({req:req,collName:collName})
-    // ap.inf('commonPreCheck_async done')
+    ap.inf('commonPreCheck_async done')
     switch (req.route.stack[0].method) {
         case 'get':
             if(originalUrl==='/user' || originalUrl==='/user/') {
-                // ap.inf('start userStateCheck_async check')
+                userLoginCheck={
+                    needCheck:true,
+                    error:controllerError.dispatch.get.notLoginCantGetUserInfo
+                }
                 await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
+
+                //验证URL中的userId并重新赋值
+                if(undefined!==req.params.userId){
+
+
+
+                    //获得他人的userId
+                    /*********  url（get）中的objectId的检查，不使用单一函数，因为需要具体的错误信息  *********/
+                    let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
+                    let tempSalt=userInfo.tempSalt
+                    //判断加密的objectId格式
+                    let cryptedObjectId=req.params.userId
+                    // ap.inf('cryptedObjectId',cryptedObjectId)
+                    // ap.inf('tempSalt',tempSalt)
+                    if(false===controllerChecker.ifObjectIdCrypted({objectId:cryptedObjectId})){
+                        return Promise.reject(controllerError.dispatch.get.cryptedUserIdFormatInvalid)
+                    }
+                    //解密
+                    tmpResult=crypt.decryptSingleFieldValue({fieldValue:cryptedObjectId,salt:tempSalt})
+                    if(tmpResult.rc>0){
+                        return Promise.reject(tmpResult)
+                    }
+                    req.params.userId=tmpResult.msg
+                    // ap.inf('decryptedObjectId',req.params.folderId)
+                    //判断解密的objectId
+                    if(false===regex.objectId.test(req.params.userId)){
+                        return Promise.reject(controllerError.dispatch.get.decryptedUserIdFormatInvalid)
+                    }
+// ap.inf('req.params',req.params)
+                }
+
                 result= await getUser_async({req: req})
                 return Promise.resolve(result)
             }
@@ -163,11 +198,21 @@ async function dispatcher_async(req){
                 return Promise.resolve(result)
             }
             if(originalUrl==='/user/retrievePassword' || originalUrl==='/user/retrievePassword/') {
-                userLoginCheck={
+                //只是为了确保account这个字段必须存在（而并不是意味此操作为创建用户）
+                let applyRange=e_applyRange.CREATE
+                //retrievePassword无需登录，只需账号即可
+/*                userLoginCheck={
                     needCheck:true,
-                    error:controllerError.dispatch.notLoginCantRetrievePassword
+                    error:controllerError.dispatch.post.notLoginCantRetrievePassword
                 }
-                await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
+                await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})*/
+                expectedPart=[e_part.SINGLE_FIELD]
+                //是否为期望的part
+                result = controllerPreCheck.inputCommonCheck({req:req, expectedPart:expectedPart})
+                if (result.rc > 0) {return Promise.reject(result)}
+                result=controllerPreCheck.inputPreCheck({req:req,expectedPart:expectedPart,collName:collName,applyRange:applyRange,arr_currentSearchRange:arr_currentSearchRange})
+                // ap.inf('create use inputPreCheck result',result)
+                if(result.rc>0){return Promise.reject(result)}
                 result = await retrievePassword_async({req: req})
                 return Promise.resolve(result)
             }
@@ -185,7 +230,7 @@ async function dispatcher_async(req){
                 // ap.inf('req.body.values',req.body.values)
                 userLoginCheck={
                     needCheck:true,
-                    error:controllerError.dispatch.notLoginCantUpdateUserInfo
+                    error:controllerError.dispatch.put.notLoginCantUpdateUserInfo
                 }
                 await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
                 expectedPart=[e_part.RECORD_INFO]
@@ -237,7 +282,7 @@ async function dispatcher_async(req){
                 penalizeCheck={
                     penalizeType:e_penalizeType.NO_UPLOAD_USER_PHOTO,
                     penalizeSubType:e_penalizeSubType.UPDATE,
-                    penalizeCheckError:controllerError.dispatch.userInPenalizeNoPhotoUpload
+                    penalizeCheckError:controllerError.dispatch.put.userInPenalizeNoPhotoUpload
                 }
                 await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
                 // ap.inf('userStateCheck_async done')

@@ -78,6 +78,14 @@ async  function createAddFriend_async({req,applyRange}){
     let {userId,userCollName,userType,userPriority,tempSalt}=userInfo
     // ap.print('docValue',docValue)
 
+    /************************************************/
+    /****     singleField field check      **********/
+    /************************************************/
+    tmpResult=controllerChecker.ifSingleFieldContainExpectField({singleFieldValue:docValue,expectedFieldNames:[e_field.USER.PHOTO_DATA_URL]})
+    if(tmpResult.rc>0){
+        return Promise.reject(tmpResult)
+    }
+
     /**********************************************/
     /********  删除null/undefined的字段  *********/
     /*********************************************/

@@ -8,7 +8,7 @@ const express = require('express');
 const router = express.Router();
 const server_common_file_require=require('../../../server_common_file_require')
 const genFinalReturnResult=server_common_file_require.misc.genFinalReturnResult//require('../../function/assist/misc').genFinalReturnResult
-
+const systemError=server_common_file_require.systemError
 /*              dispatch require                 */
 const dispatcher_async=require('./impeach_comment_dispatch').dispatcher_async
 
@@ -48,6 +48,11 @@ router.post('/image',function(req,res,next){
 
         }
     )
+})
+
+router.all('*',function(req,res,next){
+    // ap.inf('systemError.systemError.noMatchRESTAPI',systemError.systemError.noMatchRESTAPI)
+    return res.json(genFinalReturnResult(systemError.systemError.noMatchRESTAPI))
 })
 
 module.exports={router}

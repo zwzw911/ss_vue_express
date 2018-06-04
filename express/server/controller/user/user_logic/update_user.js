@@ -138,34 +138,46 @@ async function updateUser_async({req}){
         // console.log(`originUserInfo=======》${JSON.stringify(originUserInfo)}`)
         // console.log(`docValue=======》${JSON.stringify(docValue)}`)
         let originalUsedAccount=originUserInfo[e_field.USER.USED_ACCOUNT]
+        let currentUserAccount=originUserInfo[e_field.USER.ACCOUNT]
         let toBeUpdateAccountValue=docValue[e_field.USER.ACCOUNT]
+        // ap.inf('originalUsedAccount',originalUsedAccount)
+        // ap.inf('toBeUpdateAccountValue',toBeUpdateAccountValue)
+        // ap.inf('currentUserAccount',currentUserAccount)
         // console.log(`originalUsedAccount=======》${JSON.stringify(originalUsedAccount)}`)
         // console.log(`toBeUpdateAccountValue=======》${JSON.stringify(toBeUpdateAccountValue)}`)
         //要更新的account没有在历史记录中
-        if(-1===originalUsedAccount.indexOf(toBeUpdateAccountValue)){
-            //检测历史记录的长度
-            while (originalUsedAccount.length>=maxNumber.user.maxUsedAccountNum){
-                originalUsedAccount.shift()
-            }
-            // console.log(`=======>not used`)
-            //检查更改账号的间隔
-            if(e_env.PROD===currentEnv){
-                let duration=(Date.now()-originUserInfo[e_field.USER.LAST_ACCOUNT_UPDATE_DATE])/1000/60
-                // console.log(`duration=======>${duration}`)
-                if(duration<miscConfiguration.user.accountMinimumChangeDurationInHours){
-                    return Promise.reject(controllerError.accountCantChange)
+        if(originalUsedAccount.length>0){
+            if(-1===originalUsedAccount.indexOf(toBeUpdateAccountValue)){
+                //检测历史记录的长度
+                while (originalUsedAccount.length>=maxNumber.user.maxUsedAccountNum){
+                    originalUsedAccount.shift()
                 }
-            }
+                // console.log(`=======>not used`)
+                //检查更改账号的间隔
+                if(e_env.PROD===currentEnv){
+                    let duration=(Date.now()-originUserInfo[e_field.USER.LAST_ACCOUNT_UPDATE_DATE])/1000/60
+                    // console.log(`duration=======>${duration}`)
+                    if(duration<miscConfiguration.user.accountMinimumChangeDurationInHours){
+                        return Promise.reject(controllerError.accountCantChange)
+                    }
+                }
 
-            originalUsedAccount.push(toBeUpdateAccountValue)
-            // console.log(`originalUsedAccount=======>${JSON.stringify(originalUsedAccount)}`)
-            docValue[e_field.USER.USED_ACCOUNT]=originalUsedAccount
-            // console.log(`docValue=======>${JSON.stringify(docValue)}`)
-            //添加最近一次更改账号的时间
-            docValue[e_field.USER.LAST_ACCOUNT_UPDATE_DATE]=Date.now()
-            // console.log(`docValue=======>not used`)
+                originalUsedAccount.push(currentUserAccount)
+                // console.log(`originalUsedAccount=======>${JSON.stringify(originalUsedAccount)}`)
+
+                // console.log(`docValue=======>not used`)
+            }
+        }
+        //USED_ACCOUNT为空，直接赋值[]。并push
+        else{
+            // originalUsedAccount=[]
+            originalUsedAccount.push(currentUserAccount)
         }
 
+        docValue[e_field.USER.USED_ACCOUNT]=originalUsedAccount
+        // console.log(`docValue=======>${JSON.stringify(docValue)}`)
+        //添加最近一次更改账号的时间
+        docValue[e_field.USER.LAST_ACCOUNT_UPDATE_DATE]=Date.now()
         // console.log(`.USER.USED_ACCOUNT======>${JSON.stringify(docValue)}`)
     }
 
@@ -187,7 +199,7 @@ async function updateUser_async({req}){
      if(undefined!==docValue[e_field.USER.ACCOUNT]){
 
      }*/
-
+// ap.inf('update docvalue',docValue)
     await common_operation_model.update_returnRecord_async({dbModel:e_dbModel[e_coll.USER],id:userId,values:docValue})
     return Promise.resolve({rc:0})
 

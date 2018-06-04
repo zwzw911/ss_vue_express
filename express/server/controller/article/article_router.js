@@ -20,6 +20,7 @@ const genFinalReturnResult=server_common_file_require.misc.genFinalReturnResult
 // const article_comment_logic=require('./article_comment_logic')
 // const article_upload_file_logic=require('./article_upload_file_logic')
 // const likeDislike_logic=require('./liekDislike_logic')
+const systemError=server_common_file_require.systemError
 
 const e_uploadFileType=nodeEnum.UploadFileType
 
@@ -114,7 +115,10 @@ router.post('/likeDislike',function(req,res,next){
 
 
 
-
+router.all('*',function(req,res,next){
+    // ap.inf('systemError.systemError.noMatchRESTAPI',systemError.systemError.noMatchRESTAPI)
+    return res.json(genFinalReturnResult(systemError.systemError.noMatchRESTAPI))
+})
 
 
 

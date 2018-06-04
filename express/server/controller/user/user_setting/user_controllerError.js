@@ -6,11 +6,23 @@
 
 const controllerError={
     dispatch:{
-        notLoginCantRetrievePassword:{rc:50100,msg:`尚未登录，无法重置密码`},
-        notLoginCantUpdateUserInfo:{rc:50100,msg:`尚未登录，无法更新用户信息`},
+        'get':{
+            notLoginCantGetUserInfo:{rc:50100,msg:`尚未登录，无法获得用户信息`},
+            cryptedUserIdFormatInvalid:{rc:50100,msg:{client:`用户ID不正确`,server:`加密的userId的格式不正确`}},
+            decryptedUserIdFormatInvalid:{rc:50100,msg:{client:`用户ID不正确`,server:`解密后的userId的格式不正确`}},
+        },
+        'put':{
+            notLoginCantUpdateUserInfo:{rc:50100,msg:`尚未登录，无法更新用户信息`},
+            userInPenalizeNoPhotoUpload:{rc:50131,msg:`您被禁止上传头像`},
+        },
+        'post':{
+            notLoginCantRetrievePassword:{rc:50100,msg:`尚未登录，无法重置密码`},
+        },
+
+
         notLoginCantUpdatePassword:{rc:50100,msg:`尚未登录，无法更新密码`},
         notLoginCantUpdateUserPhoto:{rc:50100,msg:`尚未登录，无法上传头像`},
-        userInPenalizeNoPhotoUpload:{rc:50131,msg:`您被禁止上传头像`},
+
     },
     /*              common                          */
 
@@ -38,7 +50,11 @@ const controllerError={
     accountCantChange:{rc:50120,msg:`更改账号过于频繁，请明天再试`},
 
     /*              retrievePassword_async          */
-    accountNotUnique:{rc:50122,msg:`账号错误，请联系管理员`},
+    retrievePassword:{
+        fieldNameWrong:{rc:50121,msg:{client:`输入值错误`,server:``}},
+        accountNotUnique:{rc:50122,msg:`账号错误，请联系管理员`},
+    },
+
 
     /*              upload user photo               */
     uploadUserPhoto:{

@@ -251,7 +251,44 @@ async function getAddFriendRequest_async({originatorId,receiverId}){
             })
     return Promise.resolve(result)
 }*/
+/***        获得resourceProfile的设置，以便恢复       ***/
+async function getResourceProfileSetting_async({resourceRange,resourceType}){
+    let condition={}
+    if(undefined!==resourceRange){
+        condition[e_field.RESOURCE_PROFILE.RESOURCE_RANGE]=resourceRange
+    }
+    if(undefined!==resourceType){
+        condition[e_field.RESOURCE_PROFILE.RESOURCE_TYPE]=resourceType
+    }
+    let tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.resource_profile,condition:condition})
+    if(tmpResult.length!==1){
+        return Promise.reject('没有找到正确的profile')
+    }
 
+    return Promise.resolve({num:tmpResult[0][e_field.RESOURCE_PROFILE.MAX_NUM],size:tmpResult[0][e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]})
+}
+async function changeResourceProfileSetting_async({resourceRange,resourceType,num,size}){
+    let condition={}
+    if(undefined!==resourceRange){
+        condition[e_field.RESOURCE_PROFILE.RESOURCE_RANGE]=resourceRange
+    }
+    if(undefined!==resourceType){
+        condition[e_field.RESOURCE_PROFILE.RESOURCE_TYPE]=resourceType
+    }
+    let tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.resource_profile,condition:condition})
+    if(tmpResult.length!==1){
+        return Promise.reject('没有找到正确的profile')
+    }
+    let recordId=tmpResult[0]['_id']
+    let updateValue={}
+    if(undefined!==num){
+        updateValue[e_field.RESOURCE_PROFILE.MAX_NUM]=num
+    }
+    if(undefined!==size){
+        updateValue[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]=size
+    }
+    await common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel.resource_profile,id:recordId,updateFieldsValue:updateValue})
+}
 module.exports={
     deleteUserAndRelatedInfo_async,
     deleteAdminUserAndRelatedInfo_async,
@@ -273,4 +310,6 @@ module.exports={
 
     getAddFriendRequest_async,
     // findByIdAndUpdate_returnRecord_async,
+    getResourceProfileSetting_async,
+    changeResourceProfileSetting_async,
 }

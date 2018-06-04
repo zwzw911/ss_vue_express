@@ -24,7 +24,9 @@ app.set('view engine', 'jade');*/
 
 app.use(logger('dev'));
 app.use(bodyParser.json());
+// ap.inf('bodyParser.json() done')
 app.use(bodyParser.urlencoded({ extended: false }));
+// ap.inf('bodyParser.urlencoded done')
 app.use(cookieParser());
 app.set('trust proxy',appSetting['trust_proxy'])
 // app.use(express.static(path.join(__dirname, 'public')));

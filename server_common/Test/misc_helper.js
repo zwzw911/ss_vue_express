@@ -43,6 +43,25 @@ async function postDataToAPI_compareCommonRc_async({APIUrl,sess,data,expectedErr
     })
 }
 
+async function postDataWithFileToAPI_compareCommonRc_async({APIUrl,sess,data,filePath,expectedErrorRc,app}){
+    request(app).post(finalUrl).field('name','file')
+    // .attach('file','H:/ss_vue_express/培训结果1.png')
+        .attach('file',filePath)
+        // .attach('file','H:/ss_vue_express/gm_test.png')
+        .set('Cookie',[sess])
+        // .send(data)
+        .set('Accept', 'application/json')
+        .end(function(err, res) {
+            // if (err) return done(err);
+            // console.log(`res ${JSON.stringify(res['header']['set-cookie']['connect.sid'])}`)
+            // console.log(`parsedRes ${JSON.stringify(res)}`)
+            let parsedRes=JSON.parse(res.text)
+            // console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
+            assert.deepStrictEqual(parsedRes.rc,expectedErrorRc)
+            // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
+            return resolve()
+        });
+}
 
 async function putDataToAPI_compareFieldRc_async({APIUrl,sess,data,expectedErrorRc,fieldName,app}){
     return new Promise(function(resolve,reject){
@@ -70,8 +89,8 @@ async function putDataToAPI_compareCommonRc_async({APIUrl,sess,data,expectedErro
                 // console.log(`res is ${JSON.stringify(res)}`)
                 let parsedRes = JSON.parse(res.text)
                 // console.log(`sess=======>${JSON.stringify(sess)}`)
-                console.log(`data.values of common===========>${JSON.stringify(data.values)}`)
-                console.log(`parsedRes of common  ===========>${JSON.stringify(parsedRes)}`)
+                // console.log(`data.values of common===========>${JSON.stringify(data.values)}`)
+                // console.log(`parsedRes of common  ===========>${JSON.stringify(parsedRes)}`)
                 // assert.deepStrictEqual(parsedRes.rc, 99999)
                 assert.deepStrictEqual(parsedRes.rc, expectedErrorRc)
                 return resolve(parsedRes)

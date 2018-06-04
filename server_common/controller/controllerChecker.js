@@ -322,9 +322,9 @@ async function ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({dbMod
     if(undefined!==additionalCondition){
         Object.assign(condition,additionalCondition)
     }
-    // ap.inf('condition',condition)
+    ap.inf('condition',condition)
     tmpResult=await  common_operation_model.find_returnRecords_async({dbModel:dbModel,condition:condition})
-    // ap.inf('result',tmpResult)
+    ap.inf('result',tmpResult)
     if(tmpResult.length===1){
         return Promise.resolve(tmpResult[0])
     }else{
@@ -528,6 +528,16 @@ function ifObjectIdInGetCrypted({objectId}){
 
 
 
+/**     singleField中的fieldName是否为期望的    **/
+function ifSingleFieldContainExpectField({singleFieldValue,expectedFieldNames}){
+    let fieldName=Object.keys(singleFieldValue)[0]
+    if(-1===expectedFieldNames.indexOf(fieldName)){
+        return checkerError.ifSingleFieldContainExpectField.singleFieldNotContainExpectedField
+    }
+
+    return {rc:0}
+}
+
 
 module.exports= {
     // ifFieldValueExistInColl_async,// 检测字段值是否已经在db中存在
@@ -558,4 +568,6 @@ module.exports= {
     ifObjectIdInPartCrypted_async,
     ifObjectIdInGetCrypted,
     // checkInterval_async,
+
+    ifSingleFieldContainExpectField,
 }

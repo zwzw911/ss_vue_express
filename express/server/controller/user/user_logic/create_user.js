@@ -75,8 +75,8 @@ async  function createUser_async({req}){
     /************************************************/
     let collName=e_coll.USER
     let docValue=req.body.values[e_part.RECORD_INFO]
-
-
+// ap.inf('collName',collName)
+// ap.inf('docValue',docValue)
     /**********************************************/
     /********  删除undefined/null字段  ***********/
     /*********************************************/

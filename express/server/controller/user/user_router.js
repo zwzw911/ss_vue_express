@@ -14,6 +14,7 @@ const router = express.Router();
 
 const server_common_file_require=require('../../../server_common_file_require')
 
+const systemError=server_common_file_require.systemError
 
 const genFinalReturnResult=server_common_file_require.misc.genFinalReturnResult//require('../../function/assist/misc').genFinalReturnResult
 const userDispatcher_async=require('./user_dispatcher').dispatcher_async
@@ -75,6 +76,20 @@ router.get('/',function(req,res,next){
         }
     )
 })
+router.get('/:userId',function(req,res,next){
+    // ap.inf('match url')
+    userDispatcher_async(req).then(
+        (v)=>{
+            ap.inf(`user get success, result:  ${JSON.stringify(v)}`)
+            return res.json(v)
+        },
+        (err)=>{
+            ap.err(`user get fail: ${JSON.stringify(err)}`)
+            return res.json(genFinalReturnResult(err))
+        }
+    )
+})
+
 
 router.post('/login',function(req,res,next){
     // ap.inf('match url')
@@ -142,7 +157,7 @@ router.put('/changePassword',function(req,res,next){
 })
 
 router.put('/uploadUserPhoto',function(req,res,next){
-    // ap.inf('put upload user photo in')
+    ap.inf('put upload user photo in')
     userDispatcher_async(req).then(
         (v)=>{
             ap.inf(`upload photo  success, result:  ${JSON.stringify(v)}`)
@@ -168,6 +183,11 @@ router.get('/captcha',function(req,res,next){
         }
     )
 
+})
+
+router.all('*',function(req,res,next){
+    // ap.inf('systemError.systemError.noMatchRESTAPI',systemError.systemError.noMatchRESTAPI)
+    return res.json(genFinalReturnResult(systemError.systemError.noMatchRESTAPI))
 })
 
 module.exports={router}

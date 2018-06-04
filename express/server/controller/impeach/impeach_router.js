@@ -15,7 +15,7 @@ const nodeEnum=server_common_file_require.nodeEnum
 const mongoEnum=server_common_file_require.mongoEnum
 
 const genFinalReturnResult=server_common_file_require.misc.genFinalReturnResult
-
+const systemError=server_common_file_require.systemError
 // const impeach_logic=require('./impeach_logic')
 // const impeachComment_logic=require('./impeachComment_logic_bk')
 // const article_comment_logic=require('./article_comment_logic')
@@ -164,7 +164,10 @@ router.post('/impeachCommentAttachment',function(req,res,next){
 
 
 
-
+router.all('*',function(req,res,next){
+    // ap.inf('systemError.systemError.noMatchRESTAPI',systemError.systemError.noMatchRESTAPI)
+    return res.json(genFinalReturnResult(systemError.systemError.noMatchRESTAPI))
+})
 
 
 module.exports={router}

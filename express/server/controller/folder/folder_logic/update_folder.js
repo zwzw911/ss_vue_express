@@ -93,7 +93,7 @@ async function updateFolder_async({req,applyRange}){
         return Promise.reject(controllerError.update.inValidFolderId)
     }*/
     /**********************************************/
-    /***********    用户权限检测    **************/
+    /***    用户权限检测(兼检查记录是否存在)   ***/
     /*********************************************/
     let originalDoc
     if(userType===e_allUserType.USER_NORMAL){

@@ -44,7 +44,8 @@ const e_penalizeSubType=mongoEnum.PenalizeSubType.DB
 const e_impeachState=mongoEnum.ImpeachState.DB
 const e_addFriendStatus=mongoEnum.AddFriendStatus.DB
 const e_impeachAdminAction=mongoEnum.ImpeachAdminAction.DB
-
+const e_resourceRange=mongoEnum.ResourceRange.DB
+const e_resourceType=mongoEnum.ResourceType.DB
 
 const e_dbModel=require('../../server/constant/genEnum/dbModel')
 
@@ -55,7 +56,7 @@ const validateError=server_common_file_require.validateError//require('../../ser
 const controllerHelperError=server_common_file_require.helperError.helper//require('../../server/constant/error/controller/helperError').helper
 const controllerCheckerError=server_common_file_require.helperError.checker
 const inputValueLogicCheckError=server_common_file_require.helperError.inputValueLogicCheck
-const resourceCheck=server_common_file_require.helperError.resourceCheck
+const resourceCheckError=server_common_file_require.helperError.resourceCheck
 // const common_operation_model=server_common_file_require.common_operation_model
 /****************  公共函数 ********************/
 const objectDeepCopy=server_common_file_require.misc.objectDeepCopy
@@ -311,7 +312,13 @@ describe('dispatch', function() {
         data={values:{[e_part.RECORD_ID]:user1ParentFolderIdGetByUser2Crypted,[e_part.RECORD_INFO]:{[e_field.FOLDER.NAME]:'test'}}}
         await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user2Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
     });
-
+    it('3.2.2 update: recordId not exist ', async function() {
+        finalUrl=baseUrl
+        expectedErrorRc=controllerError.update.notAuthorCantUpdateFolder.rc
+        let unExistRecordId=await commonAPI.cryptObjectId_async({objectId:testData.unExistObjectId,sess:user2Sess})
+        data={values:{[e_part.RECORD_ID]:unExistRecordId,[e_part.RECORD_INFO]:{[e_field.FOLDER.NAME]:'test'}}}
+        await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user2Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+    });
     it('3.3 update:parentId cant be self', async function() {
         finalUrl=baseUrl
         expectedErrorRc=controllerError.update.parentFolderIdCantBeSelf.rc
@@ -364,7 +371,7 @@ describe('dispatch', function() {
         finalUrl=baseUrl
         // normalRecord[e_field.FOLDER.NAME]='test'
         normalRecord[e_field.FOLDER.PARENT_FOLDER_ID]=user1ParentFolderIdCrypted
-        expectedErrorRc=resourceCheck.ifEnoughResource_async.totalFolderNumExceed({}).rc
+        expectedErrorRc=resourceCheckError.ifEnoughResource_async.totalFolderNumExceed({}).rc
         // let sess=await userAPI.getFirstSession({app})
         data.values={[e_part.RECORD_INFO]:normalRecord}
         await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})

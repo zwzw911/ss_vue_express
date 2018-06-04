@@ -14,7 +14,7 @@ const router = express.Router();
 
 const server_common_file_require=require('../../../server_common_file_require')
 
-
+const systemError=server_common_file_require.systemError
 const genFinalReturnResult=server_common_file_require.misc.genFinalReturnResult//require('../../function/assist/misc').genFinalReturnResult
 const userDispatcher_async=require('./admin_dispatcher').dispatcher_async
 const userMiscFunc=require('./admin_logic/admin_misc_func')
@@ -154,4 +154,8 @@ router.get('/captcha',function(req,res,next){
 
 })
 
+router.all('*',function(req,res,next){
+    // ap.inf('systemError.systemError.noMatchRESTAPI',systemError.systemError.noMatchRESTAPI)
+    return res.json(genFinalReturnResult(systemError.systemError.noMatchRESTAPI))
+})
 module.exports={router}
