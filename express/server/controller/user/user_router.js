@@ -9,7 +9,6 @@
 const ap=require('awesomeprint')
 
 const express = require('express');
-//var app=express()
 const router = express.Router();
 
 const server_common_file_require=require('../../../server_common_file_require')
@@ -157,7 +156,7 @@ router.put('/changePassword',function(req,res,next){
 })
 
 router.put('/uploadUserPhoto',function(req,res,next){
-    ap.inf('put upload user photo in')
+    // ap.inf('put upload user photo in')
     userDispatcher_async(req).then(
         (v)=>{
             ap.inf(`upload photo  success, result:  ${JSON.stringify(v)}`)

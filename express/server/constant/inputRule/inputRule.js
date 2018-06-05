@@ -1,4 +1,4 @@
-/*    gene by H:\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-6-1   */ 
+/*    gene by H:\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-6-5   */ 
  
 "use strict"
 const inputRule={
@@ -347,6 +347,15 @@ const inputRule={
             min:{"define":1,"error":{"rc":101256,"msg":"目录层级最小为1"},"mongoError":{"rc":201256,"msg":"目录层级最小为1"}},
         },
     },
+    tag:{
+        name:{
+            chineseName:"标签名称",
+            dataType:"string",
+            applyRange:["create"],
+            require:{"define":{"create":true},"error":{"rc":101400,"msg":"标签名称不能为空"},"mongoError":{"rc":201400,"msg":"标签名称不能为空"}},
+            format:{"define":/^[\u4E00-\u9FFF\w]{2,20}$/,"error":{"rc":101402,"msg":"标签名必须由2-20个字符组成"},"mongoError":{"rc":201402,"msg":"标签名必须由2-20个字符组成"}},
+        },
+    },
     like_dislike:{
         articleId:{
             chineseName:"文档",
@@ -355,12 +364,6 @@ const inputRule={
             require:{"define":{"create":true},"error":{"rc":101300,"msg":"文档不能为空"},"mongoError":{"rc":201300,"msg":"文档不能为空"}},
             format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":101302,"msg":"文档必须是objectId"},"mongoError":{"rc":201302,"msg":"文档必须是objectId"}},
         },
-        like:{
-            chineseName:"喜欢",
-            dataType:"boolean",
-            applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":101304,"msg":"喜欢不能为空"},"mongoError":{"rc":201304,"msg":"喜欢不能为空"}},
-        },
         authorId:{
             chineseName:"提交者",
             dataType:"objectId",
@@ -368,14 +371,11 @@ const inputRule={
             require:{"define":{"create":true},"error":{"rc":101350,"msg":"提交者不能为空"},"mongoError":{"rc":201350,"msg":"提交者不能为空"}},
             format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":101352,"msg":"提交者必须是objectId"},"mongoError":{"rc":201352,"msg":"提交者必须是objectId"}},
         },
-    },
-    tag:{
-        name:{
-            chineseName:"标签名称",
-            dataType:"string",
+        like:{
+            chineseName:"喜欢",
+            dataType:"boolean",
             applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":101400,"msg":"标签名称不能为空"},"mongoError":{"rc":201400,"msg":"标签名称不能为空"}},
-            format:{"define":/^[\u4E00-\u9FFF\w]{2,20}$/,"error":{"rc":101402,"msg":"标签名必须由2-20个字符组成"},"mongoError":{"rc":201402,"msg":"标签名必须由2-20个字符组成"}},
+            require:{"define":{"create":true},"error":{"rc":101354,"msg":"喜欢不能为空"},"mongoError":{"rc":201354,"msg":"喜欢不能为空"}},
         },
     },
     member_penalize:{

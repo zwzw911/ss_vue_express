@@ -280,9 +280,9 @@ async function businessLogic_async({docValue,collName,recordId,addFriendStatus,a
     }
 
     /***         数据库操作            ***/
-    let createdRecord= await common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel[collName],id:recordId,updateFieldsValue:docValue,updateOption:undefined})
+    let updatedRecord= await common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel[collName],id:recordId,updateFieldsValue:docValue,updateOption:undefined})
 
-    return Promise.resolve(createdRecord.toObject())
+    return Promise.resolve(updatedRecord.toObject())
 }
 
 module.exports={

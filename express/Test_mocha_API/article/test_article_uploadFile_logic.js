@@ -31,7 +31,7 @@ const browserInputRule=require('../../server/constant/inputRule/browserInputRule
 const validateError=server_common_file_require.validateError//require('../../server/constant/error/va').validateError
 const helpError=server_common_file_require.helperError.helper//require('../../server/constant/error/controller/helperError').helper
 
-const controllerError=require('../../server/controller/article/article_upload_file_setting/article_upload_file_controllerError').controllerError
+const controllerError=require('../../server/controller/article/not_used_article_upload_file_setting/article_upload_file_controllerError').controllerError
 
 // const objectDeepCopy=server_common_file_require.misc.objectDeepCopy
 

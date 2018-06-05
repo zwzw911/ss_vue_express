@@ -278,7 +278,7 @@ async function findById_returnRecord_async({dbModel,id,selectedFields='-cDate -u
     return Promise.resolve(result)
 }
 
-
+//返回（空）数组
 async function find_returnRecords_async({dbModel,condition,selectedFields='-cDate -uDate -dDate',options={},populateOpt}){
     // console.log(`find by id :${id}`)
     // console.log(`find condition==========================>${JSON.stringify(condition)}`)

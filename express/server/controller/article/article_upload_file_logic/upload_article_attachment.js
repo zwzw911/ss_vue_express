@@ -2,17 +2,20 @@
  * Created by ada on 2017/9/1.
  */
 'use strict'
-/*                      controller setting                */
-const controller_setting=require('../article_upload_file_setting/article_upload_file_setting').setting
-const controllerError=require('../article_upload_file_setting/article_upload_file_controllerError').controllerError
+/******************    内置lib和第三方lib  **************/
+const ap=require(`awesomeprint`)
+/**************  controller相关常量  ****************/
+const controller_setting=require('../article_setting/article_setting').setting
+const controllerError=require('../article_setting/article_controllerError').controllerError
 
-/*                      specify: genEnum                */
+/***************  数据库相关常量   ****************/
 const e_uniqueField=require('../../../constant/genEnum/DB_uniqueField').UniqueField
 const e_chineseName=require('../../../constant/genEnum/inputRule_field_chineseName').ChineseName
 const e_coll=require('../../../constant/genEnum/DB_Coll').Coll
 const e_field=require('../../../constant/genEnum/DB_field').Field
 const e_dbModel=require('../../../constant/genEnum/dbModel')
 const e_iniSettingObject=require('../../../constant/genEnum/initSettingObject').iniSettingObject
+/***************  rule   ****************/
 const inputRule=require('../../../constant/inputRule/inputRule').inputRule
 const internalInputRule=require('../../../constant/inputRule/internalInputRule').internalInputRule
 const browserInputRule=require('../../../constant/inputRule/browserInputRule').browserInputRule
@@ -20,14 +23,13 @@ const browserInputRule=require('../../../constant/inputRule/browserInputRule').b
 
 /*                      server common                                           */
 const server_common_file_require=require('../../../../server_common_file_require')
-/*                      server common：enum                                       */
+/**************  公共常量   ******************/
 const nodeEnum=server_common_file_require.nodeEnum
 const nodeRuntimeEnum=server_common_file_require.nodeRuntimeEnum
 const mongoEnum=server_common_file_require.mongoEnum
 
 const e_env=nodeEnum.Env
 const e_part=nodeEnum.ValidatePart
-
 //上传文件的定义
 const e_resourceFieldName=nodeEnum.ResourceFieldName
 const e_uploadFileType=nodeEnum.UploadFileType
@@ -41,15 +43,16 @@ const e_resourceRange=mongoEnum.ResourceRange.DB
 const e_storePathUsage=mongoEnum.StorePathUsage.DB
 const e_resourceType=mongoEnum.ResourceType.DB
 
-/*                      server common：function                                       */
+const e_applyRange=server_common_file_require.inputDataRuleType.ApplyRange
+/**************  公共函数   ******************/
 const dataConvert=server_common_file_require.dataConvert
 const controllerHelper=server_common_file_require.controllerHelper
 const controllerChecker=server_common_file_require.controllerChecker
 const common_operation_model=server_common_file_require.common_operation_model
 const misc=server_common_file_require.misc
 const hash=server_common_file_require.crypt.hash
-
-/*                      server common：other                                       */
+const resourceCheck=server_common_file_require.resourceCheck
+/*************** 配置信息 *********************/
 const regex=server_common_file_require.regex.regex
 const currentEnv=server_common_file_require.appSetting.currentEnv
 const fkConfig=server_common_file_require.fkConfig.fkConfig
@@ -62,14 +65,14 @@ const e_gmGetter=nodeRuntimeEnum.GmGetter
 async function uploadArticleAttachment_async({req}){
     // console.log(`uploadArticleAttachment_async in`)
     // console.log(`req.session ${JSON.stringify(req.session)}`)
-    /*******************************************************************************************/
-    /*                                          define variant                                 */
-    /*******************************************************************************************/
+    /*************************************************/
+    /************      define variant     ***********/
+    /************************************************/
     let tmpResult,collName=controller_setting.MAIN_HANDLED_COLL_NAME
 
     // console.log(`req============>${JSON.stringify(req)}`)
     let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
-    let {userId,userCollName,userType,userPriority}=userInfo
+    let {userId,userCollName,userType,userPriority,tempSalt}=userInfo
     // console.log(`userInfo============>${JSON.stringify(userInfo)}`)
     // let docValue=req.body.values[e_part.RECORD_INFO]
     let recordId=req.body.values[e_part.RECORD_ID]
@@ -80,65 +83,48 @@ async function uploadArticleAttachment_async({req}){
     /*******************************************************************************************/
     // dataConvert.constructUpdateCriteria(docValue,fkConfig[collName])
     // console.log(`docValue after constructUpdateCriteria============>${JSON.stringify(docValue)}`)
-    /*******************************************************************************************/
-    /*                                       authorization check                               */
-    /*******************************************************************************************/
-    //当前要上传图片/附件的文档是否为作者本人
-    tmpResult=await controllerChecker.ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({
-        dbModel:e_dbModel.article,
-        recordId:recordId,
-        ownerFieldsName:[e_field.ARTICLE.AUTHOR_ID],
-        userId:userId,
-        additionalCondition:undefined
-    })
-    if(false===tmpResult){
-        return Promise.reject(controllerError.notArticleAuthorCantUploadAttachment)
+    /**********************************************/
+    /***********    用户权限检测    **************/
+    /*********************************************/
+    let originalDoc
+    if(userType===e_allUserType.USER_NORMAL){
+        originalDoc=await controllerChecker.ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({
+            dbModel:e_dbModel.article,
+            recordId:recordId,
+            ownerFieldsName:[e_field.ARTICLE.AUTHOR_ID],
+            userId:userId,
+            additionalCondition:undefined,
+        })
+        if(false===originalDoc){
+            return Promise.reject(controllerError.upload.notAuthorCantUploadAttachment)
+        }
     }
-    let originalDoc=misc.objectDeepCopy(tmpResult)
-/*    let condition={}
-    condition['_id']=recordId
-    condition[e_field.ARTICLE.AUTHOR_ID]=userId
-// console.log(`condition to check user =====>${JSON.stringify(condition)}`)
-    tmpResult=await  common_operation_model.find_returnRecords_async({dbModel:e_dbModel[collName],condition:condition})
-    // console.log(`tmpResult =====>${JSON.stringify(tmpResult)}`)
-    if(tmpResult.length!==1){
-        return Promise.reject(controllerError.notArticleAuthorCantInsertFile)
-    }*/
-    // console.log(`authorization check  =====>`)
-    /*******************************************************************************************/
-    /*                          delete field cant be update from client                        */
-    /*******************************************************************************************/
 
-    /*******************************************************************************************/
-    /*                              remove not change field                                    */
-    /*******************************************************************************************/
 
-    /*******************************************************************************************/
-    /*                          check field number after delete                                */
-    /*******************************************************************************************/
-
-    /*******************************************************************************************/
-    /*                          获得上传文件的信息并判断 文件是否valid                         */
-    /*******************************************************************************************/
-    let maxFileSize
-    // if(e_uploadFileType.IMAGE===type){
-        maxFileSize=uploadFileDefine[e_coll.ARTICLE_ATTACHMENT][e_uploadFileDefinitionFieldName.MAX_SIZE_IN_BYTE]
-    // }
+    /***********************************************************************/
+    /*************  获得上传文件的信息并判断 文件是否valid        *********/
+    /***********************************************************************/
+    let maxFileSize=uploadFileDefine[e_coll.ARTICLE_ATTACHMENT][e_uploadFileDefinitionFieldName.MAX_SIZE_IN_BYTE]
     let uploadResult=await controllerHelper.uploadFileToTmpDir_async({req:req, uploadTmpDir:e_iniSettingObject.store_path.UPLOAD_TMP.upload_tmp_dir.path, maxFileSize:maxFileSize,fileSizeUnit:e_fileSizeUnit.MB})
     let {originalFilename,path,size}=uploadResult
 
 
     //判断图片格式是否允许
-    let suffix=await controllerHelper.ifFileSuffixMatchContentType_returnSuffixOrFalse_async({uploadResult})
+    let suffix=await controllerChecker.ifFileSuffixMatchContentType_returnSuffixOrFalse_async({uploadResult})
     if(false===suffix){
-        return Promise.reject(controllerError.attachmentFormatIncorrect)
+        return Promise.reject(controllerError.upload.attachmentFormatIncorrect)
     }
 
     if(-1===uploadFileDefine.common.attachmentType.indexOf(suffix)){
         fs.unlink(path)
-        return Promise.reject(controllerError.attachmentFormatNotSupport)
+        return Promise.reject(controllerError.upload.attachmentFormatNotSupport)
     }
 
+    let requiredResource={
+        [e_resourceFieldName.USED_NUM]:1,
+        [e_resourceFieldName.DISK_USAGE_SIZE_IN_MB]:size,
+        [e_resourceFieldName.FILE_ABS_PATH]:path,
+    }
 /*    //判断图片的长，宽，是否符合
     let wh=await gmImage.getImageProperty_async(gmInst,e_gmGetter.SIZE)
     if(wh.width > uploadFileDefine[e_coll.article_image][e_uploadFileDefinitionFieldName.MAX_WIDTH]
@@ -153,9 +139,9 @@ async function uploadArticleAttachment_async({req}){
     /*******************************************************************************************/
     /*              获得用户当前的所有资源配置，并检查当前占用的资源（磁盘空间）+文件的资源（sizeInMB）后，还小于==>所有<==的资源配置（）                         */
     let resourceProfileRangeToBeCheck=[e_resourceRange.ATTACHMENT_PER_ARTICLE,e_resourceRange.WHOLE_RESOURCE_PER_PERSON_FOR_ALL_ARTICLE]
-    let resourceResult=await controllerHelper.findResourceProfileRecords_async({arr_resourceProfileRange:resourceProfileRangeToBeCheck})
+    await resourceCheck.ifEnoughResource_async({requiredResource:requiredResource,resourceProfileRange:resourceProfileRangeToBeCheck,userId:userId,containerId:recordId})
 
-    let calcResult
+    /*let calcResult
     //recordId是articleId
     for(let singleResourceProfileRecord of resourceResult){
         switch (singleResourceProfileRecord[e_field.RESOURCE_PROFILE.RANGE]){
@@ -189,7 +175,7 @@ async function uploadArticleAttachment_async({req}){
             default:
                 return Promise.reject(controllerError.resourceRangeNotExpected)
         }
-    }
+    }*/
 // console.log(`rexource check done ======================`)
     /*              文件move到永久存储目录                           */
     let finalFileName
@@ -209,34 +195,12 @@ async function uploadArticleAttachment_async({req}){
     let pathId=tmpResult._id
     fs.renameSync(path,finalPath)
 
-    // console.log(`save fild done ======================`)
-    // let tmpResult=await common_operation_model.findById({dbModel:dbModel[e_coll.USER],id:objectId})
-    // let userId=tmpResult.msg[e_field.USER.]
-    /*******************************************************************************************/
-    /*                                     specific priority check                             */
-    /*******************************************************************************************/
-
-    /*******************************************************************************************/
-    /*                                    fk value是否存在                                     */
-    /*******************************************************************************************/
-
-    /*******************************************************************************************/
-    /*                                  enum unique check(enum in array)                       */
-    /*******************************************************************************************/
 
 
-    /*******************************************************************************************/
-    /*                                       特定字段的处理（检查）                            */
-    /*******************************************************************************************/
-
-    /*******************************************************************************************/
-    /*                                  field value duplicate check                            */
-    /*******************************************************************************************/
-
-    /*******************************************************************************************/
-    /*                         添加internal field，然后检查                                    */
-    /*******************************************************************************************/
-    let internalValue={},fieldToBeChanged,fileCollName
+    /*************************************************/
+    /****           更新关联表（attachment）        ******/
+    /************************************************/
+    let internalValue={},fileCollName
     // if(e_uploadFileType.IMAGE===type){
     //     internalValue[e_field.ARTICLE_IMAGE.NAME]=originalFilename
     //     internalValue[e_field.ARTICLE_IMAGE.HASH_NAME]=finalFileName
@@ -255,30 +219,35 @@ async function uploadArticleAttachment_async({req}){
         internalValue[e_field.ARTICLE_ATTACHMENT.AUTHOR_ID]=userId
         internalValue[e_field.ARTICLE_ATTACHMENT.ARTICLE_ID]=recordId
         fileCollName=e_coll.ARTICLE_ATTACHMENT
-        fieldToBeChanged=e_field.ARTICLE.ARTICLE_ATTACHMENTS_ID
+
     }
     if(e_env.DEV===currentEnv){
-        let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInputRule:inputRule[fileCollName],collInternalRule:internalInputRule[fileCollName],method:req.body.values[e_part.METHOD]})
+        let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInputRule:inputRule[fileCollName],collInternalRule:internalInputRule[fileCollName],applyRange:e_applyRange.CREATE})
 // console.log(`internalValue check result====>   ${JSON.stringify(tmpResult)}`)
         if(tmpResult.rc>0){
             return Promise.reject(tmpResult)
         }
     }
-    /*******************************************************************************************/
-    /*                                          unique check                                   */
-    /*******************************************************************************************/
-
 
     /*******************************************************************************************/
-    /*                                  db operation                                           */
+    /**                                  db operation                                         **/
     /*******************************************************************************************/
-
     //更新e_coll.ARTICLE_ATTACHMENT
     tmpResult=await common_operation_model.create_returnRecord_async({dbModel:e_dbModel[fileCollName],value:internalValue})
     let fileId=tmpResult._id
+
     /*              更新记录到article                  */
-    tmpResult=await e_dbModel.article.update({_id:recordId},{$push:{[fieldToBeChanged]:fileId}})
-    /*              更新user_resource_static          */
+    let updateValues={}
+    updateValues["$push"]={[e_field.ARTICLE.ARTICLE_ATTACHMENTS_ID]:fileId}
+    //image/attachment移动到article本身了
+    updateValues["$inc"]={
+        [e_field.ARTICLE.ATTACHMENTS_NUM]:1,
+        [e_field.ARTICLE.ATTACHMENTS_SIZE_IN_MB]:size,
+    }
+
+    await common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel.article,id:recordId,updateFieldsValue:updateValues})
+    /*tmpResult=await e_dbModel.article.update({_id:recordId},{$push:{[fieldToBeChanged]:fileId}})
+    /!*              更新user_resource_static          *!/
     tmpResult=await e_dbModel.user_resource_static.update({
         [e_field.USER_RESOURCE_STATIC.USER_ID]:userId,
         [e_field.USER_RESOURCE_STATIC.RESOURCE_TYPE]:e_resourceType.ARTICLE_ATTACHMENT
@@ -287,11 +256,11 @@ async function uploadArticleAttachment_async({req}){
             [e_field.USER_RESOURCE_STATIC.UPLOADED_FILE_NUM]:1,
             [e_field.USER_RESOURCE_STATIC.UPLOADED_FILE_SIZE_IN_MB]:size,
         }
-    })
+    })*/
 
 
 
-    return Promise.resolve(tmpResult)
+    return Promise.resolve({rc:0})
 
 }
 

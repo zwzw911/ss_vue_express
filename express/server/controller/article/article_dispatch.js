@@ -6,153 +6,375 @@
  */
 'use strict'
 
-const fs=require('fs')
-
-
-
-
+/****************   内置lib和第三方lib   ******************/
+const ap=require('awesomeprint')
+/*                          server common                       */
 const server_common_file_require=require('../../../server_common_file_require')
-// const maxSearchKeyNum=server_common_file_require.globalConfiguration.searchSetting.maxKeyNum
-// const maxSearchPageNum=server_common_file_require.globalConfiguration.searchMaxPage.readName
+/****************   公共函数   ******************/
+const controllerPreCheck=server_common_file_require.controllerPreCheck
 const controllerHelper=server_common_file_require.controllerHelper
+const controllerChecker=server_common_file_require.controllerChecker
+const crypt=server_common_file_require.crypt
+/****************   公共常量   ******************/
+const dispatchError=server_common_file_require.helperError.dispatch
 
-const e_userState=server_common_file_require.nodeEnum.UserState
-const e_part=server_common_file_require.nodeEnum.ValidatePart
-const e_method=server_common_file_require.nodeEnum.Method
-const e_randomStringType=server_common_file_require.nodeEnum.RandomStringType
-const e_uploadFileType=server_common_file_require.nodeEnum.UploadFileType
-// const e_method=server_common_file_require.nodeEnum.Method
+const nodeEnum=server_common_file_require.nodeEnum
+const e_uploadFileType=nodeEnum.UploadFileType
+const e_part=nodeEnum.ValidatePart
 
-const e_hashType=server_common_file_require.nodeRuntimeEnum.HashType
+const mongoEnum=server_common_file_require.mongoEnum
+const e_penalizeType=mongoEnum.PenalizeType.DB
+const e_penalizeSubType=mongoEnum.PenalizeSubType.DB
 
-const e_env=server_common_file_require.nodeEnum.Env
-const e_docStatus=server_common_file_require.mongoEnum.DocStatus.DB
-const e_penalizeType=server_common_file_require.mongoEnum.PenalizeType.DB
-const e_penalizeSubType=server_common_file_require.mongoEnum.PenalizeSubType.DB
-const e_iniSettingObject=require('../../constant/genEnum/initSettingObject').iniSettingObject
-const e_articleStatus=server_common_file_require.mongoEnum.ArticleStatus.DB
-const e_resourceRange=server_common_file_require.mongoEnum.ResourceRange.DB
-const e_resourceType=server_common_file_require.mongoEnum.ResourceType.DB
-const e_storePathUsage=server_common_file_require.mongoEnum.StorePathUsage.DB
+const e_field=require(`../../constant/genEnum/DB_field`).Field
+const e_coll=require(`../../constant/genEnum/DB_Coll`).Coll
 
-const e_fileSizeUnit=server_common_file_require.nodeRuntimeEnum.FileSizeUnit
+const e_searchRange=server_common_file_require.inputDataRuleType.SearchRange
+const e_applyRange=server_common_file_require.inputDataRuleType.ApplyRange
 
-const dataConvert=server_common_file_require.dataConvert
-const gmImage=server_common_file_require.gmImage//require('../../function/assist/gmImage')
-
-const currentEnv=server_common_file_require.appSetting.currentEnv
-// const uploadFileDefine=require('../../constant/config/globalConfiguration').uploadFileDefine
-
-
-const fkConfig=server_common_file_require.fkConfig.fkConfig
-
-const e_dbModel=require('../../constant/genEnum/dbModel')
-const e_coll=require('../../constant/genEnum/DB_Coll').Coll
-const e_field=require('../../constant/genEnum/DB_field').Field
-const e_internal_field=require('../../constant/genEnum/DB_internal_field').Field
-const e_uniqueField=require('../../constant/genEnum/DB_uniqueField').UniqueField
-const e_chineseName=require('../../constant/genEnum/inputRule_field_chineseName').ChineseName
-// const e_inputFieldCheckType=server_common_file_require.nodeEnum.InputFieldCheckType
-
-
-// const hash=require('../../function/assist/crypt').hash
-
-const misc=server_common_file_require.misc
-// const checkRobot_async=require('../../function/assist/checkRobot').checkRobot_async
-
-
-// const sanityHtml=server_common_file_require.sanityHtml.sanityHtml
-/*const generateRandomString=require('../../function/assist/misc').generateRandomString
-const sendVerificationCodeByEmail_async=require('../../function/assist/misc').sendVerificationCodeByEmail_async
-const ifUserLogin=require('../../function/assist/misc').ifUserLogin*/
-
-
-// const validateCreateRecorderValue=require('../../function/validateInput/validateValue').validateCreateRecorderValue
-// const validateUpdateRecorderValue=require('../../function/validateInput/validateValue').validateUpdateRecorderValue
-// const validateCURecordInfoFormat=require('../../function/validateInput/validateFormat').validateCURecordInfoFormat
-// const browserInputRule=require('../../constant/inputRule/browserInputRule').browserInputRule
+/**************  rule  ****************/
 const internalInputRule=require('../../constant/inputRule/internalInputRule').internalInputRule
 const inputRule=require('../../constant/inputRule/inputRule').inputRule
 const e_fieldChineseName=require('../../constant/genEnum/inputRule_field_chineseName').ChineseName
 
-
-
-/*                          controller                          */
+/**************  controller相关常量  ****************/
 const controllerError=require('./article_setting/article_controllerError').controllerError
-const create_async=require('./article_logic/create_article').createArticle_async
-const update_async=require('./article_logic/update_article').updateArticle_async
-// const delete_async=require('./article_logic/delete_impeach').deleteImpeach_async
 const controllerSetting=require('./article_setting/article_setting').setting
 
 
 
-//对CRUD（输入参数带有method）操作调用对应的函数
-async function article_dispatcher_async(req){
 
-    //检查格式
-    // console.log(`req is ${JSON.stringify(req.cookies)}`)
-    // console.log(`dispatcher in`)
-    // console.log(`req.body.values ${JSON.stringify(req.body.values)}`)
-    let collName=controllerSetting.MAIN_HANDLED_COLL_NAME,tmpResult
+/**************  逻辑处理  ****************/
+const createArticle_async=require('./article_logic/create_article').createArticle_async
+const updateArticle_async=require('./article_logic/update_article').updateArticle_async
 
-    //checkMethod只检测req的结构，以及req中method的格式和值，以便后续可以直接根据method进行调用
-    tmpResult=controllerHelper.checkMethod({req:req})
-    if(tmpResult.rc>0){
-        return Promise.reject(tmpResult)
+const uploadArticleImage_async=require('./article_upload_file_logic/upload_article_image').uploadArticleImage_async
+const uploadArticleAttachment_async=require('./article_upload_file_logic/upload_article_attachment').uploadArticleAttachment_async
+const deleteArticleAttachment_async=require('./article_upload_file_logic/delete_article_attachment').deleteArticleAttachment_async
+// const delete_async=require('./article_logic/delete_impeach').deleteImpeach_async
+
+async function article_dispatcher_async({req}) {
+    /***   初始化参数   ***/
+    let userLoginCheck = {
+        //needCheck:true,
+        // error:controllerError.userNotLoginCantCreateComment
     }
-    //因为method已经检测过，所有要从req.body.values中删除，防止重复检查
-    let method=req.body.values[e_part.METHOD]
-    delete req.body.values[e_part.METHOD]
-
-    let userLoginCheck,penalizeCheck,expectedPart
-    switch (method){
-        case e_method.CREATE: //create
-            userLoginCheck={
-                needCheck:true,
-                error:controllerError.userNotLoginCantCreate
-            }
-            penalizeCheck={
-                penalizeType:e_penalizeType.NO_ARTICLE,
+    let penalizeCheck = {
+        /*        penalizeType:e_penalizeType.NO_ARTICLE,
                 penalizeSubType:e_penalizeSubType.CREATE,
-                penalizeCheckError:controllerError.userInPenalizeNoArticleCreate
-            }
-            expectedPart=[]
-            /*          新建文档无需任何输入参数，需要内部自动产生            */
-            // console.log(`userLoginCheck===========>${JSON.stringify(userLoginCheck)}`)
-            // console.log(`penalizeCheck===========>${JSON.stringify(penalizeCheck)}`)
-            // console.log(`create preCheck before`)
-            tmpResult=await controllerHelper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart,}) //e_field:e_field,e_coll:e_coll,e_internal_field:e_internal_field,maxSearchKeyNum:maxSearchKeyNum,maxSearchPageNum:maxSearchPageNum
-            // console.log(`create preCheck after`)
-            tmpResult=await create_async({req:req})
-
-            break;
-        case e_method.SEARCH:// search
-            break;
-        case e_method.UPDATE: //update
-            userLoginCheck={
-                needCheck:true,
-                error:controllerError.userNotLoginCantUpdate
-            }
-            penalizeCheck={
-                penalizeType:e_penalizeType.NO_ARTICLE,
-                penalizeSubType:e_penalizeSubType.UPDATE,
-                penalizeCheckError:controllerError.userInPenalizeNoArticleUpdate
-            }
-            expectedPart=[e_part.RECORD_INFO,e_part.RECORD_ID]
-            // console.log(`update article=========>${JSON.stringify(req.body.values)}`)
-            tmpResult=await controllerHelper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})//,e_field:e_field,e_coll:e_coll,e_internal_field:e_internal_field,maxSearchKeyNum:maxSearchKeyNum,maxSearchPageNum:maxSearchPageNum})
-// console.log(`article update precheck result======>${JSON.stringify(tmpResult)}`)
-
-            /*      执行逻辑                */
-            tmpResult=await update_async({req:req})
-            break;
-        case e_method.DELETE: //delete
-            break;
-        case e_method.MATCH: //match(login_async)
-
+                penalizeCheckError:controllerError.userInPenalizeNoCommentCreate*/
     }
-    
-    return Promise.resolve(tmpResult)
+    let arr_currentSearchRange = [e_searchRange.ALL]
+    let originalUrl = req.originalUrl
+    let baseUrl = req.baseUrl
+    let collName = controllerSetting.MAIN_HANDLED_COLL_NAME
+    let expectedPart
+    let result = dispatchError.common.unknownRequestUrl
+    let tmpResult
+    let applyRange
+    // ap.inf('originalUrl',originalUrl)
+    // ap.inf('req.route.stack[0].method',req.route.stack[0].method)
+    ap.inf('req.body', req.body)
+    // ap.inf('req.params',req.params)
+    /***   1. interval和robot检测   ***/
+    await controllerPreCheck.commonPreCheck_async({req: req, collName: collName})
+    /***   2. 根据method，以及url，进行对应的检查，最后调用处理函数   ***/
+    /**    检查包括：用户是否登录/用户是否被处罚/输入值的格式和范围是否正确（POST/PUT） **/
+    switch (req.route.stack[0].method) {
+        case 'post':
+            if (baseUrl === '/article' || baseUrl === '/article/') {
+                /**     创建文档        **/
+                if (originalUrl === '/article' || originalUrl === '/article/') {
+                    applyRange = e_applyRange.CREATE
+                    userLoginCheck = {
+                        needCheck: true,
+                        error: controllerError.dispatch.post.notLoginCantCreateArticle
+                    }
+                    penalizeCheck = {
+                        penalizeType: e_penalizeType.NO_ARTICLE,
+                        penalizeSubType: e_penalizeSubType.CREATE,
+                        penalizeCheckError: controllerError.dispatch.post.userInPenalizeCantCreateArticle
+                    }
+                    await controllerPreCheck.userStateCheck_async({
+                        req: req,
+                        userLoginCheck: userLoginCheck,
+                        penalizeCheck: penalizeCheck
+                    })
+                    /***        create article 无需任何输入参数     ***/
+                    // ap.inf('create use userStateCheck_async done')
+                    /*expectedPart=[e_part.SINGLE_FIELD] //{RECEIVER:objectId}
+                    //是否为期望的part
+                    result = controllerPreCheck.inputCommonCheck({req:req, expectedPart:expectedPart})
+                    // ap.inf('inputCommonCheck result',result)
+                    if (result.rc > 0) {return Promise.reject(result)}
+
+                    //对req中的recordId和recordInfo进行objectId（加密过的）格式判断
+                    // ap.inf('before check',req.body.values)
+                    await controllerChecker.ifObjectIdInPartCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName]})
+                    // ap.inf('after check',req.body.values)
+                    //对req中的recordId和recordInfo中加密的objectId进行解密
+                    let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
+                    // ap.inf('userInfo',userInfo)
+                    let tempSalt=userInfo.tempSalt
+                    // ap.inf('userInfo。tempSalt',userInfo.tempSalt)
+                    // ap.inf('before decrypt',req.body.values)
+                    // ap.inf('salt',tempSalt)
+                    controllerHelper.decryptInputValue({req:req,expectedPart:expectedPart,salt:tempSalt,browserCollRule:browserInputRule[collName]})
+                    // ap.inf('after decrypt',req.body.values)
+                    //对输入值进行检测（此时objectId已经解密）
+                    result=controllerPreCheck.inputPreCheck({req:req,expectedPart:expectedPart,collName:collName,applyRange:applyRange,arr_currentSearchRange:arr_currentSearchRange})
+                    // ap.inf('create use inputPreCheck result',result)
+                    if(result.rc>0){return Promise.reject(result)}*/
+
+                    result = await createArticle_async({req: req, expectedPart: undefined, applyRange: applyRange})
+                    return Promise.resolve(result)
+                }
+                if (originalUrl === '/article/articleImage' || originalUrl === '/article/articleImage/') {
+                    userLoginCheck = {
+                        needCheck: true,
+                        error: controllerError.dispatch.post.notLoginCantCreateArticleImage
+                    }
+                    await controllerPreCheck.userStateCheck_async({
+                        req: req,
+                        userLoginCheck: userLoginCheck,
+                        penalizeCheck: penalizeCheck
+                    })
+                    expectedPart = [e_part.RECORD_ID] //{RECEIVER:objectId}
+                    //是否为期望的part
+                    result = controllerPreCheck.inputCommonCheck({req: req, expectedPart: expectedPart})
+                    // ap.inf('inputCommonCheck result',result)
+                    if (result.rc > 0) {
+                        return Promise.reject(result)
+                    }
+
+                    //对req中的recordId和recordInfo进行objectId（加密过的）格式判断
+                    // ap.inf('before check',req.body.values)
+                    await controllerChecker.ifObjectIdInPartCrypted_async({
+                        req: req,
+                        expectedPart: expectedPart,
+                        browserCollRule: browserInputRule[collName]
+                    })
+                    // ap.inf('after check',req.body.values)
+                    //对req中的recordId和recordInfo中加密的objectId进行解密
+                    let userInfo = await controllerHelper.getLoginUserInfo_async({req: req})
+                    // ap.inf('userInfo',userInfo)
+                    let tempSalt = userInfo.tempSalt
+                    // ap.inf('userInfo。tempSalt',userInfo.tempSalt)
+                    // ap.inf('before decrypt',req.body.values)
+                    // ap.inf('salt',tempSalt)
+                    controllerHelper.decryptInputValue({
+                        req: req,
+                        expectedPart: expectedPart,
+                        salt: tempSalt,
+                        browserCollRule: browserInputRule[collName]
+                    })
+                    // ap.inf('after decrypt',req.body.values)
+                    //对输入值进行检测（此时objectId已经解密）
+                    result = controllerPreCheck.inputPreCheck({
+                        req: req,
+                        expectedPart: expectedPart,
+                        collName: collName,
+                        applyRange: applyRange,
+                        arr_currentSearchRange: arr_currentSearchRange
+                    })
+                    // ap.inf('create use inputPreCheck result',result)
+                    if (result.rc > 0) {
+                        return Promise.reject(result)
+                    }
+
+                    return await uploadArticleImage_async({req: req})
+
+                }
+                if (originalUrl === '/article/articleAttachment' || originalUrl === '/article/articleAttachment/') {
+                    userLoginCheck = {
+                        needCheck: true,
+                        error: controllerError.dispatch.post.notLoginCantCreateArticleAttachment
+                    }
+                    await controllerPreCheck.userStateCheck_async({
+                        req: req,
+                        userLoginCheck: userLoginCheck,
+                        penalizeCheck: penalizeCheck
+                    })
+
+                    await controllerPreCheck.userStateCheck_async({
+                        req: req,
+                        userLoginCheck: userLoginCheck,
+                        penalizeCheck: penalizeCheck
+                    })
+                    expectedPart = [e_part.RECORD_ID] //此处RECORD_ID为article的id
+                    //是否为期望的part
+                    result = controllerPreCheck.inputCommonCheck({req: req, expectedPart: expectedPart})
+                    // ap.inf('inputCommonCheck result',result)
+                    if (result.rc > 0) {
+                        return Promise.reject(result)
+                    }
+
+                    //对req中的recordId和recordInfo进行objectId（加密过的）格式判断
+                    // ap.inf('before check',req.body.values)
+                    await controllerChecker.ifObjectIdInPartCrypted_async({
+                        req: req,
+                        expectedPart: expectedPart,
+                        browserCollRule: browserInputRule[collName]
+                    })
+                    // ap.inf('after check',req.body.values)
+                    //对req中的recordId和recordInfo中加密的objectId进行解密
+                    let userInfo = await controllerHelper.getLoginUserInfo_async({req: req})
+                    // ap.inf('userInfo',userInfo)
+                    let tempSalt = userInfo.tempSalt
+                    // ap.inf('userInfo。tempSalt',userInfo.tempSalt)
+                    // ap.inf('before decrypt',req.body.values)
+                    // ap.inf('salt',tempSalt)
+                    controllerHelper.decryptInputValue({
+                        req: req,
+                        expectedPart: expectedPart,
+                        salt: tempSalt,
+                        browserCollRule: browserInputRule[collName]
+                    })
+                    // ap.inf('after decrypt',req.body.values)
+                    //对输入值进行检测（此时objectId已经解密）
+                    result = controllerPreCheck.inputPreCheck({
+                        req: req,
+                        expectedPart: expectedPart,
+                        collName: collName,
+                        applyRange: applyRange,
+                        arr_currentSearchRange: arr_currentSearchRange
+                    })
+                    // ap.inf('create use inputPreCheck result',result)
+                    if (result.rc > 0) {
+                        return Promise.reject(result)
+                    }
+
+                    return await uploadArticleAttachment_async({req: req})
+                }
+            }
+            break;
+        case 'put':
+            if (baseUrl === '/article' || baseUrl === '/article/') {
+                applyRange = e_applyRange.UPDATE_SCALAR
+                userLoginCheck = {
+                    needCheck: true,
+                    error: controllerError.dispatch.put.notLoginCantUpdateArticle
+                }
+                penalizeCheck = {
+                    penalizeType: e_penalizeType.NO_ARTICLE,
+                    penalizeSubType: e_penalizeSubType.UPDATE,
+                    penalizeCheckError: controllerError.dispatch.put.userInPenalizeCantUpdateArticle
+                }
+                await controllerPreCheck.userStateCheck_async({
+                    req: req,
+                    userLoginCheck: userLoginCheck,
+                    penalizeCheck: penalizeCheck
+                })
+                // ap.inf('create use userStateCheck_async done')
+                expectedPart = [e_part.RECORD_INFO, e_part.RECORD_ID]
+                //是否为期望的part
+                result = controllerPreCheck.inputCommonCheck({req: req, expectedPart: expectedPart})
+                if (result.rc > 0) {
+                    return Promise.reject(result)
+                }
+
+                //对req中的recordId和recordInfo进行objectId（加密过的）格式判断
+                // ap.inf('before check',req.body.values)
+                await controllerChecker.ifObjectIdInPartCrypted_async({
+                    req: req,
+                    expectedPart: expectedPart,
+                    browserCollRule: browserInputRule[collName]
+                })
+                // ap.inf('after check',req.body.values)
+                //对req中的recordId和recordInfo中加密的objectId进行解密
+                let userInfo = await controllerHelper.getLoginUserInfo_async({req: req})
+                // ap.inf('userInfo',userInfo)
+                let tempSalt = userInfo.tempSalt
+                // ap.inf('userInfo。tempSalt',userInfo.tempSalt)
+                // ap.inf('before decrypt',req.body.values)
+                // ap.inf('salt',tempSalt)
+                controllerHelper.decryptInputValue({
+                    req: req,
+                    expectedPart: expectedPart,
+                    salt: tempSalt,
+                    browserCollRule: browserInputRule[collName]
+                })
+                // ap.inf('after decrypt',req.body.values)
+                //对输入值进行检测（此时objectId已经解密）
+                result = controllerPreCheck.inputPreCheck({
+                    req: req,
+                    expectedPart: expectedPart,
+                    collName: collName,
+                    applyRange: applyRange,
+                    arr_currentSearchRange: arr_currentSearchRange
+                })
+                // ap.inf('create use inputPreCheck result',result)
+                if (result.rc > 0) {
+                    return Promise.reject(result)
+                }
+
+                result = await updateArticle_async({req: req, applyRange: applyRange})
+                return Promise.resolve(result)
+            }
+            break;
+        case 'delete':
+            if (baseUrl === '/article' || baseUrl === '/article/') {
+                if (originalUrl === '/article/articleAttachment' || originalUrl === '/article/articleAttachment/') {
+                    userLoginCheck = {
+                        needCheck: true,
+                        error: controllerError.dispatch.delete.notLoginCantDeleteAttachment
+                    }
+                    await controllerPreCheck.userStateCheck_async({
+                        req: req,
+                        userLoginCheck: userLoginCheck,
+                        penalizeCheck: penalizeCheck
+                    })
+
+
+                    expectedPart = [e_part.RECORD_ID] //此处RECORD_ID为attachment的id
+                    //是否为期望的part
+                    result = controllerPreCheck.inputCommonCheck({req: req, expectedPart: expectedPart})
+                    // ap.inf('inputCommonCheck result',result)
+                    if (result.rc > 0) {
+                        return Promise.reject(result)
+                    }
+
+                    //对req中的recordId和recordInfo进行objectId（加密过的）格式判断
+                    // ap.inf('before check',req.body.values)
+                    await controllerChecker.ifObjectIdInPartCrypted_async({
+                        req: req,
+                        expectedPart: expectedPart,
+                        browserCollRule: browserInputRule[collName]
+                    })
+                    // ap.inf('after check',req.body.values)
+                    //对req中的recordId和recordInfo中加密的objectId进行解密
+                    let userInfo = await controllerHelper.getLoginUserInfo_async({req: req})
+                    // ap.inf('userInfo',userInfo)
+                    let tempSalt = userInfo.tempSalt
+                    // ap.inf('userInfo。tempSalt',userInfo.tempSalt)
+                    // ap.inf('before decrypt',req.body.values)
+                    // ap.inf('salt',tempSalt)
+                    controllerHelper.decryptInputValue({
+                        req: req,
+                        expectedPart: expectedPart,
+                        salt: tempSalt,
+                        browserCollRule: browserInputRule[collName]
+                    })
+                    // ap.inf('after decrypt',req.body.values)
+                    //对输入值进行检测（此时objectId已经解密）
+                    result = controllerPreCheck.inputPreCheck({
+                        req: req,
+                        expectedPart: expectedPart,
+                        collName: collName,
+                        applyRange: applyRange,
+                        arr_currentSearchRange: arr_currentSearchRange
+                    })
+                    // ap.inf('create use inputPreCheck result',result)
+                    if (result.rc > 0) {
+                        return Promise.reject(result)
+                    }
+
+                    return await deleteArticleAttachment_async({req: req})
+                }
+            }
+            break;
+        default:
+    }
 }
 
 module.exports={

@@ -28,15 +28,7 @@ const like_dislike= {
         // 'maxLength': {define: 20, error: {rc: 10004}, mongoError: {rc: 20004, msg: '密码的长度不能超过20个字符'}},
         [ruleFiledName.FORMAT]: {define: regex.objectId, error: {rc: baseJSErrorCode+2, msg: '文档必须是objectId'}, mongoError: {rc: baseMongoErrorCode+2, msg: '文档必须是objectId'}} //server端使用
     },
-    like: {
-        [otherRuleFiledName.CHINESE_NAME]: '喜欢',
-        [otherRuleFiledName.DATA_TYPE]: serverDataType.BOOLEAN,
-        [otherRuleFiledName.APPLY_RANGE]:[applyRange.CREATE], //必须在create，的recordInfo中出现
-        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true}, error: {rc: baseJSErrorCode+4, msg: '喜欢不能为空'}, mongoError: {rc: baseMongoErrorCode+4, msg: '喜欢不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
-     // 'minLength': {define: 6, error: {rc: 10002}, mongoError: {rc: 20002, msg: '密码至少6个字符'}},
-     // 'maxLength': {define: 20, error: {rc: 10004}, mongoError: {rc: 20004, msg: '密码的长度不能超过20个字符'}},
-     // [ruleFiledName.FORMAT]: {define: regex.OBJECT_ID, error: {rc: 10005}, mongoError: {rc: 20005, msg: '提交者必须是objectId'}} //server端使用
-     },
+
 }
 
 module.exports={

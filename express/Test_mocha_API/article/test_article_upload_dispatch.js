@@ -49,7 +49,7 @@ const component_function=server_common_file_require.component_function
 const initSettingObject=require(`../../server/constant/genEnum/initSettingObject`).iniSettingObject
 // const controllerError=require('../../server/controller/article/liekDislike_logic').controllerError
 
-const controllerError=require('../../server/controller/article/article_upload_file_setting/article_upload_file_controllerError').controllerError
+const controllerError=require('../../server/controller/article/not_used_article_upload_file_setting/article_upload_file_controllerError').controllerError
 let baseUrl="/article/",url,finalUrl
 // let data={values:{}}
 // let rootSess

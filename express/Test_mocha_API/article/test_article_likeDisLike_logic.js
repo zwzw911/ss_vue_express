@@ -40,7 +40,7 @@ const testData=server_common_file_require.testData//require('../testData')
 const API_helper=server_common_file_require.API_helper//require('../API_helper/API_helper')
 const component_function=server_common_file_require.component_function
 
-const controllerError=require('../../server/controller/article/likeDislike_setting/likeDislike_controllerError').controllerError
+const controllerError=require('../../server/controller/articleLikeDislike/articleLikeDislike_setting/likeDislike_controllerError').controllerError
 
 let baseUrl="/article/"
 let userId  //create后存储对应的id，以便后续的update操作

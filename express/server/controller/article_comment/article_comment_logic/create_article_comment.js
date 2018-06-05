@@ -2,67 +2,63 @@
  * Created by wzhan039 on 2017/10/26.
  */
 'use strict'
+
 /******************    内置lib和第三方lib  **************/
 const ap=require('awesomeprint')
 
 /**************  controller相关常量  ****************/
-const controller_setting=require('../article_setting/article_setting').setting
-const controllerError=require('../article_setting/article_controllerError').controllerError
+const controller_setting=require('../article_comment_setting/article_comment_setting').setting
+const controllerError=require('../article_comment_setting/article_comment_controllerError').controllerError
+
+/***************  数据库相关常量   ****************/
+const e_uniqueField=require('../../../constant/genEnum/DB_uniqueField').UniqueField
+const e_fieldChineseName=require('../../../constant/genEnum/inputRule_field_chineseName').ChineseName
+const e_coll=require('../../../constant/genEnum/DB_Coll').Coll
+const e_field=require('../../../constant/genEnum/DB_field').Field
+const e_dbModel=require('../../../constant/genEnum/dbModel')
+const enumValue=require(`./express/server/constant/genEnum/enumValue`)
+
+const e_iniSettingObject=require('../../../constant/genEnum/initSettingObject').iniSettingObject
 
 /**************      rule             *************/
 const inputRule=require('../../../constant/inputRule/inputRule').inputRule
 const internalInputRule=require('../../../constant/inputRule/internalInputRule').internalInputRule
 const browserInputRule=require('../../../constant/inputRule/browserInputRule').browserInputRule
 
-/***************  数据库相关常量   ****************/
-const e_uniqueField=require('../../../constant/genEnum/DB_uniqueField').UniqueField
-const e_chineseName=require('../../../constant/genEnum/inputRule_field_chineseName').ChineseName
-const e_coll=require('../../../constant/genEnum/DB_Coll').Coll
-const e_field=require('../../../constant/genEnum/DB_field').Field
-const e_dbModel=require('../../../constant/genEnum/dbModel')
-const enumValue=require(`../../../constant/genEnum/enumValue`)
 
-const e_iniSettingObject=require('../../../constant/genEnum/initSettingObject').iniSettingObject
+/*                      server common                                           */
 const server_common_file_require=require('../../../../server_common_file_require')
+/****************  公共常量 ********************/
+const nodeEnum=server_common_file_require.nodeEnum
+const nodeRuntimeEnum=server_common_file_require.nodeRuntimeEnum
+const mongoEnum=server_common_file_require.mongoEnum
+// const e=server_common_file_require.enum
+const e_env=nodeEnum.Env
+const e_part=nodeEnum.ValidatePart
+
+// const e_hashType=nodeRuntimeEnum.
+
+const e_articleStatus=mongoEnum.ArticleStatus.DB
+const e_docStatus=mongoEnum.DocStatus.DB
+const e_impeachType=mongoEnum.ImpeachType.DB
+const e_impeachUserAction=mongoEnum.ImpeachUserAction.DB
+const e_impeachState=mongoEnum.ImpeachState.DB
+
 /**************  公共函数   ******************/
 const dataConvert=server_common_file_require.dataConvert
 const controllerHelper=server_common_file_require.controllerHelper
 const controllerChecker=server_common_file_require.controllerChecker
 const common_operation_model=server_common_file_require.common_operation_model
 const misc=server_common_file_require.misc
-const crypt=server_common_file_require.crypt
+const hash=server_common_file_require.crypt.hash
 const controllerInputValueLogicCheck=server_common_file_require.controllerInputValueLogicCheck
-/****************  公共常量 ********************/
-const nodeEnum=server_common_file_require.nodeEnum
-const e_env=nodeEnum.Env
-const e_part=nodeEnum.ValidatePart
-const e_resourceFieldName=nodeEnum.ResourceFieldName
-
-const nodeRuntimeEnum=server_common_file_require.nodeRuntimeEnum
-const e_inputValueLogicCheckStep=nodeRuntimeEnum.InputValueLogicCheckStep
-
-const mongoEnum=server_common_file_require.mongoEnum
-const e_accountType=mongoEnum.AccountType.DB
-const e_docStatus=mongoEnum.DocStatus.DB
-const e_impeachType=mongoEnum.ImpeachType.DB
-const e_impeachUserAction=mongoEnum.ImpeachUserAction.DB
-const e_impeachState=mongoEnum.ImpeachState.DB
-const e_addFriendStatus=mongoEnum.AddFriendStatus.DB
-const e_allUserType=mongoEnum.AllUserType.DB
-const e_resourceRange=mongoEnum.ResourceRange.DB
-const e_articleStatus=mongoEnum.ArticleStatus.DB
-
-const e_applyRange=server_common_file_require.inputDataRuleType.ApplyRange
-
 /*************** 配置信息 *********************/
 const regex=server_common_file_require.regex.regex
 const currentEnv=server_common_file_require.appSetting.currentEnv
 const fkConfig=server_common_file_require.fkConfig.fkConfig
 
 
-/*              新article无任何输入，所有的值都是内部产生                */
-async  function createArticle_async({req}){
-    // console.log(`createArticle_async in`)
+async  function createArticleComment_async({req,applyRange}){
     /********************************************************/
     /*************      define variant        ***************/
     /********************************************************/
@@ -72,35 +68,48 @@ async  function createArticle_async({req}){
      [e_field.IMPEACH.TITLE]:'新举报',
      [e_field.IMPEACH.CONTENT]:'对文档/评论的内容进行举报',
      }*/
-    // let docValue=req.body.values[e_part.RECORD_INFO]
+    let docValue=req.body.values[e_part.RECORD_INFO]
     let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
     // console.log(`userInfo===> ${JSON.stringify(userInfo)}`)
     let {userId,userCollName,userType,userPriority,tempSalt}=userInfo
 // console.log(`userId ====>${userId}`)
 
-    /*******************************************************************************************/
-    /*                                          create default value                           */
-    /*******************************************************************************************/
-    let docValue={}
-    docValue[e_field.ARTICLE.NAME]="新建文档"
+    /**********************************************/
+    /********  删除null/undefined的字段  *********/
+    /*********************************************/
+    // ap.inf('before constructCreateCriteria',docValue)
+    dataConvert.constructCreateCriteria(docValue)
+    // ap.inf('after constructCreateCriteria',docValue)
 
-    docValue[e_field.ARTICLE.STATUS]=e_articleStatus.EDITING
-    //查找默认目录
-/*    tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.folder,condition:{authorId:userId,name:'我的文档'}})
-    if(tmpResult.length===0){
-        return Promise.reject(controllerError.create.userNoDefaultFolder)
-    }*/
-    /**         无需默认目录，默认不放在任何目录下       **/
-    docValue[e_field.ARTICLE.FOLDER_ID]=tmpResult[0]['id']
-    docValue[e_field.ARTICLE.CATEGORY_ID]=e_iniSettingObject.category.other
-    docValue[e_field.ARTICLE.HTML_CONTENT]=`<i>请在此输入文档内容......</i>`
+    /**********************************************/
+    /***********    用户类型检测    **************/
+    /*********************************************/
+    await controllerChecker.ifExpectedUserType_async({currentUserType:userType,arr_expectedUserType:[e_allUserType.USER_NORMAL]})
+    // ap.inf('用户类型检测 done')
+    /**********************************************/
+    /**  CALL FUNCTION:inputValueLogicValidCheck **/
+    /**********************************************/
+    let commonParam={docValue:docValue,userId:userId,collName:collName}
+    // ap.inf('userId',userId)
+    let stepParam={
+        [e_inputValueLogicCheckStep.FK_EXIST_AND_PRIORITY]:{flag:true,optionalParam:undefined},
+        [e_inputValueLogicCheckStep.ENUM_DUPLICATE]:{flag:true,optionalParam:undefined},
+        //object：coll中，对单个字段进行unique检测，需要的额外查询条件
+        [e_inputValueLogicCheckStep.SINGLE_FIELD_VALUE_UNIQUE]:{flag:true,optionalParam:{singleValueUniqueCheckAdditionalCondition:undefined}},
+        //数组，元素是字段名。默认对所有dataType===string的字段进行XSS检测，但是可以通过此变量，只选择部分字段
+        [e_inputValueLogicCheckStep.XSS]:{flag:true,optionalParam:{expectedXSSFields:{optionalParam:undefined}}},
+        //object，对compoundField进行unique检测需要的额外条件，key从model->mongo->compound_unique_field_config.js中获得
+        //在internalValue之后执行
+        // [e_inputValueLogicCheckStep.COMPOUND_VALUE_UNIQUE]:{flag:true,optionalParam:{compoundFiledValueUniqueCheckAdditionalCheckCondition:undefined}},
+        //Object，配置resourceCheck的一些参数,{requiredResource,resourceProfileRange,userId,containerId}
+        //comment可以无限
+        [e_inputValueLogicCheckStep.RESOURCE_USAGE]:{flag:false,optionalParam:{resourceUsageOption:{requiredResource:{[e_resourceFieldName.USED_NUM]:1},resourceProfileRange:[e_resourceRange.FOLDER_NUM],userId:userId,containerId:undefined}}},
+    }
+    await controllerInputValueLogicCheck.inputValueLogicValidCheck_async({commonParam:commonParam,stepParam:stepParam})
 
 
-    /*************************************************************/
-    /***************   业务处理    *******************************/
-    /*************************************************************/
     let createdRecord=await businessLogic_async({docValue:docValue,collName:collName,userId:userId,applyRange:applyRange})
-// ap.inf('createdRecord',createdRecord)
+
     /*********************************************/
     /**********      删除指定字段       *********/
     /*********************************************/
@@ -113,21 +122,15 @@ async  function createArticle_async({req}){
     // ap.inf('businessLogic_async done')
     return Promise.resolve({rc:0,msg:createdRecord})
 
-    // return Promise.resolve({rc:0,msg:tmpResult})
+
 }
-
-
-
 
 /*************************************************************/
 /***************   业务处理    *******************************/
 /*************************************************************/
 async function businessLogic_async({docValue,collName,userId,applyRange}){
-    /*******************************************************************************************/
-    /*                         添加internal field，然后检查                                    */
-    /*******************************************************************************************/
     let internalValue={}
-    internalValue[e_field.ARTICLE.AUTHOR_ID]=userId
+    internalValue[e_field.ARTICLE_COMMENT.AUTHOR_ID]=userId
     if(e_env.DEV===currentEnv && Object.keys(internalValue).length>0){
         // console.log(`before newDocValue====>${JSON.stringify(internalValue)}`)
         // let newDocValue=dataConvert.addSubFieldKeyValue(internalValue)
@@ -156,14 +159,13 @@ async function businessLogic_async({docValue,collName,userId,applyRange}){
     }
 
     /*******************************************************************************************/
-    /*****                            db operation                                         *****/
+    /*                                  db operation                                           */
     /*******************************************************************************************/
-    let createdRecord= await common_operation_model.create_returnRecord_async({dbModel:e_dbModel.article,value:docValue})
-
+    let createdRecord= await common_operation_model.create_returnRecord_async({dbModel:e_dbModel[collName],value:docValue})
+    // console.log(`create result is ====>${JSON.stringify(tmpResult)}`)
+    // console.log(`db op done=========>`)
     return Promise.resolve(createdRecord.toObject())
 }
-
-
 module.exports={
-    createArticle_async,
+    createArticleComment_async,
 }

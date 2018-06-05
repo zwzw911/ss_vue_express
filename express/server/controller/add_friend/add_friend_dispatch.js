@@ -35,6 +35,8 @@ const browserInputRule=require('../../constant/inputRule/browserInputRule').brow
 const controllerError=require('./add_friend_setting/add_friend_controllerError').controllerError
 const controllerSetting=require('./add_friend_setting/add_friend_setting').setting
 
+
+/**************  逻辑处理  ****************/
 const createAddFriend_async=require('./add_friend_logic/create_add_friend').createAddFriend_async
 const acceptAddFriend_async=require('./add_friend_logic/update_add_friend').acceptAddFriend_async
 const declineAddFriend_async=require('./add_friend_logic/update_add_friend').declineAddFriend_async

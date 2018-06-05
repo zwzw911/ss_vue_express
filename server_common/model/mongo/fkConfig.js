@@ -24,7 +24,7 @@ const fkConfig={
         }
     },
 
-    /*          article         */
+    /**          article         **/
     [e_coll.ARTICLE]:{
         [e_field.ARTICLE.FOLDER_ID]:{
             relatedColl:e_coll.FOLDER,forSelect:`${e_field.FOLDER.NAME}`,forSetValue:[e_field.FOLDER.NAME],validCriteria:{'dDate':{$exists:false}},fkCollOwnerFields:[e_field.FOLDER.AUTHOR_ID],
@@ -33,11 +33,35 @@ const fkConfig={
             relatedColl:e_coll.CATEGORY,forSelect:`${e_field.CATEGORY.NAME}`,forSetValue:[e_field.CATEGORY.NAME]
         }
     },
+    /**          articleImage         **/
+    [e_coll.ARTICLE_IMAGE]:{
+        [e_field.ARTICLE_IMAGE.PATH_ID]:{
+            relatedColl:e_coll.STORE_PATH,forSelect:`${e_field.STORE_PATH.PATH}`,forSetValue:[e_field.STORE_PATH.PATH],validCriteria:{'dDate':{$exists:false}},fkCollOwnerFields:undefined,
+        },
+        [e_field.ARTICLE_IMAGE.ARTICLE_ID]:{
+            relatedColl:e_coll.ARTICLE,forSelect:`${e_field.ARTICLE.NAME}`,forSetValue:[e_field.ARTICLE.NAME],validCriteria:{'dDate':{$exists:false}},fkCollOwnerFields:[e_field.ARTICLE.AUTHOR_ID],
+        },
+/*        [e_field.ARTICLE_IMAGE.AUTHOR_ID]:{
+            relatedColl:e_coll.CATEGORY,forSelect:`${e_field.CATEGORY.NAME}`,forSetValue:[e_field.CATEGORY.NAME],validCriteria:{'dDate':{$exists:false}},fkCollOwnerFields:[e_field.ARTICLE.AUTHOR_ID]
+        },*/
+    },
+    /**          articleAttachment         **/
+    [e_coll.ARTICLE_IMAGE]:{
+        [e_field.ARTICLE_ATTACHMENT.PATH_ID]:{
+            relatedColl:e_coll.STORE_PATH,forSelect:`${e_field.STORE_PATH.PATH}`,forSetValue:[e_field.STORE_PATH.PATH],validCriteria:{'dDate':{$exists:false}},fkCollOwnerFields:undefined,
+        },
+        [e_field.ARTICLE_ATTACHMENT.ARTICLE_ID]:{
+            relatedColl:e_coll.ARTICLE,forSelect:`${e_field.ARTICLE.NAME}`,forSetValue:[e_field.ARTICLE.NAME],validCriteria:{'dDate':{$exists:false}},fkCollOwnerFields:[e_field.ARTICLE.AUTHOR_ID],
+        },
+        /*        [e_field.ARTICLE_IMAGE.AUTHOR_ID]:{
+                    relatedColl:e_coll.CATEGORY,forSelect:`${e_field.CATEGORY.NAME}`,forSetValue:[e_field.CATEGORY.NAME],validCriteria:{'dDate':{$exists:false}},fkCollOwnerFields:[e_field.ARTICLE.AUTHOR_ID]
+                },*/
+    },
     /*          article_comment     */
     [e_coll.ARTICLE_COMMENT]: {
         //未被删除，且完成（已经公开）的文档才能发表comment
         [e_field.ARTICLE_COMMENT.ARTICLE_ID]: {
-            relatedColl: e_coll.ARTICLE, forSelect: `${e_field.ARTICLE.NAME}`, forSetValue: [e_field.ARTICLE.NAME],validCriteria:{'dDate':{$exists:false},[e_field.ARTICLE.STATUS]:e_articleStatus.FINISHED}
+            relatedColl: e_coll.ARTICLE, forSelect: `${e_field.ARTICLE.NAME}`, forSetValue: [e_field.ARTICLE.NAME],validCriteria:{'dDate':{$exists:false},[e_field.ARTICLE.STATUS]:e_articleStatus.FINISHED},fkCollOwnerFields:undefined,
         },
     },
     /*          article likeDislike         */

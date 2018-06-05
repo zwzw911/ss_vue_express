@@ -34,7 +34,7 @@ const browserInputRule=require('../../server/constant/inputRule/browserInputRule
 const validateError=server_common_file_require.validateError//require('../../server/constant/error/validateError').validateError
 const controllerHelperError=server_common_file_require.helperError.helper//require('../../server/constant/error/controller/helperError').helper
 // const controllerCheckerError=server_common_file_require.helperError.checker
-const controllerError=require('../../server/controller/article/likeDislike_setting/likeDislike_controllerError').controllerError
+const controllerError=require('../../server/controller/articleLikeDislike/articleLikeDislike_setting/likeDislike_controllerError').controllerError
 
 // const objectDeepCopy=server_common_file_require.misc.objectDeepCopy
 

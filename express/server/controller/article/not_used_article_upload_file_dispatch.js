@@ -44,12 +44,12 @@ const common_operation_model=server_common_file_require.common_operation_model
 
 
 
-const controllerError=require('./article_upload_file_setting/article_upload_file_controllerError').controllerError
+const controllerError=require('./not_used_article_upload_file_setting/article_upload_file_controllerError').controllerError
 // const create_async=require('./likeDisLike_logic/create_likeDisLike').createLikeDisLike_async
 const update_uploadArticleImage_async=require('./article_upload_file_logic/upload_article_image').uploadArticleImage_async
 const update_uploadArticleAttachment_async=require('./article_upload_file_logic/upload_article_attachment').uploadArticleAttachment_async
 // const delete_async=require('./impeach_logic/delete_impeach').deleteImpeach_async
-const controllerSetting=require('./article_upload_file_setting/article_upload_file_setting').setting
+const controllerSetting=require('./not_used_article_upload_file_setting/article_upload_file_setting').setting
 
 
 

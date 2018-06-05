@@ -26,13 +26,11 @@ const e_uploadFileType=nodeEnum.UploadFileType
 
 
 const article_dispatcher_async=require('./article_dispatch').article_dispatcher_async
-const article_comment_dispatch_async=require('./article_comment_dispatch').comment_dispatcher_async
-const article_likeDislike_dispatcher_async=require(`./liekDislike_dispatch`).article_likeDislike_dispatcher_async
-const articleUploadFile_dispatch_async=require(`./article_upload_file_dispatch`).articleUploadFile_dispatch_async
-/*        通过method，判断是CRUDM中的那个操作
-*   C: register
-*   M: match(login)
-* */
+// const article_comment_dispatch_async=require('../article_comment/article_comment_dispatch').comment_dispatcher_async
+// const article_likeDislike_dispatcher_async=require(`./express/server/controller/articleLikeDislike`).article_likeDislike_dispatcher_async
+// const articleUploadFile_dispatch_async=require(`.`).articleUploadFile_dispatch_async
+
+/***    创建新文档（无任何参数）    ***/
 router.post('/',function(req,res,next){
 
     article_dispatcher_async(req).then(
@@ -47,25 +45,39 @@ router.post('/',function(req,res,next){
         }
     )
 })
+/***    更改新文档（recordId+recordInfo）    ***/
+router.put('/',function(req,res,next){
 
-/*        通过method，判断是CRUDM中的那个操作(实际comment只有CREATE)
- *   C: register
- * */
-router.post('/comment',function(req,res,next){
-
-    article_comment_dispatch_async({req:req}).then(
+    article_dispatcher_async(req).then(
         (v)=>{
-            console.log(`comment   success, result:  ${JSON.stringify(v)}`)
+            console.log(`update   article   success, result:  ${JSON.stringify(v)}`)
             return res.json(v)
         },
         (err)=>{
-            console.log(`comment  fail: ${JSON.stringify(err)}`)
+            console.log(`update   article    fail: ${JSON.stringify(err)}`)
             return res.json(genFinalReturnResult(err))
+
+        }
+    )
+})
+/***    删除文档（recordId）    ***/
+router.delete('/',function(req,res,next){
+
+    article_dispatcher_async(req).then(
+        (v)=>{
+            console.log(`update   article   success, result:  ${JSON.stringify(v)}`)
+            return res.json(v)
+        },
+        (err)=>{
+            console.log(`update   article    fail: ${JSON.stringify(err)}`)
+            return res.json(genFinalReturnResult(err))
+
         }
     )
 })
 
-/*              上传文件                */
+
+/***    上传图片(只包含上传文件，db操作由article的update，通过对article的content分析进行)    ***/
 router.post('/articleImage',function(req,res,next){
 
     articleUploadFile_dispatch_async({req:req,type:e_uploadFileType.IMAGE}).then(
@@ -81,6 +93,8 @@ router.post('/articleImage',function(req,res,next){
     )
 })
 
+
+/***    上传附件    ***/
 router.post('/articleAttachment',function(req,res,next){
 
     articleUploadFile_dispatch_async({req:req,type:e_uploadFileType.ATTACHMENT}).then(
@@ -91,27 +105,24 @@ router.post('/articleAttachment',function(req,res,next){
         (err)=>{
             console.log(`articleAttachment upload fail: ${JSON.stringify(err)}`)
             return res.json(genFinalReturnResult(err))
-
         }
     )
 })
+router.delete('/articleAttachment',function(req,res,next){
 
-
-/*                  article like_dislike    */
-router.post('/likeDislike',function(req,res,next){
-
-    article_likeDislike_dispatcher_async({req:req}).then(
+    articleUploadFile_dispatch_async({req:req,type:e_uploadFileType.ATTACHMENT}).then(
         (v)=>{
-            console.log(`likeDislike success, result:  ${JSON.stringify(v)}`)
+            console.log(`articleAttachment upload success, result:  ${JSON.stringify(v)}`)
             return res.json(v)
         },
         (err)=>{
-            console.log(`likeDislike fail: ${JSON.stringify(err)}`)
+            console.log(`articleAttachment upload fail: ${JSON.stringify(err)}`)
             return res.json(genFinalReturnResult(err))
-
         }
     )
 })
+
+
 
 
 

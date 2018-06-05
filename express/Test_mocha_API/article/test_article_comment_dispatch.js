@@ -49,7 +49,7 @@ const component_function=server_common_file_require.component_function
 
 const initSettingObject=require(`../../server/constant/genEnum/initSettingObject`).iniSettingObject
 
-const controllerError=require('../../server/controller/article/article_comment_setting/article_comment_controllerError').controllerError
+const controllerError=require('../../server/controller/article_comment/article_comment_setting/article_comment_controllerError').controllerError
 let baseUrl="/article/",url,finalUrl
 // let data={values:{}}
 // let rootSess

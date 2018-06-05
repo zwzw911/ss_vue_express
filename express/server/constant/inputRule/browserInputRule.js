@@ -1,4 +1,4 @@
-/*    gene by H:\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-6-1   */ 
+/*    gene by H:\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-6-5   */ 
  
 "use strict"
 const browserInputRule={
@@ -234,21 +234,6 @@ const browserInputRule={
             format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":101206,"msg":"上级目录必须是objectId"},"mongoError":{"rc":201206,"msg":"上级目录必须是objectId"}},
         },
     },
-    like_dislike:{
-        articleId:{
-            chineseName:"文档",
-            dataType:"objectId",
-            applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":101300,"msg":"文档不能为空"},"mongoError":{"rc":201300,"msg":"文档不能为空"}},
-            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":101302,"msg":"文档必须是objectId"},"mongoError":{"rc":201302,"msg":"文档必须是objectId"}},
-        },
-        like:{
-            chineseName:"喜欢",
-            dataType:"boolean",
-            applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":101304,"msg":"喜欢不能为空"},"mongoError":{"rc":201304,"msg":"喜欢不能为空"}},
-        },
-    },
     tag:{
         name:{
             chineseName:"标签名称",
@@ -256,6 +241,15 @@ const browserInputRule={
             applyRange:["create"],
             require:{"define":{"create":true},"error":{"rc":101400,"msg":"标签名称不能为空"},"mongoError":{"rc":201400,"msg":"标签名称不能为空"}},
             format:{"define":/^[\u4E00-\u9FFF\w]{2,20}$/,"error":{"rc":101402,"msg":"标签名必须由2-20个字符组成"},"mongoError":{"rc":201402,"msg":"标签名必须由2-20个字符组成"}},
+        },
+    },
+    like_dislike:{
+        articleId:{
+            chineseName:"文档",
+            dataType:"objectId",
+            applyRange:["create"],
+            require:{"define":{"create":true},"error":{"rc":101300,"msg":"文档不能为空"},"mongoError":{"rc":201300,"msg":"文档不能为空"}},
+            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":101302,"msg":"文档必须是objectId"},"mongoError":{"rc":201302,"msg":"文档必须是objectId"}},
         },
     },
     member_penalize:{

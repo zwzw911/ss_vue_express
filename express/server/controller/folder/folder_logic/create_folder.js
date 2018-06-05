@@ -128,8 +128,9 @@ async function createFolder_async({req,applyRange}){
 /***************   业务处理    *******************************/
 /*************************************************************/
 async function businessLogic_async({docValue,collName,userId,applyRange}){
-    // ap.inf('businessLogic_async in')
-    //添加internal value
+    /*************************************************/
+    /**        添加internal field，然后检查        **/
+    /*************************************************/
     let internalValue={}
     if(undefined!==docValue[e_field.FOLDER.PARENT_FOLDER_ID]){
         let parentFolder=await common_operation_model.findById_returnRecord_async({dbModel:e_dbModel.folder,id:docValue[e_field.FOLDER.PARENT_FOLDER_ID]})

@@ -118,6 +118,7 @@ const UploadFileType={
 const ResourceFieldName={
     DISK_USAGE_SIZE_IN_MB:'diskUsageSizeInMb',
     USED_NUM:'usedNum',
+    FILE_ABS_PATH:'fileAbsPath',
 }
 
 //为不同的resourceType/resourceRange设置calcResourceConfig的时候，使用的字段

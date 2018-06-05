@@ -45,7 +45,7 @@ const dataConvert=server_common_file_require.dataConvert
 const controllerHelper=server_common_file_require.controllerHelper
 const controllerChecker=server_common_file_require.controllerChecker
 const common_operation_model=server_common_file_require.common_operation_model
-const inputValueLogicValidCheck_async=server_common_file_require.controllerInputValueLogicCheck.inputValueLogicValidCheck_async
+const controllerInputValueLogicCheck=server_common_file_require.controllerInputValueLogicCheck
 const misc=server_common_file_require.misc
 const crypt=server_common_file_require.crypt
 
@@ -54,7 +54,7 @@ const regex=server_common_file_require.regex.regex
 const currentEnv=server_common_file_require.appSetting.currentEnv
 const fkConfig=server_common_file_require.fkConfig.fkConfig
 
-async function updateArticle_async({req}){
+async function updateArticle_async({req,applyRange}){
     // console.log(`updateUser_async in`)
     // console.log(`req.session ${JSON.stringify(req.session)}`)
     /*************************************************/
@@ -85,7 +85,7 @@ async function updateArticle_async({req}){
     /*********************************************/
     let originalDoc
     if(userType===e_allUserType.USER_NORMAL){
-        let originalDoc=await controllerChecker.ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({
+        originalDoc=await controllerChecker.ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({
             dbModel:e_dbModel.article,
             recordId:recordId,
             ownerFieldsName:[e_field.ARTICLE.AUTHOR_ID],
@@ -124,42 +124,9 @@ async function updateArticle_async({req}){
         /*****  无需对资源进行检查，因为都是删除操作  ******/
         [e_inputValueLogicCheckStep.RESOURCE_USAGE]:{flag:false,optionalParam:{resourceUsageOption:{requiredResource:undefined}}},
     }
-    await inputValueLogicValidCheck_async({commonParam:commonParam,stepParam:stepParam})
+    await controllerInputValueLogicCheck.inputValueLogicValidCheck_async({commonParam:commonParam,stepParam:stepParam})
 
-    /*******************************************************************************************/
-    /*                                       resource check                                    */
-    /*******************************************************************************************/
 
-    // let tmpResult=await common_operation_model.findById({dbModel:dbModel[e_coll.USER],id:objectId})
-    // let userId=tmpResult.msg[e_field.USER.]
-    /*******************************************************************************************/
-    /*                                     specific priority check                             */
-    /*******************************************************************************************/
-
-    /*******************************************************************************************/
-    /*                                    fk value是否存在                                     */
-    /*******************************************************************************************/
-    //在fkConfig中定义的外键检查
-    // await controllerChecker.ifFkValueExist_async({docValue:docValue,collFkConfig:fkConfig[collName],collFieldChineseName:e_chineseName[collName]})
-    //自定义外键的检查
-    /*******************************************************************************************/
-    /*                                  enum unique check(enum in array)                       */
-    /*******************************************************************************************/
-    // console.log(`browserInputRule[collName]==========> ${JSON.stringify(browserInputRule[collName])}`)
-    // console.log(`docValue==========> ${JSON.stringify(docValue)}`)
-/*    tmpResult=controllerChecker.ifEnumHasDuplicateValue({collValue:docValue,collRule:browserInputRule[collName]})
-    // console.log(`duplicate check result ==========> ${JSON.stringify(tmpResult)}`)
-    if(tmpResult.rc>0){
-        return Promise.reject(tmpResult)
-    }*/
-
-    /*******************************************************************************************/
-    /*                                       特定字段的处理（检查）                            */
-    /*******************************************************************************************/
-    //所有用户可能的输入，进行XSS检测
-    /*let XssCheckField=[e_field.ARTICLE.NAME,e_field.ARTICLE.HTML_CONTENT,e_field.ARTICLE.TAGS]
-    await controllerHelper.inputFieldValueXSSCheck({docValue:docValue,collName:collName,expectedXSSCheckField:XssCheckField})*/
-// console.log(`inputFieldValueXSSCheck done`)
     //如果content存在，图片检测
     if(undefined!==docValue[e_field.ARTICLE.HTML_CONTENT]){
         // let content=docValue[e_field.ARTICLE.HTML_CONTENT]
@@ -191,57 +158,61 @@ async function updateArticle_async({req}){
         })
         docValue[e_field.IMPEACH.CONTENT]=content
     }
-    // console.log(`1`)
-    //如果有folder，检测folder的owner是否为当前用户
-    /*if(undefined!==docValue[e_field.ARTICLE.FOLDER_ID]){
-        condition={}
-        condition[e_field.FOLDER.AUTHOR_ID]=userId
-        condition['_id']=docValue[e_field.ARTICLE.FOLDER_ID]
-        // console.log(`folder check=========>${JSON.stringify(condition)}`)
-        tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.folder,condition:condition})
-        // console.log(`folder check result=========>${JSON.stringify(tmpResult)}`)
-        if(tmpResult.length!==1){
-            return Promise.reject(controllerError.notAuthorizedFolder)
-        }
-    }*/
-    // console.log(`1`)
-    /*******************************************************************************************/
-    /*                                  field value duplicate check                            */
-    /*******************************************************************************************/
-/*    if(undefined!==e_uniqueField[collName] && e_uniqueField[collName].length>0) {
-        let additionalCheckCondition={[e_field.ADMIN_USER.DOC_STATUS]:e_docStatus.DONE}
-        await controllerChecker.ifFieldInDocValueUnique_async({collName: collName, docValue: docValue,additionalCheckCondition:additionalCheckCondition})
-    }*/
 
-    /*******************************************************************************************/
-    /*                         添加internal field，然后检查                                    */
-    /*******************************************************************************************/
+
+    /*********************************************/
+    /**********          业务处理        *********/
+    /*********************************************/
+    let updatedRecord=await businessLogic_async({docValue:docValue,collName:collName,recordId:recordId,applyRange:applyRange})
+
+    /*********************************************/
+    /**********      加密 敏感数据       *********/
+    /*********************************************/
+    controllerHelper.cryptRecordValue({record:updatedRecord,salt:tempSalt,collName:collName})
+    /*********************************************/
+    /**********      删除指定字段       *********/
+    /*********************************************/
+    controllerHelper.deleteFieldInRecord({record:updatedRecord,fieldsToBeDeleted:undefined})
+
+    //无需返回更新后记录，只需返回操作结果
+    return Promise.resolve({rc:0,msg:updatedRecord})
+
+
+
+}
+
+/*************************************************************/
+/***************   业务处理    *******************************/
+/*************************************************************/
+async function businessLogic_async({docValue,collName,recordId,applyRange}){
     let internalValue={}
     if(e_env.DEV===currentEnv && Object.keys(internalValue).length>0){
-        let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInputRule:inputRule[collName],collInternalRule:internalInputRule[collName],method:req.body.values[e_part.METHOD]})
+        let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInternalRule:internalInputRule[collName],applyRange:applyRange})
         if(tmpResult.rc>0){
             return Promise.reject(tmpResult)
         }
     }
-    //因为internalValue只是进行了转换，而不是新增，所以无需ObjectDeepCopy
-    Object.assign(docValue,internalValue)
+    if(undefined===docValue){
+        docValue=internalValue
+    }else{
+        Object.assign(docValue,internalValue)
+    }
     /*******************************************************************************************/
-    /*                                          unique check                                   */
+    /******************          compound field value unique check                  ************/
     /*******************************************************************************************/
-/*    if(undefined!==e_uniqueField[collName] && e_uniqueField[collName].length>0) {
-        await controllerChecker.ifFieldInDocValueUnique_async({collName: collName, docValue: docValue})
-        //await controllerHelper.ifFiledInDocValueUnique_async({collName: collName, docValue: docValue,e_uniqueField:e_uniqueField,e_chineseName:e_chineseName})
-    }*/
-
-    /*******************************************************************************************/
-    /*                                  db operation                                           */
-    /*******************************************************************************************/
-    // await common_operation_model.update_returnRecord_async({dbModel:e_dbModel[collName],id:recordId,values:docValue})
-    await common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel[collName],id:recordId,updateFieldsValue:docValue})
-    return Promise.resolve({rc:0})
-
-
+    if(undefined!==docValue){
+        let compoundFiledValueUniqueCheckAdditionalCheckCondition
+        await controllerInputValueLogicCheck.ifCompoundFiledValueUnique_returnExistRecord_async({
+            collName:collName,
+            docValue:docValue,
+            additionalCheckCondition:compoundFiledValueUniqueCheckAdditionalCheckCondition,
+        })
+    }
+    /***         数据库操作            ***/
+    let updatedRecord=await common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel[collName],id:recordId,updateFieldsValue:docValue})
+    return Promise.resolve(updatedRecord.toObject())
 }
+
 
 module.exports={
     updateArticle_async,
