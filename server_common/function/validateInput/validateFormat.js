@@ -280,7 +280,7 @@ function validateCURecordInfoFormat(recordInfo,rule){
     return rightResult
 }
 
-/*  用于e_part.SINGLR_FIELD的格式检查
+/*  用于e_part.SINGLE_FIELD的格式检查
 * 和validateCURecordInfoFormat类似，只是对应的part只有一个字段
 * */
 function validateSingleFieldFormat(singleField,collRule){
@@ -304,6 +304,8 @@ function validateSingleFieldFormat(singleField,collRule){
         if(singleFieldName==='_id' || singleFieldName ==='id'){
             return validateFormatError.singleFieldCantContainId
         }
+/*        ap.wrn('singleFieldName',singleFieldName)
+    ap.wrn('collRule',collRule)*/
         if(undefined===collRule[singleFieldName]){
             return validateFormatError.singleFiledRuleNotDefine
         }

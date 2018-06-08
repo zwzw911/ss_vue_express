@@ -1,4 +1,4 @@
-/*    gene by H:\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-5-28   */ 
+/*    gene by H:\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-6-8   */ 
  
 "use strict"
 const internalInputRule={
@@ -253,18 +253,11 @@ const internalInputRule={
             chineseName:"目录层级",
             dataType:"int",
             applyRange:["create","update_scalar"],
-            require:{"define":{"create":true,"update_scalar":false},"error":{"rc":101250,"msg":"目录层级不能为空"},"mongoError":{"rc":201250,"msg":"目录层级不能为空"}},
-            min:{"define":1,"error":{"rc":101252,"msg":"目录层级最小为1"},"mongoError":{"rc":201252,"msg":"目录层级最小为1"}},
+            require:{"define":{"create":true,"update_scalar":false},"error":{"rc":101254,"msg":"目录层级不能为空"},"mongoError":{"rc":201254,"msg":"目录层级不能为空"}},
+            min:{"define":1,"error":{"rc":101256,"msg":"目录层级最小为1"},"mongoError":{"rc":201256,"msg":"目录层级最小为1"}},
         },
     },
-    like_dislike:{
-        authorId:{
-            chineseName:"提交者",
-            dataType:"objectId",
-            applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":101350,"msg":"提交者不能为空"},"mongoError":{"rc":201350,"msg":"提交者不能为空"}},
-            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":101352,"msg":"提交者必须是objectId"},"mongoError":{"rc":201352,"msg":"提交者必须是objectId"}},
-        },
+    article_like_dislike:{
     },
     member_penalize:{
         creatorId:{
@@ -346,9 +339,9 @@ const internalInputRule={
         status:{
             chineseName:"当前请求所处状态",
             dataType:"string",
-            applyRange:["update_scalar"],
-            require:{"define":{"update_scalar":true},"error":{"rc":102154,"msg":"状态不能为空"},"mongoError":{"rc":202154,"msg":"状态不能为空"}},
-            enum:{"define":["1","2","3"],"error":{"rc":102156,"msg":"状态未定义"},"mongoError":{"rc":202156,"msg":"状态未定义"}},
+            applyRange:["create","update_scalar"],
+            require:{"define":{"create":true,"update_scalar":true},"error":{"rc":102154,"msg":"状态不能为空"},"mongoError":{"rc":202154,"msg":"状态不能为空"}},
+            enum:{"define":["1","2","3","4"],"error":{"rc":102156,"msg":"状态未定义"},"mongoError":{"rc":202156,"msg":"状态未定义"}},
         },
     },
     impeach:{

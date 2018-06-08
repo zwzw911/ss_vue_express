@@ -14,10 +14,6 @@ const ChineseName={
         'revokerId':'撤销人',
         'endDate':'处罚结束日期',
     },
-    category:{
-        'name':'分类名称',
-        'parentCategoryId':'上级分类',
-    },
     store_path:{
         'name':'存储路径名称',
         'path':'存储路径',
@@ -35,21 +31,9 @@ const ChineseName={
         'maxNum':'最大文件数量',
         'maxDiskSpaceInMb':'最大存储空间',
     },
-    article:{
-        'name':'文档标题',
-        'status':'文档状态',
-        'folderId':'文档目录',
-        'htmlContent':'文档内容',
-        'tags':'文档标签',
-        'categoryId':'分类',
-        'authorId':'作者',
-        'articleImagesId':'文档图片',
-        'articleAttachmentsId':'文档附件',
-        'articleCommentsId':'留言',
-        'attachmentsNum':'文档附件总数',
-        'attachmentsSizeInMb':'文档附件总大小',
-        'imagesNum':'文档图片总数',
-        'imagesSizeInMb':'文档图片总大小',
+    category:{
+        'name':'分类名称',
+        'parentCategoryId':'上级分类',
     },
     article_comment:{
         'articleId':'文档',
@@ -62,13 +46,27 @@ const ChineseName={
         'authorId':'创建人',
         'level':'目录层级',
     },
-    like_dislike:{
-        'articleId':'文档',
-        'like':'喜欢',
-        'authorId':'提交者',
-    },
     tag:{
         'name':'标签名称',
+    },
+    article_like_dislike:{
+    },
+    article:{
+        'name':'文档标题',
+        'status':'文档状态',
+        'folderId':'文档目录',
+        'htmlContent':'文档内容',
+        'tags':'文档标签',
+        'categoryId':'分类',
+        'allowComment':'允许评论',
+        'authorId':'作者',
+        'articleImagesId':'文档图片',
+        'articleAttachmentsId':'文档附件',
+        'articleCommentsId':'留言',
+        'attachmentsNum':'文档附件总数',
+        'attachmentsSizeInMb':'文档附件总大小',
+        'imagesNum':'文档图片总数',
+        'imagesSizeInMb':'文档图片总大小',
     },
     member_penalize:{
         'publicGroupId':'群',

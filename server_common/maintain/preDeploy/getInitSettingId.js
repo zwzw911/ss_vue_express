@@ -14,9 +14,9 @@ const e_storePathUsage=mongoEnum.StorePathUsage
 const e_storePathStatus=mongoEnum.StorePathStatus
 const e_resourceRange=mongoEnum.ResourceRange
 
-const e_dbModel=require('../../../express/server/constant/genEnum/dbModel')
-const e_coll=require('../../../express/server/constant/genEnum/DB_Coll').Coll
-const e_field=require('../../../express/server/constant/genEnum/DB_field').Field
+const e_dbModel=require('../../constant/genEnum/dbModel')
+const e_coll=require('../../constant/genEnum/DB_Coll').Coll
+const e_field=require('../../constant/genEnum/DB_field').Field
 const generateMongoEnumKeyValueExchange=require(`../generateFunction/generateMongoEnumKeyValueExchange`).genMongoEnumKVExchange//server_common_file_require.generateMongoEnumKeyValueExchange
 
 
@@ -55,14 +55,14 @@ async function generateInitSettingEnum_async(){
     }
 // console.log(`store path extract result =========> ${JSON.stringify(result)}`)
 
-
-    result[e_coll.CATEGORY]={}
+/**         category直接从db中获得        **/
+/*    result[e_coll.CATEGORY]={}
     tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.category,condition:{}})
     for(let singleRecord of tmpResult){
         let name=singleRecord[e_field.CATEGORY.NAME]
         let objectId=singleRecord['id']
         result[e_coll.CATEGORY][name]=objectId
-    }
+    }*/
 // console.log(`CATEGORY extract result =========> ${JSON.stringify(result[e_coll.CATEGORY])}`)
 /******** resource profile no need to write into file, but just read from db **************/
 /*    result[e_coll.RESOURCE_PROFILE]={}

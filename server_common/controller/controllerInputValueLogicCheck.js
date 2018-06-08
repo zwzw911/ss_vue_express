@@ -307,11 +307,11 @@ async function ifCompoundFiledValueUnique_returnExistRecord_async({collName,docV
         for(let singleCompoundFieldName in collConfig){
             let singleCompound=collConfig[singleCompoundFieldName]
             // console.log(`singleCompound===========>${JSON.stringify(singleCompound)}`)
-            ap.inf('singleCompound',singleCompound)
+            // ap.inf('singleCompound',singleCompound)
             let condition={},allCompoundFiledAvailable=true
             //检测复合字段的每个字段都有值
             // let singleCompoundFields=Object.keys(singleCompound)
-            for(let singleField of singleCompound){
+            for(let singleField of singleCompound['fields']){
                 //复合字段中，如果某个字段，在docValue没有设置值，直接忽略
                 //因为在mongo中，某个字段不需要值，直接unset，而不是设成null等，所以如果传入的带检测值有空字段，直接忽略unqique检测
                 // console.log(`docValue[${singleField}] ===========>${JSON.stringify(docValue[singleField] )}`)
@@ -339,9 +339,9 @@ async function ifCompoundFiledValueUnique_returnExistRecord_async({collName,docV
                 if(false===dataTypeCheck.isEmpty((condition))){
                     let results=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel[collName],condition:condition})
                     // console.log(`compound result=============>${JSON.stringify(results)}`)
-                    ap.inf('compound result',results)
+                    // ap.inf('compound result',results)
                     if(results.length>0){
-                        return Promise.reject( checkerError.compoundFieldHasMultipleDuplicateRecord({collName:collName,arr_compoundField:Object.keys(condition)}))
+                        return Promise.reject( checkerError.compoundFieldHasMultipleDuplicateRecord({collName:collName,singleCompoundFieldName:singleCompoundFieldName}))
                     }
                     if(results.length===1){
                         return Promise.resolve(results)

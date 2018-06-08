@@ -19,7 +19,7 @@ const crypt=server_common_file_require.crypt
 const dispatchError=server_common_file_require.helperError.dispatch
 
 const nodeEnum=server_common_file_require.nodeEnum
-const e_uploadFileType=nodeEnum.UploadFileType
+// const e_uploadFileType=nodeEnum.UploadFileType
 const e_part=nodeEnum.ValidatePart
 
 const mongoEnum=server_common_file_require.mongoEnum
@@ -32,10 +32,12 @@ const e_coll=require(`../../constant/genEnum/DB_Coll`).Coll
 const e_searchRange=server_common_file_require.inputDataRuleType.SearchRange
 const e_applyRange=server_common_file_require.inputDataRuleType.ApplyRange
 
+const e_fieldChineseName=require('../../constant/genEnum/inputRule_field_chineseName').ChineseName
+
 /**************  rule  ****************/
 const internalInputRule=require('../../constant/inputRule/internalInputRule').internalInputRule
 const inputRule=require('../../constant/inputRule/inputRule').inputRule
-const e_fieldChineseName=require('../../constant/genEnum/inputRule_field_chineseName').ChineseName
+const browserInputRule=require('../../constant/inputRule/browserInputRule').browserInputRule
 
 /**************  controller相关常量  ****************/
 const controllerError=require('./article_setting/article_controllerError').controllerError
@@ -72,7 +74,7 @@ async function article_dispatcher_async({req}) {
     let result = dispatchError.common.unknownRequestUrl
     let tmpResult
     let applyRange
-    // ap.inf('originalUrl',originalUrl)
+    ap.inf('originalUrl',originalUrl)
     // ap.inf('req.route.stack[0].method',req.route.stack[0].method)
     ap.inf('req.body', req.body)
     // ap.inf('req.params',req.params)
@@ -83,6 +85,7 @@ async function article_dispatcher_async({req}) {
     switch (req.route.stack[0].method) {
         case 'post':
             if (baseUrl === '/article' || baseUrl === '/article/') {
+                // ap.inf('upload req',req)
                 /**     创建文档        **/
                 if (originalUrl === '/article' || originalUrl === '/article/') {
                     applyRange = e_applyRange.CREATE
@@ -134,26 +137,16 @@ async function article_dispatcher_async({req}) {
                         needCheck: true,
                         error: controllerError.dispatch.post.notLoginCantCreateArticleImage
                     }
-                    await controllerPreCheck.userStateCheck_async({
-                        req: req,
-                        userLoginCheck: userLoginCheck,
-                        penalizeCheck: penalizeCheck
-                    })
-                    expectedPart = [e_part.RECORD_ID] //{RECEIVER:objectId}
+                    await controllerPreCheck.userStateCheck_async({req: req,userLoginCheck: userLoginCheck,penalizeCheck: penalizeCheck})
+                    expectedPart = [e_part.RECORD_ID] //articleId
                     //是否为期望的part
                     result = controllerPreCheck.inputCommonCheck({req: req, expectedPart: expectedPart})
                     // ap.inf('inputCommonCheck result',result)
-                    if (result.rc > 0) {
-                        return Promise.reject(result)
-                    }
+                    if (result.rc > 0) {return Promise.reject(result)}
 
                     //对req中的recordId和recordInfo进行objectId（加密过的）格式判断
                     // ap.inf('before check',req.body.values)
-                    await controllerChecker.ifObjectIdInPartCrypted_async({
-                        req: req,
-                        expectedPart: expectedPart,
-                        browserCollRule: browserInputRule[collName]
-                    })
+                    await controllerChecker.ifObjectIdInPartCrypted_async({req: req,expectedPart: expectedPart,browserCollRule: browserInputRule[collName]})
                     // ap.inf('after check',req.body.values)
                     //对req中的recordId和recordInfo中加密的objectId进行解密
                     let userInfo = await controllerHelper.getLoginUserInfo_async({req: req})
@@ -162,25 +155,12 @@ async function article_dispatcher_async({req}) {
                     // ap.inf('userInfo。tempSalt',userInfo.tempSalt)
                     // ap.inf('before decrypt',req.body.values)
                     // ap.inf('salt',tempSalt)
-                    controllerHelper.decryptInputValue({
-                        req: req,
-                        expectedPart: expectedPart,
-                        salt: tempSalt,
-                        browserCollRule: browserInputRule[collName]
-                    })
+                    controllerHelper.decryptInputValue({req: req,expectedPart: expectedPart,salt: tempSalt,browserCollRule: browserInputRule[collName]})
                     // ap.inf('after decrypt',req.body.values)
                     //对输入值进行检测（此时objectId已经解密）
-                    result = controllerPreCheck.inputPreCheck({
-                        req: req,
-                        expectedPart: expectedPart,
-                        collName: collName,
-                        applyRange: applyRange,
-                        arr_currentSearchRange: arr_currentSearchRange
-                    })
+                    result = controllerPreCheck.inputPreCheck({req: req,expectedPart: expectedPart,collName: collName,applyRange: applyRange, arr_currentSearchRange: arr_currentSearchRange})
                     // ap.inf('create use inputPreCheck result',result)
-                    if (result.rc > 0) {
-                        return Promise.reject(result)
-                    }
+                    if (result.rc > 0) {return Promise.reject(result)}
 
                     return await uploadArticleImage_async({req: req})
 
@@ -190,32 +170,18 @@ async function article_dispatcher_async({req}) {
                         needCheck: true,
                         error: controllerError.dispatch.post.notLoginCantCreateArticleAttachment
                     }
-                    await controllerPreCheck.userStateCheck_async({
-                        req: req,
-                        userLoginCheck: userLoginCheck,
-                        penalizeCheck: penalizeCheck
-                    })
+                    await controllerPreCheck.userStateCheck_async({req: req,userLoginCheck: userLoginCheck,penalizeCheck: penalizeCheck})
 
-                    await controllerPreCheck.userStateCheck_async({
-                        req: req,
-                        userLoginCheck: userLoginCheck,
-                        penalizeCheck: penalizeCheck
-                    })
+
                     expectedPart = [e_part.RECORD_ID] //此处RECORD_ID为article的id
                     //是否为期望的part
                     result = controllerPreCheck.inputCommonCheck({req: req, expectedPart: expectedPart})
                     // ap.inf('inputCommonCheck result',result)
-                    if (result.rc > 0) {
-                        return Promise.reject(result)
-                    }
+                    if (result.rc > 0) {return Promise.reject(result)}
 
                     //对req中的recordId和recordInfo进行objectId（加密过的）格式判断
                     // ap.inf('before check',req.body.values)
-                    await controllerChecker.ifObjectIdInPartCrypted_async({
-                        req: req,
-                        expectedPart: expectedPart,
-                        browserCollRule: browserInputRule[collName]
-                    })
+                    await controllerChecker.ifObjectIdInPartCrypted_async({req: req,expectedPart: expectedPart,browserCollRule: browserInputRule[collName]})
                     // ap.inf('after check',req.body.values)
                     //对req中的recordId和recordInfo中加密的objectId进行解密
                     let userInfo = await controllerHelper.getLoginUserInfo_async({req: req})
@@ -224,25 +190,12 @@ async function article_dispatcher_async({req}) {
                     // ap.inf('userInfo。tempSalt',userInfo.tempSalt)
                     // ap.inf('before decrypt',req.body.values)
                     // ap.inf('salt',tempSalt)
-                    controllerHelper.decryptInputValue({
-                        req: req,
-                        expectedPart: expectedPart,
-                        salt: tempSalt,
-                        browserCollRule: browserInputRule[collName]
-                    })
+                    controllerHelper.decryptInputValue({req: req,expectedPart: expectedPart,salt: tempSalt,browserCollRule: browserInputRule[collName]})
                     // ap.inf('after decrypt',req.body.values)
                     //对输入值进行检测（此时objectId已经解密）
-                    result = controllerPreCheck.inputPreCheck({
-                        req: req,
-                        expectedPart: expectedPart,
-                        collName: collName,
-                        applyRange: applyRange,
-                        arr_currentSearchRange: arr_currentSearchRange
-                    })
+                    result = controllerPreCheck.inputPreCheck({req: req,expectedPart: expectedPart,collName: collName,applyRange: applyRange, arr_currentSearchRange: arr_currentSearchRange})
                     // ap.inf('create use inputPreCheck result',result)
-                    if (result.rc > 0) {
-                        return Promise.reject(result)
-                    }
+                    if (result.rc > 0) {return Promise.reject(result)}
 
                     return await uploadArticleAttachment_async({req: req})
                 }
@@ -250,6 +203,7 @@ async function article_dispatcher_async({req}) {
             break;
         case 'put':
             if (baseUrl === '/article' || baseUrl === '/article/') {
+
                 applyRange = e_applyRange.UPDATE_SCALAR
                 userLoginCheck = {
                     needCheck: true,
@@ -260,26 +214,16 @@ async function article_dispatcher_async({req}) {
                     penalizeSubType: e_penalizeSubType.UPDATE,
                     penalizeCheckError: controllerError.dispatch.put.userInPenalizeCantUpdateArticle
                 }
-                await controllerPreCheck.userStateCheck_async({
-                    req: req,
-                    userLoginCheck: userLoginCheck,
-                    penalizeCheck: penalizeCheck
-                })
+                await controllerPreCheck.userStateCheck_async({req: req,userLoginCheck: userLoginCheck,penalizeCheck: penalizeCheck})
                 // ap.inf('create use userStateCheck_async done')
                 expectedPart = [e_part.RECORD_INFO, e_part.RECORD_ID]
                 //是否为期望的part
                 result = controllerPreCheck.inputCommonCheck({req: req, expectedPart: expectedPart})
-                if (result.rc > 0) {
-                    return Promise.reject(result)
-                }
+                if (result.rc > 0) {return Promise.reject(result)}
 
                 //对req中的recordId和recordInfo进行objectId（加密过的）格式判断
                 // ap.inf('before check',req.body.values)
-                await controllerChecker.ifObjectIdInPartCrypted_async({
-                    req: req,
-                    expectedPart: expectedPart,
-                    browserCollRule: browserInputRule[collName]
-                })
+                await controllerChecker.ifObjectIdInPartCrypted_async({req: req,expectedPart: expectedPart,browserCollRule: browserInputRule[collName]})
                 // ap.inf('after check',req.body.values)
                 //对req中的recordId和recordInfo中加密的objectId进行解密
                 let userInfo = await controllerHelper.getLoginUserInfo_async({req: req})
@@ -288,25 +232,12 @@ async function article_dispatcher_async({req}) {
                 // ap.inf('userInfo。tempSalt',userInfo.tempSalt)
                 // ap.inf('before decrypt',req.body.values)
                 // ap.inf('salt',tempSalt)
-                controllerHelper.decryptInputValue({
-                    req: req,
-                    expectedPart: expectedPart,
-                    salt: tempSalt,
-                    browserCollRule: browserInputRule[collName]
-                })
+                controllerHelper.decryptInputValue({req: req,expectedPart: expectedPart,salt: tempSalt,browserCollRule: browserInputRule[collName]})
                 // ap.inf('after decrypt',req.body.values)
                 //对输入值进行检测（此时objectId已经解密）
-                result = controllerPreCheck.inputPreCheck({
-                    req: req,
-                    expectedPart: expectedPart,
-                    collName: collName,
-                    applyRange: applyRange,
-                    arr_currentSearchRange: arr_currentSearchRange
-                })
+                result = controllerPreCheck.inputPreCheck({req: req,expectedPart: expectedPart,collName: collName,applyRange: applyRange,arr_currentSearchRange: arr_currentSearchRange})
                 // ap.inf('create use inputPreCheck result',result)
-                if (result.rc > 0) {
-                    return Promise.reject(result)
-                }
+                if (result.rc > 0) {return Promise.reject(result)}
 
                 result = await updateArticle_async({req: req, applyRange: applyRange})
                 return Promise.resolve(result)
@@ -319,28 +250,18 @@ async function article_dispatcher_async({req}) {
                         needCheck: true,
                         error: controllerError.dispatch.delete.notLoginCantDeleteAttachment
                     }
-                    await controllerPreCheck.userStateCheck_async({
-                        req: req,
-                        userLoginCheck: userLoginCheck,
-                        penalizeCheck: penalizeCheck
-                    })
+                    await controllerPreCheck.userStateCheck_async({req: req,userLoginCheck: userLoginCheck,penalizeCheck: penalizeCheck})
 
 
                     expectedPart = [e_part.RECORD_ID] //此处RECORD_ID为attachment的id
                     //是否为期望的part
                     result = controllerPreCheck.inputCommonCheck({req: req, expectedPart: expectedPart})
                     // ap.inf('inputCommonCheck result',result)
-                    if (result.rc > 0) {
-                        return Promise.reject(result)
-                    }
+                    if (result.rc > 0) {return Promise.reject(result)}
 
                     //对req中的recordId和recordInfo进行objectId（加密过的）格式判断
                     // ap.inf('before check',req.body.values)
-                    await controllerChecker.ifObjectIdInPartCrypted_async({
-                        req: req,
-                        expectedPart: expectedPart,
-                        browserCollRule: browserInputRule[collName]
-                    })
+                    await controllerChecker.ifObjectIdInPartCrypted_async({req: req,expectedPart: expectedPart,browserCollRule: browserInputRule[collName]})
                     // ap.inf('after check',req.body.values)
                     //对req中的recordId和recordInfo中加密的objectId进行解密
                     let userInfo = await controllerHelper.getLoginUserInfo_async({req: req})
@@ -349,25 +270,12 @@ async function article_dispatcher_async({req}) {
                     // ap.inf('userInfo。tempSalt',userInfo.tempSalt)
                     // ap.inf('before decrypt',req.body.values)
                     // ap.inf('salt',tempSalt)
-                    controllerHelper.decryptInputValue({
-                        req: req,
-                        expectedPart: expectedPart,
-                        salt: tempSalt,
-                        browserCollRule: browserInputRule[collName]
-                    })
+                    controllerHelper.decryptInputValue({req: req,expectedPart: expectedPart,salt: tempSalt,browserCollRule: browserInputRule[collName]})
                     // ap.inf('after decrypt',req.body.values)
                     //对输入值进行检测（此时objectId已经解密）
-                    result = controllerPreCheck.inputPreCheck({
-                        req: req,
-                        expectedPart: expectedPart,
-                        collName: collName,
-                        applyRange: applyRange,
-                        arr_currentSearchRange: arr_currentSearchRange
-                    })
+                    result = controllerPreCheck.inputPreCheck({req: req,expectedPart: expectedPart,collName: collName,applyRange: applyRange, arr_currentSearchRange: arr_currentSearchRange})
                     // ap.inf('create use inputPreCheck result',result)
-                    if (result.rc > 0) {
-                        return Promise.reject(result)
-                    }
+                    if (result.rc > 0) {return Promise.reject(result)}
 
                     return await deleteArticleAttachment_async({req: req})
                 }

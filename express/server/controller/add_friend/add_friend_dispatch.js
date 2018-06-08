@@ -15,7 +15,7 @@ const crypt=server_common_file_require.crypt
 const dispatchError=server_common_file_require.helperError.dispatch
 
 const nodeEnum=server_common_file_require.nodeEnum
-const e_uploadFileType=nodeEnum.UploadFileType
+// const e_uploadFileType=nodeEnum.UploadFileType
 const e_part=nodeEnum.ValidatePart
 
 const mongoEnum=server_common_file_require.mongoEnum

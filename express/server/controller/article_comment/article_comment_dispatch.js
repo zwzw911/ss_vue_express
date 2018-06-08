@@ -39,10 +39,10 @@ const e_applyRange=server_common_file_require.inputDataRuleType.ApplyRange
 const internalInputRule=require('../../constant/inputRule/internalInputRule').internalInputRule
 const inputRule=require('../../constant/inputRule/inputRule').inputRule
 const e_fieldChineseName=require('../../constant/genEnum/inputRule_field_chineseName').ChineseName
-
+const browserInputRule=require('../../constant/inputRule/browserInputRule').browserInputRule
 /**************  controller相关常量  ****************/
 const controllerError=require('./article_comment_setting/article_comment_controllerError').controllerError
-const controllerSetting=require('../article/article_setting/article_setting').setting
+const controllerSetting=require('../article_comment/article_comment_setting/article_comment_setting').setting
 
 
 
@@ -94,12 +94,12 @@ async function comment_dispatcher_async({req}){
                 applyRange=e_applyRange.CREATE
                 userLoginCheck={
                     needCheck:true,
-                    error:controllerError.dispatch.post.userNotLoginCantCreateComment
+                    error:controllerError.dispatch.post.notLoginCantCreateComment
                 }
                 penalizeCheck={
-                    penalizeType:e_penalizeType.NO_FOLDER,
-                    penalizeSubType:e_penalizeSubType.UPDATE,
-                    penalizeCheckError:controllerError.dispatch.post.userInPenalizeCantUpdateComment
+                    penalizeType:e_penalizeType.NO_ARTICLE_COMMENT,
+                    penalizeSubType:e_penalizeSubType.CREATE,
+                    penalizeCheckError:controllerError.dispatch.post.userInPenalizeCantCreateComment
                 }
                 await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
                 // ap.inf('create use userStateCheck_async done')

@@ -14,14 +14,16 @@ const controllerError={
 //50300~50320
     dispatch:{
         post:{
-            userNotLoginCantCreateComment:{rc:50300,msg:`用户尚未登录，无法发表评论`},
-            userInPenalizeNoCommentCreate:{rc:50302,msg:`管理员禁止发表评论`},
+            notLoginCantCreateComment:{rc:50300,msg:`用户尚未登录，无法发表评论`},
+            userInPenalizeCantCreateComment:{rc:50302,msg:`管理员禁止发表评论`},
         },
 
     },
     /*          create new comment              */
 
-
+    create:{
+        cantCommentArticle:{rc:50360,msg:{client:`无法评论`,server:`文档未完成，或者作者进行进行评论`}}
+    },
 
     // userInPenalizeNoArticleUpdate:{rc:50232,msg:`管理员禁止更新文档`},
 }

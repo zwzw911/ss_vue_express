@@ -15,7 +15,7 @@ const e_chineseName=require('../../../constant/genEnum/inputRule_field_chineseNa
 const e_coll=require('../../../constant/genEnum/DB_Coll').Coll
 const e_field=require('../../../constant/genEnum/DB_field').Field
 const e_dbModel=require('../../../constant/genEnum/dbModel')
-const enumValue=require(`./express/server/constant/genEnum/enumValue`)
+// const enumValue=require(`./express/server/constant/genEnum/enumValue`)
 
 const e_iniSettingObject=require('../../../constant/genEnum/initSettingObject').iniSettingObject
 
@@ -31,10 +31,12 @@ const server_common_file_require=require('../../../../server_common_file_require
 const nodeEnum=server_common_file_require.nodeEnum
 const nodeRuntimeEnum=server_common_file_require.nodeRuntimeEnum
 const mongoEnum=server_common_file_require.mongoEnum
-// const e=server_common_file_require.enum
+
+const e_inputValueLogicCheckStep=nodeRuntimeEnum.InputValueLogicCheckStep
+
 const e_env=nodeEnum.Env
 const e_part=nodeEnum.ValidatePart
-
+const e_resourceFieldName=nodeEnum.ResourceFieldName
 // const e_hashType=nodeRuntimeEnum.
 
 const e_accountType=mongoEnum.AccountType.DB
@@ -42,6 +44,8 @@ const e_docStatus=mongoEnum.DocStatus.DB
 const e_impeachType=mongoEnum.ImpeachType.DB
 const e_impeachUserAction=mongoEnum.ImpeachUserAction.DB
 const e_impeachState=mongoEnum.ImpeachState.DB
+const e_allUserType=mongoEnum.AllUserType.DB
+const e_resourceRange=mongoEnum.ResourceRange.DB
 
 /**************  公共函数   ******************/
 const dataConvert=server_common_file_require.dataConvert
@@ -78,7 +82,7 @@ async  function createLikeDisLike_async({req,like,applyRange}){
         [e_field.IMPEACH.TITLE]:'新举报',
         [e_field.IMPEACH.CONTENT]:'对文档/评论的内容进行举报',
     }*/
-    let docValue=req.body.values[e_part.RECORD_INFO]
+    let docValue=req.body.values[e_part.SINGLE_FIELD]
     let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
     // console.log(`userInfo===> ${JSON.stringify(userInfo)}`)
     let {userId,userCollName,userType,userPriority,tempSalt}=userInfo
@@ -107,7 +111,7 @@ async  function createLikeDisLike_async({req,like,applyRange}){
         //object：coll中，对单个字段进行unique检测，需要的额外查询条件
         [e_inputValueLogicCheckStep.SINGLE_FIELD_VALUE_UNIQUE]:{flag:true,optionalParam:{singleValueUniqueCheckAdditionalCondition:undefined}},
         //数组，元素是字段名。默认对所有dataType===string的字段进行XSS检测，但是可以通过此变量，只选择部分字段
-        [e_inputValueLogicCheckStep.XSS]:{flag:true,optionalParam:{expectedXSSFields:{optionalParam:undefined}}},
+        [e_inputValueLogicCheckStep.XSS]:{flag:true,optionalParam:{expectedXSSFields:undefined}},
         //object，对compoundField进行unique检测需要的额外条件，key从model->mongo->compound_unique_field_config.js中获得
         //在internalValue之后执行
         // [e_inputValueLogicCheckStep.COMPOUND_VALUE_UNIQUE]:{flag:true,optionalParam:{compoundFiledValueUniqueCheckAdditionalCheckCondition:undefined}},
@@ -116,6 +120,9 @@ async  function createLikeDisLike_async({req,like,applyRange}){
     }
     await controllerInputValueLogicCheck.inputValueLogicValidCheck_async({commonParam:commonParam,stepParam:stepParam})
 
+    /**********************************************/
+    /***********    逻辑操作       **************/
+    /*********************************************/
     await businessLogic_async({docValue:docValue,like:like,collName:collName,userId:userId,applyRange:applyRange})
     /**     无返回记录，所以无需加密objectId **/
     return Promise.resolve({rc:0})
@@ -130,8 +137,8 @@ async function businessLogic_async({docValue,like,collName,userId,applyRange}){
     /*************************************************/
     // console.log(`before hash is ${JSON.stringify(docValue)}`)
     let internalValue={}
-    internalValue[e_field.LIKE_DISLIKE.AUTHOR_ID] = userId
-    internalValue[e_field.LIKE_DISLIKE.LIKE] = like
+    internalValue[e_field.ARTICLE_LIKE_DISLIKE.AUTHOR_ID] = userId
+    internalValue[e_field.ARTICLE_LIKE_DISLIKE.LIKE] = like
     /*              对内部产生的值进行检测（开发时使用，上线后为了减低负荷，无需使用）           */
     if(e_env.DEV===currentEnv){
         let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInternalRule:internalInputRule[collName],applyRange:applyRange})
@@ -166,12 +173,12 @@ async function businessLogic_async({docValue,like,collName,userId,applyRange}){
     // console.log(`create result is ====>${JSON.stringify(tmpResult)}`)
     /*          对关联db进行操作               */
     let fieldToBePlus1
-    if(true===docValue[e_field.LIKE_DISLIKE.LIKE]){
+    if(true===docValue[e_field.ARTICLE_LIKE_DISLIKE.LIKE]){
         fieldToBePlus1=e_field.LIKE_DISLIKE_STATIC.LIKE_TOTAL_NUM
     }else{
         fieldToBePlus1=e_field.LIKE_DISLIKE_STATIC.DISLIKE_TOTAL_NUM
     }
-    let articleId=docValue[e_field.LIKE_DISLIKE.ARTICLE_ID]
+    let articleId=docValue[e_field.ARTICLE_LIKE_DISLIKE.ARTICLE_ID]
     let articleLikeDisLikeStatic=await  common_operation_model.find_returnRecords_async({dbModel:e_dbModel.like_dislike_static,condition:{[e_field.LIKE_DISLIKE_STATIC.ARTICLE_ID]:articleId}})
     //article没有对应的统计数据，新建记录
     if(0===articleLikeDisLikeStatic.length){

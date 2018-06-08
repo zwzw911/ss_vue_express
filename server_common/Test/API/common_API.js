@@ -63,13 +63,20 @@ async function getTempSalt_async({sess}){
 async function cryptObjectId_async({objectId,sess}){
     // ap.inf('sess',sess)
     let tempSalt=await getTempSalt_async({sess:sess})
-    // ap.inf('tempSalt',tempSalt)
+    // ap.wrn('tempSalt',tempSalt)
     // ap.inf('objectId',objectId)
     let cryptedValue=crypt.cryptSingleFieldValue({fieldValue:objectId,salt:tempSalt}).msg
     return Promise.resolve(cryptedValue)
 }
 
-
+async function decryptObjectId_async({objectId,sess}){
+    // ap.inf('sess',sess)
+    let tempSalt=await getTempSalt_async({sess:sess})
+    // ap.inf('tempSalt',tempSalt)
+    // ap.inf('objectId',objectId)
+    let decryptedValue=crypt.decryptSingleFieldValue({fieldValue:objectId,salt:tempSalt}).msg
+    return Promise.resolve(decryptedValue)
+}
 
 module.exports={
     generalCreate_returnRecord_async,
@@ -77,6 +84,6 @@ module.exports={
     getTempSalt_async,
 
     cryptObjectId_async,
-
+    decryptObjectId_async,
 
 }

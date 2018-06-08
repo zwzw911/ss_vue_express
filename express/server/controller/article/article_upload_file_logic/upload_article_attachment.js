@@ -32,7 +32,7 @@ const e_env=nodeEnum.Env
 const e_part=nodeEnum.ValidatePart
 //上传文件的定义
 const e_resourceFieldName=nodeEnum.ResourceFieldName
-const e_uploadFileType=nodeEnum.UploadFileType
+// const e_uploadFileType=nodeEnum.UploadFileType
 const e_uploadFileDefinitionFieldName=nodeEnum.UploadFileDefinitionFieldName
 
 // const e_resourceRange=nodeEnum.Resource
@@ -63,6 +63,7 @@ const gmImage=server_common_file_require.gmImage//require('../../function/assist
 const e_gmGetter=nodeRuntimeEnum.GmGetter
 
 async function uploadArticleAttachment_async({req}){
+
     // console.log(`uploadArticleAttachment_async in`)
     // console.log(`req.session ${JSON.stringify(req.session)}`)
     /*************************************************/
@@ -211,7 +212,7 @@ async function uploadArticleAttachment_async({req}){
     //     fileCollName=e_coll.ARTICLE_IMAGE
     //     fieldToBeChanged=e_field.ARTICLE.ARTICLE_IMAGES_ID
     // }
-    if(e_uploadFileType.ATTACHMENT===type){
+    // if(e_uploadFileType.ATTACHMENT===type){
         internalValue[e_field.ARTICLE_ATTACHMENT.NAME]=originalFilename
         internalValue[e_field.ARTICLE_ATTACHMENT.HASH_NAME]=finalFileName
         internalValue[e_field.ARTICLE_ATTACHMENT.PATH_ID]=pathId
@@ -220,7 +221,7 @@ async function uploadArticleAttachment_async({req}){
         internalValue[e_field.ARTICLE_ATTACHMENT.ARTICLE_ID]=recordId
         fileCollName=e_coll.ARTICLE_ATTACHMENT
 
-    }
+    // }
     if(e_env.DEV===currentEnv){
         let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInputRule:inputRule[fileCollName],collInternalRule:internalInputRule[fileCollName],applyRange:e_applyRange.CREATE})
 // console.log(`internalValue check result====>   ${JSON.stringify(tmpResult)}`)

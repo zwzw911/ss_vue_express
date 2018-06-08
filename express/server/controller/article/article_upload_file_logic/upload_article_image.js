@@ -33,7 +33,7 @@ const mongoEnum=server_common_file_require.mongoEnum
 const e_env=nodeEnum.Env
 const e_part=nodeEnum.ValidatePart
 const e_resourceFieldName=nodeEnum.ResourceFieldName
-const e_uploadFileType=nodeEnum.UploadFileType
+// const e_uploadFileType=nodeEnum.UploadFileType
 const e_uploadFileDefinitionFieldName=nodeEnum.UploadFileDefinitionFieldName
 
 const e_fileSizeUnit=nodeRuntimeEnum.FileSizeUnit

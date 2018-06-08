@@ -15,7 +15,7 @@ const e_coll=require('../../../constant/genEnum/DB_Coll').Coll
 // const e_adminPriorityType=server_common_file_require.mongoEnum.AdminPriorityType.DB
 
 const setting={
-    MAIN_HANDLED_COLL_NAME:e_coll.LIKE_DISLIKE,
+    MAIN_HANDLED_COLL_NAME:e_coll.ARTICLE_LIKE_DISLIKE,
 }
 
 module.exports={

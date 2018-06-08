@@ -10,7 +10,10 @@ const allAdminPriorityType=require('../../constant/genEnum/enumValue').AdminPrio
 const mongoEnum=require(`../../constant/enum/mongoEnum`)//server_common_file_require.mongoEnum
 const e_storePathUsage=mongoEnum.StorePathUsage.DB
 const e_storePathStatus=mongoEnum.StorePathStatus.DB
+
 const e_resourceRange=mongoEnum.ResourceRange.DB
+const e_resourceRange_name=mongoEnum.ResourceRange.SHOW
+
 const e_resourceType=mongoEnum.ResourceType.DB
 const e_adminUserType=mongoEnum.AdminUserType.DB
 const e_docStatus=mongoEnum.DocStatus.DB
@@ -229,6 +232,39 @@ const resource_profile= [
     {
         [e_field.RESOURCE_PROFILE.NAME]:"最大已同意但是未分配的添加朋友的请求数",
         [e_field.RESOURCE_PROFILE.RESOURCE_RANGE]:e_resourceRange.MAX_ACCEPT_BUT_NOT_ASSIGN_ADD_FRIEND_REQUEST,
+        [e_field.RESOURCE_PROFILE.RESOURCE_TYPE]:e_resourceType.BASIC,
+        [e_field.RESOURCE_PROFILE.MAX_NUM]:50,
+    },
+    //同上，只有basic。防止用户大量插入无用文档
+    {
+        [e_field.RESOURCE_PROFILE.NAME]:e_resourceRange_name.MAX_NEW_ARTICLE,
+        [e_field.RESOURCE_PROFILE.RESOURCE_RANGE]:e_resourceRange.MAX_NEW_ARTICLE,
+        [e_field.RESOURCE_PROFILE.RESOURCE_TYPE]:e_resourceType.BASIC,
+        [e_field.RESOURCE_PROFILE.MAX_NUM]:10,
+    },
+    /**     最大文档数       **/
+    {
+        [e_field.RESOURCE_PROFILE.NAME]:'普通用户'+e_resourceRange_name.MAX_ARTICLE,
+        [e_field.RESOURCE_PROFILE.RESOURCE_RANGE]:e_resourceRange.MAX_ARTICLE,
+        [e_field.RESOURCE_PROFILE.RESOURCE_TYPE]:e_resourceType.BASIC,
+        [e_field.RESOURCE_PROFILE.MAX_NUM]:500,
+    },
+    {
+        [e_field.RESOURCE_PROFILE.NAME]:'高级用户'+e_resourceRange_name.MAX_ARTICLE,
+        [e_field.RESOURCE_PROFILE.RESOURCE_RANGE]:e_resourceRange.MAX_ARTICLE,
+        [e_field.RESOURCE_PROFILE.RESOURCE_TYPE]:e_resourceType.ADVANCED,
+        [e_field.RESOURCE_PROFILE.MAX_NUM]:1000,
+    },
+    /**     最大评论数（都是普通）       **/
+    {
+        [e_field.RESOURCE_PROFILE.NAME]:e_resourceRange_name.MAX_COMMENT_PER_ARTICLE,
+        [e_field.RESOURCE_PROFILE.RESOURCE_RANGE]:e_resourceRange.MAX_COMMENT_PER_ARTICLE,
+        [e_field.RESOURCE_PROFILE.RESOURCE_TYPE]:e_resourceType.BASIC,
+        [e_field.RESOURCE_PROFILE.MAX_NUM]:1000,
+    },
+    {
+        [e_field.RESOURCE_PROFILE.NAME]:e_resourceRange_name.MAX_COMMENT_PER_ARTICLE_PER_USER,
+        [e_field.RESOURCE_PROFILE.RESOURCE_RANGE]:e_resourceRange.MAX_COMMENT_PER_ARTICLE_PER_USER,
         [e_field.RESOURCE_PROFILE.RESOURCE_TYPE]:e_resourceType.BASIC,
         [e_field.RESOURCE_PROFILE.MAX_NUM]:50,
     },

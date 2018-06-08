@@ -103,6 +103,7 @@ async function userStateCheck_async({req,userLoginCheck={needCheck:false},penali
 //validatePartValueFormat+validatePartValue
 function inputPreCheck({req,expectedPart,collName,arr_currentSearchRange,applyRange}){
     // ap.inf('inputPreCheck in')
+    // ap.inf('collName',collName)
     let result
 
     if(expectedPart.length>0){

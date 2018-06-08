@@ -12,7 +12,7 @@ const db_operation_helper=require('./db_operation_helper')
 const testData=require('./testData')
 
 /** 对3个userId进行加密   ***/
-async function getUserCryotedUserId_async({app,adminApp}){
+async function getUserCryptedUserId_async({app,adminApp}){
     let user1Info,user2Info,user3Info
     let user1Id,user2Id,user3Id,adminRootId
     let user1Sess,user2Sess,user3Sess,adminRootSess
@@ -70,5 +70,5 @@ async function getUserCryotedUserId_async({app,adminApp}){
 }
 
 module.exports={
-    getUserCryotedUserId_async,
+    getUserCryptedUserId_async,
 }

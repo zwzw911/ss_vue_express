@@ -16,7 +16,7 @@ const e_fieldChineseName=require('../../../constant/genEnum/inputRule_field_chin
 const e_coll=require('../../../constant/genEnum/DB_Coll').Coll
 const e_field=require('../../../constant/genEnum/DB_field').Field
 const e_dbModel=require('../../../constant/genEnum/dbModel')
-const enumValue=require(`./express/server/constant/genEnum/enumValue`)
+// const enumValue=require(`'../../../constant/genEnum/enumValue`)
 
 const e_iniSettingObject=require('../../../constant/genEnum/initSettingObject').iniSettingObject
 
@@ -32,10 +32,12 @@ const server_common_file_require=require('../../../../server_common_file_require
 const nodeEnum=server_common_file_require.nodeEnum
 const nodeRuntimeEnum=server_common_file_require.nodeRuntimeEnum
 const mongoEnum=server_common_file_require.mongoEnum
-// const e=server_common_file_require.enum
+
+const e_inputValueLogicCheckStep=nodeRuntimeEnum.InputValueLogicCheckStep
+
 const e_env=nodeEnum.Env
 const e_part=nodeEnum.ValidatePart
-
+const e_resourceFieldName=nodeEnum.ResourceFieldName
 // const e_hashType=nodeRuntimeEnum.
 
 const e_articleStatus=mongoEnum.ArticleStatus.DB
@@ -43,6 +45,8 @@ const e_docStatus=mongoEnum.DocStatus.DB
 const e_impeachType=mongoEnum.ImpeachType.DB
 const e_impeachUserAction=mongoEnum.ImpeachUserAction.DB
 const e_impeachState=mongoEnum.ImpeachState.DB
+const e_allUserType=mongoEnum.AllUserType.DB
+const e_resourceRange=mongoEnum.ResourceRange.DB
 
 /**************  公共函数   ******************/
 const dataConvert=server_common_file_require.dataConvert
@@ -73,7 +77,7 @@ async  function createArticleComment_async({req,applyRange}){
     // console.log(`userInfo===> ${JSON.stringify(userInfo)}`)
     let {userId,userCollName,userType,userPriority,tempSalt}=userInfo
 // console.log(`userId ====>${userId}`)
-
+    let articleId=docValue[e_field.ARTICLE_COMMENT.ARTICLE_ID]
     /**********************************************/
     /********  删除null/undefined的字段  *********/
     /*********************************************/
@@ -86,28 +90,42 @@ async  function createArticleComment_async({req,applyRange}){
     /*********************************************/
     await controllerChecker.ifExpectedUserType_async({currentUserType:userType,arr_expectedUserType:[e_allUserType.USER_NORMAL]})
     // ap.inf('用户类型检测 done')
+
+
     /**********************************************/
     /**  CALL FUNCTION:inputValueLogicValidCheck **/
     /**********************************************/
     let commonParam={docValue:docValue,userId:userId,collName:collName}
-    // ap.inf('userId',userId)
+    // ap.inf('commonParam',commonParam)
     let stepParam={
         [e_inputValueLogicCheckStep.FK_EXIST_AND_PRIORITY]:{flag:true,optionalParam:undefined},
         [e_inputValueLogicCheckStep.ENUM_DUPLICATE]:{flag:true,optionalParam:undefined},
         //object：coll中，对单个字段进行unique检测，需要的额外查询条件
         [e_inputValueLogicCheckStep.SINGLE_FIELD_VALUE_UNIQUE]:{flag:true,optionalParam:{singleValueUniqueCheckAdditionalCondition:undefined}},
         //数组，元素是字段名。默认对所有dataType===string的字段进行XSS检测，但是可以通过此变量，只选择部分字段
-        [e_inputValueLogicCheckStep.XSS]:{flag:true,optionalParam:{expectedXSSFields:{optionalParam:undefined}}},
+        [e_inputValueLogicCheckStep.XSS]:{flag:true,optionalParam:{expectedXSSFields:undefined}},
         //object，对compoundField进行unique检测需要的额外条件，key从model->mongo->compound_unique_field_config.js中获得
         //在internalValue之后执行
         // [e_inputValueLogicCheckStep.COMPOUND_VALUE_UNIQUE]:{flag:true,optionalParam:{compoundFiledValueUniqueCheckAdditionalCheckCondition:undefined}},
         //Object，配置resourceCheck的一些参数,{requiredResource,resourceProfileRange,userId,containerId}
         //comment可以无限
-        [e_inputValueLogicCheckStep.RESOURCE_USAGE]:{flag:false,optionalParam:{resourceUsageOption:{requiredResource:{[e_resourceFieldName.USED_NUM]:1},resourceProfileRange:[e_resourceRange.FOLDER_NUM],userId:userId,containerId:undefined}}},
+        [e_inputValueLogicCheckStep.RESOURCE_USAGE]:{flag:true,optionalParam:{resourceUsageOption:{requiredResource:{[e_resourceFieldName.USED_NUM]:1},resourceProfileRange:[e_resourceRange.MAX_COMMENT_PER_ARTICLE,e_resourceRange.MAX_COMMENT_PER_ARTICLE_PER_USER],userId:userId,containerId:articleId}}},
     }
+    // ap.inf('stepParam',stepParam)
     await controllerInputValueLogicCheck.inputValueLogicValidCheck_async({commonParam:commonParam,stepParam:stepParam})
 
+    /**********************************************/
+    /***********    特定检查(在fk检查中被检出)       **************/
+    /*********************************************/
+/*    //article状态必须是FINISN且字段ALLOW_COMMENT为true
+    let articleRecord=await common_operation_model.findById_returnRecord_async({dbModel:e_dbModel.article,id:articleId})
+    if(e_articleStatus.FINISHED!==articleRecord[e_field.ARTICLE.STATUS] || false===articleRecord[e_field.ARTICLE.ALLOW_COMMENT]){
+        return Promise.reject(controllerError.create.cantCommentArticle)
+    }*/
 
+    /**********************************************/
+    /***********    逻辑操作       **************/
+    /*********************************************/
     let createdRecord=await businessLogic_async({docValue:docValue,collName:collName,userId:userId,applyRange:applyRange})
 
     /*********************************************/

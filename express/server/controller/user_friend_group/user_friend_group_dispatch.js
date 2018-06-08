@@ -11,7 +11,7 @@ const nodeEnum=server_common_file_require.nodeEnum
 const mongoEnum=server_common_file_require.mongoEnum
 const controllerHelper=server_common_file_require.controllerHelper
 
-const e_uploadFileType=nodeEnum.UploadFileType
+// const e_uploadFileType=nodeEnum.UploadFileType
 const e_uploadType=nodeEnum.UpdateType
 const e_findEleInArray=nodeEnum.FindEleInArray
 

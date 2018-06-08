@@ -424,6 +424,7 @@ async function ifObjectIdInPartCrypted_async({req,expectedPart,browserCollRule})
         // ap.inf('singlePart',singlePart)
         // ap.inf('req.body.values[singlePart]',req.body.values[singlePart])
         if(true===dataTypeCheck.isSetValue(req.body.values[singlePart])){
+            // ap.wrn('')
             let partValue=req.body.values[singlePart]
             switch (singlePart){
                 case e_part.RECORD_ID:
@@ -447,6 +448,7 @@ async function ifObjectIdInPartCrypted_async({req,expectedPart,browserCollRule})
                         let fieldDataTypeInRule=browserCollRule[fieldName][e_otherRuleFiledName.DATA_TYPE]
                         let dataTypeArrayFlag=dataTypeCheck.isArray(fieldDataTypeInRule)
                         let dataType= dataTypeArrayFlag ? fieldDataTypeInRule[0]:fieldDataTypeInRule
+                        // ap.wrn('dataType',dataType)
                         //字段类型是objectId
                         if(e_dataType.OBJECT_ID===dataType){
                             //数组，对每个元素进行判别
@@ -459,7 +461,10 @@ async function ifObjectIdInPartCrypted_async({req,expectedPart,browserCollRule})
                                     }
                                 }
                             }else{
+                                // ap.wrn('before ifObjectIdCrypted')
+                                // ap.wrn('after ifObjectIdCrypted',ifObjectIdCrypted({objectId:partValue[fieldName]}))
                                 if(false===ifObjectIdCrypted({objectId:partValue[fieldName]})){
+
                                     return Promise.reject(checkerError.ifObjectIdCrypted.singleFieldValueContainInvalidObjectId)
                                 }
                             }

@@ -61,7 +61,7 @@ const fkConfig=server_common_file_require.fkConfig.fkConfig
 
 
 /*              新article无任何输入，所有的值都是内部产生                */
-async  function createArticle_async({req}){
+async  function createArticle_async({req,applyRange}){
     // console.log(`createArticle_async in`)
     /********************************************************/
     /*************      define variant        ***************/
@@ -78,22 +78,54 @@ async  function createArticle_async({req}){
     let {userId,userCollName,userType,userPriority,tempSalt}=userInfo
 // console.log(`userId ====>${userId}`)
 
-    /*******************************************************************************************/
-    /*                                          create default value                           */
-    /*******************************************************************************************/
+    /**********************************************/
+    /***********    用户类型检测    **************/
+    /*********************************************/
+    await controllerChecker.ifExpectedUserType_async({currentUserType:userType,arr_expectedUserType:[e_allUserType.USER_NORMAL]})
+    // ap.inf('用户类型检测 done')
+
+    /**********************************************/
+    /**         create default value            **/
+    /**********************************************/
     let docValue={}
     docValue[e_field.ARTICLE.NAME]="新建文档"
 
-    docValue[e_field.ARTICLE.STATUS]=e_articleStatus.EDITING
+    //新建且未做过任何更新的文档
+    docValue[e_field.ARTICLE.STATUS]=e_articleStatus.NEW
     //查找默认目录
-/*    tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.folder,condition:{authorId:userId,name:'我的文档'}})
-    if(tmpResult.length===0){
-        return Promise.reject(controllerError.create.userNoDefaultFolder)
-    }*/
+    /*    tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.folder,condition:{authorId:userId,name:'我的文档'}})
+        if(tmpResult.length===0){
+            return Promise.reject(controllerError.create.userNoDefaultFolder)
+        }*/
     /**         无需默认目录，默认不放在任何目录下       **/
-    docValue[e_field.ARTICLE.FOLDER_ID]=tmpResult[0]['id']
-    docValue[e_field.ARTICLE.CATEGORY_ID]=e_iniSettingObject.category.other
+    // docValue[e_field.ARTICLE.FOLDER_ID]=tmpResult[0]['id']
+    /**         无需默认分类       **/
+    // docValue[e_field.ARTICLE.CATEGORY_ID]=e_iniSettingObject.category.other
     docValue[e_field.ARTICLE.HTML_CONTENT]=`<i>请在此输入文档内容......</i>`
+    docValue[e_field.ARTICLE.ALLOW_COMMENT]=false
+
+    /**********************************************/
+    /**  CALL FUNCTION:inputValueLogicValidCheck **/
+    /**********************************************/
+    let commonParam={docValue:docValue,userId:userId,collName:collName}
+    // ap.inf('userId',userId)
+    let stepParam={
+        [e_inputValueLogicCheckStep.FK_EXIST_AND_PRIORITY]:{flag:true,optionalParam:undefined},
+        [e_inputValueLogicCheckStep.ENUM_DUPLICATE]:{flag:false,optionalParam:undefined},
+        //object：coll中，对单个字段进行unique检测，需要的额外查询条件
+        [e_inputValueLogicCheckStep.SINGLE_FIELD_VALUE_UNIQUE]:{flag:false,optionalParam:{singleValueUniqueCheckAdditionalCondition:undefined}},
+        //数组，元素是字段名。默认对所有dataType===string的字段进行XSS检测，但是可以通过此变量，只选择部分字段
+        [e_inputValueLogicCheckStep.XSS]:{flag:false,optionalParam:{expectedXSSFields:undefined}},
+        //object，对compoundField进行unique检测需要的额外条件，key从model->mongo->compound_unique_field_config.js中获得
+        //在internalValue之后执行
+        // [e_inputValueLogicCheckStep.COMPOUND_VALUE_UNIQUE]:{flag:true,optionalParam:{compoundFiledValueUniqueCheckAdditionalCheckCondition:undefined}},
+        //Object，配置resourceCheck的一些参数,{requiredResource,resourceProfileRange,userId,containerId}
+        /*** 新建文档/所有文档数量 ***/
+        [e_inputValueLogicCheckStep.RESOURCE_USAGE]:{flag:true,optionalParam:{resourceUsageOption:{requiredResource:{[e_resourceFieldName.USED_NUM]:1},resourceProfileRange:[e_resourceRange.MAX_NEW_ARTICLE,e_resourceRange.MAX_ARTICLE],userId:userId,containerId:undefined}}},
+    }
+    await controllerInputValueLogicCheck.inputValueLogicValidCheck_async({commonParam:commonParam,stepParam:stepParam})
+
+
 
 
     /*************************************************************/

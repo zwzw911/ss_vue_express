@@ -47,13 +47,18 @@ function  readRuleFileContent({inputRuleBaseDir,ruleType,skipFilesArray}){
     if(ruleFileAbsPath.length>0){
         for(let singleRuleFileAbsPath of ruleFileAbsPath){
             let collName=getFileName(singleRuleFileAbsPath)
-            // ap.inf('collName',collName)
+
             // ap.inf('require(singleRuleFileAbsPath)[collName]',require(singleRuleFileAbsPath)[collName])
             if(undefined===readResult[collName]){
                 readResult[collName]=require(singleRuleFileAbsPath)[collName]
             }else{
                 Object.assign(readResult[collName],require(singleRuleFileAbsPath)[collName])
             }
+/*            if(collName==='article_like_dislike'){
+                ap.inf('collName',collName)
+                ap.inf('readResult[collName]',readResult[collName])
+            }*/
+
         }
     }
     return readResult

@@ -18,6 +18,7 @@ const e_resourceFieldName=require(`../constant/enum/nodeEnum`).ResourceFieldName
 const e_resourceConfigFieldName=require(`../constant/enum/nodeEnum`).ResourceConfigFieldName
 
 const e_addFriendStatus=require('../constant/enum/mongoEnum').AddFriendStatus.DB
+const e_articleStatus=require('../constant/enum/mongoEnum').ArticleStatus.DB
 // const e_=require('../constant/enum/mongoEnum').ResourceRange.DB
 // const e_resourceType=require(`../constant/enum/mongoEnum`).ResourceType.DB
 
@@ -233,9 +234,9 @@ function ifSpaceExceed({currentUsedSpace,requiredSpace,resourceProfileRecord}){
     return currentUsedSpace+requiredSpace > resourceProfileRecord[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]
 }
 function ifNumExceed({currentUsedNum,requiredNum,resourceProfileRecord}){
-    ap.inf('currentUsedNum',currentUsedNum)
-    ap.inf('requiredNum',requiredNum)
-    ap.inf('resourceProfileRecord',resourceProfileRecord)
+    // ap.inf('currentUsedNum',currentUsedNum)
+    // ap.inf('requiredNum',requiredNum)
+    // ap.inf('resourceProfileRecord',resourceProfileRecord)
     return currentUsedNum+requiredNum > resourceProfileRecord[e_field.RESOURCE_PROFILE.MAX_NUM]
 }
 /**********************************************************************************/
@@ -313,6 +314,57 @@ async function calcFolderNum_async({userId}){
     }
     let folderNum=await common_operation_model.count_async({dbModel:e_dbModel.folder,condition:condition})
     return Promise.resolve({[e_resourceFieldName.USED_NUM]:folderNum})
+}
+/**********************************************************************************/
+/**********************           new article        *****************************/
+/**********************************************************************************/
+/*  计算folder的数量
+* */
+async function calcNewArticleNum_async({userId}){
+    let condition={
+        [e_field.ARTICLE.AUTHOR_ID]:userId,
+        [e_field.ARTICLE.STATUS]:e_articleStatus.NEW,
+        'dDate':{$exists:false},
+    }
+    let recordNum=await common_operation_model.count_async({dbModel:e_dbModel.article,condition:condition})
+    return Promise.resolve({[e_resourceFieldName.USED_NUM]:recordNum})
+}
+/**********************************************************************************/
+/**********************              article        *******************************/
+/**********************************************************************************/
+/*  计算folder的数量
+* */
+async function calcArticleNum_async({userId}){
+    let condition={
+        [e_field.ARTICLE.AUTHOR_ID]:userId,
+        'dDate':{$exists:false},
+    }
+    let recordNum=await common_operation_model.count_async({dbModel:e_dbModel.article,condition:condition})
+    return Promise.resolve({[e_resourceFieldName.USED_NUM]:recordNum})
+}
+/**********************************************************************************/
+/**********************              comment        *******************************/
+/**********************************************************************************/
+/*  计算article的总评论数量
+* */
+async function calcCommentPerArticleNum_async({userId,containerId}){
+    let condition={
+        [e_field.ARTICLE_COMMENT.ARTICLE_ID]:containerId,
+        'dDate':{$exists:false},
+    }
+    let recordNum=await common_operation_model.count_async({dbModel:e_dbModel.article_comment,condition:condition})
+    return Promise.resolve({[e_resourceFieldName.USED_NUM]:recordNum})
+}
+/*  计算article下，当前用户的总评论数量
+* */
+async function calcCommentPerArticlePerUserNum_async({userId,containerId}){
+    let condition={
+        [e_field.ARTICLE_COMMENT.AUTHOR_ID]:userId,
+        [e_field.ARTICLE_COMMENT.ARTICLE_ID]:containerId,
+        'dDate':{$exists:false},
+    }
+    let recordNum=await common_operation_model.count_async({dbModel:e_dbModel.article_comment,condition:condition})
+    return Promise.resolve({[e_resourceFieldName.USED_NUM]:recordNum})
 }
 /**********************************************************************************/
 /**********************      max add friend request   ****************************/
@@ -409,6 +461,46 @@ async function ifEnoughResource_async({requiredResource,resourceProfileRange,use
                 numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:resourceProfile})
                 if(true===numExceedFlag){
                     return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.totalFolderNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
+                }
+                break;
+            case e_resourceRange.MAX_NEW_ARTICLE:
+                usedResource=await calcNewArticleNum_async({userId:userId})
+                // ap.inf('usedResource',usedResource)
+                // ap.inf('resourceProfile',resourceProfile)
+                //只要检测数量
+                numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:resourceProfile})
+                if(true===numExceedFlag){
+                    return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.totalNewArticleNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
+                }
+                break;
+            case e_resourceRange.MAX_ARTICLE:
+                usedResource=await calcArticleNum_async({userId:userId})
+                // ap.inf('usedResource',usedResource)
+                // ap.inf('resourceProfile',resourceProfile)
+                //只要检测数量
+                numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:resourceProfile})
+                if(true===numExceedFlag){
+                    return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.totalArticleNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
+                }
+                break;
+            case e_resourceRange.MAX_COMMENT_PER_ARTICLE:
+                usedResource=await calcCommentPerArticleNum_async({userId:userId,con:containerId})
+                // ap.inf('usedResource',usedResource)
+                // ap.inf('resourceProfile',resourceProfile)
+                //只要检测数量
+                numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:resourceProfile})
+                if(true===numExceedFlag){
+                    return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.totalCommentPerArticleNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
+                }
+                break;
+            case e_resourceRange.MAX_COMMENT_PER_ARTICLE_PER_USER:
+                usedResource=await calcCommentPerArticlePerUserNum_async({userId:userId,containerId:containerId})
+                // ap.inf('usedResource',usedResource)
+                // ap.inf('resourceProfile',resourceProfile)
+                //只要检测数量
+                numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:resourceProfile})
+                if(true===numExceedFlag){
+                    return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.totalCommentPerArticlePerUserNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
                 }
                 break;
             default:

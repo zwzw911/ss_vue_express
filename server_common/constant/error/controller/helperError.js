@@ -13,6 +13,8 @@ const dispatchBaseErrorCode=baseErrorCode+300
 const resourceCheckBaseErrorCode=baseErrorCode+400
 const inputValueLogicCheckError=baseErrorCode+500
 
+const e_coll=require('../../../constant/genEnum/DB_Coll').Coll
+const compound_unique_field_config=require(`../../../model/mongo/compound_unique_field_config`).compound_unique_field_config
 const helper={
     /*              checkOptionPartExist            */
     optionPartCheckFail:{rc:helperBaseErrorCode,msg:{client:'输入数据错误',server:'req中，没有optionPart定义的part值'}},
@@ -201,8 +203,16 @@ const checker={
     },*/
 
     /*          compound field unique check                 */
-    compoundFieldHasMultipleDuplicateRecord({collName,arr_compoundField}){
-        return {rc:checkerBaseErrorCode+50,msg:{client:`记录已经存在，无法重复添加`,server:`表${collName}的复合字段${arr_compoundField.join('+')}存在多个重复记录`}}
+    compoundFieldHasMultipleDuplicateRecord({collName,singleCompoundFieldName}){
+
+/*        let clientMsg=`记录已经存在，无法重复添加`
+        switch (collName){
+            case e_coll.ARTICLE_LIKE_DISLIKE:
+                clientMsg='已经执行过操作'
+                break;
+            default:
+        }*/
+        return {rc:checkerBaseErrorCode+50,msg:{client:compound_unique_field_config[collName][singleCompoundFieldName]['errorMsg'],server:`表${collName}的复合字段${compound_unique_field_config[collName][singleCompoundFieldName]['fields'].join('+')}存在多个重复记录`}}
     },
 
     /*      ifFileSuffixMatchContentType_async          */
@@ -276,6 +286,19 @@ const resourceCheck={
         totalFolderNumExceed({resourceProfileNum}){
             return {rc:resourceCheckBaseErrorCode+18,msg:{client:`您已达到最大可以创建的目录数量${resourceProfileNum}，无法新建目录`}}
         },
+
+        totalNewArticleNumExceed({resourceProfileNum}){
+            return {rc:resourceCheckBaseErrorCode+20,msg:{client:`您已达到最大新建文档数量${resourceProfileNum}，无法新建文档`}}
+        },
+        totalArticleNumExceed({resourceProfileNum}){
+            return {rc:resourceCheckBaseErrorCode+22,msg:{client:`您已达到最大文档数量${resourceProfileNum}，无法新建文档`}}
+        },
+        totalCommentPerArticleNumExceed({resourceProfileNum}){
+            return {rc:resourceCheckBaseErrorCode+24,msg:{client:`文档达到最大评论数量${resourceProfileNum}，无法添加评论`}}
+        },
+        totalCommentPerArticlePerUserNumExceed({resourceProfileNum}){
+            return {rc:resourceCheckBaseErrorCode+26,msg:{client:`您对当前文档的评论数量已经达到最大数量${resourceProfileNum}，无法添加评论`}}
+        },
     }
 }
 
@@ -288,7 +311,7 @@ const inputValueLogicCheck={
     /*              checkIfFkExist_async            */
     ifFkValueExist_And_FkHasPriority_async:{
         fkValueNotExist(chineseFieldName,fieldInputValue){
-            return {rc:inputValueLogicCheckError+8,msg:{client:`${chineseFieldName}不存在`, server:`字段:${chineseFieldName}  的外键值${fieldInputValue}不存在`}}
+            return {rc:inputValueLogicCheckError+8,msg:{client:`${chineseFieldName}不存在或者无法使用`, server:`字段:${chineseFieldName}  的外键值${fieldInputValue}不存在`}}
         },
         notHasPriorityForFkField(chineseFieldName,fieldInputValue){
             return {rc:inputValueLogicCheckError+10,msg:{client:`无权对${chineseFieldName}的值进行操作`, server:`当前用户无权对外键字段:${chineseFieldName}  的值${fieldInputValue}所对应的记录进行操作`}}

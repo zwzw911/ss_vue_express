@@ -3,134 +3,233 @@
  */
 'use strict'
 
+/**************  controller相关常量  ****************/
+const controllerError=require('../../server/controller/article_comment/article_comment_setting/article_comment_controllerError').controllerError
 
-const request=require('supertest')
+/******************    内置lib和第三方lib  **************/
+const ap=require(`awesomeprint`)
+
+/******************    待测函数  **************/
 const app=require('../../app')
-const assert=require('assert')
+const adminApp=require(`../../../express_admin/app`)
 
 const server_common_file_require=require('../../server_common_file_require')
+/****************  公共常量 ********************/
+const e_serverRuleType=server_common_file_require.inputDataRuleType.ServerRuleType
+
 const nodeEnum=server_common_file_require.nodeEnum
-const nodeRuntimeEnum=server_common_file_require.nodeRuntimeEnum
-const mongoEnum=server_common_file_require.mongoEnum
-
 const e_part=nodeEnum.ValidatePart
-const e_method=nodeEnum.Method
+
+const nodeRuntimeEnum=server_common_file_require.nodeRuntimeEnum
+
+const mongoEnum=server_common_file_require.mongoEnum
+const e_addFriendStatus=mongoEnum.AddFriendStatus.DB
+const e_impeachAllAction=mongoEnum.ImpeachAllAction.DB
+const e_penalizeType=mongoEnum.PenalizeType.DB
+const e_penalizeSubType=mongoEnum.PenalizeSubType.DB
+const e_articleStatus=mongoEnum.ArticleStatus.DB
+const e_resourceRange=mongoEnum.ResourceRange.DB
+const e_resourceType=mongoEnum.ResourceType.DB
+
+
+const e_coll=require('../../server/constant/genEnum/DB_Coll').Coll
 const e_field=require('../../server/constant/genEnum/DB_field').Field
-// const e_coll=require('../../server/constant/genEnum/DB_Coll').Coll
-// const e_penalizeType=require('../../server/constant/enum/mongo').PenalizeType.DB
-// const e_penalizeSubType=require('../../server/constant/enum/mongo').PenalizeSubType.DB
 
-const common_operation_model=server_common_file_require.common_operation_model//require('../../server/model/mongo/operation/common_operation_model')
-const e_dbModel=require('../../server/constant/genEnum/dbModel')
-const dbModelInArray=require('../../server/constant/genEnum/dbModelInArray')
 
-const inputRule=require('../../server/constant/inputRule/inputRule').inputRule
+const e_parameterPart=server_common_file_require.testCaseEnum.ParameterPart
+const e_skipPart=server_common_file_require.testCaseEnum.SkipPart
+
+
+
+/******************    数据库函数  **************/
+
+/****************  公共函数 ********************/
+const db_operation_helper=server_common_file_require.db_operation_helper//require("../../../server_common/Test/db_operation_helper")
+const testData=server_common_file_require.testData//require('../../../server_common/Test/testData')
+
+const userAPI=server_common_file_require.user_API//require('../API_helper/API_helper')
+const penalizeAPI=server_common_file_require.penalize_API
+const commonAPI=server_common_file_require.common_API
+const articleAPI=server_common_file_require.article_API
+
+const userComponentFunction=server_common_file_require.user_component_function
+const adminUserComponentFunction=server_common_file_require.admin_user_component_function
+const misc_helper=server_common_file_require.misc_helper
+const crypt=server_common_file_require.crypt
+
+const generateTestData=server_common_file_require.generateTestData
+
 const browserInputRule=require('../../server/constant/inputRule/browserInputRule').browserInputRule
 
-// const validateError=server_common_file_require.validateError
-const helpError=server_common_file_require.helperError.helper//require('../../server/constant/error/controller/helperError').helper
+
+/****************  公共错误 ********************/
+const validateError=server_common_file_require.validateError//require('../../server/constant/error/validateError').validateError
+const controllerHelperError=server_common_file_require.helperError.helper//require('../../server/constant/error/controller/helperError').helper
+// const controllerCheckerError=server_common_file_require.helperError.checker
+const controllerCheckerError=server_common_file_require.helperError.checker
+const systemError=server_common_file_require.systemError
+const inputValueLogicCheckError=server_common_file_require.helperError.inputValueLogicCheck
+const resourceCheckError=server_common_file_require.helperError.resourceCheck
+// const objectDeepCopy=server_common_file_require.misc.objectDeepCopy
 
 
 
-const objectDeepCopy=server_common_file_require.misc.objectDeepCopy//require('../../server/function/assist/misc').objectDeepCopy
+// const controllerError=require('../../server/controller/penalize/penalize_setting/penalize_controllerError').controllerError
+/****************  变量 ********************/
+let baseUrl="/article_like_dislike/",finalUrl,url
 
-//const test_helper=require("../API_helper/db_operation_helper")
-const db_operation_helper=server_common_file_require.db_operation_helper
-const testData=server_common_file_require.testData//require('../testData')
-const API_helper=server_common_file_require.API_helper//require('../API_helper/API_helper')
-const component_function=server_common_file_require.component_function
+let recordId1,recordId2,recordId3,expectedErrorRc
 
-const controllerError=require('../../server/controller/articleLikeDislike/articleLikeDislike_setting/likeDislike_controllerError').controllerError
+let user1IdCryptedByUser1,user1IdCryptedByUser2,user1IdCryptedByUser3,
+    user2IdCryptedByUser1,user2IdCryptedByUser2,user2IdCryptedByUser3,
+    user3IdCryptedByUser1,user3IdCryptedByUser2,user3IdCryptedByUser3,
+    user3IdCryptedByAdminRoot,adminRootIdCryptedByUser1,
+    user1Sess,user2Sess,user3Sess,adminRootSess,
+    user1Id,user2Id,user3Id,adminRootId
 
-let baseUrl="/article/"
-let userId  //create后存储对应的id，以便后续的update操作
+let recordId1CryptedByAdminRoot,recordId1CryptedByUser2,recordId1CryptedByUser3,recordId2CryptedByUser2
+let recordId1CryptedByUser1,recordId11CryptedByUser1
+let unexistIdCryptedByUser1
+let data={values:{}}
 
-let user1Sess,sess2,user1Id,user2Id,data={values:{}}
 
+let normalRecord={
+    [e_field.ARTICLE_COMMENT.CONTENT]:"new article comment",
+    [e_field.ARTICLE_COMMENT.ARTICLE_ID]:undefined,
+    // [e_field.ARTICLE_COMMENT.FOLDER_ID]:undefined,
 
-describe('logic check for like dislike ', async function() {
-    let url = 'likeDislike', finalUrl = baseUrl + url
+}
 
-    let articleId,userId
-    before('user1 login correct and get userId', async function () {
-        let user1Info=await component_function.reCreateUser_returnSessUserId_async({userData:testData.user.user1,app:app})
-        user1Sess=user1Info['sess']
-        user1Id=user1Info[`userId`]
+describe('article comment logic test:',async  function() {
+
+    before('prepare', async function () {
+        let tmpResult = await generateTestData.getUserCryptedUserId_async({app: app, adminApp: adminApp})
+
+        user1IdCryptedByUser1 = tmpResult['user1IdCryptedByUser1']
+        user1IdCryptedByUser2 = tmpResult['user1IdCryptedByUser2']
+        user1IdCryptedByUser3 = tmpResult['user1IdCryptedByUser3']
+        user2IdCryptedByUser1 = tmpResult['user2IdCryptedByUser1']
+        user2IdCryptedByUser2 = tmpResult['user2IdCryptedByUser2']
+        user2IdCryptedByUser3 = tmpResult['user2IdCryptedByUser3']
+        user3IdCryptedByUser1 = tmpResult['user3IdCryptedByUser1']
+        user3IdCryptedByUser2 = tmpResult['user3IdCryptedByUser2']
+        user3IdCryptedByUser3 = tmpResult['user3IdCryptedByUser3']
+        user3IdCryptedByAdminRoot = tmpResult['user3IdCryptedByAdminRoot']
+        adminRootIdCryptedByUser1 = tmpResult['adminRootIdCryptedByUser1']
+        user1Sess = tmpResult['user1Sess']
+        user2Sess = tmpResult['user2Sess']
+        user3Sess = tmpResult['user3Sess']
+        adminRootSess = tmpResult['adminRootSess']
+        user1Id = tmpResult['user1Id']
+        user2Id = tmpResult['user2Id']
+        user3Id = tmpResult['user3Id']
+        adminRootId = tmpResult['adminRootId']
+
+        unexistIdCryptedByUser1=await commonAPI.cryptObjectId_async({objectId:testData.unExistObjectId,sess:user1Sess})
+
+        /**     user1 create article1 and return recordId1    **/
+        recordId1CryptedByUser1 = await articleAPI.createNewArticle_returnArticleId_async({userSess: user1Sess,app: app})
+        recordId1=await commonAPI.decryptObjectId_async({objectId:recordId1CryptedByUser1,sess:user1Sess})
+        // ap.wrn('recordId1',recordId1)
+        recordId1CryptedByAdminRoot=await commonAPI.cryptObjectId_async({objectId:recordId1,sess:adminRootSess})
+        /**     user1 create article2 and update to finish    **/
+        recordId11CryptedByUser1 = await articleAPI.createNewArticle_returnArticleId_async({userSess: user1Sess,app: app})
+        data.values = {
+            [e_part.RECORD_ID]: recordId11CryptedByUser1,
+            [e_part.RECORD_INFO]: {[e_field.ARTICLE.STATUS]: e_articleStatus.FINISHED}
+        }
+        await articleAPI.updateArticle_returnArticleId_async({userSess: user1Sess, data: data, app: app})
+        // ap.wrn('recordId1CryptedByAdminRoot',recordId1CryptedByAdminRoot)
+        /**     user2 create article2 and return recordId2, then update to change status to editing    **/
+        recordId2CryptedByUser2 = await articleAPI.createNewArticle_returnArticleId_async({userSess: user2Sess,app: app})
+        // let values=
+        data.values = {
+            [e_part.RECORD_ID]: recordId2CryptedByUser2,
+            [e_part.RECORD_INFO]: {[e_field.ARTICLE.STATUS]: e_articleStatus.EDITING}
+        }
+        await articleAPI.updateArticle_returnArticleId_async({userSess: user2Sess, data: data, app: app})
+        /**     admin create penalize for user3     **/
+        /*        adminRootSess = await adminUserComponentFunction.adminUserLogin_returnSess_async({
+                    userData: testData.admin_user.adminRoot,
+                    adminApp: adminApp
+                })*/
+        // adminRootId = await db_operation_helper.getAdminUserId_async({userName: testData.admin_user.adminRoot.name})
+        //create penalize for user3
+        let adminRootSalt = await commonAPI.getTempSalt_async({sess: adminRootSess})
+        // ap.inf('root user salt',adminRootSalt)
+        let cryptedUser3Id = crypt.cryptSingleFieldValue({fieldValue: user3Id, salt: adminRootSalt}).msg
+        // ap.inf('cryptedUser3Id',cryptedUser3Id)
+        let penalizeInfoForUser3 = {
+            penalizeType: e_penalizeType.NO_ARTICLE_COMMENT,
+            penalizeSubType: e_penalizeSubType.ALL,
+            // penalizedError:undefined, //错误根据具体method定义
+            [e_field.ADMIN_PENALIZE.DURATION]: 0,
+            [e_field.ADMIN_PENALIZE.REASON]: 'test reason, no indication',
+        }
+        await penalizeAPI.createPenalize_returnPenalizeId_async({
+            adminUserSess: adminRootSess,
+            penalizeInfo: penalizeInfoForUser3,
+            penalizedUserId: cryptedUser3Id,
+            adminApp: adminApp
+        })
+        console.log(`==============================================================`)
+        console.log(`=================    before all done      ====================`)
+        console.log(`==============================================================`)
+    });
+    describe('like dislike article:',async  function() {
+        before('prepare', async function () {
+            data.values = {}
+            url = 'like'
+            finalUrl = baseUrl + url
+        })
+        /*******************************************************************************************/
+        /*                                    fk value是否存在                                     */
+        /*******************************************************************************************/
+        it('1.1 articleId not exist', async function() {
+            data.values={}
+            // console.log(`finalUrl ===>${JSON.stringify(finalUrl)}`)
+            // console.log(`data.values ===>${JSON.stringify(data.values)}`)
+            // data.values[e_part.METHOD]=e_method.CREATE
+            data.values[e_part.SINGLE_FIELD]={
+                [e_field.ARTICLE_LIKE_DISLIKE.ARTICLE_ID]:unexistIdCryptedByUser1,
+                // [e_field.ARTICLE_LIKE_DISLIKE.LIKE]:false,
+            }
+            ap.inf('data',data)
+            expectedErrorRc=inputValueLogicCheckError.ifFkValueExist_And_FkHasPriority_async.fkValueNotExist({}).rc
+            await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        });
+
+        it('1.2 correct like', async function() {
+            data.values={}
+            // console.log(`finalUrl ===>${JSON.stringify(finalUrl)}`)
+            // console.log(`data.values ===>${JSON.stringify(data.values)}`)
+            // data.values[e_part.METHOD]=e_method.CREATE
+            data.values[e_part.SINGLE_FIELD]={
+                [e_field.ARTICLE_LIKE_DISLIKE.ARTICLE_ID]:recordId11CryptedByUser1,
+                // [e_field.ARTICLE_LIKE_DISLIKE.LIKE]:true,
+            }
+            expectedErrorRc=0
+            await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+            // console.log(`data.values ===>${JSON.stringify(data.values)}`)
+        });
+
+        it('1.3 try like(dislike) again', async function() {
+            data.values={}
+
+            url = 'dislike'
+            finalUrl = baseUrl + url
+
+            // console.log(`finalUrl ===>${JSON.stringify(finalUrl)}`)
+            // console.log(`data.values ===>${JSON.stringify(data.values)}`)
+            // data.values[e_part.METHOD]=e_method.CREATE
+            data.values[e_part.SINGLE_FIELD]={
+                [e_field.ARTICLE_LIKE_DISLIKE.ARTICLE_ID]:recordId11CryptedByUser1,
+                // [e_field.ARTICLE_LIKE_DISLIKE.LIKE]:true,
+            }
+            // console.log(`data.values ===>${JSON.stringify(data.values)}`)
+            expectedErrorRc=controllerCheckerError.compoundFieldHasMultipleDuplicateRecord({collName:'article_like_dislike',singleCompoundFieldName:'unique_likeDislike_for_article'}).rc
+            await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        });
     })
 
-    //create new article
-    before('create correct article', async function() {
-        articleId=await API_helper.createNewArticle_returnArticleId_async({userSess:user1Sess,app:app})
-    });
-    /*******************************************************************************************/
-    /*                                    fk value是否存在                                     */
-    /*******************************************************************************************/
-    it('articleId not exist', function(done) {
-        data.values={}
-        // console.log(`finalUrl ===>${JSON.stringify(finalUrl)}`)
-        // console.log(`data.values ===>${JSON.stringify(data.values)}`)
-        data.values[e_part.METHOD]=e_method.CREATE
-        data.values[e_part.RECORD_INFO]={
-            [e_field.LIKE_DISLIKE.ARTICLE_ID]:'598ebecc1fb29c1ca49da342',
-            [e_field.LIKE_DISLIKE.LIKE]:false,
-        }
-        // console.log(`data.values ===>${JSON.stringify(data.values)}`)
-        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[user1Sess]).send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-                // console.log(`res ios ${JSON.stringify(res)}`)
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                // articleId=parsedRes['msg']['_id']
-                assert.deepStrictEqual(parsedRes.rc,helpError.fkValueNotExist().rc)
-                // assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.require.error.rc)
-                done();
-            });
-    });
-
-    it('correct like', function(done) {
-        data.values={}
-        // console.log(`finalUrl ===>${JSON.stringify(finalUrl)}`)
-        // console.log(`data.values ===>${JSON.stringify(data.values)}`)
-        data.values[e_part.METHOD]=e_method.CREATE
-        data.values[e_part.RECORD_INFO]={
-            [e_field.LIKE_DISLIKE.ARTICLE_ID]:articleId,
-            [e_field.LIKE_DISLIKE.LIKE]:true,
-        }
-        // console.log(`data.values ===>${JSON.stringify(data.values)}`)
-        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[user1Sess]).send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-                // console.log(`res ios ${JSON.stringify(res)}`)
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                // articleId=parsedRes['msg']['_id']
-                assert.deepStrictEqual(parsedRes.rc,0)
-                // assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.require.error.rc)
-                done();
-            });
-    });
-
-    it('try like(dislike) again', function(done) {
-        data.values={}
-        // console.log(`finalUrl ===>${JSON.stringify(finalUrl)}`)
-        // console.log(`data.values ===>${JSON.stringify(data.values)}`)
-        data.values[e_part.METHOD]=e_method.CREATE
-        data.values[e_part.RECORD_INFO]={
-            [e_field.LIKE_DISLIKE.ARTICLE_ID]:articleId,
-            [e_field.LIKE_DISLIKE.LIKE]:true,
-        }
-        // console.log(`data.values ===>${JSON.stringify(data.values)}`)
-        request(app).post(finalUrl).set('Accept', 'application/json').set('Cookie',[user1Sess]).send(data)
-            .end(function(err, res) {
-                // if (err) return done(err);
-                // console.log(`res ios ${JSON.stringify(res)}`)
-                let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
-                // articleId=parsedRes['msg']['_id']
-                assert.deepStrictEqual(parsedRes.rc,controllerError.alreadyLikeDislike.rc)
-                // assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.require.error.rc)
-                done();
-            });
-    });
 })

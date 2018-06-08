@@ -1,4 +1,4 @@
-/*    gene by H:\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-6-5   */ 
+/*    gene by H:\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-6-8   */ 
  
 "use strict"
 const internalInputRule={
@@ -213,7 +213,7 @@ const internalInputRule={
             min:{"define":1,"error":{"rc":101256,"msg":"目录层级最小为1"},"mongoError":{"rc":201256,"msg":"目录层级最小为1"}},
         },
     },
-    like_dislike:{
+    article_like_dislike:{
         authorId:{
             chineseName:"提交者",
             dataType:"objectId",

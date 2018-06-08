@@ -17,7 +17,7 @@ const regex=require('../../../regex/regex').regex
 const baseJSErrorCode=101300
 const baseMongoErrorCode=201300
 
-const like_dislike= {
+const article_like_dislike= {
     //
     articleId: {
         [otherRuleFiledName.CHINESE_NAME]: '文档',
@@ -32,5 +32,5 @@ const like_dislike= {
 }
 
 module.exports={
-    like_dislike
+    article_like_dislike
 }

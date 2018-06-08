@@ -36,32 +36,32 @@ async function createNewArticle_returnArticleId_async({userSess,app}){
                 // if (err) return done(err);
                 // console.log(`res ios ${JSON.stringify(res)}`)
                 let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
+                console.log(`create new article result ${JSON.stringify(parsedRes)}`)
                 // articleId=
                 assert.deepStrictEqual(parsedRes.rc,0)
-                return resolve(parsedRes['msg']['_id'])
+                return resolve(parsedRes['msg']['id'])
                 // assert.deepStrictEqual(parsedRes.msg.name.rc,browserInputRule.user.name.require.error.rc)
                 // done();
             });
     })
 }
 
-async function updateArticle_returnArticleId_async({userSess,recordId,values,app}){
-    let data={values:{}}
-    // data.values={}
-    // console.log(`sess1 ===>${JSON.stringify(sess1)}`)
-    // console.log(`data.values ===>${JSON.stringify(data.values)}`)
-    data.values[e_part.RECORD_INFO]=values
-    data.values[e_part.RECORD_ID]=recordId
+async function updateArticle_returnArticleId_async({userSess,data,app}){
+    // let data={values:{}}
+    // // data.values={}
+    // // console.log(`sess1 ===>${JSON.stringify(sess1)}`)
+    // // console.log(`data.values ===>${JSON.stringify(data.values)}`)
+    // data.values[e_part.RECORD_INFO]=values
+    // data.values[e_part.RECORD_ID]=recordId
     // data.values[e_part.METHOD]=e_method.UPDATE
     // console.log(`data.values ===>${JSON.stringify(data.values)}`)
     return new Promise(function(resolve,reject){
-        request(app).post('/article/').set('Accept', 'application/json').set('Cookie',[userSess]).send(data)
+        request(app).put('/article/').set('Accept', 'application/json').set('Cookie',[userSess]).send(data)
             .end(function(err, res) {
                 // if (err) return done(err);
                 // console.log(`res ios ${JSON.stringify(res)}`)
                 let parsedRes=JSON.parse(res.text)
-                console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
+                console.log(`update article result ${JSON.stringify(parsedRes)}`)
                 // articleId=
                 assert.deepStrictEqual(parsedRes.rc,0)
                 return resolve(parsedRes)

@@ -3,7 +3,7 @@
  * 在正式部署之前，需要预先设定一些值（例如，user_thumb存放路径，文档分类信息等）
  */
 'use strict'
-
+const ap=require('awesomeprint')
 // const server_common_file_require=require('../../../express/server_common_file_require')
 const common_operation_model=require(`../../model/mongo/operation/common_operation_model`)//server_common_file_require.common_operation_model
 const e_dbModel=require('../../constant/genEnum/dbModel')
@@ -49,7 +49,8 @@ async function category(){
     for(let singleCategory of Object.values(categoryRecord)){
         categoryDocs.push({name:`${singleCategory}`})
     }
-    console.log(`${JSON.stringify(categoryDocs)}`)
+    // console.log(`${JSON.stringify(categoryDocs)}`)
+    // ap.inf('categoryDocs',categoryDocs)
     await common_operation_model.insertMany_returnRecord_async({dbModel:e_dbModel.category,docs:categoryDocs})
     //     .then(
     //     (v)=>{console.log(`success====>${JSON.stringify(v)}`)},
@@ -117,8 +118,8 @@ async function all(){
 }
 
 all().then(
-    (v)=>{console.log(`create all init success====>${JSON.stringify(v)}`)},
-    (e)=>{console.log(`create all init err====>${JSON.stringify(e)}`)}
+    (v)=>{ap.inf('insert all init done',v)},
+    (e)=>{ap.inf('insert all init fail',e)}
 )
 
 

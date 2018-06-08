@@ -40,6 +40,10 @@ const e_applyRange=server_common_file_require.inputDataRuleType.ApplyRange
 const e_coll=require('../../constant/genEnum/DB_Coll').Coll
 
 const regex=server_common_file_require.regex.regex
+/**************  rule  ****************/
+const internalInputRule=require('../../constant/inputRule/internalInputRule').internalInputRule
+const inputRule=require('../../constant/inputRule/inputRule').inputRule
+const browserInputRule=require('../../constant/inputRule/browserInputRule').browserInputRule
 
 /**************  controller相关常量  ****************/
 const controllerError=require('./articleLikeDislike_setting/likeDislike_controllerError').controllerError
@@ -93,7 +97,7 @@ async function article_likeDislike_dispatcher_async({req}){
                     error:controllerError.dispatch.post.notLoginCantLikeDisLikeArticle
                 }
                 penalizeCheck={
-                    penalizeType:e_penalizeType.NO_ADD_FRIEND,
+                    penalizeType:e_penalizeType.NO_LIKE_DISLIKE,
                     penalizeSubType:e_penalizeSubType.CREATE,
                     penalizeCheckError:controllerError.dispatch.post.userInPenalizeCantCreateLikeDisLike
                 }
@@ -120,7 +124,7 @@ async function article_likeDislike_dispatcher_async({req}){
                 // ap.inf('after decrypt',req.body.values)
                 //对输入值进行检测（此时objectId已经解密）
                 result=controllerPreCheck.inputPreCheck({req:req,expectedPart:expectedPart,collName:collName,applyRange:applyRange,arr_currentSearchRange:arr_currentSearchRange})
-                // ap.inf('create use inputPreCheck result',result)
+                // ap.inf('inputPreCheck result',result)
                 if(result.rc>0){return Promise.reject(result)}
 
                 if(originalUrl==='/article_like_dislike/like' || originalUrl==='/article_like_dislike/like/'){
@@ -147,8 +151,8 @@ async function article_likeDislike_dispatcher_async({req}){
     let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
     let userId=userInfo.userId
 
-    collName=e_coll.LIKE_DISLIKE
-    collNameStatic=e_coll.LIKE_DISLIKE_STATIC
+    collName=e_Coll.ARTICLE_LIKE_DISLIKE
+    collNameStatic=e_Coll.ARTICLE_LIKE_DISLIKE_STATIC
     // userId='598dae560706320f40c0cab1'
 // console.log(`userId ====>${userId}`)
     /!*              client数据转换                  *!/
@@ -160,7 +164,7 @@ async function article_likeDislike_dispatcher_async({req}){
 
     /!*                  添加内部产生的client值                  *!/
     let internalValue = {}
-    internalValue[e_field.LIKE_DISLIKE.AUTHOR_ID] = userId
+    internalValue[e_field.ARTICLE_LIKE_DISLIKE.AUTHOR_ID] = userId
     /!*              对内部产生的值进行检测（开发时使用，上线后为了减低负荷，无需使用）           *!/
     if (e_env.DEV === currentEnv && Object.keys(internalValue).length > 0) {
         // console.log(`before newDocValue====>${JSON.stringify(internalValue)}`)
@@ -183,8 +187,8 @@ async function article_likeDislike_dispatcher_async({req}){
 
     /!*                  复合unique index检查(用户是否对此文档进行过踩赞)                    *!/
     let condition={}
-    condition[e_field.LIKE_DISLIKE.AUTHOR_ID]=docValue[e_field.LIKE_DISLIKE.AUTHOR_ID]
-    condition[e_field.LIKE_DISLIKE.ARTICLE_ID]=docValue[e_field.LIKE_DISLIKE.ARTICLE_ID]
+    condition[e_field.ARTICLE_LIKE_DISLIKE.AUTHOR_ID]=docValue[e_field.ARTICLE_LIKE_DISLIKE.AUTHOR_ID]
+    condition[e_field.ARTICLE_LIKE_DISLIKE.ARTICLE_ID]=docValue[e_field.ARTICLE_LIKE_DISLIKE.ARTICLE_ID]
     tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel[collName],condition:condition})
     if(tmpResult.length>0){
         return Promise.reject(controllerError.alreadyLikeDislike)
@@ -195,12 +199,12 @@ async function article_likeDislike_dispatcher_async({req}){
     // console.log(`create result is ====>${JSON.stringify(tmpResult)}`)
     /!*          对关联db进行操作               *!/
     let fieldToBePlus1
-    if(docValue[e_field.LIKE_DISLIKE.LIKE]){
+    if(docValue[e_field.ARTICLE_LIKE_DISLIKE.LIKE]){
         fieldToBePlus1=e_field.LIKE_DISLIKE_STATIC.LIKE_TOTAL_NUM
     }else{
         fieldToBePlus1=e_field.LIKE_DISLIKE_STATIC.DISLIKE_TOTAL_NUM
     }
-    let articleId=docValue[e_field.LIKE_DISLIKE.ARTICLE_ID]
+    let articleId=docValue[e_field.ARTICLE_LIKE_DISLIKE.ARTICLE_ID]
     tmpResult= await common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel[collNameStatic],id:articleId,updateFieldsValue:{$inc:{[fieldToBePlus1]:1}}})
 
     return Promise.resolve({rc: 0, msg: tmpResult})

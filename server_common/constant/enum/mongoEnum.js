@@ -136,7 +136,7 @@ const EventStatus={
 const PenalizeType={
     DB:{
         NO_ARTICLE: '0',
-        NO_COMMENT:'1',
+        NO_ARTICLE_COMMENT:'1',
         NO_TOPIC:'2',
         NO_LIKE_DISLIKE:'3',
         NO_IMPEACH:'4',
@@ -159,7 +159,7 @@ const PenalizeType={
     },
     SHOW:{
         NO_ARTICLE: '禁止文档',
-        NO_COMMENT:'禁止评论',
+        NO_ARTICLE_COMMENT:'禁止评论',
         NO_TOPIC:'禁止创建系列',
         NO_LIKE_DISLIKE:'禁止踩赞',
         NO_IMPEACH:'禁止举报',
@@ -381,27 +381,41 @@ const StorePathStatus={
 
 const ResourceRange={
     DB:{
-        IMAGE_PER_ARTICLE:'1',  //每个文档的图片
-        ATTACHMENT_PER_ARTICLE:'2', //每个文档的附件
+        /**     存储在coll中    **/
+        WHOLE_RESOURCE_PER_PERSON_FOR_ALL_ARTICLE:'1', //用户总共的空间
 
-        WHOLE_RESOURCE_PER_PERSON_FOR_ALL_ARTICLE:'3', //用户总共的空间
+        /**     通过count获得数据     **/
+        IMAGE_PER_ARTICLE:'10',  //每个文档的图片
+        ATTACHMENT_PER_ARTICLE:'12', //每个文档的附件
+
+
         // ATTACHMENT_PER_PERSON_FOR_ALL_ARTICLE:'4',//每个用户对所有文档的附件
 
-        IMAGE_PER_IMPEACH_OR_COMMENT:'5', //每个impeach或者comment的图片
-        IMAGE_PER_PERSON_FOR_WHOLE_IMPEACH:'7', //每个用户，在整个impeach和comment的图片
+        IMAGE_PER_IMPEACH_OR_COMMENT:'14', //每个impeach或者comment的图片
+        IMAGE_PER_PERSON_FOR_WHOLE_IMPEACH:'16', //每个用户，在整个impeach和comment的图片
 
-        FOLDER_NUM:'8', //最大目录数量
+        FOLDER_NUM:'18', //最大目录数量
 
-        FRIEND_GROUP_NUM:'9',//朋友群数量
-        MAX_PERSON_NUM_PER_FRIEND_GROUP:'10',//群中人数最大数量
+        FRIEND_GROUP_NUM:'20',//朋友群数量
+        MAX_PERSON_NUM_PER_FRIEND_GROUP:'22',//群中人数最大数量
 
-        MAX_UNTREATED_ADD_FRIEND_REQUEST:'11', //最大未处理的 添加朋友的请求数
-        MAX_ACCEPT_BUT_NOT_ASSIGN_ADD_FRIEND_REQUEST:'12', //最大已同意但是未被分配到某个朋友群的 添加朋友的请求数
+        MAX_UNTREATED_ADD_FRIEND_REQUEST:'24', //最大未处理的 添加朋友的请求数
+        MAX_ACCEPT_BUT_NOT_ASSIGN_ADD_FRIEND_REQUEST:'26', //最大已同意但是未被分配到某个朋友群的 添加朋友的请求数
+
+        MAX_NEW_ARTICLE:'28',//新建但未做过任何处理的文档数
+        MAX_ARTICLE:'30',//最大文档数（所有状态（删除的不算））
+
+        MAX_COMMENT_PER_ARTICLE:'32',
+        MAX_COMMENT_PER_ARTICLE_PER_USER:'34',
     },
     SHOW:{
+        /**     存储在coll中    **/
+        WHOLE_RESOURCE_PER_PERSON_FOR_ALL_ARTICLE:'用户文档所有资源',
+
+        /**     通过count获得数据     **/
         IMAGE_PER_ARTICLE:'文档图片',//对文档起作用
         ATTACHMENT_PER_ARTICLE:'文档附件',
-        WHOLE_RESOURCE_PER_PERSON_FOR_ALL_ARTICLE:'用户文档所有资源',
+
         // ATTACHMENT_PER_PERSON_FOR_ALL_ARTICLE:'用户文档附件',//对用户起作用
 
         IMAGE_PER_IMPEACH_OR_COMMENT:'举报（或者评论）图片', //举报或者举报评论
@@ -415,6 +429,12 @@ const ResourceRange={
 
         MAX_UNTREATED_ADD_FRIEND_REQUEST:'最大未处理的添加朋友的请求数',
         MAX_ACCEPT_BUT_NOT_ASSIGN_ADD_FRIEND_REQUEST:'最大已同意但是未被分配的添加朋友的请求数', //最大 已同意但是未被分配到某个朋友群的 添加朋友的请求数
+
+        MAX_NEW_ARTICLE:'新建但未做过任何处理的文档数',//新建但未做过任何处理的文档数
+        MAX_ARTICLE:'最大文档数',//最大文档数
+
+        MAX_COMMENT_PER_ARTICLE:'文档最大评论数',
+        MAX_COMMENT_PER_ARTICLE_PER_USER:'用户对文档的最大评论数',
     },
 }
 

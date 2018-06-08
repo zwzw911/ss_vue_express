@@ -12,7 +12,7 @@ const Field={
     article_comment:['authorId',],
     article_image:['name','hashName','pathId','sizeInMb','authorId','articleId',],
     folder:['authorId','level',],
-    like_dislike:['authorId',],
+    article_like_dislike:[],
     member_penalize:['creatorId',],
     public_group:['creatorId',],
     public_group_event:['sourceId',],

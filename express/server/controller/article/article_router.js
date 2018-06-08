@@ -7,7 +7,7 @@
 'use strict'
 
 
-
+const ap=require('awesomeprint')
 const express = require('express');
 //var app=express()
 const router = express.Router();
@@ -22,7 +22,7 @@ const genFinalReturnResult=server_common_file_require.misc.genFinalReturnResult
 // const likeDislike_logic=require('./liekDislike_logic')
 const systemError=server_common_file_require.systemError
 
-const e_uploadFileType=nodeEnum.UploadFileType
+// const e_uploadFileType=nodeEnum.UploadFileType
 
 
 const article_dispatcher_async=require('./article_dispatch').article_dispatcher_async
@@ -33,7 +33,7 @@ const article_dispatcher_async=require('./article_dispatch').article_dispatcher_
 /***    创建新文档（无任何参数）    ***/
 router.post('/',function(req,res,next){
 
-    article_dispatcher_async(req).then(
+    article_dispatcher_async({req}).then(
         (v)=>{
             console.log(`create   article   success, result:  ${JSON.stringify(v)}`)
             return res.json(v)
@@ -48,7 +48,7 @@ router.post('/',function(req,res,next){
 /***    更改新文档（recordId+recordInfo）    ***/
 router.put('/',function(req,res,next){
 
-    article_dispatcher_async(req).then(
+    article_dispatcher_async({req}).then(
         (v)=>{
             console.log(`update   article   success, result:  ${JSON.stringify(v)}`)
             return res.json(v)
@@ -63,7 +63,7 @@ router.put('/',function(req,res,next){
 /***    删除文档（recordId）    ***/
 router.delete('/',function(req,res,next){
 
-    article_dispatcher_async(req).then(
+    article_dispatcher_async({req}).then(
         (v)=>{
             console.log(`update   article   success, result:  ${JSON.stringify(v)}`)
             return res.json(v)
@@ -80,7 +80,7 @@ router.delete('/',function(req,res,next){
 /***    上传图片(只包含上传文件，db操作由article的update，通过对article的content分析进行)    ***/
 router.post('/articleImage',function(req,res,next){
 
-    articleUploadFile_dispatch_async({req:req,type:e_uploadFileType.IMAGE}).then(
+    article_dispatcher_async({req:req}).then(
         (v)=>{
             console.log(`articleImage upload  success, result:  ${JSON.stringify(v)}`)
             return res.json(v)
@@ -96,8 +96,8 @@ router.post('/articleImage',function(req,res,next){
 
 /***    上传附件    ***/
 router.post('/articleAttachment',function(req,res,next){
-
-    articleUploadFile_dispatch_async({req:req,type:e_uploadFileType.ATTACHMENT}).then(
+ap.inf('upload Attachment in')
+    article_dispatcher_async({req:req}).then(
         (v)=>{
             console.log(`articleAttachment upload success, result:  ${JSON.stringify(v)}`)
             return res.json(v)
@@ -110,7 +110,7 @@ router.post('/articleAttachment',function(req,res,next){
 })
 router.delete('/articleAttachment',function(req,res,next){
 
-    articleUploadFile_dispatch_async({req:req,type:e_uploadFileType.ATTACHMENT}).then(
+    article_dispatcher_async({req:req}).then(
         (v)=>{
             console.log(`articleAttachment upload success, result:  ${JSON.stringify(v)}`)
             return res.json(v)

@@ -46,12 +46,12 @@ const article= {
         [ruleFiledName.ENUM]:{define:enumValue.ArticleStatus,error:{rc:baseJSErrorCode+6,msg:'文档状态不正确'},mongoError:{rc:baseMongoErrorCode+6,msg:'文档状态不正确'}},//server端使用
 
     },
-
+//folderId可以为空，表示文档不处于任何目录下
     folderId: {
         [otherRuleFiledName.CHINESE_NAME]: '文档目录',
         [otherRuleFiledName.DATA_TYPE]: serverDataType.OBJECT_ID,
         [otherRuleFiledName.APPLY_RANGE]:[applyRange.CREATE,applyRange.UPDATE_SCALAR], //必须在create，可以在update，的recordInfo中出现
-        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true,[applyRange.UPDATE_SCALAR]:false}, error: {rc: baseJSErrorCode+8, msg: '文档目录不能为空'}, mongoError: {rc: baseMongoErrorCode+2+8, msg: '文档目录不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:false,[applyRange.UPDATE_SCALAR]:false}, error: {rc: baseJSErrorCode+8, msg: '文档目录不能为空'}, mongoError: {rc: baseMongoErrorCode+2+8, msg: '文档目录不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
 
         // [ruleFiledName.MIN_LENGTH]: {define: 6, error: {rc: 10002}, mongoError: {rc: 20002, msg: '密码至少6个字符'}},
         // [ruleFiledName.ARRAY_MAX_LENGTH]: {define: 20, error: {rc: 10004}, mongoError: {rc: 20004, msg: '密码的长度不能超过20个字符'}},
@@ -88,12 +88,20 @@ const article= {
         [ruleFiledName.MAX_LENGTH]: {define: 20, error: {rc: baseJSErrorCode+24, msg: '文档标签的长度不能超过20个字符'}, mongoError: {rc: baseMongoErrorCode+24, msg: '文档标签的长度不能超过20个字符'}},
         // [ruleFiledName.FORMAT]: {define: regex.tagName, error: {rc: 10124}, mongoError: {rc: 20124, msg: '文档标签必须是objectId'}} //server端使用
     },
+    //分类可以为空
     categoryId: {
         [otherRuleFiledName.CHINESE_NAME]: '分类',
         [otherRuleFiledName.DATA_TYPE]: serverDataType.OBJECT_ID,
         [otherRuleFiledName.APPLY_RANGE]:[applyRange.CREATE,applyRange.UPDATE_SCALAR], //必须在create，可以在update，的recordInfo中出现
-        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true,[applyRange.UPDATE_SCALAR]:false}, error: {rc: baseJSErrorCode+26, msg: '文档分类不能为空'}, mongoError: {rc: baseMongoErrorCode+26, msg: '文档分类不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:false,[applyRange.UPDATE_SCALAR]:false}, error: {rc: baseJSErrorCode+26, msg: '文档分类不能为空'}, mongoError: {rc: baseMongoErrorCode+26, msg: '文档分类不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         [ruleFiledName.FORMAT]: {define: regex.objectId, error: {rc: baseJSErrorCode+28, msg: '文档分类必须是objectId'}, mongoError: {rc: baseMongoErrorCode+28, msg: '文档分类必须是objectId'}} //server端使用
+    },
+    allowComment: {
+        [otherRuleFiledName.CHINESE_NAME]: '允许评论',
+        [otherRuleFiledName.DATA_TYPE]: serverDataType.BOOLEAN,
+        [otherRuleFiledName.APPLY_RANGE]:[applyRange.CREATE,applyRange.UPDATE_SCALAR], //必须在create，可以在update，的recordInfo中出现
+        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:false,[applyRange.UPDATE_SCALAR]:false}, error: {rc: baseJSErrorCode+28, msg: '文档分类不能为空'}, mongoError: {rc: baseMongoErrorCode+28, msg: '允许评论不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        // [ruleFiledName.FORMAT]: {define: regex.objectId, error: {rc: baseJSErrorCode+30, msg: '文档分类必须是objectId'}, mongoError: {rc: baseMongoErrorCode+30, msg: '允许评论必须是boolean'}} //server端使用
     },
 }
 

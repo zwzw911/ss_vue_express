@@ -58,13 +58,22 @@ async function insertMany_returnRecord_async({dbModel,docs}){
 //使用Promise方式，以便catch可能的错误
 //     ap.print('docs',docs)
     /*          原本使用insertMany，输入参数是数据，返回结果也是数据         */
-    let result=await dbModel.insertMany(docs).catch((err)=>{
+    return new Promise(function(resolve, reject){
+        dbModel.insertMany(docs,function(err,result){
+            if(err){
+                return reject(err)
+            }else{
+                return resolve(result)
+            }
+        })
+    })
+/*    let result=await dbModel.insertMany(docs).catch((err)=>{
      // console.log(`model err is ${JSON.stringify(err)}`)
         return  Promise.reject(mongooseErrorHandler(mongooseOpEnum.insertMany,err))
      })
      //result.name=undefined
      //console.log(`model result is ${JSON.stringify(modelResult)}`)
-     return Promise.resolve(result)
+     return Promise.resolve(result)*/
 }
 
 async function update_returnRecord_async({dbModel,id,values}){

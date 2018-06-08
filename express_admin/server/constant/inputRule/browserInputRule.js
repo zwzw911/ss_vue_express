@@ -1,4 +1,4 @@
-/*    gene by H:\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-5-28   */ 
+/*    gene by H:\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-6-8   */ 
  
 "use strict"
 const browserInputRule={
@@ -83,23 +83,6 @@ const browserInputRule={
             arrayMaxLength:{"define":8,"error":{"rc":100118,"msg":"最多拥有8个权限"},"mongoError":{"rc":100118,"msg":"最多拥有8个权限"}},
         },
     },
-    category:{
-        name:{
-            chineseName:"分类名称",
-            dataType:"string",
-            applyRange:["create","update_scalar"],
-            require:{"define":{"create":true,"update_scalar":false},"error":{"rc":100200,"msg":"分类名不能为空"},"mongoError":{"rc":200200,"msg":"分类名不能为空"}},
-            minLength:{"define":2,"error":{"rc":100202,"msg":"分类名至少2个字符"},"mongoError":{"rc":200202,"msg":"分类名至少2个字符"}},
-            maxLength:{"define":50,"error":{"rc":100204,"msg":"分类名的长度不能超过50个字符"},"mongoError":{"rc":200204,"msg":"分类名的长度不能超过50个字符"}},
-        },
-        parentCategoryId:{
-            chineseName:"上级分类",
-            dataType:"objectId",
-            applyRange:["create","update_scalar"],
-            require:{"define":{"create":true,"update_scalar":false},"error":{"rc":100206,"msg":"上级分类不能为空"},"mongoError":{"rc":200206,"msg":"上级分类不能为空"}},
-            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":100208,"msg":"上级分类必须是objectId"},"mongoError":{"rc":200208,"msg":"上级分类必须是objectId"}},
-        },
-    },
     store_path:{
         name:{
             chineseName:"存储路径名称",
@@ -160,7 +143,7 @@ const browserInputRule={
             dataType:"string",
             applyRange:["create"],
             require:{"define":{"create":true},"error":{"rc":100506,"msg":"资源配置范围不能为空"},"mongoError":{"rc":200506,"msg":"资源配置范围不能为空"}},
-            enum:{"define":["1","2","3","5","7","8"],"error":{"rc":100508,"msg":"资源配置范围的类型不正确"},"mongoError":{"rc":200508,"msg":"资源配置范围的类型不正确"}},
+            enum:{"define":["1","10","12","14","16","18","20","22","24","26","28","30","32","34"],"error":{"rc":100508,"msg":"资源配置范围的类型不正确"},"mongoError":{"rc":200508,"msg":"资源配置范围的类型不正确"}},
         },
         type:{
             chineseName:"资源配置类型",
@@ -182,55 +165,21 @@ const browserInputRule={
             require:{"define":{"create":false},"error":{"rc":100516,"msg":"最大存储空间不能为空"},"mongoError":{"rc":200516,"msg":"最大存储空间不能为空"}},
         },
     },
-    article:{
+    category:{
         name:{
-            chineseName:"文档标题",
+            chineseName:"分类名称",
             dataType:"string",
             applyRange:["create","update_scalar"],
-            placeHolder:["文档标题，至多50个字符"],
-            require:{"define":{"create":true,"update_scalar":false},"error":{"rc":101000,"msg":"文档名不能为空"},"mongoError":{"rc":201000,"msg":"文档名不能为空"}},
-            maxLength:{"define":50,"error":{"rc":101002,"msg":"文档名的长度不能超过50个字符"},"mongoError":{"rc":201002,"msg":"文档名的长度不能超过50个字符"}},
+            require:{"define":{"create":true,"update_scalar":false},"error":{"rc":100200,"msg":"分类名不能为空"},"mongoError":{"rc":200200,"msg":"分类名不能为空"}},
+            minLength:{"define":2,"error":{"rc":100202,"msg":"分类名至少2个字符"},"mongoError":{"rc":200202,"msg":"分类名至少2个字符"}},
+            maxLength:{"define":50,"error":{"rc":100204,"msg":"分类名的长度不能超过50个字符"},"mongoError":{"rc":200204,"msg":"分类名的长度不能超过50个字符"}},
         },
-        status:{
-            chineseName:"文档状态",
-            dataType:"string",
-            applyRange:["create","update_scalar"],
-            placeHolder:["文档状态"],
-            require:{"define":{"create":true,"update_scalar":false},"error":{"rc":101004,"msg":"文档状态不能为空"},"mongoError":{"rc":201004,"msg":"文档状态不能为空"}},
-            enum:{"define":["0","1","2"],"error":{"rc":101006,"msg":"文档状态不正确"},"mongoError":{"rc":201006,"msg":"文档状态不正确"}},
-        },
-        folderId:{
-            chineseName:"文档目录",
+        parentCategoryId:{
+            chineseName:"上级分类",
             dataType:"objectId",
             applyRange:["create","update_scalar"],
-            require:{"define":{"create":true,"update_scalar":false},"error":{"rc":101008,"msg":"文档目录不能为空"},"mongoError":{"rc":201010,"msg":"文档目录不能为空"}},
-            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":101010,"msg":"文档目录必须是objectId"},"mongoError":{"rc":201010,"msg":"文档目录必须是objectId"}},
-        },
-        htmlContent:{
-            chineseName:"文档内容",
-            dataType:"string",
-            applyRange:["create","update_scalar"],
-            placeHolder:["文档内容"],
-            require:{"define":{"create":true,"update_scalar":false},"error":{"rc":101012,"msg":"文档内容不能为空"},"mongoError":{"rc":201012,"msg":"文档内容不能为空"}},
-            minLength:{"define":15,"error":{"rc":101014,"msg":"文档内容至少15个字符"},"mongoError":{"rc":201014,"msg":"文档内容至少15个字符"}},
-            maxLength:{"define":50000,"error":{"rc":101016,"msg":"文档内容的长度不能超过50000个字符"},"mongoError":{"rc":201016,"msg":"文档内容的长度不能超过50000个字符"}},
-        },
-        tags:{
-            chineseName:"文档标签",
-            dataType:["string"],
-            applyRange:["create","update_scalar"],
-            placeHolder:["文档标签，2至20个字符"],
-            require:{"define":{"create":false,"update_scalar":false},"error":{"rc":101018,"msg":"文档标签不能为空"},"mongoError":{"rc":201018,"msg":"文档标签不能为空"}},
-            arrayMaxLength:{"define":5,"error":{"rc":101020,"msg":"最多设置5标签"},"mongoError":{"rc":201020,"msg":"最多设置5标签"}},
-            minLength:{"define":2,"error":{"rc":101022,"msg":"文档标签至少2个字符"},"mongoError":{"rc":201022,"msg":"文档标签至少2个字符"}},
-            maxLength:{"define":20,"error":{"rc":101024,"msg":"文档标签的长度不能超过20个字符"},"mongoError":{"rc":201024,"msg":"文档标签的长度不能超过20个字符"}},
-        },
-        categoryId:{
-            chineseName:"分类",
-            dataType:"objectId",
-            applyRange:["create","update_scalar"],
-            require:{"define":{"create":true,"update_scalar":false},"error":{"rc":101026,"msg":"文档分类不能为空"},"mongoError":{"rc":201026,"msg":"文档分类不能为空"}},
-            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":101028,"msg":"文档分类必须是objectId"},"mongoError":{"rc":201028,"msg":"文档分类必须是objectId"}},
+            require:{"define":{"create":false,"update_scalar":false},"error":{"rc":100206,"msg":"上级分类不能为空"},"mongoError":{"rc":200206,"msg":"上级分类不能为空"}},
+            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":100208,"msg":"上级分类必须是objectId"},"mongoError":{"rc":200208,"msg":"上级分类必须是objectId"}},
         },
     },
     article_comment:{
@@ -266,21 +215,6 @@ const browserInputRule={
             format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":101206,"msg":"上级目录必须是objectId"},"mongoError":{"rc":201206,"msg":"上级目录必须是objectId"}},
         },
     },
-    like_dislike:{
-        articleId:{
-            chineseName:"文档",
-            dataType:"objectId",
-            applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":101300,"msg":"文档不能为空"},"mongoError":{"rc":201300,"msg":"文档不能为空"}},
-            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":101302,"msg":"文档必须是objectId"},"mongoError":{"rc":201302,"msg":"文档必须是objectId"}},
-        },
-        like:{
-            chineseName:"喜欢",
-            dataType:"boolean",
-            applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":101304,"msg":"喜欢不能为空"},"mongoError":{"rc":201304,"msg":"喜欢不能为空"}},
-        },
-    },
     tag:{
         name:{
             chineseName:"标签名称",
@@ -288,6 +222,65 @@ const browserInputRule={
             applyRange:["create"],
             require:{"define":{"create":true},"error":{"rc":101400,"msg":"标签名称不能为空"},"mongoError":{"rc":201400,"msg":"标签名称不能为空"}},
             format:{"define":/^[\u4E00-\u9FFF\w]{2,20}$/,"error":{"rc":101402,"msg":"标签名必须由2-20个字符组成"},"mongoError":{"rc":201402,"msg":"标签名必须由2-20个字符组成"}},
+        },
+    },
+    article_like_dislike:{
+    },
+    article:{
+        name:{
+            chineseName:"文档标题",
+            dataType:"string",
+            applyRange:["create","update_scalar"],
+            placeHolder:["文档标题，至多50个字符"],
+            require:{"define":{"create":true,"update_scalar":false},"error":{"rc":101000,"msg":"文档名不能为空"},"mongoError":{"rc":201000,"msg":"文档名不能为空"}},
+            maxLength:{"define":50,"error":{"rc":101002,"msg":"文档名的长度不能超过50个字符"},"mongoError":{"rc":201002,"msg":"文档名的长度不能超过50个字符"}},
+        },
+        status:{
+            chineseName:"文档状态",
+            dataType:"string",
+            applyRange:["create","update_scalar"],
+            placeHolder:["文档状态"],
+            require:{"define":{"create":true,"update_scalar":false},"error":{"rc":101004,"msg":"文档状态不能为空"},"mongoError":{"rc":201004,"msg":"文档状态不能为空"}},
+            enum:{"define":["0","1","2"],"error":{"rc":101006,"msg":"文档状态不正确"},"mongoError":{"rc":201006,"msg":"文档状态不正确"}},
+        },
+        folderId:{
+            chineseName:"文档目录",
+            dataType:"objectId",
+            applyRange:["create","update_scalar"],
+            require:{"define":{"create":false,"update_scalar":false},"error":{"rc":101008,"msg":"文档目录不能为空"},"mongoError":{"rc":201010,"msg":"文档目录不能为空"}},
+            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":101010,"msg":"文档目录必须是objectId"},"mongoError":{"rc":201010,"msg":"文档目录必须是objectId"}},
+        },
+        htmlContent:{
+            chineseName:"文档内容",
+            dataType:"string",
+            applyRange:["create","update_scalar"],
+            placeHolder:["文档内容"],
+            require:{"define":{"create":true,"update_scalar":false},"error":{"rc":101012,"msg":"文档内容不能为空"},"mongoError":{"rc":201012,"msg":"文档内容不能为空"}},
+            minLength:{"define":15,"error":{"rc":101014,"msg":"文档内容至少15个字符"},"mongoError":{"rc":201014,"msg":"文档内容至少15个字符"}},
+            maxLength:{"define":50000,"error":{"rc":101016,"msg":"文档内容的长度不能超过50000个字符"},"mongoError":{"rc":201016,"msg":"文档内容的长度不能超过50000个字符"}},
+        },
+        tags:{
+            chineseName:"文档标签",
+            dataType:["string"],
+            applyRange:["create","update_scalar"],
+            placeHolder:["文档标签，2至20个字符"],
+            require:{"define":{"create":false,"update_scalar":false},"error":{"rc":101018,"msg":"文档标签不能为空"},"mongoError":{"rc":201018,"msg":"文档标签不能为空"}},
+            arrayMaxLength:{"define":5,"error":{"rc":101020,"msg":"最多设置5标签"},"mongoError":{"rc":201020,"msg":"最多设置5标签"}},
+            minLength:{"define":2,"error":{"rc":101022,"msg":"文档标签至少2个字符"},"mongoError":{"rc":201022,"msg":"文档标签至少2个字符"}},
+            maxLength:{"define":20,"error":{"rc":101024,"msg":"文档标签的长度不能超过20个字符"},"mongoError":{"rc":201024,"msg":"文档标签的长度不能超过20个字符"}},
+        },
+        categoryId:{
+            chineseName:"分类",
+            dataType:"objectId",
+            applyRange:["create","update_scalar"],
+            require:{"define":{"create":false,"update_scalar":false},"error":{"rc":101026,"msg":"文档分类不能为空"},"mongoError":{"rc":201026,"msg":"文档分类不能为空"}},
+            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":101028,"msg":"文档分类必须是objectId"},"mongoError":{"rc":201028,"msg":"文档分类必须是objectId"}},
+        },
+        allowComment:{
+            chineseName:"允许评论",
+            dataType:"boolean",
+            applyRange:["create","update_scalar"],
+            require:{"define":{"create":false,"update_scalar":false},"error":{"rc":101028,"msg":"文档分类不能为空"},"mongoError":{"rc":201028,"msg":"允许评论不能为空"}},
         },
     },
     member_penalize:{

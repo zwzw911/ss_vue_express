@@ -91,6 +91,7 @@ const collFieldDefine={
     htmlContent:{type:String},//一般设置成pureContent的2倍大小
     categoryId:{type:mongoose.Schema.Types.ObjectId,ref:"category"},
     tags:{type:[String],validate:[tag_arrayMaxLengthValidator]},//tag_arrayMinLengthValidator
+    allowComment:{type:Boolean},
     articleImagesId:{type:[mongoose.Schema.Types.ObjectId],ref:'article_image',validate:[image_arrayMaxLengthValidator]},
     articleAttachmentsId:{type:[mongoose.Schema.Types.ObjectId],ref:'article_attachment',validate:[attachment_arrayMaxLengthValidator]},
     articleCommentsId:{type:[mongoose.Schema.Types.ObjectId],ref:'article_comment',validate:[comment_arrayMaxLengthValidator]},

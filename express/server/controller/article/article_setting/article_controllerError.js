@@ -10,15 +10,15 @@ const controllerError={
             notLoginCantCreateArticle:{rc:50200,msg:`尚未登录，无法创建文档`},
             userInPenalizeCantCreateArticle:{rc:50202,msg:`管理员禁止创建文档`},
 
-            notLoginCantCreateArticleImage:{rc:50200,msg:`用户尚未登录，无法插入图片`},
-            notLoginCantCreateArticleAttachment:{rc:50200,msg:`用户尚未登录，无法插入图片`},
+            notLoginCantCreateArticleImage:{rc:50204,msg:`用户尚未登录，无法插入图片`},
+            notLoginCantCreateArticleAttachment:{rc:50206,msg:`用户尚未登录，无法插入图片`},
         },
         'put':{
-            notLoginCantUpdateArticle:{rc:50204,msg:`尚未登录，无法更新文档`},
-            userInPenalizeCantUpdateArticle:{rc:50206,msg:`管理员禁止更新文档`},
+            notLoginCantUpdateArticle:{rc:50208,msg:`尚未登录，无法更新文档`},
+            userInPenalizeCantUpdateArticle:{rc:50210,msg:`管理员禁止更新文档`},
         },
         'delete':{
-            notLoginCantDeleteAttachment:{rc:50208,msg:`尚未登录，无法删除附件`},
+            notLoginCantDeleteAttachment:{rc:50212,msg:`尚未登录，无法删除附件`},
             /*            notLoginCantDeleteArticle:{rc:50208,msg:`尚未登录，无法删除文档`},
                         userInPenalizeCantDeleteArticle:{rc:50210,msg:`管理员禁止删除文档`},*/
         },

@@ -1,4 +1,4 @@
-/*    gene by H:\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-5-29   */ 
+/*    gene by H:\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-6-8   */ 
  
 "use strict"
 const internalInputRule={
@@ -241,15 +241,6 @@ const internalInputRule={
             format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":101672,"msg":"所属文档必须是objectId"},"mongoError":{"rc":201672,"msg":"所属文档必须是objectId"}},
         },
     },
-    like_dislike:{
-        authorId:{
-            chineseName:"提交者",
-            dataType:"objectId",
-            applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":101350,"msg":"提交者不能为空"},"mongoError":{"rc":201350,"msg":"提交者不能为空"}},
-            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":101352,"msg":"提交者必须是objectId"},"mongoError":{"rc":201352,"msg":"提交者必须是objectId"}},
-        },
-    },
     folder:{
         authorId:{
             chineseName:"创建人",
@@ -264,6 +255,21 @@ const internalInputRule={
             applyRange:["create","update_scalar"],
             require:{"define":{"create":true,"update_scalar":false},"error":{"rc":101254,"msg":"目录层级不能为空"},"mongoError":{"rc":201254,"msg":"目录层级不能为空"}},
             min:{"define":1,"error":{"rc":101256,"msg":"目录层级最小为1"},"mongoError":{"rc":201256,"msg":"目录层级最小为1"}},
+        },
+    },
+    article_like_dislike:{
+        authorId:{
+            chineseName:"提交者",
+            dataType:"objectId",
+            applyRange:["create"],
+            require:{"define":{"create":true},"error":{"rc":101350,"msg":"提交者不能为空"},"mongoError":{"rc":201350,"msg":"提交者不能为空"}},
+            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":101352,"msg":"提交者必须是objectId"},"mongoError":{"rc":201352,"msg":"提交者必须是objectId"}},
+        },
+        like:{
+            chineseName:"喜欢",
+            dataType:"boolean",
+            applyRange:["create"],
+            require:{"define":{"create":true},"error":{"rc":101354,"msg":"喜欢不能为空"},"mongoError":{"rc":201354,"msg":"喜欢不能为空"}},
         },
     },
     member_penalize:{
@@ -348,7 +354,7 @@ const internalInputRule={
             dataType:"string",
             applyRange:["create","update_scalar"],
             require:{"define":{"create":true,"update_scalar":true},"error":{"rc":102154,"msg":"状态不能为空"},"mongoError":{"rc":202154,"msg":"状态不能为空"}},
-            enum:{"define":["1","2","3"],"error":{"rc":102156,"msg":"状态未定义"},"mongoError":{"rc":202156,"msg":"状态未定义"}},
+            enum:{"define":["1","2","3","4"],"error":{"rc":102156,"msg":"状态未定义"},"mongoError":{"rc":202156,"msg":"状态未定义"}},
         },
     },
     impeach:{

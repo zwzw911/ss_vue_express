@@ -51,7 +51,8 @@ async function deleteUserAndRelatedInfo_async({account,name}){
         await common_operation_model.deleteMany_async({dbModel:e_dbModel.user_friend_group,condition:{[e_field.USER_FRIEND_GROUP.OWNER_USER_ID]:userId}})
         //删除所有创建的群
         await common_operation_model.deleteMany_async({dbModel:e_dbModel.public_group,condition:{[e_field.PUBLIC_GROUP.CREATOR_ID]:userId}})
-
+        //删除所有文档
+        await common_operation_model.deleteMany_async({dbModel:e_dbModel.article,condition:{[e_field.ARTICLE.AUTHOR_ID]:userId}})
     }
 
 }
@@ -196,6 +197,13 @@ async function getGroupId_async({userId,groupName}) {
     return Promise.resolve(tmpResult[0]['_id'])
 }
 
+async function getCategoryId_async({categoryName}) {
+    // console.log(`userName===================================>${JSON.stringify(userName)}`)
+    tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.category,condition:{[e_field.CATEGORY.NAME]:categoryName}})
+    // console.log(`user1Id result===================================>${JSON.stringify(tmpResult)}`)
+    return Promise.resolve(tmpResult[0]['id'])
+}
+
 async function getUserFolderId_async(userData){
     // let user1Tmp = {}
     // user1Tmp[e_field.USER.ACCOUNT] = testData.user.user2[e_field.USER.ACCOUNT]
@@ -217,6 +225,8 @@ async function getUserFolderId_async(userData){
     // console.log(`folderis =====================>${JSON.stringify(tmpResult[0]['_id'].toString())}`)
     return Promise.resolve(tmpResult[0]['_id'].toString())
 }
+
+
 
 async function getAddFriendRequest_async({originatorId,receiverId}){
     // let user1Tmp = {}
@@ -305,6 +315,8 @@ module.exports={
     getGroupId_async,
     getUserId_async,
     getAdminUserId_async,
+
+    getCategoryId_async,
 
     getUserFolderId_async,
 

@@ -57,7 +57,7 @@ const crypt=server_common_file_require.crypt
 
 
 let baseUrl="/user/",url='',finalUrl=baseUrl+url
-let userId  //create后存储对应的id，以便后续的update操作
+
 
 let recordId1,recordId2,recordId3,expectedErrorRc
 
@@ -76,7 +76,7 @@ let data={values:{}}
 describe('user1 register unique check:',async  function() {
 
     before('prepare', async function () {
-        let tmpResult=await generateTestData.getUserCryotedUserId_async({app:app,adminApp:adminApp})
+        let tmpResult=await generateTestData.getUserCryptedUserId_async({app:app,adminApp:adminApp})
 
         user1IdCryptedByUser1=tmpResult['user1IdCryptedByUser1']
         user1IdCryptedByUser2=tmpResult['user1IdCryptedByUser2']

@@ -587,10 +587,11 @@ function getOwnSiteImgDOM({content}){
 * */
 async function contentDbDeleteNotExistImage_async({content,recordId,collConfig,collImageConfig,resourceRange}){
     let tmpResult
+    // ap.inf('content',content)
     //获得合格的md5文件名和DOM的键值对
     let validMd5ImageNameInContent=getOwnSiteImgDOM({content:content})
 
-
+    // ap.inf('validMd5ImageNameInContent',validMd5ImageNameInContent)
 // console.log(`afte r delete not own image==============>${JSON.stringify(content)}`)
     /*          检查md5是否在collImage中存在            */
     //获得当前article/impeach/impeachComment的所有image记录
@@ -722,8 +723,8 @@ async function calcExistResource_async({resourceProfileRange,resourceFileFieldNa
  *
  * return：对象，当前resourceColl下资源的统计（size，type）
  * */
-async function calcExistResource_async({resourceProfileRange,userId,articleId,impeach_comment_id,arr_impeach_and_comment_id}){
-    /*          检查对应的参数是否都存在            */
+/*async function calcExistResource_async({resourceProfileRange,userId,articleId,impeach_comment_id,arr_impeach_and_comment_id}){
+    /!*          检查对应的参数是否都存在            *!/
 
     switch (resourceProfileRange) {
         case e_resourceRange.IMAGE_PER_ARTICLE:
@@ -735,15 +736,15 @@ async function calcExistResource_async({resourceProfileRange,userId,articleId,im
         case e_resourceRange.WHOLE_RESOURCE_PER_PERSON_FOR_ALL_ARTICLE:
             if(undefined===userId || null===userId){return Promise.reject(helperError.missParameter(`userId`))}
             break;
-/*        case e_resourceRange.ATTACHMENT_PER_PERSON_FOR_ALL_ARTICLE:
+/!*        case e_resourceRange.ATTACHMENT_PER_PERSON_FOR_ALL_ARTICLE:
             if(undefined===userId || null===userId){return Promise.reject(helperError.missParameter(`userId`))}
-            break;*/
+            break;*!/
         case e_resourceRange.IMAGE_PER_IMPEACH_OR_COMMENT:
             if(undefined===impeach_comment_id || null===impeach_comment_id){return Promise.reject(helperError.missParameter(`impeach_comment_id`))}
             break;
-/*        case e_resourceRange.IMAGE_PER_COMMENT:
+/!*        case e_resourceRange.IMAGE_PER_COMMENT:
             // if(undefined===impeachCommentId || null===impeachCommentId){return Promise.reject(helperError.missParameter(`impeachCommentId`))}
-            break;*/
+            break;*!/
         case e_resourceRange.IMAGE_PER_PERSON_FOR_WHOLE_IMPEACH:
             if(undefined===userId || null===userId){return Promise.reject(helperError.missParameter(`userId`))}
             if(undefined===arr_impeach_and_comment_id || null===arr_impeach_and_comment_id){return Promise.reject(helperError.missParameter(`arr_impeach_and_comment_id`))}
@@ -769,7 +770,7 @@ async function calcExistResource_async({resourceProfileRange,userId,articleId,im
     }
 
     return Promise.resolve(calcResult)
-}
+}*/
 /*                  根据用户的类型（普通用户，还是管理员用户），生成sugar，并hash输入的密码                        */
 function generateSugarAndHashPassword({ifAdminUser,ifUser,password}){
     let randomStringLength,hashType
@@ -1397,7 +1398,7 @@ module.exports= {
     // removeImageDataUrl,//删除content中的dataUrl图片，防止未经授权的图片
     contentDbDeleteNotExistImage_async,
 
-    calcExistResource_async,//根据resourceProfileRange，resourceProfileType，从预定义的对象中获得对应的fieldName和grougby的设置
+    // calcExistResource_async,//根据resourceProfileRange，resourceProfileType，从预定义的对象中获得对应的fieldName和grougby的设置
 
     generateSugarAndHashPassword,//根据用户类型，生成sugar和hash过得密码
 

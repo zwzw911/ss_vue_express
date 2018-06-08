@@ -32,13 +32,16 @@ const e_part=nodeEnum.ValidatePart
 
 const nodeRuntimeEnum=server_common_file_require.nodeRuntimeEnum
 const e_hashType=nodeRuntimeEnum.HashType
+const e_inputValueLogicCheckStep=nodeRuntimeEnum.InputValueLogicCheckStep
 
 const mongoEnum=server_common_file_require.mongoEnum
 const e_accountType=mongoEnum.AccountType.DB
 const e_docStatus=mongoEnum.DocStatus.DB
+const e_articleStatus=mongoEnum.ArticleStatus.DB
 const e_adminUserType=mongoEnum.AdminUserType.DB
 const e_adminPriorityType=mongoEnum.AdminPriorityType.DB
-const e_resourceType=mongoEnum.ResourceType.DB
+const e_allUserType=mongoEnum.AllUserType.DB
+const e_resourceRange=mongoEnum.ResourceRange.DB
 
 /**************  公共函数   ******************/
 const dataConvert=server_common_file_require.dataConvert
@@ -63,7 +66,7 @@ async function updateArticle_async({req,applyRange}){
     let tmpResult,collName=controller_setting.MAIN_HANDLED_COLL_NAME
     // console.log(`req============>${JSON.stringify(req)}`)
     let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
-    let {userId,userCollName,userType,userPriority}=userInfo
+    let {userId,userCollName,userType,userPriority,tempSalt}=userInfo
     // console.log(`userInfo============>${JSON.stringify(userInfo)}`)
     let docValue=req.body.values[e_part.RECORD_INFO]
     let recordId=req.body.values[e_part.RECORD_ID]
@@ -96,6 +99,13 @@ async function updateArticle_async({req,applyRange}){
             return Promise.reject(controllerError.update.notAuthorCantUpdateArticle)
         }
     }
+    /**********************************************/
+    /*********    特殊数据处理        ************/
+    /*********************************************/
+    //更新时，如果原始状态为NEW，且没有输入新状态，那么自动改为“EDITING”
+    if(undefined===docValue[e_field.ARTICLE.STATUS] && e_articleStatus.NEW===originalDoc[e_field.ARTICLE.STATUS]){
+        docValue[e_field.ARTICLE.STATUS]=e_articleStatus.EDITING
+    }
 
     /**********************************************/
     /*********    是否未做任何更改    ************/
@@ -105,11 +115,12 @@ async function updateArticle_async({req,applyRange}){
     if(0===Object.keys(docValue).length){
         return {rc:0}
     }
-
+    // ap.inf('special doen')
     /************************************************/
     /*** CALL FUNCTION:inputValueLogicValidCheck ****/
     /************************************************/
     let commonParam={docValue:docValue,userId:userId,collName:collName}
+    // ap.inf('commonParam',commonParam)
     let stepParam={
         /******** fk需要检查folder是否为自己 ********/
         [e_inputValueLogicCheckStep.FK_EXIST_AND_PRIORITY]:{flag:true,optionalParam:undefined},
@@ -117,15 +128,17 @@ async function updateArticle_async({req,applyRange}){
         //object：coll中，对单个字段进行unique检测，需要的额外查询条件
         [e_inputValueLogicCheckStep.SINGLE_FIELD_VALUE_UNIQUE]:{flag:true,optionalParam:{singleValueUniqueCheckAdditionalCondition:undefined}},
         //数组，元素是字段名。默认对所有dataType===string的字段进行XSS检测，但是可以通过此变量，只选择部分字段
-        [e_inputValueLogicCheckStep.XSS]:{flag:true,optionalParam:{expectedXSSFields:{optionalParam:undefined}}},
+        [e_inputValueLogicCheckStep.XSS]:{flag:true,optionalParam:{expectedXSSFields:undefined}},
         //object，对compoundField进行unique检测需要的额外条件，key从model->mongo->compound_unique_field_config.js中获得
         [e_inputValueLogicCheckStep.COMPOUND_VALUE_UNIQUE]:{flag:true,optionalParam:{compoundFiledValueUniqueCheckAdditionalCheckCondition:undefined}},
         //Object，配置resourceCheck的一些参数,{requiredResource,resourceProfileRange,userId,containerId}
-        /*****  无需对资源进行检查，因为都是删除操作  ******/
+        /*****  无需对资源进行检查，因为都是更新操作  ******/
         [e_inputValueLogicCheckStep.RESOURCE_USAGE]:{flag:false,optionalParam:{resourceUsageOption:{requiredResource:undefined}}},
     }
-    await controllerInputValueLogicCheck.inputValueLogicValidCheck_async({commonParam:commonParam,stepParam:stepParam})
 
+    // ap.inf('stepParam',stepParam)
+    await controllerInputValueLogicCheck.inputValueLogicValidCheck_async({commonParam:commonParam,stepParam:stepParam})
+    // ap.inf('inputValueLogicValidCheck_async done')
 
     //如果content存在，图片检测
     if(undefined!==docValue[e_field.ARTICLE.HTML_CONTENT]){
@@ -140,7 +153,7 @@ async function updateArticle_async({req,applyRange}){
             ownerFieldName:e_field.ARTICLE.AUTHOR_ID,// coll中，作者的字段名
 
         }
-
+        // ap.inf('collConfig',collConfig)
         let collImageConfig={
             collName:e_coll.ARTICLE_IMAGE,//实际存储图片的coll名
             fkFieldName:e_field.ARTICLE_IMAGE.ARTICLE_ID, //字段名，记录图片存储在那个coll中
@@ -148,17 +161,24 @@ async function updateArticle_async({req,applyRange}){
             imageHashFieldName:e_field.ARTICLE_IMAGE.HASH_NAME, //记录图片hash名字的字段名
             storePathPopulateOpt:[{path:e_field.ARTICLE_IMAGE.PATH_ID,select:e_field.STORE_PATH.PATH}], //需要storePath，以便执行fs.unlink
         }
-        // console.log(`0.1`)
+        // ap.inf('collImageConfig',collImageConfig)
+        // ap.inf('content',content)
+        // ap.inf('recordId',recordId)
+        // ap.inf('resourceRange',e_resourceRange.WHOLE_RESOURCE_PER_PERSON_FOR_ALL_ARTICLE)
+        // content,recordId,collConfig,collImageConfig,resourceRange
         let {content,deletedFileNum,deletedFileSize}=await controllerHelper.contentDbDeleteNotExistImage_async({
-            content:content,
+            content:docValue[e_field.ARTICLE.HTML_CONTENT],
             recordId:recordId,
             collConfig:collConfig,
             collImageConfig:collImageConfig,
-            resourceType:e_resourceType.ARTICLE_IMAGE, //控制是否需要对user_resource_static进行更新时，使用的resourceType，可以为undefined
+            resourceRange:e_resourceRange.WHOLE_RESOURCE_PER_PERSON_FOR_ALL_ARTICLE, //控制是否需要对user_resource_static进行更新时，使用的resourceType，可以为undefined
         })
+        // {content,deletedFileNum,deletedFileSize}
+        // ap.inf('result',result)
         docValue[e_field.IMPEACH.CONTENT]=content
     }
 
+    // ap.inf('contentDbDeleteNotExistImage_async done')
 
     /*********************************************/
     /**********          业务处理        *********/
@@ -186,6 +206,7 @@ async function updateArticle_async({req,applyRange}){
 /*************************************************************/
 async function businessLogic_async({docValue,collName,recordId,applyRange}){
     let internalValue={}
+
     if(e_env.DEV===currentEnv && Object.keys(internalValue).length>0){
         let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInternalRule:internalInputRule[collName],applyRange:applyRange})
         if(tmpResult.rc>0){

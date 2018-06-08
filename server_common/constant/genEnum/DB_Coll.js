@@ -10,13 +10,13 @@ const Coll={
     STORE_PATH:'store_path',
     RESOURCE_PROFILE:'resource_profile',
     /*       article           */
-    ARTICLE:'article',
     ARTICLE_ATTACHMENT:'article_attachment',
     ARTICLE_COMMENT:'article_comment',
     ARTICLE_IMAGE:'article_image',
     FOLDER:'folder',
-    LIKE_DISLIKE:'like_dislike',
     TAG:'tag',
+    ARTICLE:'article',
+    ARTICLE_LIKE_DISLIKE:'article_like_dislike',
     /*       friend           */
     MEMBER_PENALIZE:'member_penalize',
     PUBLIC_GROUP:'public_group',

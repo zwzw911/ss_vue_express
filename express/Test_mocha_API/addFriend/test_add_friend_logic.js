@@ -109,7 +109,7 @@ describe('add friend logic', async function() {
         // parameter[`APIUrl`]=finalUrl
         finalUrl = baseUrl + url
 
-        let tmpResult=await generateTestData.getUserCryotedUserId_async({app:app,adminApp:adminApp})
+        let tmpResult=await generateTestData.getUserCryptedUserId_async({app:app,adminApp:adminApp})
 
         user1IdCryptedByUser1=tmpResult['user1IdCryptedByUser1']
         user1IdCryptedByUser2=tmpResult['user1IdCryptedByUser2']

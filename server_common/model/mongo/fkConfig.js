@@ -57,19 +57,19 @@ const fkConfig={
                     relatedColl:e_coll.CATEGORY,forSelect:`${e_field.CATEGORY.NAME}`,forSetValue:[e_field.CATEGORY.NAME],validCriteria:{'dDate':{$exists:false}},fkCollOwnerFields:[e_field.ARTICLE.AUTHOR_ID]
                 },*/
     },
-    /*          article_comment     */
+    /**          article_comment     **/
     [e_coll.ARTICLE_COMMENT]: {
         //未被删除，且完成（已经公开）的文档才能发表comment
         [e_field.ARTICLE_COMMENT.ARTICLE_ID]: {
             relatedColl: e_coll.ARTICLE, forSelect: `${e_field.ARTICLE.NAME}`, forSetValue: [e_field.ARTICLE.NAME],validCriteria:{'dDate':{$exists:false},[e_field.ARTICLE.STATUS]:e_articleStatus.FINISHED},fkCollOwnerFields:undefined,
         },
     },
-    /*          article likeDislike         */
-    [e_coll.LIKE_DISLIKE]: {
-        [e_field.LIKE_DISLIKE.ARTICLE_ID]: {
-            relatedColl: e_coll.ARTICLE, forSelect: `${e_field.ARTICLE.NAME}`, forSetValue: [e_field.ARTICLE.NAME]
+    /**          article likeDislike         **/
+    [e_coll.ARTICLE_LIKE_DISLIKE]: {
+        [e_field.ARTICLE_LIKE_DISLIKE.ARTICLE_ID]: {
+            relatedColl: e_coll.ARTICLE, forSelect: `${e_field.ARTICLE.NAME}`, forSetValue: [e_field.ARTICLE.NAME],validCriteria:{'dDate':{$exists:false},[e_field.ARTICLE.STATUS]:e_articleStatus.FINISHED},fkCollOwnerFields:undefined,
         },
-        [e_field.LIKE_DISLIKE.AUTHOR_ID]:{
+        [e_field.ARTICLE_LIKE_DISLIKE.AUTHOR_ID]:{
             relatedColl:e_coll.USER,forSelect:`${e_field.USER.NAME}`,forSetValue:[e_field.USER.NAME]
         },
     },
