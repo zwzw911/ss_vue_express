@@ -4,24 +4,53 @@
 'use strict'
 
 const controllerError={
-    /*          common              */
-    /*    fieldAlreadyExist(chineseFieldName,fieldInputValue){
-     switch (fieldName){
-     case e_field.article
-     }
-     return {rc:50200,msg:{client:`${fieldInputValue}已经存在`, server:`字段${chineseFieldName}中，值${fieldInputValue}已经存在`}}},*/
+   //50600~50650
+    dispatch:{
+        post:{
+            notLoginCantCreateImpeach:{rc:50600,msg:`尚未登录，无法举报`},
+            userInPenalizeCantCreateImpeach:{rc:50602,msg:`管理员禁止举报`},
+        },
+        put:{
+            notLoginCantUpdateImpeach:{rc:50604,msg:`尚未登录，无法更新举报`},
+            userInPenalizeCantUpdateImpeach:{rc:50606,msg:`管理员禁止举报`},
+        },
+        'delete':{
+            notLoginCantDeleteImpeach:{rc:50604,msg:`尚未登录，无法删除举报`},
+            userInPenalizeCantDeleteImpeach:{rc:50606,msg:`管理员禁止删除举报`},
+            // userInPenalizeCantUpdateImpeach:{rc:50606,msg:`管理员禁止举报`},
+        },
+    },
+
+    //50650~50660
+    create:{
+        cantImpeachMultiItem:{rc:50650,msg:`不能举报多个对象`},
+        noImpeachedItem:{rc:50652,msg:`没有设置举报对象`},
+        notSetImpeachedArticle:{rc:50654,msg:`没有设置举报文档`},
+        notSetImpeachedComment:{rc:50656,msg:`没有设置举报评论`},
+        unknownImpeachType:{rc:50658,msg:`未知举报类型，无法创建`},
+
+        // onlyOneImpeachedObjectCanBeSet:{rc:50610,msg:`只能设置一个举报对象`},
+    },
+    //50660~50670
+    update:{
+        notAuthorCantUpdateImpeach:{rc:50660,msg:`非举报创建者，无法更新举报`},
+        impeachedSubmittedCantUpdate:{rc:50662,msg:`举报已被提交，正在处理，不能更新`},
+    },
+    //50670~50680
+    'delete':{
+        notCreatorCantDeleteImpeach:{rc:50670,msg:`非举报创建者，无权删除举报`},
+        impeachAlreadyHandledByAdmin:{rc:50672,msg:`举报已被管理员处理中，无法删除`},
+    },
+
+
 
     /*          create new impeach              */
     notDefineImpeachType:{rc:50601,msg:`举报类型未设置`},
-    userNotLoginCantCreate:{rc:50602,msg:`尚未登录，无法举报`},
-    // userNoDefaultFolder:{rc:50205,msg:`没有默认目录，无法创建新文档`},
-    userInPenalizeNoImpeachCreate:{rc:50604,msg:`管理员禁止举报`},
+
     // contentSanityFailed:{rc:50606,msg:`举报内容包含有害内容，无法提交`},
     articleAlreadyImpeached:{rc:50605,msg:`已经举报过此文档，无法再次举报`},
     articleCommentAlreadyImpeached:{rc:50607,msg:`已经举报过此评论，无法再次举报`},
-    unknownImpeachType:{rc:50608,msg:`未知举报类型，无法创建`},
-    noImpeachedObject:{rc:50609,msg:`没有设置举报对象`},
-    onlyOneImpeachedObjectCanBeSet:{rc:50610,msg:`只能设置一个举报对象`},
+
     impeachObjectNotExist:{rc:50611,msg:`举报对象不存在`},
 
     /*          update impeach              */
@@ -35,10 +64,9 @@ const controllerError={
     // notAuthorized:{rc:50212,msg:`无权更改文档`},
 
     /*      delete impeach              */
-    userNotLoginCantDelete:{rc:50618,msg:`用户尚未登录，无法删除`},
-    userInPenalizeNoImpeachDelete:{rc:50620,msg:`管理员禁止删除举报`},
-    notCreatorCantDeleteImpeach:{rc:50622,msg:`非举报创建者，无权删除举报`},
-    impeachAlreadyHandledByAdmin:{rc:50624,msg:`举报曾被管理员处理中，无法删除`},
+
+
+
 
     /*              upload                          */
     notImpeachCreatorCantUploadFile:{rc:50626,msg:`无权为他人举报评论上传文件`},

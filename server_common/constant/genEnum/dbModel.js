@@ -26,11 +26,12 @@ const user_friend_group=require('H:/ss_vue_express/server_common/model/mongo/str
 const user_public_group=require('H:/ss_vue_express/server_common/model/mongo/structure/friend/user_public_group.js').collModel
 const add_friend=require('H:/ss_vue_express/server_common/model/mongo/structure/friend/add_friend.js').collModel
 /*       impeach           */
-const impeach=require('H:/ss_vue_express/server_common/model/mongo/structure/impeach/impeach.js').collModel
 const impeach_action=require('H:/ss_vue_express/server_common/model/mongo/structure/impeach/impeach_action.js').collModel
-const impeach_attachment=require('H:/ss_vue_express/server_common/model/mongo/structure/impeach/impeach_attachment.js').collModel
-const impeach_comment=require('H:/ss_vue_express/server_common/model/mongo/structure/impeach/impeach_comment.js').collModel
 const impeach_image=require('H:/ss_vue_express/server_common/model/mongo/structure/impeach/impeach_image.js').collModel
+const impeach_comment_image=require('H:/ss_vue_express/server_common/model/mongo/structure/impeach/impeach_comment_image.js').collModel
+const impeach_comment=require('H:/ss_vue_express/server_common/model/mongo/structure/impeach/impeach_comment.js').collModel
+const impeach_attachment=require('H:/ss_vue_express/server_common/model/mongo/structure/impeach/impeach_attachment.js').collModel
+const impeach=require('H:/ss_vue_express/server_common/model/mongo/structure/impeach/impeach.js').collModel
 /*       static           */
 const like_dislike_static=require('H:/ss_vue_express/server_common/model/mongo/structure/static/like_dislike_static.js').collModel
 const user_resource_static=require('H:/ss_vue_express/server_common/model/mongo/structure/static/user_resource_static.js').collModel
@@ -72,11 +73,12 @@ module.exports={
     user_public_group,
     add_friend,
     /*       impeach           */
-    impeach,
     impeach_action,
-    impeach_attachment,
-    impeach_comment,
     impeach_image,
+    impeach_comment_image,
+    impeach_comment,
+    impeach_attachment,
+    impeach,
     /*       static           */
     like_dislike_static,
     user_resource_static,

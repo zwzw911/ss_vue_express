@@ -20,6 +20,9 @@ const mongoEnum=require('../../../enum/mongoEnum')
 /*              获得 某些设置值            */
 const maxNumber=require('../../../config/globalConfiguration').maxNumber
 
+const baseJSErrorCode=103250
+const baseMongoErrorCode=203250
+
 const impeach_comment= {
     //从session中获得
     authorId: {
@@ -50,6 +53,24 @@ const impeach_comment= {
         'arrayMaxLength': {define: maxNumber.impeachAttachment.maxImageNumber, error: {rc: 10576, msg: `评论中最多插入${maxNumber.impeachAttachment.maxImageNumber}个图片`}, mongoError: {rc: 20576, msg: `评论中最多插入${maxNumber.impeachAttachment.maxImageNumber}个图片`}},
         [ruleFiledName.FORMAT]: {define: regex.objectId, error: {rc: 10578, msg: '评论图片必须是objectId'}, mongoError: {rc: 20578, msg: '评论图片必须是objectId'}} //server端使用
     },
+
+    imagesNum: {
+        [otherRuleFiledName.CHINESE_NAME]: '图片总数量',
+        [otherRuleFiledName.DATA_TYPE]: serverDataType.INT,
+        [otherRuleFiledName.APPLY_RANGE]:[applyRange.CREATE,applyRange.UPDATE_SCALAR],
+        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:false,[applyRange.UPDATE_SCALAR]:false}, error: {rc: baseJSErrorCode+38, msg: '图片总数量不能为空'}, mongoError: {rc: baseMongoErrorCode+38, msg: '图片总数量不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        // [ruleFiledName.ENUM]:{define:Object.values(mongoEnum.ImpeachType.DB),error:{rc:10532},mongoError:{rc:20532,msg:'未知举报的对象'}},//server端使用
+        // [ruleFiledName.ENUM]:{define:enumValue.ImpeachType,error:{rc:10536,msg:'未知举报的对象'},mongoError:{rc:20536,msg:'未知举报的对象'}},//server端使用
+    },
+    imagesSizeInMb: {
+        [otherRuleFiledName.CHINESE_NAME]: '图片总大小',
+        [otherRuleFiledName.DATA_TYPE]: serverDataType.INT,
+        [otherRuleFiledName.APPLY_RANGE]:[applyRange.CREATE,applyRange.UPDATE_SCALAR],
+        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:false,[applyRange.UPDATE_SCALAR]:false}, error: {rc: baseJSErrorCode+40, msg: '图片总大小不能为空'}, mongoError: {rc: baseMongoErrorCode+40, msg: '图片总大小不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        // [ruleFiledName.ENUM]:{define:Object.values(mongoEnum.ImpeachType.DB),error:{rc:10532},mongoError:{rc:20532,msg:'未知举报的对象'}},//server端使用
+        // [ruleFiledName.ENUM]:{define:enumValue.ImpeachType,error:{rc:10536,msg:'未知举报的对象'},mongoError:{rc:20536,msg:'未知举报的对象'}},//server端使用
+    },
+
     //虽然mongodb中定义的是array+objectId，但是实际处理时，从client传递的只是objectId，所以定义的时候，只检查objectId
     impeachAttachmentsId: {
         [otherRuleFiledName.CHINESE_NAME]: '评论附件',
@@ -70,6 +91,8 @@ const impeach_comment= {
         // 'arrayMaxLength': {define: maxNumber.impeachAttachment.maxAttachmentNumber, error: {rc: 10582}, mongoError: {rc: 20582, msg: `评论中最多添加${maxNumber.impeachAttachment.maxAttachmentNumber}个附件`}},
         [ruleFiledName.ENUM]:{define:enumValue.DocumentStatus,error:{rc:10588,msg:'document状态不是预定义的值'},mongoError:{rc:20588,msg:'document状态不是预定义的值'}} //加密密码采用sha256，减少CPU负荷
     },
+
+
 }
 
 module.exports={

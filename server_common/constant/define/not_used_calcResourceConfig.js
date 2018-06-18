@@ -85,7 +85,7 @@ const calcResourceCriteria={
         ]
     },
     //用户在 所有 文档中的资源
-    [e_resourceRange.WHOLE_RESOURCE_PER_PERSON_FOR_ALL_ARTICLE]:({userId})=>{
+    [e_resourceRange.WHOLE_FILE_RESOURCE_PER_PERSON]:({userId})=>{
         return [
             {
                 collName:e_coll.USER_RESOURCE_STATIC,

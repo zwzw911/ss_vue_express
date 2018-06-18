@@ -21,8 +21,8 @@ const regex=require('../../../regex/regex').regex
 // const mongoEnum=require('../../../enum/mongo')
 const enumValue=require('../../../../constant/genEnum//enumValue')
 
-const baseJSErrorCode=103500
-const baseMongoErrorCode=203500
+const baseJSErrorCode=103600
+const baseMongoErrorCode=203600
 
 const impeach_image= {
     impeachId: {

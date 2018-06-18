@@ -1,4 +1,4 @@
-/*    gene by H:\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-6-8   */ 
+/*    gene by H:\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-6-12   */ 
  
 "use strict"
 const browserInputRule={
@@ -143,7 +143,7 @@ const browserInputRule={
             dataType:"string",
             applyRange:["create"],
             require:{"define":{"create":true},"error":{"rc":100506,"msg":"资源配置范围不能为空"},"mongoError":{"rc":200506,"msg":"资源配置范围不能为空"}},
-            enum:{"define":["1","10","12","14","16","18","20","22","24","26","28","30","32","34"],"error":{"rc":100508,"msg":"资源配置范围的类型不正确"},"mongoError":{"rc":200508,"msg":"资源配置范围的类型不正确"}},
+            enum:{"define":["1","10","12","18","20","22","24","26","28","30","32","34","36","38","39","40","41","42"],"error":{"rc":100508,"msg":"资源配置范围的类型不正确"},"mongoError":{"rc":200508,"msg":"资源配置范围的类型不正确"}},
         },
         type:{
             chineseName:"资源配置类型",
@@ -224,8 +224,6 @@ const browserInputRule={
             format:{"define":/^[\u4E00-\u9FFF\w]{2,20}$/,"error":{"rc":101402,"msg":"标签名必须由2-20个字符组成"},"mongoError":{"rc":201402,"msg":"标签名必须由2-20个字符组成"}},
         },
     },
-    article_like_dislike:{
-    },
     article:{
         name:{
             chineseName:"文档标题",
@@ -281,6 +279,15 @@ const browserInputRule={
             dataType:"boolean",
             applyRange:["create","update_scalar"],
             require:{"define":{"create":false,"update_scalar":false},"error":{"rc":101028,"msg":"文档分类不能为空"},"mongoError":{"rc":201028,"msg":"允许评论不能为空"}},
+        },
+    },
+    article_like_dislike:{
+        articleId:{
+            chineseName:"文档",
+            dataType:"objectId",
+            applyRange:["create"],
+            require:{"define":{"create":true},"error":{"rc":101300,"msg":"文档不能为空"},"mongoError":{"rc":201300,"msg":"文档不能为空"}},
+            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":101302,"msg":"文档必须是objectId"},"mongoError":{"rc":201302,"msg":"文档必须是objectId"}},
         },
     },
     member_penalize:{
@@ -432,59 +439,54 @@ const browserInputRule={
             format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":102102,"msg":"好友必须是objectId"},"mongoError":{"rc":202102,"msg":"好友必须是objectId"}},
         },
     },
+    impeach_image:{
+        impeachId:{
+            chineseName:"举报对象",
+            dataType:"objectId",
+            applyRange:["create"],
+            require:{"define":{"create":true},"error":{"rc":103500,"msg":"举报对象不能为空"},"mongoError":{"rc":203500,"msg":"举报对象不能为空"}},
+            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":103502,"msg":"举报对象必须是objectId"},"mongoError":{"rc":203502,"msg":"举报对象必须是objectId"}},
+        },
+    },
+    impeach_comment_image:{
+        impeachCommentId:{
+            chineseName:"举报处理",
+            dataType:"objectId",
+            applyRange:["create"],
+            require:{"define":{"create":true},"error":{"rc":103300,"msg":"举报处理不能为空"},"mongoError":{"rc":203300,"msg":"举报处理不能为空"}},
+            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":103302,"msg":"举报处理必须是objectId"},"mongoError":{"rc":203302,"msg":"举报处理必须是objectId"}},
+        },
+    },
     impeach:{
         title:{
             chineseName:"举报名",
             dataType:"string",
             applyRange:["create","update_scalar"],
-            require:{"define":{"create":true,"update_scalar":false},"error":{"rc":103100,"msg":"举报名不能为空"},"mongoError":{"rc":20500,"msg":"举报名不能为空"}},
-            minLength:{"define":2,"error":{"rc":103102,"msg":"举报名至少2个字符"},"mongoError":{"rc":20502,"msg":"举报名至少2个字符"}},
-            maxLength:{"define":50,"error":{"rc":103104,"msg":"举报名的长度不能超过50个字符"},"mongoError":{"rc":20504,"msg":"举报名的长度不能超过50个字符"}},
+            require:{"define":{"create":true,"update_scalar":false},"error":{"rc":103100,"msg":"举报名不能为空"},"mongoError":{"rc":203100,"msg":"举报名不能为空"}},
+            minLength:{"define":2,"error":{"rc":103102,"msg":"举报名至少2个字符"},"mongoError":{"rc":203102,"msg":"举报名至少2个字符"}},
+            maxLength:{"define":50,"error":{"rc":103104,"msg":"举报名的长度不能超过50个字符"},"mongoError":{"rc":203104,"msg":"举报名的长度不能超过50个字符"}},
         },
         content:{
             chineseName:"举报内容",
             dataType:"string",
             applyRange:["create","update_scalar"],
-            require:{"define":{"create":true,"update_scalar":false},"error":{"rc":103106,"msg":"举报内容不能为空"},"mongoError":{"rc":20506,"msg":"举报内容不能为空"}},
-            minLength:{"define":5,"error":{"rc":103108,"msg":"举报内容至少5个字符"},"mongoError":{"rc":20508,"msg":"举报内容至少5个字符"}},
-            maxLength:{"define":1999,"error":{"rc":103110,"msg":"举报内容的长度不能超过1999个字符"},"mongoError":{"rc":20510,"msg":"举报内容的长度不能超过1999个字符"}},
+            require:{"define":{"create":true,"update_scalar":false},"error":{"rc":103106,"msg":"举报内容不能为空"},"mongoError":{"rc":203106,"msg":"举报内容不能为空"}},
+            minLength:{"define":5,"error":{"rc":103108,"msg":"举报内容至少5个字符"},"mongoError":{"rc":203108,"msg":"举报内容至少5个字符"}},
+            maxLength:{"define":1999,"error":{"rc":103110,"msg":"举报内容的长度不能超过1999个字符"},"mongoError":{"rc":203110,"msg":"举报内容的长度不能超过1999个字符"}},
         },
         impeachedArticleId:{
             chineseName:"举报的文档",
             dataType:"objectId",
-            applyRange:["create","update_scalar"],
-            require:{"define":{"create":false,"update_scalar":false},"error":{"rc":103112,"msg":"举报的文档不能为空"},"mongoError":{"rc":20512,"msg":"举报的文档不能为空"}},
-            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":103114,"msg":"举报的文档必须是objectId"},"mongoError":{"rc":20514,"msg":"举报的文档必须是objectId"}},
+            applyRange:["create"],
+            require:{"define":{"create":false},"error":{"rc":103112,"msg":"举报的文档不能为空"},"mongoError":{"rc":203112,"msg":"举报的文档不能为空"}},
+            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":103114,"msg":"举报的文档必须是objectId"},"mongoError":{"rc":203114,"msg":"举报的文档必须是objectId"}},
         },
         impeachedCommentId:{
             chineseName:"举报的评论",
             dataType:"objectId",
-            applyRange:["create","update_scalar"],
-            require:{"define":{"create":false,"update_scalar":false},"error":{"rc":103116,"msg":"举报的评论不能为空"},"mongoError":{"rc":20516,"msg":"举报的评论不能为空"}},
-            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":10518,"msg":"举报的评论必须是objectId"},"mongoError":{"rc":20518,"msg":"举报的评论必须是objectId"}},
-        },
-    },
-    impeach_action:{
-        impeachId:{
-            chineseName:"举报",
-            dataType:"objectId",
             applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":10590,"msg":"举报不能为空"},"mongoError":{"rc":20590,"msg":"举报不能为空"}},
-            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":10592,"msg":"举报必须是objectId"},"mongoError":{"rc":20592,"msg":"举报必须是objectId"}},
-        },
-        adminOwnerId:{
-            chineseName:"处理人",
-            dataType:"objectId",
-            applyRange:["create"],
-            require:{"define":{"create":false},"error":{"rc":10594,"msg":"处理人不能为空"},"mongoError":{"rc":20594,"msg":"处理人不能为空"}},
-            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":10596,"msg":"处理人必须是objectId"},"mongoError":{"rc":20596,"msg":"处理人必须是objectId"}},
-        },
-        action:{
-            chineseName:"操作",
-            dataType:"string",
-            applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":10598,"msg":"操作不能为空"},"mongoError":{"rc":20598,"msg":"操作不能为空"}},
-            enum:{"define":["1","2","3","4","5","6","7"],"error":{"rc":10092,"msg":"未知操作"},"mongoError":{"rc":20092,"msg":"未知操作"}},
+            require:{"define":{"create":false},"error":{"rc":103116,"msg":"举报的评论不能为空"},"mongoError":{"rc":203116,"msg":"举报的评论不能为空"}},
+            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":103118,"msg":"举报的评论必须是objectId"},"mongoError":{"rc":203118,"msg":"举报的评论必须是objectId"}},
         },
     },
     impeach_comment:{
@@ -492,33 +494,42 @@ const browserInputRule={
             chineseName:"举报",
             dataType:"objectId",
             applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":10560,"msg":"举报不能为空"},"mongoError":{"rc":20560,"msg":"举报不能为空"}},
-            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":10562,"msg":"举报必须是objectId"},"mongoError":{"rc":20562,"msg":"举报必须是objectId"}},
+            require:{"define":{"create":true},"error":{"rc":103200,"msg":"举报不能为空"},"mongoError":{"rc":203200,"msg":"举报不能为空"}},
+            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":103202,"msg":"举报必须是objectId"},"mongoError":{"rc":203202,"msg":"举报必须是objectId"}},
         },
         content:{
             chineseName:"评论内容",
             dataType:"string",
             applyRange:["create","update_scalar"],
-            require:{"define":{"create":false,"update_scalar":false},"error":{"rc":10564,"msg":"评论内容不能为空"},"mongoError":{"rc":20564,"msg":"评论内容不能为空"}},
-            minLength:{"define":15,"error":{"rc":10566,"msg":"评论内容至少15个字符"},"mongoError":{"rc":20566,"msg":"评论内容至少15个字符"}},
-            maxLength:{"define":140,"error":{"rc":10568,"msg":"评论内容不能超过140个字符"},"mongoError":{"rc":20568,"msg":"评论内容不能超过140个字符"}},
+            require:{"define":{"create":false,"update_scalar":false},"error":{"rc":103204,"msg":"评论内容不能为空"},"mongoError":{"rc":203204,"msg":"评论内容不能为空"}},
+            minLength:{"define":15,"error":{"rc":103206,"msg":"评论内容至少15个字符"},"mongoError":{"rc":203206,"msg":"评论内容至少15个字符"}},
+            maxLength:{"define":140,"error":{"rc":103208,"msg":"评论内容不能超过140个字符"},"mongoError":{"rc":203208,"msg":"评论内容不能超过140个字符"}},
         },
     },
-    impeach_image:{
-        referenceId:{
-            chineseName:"举报对象",
+    impeach_action:{
+        impeachId:{
+            chineseName:"举报",
             dataType:"objectId",
             applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":10634,"msg":"举报对象不能为空"},"mongoError":{"rc":20634,"msg":"举报对象不能为空"}},
-            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":10636,"msg":"举报对象必须是objectId"},"mongoError":{"rc":20636,"msg":"举报对象必须是objectId"}},
+            require:{"define":{"create":true},"error":{"rc":103400,"msg":"举报不能为空"},"mongoError":{"rc":203400,"msg":"举报不能为空"}},
+            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":103402,"msg":"举报必须是objectId"},"mongoError":{"rc":203402,"msg":"举报必须是objectId"}},
         },
-        referenceColl:{
-            chineseName:"举报对象类型",
+        adminOwnerId:{
+            chineseName:"处理人",
+            dataType:"objectId",
+            applyRange:["create"],
+            require:{"define":{"create":false},"error":{"rc":103404,"msg":"处理人不能为空"},"mongoError":{"rc":203404,"msg":"处理人不能为空"}},
+            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":103406,"msg":"处理人必须是objectId"},"mongoError":{"rc":203406,"msg":"处理人必须是objectId"}},
+        },
+        action:{
+            chineseName:"操作",
             dataType:"string",
             applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":10638,"msg":"举报对象类型不能为空"},"mongoError":{"rc":20638,"msg":"举报对象类型不能为空"}},
-            enum:{"define":["1","2"],"error":{"rc":10539,"msg":"举报对象的类型未知"},"mongoError":{"rc":20539,"msg":"举报对象的类型未知"}},
+            require:{"define":{"create":true},"error":{"rc":103408,"msg":"操作不能为空"},"mongoError":{"rc":203408,"msg":"操作不能为空"}},
+            enum:{"define":["1","2","3","4","5","6","7"],"error":{"rc":103410,"msg":"未知操作"},"mongoError":{"rc":203410,"msg":"未知操作"}},
         },
+    },
+    impeach_attachment:{
     },
     user_resource_profile:{
         userId:{

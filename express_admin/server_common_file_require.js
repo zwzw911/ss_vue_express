@@ -24,6 +24,8 @@ const controllerInputValueLogicCheck=require('../server_common/controller/contro
 const controllerPreCheck=require('../server_common/controller/controllerPreCheck.js')
 const resourceCheck=require('../server_common/controller/resourceCheck.js')
 const dataConvert=require('../server_common/controller/dataConvert.js')
+const fileResourceCalc=require('../server_common/controller/fileResourceCalc.js')
+const numOnlyResourceCalc=require('../server_common/controller/numOnlyResourceCalc.js')
 const array=require('../server_common/function/assist/array.js')
 const awesomeCaptcha=require('../server_common/function/assist/awesomeCaptcha.js')
 const file=require('../server_common/function/assist/file.js')
@@ -41,19 +43,22 @@ const interval=require('../server_common/function/security/interval.js')
 const supervisor=require('../server_common/function/supervisor/supervisor.js')
 const validateSearchFormat=require('../server_common/function/validateInput/validateSearchFormat.js')
 const validateHelper=require('../server_common/function/validateInput/validateHelper.js')
-const validateFormat=require('../server_common/function/validateInput/validateFormat.js')
 const validateValue=require('../server_common/function/validateInput/validateValue.js')
+const validateFormat=require('../server_common/function/validateInput/validateFormat.js')
 const db_operation_helper=require('../server_common/Test/db_operation_helper.js')
 const testData=require('../server_common/Test/testData.js')
 const generateTestData=require('../server_common/Test/generateTestData.js')
 const misc_helper=require('../server_common/Test/misc_helper.js')
 const friend_group_API=require('../server_common/Test/API/express/friend_group_API.js')
-const impeach_and_comment_API=require('../server_common/Test/API/express/impeach_and_comment_API.js')
 const user_API=require('../server_common/Test/API/express/user_API.js')
 const penalize_API=require('../server_common/Test/API/express/penalize_API.js')
 const folder_API=require('../server_common/Test/API/express/folder_API.js')
 const add_friend_API=require('../server_common/Test/API/express/add_friend_API.js')
 const article_API=require('../server_common/Test/API/express/article_API.js')
+const impeachComment_API=require('../server_common/Test/API/express/impeachComment_API.js')
+const impeach_API=require('../server_common/Test/API/express/impeach_API.js')
+const impeach_and_comment_API_backup=require('../server_common/Test/API/express/impeach_and_comment_API_backup.js')
+const impeachAction_API=require('../server_common/Test/API/express/impeachAction_API.js')
 const admin_user_API=require('../server_common/Test/API/express_admin/admin_user_API.js')
 const common_API=require('../server_common/Test/API/common_API.js')
 const article_component_function=require('../server_common/Test/component_function/express/article_component_function.js')
@@ -93,6 +98,8 @@ module.exports={
     controllerPreCheck,
     resourceCheck,
     dataConvert,
+    fileResourceCalc,
+    numOnlyResourceCalc,
     array,
     awesomeCaptcha,
     file,
@@ -110,19 +117,22 @@ module.exports={
     supervisor,
     validateSearchFormat,
     validateHelper,
-    validateFormat,
     validateValue,
+    validateFormat,
     db_operation_helper,
     testData,
     generateTestData,
     misc_helper,
     friend_group_API,
-    impeach_and_comment_API,
     user_API,
     penalize_API,
     folder_API,
     add_friend_API,
     article_API,
+    impeachComment_API,
+    impeach_API,
+    impeach_and_comment_API_backup,
+    impeachAction_API,
     admin_user_API,
     common_API,
     article_component_function,

@@ -216,7 +216,7 @@ async function article_dispatcher_async({req}) {
                 }
                 await controllerPreCheck.userStateCheck_async({req: req,userLoginCheck: userLoginCheck,penalizeCheck: penalizeCheck})
                 // ap.inf('create use userStateCheck_async done')
-                expectedPart = [e_part.RECORD_INFO, e_part.RECORD_ID]
+                expectedPart = [e_part.RECORD_ID,e_part.RECORD_INFO]
                 //是否为期望的part
                 result = controllerPreCheck.inputCommonCheck({req: req, expectedPart: expectedPart})
                 if (result.rc > 0) {return Promise.reject(result)}

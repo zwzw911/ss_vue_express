@@ -160,6 +160,7 @@ function inputCommonCheck({req,expectedPart}){
     if(result.rc>0){return result}
 
     //检查expectedPart中设定的部分是否valid，且其值格式是否正确
+    // ap.wrn('req.body.values',req.body.values)
     result=validateFormat.validatePartFormat(req.body.values,expectedPart)
     return result
 }

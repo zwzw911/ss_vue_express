@@ -19,10 +19,10 @@ const regex=require('../../../regex/regex').regex
 const uploadFileDefine=require('../../../config/globalConfiguration').uploadFileDefine
 const e_uploadFileDefinitionFieldName=require(`../../../../constant/enum/nodeEnum`).UploadFileDefinitionFieldName
 
-const baseJSErrorCode=103550
-const baseMongoErrorCode=203550
+const baseJSErrorCode=103350
+const baseMongoErrorCode=203350
 
-const impeach_image= {
+const impeach_comment_image= {
     name: {
         [otherRuleFiledName.CHINESE_NAME]: '举报图片名称',
         [otherRuleFiledName.DATA_TYPE]: serverDataType.STRING,
@@ -75,5 +75,5 @@ const impeach_image= {
 }
 
 module.exports={
-    impeach_image
+    impeach_comment_image
 }

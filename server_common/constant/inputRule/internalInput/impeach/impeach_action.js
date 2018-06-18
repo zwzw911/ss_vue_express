@@ -22,6 +22,9 @@ const collNameForFK=require('../../../../constant/enum/collEnum').collNameForFK
 /*              获得 某些设置值            */
 // const maxNumber=require('../../../config/globalConfiguration').maxNumber
 
+const baseJSErrorCode=103450
+const baseMongoErrorCode=203450
+
 const impeach_action= {
 /*    impeachId: {
         [otherRuleFiledName.CHINESE_NAME]: '举报',
@@ -36,21 +39,21 @@ const impeach_action= {
         [otherRuleFiledName.CHINESE_NAME]: '状态改变人',
         [otherRuleFiledName.DATA_TYPE]: serverDataType.OBJECT_ID,
         [otherRuleFiledName.APPLY_RANGE]:[applyRange.CREATE],
-        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true}, error: {rc: 10598, msg: '状态改变人不能为空'}, mongoError: {rc: 20598, msg: '状态改变人不能为空'}},//默认为空对象
+        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true}, error: {rc: baseJSErrorCode, msg: '状态改变人不能为空'}, mongoError: {rc: baseMongoErrorCode, msg: '状态改变人不能为空'}},//默认为空对象
         // 'arrayMinLength': {define: 1, error: {rc: 10002}, mongoError: {rc: 20002, msg: '至少设置1个标签'}},
         //'arrayMaxLength': {define: maxNumber.impeach.maxAttachmentNumber, error: {rc: 10004}, mongoError: {rc: 20004, msg: `最多添加${maxNumber.impeach.maxAttachmentNumber}个附件`}},
-        [ruleFiledName.FORMAT]: {define: regex.objectId, error: {rc: 10600, msg: '状态改变人必须是objectId'}, mongoError: {rc: 20600, msg: '状态改变人必须是objectId'}} //server端使用
+        [ruleFiledName.FORMAT]: {define: regex.objectId, error: {rc: baseJSErrorCode+2, msg: '状态改变人必须是objectId'}, mongoError: {rc: baseMongoErrorCode+2, msg: '状态改变人必须是objectId'}} //server端使用
     },
     //处理人所在coll（通过enum限定可取的coll name）
     creatorColl: {
         [otherRuleFiledName.CHINESE_NAME]: '状态改变人表',
         [otherRuleFiledName.DATA_TYPE]: serverDataType.STRING,
         [otherRuleFiledName.APPLY_RANGE]:[applyRange.CREATE],
-        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true}, error: {rc: 10594, msg: '状态改变人表不能为空'}, mongoError: {rc: 20594, msg: '状态改变人表不能为空'}},//默认为空对象
+        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true}, error: {rc: baseJSErrorCode+4, msg: '状态改变人表不能为空'}, mongoError: {rc: baseMongoErrorCode+4, msg: '状态改变人表不能为空'}},//默认为空对象
         // 'arrayMinLength': {define: 1, error: {rc: 10002}, mongoError: {rc: 20002, msg: '至少设置1个标签'}},
         //'arrayMaxLength': {define: maxNumber.impeach.maxAttachmentNumber, error: {rc: 10004}, mongoError: {rc: 20004, msg: `最多添加${maxNumber.impeach.maxAttachmentNumber}个附件`}},
         // [ruleFiledName.FORMAT]: {define: regex.objectId, error: {rc: 10596}, mongoError: {rc: 20596, msg: '状态改变人表必须是objectId'}} //server端使用
-        [ruleFiledName.ENUM]:{define:collNameForFK.impeach_state.dealerColl,error:{rc:10092,msg:'受罚子类型不正确'},mongoError:{rc:20092,msg:'受罚子类型不正确'}},//server端使用
+        [ruleFiledName.ENUM]:{define:collNameForFK.impeach_state.dealerColl,error:{rc:baseJSErrorCode+6,msg:'受罚子类型不正确'},mongoError:{rc:baseMongoErrorCode+6,msg:'受罚子类型不正确'}},//server端使用
     },
 /*    state:{
         [otherRuleFiledName.CHINESE_NAME]: '状态',

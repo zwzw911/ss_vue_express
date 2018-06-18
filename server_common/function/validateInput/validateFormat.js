@@ -67,6 +67,9 @@ function  validatePartFormat (inputValue,expectedParts){
     //1  inputValue的数量是否等于expectedParts的数量
     let inputValueKeyNum=Object.keys(inputValue).length
     let expectedPartsNum=expectedParts.length
+    // ap.inf('inputValue',inputValue)
+    // ap.inf('inputValueKeyNum',inputValueKeyNum)
+    // ap.inf('expectedPartsNum',expectedPartsNum)
     if(inputValueKeyNum!==expectedPartsNum){
         return validateFormatError.inputValuePartNumNotExpected
     }

@@ -197,24 +197,24 @@ describe('article login:',async  function() {
             await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:adminRootSess,data:data,expectedErrorRc:expectedErrorRc,app:app})
         })
         it('1.2 user1 add too many new article', async function () {
-            let originalSetting=await db_operation_helper.getResourceProfileSetting_async({resourceRange:e_resourceRange.MAX_NEW_ARTICLE,resourceType:e_resourceType.BASIC})
-            await db_operation_helper.changeResourceProfileSetting_async({resourceRange:e_resourceRange.MAX_NEW_ARTICLE,resourceType:e_resourceType.BASIC,num:0})
+            let originalSetting=await db_operation_helper.getResourceProfileSetting_async({resourceRange:e_resourceRange.MAX_NEW_ARTICLE_PER_USER,resourceType:e_resourceType.BASIC})
+            await db_operation_helper.changeResourceProfileSetting_async({resourceRange:e_resourceRange.MAX_NEW_ARTICLE_PER_USER,resourceType:e_resourceType.BASIC,num:0})
 
             expectedErrorRc=resourceCheckError.ifEnoughResource_async.totalNewArticleNumExceed({}).rc
             await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
 
             //恢复原始设置
-            await db_operation_helper.changeResourceProfileSetting_async({resourceRange:e_resourceRange.MAX_NEW_ARTICLE,resourceType:e_resourceType.BASIC,num:originalSetting['num'],size:originalSetting['size']})
+            await db_operation_helper.changeResourceProfileSetting_async({resourceRange:e_resourceRange.MAX_NEW_ARTICLE_PER_USER,resourceType:e_resourceType.BASIC,num:originalSetting['num'],size:originalSetting['size']})
         })
         it('1.3 user1 add too many  article', async function () {
-            let originalSetting=await db_operation_helper.getResourceProfileSetting_async({resourceRange:e_resourceRange.MAX_ARTICLE,resourceType:e_resourceType.BASIC})
-            await db_operation_helper.changeResourceProfileSetting_async({resourceRange:e_resourceRange.MAX_ARTICLE,resourceType:e_resourceType.BASIC,num:0})
+            let originalSetting=await db_operation_helper.getResourceProfileSetting_async({resourceRange:e_resourceRange.MAX_ARTICLE_PER_USER,resourceType:e_resourceType.BASIC})
+            await db_operation_helper.changeResourceProfileSetting_async({resourceRange:e_resourceRange.MAX_ARTICLE_PER_USER,resourceType:e_resourceType.BASIC,num:0})
 
             expectedErrorRc=resourceCheckError.ifEnoughResource_async.totalArticleNumExceed({}).rc
             await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
 
             //恢复原始设置
-            await db_operation_helper.changeResourceProfileSetting_async({resourceRange:e_resourceRange.MAX_ARTICLE,resourceType:e_resourceType.BASIC,num:originalSetting['num'],size:originalSetting['size']})
+            await db_operation_helper.changeResourceProfileSetting_async({resourceRange:e_resourceRange.MAX_ARTICLE_PER_USER,resourceType:e_resourceType.BASIC,num:originalSetting['num'],size:originalSetting['size']})
         })
     })
     describe('update article:',async  function() {

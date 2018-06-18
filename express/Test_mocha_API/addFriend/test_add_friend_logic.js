@@ -204,7 +204,7 @@ describe('add friend logic', async function() {
             // copyNormalRecord[e_field.ADD_FRIEND.]
             data.values[e_part.SINGLE_FIELD]=normalRecord
             // data.values[e_part.METHOD]=e_method.CREATE
-            expectedErrorRc=controllerCheckerError.compoundFieldHasMultipleDuplicateRecord({arr_compoundField:compound_unique_field_config[e_coll.ADD_FRIEND]['unique_group_name_for_user']}).rc
+            expectedErrorRc=controllerCheckerError.compoundFieldHasMultipleDuplicateRecord({singleCompoundFieldName:'unique_group_name_for_user',collName:e_coll.ADD_FRIEND}).rc
             await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
             // normalRecord[e_field.IMPEACH_ACTION.ACTION]=e_impeachUserAction.SUBMIT
         });
@@ -232,8 +232,8 @@ describe('add friend logic', async function() {
             // normalRecord[e_field.IMPEACH_ACTION.ACTION]=e_impeachUserAction.SUBMIT
         });
         it('5.1 create:user1 try to add friend user2 , exceed profile defined', async function() {
-            let originalSetting=await db_operation_helper.getResourceProfileSetting_async({resourceRange:e_resourceRange.MAX_UNTREATED_ADD_FRIEND_REQUEST,resourceType:e_resourceType.BASIC})
-            await db_operation_helper.changeResourceProfileSetting_async({resourceRange:e_resourceRange.MAX_UNTREATED_ADD_FRIEND_REQUEST,resourceType:e_resourceType.BASIC,num:0})
+            let originalSetting=await db_operation_helper.getResourceProfileSetting_async({resourceRange:e_resourceRange.MAX_UNTREATED_ADD_FRIEND_REQUEST_PER_USER,resourceType:e_resourceType.BASIC})
+            await db_operation_helper.changeResourceProfileSetting_async({resourceRange:e_resourceRange.MAX_UNTREATED_ADD_FRIEND_REQUEST_PER_USER,resourceType:e_resourceType.BASIC,num:0})
             data.values={}
             normalRecord={}
             normalRecord[e_field.ADD_FRIEND.RECEIVER]=user2IdCryptedByUser1
@@ -244,7 +244,7 @@ describe('add friend logic', async function() {
             ap.inf('expectedErrorRc',expectedErrorRc)
             await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
             //恢复原始设置
-            await db_operation_helper.changeResourceProfileSetting_async({resourceRange:e_resourceRange.MAX_UNTREATED_ADD_FRIEND_REQUEST,resourceType:e_resourceType.BASIC,num:originalSetting['num'],size:originalSetting['size']})
+            await db_operation_helper.changeResourceProfileSetting_async({resourceRange:e_resourceRange.MAX_UNTREATED_ADD_FRIEND_REQUEST_PER_USER,resourceType:e_resourceType.BASIC,num:originalSetting['num'],size:originalSetting['size']})
         });
         /***            update      ****/
         it('10.1 update:userType check, admin not allow for create', async function() {

@@ -16,7 +16,7 @@ const connectedDb=require('../../common/connection').dbSS;
 const mongoSetting=require('../../common/configuration')
 
 // const browserInputRule=require('../../../../constant/inputRule/browserInput/impeach/im').article
-const internalInputRule=require('../../../../constant/inputRule/internalInput/impeach/impeach_attachment').impeach_attachment
+const internalInputRule=require('../../../../constant/inputRule/internalInput/impeach/impeach_image').impeach_image
 //根据inputRule的rule设置，对mongoose设置内建validator
 const collInputRule=internalInputRule
 
@@ -36,14 +36,15 @@ const assist=require('../../common/assist')
 * */
 
 /*                           department                        */
-const collName='impeach_attachment'
-/**     只有impeach有附件    **/
+const collName='impeach_comment_image'
+
 const collFieldDefine={
     name:{type:String,},
     hashName:{type:String,},
     pathId:{type:mongoose.Schema.Types.ObjectId,ref:"path"},
     sizeInMb:{type:Number}, //
-    impeachId:{type:mongoose.Schema.Types.ObjectId,ref:'impeach'},//冗余字段，方便查询，统计。impeach和impeach_comment共用
+    impeachCommentId:{type:mongoose.Schema.Types.ObjectId,ref:'impeach_comment'},//冗余字段，方便查询，统计。impeach和impeach_comment共用
+    //referenceColl:{type:String},//区分image属于impeach还是impeach_comment
     authorId:{type:mongoose.Schema.Types.ObjectId,ref:"user"}, //
     cDate:{type:Date,default:Date.now},
     uDate:{type:Date,default:Date.now},

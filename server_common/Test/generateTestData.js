@@ -20,6 +20,7 @@ async function getUserCryptedUserId_async({app,adminApp}){
         userData: testData.user.user1,
         app: app
     })
+
     user1Id = user1Info[`userId`]
     user1Sess = user1Info[`sess`]
     // ap.inf('user1Info',user1Info)

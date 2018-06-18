@@ -26,11 +26,12 @@ const Coll={
     USER_PUBLIC_GROUP:'user_public_group',
     ADD_FRIEND:'add_friend',
     /*       impeach           */
-    IMPEACH:'impeach',
     IMPEACH_ACTION:'impeach_action',
-    IMPEACH_ATTACHMENT:'impeach_attachment',
-    IMPEACH_COMMENT:'impeach_comment',
     IMPEACH_IMAGE:'impeach_image',
+    IMPEACH_COMMENT_IMAGE:'impeach_comment_image',
+    IMPEACH_COMMENT:'impeach_comment',
+    IMPEACH_ATTACHMENT:'impeach_attachment',
+    IMPEACH:'impeach',
     /*       static           */
     LIKE_DISLIKE_STATIC:'like_dislike_static',
     USER_RESOURCE_STATIC:'user_resource_static',

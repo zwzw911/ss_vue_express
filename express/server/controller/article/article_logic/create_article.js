@@ -121,7 +121,7 @@ async  function createArticle_async({req,applyRange}){
         // [e_inputValueLogicCheckStep.COMPOUND_VALUE_UNIQUE]:{flag:true,optionalParam:{compoundFiledValueUniqueCheckAdditionalCheckCondition:undefined}},
         //Object，配置resourceCheck的一些参数,{requiredResource,resourceProfileRange,userId,containerId}
         /*** 新建文档/所有文档数量 ***/
-        [e_inputValueLogicCheckStep.RESOURCE_USAGE]:{flag:true,optionalParam:{resourceUsageOption:{requiredResource:{[e_resourceFieldName.USED_NUM]:1},resourceProfileRange:[e_resourceRange.MAX_NEW_ARTICLE,e_resourceRange.MAX_ARTICLE],userId:userId,containerId:undefined}}},
+        [e_inputValueLogicCheckStep.RESOURCE_USAGE]:{flag:true,optionalParam:{resourceUsageOption:{requiredResource:{[e_resourceFieldName.USED_NUM]:1},resourceProfileRange:[e_resourceRange.MAX_NEW_ARTICLE_PER_USER,e_resourceRange.MAX_ARTICLE_PER_USER],userId:userId,containerId:undefined}}},
     }
     await controllerInputValueLogicCheck.inputValueLogicValidCheck_async({commonParam:commonParam,stepParam:stepParam})
 

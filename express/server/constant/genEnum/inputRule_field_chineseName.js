@@ -49,8 +49,6 @@ const ChineseName={
     tag:{
         'name':'标签名称',
     },
-    article_like_dislike:{
-    },
     article:{
         'name':'文档标题',
         'status':'文档状态',
@@ -67,6 +65,11 @@ const ChineseName={
         'attachmentsSizeInMb':'文档附件总大小',
         'imagesNum':'文档图片总数',
         'imagesSizeInMb':'文档图片总大小',
+    },
+    article_like_dislike:{
+        'articleId':'文档',
+        'authorId':'提交者',
+        'like':'喜欢',
     },
     member_penalize:{
         'publicGroupId':'群',
@@ -106,6 +109,22 @@ const ChineseName={
         'originator':'发起人',
         'status':'当前请求所处状态',
     },
+    impeach_image:{
+        'impeachId':'举报对象',
+        'name':'举报图片名称',
+        'hashName':'举报图片名称',
+        'pathId':'存储路径',
+        'sizeInMb':'图片大小',
+        'authorId':'图片上传者',
+    },
+    impeach_comment_image:{
+        'impeachCommentId':'举报处理',
+        'name':'举报图片名称',
+        'hashName':'举报图片名称',
+        'pathId':'存储路径',
+        'sizeInMb':'图片大小',
+        'authorId':'图片上传者',
+    },
     impeach:{
         'title':'举报名',
         'content':'举报内容',
@@ -117,8 +136,23 @@ const ChineseName={
         'impeachImagesId':'举报图片',
         'impeachAttachmentsId':'举报附件',
         'impeachCommentsId':'留言',
-        'currentState':'当前状态',
+        'currentState':'当前处理状态',
         'currentAdminOwnerId':'当前处理人',
+        'imagesNum':'图片总数量',
+        'imagesSizeInMb':'图片总大小',
+        'attachmentsNum':'附件总数量',
+        'attachmentsSizeInMb':'附件总大小',
+    },
+    impeach_comment:{
+        'impeachId':'举报',
+        'content':'评论内容',
+        'authorId':'评论作者',
+        'adminAuthorId':'评论作者',
+        'impeachImagesId':'评论图片',
+        'imagesNum':'图片总数量',
+        'imagesSizeInMb':'图片总大小',
+        'impeachAttachmentsId':'评论附件',
+        'documentStatus':'记录状态',
     },
     impeach_action:{
         'impeachId':'举报',
@@ -127,23 +161,12 @@ const ChineseName={
         'creatorId':'状态改变人',
         'creatorColl':'状态改变人表',
     },
-    impeach_comment:{
-        'impeachId':'举报',
-        'content':'评论内容',
-        'authorId':'评论作者',
-        'adminAuthorId':'评论作者',
-        'impeachImagesId':'评论图片',
-        'impeachAttachmentsId':'评论附件',
-        'documentStatus':'记录状态',
-    },
-    impeach_image:{
-        'referenceId':'举报对象',
-        'referenceColl':'举报对象类型',
-        'name':'举报图片名称',
-        'hashName':'举报图片名称',
+    impeach_attachment:{
+        'name':'举报附件名称',
+        'hashName':'举报附件名称',
+        'authorId':'附件上传者',
+        'sizeInMb':'附件大小',
         'pathId':'存储路径',
-        'sizeInMb':'图片大小',
-        'authorId':'图片上传者',
     },
     user:{
         'name':'昵称',
@@ -205,13 +228,6 @@ const ChineseName={
     user_public_group:{
         'userId':'用户',
         'currentJoinGroup':'用户所处群',
-    },
-    impeach_attachment:{
-        'name':'举报附件名称',
-        'hashName':'举报附件名称',
-        'authorId':'附件上传者',
-        'sizeInMb':'附件大小',
-        'pathId':'存储路径',
     },
     like_dislike_static:{
         'articleId':'文档',

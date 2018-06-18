@@ -17,16 +17,19 @@ const e_dbModel=require(`../constant/genEnum/dbModel`)
 const e_resourceFieldName=require(`../constant/enum/nodeEnum`).ResourceFieldName
 const e_resourceConfigFieldName=require(`../constant/enum/nodeEnum`).ResourceConfigFieldName
 
-const e_addFriendStatus=require('../constant/enum/mongoEnum').AddFriendStatus.DB
-const e_articleStatus=require('../constant/enum/mongoEnum').ArticleStatus.DB
-// const e_=require('../constant/enum/mongoEnum').ResourceRange.DB
+
+
+
 // const e_resourceType=require(`../constant/enum/mongoEnum`).ResourceType.DB
 
 const e_resourceRange=require(`../constant/enum/mongoEnum`).ResourceRange.DB
 /**********************************************************/
 /******************  普通函数     ***********************/
 /**********************************************************/
+const fileResourceCalc=require('./fileResourceCalc')
+const numOnlyResourceCalc=require('./numOnlyResourceCalc')
 const recordInternalError_async=require('../function/supervisor/supervisor').recordInternalError_async
+
 /**********************************************************/
 /******************  db操作函数     ***********************/
 /**********************************************************/
@@ -37,141 +40,20 @@ const common_operation_model=require('../model/mongo/operation/common_operation_
 /**********************************************************/
 const helperError=require('../constant/error/controller/helperError')
 
-//日常：计算总体(total)资源，并存入user_resource_static,修正可能出现的资源统计错误
-//当前只计算用户的article中的image和attachment的总数，以便确定用户总的使用空间
-// const daily={
-//     [e_resourceType.ARTICLE_IMAGE]:function({arr_userId}){
-//         let config={
-//             [e_resourceConfigFieldName.COLL_NAME]:e_coll.ARTICLE_IMAGE,
-//             [e_resourceConfigFieldName.RESOURCE_TYPE]:e_resourceType.ARTICLE_IMAGE,
-//             [e_resourceConfigFieldName.DB_MODEL]:e_dbModel.article_image,
-//             [e_resourceConfigFieldName.RAW_DOC_GROUP]:{
-//                 _id:`$${[e_field.ARTICLE_IMAGE.AUTHOR_ID]}`,
-//                 [e_resourceFieldName.TOTAL_FILE_SIZE_IN_MB]:{$sum:`$${e_field.ARTICLE_IMAGE.SIZE_IN_MB}`},
-//                 [e_resourceFieldName.MAX_FILE_NUM]:{$sum:1}
-//             }
-//         }
-//         if(undefined!==arr_userId && arr_userId.length>0){
-//             config[e_resourceConfigFieldName.RAW_DOC_FILTER]={[e_field.ARTICLE_IMAGE.AUTHOR_ID]:{$in:arr_userId}}
-//         }
-//         return config
-//     },
-//     [e_resourceType.ARTICLE_ATTACHMENT]:function({arr_userId}){
-//         let config={
-//             [e_resourceConfigFieldName.COLL_NAME]:e_coll.ARTICLE_ATTACHMENT,
-//             [e_resourceConfigFieldName.RESOURCE_TYPE]:e_resourceType.ARTICLE_ATTACHMENT,
-//             [e_resourceConfigFieldName.DB_MODEL]:e_dbModel.article_image,
-//             [e_resourceConfigFieldName.RAW_DOC_GROUP]:{
-//                 _id:`$${[e_field.ARTICLE_ATTACHMENT.AUTHOR_ID]}`,
-//                 [e_resourceFieldName.TOTAL_FILE_SIZE_IN_MB]:{$sum:`$${e_field.ARTICLE_ATTACHMENT.SIZE_IN_MB}`},
-//                 [e_resourceFieldName.MAX_FILE_NUM]:{$sum:1}
-//             }
-//         }
-//         if(undefined!==arr_userId && arr_userId.length>0){
-//             config[e_resourceConfigFieldName.RAW_DOC_FILTER]={[e_field.ARTICLE_IMAGE.AUTHOR_ID]:{$in:arr_userId}}
-//         }
-//         return config
-//     }
-// }
 
-// const calcResourceCriteria={
-//     //用户在 单个 文档中的图片：需要实时获得
-//     /*[e_resourceRange.IMAGE_PER_ARTICLE]:({articleId})=>{
-//         return [
-//             {
-//                 collName:e_coll.ARTICLE_IMAGE,
-//                 match:{
-//                     [e_field.ARTICLE_IMAGE.ARTICLE_ID]:articleId
-//                 },
-//                 group:{
-//                     _id:`$${[e_field.ARTICLE_IMAGE.ARTICLE_ID]}`,
-//                     [e_resourceFieldName.TOTAL_FILE_SIZE_IN_MB]:{$sum:`$${e_field.ARTICLE_IMAGE.SIZE_IN_MB}`},
-//                     [e_resourceFieldName.MAX_FILE_NUM]:{$sum:1}
-//                 },
-//             }
-//         ]
-//     },
-//     //用户在 单个 文档中的附件：需要实时获得
-//     [e_resourceRange.ATTACHMENT_PER_ARTICLE]:({articleId})=>{
-//         return [
-//             {
-//                 collName:e_coll.ARTICLE_ATTACHMENT,
-//                 match:{
-//                     [e_field.ARTICLE_ATTACHMENT.ARTICLE_ID]:articleId
-//                 },
-//                 group:{
-//                     _id:`$${[e_field.ARTICLE_ATTACHMENT.ARTICLE_ID]}`,
-//                     [e_resourceFieldName.TOTAL_FILE_SIZE_IN_MB]:{$sum:`$${e_field.ARTICLE_ATTACHMENT.SIZE_IN_MB}`},
-//                     [e_resourceFieldName.MAX_FILE_NUM]:{$sum:1}
-//                 },
-//             }
-//         ]
-//     },*/
-//     //用户在 所有 文档中的资源，直接读取user_resource_static的内容
-//     [e_resourceRange.WHOLE_RESOURCE_PER_PERSON_FOR_ALL_ARTICLE]:({userId})=>{
-//         return [
-//             {
-//                 collName:e_coll.USER_RESOURCE_STATIC,
-//                 match:{
-//                     [e_field.USER_RESOURCE_STATIC.USER_ID]:userId
-//                 },
-//                 group:{
-//                     _id:`$${[e_field.USER_RESOURCE_STATIC.USER_ID]}`,
-//                     [e_resourceFieldName.TOTAL_FILE_SIZE_IN_MB]:{$sum:`$${e_field.USER_RESOURCE_STATIC.UPLOADED_FILE_SIZE_IN_MB}`},
-//                     [e_resourceFieldName.MAX_FILE_NUM]:{$sum:`$${e_field.USER_RESOURCE_STATIC.UPLOADED_FILE_NUM}`}
-//                 },
-//             },
-//             {
-//                 collName:e_coll.ARTICLE_ATTACHMENT,
-//                 match:{
-//                     [e_field.ARTICLE_IMAGE.AUTHOR_ID]:userId
-//                 },
-//                 group:{
-//                     _id:`$${[e_field.ARTICLE_IMAGE.AUTHOR_ID]}`,
-//                     [e_resourceFieldName.TOTAL_FILE_SIZE_IN_MB]:{$sum:`$${e_field.ARTICLE_ATTACHMENT.SIZE_IN_MB}`},
-//                     [e_resourceFieldName.MAX_FILE_NUM]:{$sum:1}
-//                 },
-//             }
-//         ]
-//     },
-//
-//
-//     //用户在 单个 举报中的图片：需要实时获得
-//     [e_resourceRange.IMAGE_PER_IMPEACH_OR_COMMENT]:({impeach_comment_Id})=>{
-//         return [
-//             {
-//                 collName:e_coll.IMPEACH_IMAGE,
-//                 match:{
-//                     [e_field.IMPEACH_IMAGE.REFERENCE_ID]:impeach_comment_Id
-//                 },
-//                 group:{
-//                     _id:`$${[e_field.IMPEACH_IMAGE.REFERENCE_ID]}`,
-//                     [e_resourceFieldName.TOTAL_FILE_SIZE_IN_MB]:{$sum:`$${e_field.IMPEACH_IMAGE.SIZE_IN_MB}`},
-//                     [e_resourceFieldName.MAX_FILE_NUM]:{$sum:1}
-//                 },
-//             }
-//         ]
-//     },
-//
-//     //用户在 整个 举报和评论中的图片：需要实时获得
-//     [e_resourceRange.IMAGE_PER_PERSON_FOR_WHOLE_IMPEACH]:({userId,arr_impeach_and_comment_id})=>{
-//         return [
-//             {
-//                 collName:e_coll.IMPEACH_IMAGE,
-//                 match:{
-//                     [e_field.IMPEACH_IMAGE.REFERENCE_ID]:{"$in":arr_impeach_and_comment_id},
-//                     [e_field.IMPEACH_IMAGE.AUTHOR_ID]:userId,
-//                 },
-//                 group:{
-//                     _id:`$${[e_field.IMPEACH_IMAGE.AUTHOR_ID]}`,
-//                     [e_resourceFieldName.TOTAL_FILE_SIZE_IN_MB]:{$sum:`$${e_field.IMPEACH_IMAGE.SIZE_IN_MB}`},
-//                     [e_resourceFieldName.MAX_FILE_NUM]:{$sum:1}
-//                 },
-//             }
-//         ]
-//     },
-// }
 
+
+/**     根据数值判断是否为 文件资源的计算（数量和size）
+ *  return：boolean
+ * **/
+function ifCalcFileResource({singleResourceRange}) {
+    if(parseInt(singleResourceRange)>0 && parseInt(singleResourceRange)<100){
+        return true
+    }
+    if(parseInt(singleResourceRange)>=100 ){
+        return false
+    }
+}
 /*  为arr_resourceProfileRange中的每个resourceRange，获得当前valida的user_resource_profile(basic或者advanced)，并最终找到对应的resourceProfile
 * @singleResourceProfileRange；需要获得profile的resource
 * @userId：对哪个用户的resource检索profile
@@ -214,6 +96,7 @@ async function findValidResourceProfiles_async({singleResourceProfileRange,userI
         options:option,
         condition:userResourceProfileCondition
     })
+    // ap.wrn('condit',condition)
     //根据返回记录的数量判断valida的profile id
     if(0===validResultForSingleResourceProfileRange.length){
         await recordInternalError_async({})
@@ -239,147 +122,9 @@ function ifNumExceed({currentUsedNum,requiredNum,resourceProfileRecord}){
     // ap.inf('resourceProfileRecord',resourceProfileRecord)
     return currentUsedNum+requiredNum > resourceProfileRecord[e_field.RESOURCE_PROFILE.MAX_NUM]
 }
-/**********************************************************************************/
-/**********************             article        *******************************/
-/**********************************************************************************/
-/*  根据resourceProfileRange，计算对应的resource usage（当前只支持image/attachmentPerArticle）
-* @singleResourceProfileRange: 为了代码结构简单，传入单个resourceProfile，而不是数组（实际应用中，一般也只要传入一个resourceProfileRange，例如，上传附件和上传图片一般是分开操作的）
-*
-* 返回：对象。 key为arr_resourceProfileRange中的元素，values手机object，{num:xxx,sizeInMb:yyy}
-* */
-async function calcArticleResourceUsage_async({singleResourceProfileRange,articleId}){
-    let result
-    //没有任何需要检查的profileRange，则返回空object
-/*    if(arr_resourceProfileRange.length===0){
-        return Promise.resolve({})
-    }*/
-    //首先读取数据库（无路是image还是attachment的resourceUsage，都存在同一条记录中）
-    let articleRecord=await common_operation_model.findById_returnRecord_async({dbModel:e_dbModel.article,id:articleId})
-    if(null===articleRecord){
-        return Promise.reject(helperError.resourceCheck.calcArticleResourceUsage_async.articleNotExistCantCalcResource)
-    }
-    //为每个resourceProfileRange获得统计信息
-    // for(let singleResourceProfileRange of arr_resourceProfileRange){
-        switch (singleResourceProfileRange){
-            case e_resourceRange.IMAGE_PER_ARTICLE:
-                // result[singleResourceProfileRange]={
-                result={
-                    [e_resourceFieldName.USED_NUM]:articleRecord[e_field.ARTICLE.IMAGES_NUM],
-                    [e_resourceFieldName.DISK_USAGE_SIZE_IN_MB]:articleRecord[e_field.ARTICLE.IMAGES_SIZE_IN_MB],
-                }
-                break;
-            case e_resourceRange.ATTACHMENT_PER_ARTICLE:
-                // result[singleResourceProfileRange]=
-                result={
-                    [e_resourceFieldName.USED_NUM]:articleRecord[e_field.ARTICLE.ATTACHMENTS_NUM],
-                    [e_resourceFieldName.DISK_USAGE_SIZE_IN_MB]:articleRecord[e_field.ARTICLE.ATTACHMENTS_SIZE_IN_MB],
-                }
-                break;
-            default:
-                return Promise.reject(helperError.resourceCheck.calcArticleResourceUsage_async.unknownResourceProfileRange)
 
-        }
-    // }
-    return Promise.resolve(result)
-}
 
-/**********************************************************************************/
-/**********************             total          *******************************/
-/**********************************************************************************/
-/*  直接读取user_resource_static中user的记录（当前记录的num和sizeInMb只包括article的image和attachment）
-* */
-async function calcUserTotalResourceUsage_async({userId}){
-    let condition={
-        [e_field.USER_RESOURCE_STATIC.USER_ID]:userId,
-        [e_field.USER_RESOURCE_STATIC.RESOURCE_RANGE]:e_resourceRange.WHOLE_RESOURCE_PER_PERSON_FOR_ALL_ARTICLE,
-    }
-    let result=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.user_resource_static,condition:condition})
-    if(null===result){
-        await recordInternalError_async({})
-        return Promise.reject(helperError.resourceCheck.calcUserTotalResourceUsage_async.userNotExistCantGetUsage)
-    }
 
-    return Promise.resolve({[e_resourceFieldName.USED_NUM]:result[0][e_field.USER_RESOURCE_STATIC.UPLOADED_FILE_NUM],[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB]:result[0][e_field.USER_RESOURCE_STATIC.UPLOADED_FILE_SIZE_IN_MB]})
-}
-
-/**********************************************************************************/
-/**********************             folder        *******************************/
-/**********************************************************************************/
-/*  计算folder的数量
-* */
-async function calcFolderNum_async({userId}){
-    let condition={
-        [e_field.FOLDER.AUTHOR_ID]:userId,
-        'dDate':{$exists:false},
-    }
-    let folderNum=await common_operation_model.count_async({dbModel:e_dbModel.folder,condition:condition})
-    return Promise.resolve({[e_resourceFieldName.USED_NUM]:folderNum})
-}
-/**********************************************************************************/
-/**********************           new article        *****************************/
-/**********************************************************************************/
-/*  计算folder的数量
-* */
-async function calcNewArticleNum_async({userId}){
-    let condition={
-        [e_field.ARTICLE.AUTHOR_ID]:userId,
-        [e_field.ARTICLE.STATUS]:e_articleStatus.NEW,
-        'dDate':{$exists:false},
-    }
-    let recordNum=await common_operation_model.count_async({dbModel:e_dbModel.article,condition:condition})
-    return Promise.resolve({[e_resourceFieldName.USED_NUM]:recordNum})
-}
-/**********************************************************************************/
-/**********************              article        *******************************/
-/**********************************************************************************/
-/*  计算folder的数量
-* */
-async function calcArticleNum_async({userId}){
-    let condition={
-        [e_field.ARTICLE.AUTHOR_ID]:userId,
-        'dDate':{$exists:false},
-    }
-    let recordNum=await common_operation_model.count_async({dbModel:e_dbModel.article,condition:condition})
-    return Promise.resolve({[e_resourceFieldName.USED_NUM]:recordNum})
-}
-/**********************************************************************************/
-/**********************              comment        *******************************/
-/**********************************************************************************/
-/*  计算article的总评论数量
-* */
-async function calcCommentPerArticleNum_async({userId,containerId}){
-    let condition={
-        [e_field.ARTICLE_COMMENT.ARTICLE_ID]:containerId,
-        'dDate':{$exists:false},
-    }
-    let recordNum=await common_operation_model.count_async({dbModel:e_dbModel.article_comment,condition:condition})
-    return Promise.resolve({[e_resourceFieldName.USED_NUM]:recordNum})
-}
-/*  计算article下，当前用户的总评论数量
-* */
-async function calcCommentPerArticlePerUserNum_async({userId,containerId}){
-    let condition={
-        [e_field.ARTICLE_COMMENT.AUTHOR_ID]:userId,
-        [e_field.ARTICLE_COMMENT.ARTICLE_ID]:containerId,
-        'dDate':{$exists:false},
-    }
-    let recordNum=await common_operation_model.count_async({dbModel:e_dbModel.article_comment,condition:condition})
-    return Promise.resolve({[e_resourceFieldName.USED_NUM]:recordNum})
-}
-/**********************************************************************************/
-/**********************      max add friend request   ****************************/
-/**********************************************************************************/
-/*  计算当前未处理的添加用户的请求数
-* */
-async function calcAddFriendNum_async({userId}){
-    let condition={
-        [e_field.ADD_FRIEND.ORIGINATOR]:userId,
-        [e_field.ADD_FRIEND.STATUS]:e_addFriendStatus.UNTREATED,
-        'dDate':{$exists:false},
-    }
-    let untreatedNum=await common_operation_model.count_async({dbModel:e_dbModel.add_friend,condition:condition})
-    return Promise.resolve({[e_resourceFieldName.USED_NUM]:untreatedNum})
-}
 /*******************************************************************************************/
 /******************         主函数，用来检测是否还是有disk space可用        ***************/
 /*******************************************************************************************/
@@ -396,116 +141,217 @@ async function ifEnoughResource_async({requiredResource,resourceProfileRange,use
         //1. 根据resourceProfileRange获得对应的当前可用的 资源配置文件（valid resourceProfile）
         let resourceProfile=await findValidResourceProfiles_async({singleResourceProfileRange:singleResourceProfileRange,userId:userId})
         //2. 根据resourceProfileRange和（或） userId/containerId，获得当前使用资源量
-        let usedResource,spaceExceedFlag,numExceedFlag
-        //ap.inf('singleResourceProfileRange',singleResourceProfileRange)
-        switch (singleResourceProfileRange){
+        let usedResource,spaceExceedFlag,numExceedFlag//,
 
-            case e_resourceRange.ATTACHMENT_PER_ARTICLE:
-                usedResource=await calcArticleResourceUsage_async({singleResourceProfileRange:singleResourceProfileRange,articleId:containerId})
-                spaceExceedFlag=ifSpaceExceed({currentUsedSpace:usedResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],requiredSpace:requiredResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],resourceProfileRecord:[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]})
-                if(true===spaceExceedFlag){
-                    //如果超出，将所有文件都删除（需要用户取舍后重新上传）
-                    deleteFiles({arr_fileAbsPath:requiredResource.filesAbsPath})
-                    return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.articleAttachmentDiskUsageExceed({resourceProfileRangeSizeInMb:resourceProfile[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]}))
-                }
 
-                numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:resourceProfile})
-                if(true===numExceedFlag){
-                    deleteFiles({arr_fileAbsPath:requiredResource.filesAbsPath})
-                    return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.articleAttachmentNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
-                }
-                break;
-            case e_resourceRange.IMAGE_PER_ARTICLE:
-                usedResource=await calcArticleResourceUsage_async({singleResourceProfileRange:singleResourceProfileRange,articleId:containerId})
-                spaceExceedFlag=ifSpaceExceed({currentUsedSpace:usedResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],requiredSpace:requiredResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],resourceProfileRecord:[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]})
-                if(true===spaceExceedFlag){
-                    deleteFiles({arr_fileAbsPath:requiredResource.filesAbsPath})
-                    return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.articleImageDiskUsageExceed({resourceProfileRangeSizeInMb:resourceProfile[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]}))
-                }
+        let fileResourceFlag=ifCalcFileResource({singleResourceRange:singleResourceProfileRange})//是否统计文件资源（需要计算SIZE）
+        /**     对文件进行资源判定       **/
+        if(true===fileResourceFlag){
+            switch (singleResourceProfileRange){
+                case e_resourceRange.ATTACHMENT_PER_ARTICLE:
+                    usedResource=await fileResourceCalc.calcArticleResourceUsage_async({singleResourceProfileRange:singleResourceProfileRange,articleId:containerId})
+                    spaceExceedFlag=ifSpaceExceed({currentUsedSpace:usedResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],requiredSpace:requiredResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],resourceProfileRecord:[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]})
+                    if(true===spaceExceedFlag){
+                        //如果超出，将所有文件都删除（需要用户取舍后重新上传）
+                        deleteFiles({arr_fileAbsPath:requiredResource.filesAbsPath})
+                        return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.articleAttachmentDiskUsageExceed({resourceProfileRangeSizeInMb:resourceProfile[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]}))
+                    }
 
-                numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:resourceProfile})
-                if(true===numExceedFlag){
-                    deleteFiles({arr_fileAbsPath:requiredResource.filesAbsPath})
-                    return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.articleImageNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
-                }
-                break
-            case e_resourceRange.WHOLE_RESOURCE_PER_PERSON_FOR_ALL_ARTICLE:
-                usedResource=await calcUserTotalResourceUsage_async({userId:userId})
-                spaceExceedFlag=ifSpaceExceed({currentUsedSpace:usedResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],requiredSpace:requiredResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],resourceProfileRecord:[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]})
-                if(true===spaceExceedFlag){
-                    deleteFiles({arr_fileAbsPath:requiredResource.filesAbsPath})
-                    return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.userTotalDiskUsageExceed({resourceProfileRangeSizeInMb:resourceProfile[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]}))
-                }
-                numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:resourceProfile})
-                if(true===numExceedFlag){
-                    deleteFiles({arr_fileAbsPath:requiredResource.filesAbsPath})
-                    return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.userTotalFileNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
-                }
-                break
-            case e_resourceRange.FOLDER_NUM:
-                // ap.inf('FOLDER_NUM')
-                usedResource=await calcFolderNum_async({userId:userId})
-                // ap.inf('usedResource',usedResource)
-                // ap.inf('resourceProfile',resourceProfile)
-                //folder只要检测数量
-                numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:resourceProfile})
-                if(true===numExceedFlag){
-                    return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.totalFolderNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
-                }
-                break
-            case e_resourceRange.MAX_UNTREATED_ADD_FRIEND_REQUEST:
-                usedResource=await calcAddFriendNum_async({userId:userId})
-                // ap.inf('usedResource',usedResource)
-                // ap.inf('resourceProfile',resourceProfile)
-                //只要检测数量
-                numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:resourceProfile})
-                if(true===numExceedFlag){
-                    return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.totalFolderNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
-                }
-                break;
-            case e_resourceRange.MAX_NEW_ARTICLE:
-                usedResource=await calcNewArticleNum_async({userId:userId})
-                // ap.inf('usedResource',usedResource)
-                // ap.inf('resourceProfile',resourceProfile)
-                //只要检测数量
-                numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:resourceProfile})
-                if(true===numExceedFlag){
-                    return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.totalNewArticleNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
-                }
-                break;
-            case e_resourceRange.MAX_ARTICLE:
-                usedResource=await calcArticleNum_async({userId:userId})
-                // ap.inf('usedResource',usedResource)
-                // ap.inf('resourceProfile',resourceProfile)
-                //只要检测数量
-                numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:resourceProfile})
-                if(true===numExceedFlag){
-                    return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.totalArticleNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
-                }
-                break;
-            case e_resourceRange.MAX_COMMENT_PER_ARTICLE:
-                usedResource=await calcCommentPerArticleNum_async({userId:userId,con:containerId})
-                // ap.inf('usedResource',usedResource)
-                // ap.inf('resourceProfile',resourceProfile)
-                //只要检测数量
-                numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:resourceProfile})
-                if(true===numExceedFlag){
-                    return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.totalCommentPerArticleNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
-                }
-                break;
-            case e_resourceRange.MAX_COMMENT_PER_ARTICLE_PER_USER:
-                usedResource=await calcCommentPerArticlePerUserNum_async({userId:userId,containerId:containerId})
-                // ap.inf('usedResource',usedResource)
-                // ap.inf('resourceProfile',resourceProfile)
-                //只要检测数量
-                numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:resourceProfile})
-                if(true===numExceedFlag){
-                    return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.totalCommentPerArticlePerUserNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
-                }
-                break;
-            default:
-                //ap.err(`ResourceRange ${singleResourceProfileRange} no related method to calc resource usage`)
+                    numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:resourceProfile})
+                    if(true===numExceedFlag){
+                        deleteFiles({arr_fileAbsPath:requiredResource.filesAbsPath})
+                        return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.articleAttachmentNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
+                    }
+                    break;
+                case e_resourceRange.IMAGE_PER_ARTICLE:
+                    usedResource=await fileResourceCalc.calcArticleResourceUsage_async({singleResourceProfileRange:singleResourceProfileRange,articleId:containerId})
+                    spaceExceedFlag=ifSpaceExceed({currentUsedSpace:usedResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],requiredSpace:requiredResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],resourceProfileRecord:[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]})
+                    if(true===spaceExceedFlag){
+                        deleteFiles({arr_fileAbsPath:requiredResource.filesAbsPath})
+                        return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.articleImageDiskUsageExceed({resourceProfileRangeSizeInMb:resourceProfile[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]}))
+                    }
+
+                    numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:resourceProfile})
+                    if(true===numExceedFlag){
+                        deleteFiles({arr_fileAbsPath:requiredResource.filesAbsPath})
+                        return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.articleImageNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
+                    }
+                    break
+                case e_resourceRange.WHOLE_FILE_RESOURCE_PER_PERSON:
+                    usedResource=await fileResourceCalc.calcUserTotalResourceUsage_async({userId:userId})
+                    spaceExceedFlag=ifSpaceExceed({currentUsedSpace:usedResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],requiredSpace:requiredResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],resourceProfileRecord:[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]})
+                    if(true===spaceExceedFlag){
+                        deleteFiles({arr_fileAbsPath:requiredResource.filesAbsPath})
+                        return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.userTotalDiskUsageExceed({resourceProfileRangeSizeInMb:resourceProfile[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]}))
+                    }
+                    numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:resourceProfile})
+                    if(true===numExceedFlag){
+                        deleteFiles({arr_fileAbsPath:requiredResource.filesAbsPath})
+                        return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.userTotalFileNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
+                    }
+                    break
+                /****     举报图片资源      ****/
+                case e_resourceRange.IMAGE_PER_IMPEACH_OR_COMMENT:
+                    usedResource=await fileResourceCalc.calcImageResourcePerImpeachOrComment_async({userId:userId,containerId:containerId})
+                    spaceExceedFlag=ifSpaceExceed({currentUsedSpace:usedResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],requiredSpace:requiredResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],resourceProfileRecord:[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]})
+                    if(true===spaceExceedFlag){
+                        deleteFiles({arr_fileAbsPath:requiredResource.filesAbsPath})
+                        return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.impeachImageDiskUsageExceed({resourceProfileRangeSizeInMb:resourceProfile[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]}))
+                    }
+                    numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:resourceProfile})
+                    if(true===numExceedFlag){
+                        deleteFiles({arr_fileAbsPath:requiredResource.filesAbsPath})
+                        return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.impeachImageNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
+                    }
+                    break;
+                case e_resourceRange.ATTACHMENT_PER_IMPEACH:
+                    usedResource=await fileResourceCalc.calcAttachmentResourcePerImpeachOrComment_async({userId:userId,containerId:containerId})
+                    spaceExceedFlag=ifSpaceExceed({currentUsedSpace:usedResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],requiredSpace:requiredResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],resourceProfileRecord:[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]})
+                    if(true===spaceExceedFlag){
+                        deleteFiles({arr_fileAbsPath:requiredResource.filesAbsPath})
+                        return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.impeachAttachmentDiskUsageExceed({resourceProfileRangeSizeInMb:resourceProfile[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]}))
+                    }
+                    numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:resourceProfile})
+                    if(true===numExceedFlag){
+                        deleteFiles({arr_fileAbsPath:requiredResource.filesAbsPath})
+                        return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.impeachAttachmentNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
+                    }
+                    break;
+                case e_resourceRange.IMAGE_PER_USER_IN_WHOLE_IMPEACH:
+                    usedResource=await fileResourceCalc.calcImageResourcePerNormalUserInWholeImpeach_async({userId:userId,containerId:containerId})
+                    spaceExceedFlag=ifSpaceExceed({currentUsedSpace:usedResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],requiredSpace:requiredResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],resourceProfileRecord:[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]})
+                    if(true===spaceExceedFlag){
+                        deleteFiles({arr_fileAbsPath:requiredResource.filesAbsPath})
+                        return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.impeachImageDiskUsagePerUserInWholeImpeachExceed({resourceProfileRangeSizeInMb:resourceProfile[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]}))
+                    }
+                    numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:resourceProfile})
+                    if(true===numExceedFlag){
+                        deleteFiles({arr_fileAbsPath:requiredResource.filesAbsPath})
+                        return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.impeachImageNumPerUserInWholeImpeachExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
+                    }
+                    break;
+                case e_resourceRange.IMAGE_IN_WHOLE_IMPEACH:
+                    usedResource=await fileResourceCalc.calcImageResourceInWholeImpeach_async({userId:userId,containerId:containerId})
+                    spaceExceedFlag=ifSpaceExceed({currentUsedSpace:usedResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],requiredSpace:requiredResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],resourceProfileRecord:[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]})
+                    if(true===spaceExceedFlag){
+                        deleteFiles({arr_fileAbsPath:requiredResource.filesAbsPath})
+                        return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.impeachImageDiskUsageInWholeImpeachExceed({resourceProfileRangeSizeInMb:resourceProfile[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]}))
+                    }
+                    numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:resourceProfile})
+                    if(true===numExceedFlag){
+                        deleteFiles({arr_fileAbsPath:requiredResource.filesAbsPath})
+                        return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.impeachImageNumInWholeImpeachExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
+                    }
+                    break;
+            }
         }
+
+        /**     对数量判定       **/
+        // ap.wrn('fileResourceFlag',fileResourceFlag)
+        if(false===fileResourceFlag){
+            switch (singleResourceProfileRange){
+
+
+                case e_resourceRange.MAX_FOLDER_NUM_PER_USER:
+                    // ap.inf('MAX_FOLDER_NUM_PER_USER')
+                    usedResource=await numOnlyResourceCalc.calcFolderNum_async({userId:userId})
+                    // ap.inf('usedResource',usedResource)
+                    // ap.inf('resourceProfile',resourceProfile)
+                    //folder只要检测数量
+                    numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:resourceProfile})
+                    if(true===numExceedFlag){
+                        return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.totalFolderNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
+                    }
+                    break
+                case e_resourceRange.MAX_UNTREATED_ADD_FRIEND_REQUEST_PER_USER:
+                    usedResource=await numOnlyResourceCalc.calcAddFriendNum_async({userId:userId})
+                    // ap.inf('usedResource',usedResource)
+                    // ap.inf('resourceProfile',resourceProfile)
+                    //只要检测数量
+                    numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:resourceProfile})
+                    if(true===numExceedFlag){
+                        return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.totalFolderNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
+                    }
+                    break;
+                case e_resourceRange.MAX_NEW_ARTICLE_PER_USER:
+                    usedResource=await numOnlyResourceCalc.calcNewArticleNum_async({userId:userId})
+                    // ap.inf('usedResource',usedResource)
+                    // ap.inf('resourceProfile',resourceProfile)
+                    //只要检测数量
+                    numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:resourceProfile})
+                    if(true===numExceedFlag){
+                        return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.totalNewArticleNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
+                    }
+                    break;
+                case e_resourceRange.MAX_ARTICLE_PER_USER:
+                    usedResource=await numOnlyResourceCalc.calcArticleNum_async({userId:userId})
+                    // ap.inf('usedResource',usedResource)
+                    // ap.inf('resourceProfile',resourceProfile)
+                    //只要检测数量
+                    numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:resourceProfile})
+                    if(true===numExceedFlag){
+                        return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.totalArticleNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
+                    }
+                    break;
+                case e_resourceRange.MAX_COMMENT_PER_ARTICLE:
+                    usedResource=await numOnlyResourceCalc.calcCommentPerArticleNum_async({userId:userId,con:containerId})
+                    // ap.inf('usedResource',usedResource)
+                    // ap.inf('resourceProfile',resourceProfile)
+                    //只要检测数量
+                    numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:resourceProfile})
+                    if(true===numExceedFlag){
+                        return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.totalCommentPerArticleNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
+                    }
+                    break;
+                case e_resourceRange.MAX_COMMENT_PER_ARTICLE_PER_USER:
+                    usedResource=await numOnlyResourceCalc.calcCommentPerArticlePerUserNum_async({userId:userId,containerId:containerId})
+                    // ap.inf('usedResource',usedResource)
+                    // ap.inf('resourceProfile',resourceProfile)
+                    //只要检测数量
+                    numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:resourceProfile})
+                    if(true===numExceedFlag){
+                        return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.totalCommentPerArticlePerUserNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
+                    }
+                    break;
+                /****     举报数量      ****/
+                case e_resourceRange.MAX_SIMULTANEOUS_NEW_OR_EDITING_IMPEACH_PER_USER:
+                    usedResource=await numOnlyResourceCalc.calcSimultaneousNewOrEditingImpeachNum_async({userId:userId,containerId:containerId})
+                    // ap.wrn('usedResource',usedResource)
+                    // ap.wrn('resourceProfile',resourceProfile)
+                    //只要检测数量
+                    numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:resourceProfile})
+                    if(true===numExceedFlag){
+                        return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.totalNewOrEditingImpeachNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
+                    }
+                    break;
+                case e_resourceRange.MAX_REVOKE_IMPEACH_PER_USER:
+                    usedResource=await numOnlyResourceCalc.calcRevokeImpeachNum_async({userId:userId,containerId:containerId})
+                    // ap.inf('usedResource',usedResource)
+                    // ap.inf('resourceProfile',resourceProfile)
+                    //只要检测数量
+                    numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:resourceProfile})
+                    if(true===numExceedFlag){
+                        return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.totalRevokeImpeachNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
+                    }
+                    break;
+
+                case e_resourceRange.MAX_SIMULTANEOUS_WAIT_FOR_ASSIGN_IMPEACH_PER_USER:
+                    usedResource=await numOnlyResourceCalc.calcSimultaneousWaitAssignImpeachNum_async({userId:userId,containerId:containerId})
+                    // ap.wrn('usedResource',usedResource)
+                    // ap.wrn('resourceProfile',resourceProfile)
+                    //只要检测数量
+                    numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:resourceProfile})
+                    if(true===numExceedFlag){
+                        return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.totalWaitAssignImpeachNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
+                    }
+                    break;
+
+                default:
+                    return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.noHandleCodeProfileRange())
+                //ap.err(`ResourceRange ${singleResourceProfileRange} no related method to calc resource usage`)
+            }
+        }
+
 
 
     }

@@ -601,13 +601,13 @@ async function contentDbDeleteNotExistImage_async({content,recordId,collConfig,c
     // console.log(`imageSearchCondition ====${JSON.stringify(imageSearchCondition)}`)
 
     let imageRecordInDB=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel[collImageConfig.collName],condition:imageSearchCondition,populateOpt:collImageConfig.storePathPopulateOpt})
-// console.log(   `tmpresult is ===============>${JSON.stringify(tmpResult)}`)
+// ap.inf('imageRecordInDB',imageRecordInDB)
     //对比db和content中的image
     //db中没有任何image信息，则把content中所有image DOM删除
     if(imageRecordInDB.length===0){
         // let convertedContent=
         // console.log(   `convert result  is ===============>${JSON.stringify(convertedContent)}`)
-        return Promise.resolve(content.replace(regex.imageDOM,''))
+        return Promise.resolve({content:content.replace(regex.imageDOM,''),deletedFileNum:0,deletedFileSize:0})
     }
     //以db为基准,db中有image，进行比较。如果db中的记录，在content中不存在，说明image已经被删除，那么清理db
     let deletedImageId=[],deletedImageMd5Name=[],notDeletedMd5Name=[],deletedImageRecord=[]//记录content中删除的image，用于fs.unlink删除文件，已经更新user_resource_static
@@ -643,7 +643,7 @@ async function contentDbDeleteNotExistImage_async({content,recordId,collConfig,c
             deletedFileSize+=singleDeletedImageRecord[collImageConfig.sizeFieldName]
         }
         //更改user_resource_static
-        if(undefined!==resourceRange){
+/*        if(undefined!==resourceRange){
             await e_dbModel.user_resource_static.update({
                 [e_field.USER_RESOURCE_STATIC.USER_ID]:userId,
                 [e_field.USER_RESOURCE_STATIC.RESOURCE_RANGE]:resourceRange,
@@ -653,7 +653,7 @@ async function contentDbDeleteNotExistImage_async({content,recordId,collConfig,c
                     [e_field.USER_RESOURCE_STATIC.UPLOADED_FILE_SIZE_IN_MB]:-deletedFileSize,
                 }
             })
-        }
+        }*/
 
     }
 
@@ -733,7 +733,7 @@ async function calcExistResource_async({resourceProfileRange,resourceFileFieldNa
         case e_resourceRange.ATTACHMENT_PER_ARTICLE:
             if(undefined===articleId || null===articleId){return Promise.reject(helperError.missParameter(`articleId`))}
             break;
-        case e_resourceRange.WHOLE_RESOURCE_PER_PERSON_FOR_ALL_ARTICLE:
+        case e_resourceRange.WHOLE_FILE_RESOURCE_PER_PERSON:
             if(undefined===userId || null===userId){return Promise.reject(helperError.missParameter(`userId`))}
             break;
 /!*        case e_resourceRange.ATTACHMENT_PER_PERSON_FOR_ALL_ARTICLE:

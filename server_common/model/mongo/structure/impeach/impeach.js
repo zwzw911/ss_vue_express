@@ -59,21 +59,28 @@ const impeachComment_arrayMaxLengthValidator={
     },
     message:`错误代码${collInputRule['impeachCommentsId'][serverRuleType.ARRAY_MAX_LENGTH]['mongoError']['rc']}:${collInputRule['impeachCommentsId'][serverRuleType.ARRAY_MAX_LENGTH]['mongoError']['msg']}`
 }
-
+/***        举报主体        ***/
 const collFieldDefine={
     title:{type:String,},
     content:{type:String},
     impeachImagesId:{type:[mongoose.Schema.Types.ObjectId],ref:'impeach_image',validate:[impeachImage_arrayMaxLengthValidator]},
-    impeachAttachmentsId:{type:[mongoose.Schema.Types.ObjectId],ref:'impeach_attachment',validate:[impeachAttachment_arrayMaxLengthValidator]},
+    impeachAttachmentsId:{type:[mongoose.Schema.Types.ObjectId],ref:'impeach_attachment',validate:[impeachAttachment_arrayMaxLengthValidator]},//举报中插入的
     impeachCommentsId:{type:[mongoose.Schema.Types.ObjectId],ref:'impeach_comment',validate:[impeachComment_arrayMaxLengthValidator]},
     impeachType:{type:String,},//enum:enumValue.ImpeachType，article/comment. 通过URL，在dispatch中进行内部设置
-    impeachedArticleId:{type:mongoose.Schema.Types.ObjectId,ref:"article"}, //
-    impeachedCommentId:{type:mongoose.Schema.Types.ObjectId,ref:"article_comment"}, //举报的文档评论
+    impeachedArticleId:{type:mongoose.Schema.Types.ObjectId,ref:"article"}, //被举报的文档
+    impeachedCommentId:{type:mongoose.Schema.Types.ObjectId,ref:"article_comment"}, //被举报的文档评论
     impeachedUserId:{type:mongoose.Schema.Types.ObjectId,ref:"user"}, //
-    creatorId:{type:mongoose.Schema.Types.ObjectId,ref:"user"}, //
+    creatorId:{type:mongoose.Schema.Types.ObjectId,ref:"user"}, //必定是普通用户
     currentState:{type:String},//enum，起到和documentStatus类似的作用，用来判断是否可以upload和其他作用
     currentAdminOwnerId:{type:mongoose.Schema.Types.ObjectId,ref:"admin_user"},//只有adminUser开始处理时，才会被设置Admin;如无设置，隐式说明当前owner是creatorId
     // impeachStatus:{type:String,}, //enum:enumValue.ImpeachStatus       enum， 通过setMongooseBuildInValidator从inputRule中获得对应的enum定义
+
+    imagesNum:{type:Number, default:0},//记录文档中图片总数
+    imagesSizeInMb:{type:Number, default:0},//记录文档中图片总大小
+
+    attachmentsNum:{type:Number, default:0},//记录文档中图片总数
+    attachmentsSizeInMb:{type:Number, default:0},//记录文档中图片总大小
+
     cDate:{type:Date,default:Date.now},
     // uDate:{type:Date,default:Date.now},
     dDate:{type:Date}, //用户可以撤销举报
@@ -109,8 +116,8 @@ const collSchema=new mongoose.Schema(
     mongoSetting.schemaOptions
 )
 /*          复合unique index，一个用户对一个object只能impeach一次          */
-collSchema.index({creatorId: 1, impeachedArticleId: 1}, {unique: true});
-collSchema.index({creatorId: 1, impeachedCommentId: 1}, {unique: true});
+collSchema.index({creatorId: 1, impeachedArticleId: 1}, {unique: true,partialFilterExpression:{impeachedArticleId:{$type:mongoose.Schema.Types.ObjectId}}});
+collSchema.index({creatorId: 1, impeachedCommentId: 1}, {unique: true,partialFilterExpression:{impeachedCommentId:{$type:mongoose.Schema.Types.ObjectId}}});
 /*const departmentSchema=new mongoose.Schema(
     fieldDefine['department'],
     schemaOptions

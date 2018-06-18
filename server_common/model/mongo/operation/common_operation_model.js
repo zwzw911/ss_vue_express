@@ -34,7 +34,7 @@ async function create_returnRecord_async({dbModel,value}){
     let doc=new dbModel(value)
     let result=await doc.save(doc)
         .catch((err)=>{
-        // console.log(`create err is ${JSON.stringify(err)}`)
+        console.log(`create err is ${JSON.stringify(err)}`)
         //1. mongoose返回的是reject，只能通过catch捕获
         //     2. 捕获后，通过reject在await中返回。因为reject后，此错误会在async/await直接传递到最外层，所以需要returnResult对错误处理
             return Promise.reject(mongooseErrorHandler(err))
@@ -622,13 +622,15 @@ async function checkBillTypeOkForBill({dbModel,id}){
 
 }
 
-async function group_async({dbModel,match,project,group,sort}){
+async function group_async({dbModel,aggregateParams}){
 
     let params=[]
+    let {match,project,group,sort}=aggregateParams
+
     if(undefined!==match){
         params.push({$match:match})
     }
-    if(undefined!==project){
+    if(undefined!==project && Object.keys(project).length>0){
         params.push({$project:project})
     }
     if(undefined!==group){
@@ -651,7 +653,7 @@ async function group_async({dbModel,match,project,group,sort}){
 
     let result=await dbModel.aggregate(params)
     // console.log(`group result is ${JSON.stringify(result)}`)
-    return Promise.resolve({rc:0,msg:result})
+    return Promise.resolve(result)
 }
 
 

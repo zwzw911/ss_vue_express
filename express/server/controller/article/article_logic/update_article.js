@@ -58,8 +58,7 @@ const currentEnv=server_common_file_require.appSetting.currentEnv
 const fkConfig=server_common_file_require.fkConfig.fkConfig
 
 async function updateArticle_async({req,applyRange}){
-    // console.log(`updateUser_async in`)
-    // console.log(`req.session ${JSON.stringify(req.session)}`)
+
     /*************************************************/
     /************      define variant     ***********/
     /************************************************/
@@ -130,7 +129,7 @@ async function updateArticle_async({req,applyRange}){
         //数组，元素是字段名。默认对所有dataType===string的字段进行XSS检测，但是可以通过此变量，只选择部分字段
         [e_inputValueLogicCheckStep.XSS]:{flag:true,optionalParam:{expectedXSSFields:undefined}},
         //object，对compoundField进行unique检测需要的额外条件，key从model->mongo->compound_unique_field_config.js中获得
-        [e_inputValueLogicCheckStep.COMPOUND_VALUE_UNIQUE]:{flag:true,optionalParam:{compoundFiledValueUniqueCheckAdditionalCheckCondition:undefined}},
+        //[e_inputValueLogicCheckStep.COMPOUND_VALUE_UNIQUE]:{flag:true,optionalParam:{compoundFiledValueUniqueCheckAdditionalCheckCondition:undefined}},
         //Object，配置resourceCheck的一些参数,{requiredResource,resourceProfileRange,userId,containerId}
         /*****  无需对资源进行检查，因为都是更新操作  ******/
         [e_inputValueLogicCheckStep.RESOURCE_USAGE]:{flag:false,optionalParam:{resourceUsageOption:{requiredResource:undefined}}},
@@ -140,6 +139,9 @@ async function updateArticle_async({req,applyRange}){
     await controllerInputValueLogicCheck.inputValueLogicValidCheck_async({commonParam:commonParam,stepParam:stepParam})
     // ap.inf('inputValueLogicValidCheck_async done')
 
+    /************************************************/
+    /***                 是否删除了图片          ****/
+    /************************************************/
     //如果content存在，图片检测
     if(undefined!==docValue[e_field.ARTICLE.HTML_CONTENT]){
         // let content=docValue[e_field.ARTICLE.HTML_CONTENT]
@@ -164,17 +166,35 @@ async function updateArticle_async({req,applyRange}){
         // ap.inf('collImageConfig',collImageConfig)
         // ap.inf('content',content)
         // ap.inf('recordId',recordId)
-        // ap.inf('resourceRange',e_resourceRange.WHOLE_RESOURCE_PER_PERSON_FOR_ALL_ARTICLE)
+        // ap.inf('resourceRange',e_resourceRange.WHOLE_FILE_RESOURCE_PER_PERSON)
         // content,recordId,collConfig,collImageConfig,resourceRange
         let {content,deletedFileNum,deletedFileSize}=await controllerHelper.contentDbDeleteNotExistImage_async({
             content:docValue[e_field.ARTICLE.HTML_CONTENT],
             recordId:recordId,
             collConfig:collConfig,
             collImageConfig:collImageConfig,
-            resourceRange:e_resourceRange.WHOLE_RESOURCE_PER_PERSON_FOR_ALL_ARTICLE, //控制是否需要对user_resource_static进行更新时，使用的resourceType，可以为undefined
+            //resourceRange:e_resourceRange.WHOLE_FILE_RESOURCE_PER_PERSON, //控制是否需要对user_resource_static进行更新时，使用的resourceType，可以为undefined
         })
-        // {content,deletedFileNum,deletedFileSize}
-        // ap.inf('result',result)
+        /***    更新article的size和num    ***/
+        let updateFieldsValue
+        updateFieldsValue={
+            "$inc":{
+                [e_field.IMPEACH.IMAGES_NUM]:-deletedFileNum,
+                [e_field.IMPEACH.IMAGES_SIZE_IN_MB]:-deletedFileSize
+            }
+        }
+        await common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel.article,id:recordId,updateFieldsValue:updateFieldsValue})
+        /***    更新user_resource_static的size和num    ***/
+        await e_dbModel.user_resource_static.update({
+            [e_field.USER_RESOURCE_STATIC.USER_ID]:userId,
+            [e_field.USER_RESOURCE_STATIC.RESOURCE_RANGE]:e_resourceRange.WHOLE_FILE_RESOURCE_PER_PERSON,
+        },{
+            $inc:{
+                [e_field.USER_RESOURCE_STATIC.UPLOADED_FILE_NUM]:-deletedFileNum,
+                [e_field.USER_RESOURCE_STATIC.UPLOADED_FILE_SIZE_IN_MB]:-deletedFileSize,
+            }
+        })
+
         docValue[e_field.IMPEACH.CONTENT]=content
     }
 

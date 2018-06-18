@@ -266,18 +266,32 @@ const ImpeachAdminAction={
     },
 }
 
+/**   和ImpeachState不同，这是记录创建的举报的状态，以此为基础，确定是否需要重用（防止用户大量创建未提交的impeach）  **/
+/*const ImpeachStatus={
+    DB:{
+        'NEW':'0', //必须新建一个文档，获得id后，image或者attachment才能有对应record进行处理
+        'EDITING':'1', //用在2处：1. inputRule 2.通过 maintain/generateMongoEnum产生enumValue，用于将enum值加入到model中
+        'FINISHED':'2',
+    },
+    SHOW:{
+        'NEW':'新建文档',
+        'EDITING':'编辑中',
+        'FINISHED':'编辑完成',
+    }
+}*/
+/**   和ImpeachStatus不同，这是记录举报的处理状态  **/
 const ImpeachState={
     DB:{
-        NEW: '1',
-
-        WAIT_ASSIGN:'2',
-        WAIT_HANDLE:'3',
-        ONGOING:'4',
-        DONE:'5',
+        NEW: '1',//create，但是未做任何修改
+        EDITING:'2',//create之后，开始编辑，但是没有提交
+        WAIT_ASSIGN:'3',//提交，但是未被处理
+        WAIT_HANDLE:'4',
+        ONGOING:'5',
+        DONE:'6',
     },
     SHOW:{
         NEW: '新建',
-
+        EDITING:'编辑',
         WAIT_ASSIGN:'等待分配',
         WAIT_HANDLE:'等待处理',
         ONGOING:'处理中',
@@ -381,60 +395,80 @@ const StorePathStatus={
 
 const ResourceRange={
     DB:{
-        /**     存储在coll中    **/
-        WHOLE_RESOURCE_PER_PERSON_FOR_ALL_ARTICLE:'1', //用户总共的空间
+        /**     用户总的文件空间，存储在user_resource_static中    **/
+        WHOLE_FILE_RESOURCE_PER_PERSON:'1', //用户总共的文件资源（数量（限制数量，防止传入大量小文件）和大小）
 
-        /**     通过count获得数据     **/
+        /**     每个文档的图片和附件 的文件资源     **/
         IMAGE_PER_ARTICLE:'10',  //每个文档的图片
         ATTACHMENT_PER_ARTICLE:'12', //每个文档的附件
 
-
+        /**     每个举报的图片和附件 的文件资源     **/
+        IMAGE_PER_IMPEACH_OR_COMMENT:'14',//每个举报（或者举报处理）最大可插入图片数量和总大小
+        ATTACHMENT_PER_IMPEACH:'16',//只有举报才能插入附件
+        IMAGE_IN_WHOLE_IMPEACH:'18',//整个举报（以及处理过程中）最大可插入图片数量和总大小
+        IMAGE_PER_USER_IN_WHOLE_IMPEACH:'20',//在整个impeach中，单个用户能插入的最大图片资源
         // ATTACHMENT_PER_PERSON_FOR_ALL_ARTICLE:'4',//每个用户对所有文档的附件
 
-        IMAGE_PER_IMPEACH_OR_COMMENT:'14', //每个impeach或者comment的图片
-        IMAGE_PER_PERSON_FOR_WHOLE_IMPEACH:'16', //每个用户，在整个impeach和comment的图片
+        // IMAGE_PER_IMPEACH_OR_COMMENT:'14', //每个impeach或者comment的图片
+        // IMAGE_PER_PERSON_FOR_WHOLE_IMPEACH:'16', //每个用户，在整个impeach和comment的图片
 
-        FOLDER_NUM:'18', //最大目录数量
+        /**     只有记录数量      **/
+        MAX_FOLDER_NUM_PER_USER:'100', //最大目录数量
 
-        FRIEND_GROUP_NUM:'20',//朋友群数量
-        MAX_PERSON_NUM_PER_FRIEND_GROUP:'22',//群中人数最大数量
+        MAX_FRIEND_GROUP_NUM_PER_USER:'102',//朋友群数量
+        MAX_PERSON_NUM_PER_FRIEND_GROUP:'104',//群中人数最大数量
 
-        MAX_UNTREATED_ADD_FRIEND_REQUEST:'24', //最大未处理的 添加朋友的请求数
-        MAX_ACCEPT_BUT_NOT_ASSIGN_ADD_FRIEND_REQUEST:'26', //最大已同意但是未被分配到某个朋友群的 添加朋友的请求数
+        MAX_UNTREATED_ADD_FRIEND_REQUEST_PER_USER:'106', //最大未处理的 添加朋友的请求数
+        MAX_ACCEPT_BUT_NOT_ASSIGN_ADD_FRIEND_REQUEST_PER_USER:'108', //最大已同意但是未被分配到某个朋友群的 添加朋友的请求数
 
-        MAX_NEW_ARTICLE:'28',//新建但未做过任何处理的文档数
-        MAX_ARTICLE:'30',//最大文档数（所有状态（删除的不算））
+        MAX_NEW_ARTICLE_PER_USER:'110',//新建但未做过任何处理的文档数
+        MAX_ARTICLE_PER_USER:'112',//最大文档数（所有状态（删除的不算））
 
-        MAX_COMMENT_PER_ARTICLE:'32',
-        MAX_COMMENT_PER_ARTICLE_PER_USER:'34',
+        MAX_COMMENT_PER_ARTICLE:'114',
+        MAX_COMMENT_PER_ARTICLE_PER_USER:'116',
+
+
+
+        MAX_SIMULTANEOUS_NEW_OR_EDITING_IMPEACH_PER_USER:'118',//用户最大编辑中举报
+        MAX_REVOKE_IMPEACH_PER_USER:'120',//最大撤销举报数
+        MAX_SIMULTANEOUS_WAIT_FOR_ASSIGN_IMPEACH_PER_USER:'122',////用户最大提交当未被处理的举报
     },
     SHOW:{
         /**     存储在coll中    **/
-        WHOLE_RESOURCE_PER_PERSON_FOR_ALL_ARTICLE:'用户文档所有资源',
+        WHOLE_FILE_RESOURCE_PER_PERSON:'用户文档所有资源',
 
-        /**     通过count获得数据     **/
+        /**     每个文档的图片和附件 的文件资源     **/
         IMAGE_PER_ARTICLE:'文档图片',//对文档起作用
         ATTACHMENT_PER_ARTICLE:'文档附件',
 
+        /**     每个举报的图片和附件 的文件资源     **/
+        IMAGE_PER_IMPEACH_OR_COMMENT:'单次举报最大可插入图片资源',//每个举报（或者举报处理）最大可插入图片数量
+        ATTACHMENT_PER_IMPEACH:'举报附件资源',
+        IMAGE_IN_WHOLE_IMPEACH:'整个举报过程中最大可插入图片资源',//整个举报（以及处理过程中）最大可插入图片数量
+        IMAGE_PER_USER_IN_WHOLE_IMPEACH:'整个举报过程中用户最大可插入图片资源',//在整个impeach中，单个用户能插入的最大图片资源
         // ATTACHMENT_PER_PERSON_FOR_ALL_ARTICLE:'用户文档附件',//对用户起作用
 
-        IMAGE_PER_IMPEACH_OR_COMMENT:'举报（或者评论）图片', //举报或者举报评论
-        // IMAGE_PER_COMMENT:'举报图片', //举报或者举报出路
-        IMAGE_PER_PERSON_FOR_WHOLE_IMPEACH:'举报中的用户',  //整个举报中，每个用户
+        // IMAGE_PER_IMPEACH_OR_COMMENT:'举报（或者评论）图片', //举报或者举报评论
+        // // IMAGE_PER_COMMENT:'举报图片', //举报或者举报出路
+        // IMAGE_PER_PERSON_FOR_WHOLE_IMPEACH:'举报中的用户',  //整个举报中，每个用户
 
-        FOLDER_NUM:'最大目录数量', //
+        MAX_FOLDER_NUM_PER_USER:'最大目录数量', //
 
-        FRIEND_GROUP_NUM:'最大朋友群数量',//朋友群数量
+        MAX_FRIEND_GROUP_NUM_PER_USER:'最大朋友群数量',//朋友群数量
         MAX_PERSON_NUM_PER_FRIEND_GROUP:'群人数数量',//群中人数最大数量
 
-        MAX_UNTREATED_ADD_FRIEND_REQUEST:'最大未处理的添加朋友的请求数',
-        MAX_ACCEPT_BUT_NOT_ASSIGN_ADD_FRIEND_REQUEST:'最大已同意但是未被分配的添加朋友的请求数', //最大 已同意但是未被分配到某个朋友群的 添加朋友的请求数
+        MAX_UNTREATED_ADD_FRIEND_REQUEST_PER_USER:'最大未处理的添加朋友的请求数',
+        MAX_ACCEPT_BUT_NOT_ASSIGN_ADD_FRIEND_REQUEST_PER_USER:'最大已同意但是未被分配的添加朋友的请求数', //最大 已同意但是未被分配到某个朋友群的 添加朋友的请求数
 
-        MAX_NEW_ARTICLE:'新建但未做过任何处理的文档数',//新建但未做过任何处理的文档数
-        MAX_ARTICLE:'最大文档数',//最大文档数
+        MAX_NEW_ARTICLE_PER_USER:'新建但未做过任何处理的文档数',//新建但未做过任何处理的文档数
+        MAX_ARTICLE_PER_USER:'最大文档数',//最大文档数
 
         MAX_COMMENT_PER_ARTICLE:'文档最大评论数',
         MAX_COMMENT_PER_ARTICLE_PER_USER:'用户对文档的最大评论数',
+
+        MAX_SIMULTANEOUS_NEW_OR_EDITING_IMPEACH_PER_USER:'用户最大编辑中举报数',//用户最大编辑中举报数
+        MAX_REVOKE_IMPEACH_PER_USER:'最大撤销举报数',//
+        MAX_SIMULTANEOUS_WAIT_FOR_ASSIGN_IMPEACH_PER_USER:'用户最大提交当未被处理的举报数',//用户最大提交当未被处理的举报数
     },
 }
 
@@ -504,6 +538,7 @@ module.exports={
     ImpeachAllAction,
     ImpeachUserAction,
     ImpeachAdminAction,
+    // ImpeachStatus,
     ImpeachState,
     // ImpeachActionMatchState,
     ImpeachImageReferenceColl,

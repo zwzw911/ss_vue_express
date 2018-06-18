@@ -139,7 +139,7 @@ async function uploadArticleAttachment_async({req}){
     /*                                       resource check                                    */
     /*******************************************************************************************/
     /*              获得用户当前的所有资源配置，并检查当前占用的资源（磁盘空间）+文件的资源（sizeInMB）后，还小于==>所有<==的资源配置（）                         */
-    let resourceProfileRangeToBeCheck=[e_resourceRange.ATTACHMENT_PER_ARTICLE,e_resourceRange.WHOLE_RESOURCE_PER_PERSON_FOR_ALL_ARTICLE]
+    let resourceProfileRangeToBeCheck=[e_resourceRange.ATTACHMENT_PER_ARTICLE,e_resourceRange.WHOLE_FILE_RESOURCE_PER_PERSON]
     await resourceCheck.ifEnoughResource_async({requiredResource:requiredResource,resourceProfileRange:resourceProfileRangeToBeCheck,userId:userId,containerId:recordId})
 
     /*let calcResult
@@ -159,9 +159,9 @@ async function uploadArticleAttachment_async({req}){
                     return Promise.reject(controllerError.articleAttachmentSizeExceed)
                 }
                 break;
-            case e_resourceRange.WHOLE_RESOURCE_PER_PERSON_FOR_ALL_ARTICLE:
+            case e_resourceRange.WHOLE_FILE_RESOURCE_PER_PERSON:
                 //从user_resource_static中group查询得到 总资源值
-                calcResult=await controllerHelper.calcExistResource_async({resourceProfileRange:e_resourceRange.WHOLE_RESOURCE_PER_PERSON_FOR_ALL_ARTICLE,userId:userId})
+                calcResult=await controllerHelper.calcExistResource_async({resourceProfileRange:e_resourceRange.WHOLE_FILE_RESOURCE_PER_PERSON,userId:userId})
                 if(singleResourceProfileRecord[e_resourceFieldName.MAX_FILE_NUM]<calcResult[e_resourceFieldName.MAX_FILE_NUM])
                 {
                     fs.unlink(path)
@@ -223,7 +223,7 @@ async function uploadArticleAttachment_async({req}){
 
     // }
     if(e_env.DEV===currentEnv){
-        let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInputRule:inputRule[fileCollName],collInternalRule:internalInputRule[fileCollName],applyRange:e_applyRange.CREATE})
+        let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInternalRule:internalInputRule[fileCollName],applyRange:e_applyRange.CREATE})
 // console.log(`internalValue check result====>   ${JSON.stringify(tmpResult)}`)
         if(tmpResult.rc>0){
             return Promise.reject(tmpResult)

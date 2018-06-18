@@ -40,6 +40,7 @@ async function reCreateUser_returnSessUserId_async({userData,app}){
     // ap.inf('userDate',userData)
     //登录获得sess
     sess=await userAPI.userLogin_returnSess_async({userData:userData,app:app,captcha:captcha,sess:sess})
+    // ap.wrn('userDate',userData)
     //获得userId
     let userId=await db_operation_helper.getUserId_async({userAccount:userData.account})
 /*    //获得tempSalt

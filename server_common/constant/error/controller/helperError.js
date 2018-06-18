@@ -10,8 +10,8 @@ const helperBaseErrorCode=baseErrorCode
 const checkerBaseErrorCode=baseErrorCode+100
 const preCheckBaseErrorCode=baseErrorCode+200
 const dispatchBaseErrorCode=baseErrorCode+300
-const resourceCheckBaseErrorCode=baseErrorCode+400
-const inputValueLogicCheckError=baseErrorCode+500
+const resourceCheckBaseErrorCode=baseErrorCode+400 //需要200个rc
+const inputValueLogicCheckError=baseErrorCode+600
 
 const e_coll=require('../../../constant/genEnum/DB_Coll').Coll
 const compound_unique_field_config=require(`../../../model/mongo/compound_unique_field_config`).compound_unique_field_config
@@ -256,48 +256,107 @@ const resourceCheck={
         },
 
     },
+    /**     article 文件资源        **/
     calcArticleResourceUsage_async:{
         articleNotExistCantCalcResource:{rc:resourceCheckBaseErrorCode+2,msg:{client:'文档不存在',server:'文档不存在，无法计算文档的资源使用情况'}},
-        unknownResourceProfileRange:{rc:resourceCheckBaseErrorCode+4,msg:{client:'内部错误，请联系管理员',server:'未知的资源范围'}},
+        unknownResourceProfileRange:{rc:resourceCheckBaseErrorCode+4,msg:{client:'内部错误，请联系管理员',server:'未知的文档资源范围'}},
+    },
+    /**     impeach 文件资源        **/
+    calcImpeachResourceUsage_async:{
+        impeachNotExistCantCalcResource:{rc:resourceCheckBaseErrorCode+6,msg:{client:'举报不存在',server:'举报不存在，无法计算文档的资源使用情况'}},
+        unknownResourceProfileRange:{rc:resourceCheckBaseErrorCode+8,msg:{client:'内部错误，请联系管理员',server:'未知的举报资源范围'}},
     },
     calcUserTotalResourceUsage_async:{
-        userNotExistCantGetUsage:{rc:resourceCheckBaseErrorCode+6,msg:{client:'内部错误，请联系管理员',server:'无法查找到用户的资源使用记录'}},
+        userNotExistCantGetUsage:{rc:resourceCheckBaseErrorCode+10,msg:{client:'内部错误，请联系管理员',server:'无法查找到用户的资源使用记录'}},
     },
+    calcResourcePerImpeachOrComment_async:{
+        noMatchImpeachOrCommentToCalcImage:{rc:resourceCheckBaseErrorCode+12,msg:{client:'内部错误，请联系管理员',server:'无法查找到对应的举报或者举报处理的记录'}},
+        noMatchImpeachToCalcAttachment:{rc:resourceCheckBaseErrorCode+14,msg:{client:'内部错误，请联系管理员',server:'无法查找到对应的举报或者举报处理的记录'}},
+    },
+
     ifEnoughResource_async:{
+        noHandleCodeProfileRange(){
+            return {rc:resourceCheckBaseErrorCode+30,msg:{client:`内部错误，请联系管理员`,server:`当前profileRange没有对应的处理code`}}
+        },
+        /******************************/
+        /**       file resource     **/
+        /******************************/
+        /**     article attachment  **/
         articleAttachmentDiskUsageExceed({resourceProfileRangeSizeInMb}){
-            return {rc:resourceCheckBaseErrorCode+8,msg:{client:`文档最多容纳${resourceProfileRangeSizeInMb}MB的附件，剩余空间无法存储当前上传的文件`}}
+            return {rc:resourceCheckBaseErrorCode+32,msg:{client:`文档最多容纳${resourceProfileRangeSizeInMb}MB的附件，剩余空间无法存储当前上传的文件`}}
         },
         articleAttachmentNumExceed({resourceProfileNum}){
-            return {rc:resourceCheckBaseErrorCode+10,msg:{client:`文档最多容纳${resourceProfileNum}个附件，当前上传的附件的数量大于剩余文件数量`}}
+            return {rc:resourceCheckBaseErrorCode+34,msg:{client:`文档最多容纳${resourceProfileNum}个附件，当前上传的附件的数量大于剩余文件数量`}}
         },
         articleImageDiskUsageExceed({resourceProfileRangeSizeInMb}){
-            return {rc:resourceCheckBaseErrorCode+12,msg:{client:`文档最多容纳${resourceProfileRangeSizeInMb}MB的图片，剩余空间无法存储当前上传的图片`}}
+            return {rc:resourceCheckBaseErrorCode+36,msg:{client:`文档最多容纳${resourceProfileRangeSizeInMb}MB的图片，剩余空间无法存储当前上传的图片`}}
         },
         articleImageNumExceed({resourceProfileNum}){
-            return {rc:resourceCheckBaseErrorCode+14,msg:{client:`文档最多容纳${resourceProfileNum}个图片，当前上传的图片的数量大于剩余文件数量`}}
+            return {rc:resourceCheckBaseErrorCode+38,msg:{client:`文档最多容纳${resourceProfileNum}个图片，当前上传的图片的数量大于剩余文件数量`}}
         },
+        /**     total       **/
         userTotalDiskUsageExceed({resourceProfileRangeSizeInMb}){
-            return {rc:resourceCheckBaseErrorCode+16,msg:{client:`您的总存储空间为${resourceProfileRangeSizeInMb}MB，剩余空间无法存储当前上传的文件`}}
+            return {rc:resourceCheckBaseErrorCode+40,msg:{client:`您的总存储空间为${resourceProfileRangeSizeInMb}MB，剩余空间无法存储当前上传的文件`}}
         },
         userTotalFileNumExceed({resourceProfileNum}){
-            return {rc:resourceCheckBaseErrorCode+18,msg:{client:`您的总存储文件数量为${resourceProfileNum}，当前上传的文件的数量大于剩余文件数量`}}
+            return {rc:resourceCheckBaseErrorCode+42,msg:{client:`您的总存储文件数量为${resourceProfileNum}，当前上传的文件的数量大于剩余文件数量`}}
+        },
+        /**     impeach       **/
+        impeachImageDiskUsageExceed({resourceProfileRangeSizeInMb}){
+            return {rc:resourceCheckBaseErrorCode+44,msg:{client:`举报最最多容纳${resourceProfileRangeSizeInMb}MB的图片，当前上传的图片的数量大于剩余文件数量`}}
+        },
+        impeachImageNumExceed({resourceProfileNum}){
+            return {rc:resourceCheckBaseErrorCode+46,msg:{client:`举报最多添加${resourceProfileNum}个图片，当前上传的图片的数量大于剩余图片数量`}}
+        },
+        //attachment只有impeach才有
+        impeachAttachmentDiskUsageExceed({resourceProfileRangeSizeInMb}){
+            return {rc:resourceCheckBaseErrorCode+48,msg:{client:`举报最最多容纳${resourceProfileRangeSizeInMb}MB的附件，当前上传的图片的数量大于剩余文件数量`}}
+        },
+        impeachAttachmentNumExceed({resourceProfileNum}){
+            return {rc:resourceCheckBaseErrorCode+50,msg:{client:`举报最多添加${resourceProfileNum}个附件，当前上传的附件的数量大于剩余文件数量`}}
+        },
+        impeachImageDiskUsagePerUserInWholeImpeachExceed({resourceProfileRangeSizeInMb}){
+            return {rc:resourceCheckBaseErrorCode+52,msg:{client:`您在举报最最多容纳${resourceProfileRangeSizeInMb}MB的图片，当前上传的图片的数量大于剩余文件数量`}}
+        },
+        impeachImageNumPerUserInWholeImpeachExceed({resourceProfileNum}){
+            return {rc:resourceCheckBaseErrorCode+54,msg:{client:`您在举报最多添加${resourceProfileNum}个图片，当前上传的图片的数量大于剩余图片数量`}}
+        },
+        impeachImageDiskUsageInWholeImpeachExceed({resourceProfileRangeSizeInMb}){
+            return {rc:resourceCheckBaseErrorCode+56,msg:{client:`整个举报最最多容纳${resourceProfileRangeSizeInMb}MB的图片，当前上传的图片的数量大于剩余文件数量`}}
+        },
+        impeachImageNumInWholeImpeachExceed({resourceProfileNum}){
+            return {rc:resourceCheckBaseErrorCode+58,msg:{client:`整个举报最多添加${resourceProfileNum}个图片，当前上传的图片的数量大于剩余图片数量`}}
         },
 
+
+        /******************************/
+        /**            num          **/
+        /******************************/
         totalFolderNumExceed({resourceProfileNum}){
-            return {rc:resourceCheckBaseErrorCode+18,msg:{client:`您已达到最大可以创建的目录数量${resourceProfileNum}，无法新建目录`}}
+            return {rc:resourceCheckBaseErrorCode+100,msg:{client:`您已达到最大可以创建的目录数量${resourceProfileNum}，无法新建目录`}}
         },
 
         totalNewArticleNumExceed({resourceProfileNum}){
-            return {rc:resourceCheckBaseErrorCode+20,msg:{client:`您已达到最大新建文档数量${resourceProfileNum}，无法新建文档`}}
+            return {rc:resourceCheckBaseErrorCode+102,msg:{client:`您已达到最大新建文档数量${resourceProfileNum}，无法新建文档`}}
         },
         totalArticleNumExceed({resourceProfileNum}){
-            return {rc:resourceCheckBaseErrorCode+22,msg:{client:`您已达到最大文档数量${resourceProfileNum}，无法新建文档`}}
+            return {rc:resourceCheckBaseErrorCode+104,msg:{client:`您已达到最大文档数量${resourceProfileNum}，无法新建文档`}}
         },
         totalCommentPerArticleNumExceed({resourceProfileNum}){
-            return {rc:resourceCheckBaseErrorCode+24,msg:{client:`文档达到最大评论数量${resourceProfileNum}，无法添加评论`}}
+            return {rc:resourceCheckBaseErrorCode+106,msg:{client:`文档达到最大评论数量${resourceProfileNum}，无法添加评论`}}
         },
         totalCommentPerArticlePerUserNumExceed({resourceProfileNum}){
-            return {rc:resourceCheckBaseErrorCode+26,msg:{client:`您对当前文档的评论数量已经达到最大数量${resourceProfileNum}，无法添加评论`}}
+            return {rc:resourceCheckBaseErrorCode+108,msg:{client:`您对当前文档的评论数量已经达到最大数量${resourceProfileNum}，无法添加评论`}}
+        },
+
+        totalNewOrEditingImpeachNumExceed({resourceProfileNum}){
+            return {rc:resourceCheckBaseErrorCode+110,msg:{client:`您未提交的举报已经达到最大数量${resourceProfileNum}，无法创建新举报`}}
+        },
+        totalRevokeImpeachNumExceed({resourceProfileNum}){
+            return {rc:resourceCheckBaseErrorCode+112,msg:{client:`您撤销的举报已经达到最大数量${resourceProfileNum}，无法创建新举报`}}
+        },
+        totalWaitAssignImpeachNumExceed({resourceProfileNum}){
+            return {rc:resourceCheckBaseErrorCode+114,msg:{client:`您提交但未被处理的举报已经达到最大数量${resourceProfileNum}，无法创建新举报`}}
         },
     }
 }

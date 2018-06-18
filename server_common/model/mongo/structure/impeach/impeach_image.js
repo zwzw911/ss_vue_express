@@ -43,8 +43,8 @@ const collFieldDefine={
     hashName:{type:String,},
     pathId:{type:mongoose.Schema.Types.ObjectId,ref:"path"},
     sizeInMb:{type:Number}, //
-    referenceId:{type:mongoose.Schema.Types.ObjectId,},//冗余字段，方便查询，统计。impeach和impeach_comment共用
-    referenceColl:{type:String},//区分image属于impeach还是impeach_comment
+    impeachId:{type:mongoose.Schema.Types.ObjectId,ref:'impeach'},//冗余字段，方便查询，统计。impeach和impeach_comment共用
+    // referenceColl:{type:String},//区分image属于impeach还是impeach_comment
     authorId:{type:mongoose.Schema.Types.ObjectId,ref:"user"}, //
     cDate:{type:Date,default:Date.now},
     uDate:{type:Date,default:Date.now},

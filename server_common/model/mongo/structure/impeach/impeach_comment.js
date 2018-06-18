@@ -53,14 +53,19 @@ const impeachCommentAttachment_arrayMaxLengthValidator={
     message:`错误代码${collInputRule['impeachAttachmentsId'][serverRuleType.ARRAY_MAX_LENGTH]['mongoError']['rc']}:${collInputRule['impeachAttachmentsId'][serverRuleType.ARRAY_MAX_LENGTH]['mongoError']['msg']}`
 }
 
-
+/**         举报的后续处理         **/
+/**     comment单独使用一个表，是为了使用impeachId串联起整个impeach **/
 const collFieldDefine={
-    authorId:{type:mongoose.Schema.Types.ObjectId,ref:"user"}, //普通用户发起举报
-    adminAuthorId:{type:mongoose.Schema.Types.ObjectId,ref:"adminUser"},
-    impeachId:{type:mongoose.Schema.Types.ObjectId,ref:"impeach"},
+    authorId:{type:mongoose.Schema.Types.ObjectId,ref:"user"}, //普通用户发起
+    adminAuthorId:{type:mongoose.Schema.Types.ObjectId,ref:"adminUser"},//管理员发起
+    impeachId:{type:mongoose.Schema.Types.ObjectId,ref:"impeach"},//对应哪个举报
     content:{type:String,},
     impeachImagesId:{type:[mongoose.Schema.Types.ObjectId],ref:'impeach_image',validate:[impeachCommentImage_arrayMaxLengthValidator]},
     impeachAttachmentsId:{type:[mongoose.Schema.Types.ObjectId],ref:'impeach_attachment',validate:[impeachCommentAttachment_arrayMaxLengthValidator]},
+
+    imagesNum:{type:Number, default:0},//记录图片总数
+    imagesSizeInMb:{type:Number, default:0},//记录图片总大小
+
     documentStatus:{type:String},//enum
     cDate:{type:Date,default:Date.now},
     //uDate:{type:Date,default:Date.now},//评论无法更改
