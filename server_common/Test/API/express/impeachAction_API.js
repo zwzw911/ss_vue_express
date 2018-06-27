@@ -119,7 +119,7 @@ async function updateImpeach_async({data,userSess,app}) {
 //impeachActionInfo:{}
 async function createImpeachAction_async({sess,impeachActionInfo,app}){
     let data={values:{}}
-    data.values[e_part.METHOD]=e_method.CREATE
+    // data.values[e_part.METHOD]=e_method.CREATE
     data.values[e_part.RECORD_INFO]=impeachActionInfo
     return new Promise(function(resolve,reject){
         request(app).post('/impeach_action/').set('Accept', 'application/json').set('Cookie',[sess]).send(data)

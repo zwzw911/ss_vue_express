@@ -1260,6 +1260,54 @@ function decryptInputValue({req,expectedPart,salt,browserCollRule}){
         if(true===dataTypeCheck.isSetValue(req.body.values[singlePart])){
             let partValue=req.body.values[singlePart]
             switch (singlePart){
+                case e_part.MANIPULATE_ARRAY:
+                    for(let singleFieldName in partValue){
+                        // ap.inf('singleFieldName',singleFieldName)
+                        if(undefined!==browserCollRule[singleFieldName]){
+                            let singleFieldDataTypeInRule=browserCollRule[singleFieldName][e_otherRuleFiledName.DATA_TYPE]
+                            let dataTypeArrayFlag=dataTypeCheck.isArray(singleFieldDataTypeInRule)
+                            let dataType= dataTypeArrayFlag ? singleFieldDataTypeInRule[0]:singleFieldDataTypeInRule
+                            // ap.inf('dataType',dataType)
+                            if(e_dataType.OBJECT_ID===dataType){
+                                //必定是数组，对每个元素进行解密
+                                // if(true===dataTypeArrayFlag){
+                                let fieldValue=partValue[singleFieldName]
+                                //对每个部分进行检测
+                                let fieldSubPartValue
+                                if(undefined!==fieldValue['add'] && true===dataTypeCheck.isSetValue(fieldValue['add'])){
+                                    fieldSubPartValue=fieldValue['add']
+                                    for(let  idx in fieldSubPartValue){
+                                        partValue[singleFieldName]['add'][idx]=decryptSingleFieldValue({fieldValue:fieldSubPartValue[idx],salt:salt}).msg
+                                    }
+                                }
+                                if(undefined!==fieldValue['remove'] && true===dataTypeCheck.isSetValue(fieldValue['remove'])){
+                                    fieldSubPartValue=fieldValue['remove']
+                                    for(let  idx in fieldSubPartValue){
+                                        partValue[singleFieldName]['remove'][idx]=decryptSingleFieldValue({fieldValue:fieldSubPartValue[idx],salt:salt}).msg
+                                    }
+                                }
+/*                                    for(let idx in partValue[singleFieldName]){
+                                        //非空值才进行解密
+                                        if(true===dataTypeCheck.isSetValue(partValue[singleFieldName][idx])){
+                                            partValue[singleFieldName][idx]=decryptSingleFieldValue({fieldValue:partValue[singleFieldName][idx],salt:salt}).msg
+                                        }
+
+                                    }*/
+                                /*}else{
+                                    // ap.inf('before decryptSingleFieldValue  partValue[singleFieldName]',partValue[singleFieldName])
+                                    // ap.inf('before decryptSingleFieldValue  salt',salt)
+                                    // ap.inf('decryptSingleFieldValue({fieldValue:partValue[singleFieldName],salt:salt})',decryptSingleFieldValue({fieldValue:partValue[singleFieldName],salt:salt}))
+                                    //非空值才进行解密
+                                    if(true===dataTypeCheck.isSetValue(partValue[singleFieldName])){
+                                        partValue[singleFieldName]=decryptSingleFieldValue({fieldValue:partValue[singleFieldName],salt:salt}).msg
+                                    }
+
+                                }*/
+                            }
+                        }
+
+                    }
+                    break;
                 case e_part.RECORD_ID:
                     //recordId非object，所以是非引用，需要赋值
                     req.body.values[singlePart]=decryptSingleFieldValue({fieldValue:partValue,salt:salt}).msg

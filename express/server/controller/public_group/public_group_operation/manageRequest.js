@@ -59,7 +59,7 @@ const fkConfig=server_common_file_require.fkConfig.fkConfig
 
 const globalConfiguration=server_common_file_require.globalConfiguration
 
-async function adminManageRequest_async({req}){
+/*async function manageRequest_async({req}){
     let collName=controller_setting.MAIN_HANDLED_COLL_NAME,tmpResult//,collConfig={},collImageConfig={}
 
     //checkMethod只检测req的结构，以及req中method的格式和值，以便后续可以直接根据method进行调用
@@ -91,37 +91,63 @@ async function adminManageRequest_async({req}){
     // ap.inf('bfeore')
     tmpResult=await controllerHelper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
     // ap.inf('after',tmpResult)
-    /*      执行逻辑                */
-    await requestJoin_logic_async({req:req,expectedPart:expectedPart})
+    /!*      执行逻辑                *!/
+    await manageRequest_async({req:req,expectedPart:expectedPart})
     return Promise.resolve({rc:0})
-}
+}*/
 
-async function requestJoin_logic_async({req,expectedPart}){
+/*
+* 对WAIT_APPROVE_ID字段进行操作（移动到）
+* */
+async function manageRequest_async({req}){
     // console.log(`updateUser_async in`)
     // console.log(`req.session ${JSON.stringify(req.session)}`)
-    /*******************************************************************************************/
-    /*                                          define variant                                 */
-    /*******************************************************************************************/
+    /********************************************************/
+    /*************      define variant        ***************/
+    /********************************************************/
     let tmpResult,collName=controller_setting.MAIN_HANDLED_COLL_NAME
     let convertedNoSql //为editSubField设置
     let recordInfoNotChange=false,editSubFieldValueNotChange=false //检测是否需要做update
     // console.log(`req============>${JSON.stringify(req)}`)
     let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
-    let {userId,userCollName,userType,userPriority}=userInfo
+    let {userId,userCollName,userType,userPriority,tempSalt}=userInfo
     // console.log(`userInfo============>${JSON.stringify(userInfo)}`)
-    let {docValue,recordId,subFieldValue,manipulateArrayValue}=controllerHelper.getPartValue({req:req,arr_expectedPart:expectedPart})
+    // let {docValue,recordId,subFieldValue,manipulateArrayValue}=controllerHelper.getPartValue({req:req,arr_expectedPart:expectedPart})
+    let recordId=req.body.values[e_part.RECORD_ID]
+    let manipulateArrayValue=req.body.values[e_part.MANIPULATE_ARRAY]
 
-    let groupRecord=await common_operation_model.findById_returnRecord_async({dbModel:e_dbModel[collName],id:recordId})
+
+
+    /**********************************************/
+    /***********    用户类型检测    **************/
+    /*********************************************/
+    await controllerChecker.ifExpectedUserType_async({currentUserType:userType,arr_expectedUserType:[e_allUserType.USER_NORMAL]})
+
+    /**********************************************/
+    /***********    用户权限检测    **************/
+    /*********************************************/
+    //当前用户必须是public_group的admin，且public_group未被删除
+    let originalDoc
+    if(userType===e_allUserType.USER_NORMAL){
+        originalDoc=await controllerChecker.ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({
+            dbModel:e_dbModel.public_group,
+            recordId:recordId,
+            ownerFieldsName:[e_field.PUBLIC_GROUP.ADMINS_ID],
+            userId:userId,
+            additionalCondition:{'dDate':{'$exists':false}},
+        })
+        if(false===originalDoc){
+            return Promise.reject(controllerError.adminManageGroupMember.notAdminCantManageGroup)
+        }
+    }
+
+/*    let groupRecord=await common_operation_model.findById_returnRecord_async({dbModel:e_dbModel[collName],id:recordId})
     if(null===groupRecord){
         return Promise.reject(controllerError.adminManageGroupMember.notFindGroup)
     }
-    /*******************************************************************************************/
-    /*                                     用户类型和权限检测                                  */
-    /*******************************************************************************************/
-    await controllerChecker.ifExpectedUserType_async({currentUserType:userType,arr_expectedUserType:[e_allUserType.USER_NORMAL]})
     if(-1===groupRecord[e_field.PUBLIC_GROUP.ADMINS_ID].indexOf(userId)){
         return Promise.reject(controllerError.adminManageGroupMember.notAdminCantManageGroup)
-    }
+    }*/
     // ap.inf('admin check done')
     /*******************************************************************************************/
     /*                                     参数过滤                                           */
@@ -129,16 +155,16 @@ async function requestJoin_logic_async({req,expectedPart}){
     // if(undefined!==docValue){
     //     dataConvert.constructUpdateCriteria(docValue,fkConfig[collName])
     // }
-    /*******************************************************************************************/
-    /*                                     逻辑检测                                            */
-    /*******************************************************************************************/
+    /*********************************************/
+    /**********          特定检查        *********/
+    /*********************************************/
     let updateFieldsValue={}
     if(undefined===manipulateArrayValue[e_field.PUBLIC_GROUP.WAIT_APPROVE_ID]){
         return Promise.reject(controllerError.adminManageGroupMember.missField)
     }
 
     //确认rule是批准加入（才能进行）
-    if(groupRecord[e_field.PUBLIC_GROUP.JOIN_IN_RULE]!==e_publicGroupJoinInRule.PERMIT_ALLOW){
+    if(originalDoc[e_field.PUBLIC_GROUP.JOIN_IN_RULE]!==e_publicGroupJoinInRule.PERMIT_ALLOW){
         return Promise.reject(controllerError.adminManageGroupMember.onlyPermitAllowNeedAdminOperator)
     }
 
@@ -283,5 +309,5 @@ ap.inf('updateFieldsValue',updateFieldsValue)
 }
 
 module.exports={
-    adminManageRequest_async,
+    manageRequest_async,
 }

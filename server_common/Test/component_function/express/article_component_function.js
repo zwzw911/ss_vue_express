@@ -17,6 +17,12 @@ const commonAPI=require('../../API/common_API')
 const db_operation_helper=require('../../db_operation_helper')
 
 /*************************************************************/
+/******************        公共常量      ******************/
+/*************************************************************/
+const e_part=require('../../../constant/enum/nodeEnum').ValidatePart
+const e_field=require('../../../constant/genEnum/DB_field').Field
+const e_articleStatus=require('../../../constant/enum/mongoEnum').DocumentStatus.DB
+/*************************************************************/
 /**************        direct function         **************/
 /*************************************************************/
 const cryptSingleFieldValue=require(`../../../function/assist/crypt`).cryptSingleFieldValue
@@ -26,7 +32,11 @@ async function createArticle_setToFinish_returnArticleId_async({userSess,app}){
     //创建new article
     let recordId=await articleAPI.createNewArticle_returnArticleId_async({userSess:userSess,app:app})
     //更新到完成状态
-    await API_helper.updateArticle_returnArticleId_async({userSess:userSess,recordId:recordId,values:{[e_field.ARTICLE.STATUS]:e_articleStatus.FINISHED},app:app})
+    let data={values:{}}
+    data.values[e_part.RECORD_ID]=recordId
+    data.values[e_part.RECORD_INFO]={[e_field.ARTICLE.STATUS]:e_articleStatus.COMMIT}
+    // ap.wrn('data',data)
+    await articleAPI.updateArticle_returnArticleId_async({userSess:userSess,data:data,app:app})
 
     return Promise.resolve(recordId)
 }

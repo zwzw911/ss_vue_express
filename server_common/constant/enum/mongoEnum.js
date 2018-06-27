@@ -135,27 +135,31 @@ const EventStatus={
 
 const PenalizeType={
     DB:{
-        NO_ARTICLE: '0',
-        NO_ARTICLE_COMMENT:'1',
-        NO_TOPIC:'2',
-        NO_LIKE_DISLIKE:'3',
-        NO_IMPEACH:'4',
+        NO_ARTICLE: '1',
+        NO_ARTICLE_COMMENT:'2',
+        NO_TOPIC:'3',
+        NO_LIKE_DISLIKE:'4',
 
-        NO_IMPEACH_COMMENT:'5',
+
+        NO_IMPEACH_COMMENT:'10',
         //user_friend_group
-        NO_USER_FRIEND_GROUP:'7',
+        NO_USER_FRIEND_GROUP:'20',
 
         //add_friend
-        NO_ADD_FRIEND:'8',
+        NO_ADD_FRIEND:'21',
 
         //public_group
-        NO_PUBLIC_GROUP:'9',
-
+        NO_PUBLIC_GROUP:'30',
+        NO_JOIN_PUBLIC_REQUEST:'31',
         //user:upload_photo
-        NO_UPLOAD_USER_PHOTO:'10',
+        NO_UPLOAD_USER_PHOTO:'40',
 
         //folder
-        NO_FOLDER:'11',
+        NO_FOLDER:'50',
+
+        NO_IMPEACH:'60',
+
+        NO_IMPEACH_ACTION:'61',
     },
     SHOW:{
         NO_ARTICLE: '禁止文档',
@@ -172,12 +176,15 @@ const PenalizeType={
 
         //public_group
         NO_PUBLIC_GROUP:'禁止创建群',
+        NO_JOIN_PUBLIC_REQUEST:'禁止加入群',
 
         //user:upload_photo
         NO_UPLOAD_USER_PHOTO:'禁止上传头像',
 
         //folder
         NO_FOLDER:'禁止目录相关操作',
+
+        NO_IMPEACH_ACTION:'禁止操作举报',
     },
 
 }
@@ -424,14 +431,21 @@ const ResourceRange={
         MAX_NEW_ARTICLE_PER_USER:'110',//新建但未做过任何处理的文档数
         MAX_ARTICLE_PER_USER:'112',//最大文档数（所有状态（删除的不算））
 
-        MAX_COMMENT_PER_ARTICLE:'114',
-        MAX_COMMENT_PER_ARTICLE_PER_USER:'116',
+        MAX_COMMENT_PER_ARTICLE:'114', //文档最大评论数
+        MAX_COMMENT_PER_ARTICLE_PER_USER:'116',//每用户每文档最大评论数
 
 
 
         MAX_SIMULTANEOUS_NEW_OR_EDITING_IMPEACH_PER_USER:'118',//用户最大编辑中举报
         MAX_REVOKE_IMPEACH_PER_USER:'120',//最大撤销举报数
         MAX_SIMULTANEOUS_WAIT_FOR_ASSIGN_IMPEACH_PER_USER:'122',////用户最大提交当未被处理的举报
+
+        MAX_COMMENT_PER_IMPEACH_PER_USER:'124',//每个举报中，每个用户最多创建的评论
+
+        MAX_PUBLIC_GROUP_NUM:'126',//每个用户最大可创建的公共群
+        MAX_MEMBER_PER_GROUP:'128',//每个公共群最大成员数 //虽然是用来数组，但是为update_array方式，所以每次更新时，还是需要具体计算（如果是update_scalar，一次输入整个数据，则可以使用inputRule判断）
+
+        MAX_DECLINE_JOIN_REQUEST:'130',//单个public group，每个用户最大可以被拒绝次数
     },
     SHOW:{
         /**     存储在coll中    **/
@@ -469,6 +483,14 @@ const ResourceRange={
         MAX_SIMULTANEOUS_NEW_OR_EDITING_IMPEACH_PER_USER:'用户最大编辑中举报数',//用户最大编辑中举报数
         MAX_REVOKE_IMPEACH_PER_USER:'最大撤销举报数',//
         MAX_SIMULTANEOUS_WAIT_FOR_ASSIGN_IMPEACH_PER_USER:'用户最大提交当未被处理的举报数',//用户最大提交当未被处理的举报数
+
+        MAX_COMMENT_PER_IMPEACH_PER_USER:'每个举报中每个用户最多创建的评论',//每个举报中，每个用户最多创建的评论
+
+
+        MAX_PUBLIC_GROUP_NUM:'每个用户最大可创建的公共群数',//每个用户最大可创建的公共群
+        MAX_MEMBER_PER_PUBLIC_GROUP:'每个公共群最大成员数',//每个公共群最大成员数  //虽然是用来数组，但是为update_array方式，所以每次更新时，还是需要具体计算（如果是update_scalar，一次输入整个数据，则可以使用inputRule判断）
+
+        MAX_DECLINE_JOIN_REQUEST:'入群最大被拒次数',//单个public group，每个用户最大可以被拒绝次数
     },
 }
 
@@ -522,7 +544,22 @@ const AddFriendStatus={
     },
 }
 
+/**     请求加入公共群后，可能的状态      **/
+const JoinPublicGroupHandleResult={
+    DB:{
+        UNTREATED:'1',
+        DECLINE:'2',
+        ACCEPT:'3', //被请求者已经同意，但是请求者没有进行处理（分配到某个group）
 
+
+
+    },
+    SHOW:{
+        UNTREATED:'尚未处理',
+        DECLINE:'拒绝',
+        ACCEPT:'接受',
+    },
+}
 module.exports={
     ArticleStatus,
     AdminUserType,
@@ -551,4 +588,5 @@ module.exports={
     ResourceType,
     DocumentStatus,
     AddFriendStatus,
+    JoinPublicGroupHandleResult,
 }

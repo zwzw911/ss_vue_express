@@ -1,4 +1,4 @@
-/*    gene by H:\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-6-12   */ 
+/*    gene by H:\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-6-27   */ 
  
 "use strict"
 const internalInputRule={
@@ -237,15 +237,6 @@ const internalInputRule={
             format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":102252,"msg":"处罚发起者必须是objectId"},"mongoError":{"rc":202252,"msg":"处罚发起者必须是objectId"}},
         },
     },
-    public_group:{
-        creatorId:{
-            chineseName:"群创建者",
-            dataType:"objectId",
-            applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":102350,"msg":"群创建者不能为空"},"mongoError":{"rc":202350,"msg":"群创建者不能为空"}},
-            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":102352,"msg":"群创建者必须是objectId"},"mongoError":{"rc":202352,"msg":"群创建者必须是objectId"}},
-        },
-    },
     public_group_event:{
         sourceId:{
             chineseName:"事件发起者",
@@ -313,6 +304,49 @@ const internalInputRule={
             enum:{"define":["1","2","3","4"],"error":{"rc":102156,"msg":"状态未定义"},"mongoError":{"rc":202156,"msg":"状态未定义"}},
         },
     },
+    join_public_group_request:{
+        creatorId:{
+            chineseName:"请求人",
+            dataType:"objectId",
+            applyRange:["create"],
+            require:{"define":{"create":true},"error":{"rc":102850,"msg":"请求人不能为空"},"mongoError":{"rc":202850,"msg":"请求人不能为空"}},
+            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":102852,"msg":"请求人必须是objectId"},"mongoError":{"rc":202852,"msg":"请求人必须是objectId"}},
+        },
+        handleResult:{
+            chineseName:"请求处理结果",
+            dataType:"string",
+            applyRange:["create","update_scalar"],
+            require:{"define":{"create":true,"update_scalar":true},"error":{"rc":102854,"msg":"请求处理结果不能为空"},"mongoError":{"rc":202854,"msg":"请求处理结果不能为空"}},
+            enum:{"define":["1","2","3"],"error":{"rc":102856,"msg":"请求处理结果未定义"},"mongoError":{"rc":202856,"msg":"请求处理结果未定义"}},
+        },
+    },
+    public_group:{
+        creatorId:{
+            chineseName:"群创建者",
+            dataType:"objectId",
+            applyRange:["create"],
+            require:{"define":{"create":true},"error":{"rc":102350,"msg":"群创建者不能为空"},"mongoError":{"rc":202350,"msg":"群创建者不能为空"}},
+            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":102352,"msg":"群创建者必须是objectId"},"mongoError":{"rc":202352,"msg":"群创建者必须是objectId"}},
+        },
+        membersId:{
+            chineseName:"群成员",
+            dataType:["objectId"],
+            applyRange:["update_array"],
+            require:{"define":{"update_array":false},"error":{"rc":102356,"msg":"群成员不能为空"},"mongoError":{"rc":202356,"msg":"群成员不能为空"}},
+            arrayMinLength:{"define":1,"error":{"rc":102358,"msg":"群至少有一个成员"},"mongoError":{"rc":202358,"msg":"群至少有一个成员"}},
+            arrayMaxLength:{"define":200,"error":{"rc":102360,"msg":"群最多有200个成员"},"mongoError":{"rc":202360,"msg":"群最多有200个成员"}},
+            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":102362,"msg":"群成员必须是objectId"},"mongoError":{"rc":202362,"msg":"群成员必须是objectId"}},
+        },
+        adminsId:{
+            chineseName:"群管理员",
+            dataType:["objectId"],
+            applyRange:["update_array"],
+            require:{"define":{"update_array":false},"error":{"rc":102364,"msg":"群管理员不能为空"},"mongoError":{"rc":202364,"msg":"群管理员不能为空"}},
+            arrayMinLength:{"define":1,"error":{"rc":102366,"msg":"群管理员至少有一个成员"},"mongoError":{"rc":202366,"msg":"群管理员至少有一个成员"}},
+            arrayMaxLength:{"define":10,"error":{"rc":102368,"msg":"群最多有10个群管理员"},"mongoError":{"rc":202368,"msg":"群最多有10个群管理员"}},
+            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":102370,"msg":"群管理员必须是objectId"},"mongoError":{"rc":202370,"msg":"群管理员必须是objectId"}},
+        },
+    },
     impeach_comment_image:{
         name:{
             chineseName:"举报图片名称",
@@ -348,57 +382,6 @@ const internalInputRule={
             applyRange:["create"],
             require:{"define":{"create":true},"error":{"rc":103366,"msg":"图片上传者不能为空"},"mongoError":{"rc":203366,"msg":"图片上传者不能为空"}},
             format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":103368,"msg":"图片上传者必须是objectId"},"mongoError":{"rc":203368,"msg":"图片上传者必须是objectId"}},
-        },
-    },
-    impeach_comment:{
-        authorId:{
-            chineseName:"评论作者",
-            dataType:"objectId",
-            applyRange:["create"],
-            require:{"define":{"create":false},"error":{"rc":10570,"msg":"评论作者不能为空"},"mongoError":{"rc":20570,"msg":"评论作者不能为空"}},
-            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":10571,"msg":"评论作者必须是objectId"},"mongoError":{"rc":20571,"msg":"评论作者必须是objectId"}},
-        },
-        adminAuthorId:{
-            chineseName:"评论作者",
-            dataType:"objectId",
-            applyRange:["create"],
-            require:{"define":{"create":false},"error":{"rc":10572,"msg":"评论作者不能为空"},"mongoError":{"rc":20572,"msg":"评论作者不能为空"}},
-            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":10573,"msg":"评论作者必须是objectId"},"mongoError":{"rc":20573,"msg":"评论作者必须是objectId"}},
-        },
-        impeachImagesId:{
-            chineseName:"评论图片",
-            dataType:["objectId"],
-            applyRange:["create"],
-            require:{"define":{"create":false},"error":{"rc":10574,"msg":"评论图片不能为空"},"mongoError":{"rc":20574,"msg":"评论图片不能为空"}},
-            arrayMaxLength:{"define":10,"error":{"rc":10576,"msg":"评论中最多插入10个图片"},"mongoError":{"rc":20576,"msg":"评论中最多插入10个图片"}},
-            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":10578,"msg":"评论图片必须是objectId"},"mongoError":{"rc":20578,"msg":"评论图片必须是objectId"}},
-        },
-        imagesNum:{
-            chineseName:"图片总数量",
-            dataType:"int",
-            applyRange:["create","update_scalar"],
-            require:{"define":{"create":false,"update_scalar":false},"error":{"rc":103288,"msg":"图片总数量不能为空"},"mongoError":{"rc":203288,"msg":"图片总数量不能为空"}},
-        },
-        imagesSizeInMb:{
-            chineseName:"图片总大小",
-            dataType:"int",
-            applyRange:["create","update_scalar"],
-            require:{"define":{"create":false,"update_scalar":false},"error":{"rc":103290,"msg":"图片总大小不能为空"},"mongoError":{"rc":203290,"msg":"图片总大小不能为空"}},
-        },
-        impeachAttachmentsId:{
-            chineseName:"评论附件",
-            dataType:["objectId"],
-            applyRange:["create"],
-            require:{"define":{"create":false},"error":{"rc":10580,"msg":"评论附件不能为空"},"mongoError":{"rc":20580,"msg":"评论附件不能为空"}},
-            arrayMaxLength:{"define":10,"error":{"rc":10582,"msg":"评论中最多添加10个附件"},"mongoError":{"rc":20582,"msg":"评论中最多添加10个附件"}},
-            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":10584,"msg":"评论附件必须是objectId"},"mongoError":{"rc":20584,"msg":"评论附件必须是objectId"}},
-        },
-        documentStatus:{
-            chineseName:"记录状态",
-            dataType:"string",
-            applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":10586,"msg":"记录状态不能为空"},"mongoError":{"rc":20586,"msg":"记录状态不能为空"}},
-            enum:{"define":["1","2"],"error":{"rc":10588,"msg":"document状态不是预定义的值"},"mongoError":{"rc":20588,"msg":"document状态不是预定义的值"}},
         },
     },
     impeach_attachment:{
@@ -574,6 +557,57 @@ const internalInputRule={
             dataType:"int",
             applyRange:["create","update_scalar"],
             require:{"define":{"create":false,"update_scalar":false},"error":{"rc":103194,"msg":"附件总大小不能为空"},"mongoError":{"rc":203194,"msg":"附件总大小不能为空"}},
+        },
+    },
+    impeach_comment:{
+        authorId:{
+            chineseName:"评论作者",
+            dataType:"objectId",
+            applyRange:["create"],
+            require:{"define":{"create":false},"error":{"rc":103250,"msg":"评论作者不能为空"},"mongoError":{"rc":203250,"msg":"评论作者不能为空"}},
+            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":103252,"msg":"评论作者必须是objectId"},"mongoError":{"rc":203252,"msg":"评论作者必须是objectId"}},
+        },
+        adminAuthorId:{
+            chineseName:"评论作者",
+            dataType:"objectId",
+            applyRange:["create"],
+            require:{"define":{"create":false},"error":{"rc":103254,"msg":"评论作者不能为空"},"mongoError":{"rc":203254,"msg":"评论作者不能为空"}},
+            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":103256,"msg":"评论作者必须是objectId"},"mongoError":{"rc":203256,"msg":"评论作者必须是objectId"}},
+        },
+        impeachImagesId:{
+            chineseName:"评论图片",
+            dataType:["objectId"],
+            applyRange:["create"],
+            require:{"define":{"create":false},"error":{"rc":103258,"msg":"评论图片不能为空"},"mongoError":{"rc":203258,"msg":"评论图片不能为空"}},
+            arrayMaxLength:{"define":10,"error":{"rc":103260,"msg":"评论中最多插入10个图片"},"mongoError":{"rc":203260,"msg":"评论中最多插入10个图片"}},
+            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":103262,"msg":"评论图片必须是objectId"},"mongoError":{"rc":203262,"msg":"评论图片必须是objectId"}},
+        },
+        imagesNum:{
+            chineseName:"图片总数量",
+            dataType:"int",
+            applyRange:["create","update_scalar"],
+            require:{"define":{"create":false,"update_scalar":false},"error":{"rc":103264,"msg":"图片总数量不能为空"},"mongoError":{"rc":203264,"msg":"图片总数量不能为空"}},
+        },
+        imagesSizeInMb:{
+            chineseName:"图片总大小",
+            dataType:"int",
+            applyRange:["create","update_scalar"],
+            require:{"define":{"create":false,"update_scalar":false},"error":{"rc":103266,"msg":"图片总大小不能为空"},"mongoError":{"rc":203266,"msg":"图片总大小不能为空"}},
+        },
+        impeachAttachmentsId:{
+            chineseName:"评论附件",
+            dataType:["objectId"],
+            applyRange:["create"],
+            require:{"define":{"create":false},"error":{"rc":103268,"msg":"评论附件不能为空"},"mongoError":{"rc":203268,"msg":"评论附件不能为空"}},
+            arrayMaxLength:{"define":10,"error":{"rc":103270,"msg":"评论中最多添加10个附件"},"mongoError":{"rc":203270,"msg":"评论中最多添加10个附件"}},
+            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":103272,"msg":"评论附件必须是objectId"},"mongoError":{"rc":203272,"msg":"评论附件必须是objectId"}},
+        },
+        documentStatus:{
+            chineseName:"记录状态",
+            dataType:"string",
+            applyRange:["create","update_scalar"],
+            require:{"define":{"create":true,"update_scalar":true},"error":{"rc":103274,"msg":"记录状态不能为空"},"mongoError":{"rc":203274,"msg":"记录状态不能为空"}},
+            enum:{"define":["1","2"],"error":{"rc":103276,"msg":"document状态不是预定义的值"},"mongoError":{"rc":203276,"msg":"document状态不是预定义的值"}},
         },
     },
     like_dislike_static:{

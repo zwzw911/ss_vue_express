@@ -845,7 +845,7 @@ function validateEditSubFieldValue({inputValue,browseInputRule}){
 
 
 /*        根据rule，对输入的值进行格式检查
- * @inputValue：对象。{fieldName:{remove:[id1],add:[id2]},fieldName2:{remove:[id1],add:[id2]}}
+ * @inputValue：e_part的值，对象。{fieldName:{remove:[id1],add:[id2]},fieldName2:{remove:[id1],add:[id2]}}
  * 0. rule中，对应的值类型必须是数组
  * 1. remove/add：必须是数组
  * 2. remove/add：不能为空，且不能长度不能超过rule中max_array_length

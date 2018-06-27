@@ -117,7 +117,7 @@ async function updateImpeach_async({data,userSess,app}) {
 }*/
 //普通或者admin用户提交action
 //impeachActionInfo:{}
-async function createImpeachAction_async({sess,impeachActionInfo,app}){
+/*async function createImpeachAction_async({sess,impeachActionInfo,app}){
     let data={values:{}}
     data.values[e_part.METHOD]=e_method.CREATE
     data.values[e_part.RECORD_INFO]=impeachActionInfo
@@ -130,12 +130,12 @@ async function createImpeachAction_async({sess,impeachActionInfo,app}){
                 return resolve({rc:0})
             });
     })
-}
+}*/
 
-/*/!*              impeach_comment             *!/
+/*              impeach_comment             */
 async function createImpeachComment_returnId_async({sess,impeachId,app}){
     let data={values:{}}
-    data.values[e_part.METHOD]=e_method.CREATE
+    // data.values[e_part.METHOD]=e_method.CREATE
     data.values[e_part.RECORD_INFO]={[e_field.IMPEACH_COMMENT.IMPEACH_ID]:impeachId}
     return new Promise(function(resolve,reject){
         request(app).post('/impeach_comment/').set('Accept', 'application/json').set('Cookie',[sess]).send(data)
@@ -143,10 +143,10 @@ async function createImpeachComment_returnId_async({sess,impeachId,app}){
                 let parsedRes=JSON.parse(res.text)
                 // console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
                 assert.deepStrictEqual(parsedRes.rc,0)
-                return resolve(parsedRes.msg)
+                return resolve(parsedRes.msg.id)
             });
     })
-}*/
+}
 
 module.exports={
 /*
@@ -156,6 +156,6 @@ module.exports={
     updateImpeach_async,
 */
 
-    createImpeachAction_async,
-    // createImpeachComment_returnId_async,
+    // createImpeachAction_async,
+    createImpeachComment_returnId_async,
 }

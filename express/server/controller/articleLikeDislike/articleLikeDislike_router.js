@@ -19,11 +19,17 @@ router.post('/like',function(req,res,next){
 
     likeDislikeDispatcher_async({req:req}).then(
         (v)=>{
-            console.log(`likeDislike success, result:  ${JSON.stringify(v)}`)
+            if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV) {
+                console.log(`likeDislike success, result:  ${JSON.stringify(v)}`)
+            }
+
             return res.json(v)
         },
         (err)=>{
-            console.log(`likeDislike fail: ${JSON.stringify(err)}`)
+            if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV) {
+                console.log(`likeDislike fail: ${JSON.stringify(err)}`)
+            }
+
             return res.json(genFinalReturnResult(err))
         }
     )
@@ -32,11 +38,17 @@ router.post('/dislike',function(req,res,next){
 
     likeDislikeDispatcher_async({req:req}).then(
         (v)=>{
-            console.log(`likeDislike success, result:  ${JSON.stringify(v)}`)
+            if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV) {
+                console.log(`likeDislike success, result:  ${JSON.stringify(v)}`)
+            }
+
             return res.json(v)
         },
         (err)=>{
-            console.log(`likeDislike fail: ${JSON.stringify(err)}`)
+            if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV) {
+                console.log(`likeDislike fail: ${JSON.stringify(err)}`)
+            }
+
             return res.json(genFinalReturnResult(err))
         }
     )

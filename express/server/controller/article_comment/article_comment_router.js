@@ -19,11 +19,17 @@ router.post('/',function(req,res,next){
 
     commentDispatcher_async({req:req}).then(
         (v)=>{
-            console.log(`comment   success, result:  ${JSON.stringify(v)}`)
+            if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV) {
+                console.log(`comment   success, result:  ${JSON.stringify(v)}`)
+            }
+
             return res.json(v)
         },
         (err)=>{
-            console.log(`comment  fail: ${JSON.stringify(err)}`)
+            if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV) {
+                console.log(`comment  fail: ${JSON.stringify(err)}`)
+            }
+
             return res.json(genFinalReturnResult(err))
         }
     )

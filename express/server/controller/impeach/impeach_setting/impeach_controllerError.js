@@ -45,7 +45,7 @@ const controllerError={
 
 
     /*          create new impeach              */
-    notDefineImpeachType:{rc:50601,msg:`举报类型未设置`},
+ /*   notDefineImpeachType:{rc:50601,msg:`举报类型未设置`},
 
     // contentSanityFailed:{rc:50606,msg:`举报内容包含有害内容，无法提交`},
     articleAlreadyImpeached:{rc:50605,msg:`已经举报过此文档，无法再次举报`},
@@ -53,11 +53,11 @@ const controllerError={
 
     impeachObjectNotExist:{rc:50611,msg:`举报对象不存在`},
 
-    /*          update impeach              */
+    /!*          update impeach              *!/
     // impeachTypeNotAllow:{rc:50610,msg:`无需设置举报类型`},
     userNotLoginCantUpdate:{rc:50612,msg:`用户尚未登录，无法更改`},
     userInPenalizeNoImpeachUpdate:{rc:50613,msg:`管理员禁止更新举报`},
-    notAuthorized:{rc:50614,msg:`非举报创建者，无权修改举报`},
+    notAuthorized:{rc:50614,msg:`非举报创建者，无权修改举报`},*/
     // inputSanityFailed:{rc:50616,msg:`输入内容中包含有害信息`},
     // userInPenalizeNoArticleUpdate:{rc:50209,msg:`管理员禁止更新文档`},
     // inputSanityFailed:{rc:50210,msg:`文档内容中包含有害信息`},
@@ -66,19 +66,26 @@ const controllerError={
     /*      delete impeach              */
 
 
-
-
-    /*              upload                          */
+upload:{
     notImpeachCreatorCantUploadFile:{rc:50626,msg:`无权为他人举报评论上传文件`},
-    cantUploadImageForNonNewImpeach:{rc:50727,msg:`无法上传图片`},//hacker error
+    cantUploadImageForNonNewEditingImpeach:{rc:50727,msg:`无法上传图片`},//hacker error
+
     imageFormatNotSupport:{rc:50628,msg:`只支持JPG/PNG格式的图片`},
     imageResolutionNotSupport:{rc:50629,msg:`图片的分辨率过高`},
 
-    resourceRangeNotExpected:{rc:50630,msg:{'client':"内部错误，请联系管理员",server:`非期望的resourceRange`}},
+},
+
+    /*              upload                          */
+
+
+
+
+
+/*    resourceRangeNotExpected:{rc:50630,msg:{'client':"内部错误，请联系管理员",server:`非期望的resourceRange`}},
     ImpeachImageNumExceed:{rc:50632,msg:{'client':"举报中插入的图片数量过多，请删除部分图片后再试"}},
     ImpeachImageSizeExceed:{rc:50633,msg:{'client':"举报中插入的图片过大,请删除部分图片后再试"}},
     wholeImpeachImageNumExceed:{rc:50634,msg:{'client':"您在整个举报已经举报对话中插入的图片数量过多，无法继续添加"}},
-    wholeImpeachImageSizeExceed:{rc:50636,msg:{'client':"您在整个举报已经举报对话中插入的图片尺寸过大，无法继续添加"}},
+    wholeImpeachImageSizeExceed:{rc:50636,msg:{'client':"您在整个举报已经举报对话中插入的图片尺寸过大，无法继续添加"}},*/
 }
 
 module.exports={

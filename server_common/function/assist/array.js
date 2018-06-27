@@ -34,6 +34,24 @@ function ifArrayContainArray({parentArray,childArray}){
     return true
 }
 
+/** 某个array中的元素都在另外一个array中存在   **/
+/* sourceArray:要检查的array
+*  specificArray: sourceArray中的每个元素都必须定义在specificArray中
+* */
+function ifArrayEleAllInSpecificArray({sourceArray,specificArray}){
+    // let result=false
+    if(sourceArray.length>0 && specificArray.length>0){
+        for(let singleEleToBeCheck of sourceArray){
+            if(-1===specificArray.indexOf(singleEleToBeCheck)){
+                return false
+            }
+        }
+    }else{
+        return false
+    }
+
+    return true
+}
 /*  筛选出baseArray有，但是newArray中没有的元素的idx(baseArray)
 * */
 function getRemovedEleIdx({baseArray,newArray}){
@@ -91,6 +109,7 @@ function getAddedEleIdx({baseArray,newArray}){
 module.exports={
     ifArrayHasDuplicate,
     ifArrayContainArray,
+    ifArrayEleAllInSpecificArray,
     getRemovedEleIdx,
     getAddedEleIdx,
 }

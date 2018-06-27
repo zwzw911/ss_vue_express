@@ -22,11 +22,15 @@ router.post('/',function(req,res,next){
 // console.log(`req is ${JSON.stringify(req.body)}`)
     addFriendDispatcher_async({req:req}).then(
         (v)=>{
-            console.log(`create   add friend    success, result:  ${JSON.stringify(v)}`)
+            if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV){
+                console.log(`create   add friend    success, result:  ${JSON.stringify(v)}`)
+            }
             return res.json(v)
         },
         (err)=>{
-            console.log(`create   add friend     fail: ${JSON.stringify(err)}`)
+            if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV){
+                console.log(`create   add friend     fail: ${JSON.stringify(err)}`)
+            }
             return res.json(genFinalReturnResult(err))
 
         }
@@ -39,11 +43,17 @@ router.put('/accept',function(req,res,next){
 // console.log(`req is ${JSON.stringify(req.body)}`)
     addFriendDispatcher_async({req:req}).then(
         (v)=>{
-            console.log(`accept add friend success, result:  ${JSON.stringify(v)}`)
+            if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV){
+                console.log(`accept add friend success, result:  ${JSON.stringify(v)}`)
+            }
+
             return res.json(v)
         },
         (err)=>{
-            console.log(`accept add friend fail: ${JSON.stringify(err)}`)
+            if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV){
+                console.log(`accept add friend fail: ${JSON.stringify(err)}`)
+            }
+
             return res.json(genFinalReturnResult(err))
         }
     )
@@ -53,11 +63,17 @@ router.put('/decline',function(req,res,next){
 // console.log(`req is ${JSON.stringify(req.body)}`)
     addFriendDispatcher_async({req:req}).then(
         (v)=>{
-            console.log(`decline add friend success, result:  ${JSON.stringify(v)}`)
+            if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV){
+                console.log(`decline add friend success, result:  ${JSON.stringify(v)}`)
+            }
+
             return res.json(v)
         },
         (err)=>{
-            console.log(`decline add friend fail: ${JSON.stringify(err)}`)
+            if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV){
+                console.log(`decline add friend fail: ${JSON.stringify(err)}`)
+            }
+
             return res.json(genFinalReturnResult(err))
         }
     )

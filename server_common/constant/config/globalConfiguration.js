@@ -671,10 +671,10 @@ const userGroupFriend={
     },
 }
 
-const PublicGroup={
+/*const PublicGroup={
     max:{
-        maxUserPerGroup:100,//每个群，最多容纳的成员数量
-        maxPublicGroupNumber:10,//每个用户最多创建的群数量
+        maxUserPerGroup:100,//每个群，最多容纳的成员数量 //因为直接使用数组字段存储成员，所以在inputRule中可以直接判别，而无需resourceCheck
+        // maxPublicGroupNumber:10,//每个用户最多创建的群数量 //由resourceCheck进行计算
 
         // maxUserPerDefaultGroup:200,//默认的组：我的好友/黑名单，最大能容纳的用户数
     },
@@ -685,7 +685,7 @@ const PublicGroup={
     //     },
     //     enumValue:[`我的好友`,`黑名单`]
     // },
-}
+}*/
 // mongoSetting,/*               转移到model/model定义中了   */
 // internalSetting,
 // session,
@@ -706,6 +706,6 @@ module.exports={
     mailOption,
     mailAccount,
     userGroupFriend,
-    PublicGroup,
+    // PublicGroup,
 }
 

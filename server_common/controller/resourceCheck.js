@@ -334,7 +334,6 @@ async function ifEnoughResource_async({requiredResource,resourceProfileRange,use
                         return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.totalRevokeImpeachNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
                     }
                     break;
-
                 case e_resourceRange.MAX_SIMULTANEOUS_WAIT_FOR_ASSIGN_IMPEACH_PER_USER:
                     usedResource=await numOnlyResourceCalc.calcSimultaneousWaitAssignImpeachNum_async({userId:userId,containerId:containerId})
                     // ap.wrn('usedResource',usedResource)
@@ -345,7 +344,40 @@ async function ifEnoughResource_async({requiredResource,resourceProfileRange,use
                         return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.totalWaitAssignImpeachNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
                     }
                     break;
+                    /**     impeach comment num         **/
+                case e_resourceRange.MAX_COMMENT_PER_IMPEACH_PER_USER:
+                    usedResource=await numOnlyResourceCalc.calcImpeachCommentPerUserNum_async({userId:userId,containerId:containerId})
+                    // ap.wrn('usedResource',usedResource)
+                    // ap.wrn('resourceProfile',resourceProfile)
+                    //只要检测数量
+                    numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:resourceProfile})
+                    if(true===numExceedFlag){
+                        return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.totalImpeachCommentPerUserNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
+                    }
+                    break;
+                /**     public group num && member num per group         **/
+                case e_resourceRange.MAX_PUBLIC_GROUP_NUM:
+                    usedResource=await numOnlyResourceCalc.calcPublicGroupNum_async({userId:userId,containerId:containerId})
+                    numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:resourceProfile})
+                    if(true===numExceedFlag){
+                        return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.totalPublicGroupPerUserNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
+                    }
+                    break;
+                case e_resourceRange.MAX_MEMBER_PER_GROUP:
+                    usedResource=await numOnlyResourceCalc.calcMemberPerPublic_async({userId:userId,containerId:containerId})
+                    numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:resourceProfile})
+                    if(true===numExceedFlag){
+                        return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.totalMemberPerPublicGroupNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
+                    }
+                    break
 
+                case e_resourceRange.MAX_DECLINE_JOIN_REQUEST:
+                    usedResource=await numOnlyResourceCalc.calcJoinPublicGroupDeclineNum_async({userId:userId,containerId:containerId})
+                    numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:resourceProfile})
+                    if(true===numExceedFlag){
+                        return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.totalJoinPubliGroupDeclineNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
+                    }
+                    break
                 default:
                     return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.noHandleCodeProfileRange())
                 //ap.err(`ResourceRange ${singleResourceProfileRange} no related method to calc resource usage`)

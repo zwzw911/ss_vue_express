@@ -221,13 +221,15 @@ const checker={
         recordIdFormatWrong:{rc:checkerBaseErrorCode+54,msg:{client:`参数错误`,server:'加密的recordId的格式不正确'}},
         singleFieldValueContainInvalidObjectId:{rc:checkerBaseErrorCode+55,msg:{client:`参数错误`,server:'singleField中，类型为objectId，值的格式不正确'}},
         recordInfoContainInvalidObjectId:{rc:checkerBaseErrorCode+56,msg:{client:`参数错误`,server:'recordInfo中，类型为objectId的字段，值的格式不正确'}},
+        manipulateArraySubPartAddContainInvalidObjectId:{rc:checkerBaseErrorCode+58,msg:{client:`参数错误`,server:'manipulateArray中，add中，类型为objectId的字段，值的格式不正确'}},
+        manipulateArraySubParRemoveContainInvalidObjectId:{rc:checkerBaseErrorCode+60,msg:{client:`参数错误`,server:'manipulateArray中，remove中，类型为objectId的字段，值的格式不正确'}},
         // unSupportPart:{rc:checkerBaseErrorCode+58,msg:{client:`内部错误，请联系`,server:'recordInfo中，类型为objectId的字段，值的格式不正确'}}
     },
     ifObjectIdInGetCrypted:{
-        cryptedObjectIdInvalid:{rc:checkerBaseErrorCode+58,msg:{client:`参数错误`,server:'get的url中，objectId不是加密的objectId'}},
+        cryptedObjectIdInvalid:{rc:checkerBaseErrorCode+70,msg:{client:`参数错误`,server:'get的url中，objectId不是加密的objectId'}},
     },
     ifSingleFieldContainExpectField:{
-        singleFieldNotContainExpectedField:{rc:checkerBaseErrorCode+60,msg:{client:`参数错误`,server:'singleField中的字段名称不是期望的字段'}},
+        singleFieldNotContainExpectedField:{rc:checkerBaseErrorCode+72,msg:{client:`参数错误`,server:'singleField中的字段名称不是期望的字段'}},
     },
 }
 
@@ -348,7 +350,7 @@ const resourceCheck={
         totalCommentPerArticlePerUserNumExceed({resourceProfileNum}){
             return {rc:resourceCheckBaseErrorCode+108,msg:{client:`您对当前文档的评论数量已经达到最大数量${resourceProfileNum}，无法添加评论`}}
         },
-
+        /**     impeach      **/
         totalNewOrEditingImpeachNumExceed({resourceProfileNum}){
             return {rc:resourceCheckBaseErrorCode+110,msg:{client:`您未提交的举报已经达到最大数量${resourceProfileNum}，无法创建新举报`}}
         },
@@ -357,6 +359,22 @@ const resourceCheck={
         },
         totalWaitAssignImpeachNumExceed({resourceProfileNum}){
             return {rc:resourceCheckBaseErrorCode+114,msg:{client:`您提交但未被处理的举报已经达到最大数量${resourceProfileNum}，无法创建新举报`}}
+        },
+
+        /**     impeach comment     **/
+        totalImpeachCommentPerUserNumExceed({resourceProfileNum}){
+            return {rc:resourceCheckBaseErrorCode+116,msg:{client:`您在当前举报中发言次数已经达到最大数量${resourceProfileNum}，无法继续为此举报发言`}}
+        },
+        /**     public group && member per public group     **/
+        totalPublicGroupPerUserNumExceed({resourceProfileNum}){
+            return {rc:resourceCheckBaseErrorCode+118,msg:{client:`您创建的公共群已经达到最大数量${resourceProfileNum}，无法继续创建`}}
+        },
+        totalMemberPerPublicGroupNumExceed({resourceProfileNum}){
+            return {rc:resourceCheckBaseErrorCode+120,msg:{client:`公共群中群成员数已经达到最大数量${resourceProfileNum}，无法继续添加`}}
+        },
+        /**     join public group       **/
+        totalJoinPubliGroupDeclineNumExceed({resourceProfileNum}){
+            return {rc:resourceCheckBaseErrorCode+120,msg:{client:`入群请求达到最大数量${resourceProfileNum}，无法继续发起请求`}}
         },
     }
 }

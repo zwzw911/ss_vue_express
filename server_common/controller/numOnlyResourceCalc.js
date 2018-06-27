@@ -19,6 +19,7 @@ const e_dbModel=require(`../constant/genEnum/dbModel`)
 const e_impeachState=require('../constant/enum/mongoEnum').ImpeachState.DB
 const e_addFriendStatus=require('../constant/enum/mongoEnum').AddFriendStatus.DB
 const e_articleStatus=require('../constant/enum/mongoEnum').ArticleStatus.DB
+const e_joinPublicGroupHandleResult=require('../constant/enum/mongoEnum').JoinPublicGroupHandleResult.DB
 
 const e_resourceFieldName=require(`../constant/enum/nodeEnum`).ResourceFieldName
 /**********************************************************/
@@ -143,7 +144,45 @@ async function calcSimultaneousWaitAssignImpeachNum_async({userId,containerId}){
     return Promise.resolve({[e_resourceFieldName.USED_NUM]:recordNum})
 }
 
-
+/**********************************************************************************/
+/***********             impeach comment num per user     *************************/
+/**********************************************************************************/
+//计算未结束就被删除（撤销）的举报(防止大量创建后删除)
+async function calcImpeachCommentPerUserNum_async({userId,containerId}){
+    let condition={
+        [e_field.IMPEACH_COMMENT.AUTHOR_ID]:userId,
+        [e_field.IMPEACH_COMMENT.IMPEACH_ID]:containerId,
+        'dDate':{$exists:true},
+    }
+    let recordNum=await common_operation_model.count_async({dbModel:e_dbModel.impeach,condition:condition})
+    // ap.wrn('calc result',recordNum)
+    return Promise.resolve({[e_resourceFieldName.USED_NUM]:recordNum})
+}
+/**********************************************************************************/
+/**********************           public group          ****************************/
+/**********************************************************************************/
+//计算已经创建的公共群数
+async function calcPublicGroupNum_async({userId,containerId}){
+    let condition={
+        [e_field.PUBLIC_GROUP.CREATOR_ID]:userId,
+        // [e_field.IMPEACH_COMMENT.IMPEACH_ID]:containerId,
+        // 'dDate':{$exists:true},
+    }
+    let recordNum=await common_operation_model.count_async({dbModel:e_dbModel.public_group,condition:condition})
+    // ap.wrn('calc result',recordNum)
+    return Promise.resolve({[e_resourceFieldName.USED_NUM]:recordNum})
+}
+//计算某个公共群数的人数
+async function calcMemberPerPublic_async({userId,containerId}){
+/*    let condition={
+        [e_field.PUBLIC_GROUP.CREATOR_ID]:userId,
+        // [e_field.IMPEACH_COMMENT.IMPEACH_ID]:containerId,
+        // 'dDate':{$exists:true},
+    }*/
+    let record=await common_operation_model.findById_returnRecord_async({dbModel:e_dbModel.public_group,id:containerId})
+    // ap.wrn('calc result',recordNum)
+    return Promise.resolve({[e_resourceFieldName.USED_NUM]:record[e_field.PUBLIC_GROUP.MEMBERS_ID].length})
+}
 /**********************************************************************************/
 /**********************      max add friend request   ****************************/
 /**********************************************************************************/
@@ -158,7 +197,21 @@ async function calcAddFriendNum_async({userId}){
     let untreatedNum=await common_operation_model.count_async({dbModel:e_dbModel.add_friend,condition:condition})
     return Promise.resolve({[e_resourceFieldName.USED_NUM]:untreatedNum})
 }
-
+/**********************************************************************************/
+/**************      max join public group reject request times   *****************/
+/**********************************************************************************/
+/*  计算用户入群被拒次数
+* */
+async function calcJoinPublicGroupDeclineNum_async({userId,containerId}){
+    let condition={
+        [e_field.JOIN_PUBLIC_GROUP_REQUEST.CREATOR_ID]:userId,
+        [e_field.JOIN_PUBLIC_GROUP_REQUEST.PUBLIC_GROUP_ID]:containerId,
+        [e_field.JOIN_PUBLIC_GROUP_REQUEST.HANDLE_RESULT]:e_joinPublicGroupHandleResult.DECLINE,
+        'dDate':{$exists:false},
+    }
+    let untreatedNum=await common_operation_model.count_async({dbModel:e_dbModel.add_friend,condition:condition})
+    return Promise.resolve({[e_resourceFieldName.USED_NUM]:untreatedNum})
+}
 
 module.exports={
     calcFolderNum_async,
@@ -169,5 +222,13 @@ module.exports={
     calcRevokeImpeachNum_async,
     calcSimultaneousNewOrEditingImpeachNum_async,
     calcSimultaneousWaitAssignImpeachNum_async,
+
+    calcImpeachCommentPerUserNum_async,
+
     calcAddFriendNum_async,
+
+    calcPublicGroupNum_async,
+    calcMemberPerPublic_async,
+
+    calcJoinPublicGroupDeclineNum_async,
 }

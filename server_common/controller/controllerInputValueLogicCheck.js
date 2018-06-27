@@ -42,8 +42,12 @@ const e_inputValueLogicCheckStep=require(`../constant/enum/nodeRuntimeEnum`).Inp
 // const allAdminPriorityType=require('../constant/genEnum/enumValue').AdminPriorityType
 
 const e_uniqueField=require('../constant/genEnum/DB_uniqueField').UniqueField
+const enumValue=require('../constant/genEnum/enumValue')
+
 const compound_unique_field_config=require(`../model/mongo/compound_unique_field_config`).compound_unique_field_config
 const fkConfig=require('../model/mongo/fkConfig').fkConfig
+
+
 
 /****************  公共函数  ********************/
 // const misc=require('../function/assist/misc')
@@ -118,6 +122,9 @@ async function ifFkValueExist_And_FkHasPriority_async({fieldName,fieldValue,user
                 collFkConfig[fieldName][`validCriteria`]['_id']=fieldValue
                 tmpResult=await  common_operation_model.find_returnRecords_async({dbModel:e_dbModel[fkFieldRelatedColl],condition:collFkConfig[fieldName][`validCriteria`]})
             }
+            // ap.wrn('collFkConfig',collFkConfig)
+            // ap.wrn('fieldName',fieldName)
+            // ap.wrn('collFkConfig[fieldName]',collFkConfig[fieldName])
             // console.log(`collFkConfig =========>${JSON.stringify(collFkConfig)}`)
             // console.log(`collFkConfig[singleFkFieldName]['validCriteria'] =========>${JSON.stringify(collFkConfig[singleFkFieldName]['validCriteria'])}`)
             // console.log(`fk value exit check =========>${JSON.stringify(tmpResult)}`)
@@ -205,7 +212,21 @@ function ifEnumHasDuplicateValue({fieldName,fieldValue,fieldDataTypeInfo}){
     // return {rc:0}
 }
 
+/*/!*      enum字段的值，是否为预订的值
+* *!/
+function ifEnumValueValid({fieldName,fieldValue,fieldDataTypeInfo}){
 
+    if(true===fieldDataTypeInfo[e_dataTypeInfoFieldName.IS_ENUM]){
+        let fieldEnumValue=enumValue[fieldName]
+        if(true===fieldDataTypeInfo[e_dataTypeInfoFieldName.IS_ARRAY]){
+
+        }else{
+            if(-1===fieldEnumValue.indexOf(fieldValue)){
+                return Promise.reject()
+            }
+        }
+    }
+}*/
 //singleValueUniqueCheckAdditionalCondition: 对整个docValue进行检查时，额外需要的检测条件  {field: value1,field2:value2}
 //对传入的docValue中的每个字段进行unique的检测
 async function ifSingleFieldValueUnique_async({fieldName,fieldValue,collName,singleValueUniqueCheckAdditionalCondition}){

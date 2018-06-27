@@ -123,7 +123,11 @@ const fkConfig={
             relatedColl:e_coll.ADMIN_USER,forSelect:`${e_field.ADMIN_USER.NAME}`,forSetValue:[e_field.ADMIN_USER.NAME]
         },
         [e_field.IMPEACH_COMMENT.IMPEACH_ID]:{
-            relatedColl:e_coll.IMPEACH,forSelect:`${e_field.IMPEACH.TITLE}`,forSetValue:[e_field.IMPEACH.TITLE],validCriteria:{'dDate':{$exists:false},[e_field.IMPEACH.CURRENT_STATE]:{"$ne":e_impeachState.DONE}}
+            relatedColl:e_coll.IMPEACH,
+            forSelect:`${e_field.IMPEACH.TITLE}`,
+            forSetValue:[e_field.IMPEACH.TITLE],
+            validCriteria:{'dDate':{$exists:false},[e_field.IMPEACH.CURRENT_STATE]:{"$nin":[e_impeachState.NEW,e_impeachState.EDITING,e_impeachState.DONE]}},
+            fkCollOwnerFields:[e_field.IMPEACH.CREATOR_ID],
         },
         [e_field.IMPEACH_COMMENT.IMPEACH_IMAGES_ID]:{
             relatedColl:e_coll.IMPEACH_IMAGE,forSelect:`${e_field.IMPEACH_IMAGE.NAME}`,forSetValue:[e_field.IMPEACH_IMAGE.NAME]
@@ -139,7 +143,7 @@ const fkConfig={
             relatedColl:e_coll.ADMIN_USER,forSelect:`${e_field.ADMIN_USER.NAME}`,forSetValue:[e_field.ADMIN_USER.NAME]
         },*/
         [e_field.IMPEACH_ACTION.IMPEACH_ID]:{
-            relatedColl:e_coll.IMPEACH,forSelect:`${e_field.IMPEACH.TITLE}`,forSetValue:[e_field.IMPEACH.TITLE]
+            relatedColl:e_coll.IMPEACH,forSelect:`${e_field.IMPEACH.TITLE}`,forSetValue:[e_field.IMPEACH.TITLE],validCriteria:undefined,fkCollOwnerFields:[e_field.IMPEACH.CREATOR_ID]
         },
         [e_field.IMPEACH_ACTION.ADMIN_OWNER_ID]:{
             relatedColl:e_coll.ADMIN_USER,forSelect:`${e_field.ADMIN_USER.NAME}`,forSetValue:[e_field.ADMIN_USER.NAME]
@@ -176,7 +180,9 @@ const fkConfig={
         [e_field.PUBLIC_GROUP.ADMINS_ID]:{relatedColl:e_coll.USER,forSelect:`${e_field.USER.NAME}`,forSetValue:[e_field.USER.NAME],validCriteria:undefined,fkCollOwnerFields:undefined},
         [e_field.PUBLIC_GROUP.MEMBERS_ID]:{relatedColl:e_coll.USER,forSelect:`${e_field.USER.NAME}`,forSetValue:[e_field.USER.NAME],validCriteria:undefined,fkCollOwnerFields:undefined}
     },
-
+    [e_coll.JOIN_PUBLIC_GROUP_REQUEST]:{
+        [e_field.JOIN_PUBLIC_GROUP_REQUEST.PUBLIC_GROUP_ID]:{relatedColl:e_coll.PUBLIC_GROUP,forSelect:`${e_field.PUBLIC_GROUP.NAME}`,forSetValue:[e_field.PUBLIC_GROUP.NAME],validCriteria:undefined,fkCollOwnerFields:undefined},
+    },
     /****************************************************************/
     /****************          FOLDER              *****************/
     /****************************************************************/

@@ -12,14 +12,14 @@ const systemError=server_common_file_require.systemError
 
 /*              dispatch require                 */
 const dispatcher_async=require('./public_group_dispatch').dispatcher_async
-const requestJoin_async=require('./public_group_misc_logic/requestJoin').requestJoin_async
-const requestLeave_async=require('./public_group_misc_logic/requestLeave').requestLeave_async
-const adminManageRequest_async=require('./public_group_misc_logic/adminManageRequest').adminManageRequest_async
-const adminRemoveMember_async=require('./public_group_misc_logic/adminRemoveMember').adminRemoveMember_async
-const creatorAddRemoveAdmin_async=require('./public_group_misc_logic/creatorAddRemoveAdmin').creatorAddRemoveAdmin_async
+const requestJoin_async=require('./public_group_operation/requestJoin').requestJoin_async
+const requestLeave_async=require('./public_group_operation/requestLeave').requestLeave_async
+// const adminManageRequest_async=require('./public_group_operation/adminManageRequest').adminManageRequest_async
+const adminRemoveMember_async=require('./public_group_operation/adminRemoveMember').adminRemoveMember_async
+const creatorAddRemoveAdmin_async=require('./public_group_operation/creatorAddRemoveAdmin').creatorAddRemoveAdmin_async
 const nodeEnum=server_common_file_require.nodeEnum
 // const i=server_common_file_require.inputDataRuleType
-const e_method=nodeEnum.Method
+// const e_method=nodeEnum.Method
 const e_part=nodeEnum.ValidatePart
 const e_updateType=nodeEnum.UpdateType
 // const e_uploadFileType=nodeEnum.UploadFileType
@@ -32,18 +32,46 @@ router.post('/',function(req,res,next){
 // console.log(`req is ${JSON.stringify(req.body)}`)
     dispatcher_async({req:req}).then(
         (v)=>{
-            console.log(`create  user friend group   success, result:  ${JSON.stringify(v)}`)
+            console.log(`create  public group   success, result:  ${JSON.stringify(v)}`)
             return res.json(v)
         },
         (err)=>{
-            console.log(`create   user friend group    fail: ${JSON.stringify(err)}`)
+            console.log(`create   public group    fail: ${JSON.stringify(err)}`)
             return res.json(genFinalReturnResult(err))
 
         }
     )
 })
+router.put('/',function(req,res,next){
+    // ap.inf('req in')
+// console.log(`req is ${JSON.stringify(req.body)}`)
+    dispatcher_async({req:req}).then(
+        (v)=>{
+            console.log(`update  public group   success, result:  ${JSON.stringify(v)}`)
+            return res.json(v)
+        },
+        (err)=>{
+            console.log(`update   public group    fail: ${JSON.stringify(err)}`)
+            return res.json(genFinalReturnResult(err))
 
+        }
+    )
+})
+router.delete('/',function(req,res,next){
+    // ap.inf('req in')
+// console.log(`req is ${JSON.stringify(req.body)}`)
+    dispatcher_async({req:req}).then(
+        (v)=>{
+            console.log(`delete  public group   success, result:  ${JSON.stringify(v)}`)
+            return res.json(v)
+        },
+        (err)=>{
+            console.log(`delete   public group    fail: ${JSON.stringify(err)}`)
+            return res.json(genFinalReturnResult(err))
 
+        }
+    )
+})
 /*              虚拟方法，对coll的部分字段操作;preCheck和logic放在一起               */
 //用户请求加入群
 router.post('/requestJoin',function(req,res,next){

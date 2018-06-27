@@ -48,12 +48,12 @@ async function delete_impeach_async({impeachId,userSess,app}){
     data.values={}
     data.values[e_part.RECORD_ID]=impeachId
 
-    data.values[e_part.METHOD] = e_method.DELETE
+    // data.values[e_part.METHOD] = e_method.DELETE
     return new Promise(function(resolve,reject){
-        request(app).post('/impeach/article').set('Accept', 'application/json').set('Cookie', [userSess]).send(data)
+        request(app).delete('/impeach').set('Accept', 'application/json').set('Cookie', [userSess]).send(data)
             .end(function (err, res) {
                 // if (err) return done(err);
-                console.log(`data.values of delete_impeach_async===========> ${JSON.stringify(data.values)}`)
+                // console.log(`data.values of delete_impeach_async===========> ${JSON.stringify(data.values)}`)
                 let parsedRes = JSON.parse(res.text)
                 // console.log(`createImpeach_returnImpeachId_async result=========> ${JSON.stringify(parsedRes)}`)
                 assert.deepStrictEqual(parsedRes.rc, 0)

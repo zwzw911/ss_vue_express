@@ -1,4 +1,4 @@
-/*    gene by H:\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-6-12   */ 
+/*    gene by H:\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-6-21   */ 
  
 "use strict"
 const inputRule={
@@ -25,7 +25,7 @@ const inputRule={
             dataType:"string",
             applyRange:["create"],
             require:{"define":{"create":true},"error":{"rc":100410,"msg":"受罚类型不能为空"},"mongoError":{"rc":200410,"msg":"受罚类型不能为空"}},
-            enum:{"define":["0","1","2","3","4","5","7","8","9","10","11"],"error":{"rc":100412,"msg":"受罚类型不正确"},"mongoError":{"rc":200412,"msg":"受罚类型不正确"}},
+            enum:{"define":["0","1","2","3","5","7","8","9","10","11","4","12"],"error":{"rc":100412,"msg":"受罚类型不正确"},"mongoError":{"rc":200412,"msg":"受罚类型不正确"}},
         },
         penalizeSubType:{
             chineseName:"受罚子类型",
@@ -195,7 +195,7 @@ const inputRule={
             dataType:"string",
             applyRange:["create"],
             require:{"define":{"create":true},"error":{"rc":100506,"msg":"资源配置范围不能为空"},"mongoError":{"rc":200506,"msg":"资源配置范围不能为空"}},
-            enum:{"define":["1","10","12","18","20","22","24","26","28","30","32","34","36","38","39","40","41","42"],"error":{"rc":100508,"msg":"资源配置范围的类型不正确"},"mongoError":{"rc":200508,"msg":"资源配置范围的类型不正确"}},
+            enum:{"define":["1","10","12","14","16","18","20","100","102","104","106","108","110","112","114","116","118","120","122"],"error":{"rc":100508,"msg":"资源配置范围的类型不正确"},"mongoError":{"rc":200508,"msg":"资源配置范围的类型不正确"}},
         },
         type:{
             chineseName:"资源配置类型",
@@ -455,7 +455,7 @@ const inputRule={
             dataType:"string",
             applyRange:["create"],
             require:{"define":{"create":true},"error":{"rc":102208,"msg":"处罚类型不能为空"},"mongoError":{"rc":202208,"msg":"处罚类型不能为空"}},
-            enum:{"define":["0","1","2","3","4","5","7","8","9","10","11"],"error":{"rc":102210,"msg":"未知处罚类型"},"mongoError":{"rc":202210,"msg":"未知处罚类型"}},
+            enum:{"define":["0","1","2","3","5","7","8","9","10","11","4","12"],"error":{"rc":102210,"msg":"未知处罚类型"},"mongoError":{"rc":202210,"msg":"未知处罚类型"}},
         },
         duration:{
             chineseName:"处罚时间",
@@ -830,71 +830,17 @@ const inputRule={
             applyRange:["create","update_scalar"],
             require:{"define":{"create":false,"update_scalar":false},"error":{"rc":103190,"msg":"图片总大小不能为空"},"mongoError":{"rc":203190,"msg":"图片总大小不能为空"}},
         },
-    },
-    impeach_comment:{
-        impeachId:{
-            chineseName:"举报",
-            dataType:"objectId",
-            applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":103200,"msg":"举报不能为空"},"mongoError":{"rc":203200,"msg":"举报不能为空"}},
-            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":103202,"msg":"举报必须是objectId"},"mongoError":{"rc":203202,"msg":"举报必须是objectId"}},
-        },
-        content:{
-            chineseName:"评论内容",
-            dataType:"string",
-            applyRange:["create","update_scalar"],
-            require:{"define":{"create":false,"update_scalar":false},"error":{"rc":103204,"msg":"评论内容不能为空"},"mongoError":{"rc":203204,"msg":"评论内容不能为空"}},
-            minLength:{"define":15,"error":{"rc":103206,"msg":"评论内容至少15个字符"},"mongoError":{"rc":203206,"msg":"评论内容至少15个字符"}},
-            maxLength:{"define":140,"error":{"rc":103208,"msg":"评论内容不能超过140个字符"},"mongoError":{"rc":203208,"msg":"评论内容不能超过140个字符"}},
-        },
-        authorId:{
-            chineseName:"评论作者",
-            dataType:"objectId",
-            applyRange:["create"],
-            require:{"define":{"create":false},"error":{"rc":10570,"msg":"评论作者不能为空"},"mongoError":{"rc":20570,"msg":"评论作者不能为空"}},
-            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":10571,"msg":"评论作者必须是objectId"},"mongoError":{"rc":20571,"msg":"评论作者必须是objectId"}},
-        },
-        adminAuthorId:{
-            chineseName:"评论作者",
-            dataType:"objectId",
-            applyRange:["create"],
-            require:{"define":{"create":false},"error":{"rc":10572,"msg":"评论作者不能为空"},"mongoError":{"rc":20572,"msg":"评论作者不能为空"}},
-            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":10573,"msg":"评论作者必须是objectId"},"mongoError":{"rc":20573,"msg":"评论作者必须是objectId"}},
-        },
-        impeachImagesId:{
-            chineseName:"评论图片",
-            dataType:["objectId"],
-            applyRange:["create"],
-            require:{"define":{"create":false},"error":{"rc":10574,"msg":"评论图片不能为空"},"mongoError":{"rc":20574,"msg":"评论图片不能为空"}},
-            arrayMaxLength:{"define":10,"error":{"rc":10576,"msg":"评论中最多插入10个图片"},"mongoError":{"rc":20576,"msg":"评论中最多插入10个图片"}},
-            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":10578,"msg":"评论图片必须是objectId"},"mongoError":{"rc":20578,"msg":"评论图片必须是objectId"}},
-        },
-        imagesNum:{
-            chineseName:"图片总数量",
+        attachmentsNum:{
+            chineseName:"附件总数量",
             dataType:"int",
             applyRange:["create","update_scalar"],
-            require:{"define":{"create":false,"update_scalar":false},"error":{"rc":103288,"msg":"图片总数量不能为空"},"mongoError":{"rc":203288,"msg":"图片总数量不能为空"}},
+            require:{"define":{"create":false,"update_scalar":false},"error":{"rc":103192,"msg":"附件总数量不能为空"},"mongoError":{"rc":203192,"msg":"附件总数量不能为空"}},
         },
-        imagesSizeInMb:{
-            chineseName:"图片总大小",
+        attachmentsSizeInMb:{
+            chineseName:"附件总大小",
             dataType:"int",
             applyRange:["create","update_scalar"],
-            require:{"define":{"create":false,"update_scalar":false},"error":{"rc":103290,"msg":"图片总大小不能为空"},"mongoError":{"rc":203290,"msg":"图片总大小不能为空"}},
-        },
-        impeachAttachmentsId:{
-            chineseName:"评论附件",
-            dataType:["objectId"],
-            applyRange:["create"],
-            require:{"define":{"create":false},"error":{"rc":10580,"msg":"评论附件不能为空"},"mongoError":{"rc":20580,"msg":"评论附件不能为空"}},
-            arrayMaxLength:{"define":10,"error":{"rc":10582,"msg":"评论中最多添加10个附件"},"mongoError":{"rc":20582,"msg":"评论中最多添加10个附件"}},
-            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":10584,"msg":"评论附件必须是objectId"},"mongoError":{"rc":20584,"msg":"评论附件必须是objectId"}},
-        },
-        documentStatus:{
-            chineseName:"记录状态",
-            dataType:"string",
-            applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":10586,"msg":"记录状态不能为空"},"mongoError":{"rc":20586,"msg":"记录状态不能为空"}},
-            enum:{"define":["1","2"],"error":{"rc":10588,"msg":"document状态不是预定义的值"},"mongoError":{"rc":20588,"msg":"document状态不是预定义的值"}},
+            require:{"define":{"create":false,"update_scalar":false},"error":{"rc":103194,"msg":"附件总大小不能为空"},"mongoError":{"rc":203194,"msg":"附件总大小不能为空"}},
         },
     },
     impeach_action:{
@@ -969,6 +915,72 @@ const inputRule={
             applyRange:["create"],
             require:{"define":{"create":true},"error":{"rc":103666,"msg":"存储路径不能为空"},"mongoError":{"rc":203666,"msg":"存储路径不能为空"}},
             format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":103668,"msg":"存储路径必须是objectId"},"mongoError":{"rc":203668,"msg":"存储路径必须是objectId"}},
+        },
+    },
+    impeach_comment:{
+        impeachId:{
+            chineseName:"举报",
+            dataType:"objectId",
+            applyRange:["create"],
+            require:{"define":{"create":true},"error":{"rc":103200,"msg":"举报不能为空"},"mongoError":{"rc":203200,"msg":"举报不能为空"}},
+            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":103202,"msg":"举报必须是objectId"},"mongoError":{"rc":203202,"msg":"举报必须是objectId"}},
+        },
+        content:{
+            chineseName:"评论内容",
+            dataType:"string",
+            applyRange:["create","update_scalar"],
+            require:{"define":{"create":false,"update_scalar":false},"error":{"rc":103204,"msg":"评论内容不能为空"},"mongoError":{"rc":203204,"msg":"评论内容不能为空"}},
+            minLength:{"define":15,"error":{"rc":103206,"msg":"评论内容至少15个字符"},"mongoError":{"rc":203206,"msg":"评论内容至少15个字符"}},
+            maxLength:{"define":140,"error":{"rc":103208,"msg":"评论内容不能超过140个字符"},"mongoError":{"rc":203208,"msg":"评论内容不能超过140个字符"}},
+        },
+        authorId:{
+            chineseName:"评论作者",
+            dataType:"objectId",
+            applyRange:["create"],
+            require:{"define":{"create":false},"error":{"rc":103250,"msg":"评论作者不能为空"},"mongoError":{"rc":203250,"msg":"评论作者不能为空"}},
+            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":103252,"msg":"评论作者必须是objectId"},"mongoError":{"rc":203252,"msg":"评论作者必须是objectId"}},
+        },
+        adminAuthorId:{
+            chineseName:"评论作者",
+            dataType:"objectId",
+            applyRange:["create"],
+            require:{"define":{"create":false},"error":{"rc":103254,"msg":"评论作者不能为空"},"mongoError":{"rc":203254,"msg":"评论作者不能为空"}},
+            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":103256,"msg":"评论作者必须是objectId"},"mongoError":{"rc":203256,"msg":"评论作者必须是objectId"}},
+        },
+        impeachImagesId:{
+            chineseName:"评论图片",
+            dataType:["objectId"],
+            applyRange:["create"],
+            require:{"define":{"create":false},"error":{"rc":103258,"msg":"评论图片不能为空"},"mongoError":{"rc":203258,"msg":"评论图片不能为空"}},
+            arrayMaxLength:{"define":10,"error":{"rc":103260,"msg":"评论中最多插入10个图片"},"mongoError":{"rc":203260,"msg":"评论中最多插入10个图片"}},
+            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":103262,"msg":"评论图片必须是objectId"},"mongoError":{"rc":203262,"msg":"评论图片必须是objectId"}},
+        },
+        imagesNum:{
+            chineseName:"图片总数量",
+            dataType:"int",
+            applyRange:["create","update_scalar"],
+            require:{"define":{"create":false,"update_scalar":false},"error":{"rc":103264,"msg":"图片总数量不能为空"},"mongoError":{"rc":203264,"msg":"图片总数量不能为空"}},
+        },
+        imagesSizeInMb:{
+            chineseName:"图片总大小",
+            dataType:"int",
+            applyRange:["create","update_scalar"],
+            require:{"define":{"create":false,"update_scalar":false},"error":{"rc":103266,"msg":"图片总大小不能为空"},"mongoError":{"rc":203266,"msg":"图片总大小不能为空"}},
+        },
+        impeachAttachmentsId:{
+            chineseName:"评论附件",
+            dataType:["objectId"],
+            applyRange:["create"],
+            require:{"define":{"create":false},"error":{"rc":103268,"msg":"评论附件不能为空"},"mongoError":{"rc":203268,"msg":"评论附件不能为空"}},
+            arrayMaxLength:{"define":10,"error":{"rc":103270,"msg":"评论中最多添加10个附件"},"mongoError":{"rc":203270,"msg":"评论中最多添加10个附件"}},
+            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":103272,"msg":"评论附件必须是objectId"},"mongoError":{"rc":203272,"msg":"评论附件必须是objectId"}},
+        },
+        documentStatus:{
+            chineseName:"记录状态",
+            dataType:"string",
+            applyRange:["create","update_scalar"],
+            require:{"define":{"create":true,"update_scalar":true},"error":{"rc":103274,"msg":"记录状态不能为空"},"mongoError":{"rc":203274,"msg":"记录状态不能为空"}},
+            enum:{"define":["1","2"],"error":{"rc":103276,"msg":"document状态不是预定义的值"},"mongoError":{"rc":203276,"msg":"document状态不是预定义的值"}},
         },
     },
     user_resource_profile:{

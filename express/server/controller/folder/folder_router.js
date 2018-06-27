@@ -30,11 +30,17 @@ ap.inf('router',router)
 router.post('/',function(req,res,next){
     folderDispatcher_async(req).then(
         (v)=>{
-            ap.inf(`create folder success, result:  ${JSON.stringify(v)}`)
+            if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV) {
+                ap.inf(`create folder success, result:  ${JSON.stringify(v)}`)
+            }
+
             return res.json(v)
         },
         (err)=>{
-            ap.err(`create folder fail: ${JSON.stringify(err)}`)
+            if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV) {
+                ap.err(`create folder fail: ${JSON.stringify(err)}`)
+            }
+
             return res.json(genFinalReturnResult(err))
         }
     )
@@ -44,42 +50,40 @@ router.post('/',function(req,res,next){
 router.put('/',function(req,res,next){
     folderDispatcher_async(req).then(
         (v)=>{
-            ap.inf(`update folder success, result:  ${JSON.stringify(v)}`)
+            if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV) {
+                ap.inf(`update folder success, result:  ${JSON.stringify(v)}`)
+            }
+
             return res.json(v)
         },
         (err)=>{
-            ap.err(`user update fail: ${JSON.stringify(err)}`)
+            if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV) {
+                ap.err(`user update fail: ${JSON.stringify(err)}`)
+            }
+
             return res.json(genFinalReturnResult(err))
         }
     )
     // next()
 })
-//delete folder
-/*router.delete('/:recordId',function(req,res,next){
-    // ap.inf('delete in')
-    folderDispatcher_async(req).then(
-        (v)=>{
-            ap.inf(`delete folder success, result:  ${JSON.stringify(v)}`)
-            return res.json(v)
-        },
-        (err)=>{
-            ap.err(`delete folder fail: ${JSON.stringify(err)}`)
-            return res.json(genFinalReturnResult(err))
-        }
-    )
-    // next()
-})*/
+
 
 //delete可以传递参数，只需axios参数格式改成axios.delete(url,{data:data})
 router.delete('/',function(req,res,next){
     // ap.inf('delete all in')
     folderDispatcher_async(req).then(
         (v)=>{
-            ap.inf(`delete folder success, result:  ${JSON.stringify(v)}`)
+            if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV) {
+                ap.inf(`delete folder success, result:  ${JSON.stringify(v)}`)
+            }
+
             return res.json(v)
         },
         (err)=>{
-            ap.err(`delete folder fail: ${JSON.stringify(err)}`)
+            if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV) {
+                ap.err(`delete folder fail: ${JSON.stringify(err)}`)
+            }
+
             return res.json(genFinalReturnResult(err))
         }
     )
@@ -91,11 +95,17 @@ router.get('/:folderId',function(req,res,next){
     // ap.inf('folderId',req.params.folderId)
     folderDispatcher_async(req).then(
         (v)=>{
-            ap.inf(`folderId get success, result:  ${JSON.stringify(v)}`)
+            if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV) {
+                ap.inf(`folderId get success, result:  ${JSON.stringify(v)}`)
+            }
+
             return res.json(v)
         },
         (err)=>{
-            ap.err(`folderId get fail: ${JSON.stringify(err)}`)
+            if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV) {
+                ap.err(`folderId get fail: ${JSON.stringify(err)}`)
+            }
+
             return res.json(genFinalReturnResult(err))
         }
     )
@@ -104,11 +114,17 @@ router.get('/',function(req,res,next){
     // ap.inf('match url')
     folderDispatcher_async(req).then(
         (v)=>{
-            ap.inf(`folder get success, result:  ${JSON.stringify(v)}`)
+            if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV) {
+                ap.inf(`folder get success, result:  ${JSON.stringify(v)}`)
+            }
+
             return res.json(v)
         },
         (err)=>{
-            ap.err(`folder get fail: ${JSON.stringify(err)}`)
+            if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV) {
+                ap.err(`folder get fail: ${JSON.stringify(err)}`)
+            }
+
             return res.json(genFinalReturnResult(err))
         }
     )

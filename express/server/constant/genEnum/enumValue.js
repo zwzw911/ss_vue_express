@@ -9,7 +9,7 @@ const AdminPriorityType=["1","2","3","10","11","12","20","21",]
 const PublicGroupJoinInRule=["1","2","3",] 
 const PublicGroupEventType=["0","1","2","3","4","5",] 
 const EventStatus=["0","1","2",] 
-const PenalizeType=["0","1","2","3","4","5","7","8","9","10","11",] 
+const PenalizeType=["1","2","3","4","10","20","21","30","31","40","50","60","61",] 
 const PenalizeSubType=["1","2","3","4","9",] 
 const ImpeachType=["0","1",] 
 const ImpeachAllAction=["1","2","3","4","5","6","7",] 
@@ -21,10 +21,11 @@ const DocStatus=["1","2","3",]
 const AccountType=["1","2",] 
 const StorePathUsage=["1","2","3","4","5",] 
 const StorePathStatus=["1","2",] 
-const ResourceRange=["1","10","12","18","20","22","24","26","28","30","32","34","36","38","39","40","41","42",] 
+const ResourceRange=["1","10","12","14","16","18","20","100","102","104","106","108","110","112","114","116","118","120","122","124","126","128",] 
 const ResourceType=["1","2",] 
 const DocumentStatus=["1","2",] 
 const AddFriendStatus=["1","2","3","4",] 
+const JoinPublicGroupHandleResult=["1","2","3",] 
 module.exports={
     ArticleStatus,
     AdminUserType,
@@ -50,4 +51,5 @@ module.exports={
     ResourceType,
     DocumentStatus,
     AddFriendStatus,
+    JoinPublicGroupHandleResult,
 }

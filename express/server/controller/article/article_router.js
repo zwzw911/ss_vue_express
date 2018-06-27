@@ -35,11 +35,17 @@ router.post('/',function(req,res,next){
 
     article_dispatcher_async({req}).then(
         (v)=>{
-            console.log(`create   article   success, result:  ${JSON.stringify(v)}`)
+            if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV){
+                console.log(`create   article   success, result:  ${JSON.stringify(v)}`)
+            }
+
             return res.json(v)
         },
         (err)=>{
-            console.log(`create   article    fail: ${JSON.stringify(err)}`)
+            if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV){
+                console.log(`create   article    fail: ${JSON.stringify(err)}`)
+            }
+
             return res.json(genFinalReturnResult(err))
 
         }
@@ -50,11 +56,17 @@ router.put('/',function(req,res,next){
 
     article_dispatcher_async({req}).then(
         (v)=>{
-            console.log(`update   article   success, result:  ${JSON.stringify(v)}`)
+            if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV){
+                console.log(`update   article   success, result:  ${JSON.stringify(v)}`)
+            }
+
             return res.json(v)
         },
         (err)=>{
-            console.log(`update   article    fail: ${JSON.stringify(err)}`)
+            if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV){
+                console.log(`update   article    fail: ${JSON.stringify(err)}`)
+            }
+
             return res.json(genFinalReturnResult(err))
 
         }
@@ -65,11 +77,17 @@ router.delete('/',function(req,res,next){
 
     article_dispatcher_async({req}).then(
         (v)=>{
-            console.log(`update   article   success, result:  ${JSON.stringify(v)}`)
+            if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV){
+                console.log(`update   article   success, result:  ${JSON.stringify(v)}`)
+            }
+
             return res.json(v)
         },
         (err)=>{
-            console.log(`update   article    fail: ${JSON.stringify(err)}`)
+            if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV){
+                console.log(`update   article    fail: ${JSON.stringify(err)}`)
+            }
+
             return res.json(genFinalReturnResult(err))
 
         }
@@ -82,11 +100,17 @@ router.post('/articleImage',function(req,res,next){
 
     article_dispatcher_async({req:req}).then(
         (v)=>{
-            console.log(`articleImage upload  success, result:  ${JSON.stringify(v)}`)
+            if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV){
+                console.log(`articleImage upload  success, result:  ${JSON.stringify(v)}`)
+            }
+
             return res.json(v)
         },
         (err)=>{
-            console.log(`articleImage upload fail: ${JSON.stringify(err)}`)
+            if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV){
+                console.log(`articleImage upload fail: ${JSON.stringify(err)}`)
+            }
+
             return res.json(genFinalReturnResult(err))
 
         }
@@ -96,14 +120,20 @@ router.post('/articleImage',function(req,res,next){
 
 /***    上传附件    ***/
 router.post('/articleAttachment',function(req,res,next){
-ap.inf('upload Attachment in')
+// ap.inf('upload Attachment in')
     article_dispatcher_async({req:req}).then(
         (v)=>{
-            console.log(`articleAttachment upload success, result:  ${JSON.stringify(v)}`)
+            if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV){
+                console.log(`articleAttachment upload success, result:  ${JSON.stringify(v)}`)
+            }
+
             return res.json(v)
         },
         (err)=>{
-            console.log(`articleAttachment upload fail: ${JSON.stringify(err)}`)
+            if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV){
+                console.log(`articleAttachment upload fail: ${JSON.stringify(err)}`)
+            }
+
             return res.json(genFinalReturnResult(err))
         }
     )
@@ -112,11 +142,17 @@ router.delete('/articleAttachment',function(req,res,next){
 
     article_dispatcher_async({req:req}).then(
         (v)=>{
-            console.log(`articleAttachment upload success, result:  ${JSON.stringify(v)}`)
+            if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV){
+                console.log(`articleAttachment upload success, result:  ${JSON.stringify(v)}`)
+            }
+
             return res.json(v)
         },
         (err)=>{
-            console.log(`articleAttachment upload fail: ${JSON.stringify(err)}`)
+            if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV){
+                console.log(`articleAttachment upload fail: ${JSON.stringify(err)}`)
+            }
+
             return res.json(genFinalReturnResult(err))
         }
     )

@@ -46,7 +46,7 @@ const collFieldDefine={
     creatorId:{type:mongoose.Schema.Types.ObjectId,ref:"user"},
     membersId:{type:[mongoose.Schema.Types.ObjectId],ref:"user"},
     adminsId:{type:[mongoose.Schema.Types.ObjectId],ref:"user"},//creatorId必在其中
-    waitApproveId:{type:[mongoose.Schema.Types.ObjectId],ref:"user"}, //如果需要批准加入，首先存在此处，等待后续处理
+    // waitApproveId:{type:[mongoose.Schema.Types.ObjectId],ref:"user"}, //使用join_public_group_request代替
     joinInRule:{type:String,},//enum:enumValue.PublicGroupJoinInRule
     cDate:{type:Date,default:Date.now},
     uDate:{type:Date,default:Date.now},

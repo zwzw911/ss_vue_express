@@ -314,7 +314,7 @@ async function ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({dbMod
     condition={
         // [ownerFieldName]:userId,
         '_id':recordId,
-        'dDate':{$exists:false},//未被删除的记录
+        // 'dDate':{$exists:false},//未被删除的记录
     }
     for(let singleFieldName of ownerFieldsName){
         condition[singleFieldName]=userId
@@ -322,9 +322,9 @@ async function ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({dbMod
     if(undefined!==additionalCondition){
         Object.assign(condition,additionalCondition)
     }
-    ap.inf('condition',condition)
+    // ap.inf('condition',condition)
     tmpResult=await  common_operation_model.find_returnRecords_async({dbModel:dbModel,condition:condition})
-    ap.inf('result',tmpResult)
+    // ap.inf('result',tmpResult)
     if(tmpResult.length===1){
         return Promise.resolve(tmpResult[0])
     }else{
@@ -427,6 +427,48 @@ async function ifObjectIdInPartCrypted_async({req,expectedPart,browserCollRule})
             // ap.wrn('')
             let partValue=req.body.values[singlePart]
             switch (singlePart){
+                case e_part.MANIPULATE_ARRAY:
+                    // {fieldName:{remove:[id1],add:[id2]},fieldName2:{remove:[id1],add:[id2]}}
+                    // if(partValue.length>0){
+                    for(let singleFieldName in partValue){
+                        //1 获得数据类型
+                        //字段有对应的rule，且字段值设置
+                        if(undefined!==browserCollRule[singleFieldName] ){
+                            //字段值不为空（空值交给后续代码处理，而不在解密代码中处理）
+                            // ap.inf('partValue[singleFieldName]',partValue[singleFieldName])
+                            if(true===dataTypeCheck.isSetValue(partValue[singleFieldName])){
+                                let singleFieldDataTypeInRule=browserCollRule[singleFieldName][e_otherRuleFiledName.DATA_TYPE]
+                                let dataTypeArrayFlag=dataTypeCheck.isArray(singleFieldDataTypeInRule)
+                                let dataType= dataTypeArrayFlag ? singleFieldDataTypeInRule[0]:singleFieldDataTypeInRule
+                                // ap.inf('dataType',dataType)
+                                //字段类型是objectId
+                                if(e_dataType.OBJECT_ID===dataType){
+                                    //数据类型必定是数组
+                                    let fieldValue=partValue[singleFieldName]
+                                    //对每个部分进行检测
+                                    let fieldSubPartValue
+                                    if(undefined!==fieldValue['add'] && true===dataTypeCheck.isSetValue(fieldValue['add'])){
+                                        fieldSubPartValue=fieldValue['add']
+                                        for(let singleEle of fieldSubPartValue){
+                                            if(false===ifObjectIdCrypted({objectId:singleEle})){
+                                                return Promise.reject(checkerError.ifObjectIdCrypted.manipulateArraySubPartAddContainInvalidObjectId)
+                                            }
+                                        }
+                                    }
+                                    if(undefined!==fieldValue['remove'] && true===dataTypeCheck.isSetValue(fieldValue['remove'])){
+                                        fieldSubPartValue=fieldValue['remove']
+                                        for(let singleEle of fieldSubPartValue){
+                                            if(false===ifObjectIdCrypted({objectId:singleEle})){
+                                                return Promise.reject(checkerError.ifObjectIdCrypted.manipulateArraySubPartAddContainInvalidObjectId)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    // }
+                    break;
                 case e_part.RECORD_ID:
 
                         if(false===ifObjectIdCrypted({objectId:partValue})){

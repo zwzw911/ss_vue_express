@@ -30,11 +30,17 @@ router.post('/article',function(req,res,next){
 // console.log(`req===========>${JSON.stringify(req)}`)
     impeach_dispatcher_async({req:req}).then(
         (v)=>{
-            console.log(`create   impeach for article  success, result:  ${JSON.stringify(v)}`)
+            if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV) {
+                console.log(`create   impeach for article  success, result:  ${JSON.stringify(v)}`)
+            }
+
             return res.json(v)
         },
         (err)=>{
-            console.log(`create   impeach  for article  fail: ${JSON.stringify(err)}`)
+            if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV) {
+                console.log(`create   impeach  for article  fail: ${JSON.stringify(err)}`)
+            }
+
             return res.json(genFinalReturnResult(err))
 
         }
@@ -44,11 +50,17 @@ router.post('/comment',function(req,res,next){
 
     impeach_dispatcher_async({req:req}).then(
         (v)=>{
-            console.log(`create   impeach  for comment success, result:  ${JSON.stringify(v)}`)
+            if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV) {
+                console.log(`create   impeach  for comment success, result:  ${JSON.stringify(v)}`)
+            }
+
             return res.json(v)
         },
         (err)=>{
-            console.log(`create   impeach for comment   fail: ${JSON.stringify(err)}`)
+            if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV) {
+                console.log(`create   impeach for comment   fail: ${JSON.stringify(err)}`)
+            }
+
             return res.json(genFinalReturnResult(err))
 
         }
@@ -59,11 +71,17 @@ router.put('/',function(req,res,next){
 
     impeach_dispatcher_async({req:req}).then(
         (v)=>{
-            console.log(`update   impeach  for comment success, result:  ${JSON.stringify(v)}`)
+            if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV) {
+                console.log(`update   impeach  for comment success, result:  ${JSON.stringify(v)}`)
+            }
+
             return res.json(v)
         },
         (err)=>{
-            console.log(`update   impeach for comment   fail: ${JSON.stringify(err)}`)
+            if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV) {
+                console.log(`update   impeach for comment   fail: ${JSON.stringify(err)}`)
+            }
+
             return res.json(genFinalReturnResult(err))
 
         }
@@ -74,11 +92,17 @@ router.delete('/',function(req,res,next){
 
     impeach_dispatcher_async({req:req}).then(
         (v)=>{
-            console.log(`delete   impeach  for comment success, result:  ${JSON.stringify(v)}`)
+            if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV) {
+                console.log(`delete   impeach  for comment success, result:  ${JSON.stringify(v)}`)
+            }
+
             return res.json(v)
         },
         (err)=>{
-            console.log(`delete   impeach for comment   fail: ${JSON.stringify(err)}`)
+            if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV) {
+                console.log(`delete   impeach for comment   fail: ${JSON.stringify(err)}`)
+            }
+
             return res.json(genFinalReturnResult(err))
 
         }
@@ -92,11 +116,17 @@ router.post('/uploadImage',function(req,res,next){
 
     impeach_dispatcher_async({req:req}).then(
         (v)=>{
-            console.log(`impeachImage upload  success, result:  ${JSON.stringify(v)}`)
+            if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV) {
+                console.log(`impeachImage upload  success, result:  ${JSON.stringify(v)}`)
+            }
+
             return res.json(v)
         },
         (err)=>{
-            console.log(`impeachImage upload fail: ${JSON.stringify(err)}`)
+            if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV) {
+                console.log(`impeachImage upload fail: ${JSON.stringify(err)}`)
+            }
+
             return res.json(genFinalReturnResult(err))
 
         }

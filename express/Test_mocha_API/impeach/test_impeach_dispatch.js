@@ -149,7 +149,7 @@ describe('user1 register unique check:',async  function() {
 
 
     /***************    create  impeach   ***************/
-    describe('create new article:',async  function() {
+    describe('create impeach:',async  function() {
         let sess
         before('prepare', async function () {
             url='article'

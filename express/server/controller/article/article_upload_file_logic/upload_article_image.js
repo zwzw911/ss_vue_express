@@ -229,9 +229,9 @@ async function uploadArticleImage_async({req}){
     }
 
     await common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel.article,id:recordId,updateFieldsValue:updateValues})
-/*    let fieldToBeChanged=e_field.ARTICLE.ARTICLE_IMAGES_ID
+    let fieldToBeChanged=e_field.ARTICLE.ARTICLE_IMAGES_ID
     tmpResult=await e_dbModel.article.update({_id:recordId},{$push:{[fieldToBeChanged]:fileId}})
-    /!*              更新user_resource_static          *!/
+    /*              更新user_resource_static          */
     tmpResult=await e_dbModel.user_resource_static.update({
         [e_field.USER_RESOURCE_STATIC.USER_ID]:userId,
         [e_field.USER_RESOURCE_STATIC.RESOURCE_TYPE]:e_resourceType.ARTICLE_IMAGE
@@ -240,7 +240,7 @@ async function uploadArticleImage_async({req}){
             [e_field.USER_RESOURCE_STATIC.UPLOADED_FILE_NUM]:1,
             [e_field.USER_RESOURCE_STATIC.UPLOADED_FILE_SIZE_IN_MB]:size,
         }
-    })*/
+    })
 
 
 

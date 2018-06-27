@@ -215,28 +215,29 @@ const resource_profile= [
         //[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]:20, //假设每个文件大小为2M
     },
     {
-        [e_field.RESOURCE_PROFILE.NAME]:"普通用户最大群数量",
+        [e_field.RESOURCE_PROFILE.NAME]:"普通用户最大朋友群数量",
         [e_field.RESOURCE_PROFILE.RESOURCE_RANGE]:e_resourceRange.MAX_FRIEND_GROUP_NUM_PER_USER,
         [e_field.RESOURCE_PROFILE.RESOURCE_TYPE]:e_resourceType.BASIC,
         [e_field.RESOURCE_PROFILE.MAX_NUM]:5,
         //[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]:20, //假设每个文件大小为2M
     },
+    /**         朋友群         **/
     {
-        [e_field.RESOURCE_PROFILE.NAME]:"高级用户最大群数量",
+        [e_field.RESOURCE_PROFILE.NAME]:"高级用户最大朋友群数量",
         [e_field.RESOURCE_PROFILE.RESOURCE_RANGE]:e_resourceRange.MAX_FRIEND_GROUP_NUM_PER_USER,
         [e_field.RESOURCE_PROFILE.RESOURCE_TYPE]:e_resourceType.ADVANCED,
         [e_field.RESOURCE_PROFILE.MAX_NUM]:10,
         //[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]:20, //假设每个文件大小为2M
     },
     {
-        [e_field.RESOURCE_PROFILE.NAME]:"普通用户群人数",
+        [e_field.RESOURCE_PROFILE.NAME]:"普通用户朋友群人数",
         [e_field.RESOURCE_PROFILE.RESOURCE_RANGE]:e_resourceRange.MAX_PERSON_NUM_PER_FRIEND_GROUP,
         [e_field.RESOURCE_PROFILE.RESOURCE_TYPE]:e_resourceType.BASIC,
         [e_field.RESOURCE_PROFILE.MAX_NUM]:100,
         //[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]:20, //假设每个文件大小为2M
     },
     {
-        [e_field.RESOURCE_PROFILE.NAME]:"高级用户群人数",
+        [e_field.RESOURCE_PROFILE.NAME]:"高级用户朋友群人数",
         [e_field.RESOURCE_PROFILE.RESOURCE_RANGE]:e_resourceRange.MAX_PERSON_NUM_PER_FRIEND_GROUP,
         [e_field.RESOURCE_PROFILE.RESOURCE_TYPE]:e_resourceType.ADVANCED,
         [e_field.RESOURCE_PROFILE.MAX_NUM]:200,
@@ -313,6 +314,55 @@ const resource_profile= [
         [e_field.RESOURCE_PROFILE.RESOURCE_RANGE]:e_resourceRange.MAX_SIMULTANEOUS_WAIT_FOR_ASSIGN_IMPEACH_PER_USER,
         [e_field.RESOURCE_PROFILE.RESOURCE_TYPE]:e_resourceType.BASIC,
         [e_field.RESOURCE_PROFILE.MAX_NUM]:5,
+        //[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]:10, //假设每个文件大小为2M
+    },
+
+    /**     举报评论数量的设定（只有basic）       **/
+    //每个用户（举报发起者和admin处理者），在一个impeach中，最多发起评论的数量
+    {
+        [e_field.RESOURCE_PROFILE.NAME]:e_resourceRange_name.MAX_COMMENT_PER_IMPEACH_PER_USER,
+        [e_field.RESOURCE_PROFILE.RESOURCE_RANGE]:e_resourceRange.MAX_COMMENT_PER_IMPEACH_PER_USER,
+        [e_field.RESOURCE_PROFILE.RESOURCE_TYPE]:e_resourceType.BASIC,
+        [e_field.RESOURCE_PROFILE.MAX_NUM]:20,
+        //[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]:10, //假设每个文件大小为2M
+    },
+
+    /**         公共群         **/
+    {
+        [e_field.RESOURCE_PROFILE.NAME]:e_resourceRange_name.MAX_PUBLIC_GROUP_NUM,
+        [e_field.RESOURCE_PROFILE.RESOURCE_RANGE]:e_resourceRange.MAX_PUBLIC_GROUP_NUM,
+        [e_field.RESOURCE_PROFILE.RESOURCE_TYPE]:e_resourceType.BASIC,
+        [e_field.RESOURCE_PROFILE.MAX_NUM]:10,
+        //[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]:10, //假设每个文件大小为2M
+    },
+    {
+        [e_field.RESOURCE_PROFILE.NAME]:'高级'+e_resourceRange_name.MAX_PUBLIC_GROUP_NUM,
+        [e_field.RESOURCE_PROFILE.RESOURCE_RANGE]:e_resourceRange.MAX_PUBLIC_GROUP_NUM,
+        [e_field.RESOURCE_PROFILE.RESOURCE_TYPE]:e_resourceType.ADVANCED,
+        [e_field.RESOURCE_PROFILE.MAX_NUM]:20,
+        //[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]:10, //假设每个文件大小为2M
+    },
+    {
+        [e_field.RESOURCE_PROFILE.NAME]:e_resourceRange_name.MAX_MEMBER_PER_PUBLIC_GROUP,
+        [e_field.RESOURCE_PROFILE.RESOURCE_RANGE]:e_resourceRange.MAX_MEMBER_PER_PUBLIC_GROUP,
+        [e_field.RESOURCE_PROFILE.RESOURCE_TYPE]:e_resourceType.BASIC,
+        [e_field.RESOURCE_PROFILE.MAX_NUM]:100,
+        //[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]:10, //假设每个文件大小为2M
+    },
+    {
+        [e_field.RESOURCE_PROFILE.NAME]:'高级'+e_resourceRange_name.MAX_MEMBER_PER_PUBLIC_GROUP,
+        [e_field.RESOURCE_PROFILE.RESOURCE_RANGE]:e_resourceRange.MAX_MEMBER_PER_PUBLIC_GROUP,
+        [e_field.RESOURCE_PROFILE.RESOURCE_TYPE]:e_resourceType.ADVANCED,
+        [e_field.RESOURCE_PROFILE.MAX_NUM]:200,
+        //[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]:10, //假设每个文件大小为2M
+    },
+
+    /**         入群被拒次数         **/
+    {
+        [e_field.RESOURCE_PROFILE.NAME]:e_resourceRange_name.MAX_DECLINE_JOIN_REQUEST,
+        [e_field.RESOURCE_PROFILE.RESOURCE_RANGE]:e_resourceRange.MAX_DECLINE_JOIN_REQUEST,
+        [e_field.RESOURCE_PROFILE.RESOURCE_TYPE]:e_resourceType.BASIC,
+        [e_field.RESOURCE_PROFILE.MAX_NUM]:10,
         //[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]:10, //假设每个文件大小为2M
     },
 ]

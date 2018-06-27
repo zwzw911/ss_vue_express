@@ -49,10 +49,17 @@ async function deleteUserAndRelatedInfo_async({account,name}){
         await common_operation_model.deleteMany_async({dbModel:e_dbModel.add_friend,condition:{[e_field.ADD_FRIEND.ORIGINATOR]:userId}})
         //删除所有好友分组（以及其中的朋友）
         await common_operation_model.deleteMany_async({dbModel:e_dbModel.user_friend_group,condition:{[e_field.USER_FRIEND_GROUP.OWNER_USER_ID]:userId}})
-        //删除所有创建的群
-        await common_operation_model.deleteMany_async({dbModel:e_dbModel.public_group,condition:{[e_field.PUBLIC_GROUP.CREATOR_ID]:userId}})
+
+
         //删除所有文档
         await common_operation_model.deleteMany_async({dbModel:e_dbModel.article,condition:{[e_field.ARTICLE.AUTHOR_ID]:userId}})
+        //删除所有举报
+        await common_operation_model.deleteMany_async({dbModel:e_dbModel.impeach_comment,condition:{[e_field.IMPEACH_COMMENT.AUTHOR_ID]:userId}})
+        await common_operation_model.deleteMany_async({dbModel:e_dbModel.impeach_action,condition:{[e_field.IMPEACH_ACTION.CREATOR_ID]:userId}})
+        await common_operation_model.deleteMany_async({dbModel:e_dbModel.impeach,condition:{[e_field.IMPEACH.CREATOR_ID]:userId}})
+        //删除群/入群请求
+        await common_operation_model.deleteMany_async({dbModel:e_dbModel.public_group,condition:{[e_field.PUBLIC_GROUP.CREATOR_ID]:userId}})
+        await common_operation_model.deleteMany_async({dbModel:e_dbModel.join_public_group_request,condition:{[e_field.JOIN_PUBLIC_GROUP_REQUEST.CREATOR_ID]:userId}})
     }
 
 }

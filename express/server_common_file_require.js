@@ -2,8 +2,8 @@
  
 "use strict"
 
-const globalConfiguration=require('../server_common/constant/config/globalConfiguration.js')
 const appSetting=require('../server_common/constant/config/appSetting.js')
+const globalConfiguration=require('../server_common/constant/config/globalConfiguration.js')
 const collEnum=require('../server_common/constant/enum/collEnum.js')
 const inputDataRuleType=require('../server_common/constant/enum/inputDataRuleType.js')
 const nodeRuntimeEnum=require('../server_common/constant/enum/nodeRuntimeEnum.js')
@@ -26,7 +26,6 @@ const resourceCheck=require('../server_common/controller/resourceCheck.js')
 const dataConvert=require('../server_common/controller/dataConvert.js')
 const fileResourceCalc=require('../server_common/controller/fileResourceCalc.js')
 const numOnlyResourceCalc=require('../server_common/controller/numOnlyResourceCalc.js')
-const array=require('../server_common/function/assist/array.js')
 const awesomeCaptcha=require('../server_common/function/assist/awesomeCaptcha.js')
 const file=require('../server_common/function/assist/file.js')
 const gmImage=require('../server_common/function/assist/gmImage.js')
@@ -39,15 +38,16 @@ const upload=require('../server_common/function/assist/upload.js')
 const checkRobot=require('../server_common/function/assist/checkRobot.js')
 const crypt=require('../server_common/function/assist/crypt.js')
 const misc=require('../server_common/function/assist/misc.js')
+const array=require('../server_common/function/assist/array.js')
 const interval=require('../server_common/function/security/interval.js')
 const supervisor=require('../server_common/function/supervisor/supervisor.js')
 const validateSearchFormat=require('../server_common/function/validateInput/validateSearchFormat.js')
 const validateHelper=require('../server_common/function/validateInput/validateHelper.js')
-const validateValue=require('../server_common/function/validateInput/validateValue.js')
 const validateFormat=require('../server_common/function/validateInput/validateFormat.js')
+const validateValue=require('../server_common/function/validateInput/validateValue.js')
 const db_operation_helper=require('../server_common/Test/db_operation_helper.js')
-const testData=require('../server_common/Test/testData.js')
 const generateTestData=require('../server_common/Test/generateTestData.js')
+const testData=require('../server_common/Test/testData.js')
 const misc_helper=require('../server_common/Test/misc_helper.js')
 const friend_group_API=require('../server_common/Test/API/express/friend_group_API.js')
 const user_API=require('../server_common/Test/API/express/user_API.js')
@@ -55,14 +55,16 @@ const penalize_API=require('../server_common/Test/API/express/penalize_API.js')
 const folder_API=require('../server_common/Test/API/express/folder_API.js')
 const add_friend_API=require('../server_common/Test/API/express/add_friend_API.js')
 const article_API=require('../server_common/Test/API/express/article_API.js')
-const impeachComment_API=require('../server_common/Test/API/express/impeachComment_API.js')
-const impeach_API=require('../server_common/Test/API/express/impeach_API.js')
 const impeach_and_comment_API_backup=require('../server_common/Test/API/express/impeach_and_comment_API_backup.js')
+const impeach_API=require('../server_common/Test/API/express/impeach_API.js')
 const impeachAction_API=require('../server_common/Test/API/express/impeachAction_API.js')
+const impeachComment_API=require('../server_common/Test/API/express/impeachComment_API.js')
+const publicGroup_API=require('../server_common/Test/API/express/publicGroup_API.js')
+const joinPublicGroupRequest_API=require('../server_common/Test/API/express/joinPublicGroupRequest_API.js')
 const admin_user_API=require('../server_common/Test/API/express_admin/admin_user_API.js')
 const common_API=require('../server_common/Test/API/common_API.js')
-const article_component_function=require('../server_common/Test/component_function/express/article_component_function.js')
 const user_component_function=require('../server_common/Test/component_function/express/user_component_function.js')
+const article_component_function=require('../server_common/Test/component_function/express/article_component_function.js')
 const admin_user_component_function=require('../server_common/Test/component_function/express_admin/admin_user_component_function.js')
 const redis_common_script=require('../server_common/model/redis/operation/redis_common_script.js')
 const redis_common_operation=require('../server_common/model/redis/operation/redis_common_operation.js')
@@ -76,8 +78,8 @@ const generateMongoEnumKeyValueExchange=require('../server_common/maintain/gener
 const genLuaSHA=require('../server_common/maintain/genLuaSHA.js')
 
 module.exports={
-    globalConfiguration,
     appSetting,
+    globalConfiguration,
     collEnum,
     inputDataRuleType,
     nodeRuntimeEnum,
@@ -100,7 +102,6 @@ module.exports={
     dataConvert,
     fileResourceCalc,
     numOnlyResourceCalc,
-    array,
     awesomeCaptcha,
     file,
     gmImage,
@@ -113,15 +114,16 @@ module.exports={
     checkRobot,
     crypt,
     misc,
+    array,
     interval,
     supervisor,
     validateSearchFormat,
     validateHelper,
-    validateValue,
     validateFormat,
+    validateValue,
     db_operation_helper,
-    testData,
     generateTestData,
+    testData,
     misc_helper,
     friend_group_API,
     user_API,
@@ -129,14 +131,16 @@ module.exports={
     folder_API,
     add_friend_API,
     article_API,
-    impeachComment_API,
-    impeach_API,
     impeach_and_comment_API_backup,
+    impeach_API,
     impeachAction_API,
+    impeachComment_API,
+    publicGroup_API,
+    joinPublicGroupRequest_API,
     admin_user_API,
     common_API,
-    article_component_function,
     user_component_function,
+    article_component_function,
     admin_user_component_function,
     redis_common_script,
     redis_common_operation,
