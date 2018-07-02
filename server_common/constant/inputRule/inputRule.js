@@ -1,4 +1,4 @@
-/*    gene by H:\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-6-27   */ 
+/*    gene by H:\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-6-29   */ 
  
 "use strict"
 const inputRule={
@@ -195,7 +195,7 @@ const inputRule={
             dataType:"string",
             applyRange:["create"],
             require:{"define":{"create":true},"error":{"rc":100506,"msg":"资源配置范围不能为空"},"mongoError":{"rc":200506,"msg":"资源配置范围不能为空"}},
-            enum:{"define":["1","10","12","14","16","18","20","100","102","104","106","108","110","112","114","116","118","120","122","124","126","128"],"error":{"rc":100508,"msg":"资源配置范围的类型不正确"},"mongoError":{"rc":200508,"msg":"资源配置范围的类型不正确"}},
+            enum:{"define":["1","10","12","14","16","18","20","100","102","104","106","108","110","112","114","116","118","120","122","124","126","128","130"],"error":{"rc":100508,"msg":"资源配置范围的类型不正确"},"mongoError":{"rc":200508,"msg":"资源配置范围的类型不正确"}},
         },
         type:{
             chineseName:"资源配置类型",
@@ -626,8 +626,26 @@ const inputRule={
             chineseName:"新成员加入规则",
             dataType:"string",
             applyRange:["create","update_scalar"],
-            require:{"define":{"create":true,"update_scalar":false},"error":{"rc":102322,"msg":"新成员加入规则不能为空"},"mongoError":{"rc":202322,"msg":"新成员加入规则不能为空"}},
-            enum:{"define":["1","2","3"],"error":{"rc":102324,"msg":"新成员加入规则不正确"},"mongoError":{"rc":202324,"msg":"新成员加入规则不正确"}},
+            require:{"define":{"create":true,"update_scalar":false},"error":{"rc":102306,"msg":"新成员加入规则不能为空"},"mongoError":{"rc":202306,"msg":"新成员加入规则不能为空"}},
+            enum:{"define":["1","2","3"],"error":{"rc":102308,"msg":"新成员加入规则不正确"},"mongoError":{"rc":202308,"msg":"新成员加入规则不正确"}},
+        },
+        adminsId:{
+            chineseName:"群管理员",
+            dataType:["objectId"],
+            applyRange:["update_array"],
+            require:{"define":{"update_array":false},"error":{"rc":102310,"msg":"群管理员不能为空"},"mongoError":{"rc":202310,"msg":"群管理员不能为空"}},
+            arrayMinLength:{"define":1,"error":{"rc":102312,"msg":"群管理员至少有一个成员"},"mongoError":{"rc":202312,"msg":"群管理员至少有一个成员"}},
+            arrayMaxLength:{"define":10,"error":{"rc":102318,"msg":"群最多有10个群管理员"},"mongoError":{"rc":202318,"msg":"群最多有10个群管理员"}},
+            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":102314,"msg":"群管理员必须是objectId"},"mongoError":{"rc":202314,"msg":"群管理员必须是objectId"}},
+        },
+        membersId:{
+            chineseName:"群成员",
+            dataType:["objectId"],
+            applyRange:["update_array"],
+            require:{"define":{"update_array":false},"error":{"rc":102316,"msg":"群成员不能为空"},"mongoError":{"rc":202306,"msg":"群成员不能为空"}},
+            arrayMinLength:{"define":1,"error":{"rc":102318,"msg":"群至少有一个成员"},"mongoError":{"rc":202308,"msg":"群至少有一个成员"}},
+            arrayMaxLength:{"define":200,"error":{"rc":102320,"msg":"群最多有200个成员"},"mongoError":{"rc":202310,"msg":"群最多有200个成员"}},
+            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":102322,"msg":"群成员必须是objectId"},"mongoError":{"rc":202312,"msg":"群成员必须是objectId"}},
         },
         creatorId:{
             chineseName:"群创建者",
@@ -635,24 +653,6 @@ const inputRule={
             applyRange:["create"],
             require:{"define":{"create":true},"error":{"rc":102350,"msg":"群创建者不能为空"},"mongoError":{"rc":202350,"msg":"群创建者不能为空"}},
             format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":102352,"msg":"群创建者必须是objectId"},"mongoError":{"rc":202352,"msg":"群创建者必须是objectId"}},
-        },
-        membersId:{
-            chineseName:"群成员",
-            dataType:["objectId"],
-            applyRange:["update_array"],
-            require:{"define":{"update_array":false},"error":{"rc":102356,"msg":"群成员不能为空"},"mongoError":{"rc":202356,"msg":"群成员不能为空"}},
-            arrayMinLength:{"define":1,"error":{"rc":102358,"msg":"群至少有一个成员"},"mongoError":{"rc":202358,"msg":"群至少有一个成员"}},
-            arrayMaxLength:{"define":200,"error":{"rc":102360,"msg":"群最多有200个成员"},"mongoError":{"rc":202360,"msg":"群最多有200个成员"}},
-            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":102362,"msg":"群成员必须是objectId"},"mongoError":{"rc":202362,"msg":"群成员必须是objectId"}},
-        },
-        adminsId:{
-            chineseName:"群管理员",
-            dataType:["objectId"],
-            applyRange:["update_array"],
-            require:{"define":{"update_array":false},"error":{"rc":102364,"msg":"群管理员不能为空"},"mongoError":{"rc":202364,"msg":"群管理员不能为空"}},
-            arrayMinLength:{"define":1,"error":{"rc":102366,"msg":"群管理员至少有一个成员"},"mongoError":{"rc":202366,"msg":"群管理员至少有一个成员"}},
-            arrayMaxLength:{"define":10,"error":{"rc":102368,"msg":"群最多有10个群管理员"},"mongoError":{"rc":202368,"msg":"群最多有10个群管理员"}},
-            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":102370,"msg":"群管理员必须是objectId"},"mongoError":{"rc":202370,"msg":"群管理员必须是objectId"}},
         },
     },
     impeach_image:{

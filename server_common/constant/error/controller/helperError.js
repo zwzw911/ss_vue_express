@@ -376,6 +376,10 @@ const resourceCheck={
         totalJoinPubliGroupDeclineNumExceed({resourceProfileNum}){
             return {rc:resourceCheckBaseErrorCode+120,msg:{client:`入群请求达到最大数量${resourceProfileNum}，无法继续发起请求`}}
         },
+        /**     user friend group       **/
+        totalUserFriendGroupNumExceed({resourceProfileNum}){
+            return {rc:resourceCheckBaseErrorCode+122,msg:{client:`朋友群达到最大数量${resourceProfileNum}，无法继续建立`}}
+        },
     }
 }
 

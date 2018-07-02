@@ -250,6 +250,11 @@ async function businessLogic_async({docValue,collName,recordId,applyRange,handle
 
     /***         数据库操作            ***/
     let updatedRecord=await common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel[collName],id:recordId,updateFieldsValue:docValue})
+    /***        关联操作                ***/
+    //如果handleResult是accept，在public_group的membersId中添加成员
+    if(handleResult===e_joinPublicGroupHandleResult.ACCEPT){
+        await common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel.public_group,id:docValue[e_field.JOIN_PUBLIC_GROUP_REQUEST.PUBLIC_GROUP_ID],updateFieldsValue:{"$push":{[e_field.PUBLIC_GROUP.MEMBERS_ID]:docValue[e_field.JOIN_PUBLIC_GROUP_REQUEST.CREATOR_ID]}}})
+    }
     return Promise.resolve(updatedRecord.toObject())
 }
 module.exports={

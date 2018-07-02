@@ -184,6 +184,8 @@ async  function createJoinPublicGroupRequest_async({req,applyRange}){
             [e_field.PUBLIC_GROUP.MEMBERS_ID]:userId
         }
     }
+
+    //可以直接加入，无需创建join_request
     if(publicGroupJoinRule===e_publicGroupJoinInRule.ANYONE_ALLOW){
         await common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel.public_group,id:docValue[e_field.JOIN_PUBLIC_GROUP_REQUEST.PUBLIC_GROUP_ID],updateFieldsValue:updateValues})
         return Promise.resolve({rc:0,msg:'成功加入群'})

@@ -212,7 +212,19 @@ async function calcJoinPublicGroupDeclineNum_async({userId,containerId}){
     let untreatedNum=await common_operation_model.count_async({dbModel:e_dbModel.add_friend,condition:condition})
     return Promise.resolve({[e_resourceFieldName.USED_NUM]:untreatedNum})
 }
-
+/**********************************************************************************/
+/**************               max user friend  group num          *****************/
+/**********************************************************************************/
+async function calcUserFriendGroupNum_async({userId,containerId}){
+    let condition={
+        [e_field.USER_FRIEND_GROUP.OWNER_USER_ID]:userId,
+        // [e_field.USER_FRIEND_GROUP.PUBLIC_GROUP_ID]:containerId,
+        // [e_field.USER_FRIEND_GROUP.HANDLE_RESULT]:e_joinPublicGroupHandleResult.DECLINE,
+        'dDate':{$exists:false},
+    }
+    let num=await common_operation_model.count_async({dbModel:e_dbModel.user_friend_group,condition:condition})
+    return Promise.resolve({[e_resourceFieldName.USED_NUM]:num})
+}
 module.exports={
     calcFolderNum_async,
     calcNewArticleNum_async,
@@ -231,4 +243,6 @@ module.exports={
     calcMemberPerPublic_async,
 
     calcJoinPublicGroupDeclineNum_async,
+
+    calcUserFriendGroupNum_async,
 }

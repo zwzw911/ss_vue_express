@@ -658,7 +658,7 @@ const defaultSetting= {
 const userGroupFriend={
     max:{
         maxUserPerGroup:100,//每个好友分组，最多容纳的好友数量
-        maxUserFriendGroupNum:10,//每个用户最多拥有10个好友分组（包括默认的分组：我的好友）
+        // maxUserFriendGroupNum:10,//每个用户最多拥有10个好友分组（包括默认的分组：我的好友）
 
         maxUserPerDefaultGroup:200,//默认的组：我的好友/黑名单，最大能容纳的用户数
     },

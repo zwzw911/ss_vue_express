@@ -103,7 +103,7 @@ async function userStateCheck_async({req,userLoginCheck={needCheck:false},penali
 //validatePartValueFormat+validatePartValue
 function inputPreCheck({req,expectedPart,collName,arr_currentSearchRange,applyRange}){
     // ap.inf('inputPreCheck in')
-    // ap.inf('collName',collName)
+    // wrn.inf('collName',collName)
     let result
 
     if(expectedPart.length>0){
@@ -138,7 +138,7 @@ function inputPreCheck({req,expectedPart,collName,arr_currentSearchRange,applyRa
         if (result.rc > 0) {
             return result
         }
-        // ap.inf('validatePartValueFormat done')
+        // ap.wrn('validatePartValueFormat done')
 
         //检查输入参数是否正确
         //part是recordInfo
@@ -169,6 +169,7 @@ function inputCommonCheck({req,expectedPart}){
 * */
 function validatePartValueFormat({req,expectedPart,collName,fkConfig,arr_currentSearchRange}){
     // ap.inf('expectedPart in',expectedPart)
+    // ap.wrn('validatePartValueFormat in')
     let checkPartFormatResult
     for(let singlePart of expectedPart){
         // ap.inf('current singlePart',singlePart)

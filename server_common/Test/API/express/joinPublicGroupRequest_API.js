@@ -39,12 +39,27 @@ async function createJoinPublicGroupRequest_returnId_async({sess,data,app}){
     })
 }
 
-async function updateJoinPublicGroupRequest_returnReturn_async({sess,data,app}){
+async function updateJoinPublicGroupAcceptRequest_returnReturn_async({sess,data,app}){
     // let data={values:{}}
     // // data.values[e_part.METHOD]=e_method.CREATE
     // data.values[e_part.RECORD_INFO]={[e_field.IMPEACH_COMMENT.IMPEACH_ID]:impeachId}
     return new Promise(function(resolve,reject){
-        request(app).put('/join_public_group_request/').set('Accept', 'application/json').set('Cookie',[sess]).send(data)
+        request(app).put('/join_public_group_request/accept').set('Accept', 'application/json').set('Cookie',[sess]).send(data)
+            .end(function(err, res) {
+                let parsedRes=JSON.parse(res.text)
+                // console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
+                assert.deepStrictEqual(parsedRes.rc,0)
+                return resolve(parsedRes)
+            });
+    })
+}
+
+async function updateJoinPublicGroupDeclineRequest_returnReturn_async({sess,data,app}){
+    // let data={values:{}}
+    // // data.values[e_part.METHOD]=e_method.CREATE
+    // data.values[e_part.RECORD_INFO]={[e_field.IMPEACH_COMMENT.IMPEACH_ID]:impeachId}
+    return new Promise(function(resolve,reject){
+        request(app).put('/join_public_group_request/accept').set('Accept', 'application/json').set('Cookie',[sess]).send(data)
             .end(function(err, res) {
                 let parsedRes=JSON.parse(res.text)
                 // console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
@@ -69,6 +84,7 @@ async function updateJoinPublicGroupRequest_returnReturn_async({sess,data,app}){
 }*/
 module.exports={
     createJoinPublicGroupRequest_returnId_async,
-    updateJoinPublicGroupRequest_returnReturn_async,
+    updateJoinPublicGroupAcceptRequest_returnReturn_async,
+    updateJoinPublicGroupDeclineRequest_returnReturn_async,
     // deletePublicGroup_async,
 }

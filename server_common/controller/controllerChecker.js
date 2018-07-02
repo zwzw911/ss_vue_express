@@ -431,6 +431,9 @@ async function ifObjectIdInPartCrypted_async({req,expectedPart,browserCollRule})
                     // {fieldName:{remove:[id1],add:[id2]},fieldName2:{remove:[id1],add:[id2]}}
                     // if(partValue.length>0){
                     for(let singleFieldName in partValue){
+                        if(false===dataTypeCheck.isSetValue(partValue[singleFieldName])){
+                            continue
+                        }
                         //1 获得数据类型
                         //字段有对应的rule，且字段值设置
                         if(undefined!==browserCollRule[singleFieldName] ){
@@ -447,19 +450,26 @@ async function ifObjectIdInPartCrypted_async({req,expectedPart,browserCollRule})
                                     let fieldValue=partValue[singleFieldName]
                                     //对每个部分进行检测
                                     let fieldSubPartValue
-                                    if(undefined!==fieldValue['add'] && true===dataTypeCheck.isSetValue(fieldValue['add'])){
+                                    if(undefined!==fieldValue['add'] && true===dataTypeCheck.isSetValue(fieldValue['add'] )){
                                         fieldSubPartValue=fieldValue['add']
-                                        for(let singleEle of fieldSubPartValue){
-                                            if(false===ifObjectIdCrypted({objectId:singleEle})){
-                                                return Promise.reject(checkerError.ifObjectIdCrypted.manipulateArraySubPartAddContainInvalidObjectId)
+// ap.wrn('fieldValue[\'add\']',fieldValue['add'])
+                                        if(fieldSubPartValue.length>0){
+                                            for(let singleEle of fieldSubPartValue){
+                                                // ap.wrn('singleEle',singleEle)
+                                                if(false===ifObjectIdCrypted({objectId:singleEle})){
+                                                    return Promise.reject(checkerError.ifObjectIdCrypted.manipulateArraySubPartAddContainInvalidObjectId)
+                                                }
                                             }
                                         }
+
                                     }
                                     if(undefined!==fieldValue['remove'] && true===dataTypeCheck.isSetValue(fieldValue['remove'])){
                                         fieldSubPartValue=fieldValue['remove']
-                                        for(let singleEle of fieldSubPartValue){
-                                            if(false===ifObjectIdCrypted({objectId:singleEle})){
-                                                return Promise.reject(checkerError.ifObjectIdCrypted.manipulateArraySubPartAddContainInvalidObjectId)
+                                        if(fieldSubPartValue.length>0){
+                                            for(let singleEle of fieldSubPartValue){
+                                                if(false===ifObjectIdCrypted({objectId:singleEle})){
+                                                    return Promise.reject(checkerError.ifObjectIdCrypted.manipulateArraySubPartAddContainInvalidObjectId)
+                                                }
                                             }
                                         }
                                     }
@@ -520,6 +530,9 @@ async function ifObjectIdInPartCrypted_async({req,expectedPart,browserCollRule})
                     //对每个字段进行判别，类型是否为objectId，是的话，格式判断
                     // let recordInfoValue=req.body.values[singlePart]
                     for(let singleFieldName in partValue){
+                        if(false===dataTypeCheck.isSetValue(partValue[singleFieldName])){
+                            continue
+                        }
                         // ap.inf('singleFieldName',singleFieldName)
                         // ap.inf('partValue',partValue)
                         // ap.inf('partValue[singleFieldName]',partValue[singleFieldName])

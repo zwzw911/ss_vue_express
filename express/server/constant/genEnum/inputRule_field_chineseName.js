@@ -109,9 +109,9 @@ const ChineseName={
     public_group:{
         'name':'群名称',
         'joinInRule':'新成员加入规则',
-        'creatorId':'群创建者',
-        'membersId':'群成员',
         'adminsId':'群管理员',
+        'membersId':'群成员',
+        'creatorId':'群创建者',
     },
     impeach_image:{
         'impeachId':'举报对象',

@@ -579,7 +579,7 @@ module.exports={
     convertFileSize,
 
     // ifArrayHasDuplicate,
-    // ifArrayContainArray,
+    // ifArrayEleContainInArray,
 
     getSessionId_async,
     getIP_async,

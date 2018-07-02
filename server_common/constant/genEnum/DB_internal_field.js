@@ -20,7 +20,7 @@ const Field={
     user_public_group:['userId','currentJoinGroup',],
     add_friend:['originator','status',],
     join_public_group_request:['creatorId','handleResult',],
-    public_group:['creatorId','membersId','adminsId',],
+    public_group:['creatorId',],
     impeach_comment_image:['name','hashName','pathId','sizeInMb','authorId',],
     impeach_attachment:['name','hashName','authorId','sizeInMb','pathId',],
     impeach_image:['name','hashName','pathId','sizeInMb','authorId',],

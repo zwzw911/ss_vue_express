@@ -194,7 +194,7 @@ describe('user1 register unique check:',async  function() {
         describe('update join public group update',async  function() {
             let sess
             before('prepare', async function () {
-                url=''
+                url='accept'
                 finalUrl=baseUrl+url
                 sess=await userAPI.getFirstSession({app})
                 // normalRecord[e_field.IMPEACH.IMPEACHED_ARTICLE_ID]=adminRootIdCryptedByUser1

@@ -1257,12 +1257,18 @@ function decryptRecordValue({record,collName,salt}){
 function decryptInputValue({req,expectedPart,salt,browserCollRule}){
     // ap.inf('decryptInputValue=>salt',salt)
     for(let singlePart of expectedPart){
+        // ap.wrn('req.body.values[singlePart]',req.body.values[singlePart])
+        // ap.wrn('dataTypeCheck.isSetValue(req.body.values[singlePart])',dataTypeCheck.isSetValue(req.body.values[singlePart]))
         if(true===dataTypeCheck.isSetValue(req.body.values[singlePart])){
             let partValue=req.body.values[singlePart]
             switch (singlePart){
                 case e_part.MANIPULATE_ARRAY:
                     for(let singleFieldName in partValue){
                         // ap.inf('singleFieldName',singleFieldName)
+                        //空值则不解密
+                        if(false===dataTypeCheck.isSetValue(partValue[singleFieldName])){
+                            continue
+                        }
                         if(undefined!==browserCollRule[singleFieldName]){
                             let singleFieldDataTypeInRule=browserCollRule[singleFieldName][e_otherRuleFiledName.DATA_TYPE]
                             let dataTypeArrayFlag=dataTypeCheck.isArray(singleFieldDataTypeInRule)
@@ -1344,6 +1350,9 @@ function decryptInputValue({req,expectedPart,salt,browserCollRule}){
                     // ap.inf('RECORD_INFO in')
                     for(let singleFieldName in partValue){
                         // ap.inf('singleFieldName',singleFieldName)
+                        if(false===dataTypeCheck.isSetValue(partValue[singleFieldName])){
+                            continue
+                        }
                         if(undefined!==browserCollRule[singleFieldName]){
                             let singleFieldDataTypeInRule=browserCollRule[singleFieldName][e_otherRuleFiledName.DATA_TYPE]
                             let dataTypeArrayFlag=dataTypeCheck.isArray(singleFieldDataTypeInRule)

@@ -18,14 +18,9 @@ const nodeEnum=server_common_file_require.nodeEnum
 const e_method=nodeEnum.Method
 const e_part=nodeEnum.ValidatePart
 const e_updateType=nodeEnum.UpdateType
-// const e_uploadFileType=nodeEnum.UploadFileType
-/*        通过method，判断是CRUDM中的那个操作
- *   C: register
- *   M: match(login)
- * */
+
 router.post('/',function(req,res,next){
-//     console.log(`req in`)
-// console.log(`req is ${JSON.stringify(req.body)}`)
+
     dispatcher_async({req:req}).then(
         (v)=>{
             console.log(`create  user friend group   success, result:  ${JSON.stringify(v)}`)
@@ -38,25 +33,34 @@ router.post('/',function(req,res,next){
         }
     )
 })
+router.put('/',function(req,res,next){
 
-/*router.post('/updateUserFriendGroup',function(req,res,next){
-//     console.log(`req in`)
-// console.log(`req is ${JSON.stringify(req.body)}`)
-    if(undefined===req.body.values[e_part.METHOD] && req.body.values[e_part.METHOD]===e_method.UPDATE){
-        dispatcher_async({req:req,updateType:e_updateType.SUB_FIELD}).then(
-            (v)=>{
-                console.log(`update  user friend group sub field  success, result:  ${JSON.stringify(v)}`)
-                return res.json(v)
-            },
-            (err)=>{
-                console.log(`update   user friend group  sub field  fail: ${JSON.stringify(err)}`)
-                return res.json(genFinalReturnResult(err))
+    dispatcher_async({req:req}).then(
+        (v)=>{
+            console.log(`update  user friend group   success, result:  ${JSON.stringify(v)}`)
+            return res.json(v)
+        },
+        (err)=>{
+            console.log(`update   user friend group    fail: ${JSON.stringify(err)}`)
+            return res.json(genFinalReturnResult(err))
 
-            }
-        )
-    }
+        }
+    )
+})
+router.delete('/',function(req,res,next){
 
-})*/
+    dispatcher_async({req:req}).then(
+        (v)=>{
+            console.log(`delete  user friend group   success, result:  ${JSON.stringify(v)}`)
+            return res.json(v)
+        },
+        (err)=>{
+            console.log(`delete   user friend group    fail: ${JSON.stringify(err)}`)
+            return res.json(genFinalReturnResult(err))
+
+        }
+    )
+})
 
 router.all('*',function(req,res,next){
     // ap.inf('systemError.systemError.noMatchRESTAPI',systemError.systemError.noMatchRESTAPI)

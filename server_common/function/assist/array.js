@@ -22,12 +22,12 @@ function ifArrayHasDuplicate(array){
 /*  childArray中的每个元素都包含在parentArray中
 *
 * */
-function ifArrayContainArray({parentArray,childArray}){
-    if(childArray.length===0 || parentArray.length===0){
+function ifArrayEleContainInArray({expectedArray,toBeCheckArray}){
+    if(toBeCheckArray.length===0 || expectedArray.length===0){
         return false
     }
-    for(let singleChildEle of childArray){
-        if(-1===parentArray.indexOf(singleChildEle)){
+    for(let singleChildEle of toBeCheckArray){
+        if(-1===expectedArray.indexOf(singleChildEle)){
             return false
         }
     }
@@ -108,7 +108,7 @@ function getAddedEleIdx({baseArray,newArray}){
 }
 module.exports={
     ifArrayHasDuplicate,
-    ifArrayContainArray,
+    ifArrayEleContainInArray,
     ifArrayEleAllInSpecificArray,
     getRemovedEleIdx,
     getAddedEleIdx,

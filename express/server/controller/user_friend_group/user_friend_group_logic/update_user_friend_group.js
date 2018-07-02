@@ -2,57 +2,59 @@
  * Created by ada on 2017/9/1.
  */
 'use strict'
-const ap=require('awesomeprint')
-/*                      controller setting                */
+/******************    内置lib和第三方lib  **************/
+const ap=require(`awesomeprint`)
+
+/**************  controller相关常量  ****************/
 const controller_setting=require('../user_friend_group_setting/user_friend_group_setting').setting
 const controllerError=require('../user_friend_group_setting/user_friend_group_controllerError').controllerError
 
-
-/*                      specify: genEnum                */
+/***************  数据库相关常量   ****************/
 const e_uniqueField=require('../../../constant/genEnum/DB_uniqueField').UniqueField
 const e_chineseName=require('../../../constant/genEnum/inputRule_field_chineseName').ChineseName
 const e_coll=require('../../../constant/genEnum/DB_Coll').Coll
 const e_field=require('../../../constant/genEnum/DB_field').Field
 const e_dbModel=require('../../../constant/genEnum/dbModel')
 const e_iniSettingObject=require('../../../constant/genEnum/initSettingObject').iniSettingObject
+
+/***************  rule   ****************/
 const inputRule=require('../../../constant/inputRule/inputRule').inputRule
 const internalInputRule=require('../../../constant/inputRule/internalInputRule').internalInputRule
 const browserInputRule=require('../../../constant/inputRule/browserInputRule').browserInputRule
 
 
-/*                      server common                                           */
-const server_common_file_require=require('../../../../server_common_file_require')
-/*                      server common：enum                                       */
-const nodeEnum=server_common_file_require.nodeEnum
-const nodeRuntimeEnum=server_common_file_require.nodeRuntimeEnum
-const mongoEnum=server_common_file_require.mongoEnum
-const inputDataRuleType=server_common_file_require.inputDataRuleType
 
+const server_common_file_require=require('../../../../server_common_file_require')
+/**************  公共常量   ******************/
+const nodeEnum=server_common_file_require.nodeEnum
 const e_env=nodeEnum.Env
 const e_part=nodeEnum.ValidatePart
-const e_partValueToVarName=nodeEnum.PartValueToVarName
-const e_subField=nodeEnum.SubField
 
+const nodeRuntimeEnum=server_common_file_require.nodeRuntimeEnum
 const e_hashType=nodeRuntimeEnum.HashType
+const e_inputValueLogicCheckStep=nodeRuntimeEnum.InputValueLogicCheckStep
 
+const mongoEnum=server_common_file_require.mongoEnum
 const e_accountType=mongoEnum.AccountType.DB
 const e_docStatus=mongoEnum.DocStatus.DB
+const e_articleStatus=mongoEnum.ArticleStatus.DB
 const e_adminUserType=mongoEnum.AdminUserType.DB
 const e_adminPriorityType=mongoEnum.AdminPriorityType.DB
 const e_allUserType=mongoEnum.AllUserType.DB
-
-const e_serverDataType=inputDataRuleType.ServerDataType
-const e_serverRuleType=inputDataRuleType.ServerRuleType
-
-/*                      server common：function                                       */
+const e_resourceRange=mongoEnum.ResourceRange.DB
+const e_impeachState=mongoEnum.ImpeachState.DB
+const e_documentStatus=mongoEnum.DocumentStatus.DB
+/**************  公共函数   ******************/
 const dataConvert=server_common_file_require.dataConvert
 const controllerHelper=server_common_file_require.controllerHelper
 const controllerChecker=server_common_file_require.controllerChecker
 const common_operation_model=server_common_file_require.common_operation_model
+const controllerInputValueLogicCheck=server_common_file_require.controllerInputValueLogicCheck
 const misc=server_common_file_require.misc
-const hash=server_common_file_require.crypt.hash
+const crypt=server_common_file_require.crypt
+const array=server_common_file_require.array
 
-/*                      server common：other                                       */
+/*************** 配置信息 *********************/
 const regex=server_common_file_require.regex.regex
 const currentEnv=server_common_file_require.appSetting.currentEnv
 const fkConfig=server_common_file_require.fkConfig.fkConfig
@@ -62,33 +64,34 @@ async function updateUserFriendGroup_async({req,expectedPart}){
     // console.log(`updateUser_async in`)
     // ap.print('expectedPart',expectedPart)
     // console.log(`req.session ${JSON.stringify(req.session)}`)
-    /*******************************************************************************************/
-    /*                                          define variant                                 */
-    /*******************************************************************************************/
+    /*************************************************/
+    /************      define variant     ***********/
+    /************************************************/
     let tmpResult,collName=controller_setting.MAIN_HANDLED_COLL_NAME
     let convertedNoSql //为editSubField设置
     let recordInfoNotChange=false,editSubFieldValueNotChange=false //检测是否需要做update
     // console.log(`req============>${JSON.stringify(req)}`)
     let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
-    let {userId,userCollName,userType,userPriority}=userInfo
+    let {userId,userCollName,userType,userPriority,tempSalt}=userInfo
     // console.log(`userInfo============>${JSON.stringify(userInfo)}`)
-    let {docValue,recordId,subFieldValue}=controllerHelper.getPartValue({req:req,arr_expectedPart:expectedPart})
-    // let docValue=req.body.values[e_part.RECORD_INFO]
-    // let recordId=req.body.values[e_part.RECORD_ID]
+    // let {docValue,recordId,subFieldValue}=controllerHelper.getPartValue({req:req,arr_expectedPart:expectedPart})
+    let docValue=req.body.values[e_part.RECORD_INFO]
+    let recordId=req.body.values[e_part.RECORD_ID]
+    let subFieldValue=req.body.values[e_part.EDIT_SUB_FIELD]
     // console.log(`docValue============>${JSON.stringify(docValue)}`)
     // console.log(`recordId============>${JSON.stringify(recordId)}`)
     /*******************************************************************************************/
     /*                                     editSubField                                       */
     /*******************************************************************************************/
 
-    /*******************************************************************************************/
-    /*                                     用户类型和权限检测                                  */
-    /*******************************************************************************************/
+    /************************************************/
+    /*****************  用户类型检测     ************/
+    /************************************************/
     await controllerChecker.ifExpectedUserType_async({currentUserType:userType,arr_expectedUserType:[e_allUserType.USER_NORMAL]})
 
-    /*******************************************************************************************/
-    /*                                     参数过滤                                           */
-    /*******************************************************************************************/
+    /**********************************************/
+    /********  删除undefined/null字段  ***********/
+    /*********************************************/
     if(undefined!==docValue){
         dataConvert.constructUpdateCriteria(docValue,fkConfig[collName])
     }
@@ -98,7 +101,7 @@ async function updateUserFriendGroup_async({req,expectedPart}){
     /*                                       authorization check                               */
     /*******************************************************************************************/
     //当前用户必须是user_group的创建人，且user_group未被删除
-    tmpResult=await controllerChecker.ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({
+/*    tmpResult=await controllerChecker.ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({
         dbModel:e_dbModel.user_friend_group,
         recordId:recordId,
         ownerFieldsName:[e_field.USER_FRIEND_GROUP.OWNER_USER_ID],
@@ -108,6 +111,21 @@ async function updateUserFriendGroup_async({req,expectedPart}){
         return Promise.reject(controllerError.notUserGroupOwnerCantUpdate)
     }
     let originalDoc=misc.objectDeepCopy(tmpResult)
+
+    //当前用户必须是public_group的admin，且public_group未被删除*/
+    let originalDoc
+    if(userType===e_allUserType.USER_NORMAL){
+        originalDoc=await controllerChecker.ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({
+            dbModel:e_dbModel.user_friend_group,
+            recordId:recordId,
+            ownerFieldsName:[e_field.USER_FRIEND_GROUP.OWNER_USER_ID],
+            userId:userId,
+            additionalCondition:{'dDate':{'$exists':false}},
+        })
+        if(false===originalDoc){
+            return Promise.reject(controllerError.update.notUserGroupOwnerCantUpdate)
+        }
+    }
    /* /!*******************************************************************************************!/
     /!*                          delete field cant be update from client                        *!/
     /!*******************************************************************************************!/

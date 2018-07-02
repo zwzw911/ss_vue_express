@@ -446,6 +446,8 @@ const ResourceRange={
         MAX_MEMBER_PER_GROUP:'128',//每个公共群最大成员数 //虽然是用来数组，但是为update_array方式，所以每次更新时，还是需要具体计算（如果是update_scalar，一次输入整个数据，则可以使用inputRule判断）
 
         MAX_DECLINE_JOIN_REQUEST:'130',//单个public group，每个用户最大可以被拒绝次数
+
+        MAX_USER_FRIEND_GROUP_NUM:'132',//每个用户最大可创建的朋友群
     },
     SHOW:{
         /**     存储在coll中    **/
@@ -491,6 +493,8 @@ const ResourceRange={
         MAX_MEMBER_PER_PUBLIC_GROUP:'每个公共群最大成员数',//每个公共群最大成员数  //虽然是用来数组，但是为update_array方式，所以每次更新时，还是需要具体计算（如果是update_scalar，一次输入整个数据，则可以使用inputRule判断）
 
         MAX_DECLINE_JOIN_REQUEST:'入群最大被拒次数',//单个public group，每个用户最大可以被拒绝次数
+
+        MAX_USER_FRIEND_GROUP_NUM:'用户最大朋友群',//每个用户最大可创建的朋友群
     },
 }
 

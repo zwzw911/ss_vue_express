@@ -378,6 +378,14 @@ async function ifEnoughResource_async({requiredResource,resourceProfileRange,use
                         return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.totalJoinPubliGroupDeclineNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
                     }
                     break
+                /**     user friend  group num       **/
+                case e_resourceRange.MAX_USER_FRIEND_GROUP_NUM:
+                    usedResource=await numOnlyResourceCalc.calcUserFriendGroupNum_async({userId:userId,containerId:containerId})
+                    numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:resourceProfile})
+                    if(true===numExceedFlag){
+                        return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.totalUserFriendGroupNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
+                    }
+                    break
                 default:
                     return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.noHandleCodeProfileRange())
                 //ap.err(`ResourceRange ${singleResourceProfileRange} no related method to calc resource usage`)

@@ -1,12 +1,12 @@
 /**
  * Created by ada on 2017/9/1.
- * 管理员对群成员操作（同意/拒绝 申请；移除成员）
+ * 管理员对群成员操作（移除成员）
  * 将preCheck和logic结合在一起（简单操作）
  */
 'use strict'
 /******************    内置lib和第三方lib  **************/
 const ap=require(`awesomeprint`)
-const lodash=require('lodash')
+
 /**************  controller相关常量  ****************/
 const controller_setting=require('../public_group_setting/public_group_setting').setting
 const controllerError=require('../public_group_setting/public_group_controllerError').controllerError
@@ -68,10 +68,9 @@ const fkConfig=server_common_file_require.fkConfig.fkConfig
 
 
 
-async function creatorAddRemoveAdmin_async({req}){
+async function removeMember_async({req}){
     // console.log(`updateUser_async in`)
     // console.log(`req.session ${JSON.stringify(req.session)}`)
-    // ap.wrn('creatorAddRemoveAdmin_async in')
     /*************************************************/
     /************      define variant     ***********/
     /************************************************/
@@ -80,95 +79,66 @@ async function creatorAddRemoveAdmin_async({req}){
     let recordInfoNotChange=false,editSubFieldValueNotChange=false //检测是否需要做update
     // console.log(`req============>${JSON.stringify(req)}`)
     let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
-    let {userId,userCollName,userType,userPriority}=userInfo
+    let {userId,userCollName,userType,userPriority,tempSalt}=userInfo
     // console.log(`userInfo============>${JSON.stringify(userInfo)}`)
     // let {docValue,recordId,subFieldValue,manipulateArrayValue}=controllerHelper.getPartValue({req:req,arr_expectedPart:expectedPart})
     let manipulateArrayValue=req.body.values[e_part.MANIPULATE_ARRAY]
     let recordId=req.body.values[e_part.RECORD_ID]
 
-
-    /*******************************************************************************************/
-    /*                                     用户类型和权限检测                                  */
-    /*******************************************************************************************/
+    /************************************************/
+    /*****************  用户类型检测     ************/
+    /************************************************/
     await controllerChecker.ifExpectedUserType_async({currentUserType:userType,arr_expectedUserType:[e_allUserType.USER_NORMAL]})
-    //必须是creator
-    // ap.inf('')
 
     /*********************************************/
     /**********          特定检查        *********/
     /*********************************************/
+    //需要进行成员删除的publicGroup必须存在
     let groupRecord=await common_operation_model.findById_returnRecord_async({dbModel:e_dbModel[collName],id:recordId})
     if(null===groupRecord){
-        return Promise.reject(controllerError.creatorAddRemoveAdmin.notFindGroup)
+        return Promise.reject(controllerError.adminRemoveMember.notFindGroup)
     }
-    //删创管理员的操作必须由群创建人处理
-    if(groupRecord[e_field.PUBLIC_GROUP.CREATOR_ID].toString()!==userId){
-        return Promise.reject(controllerError.creatorAddRemoveAdmin.notCreatorCantAddRemoveAdmin)
+    //当前用户为管理员
+    if(-1===groupRecord[e_field.PUBLIC_GROUP.ADMINS_ID].indexOf(userId)){
+        return Promise.reject(controllerError.adminRemoveMember.notAdminCantRemoveMember)
     }
     /**     MANIPULATE_ARRAY的输入值检查   **/
     let updateFieldsValue={}
     //需要操作的字段
     if(Object.keys(manipulateArrayValue).length!==1){
-        return Promise.reject(controllerError.creatorAddRemoveAdmin.canOnlyContain1Field)
+        return Promise.reject(controllerError.adminRemoveMember.canOnlyContain1Field)
     }
-    if(undefined===manipulateArrayValue[e_field.PUBLIC_GROUP.ADMINS_ID]){
-        return Promise.reject(controllerError.creatorAddRemoveAdmin.missField)
+    if(undefined===manipulateArrayValue[e_field.PUBLIC_GROUP.MEMBERS_ID]){
+        return Promise.reject(controllerError.adminRemoveMember.missField)
     }
-    //ADD/REMOVE字段的值是否有重复
-    if(undefined!==manipulateArrayValue[e_field.PUBLIC_GROUP.ADMINS_ID][e_manipulateOperator.ADD] && undefined!==manipulateArrayValue[e_field.PUBLIC_GROUP.ADMINS_ID][e_manipulateOperator.REMOVE]){
-        let intersectionArray=lodash.intersection(manipulateArrayValue[e_field.PUBLIC_GROUP.ADMINS_ID][e_manipulateOperator.ADD],manipulateArrayValue[e_field.PUBLIC_GROUP.ADMINS_ID][e_manipulateOperator.REMOVE])
-        if(intersectionArray.length>0){
-            return Promise.reject(controllerError.creatorAddRemoveAdmin.cantAddRemoveSameUser)
+    //只有ke=>remove才能存在
+    if(undefined!==manipulateArrayValue[e_field.PUBLIC_GROUP.MEMBERS_ID][e_manipulateOperator.ADD]){
+        return Promise.reject(controllerError.adminRemoveMember.wrongKeyExist)
+    }
+    if(undefined===manipulateArrayValue[e_field.PUBLIC_GROUP.MEMBERS_ID][e_manipulateOperator.REMOVE]){
+        return Promise.reject(controllerError.adminRemoveMember.missMandatoryKey)
+    }
+    //只能删除普通用户，admin用户需要creator才能进行
+    // ap.wrn('manipulateArrayValue[e_field.PUBLIC_GROUP.MEMBERS_ID][e_manipulateOperator.REMOVE]',manipulateArrayValue[e_field.PUBLIC_GROUP.MEMBERS_ID][e_manipulateOperator.REMOVE])
+    // ap.wrn('mgroupRecord[e_field.PUBLIC_GROUP.ADMINS_ID]',groupRecord[e_field.PUBLIC_GROUP.ADMINS_ID])
+    for(let singleMember of manipulateArrayValue[e_field.PUBLIC_GROUP.MEMBERS_ID][e_manipulateOperator.REMOVE]){
+        if(-1!==groupRecord[e_field.PUBLIC_GROUP.ADMINS_ID].indexOf(singleMember)){
+            return Promise.reject(controllerError.adminRemoveMember.cantRemoveAdmin)
         }
     }
-
-    //添加的用户必须是群成员，且不为管理员
-    if(undefined!==manipulateArrayValue[e_field.PUBLIC_GROUP.ADMINS_ID][e_manipulateOperator.ADD]){
-        for (let singleEle of manipulateArrayValue[e_field.PUBLIC_GROUP.ADMINS_ID][e_manipulateOperator.ADD]){
-            if(-1===groupRecord[e_field.PUBLIC_GROUP.MEMBERS_ID].indexOf(singleEle)){
-                return Promise.reject(controllerError.creatorAddRemoveAdmin.notPublicGroupMemberCantBeAdmin)
-
-            }
-            if(-1!==groupRecord[e_field.PUBLIC_GROUP.ADMINS_ID].indexOf(singleEle)){
-                return Promise.reject(controllerError.creatorAddRemoveAdmin.alreadyAdmin)
-            }
-        }
+    //REMOVE中不能有重复值
+    if(true===array.ifArrayHasDuplicate(manipulateArrayValue[e_field.PUBLIC_GROUP.MEMBERS_ID][e_manipulateOperator.REMOVE])){
+        return Promise.reject(controllerError.adminRemoveMember.removeMemberDuplicate)
     }
-    //不能删除创建者
-    // ap.wrn('groupRecord[e_field.PUBLIC_GROUP.CREATOR_ID]',groupRecord[e_field.PUBLIC_GROUP.CREATOR_ID])
-    // ap.wrn('typeof groupRecord[e_field.PUBLIC_GROUP.CREATOR_ID]',typeof groupRecord[e_field.PUBLIC_GROUP.CREATOR_ID])
-    if(undefined!==manipulateArrayValue[e_field.PUBLIC_GROUP.ADMINS_ID][e_manipulateOperator.REMOVE]){
-        // ap.wrn('manipulateArrayValue[e_field.PUBLIC_GROUP.ADMINS_ID][e_manipulateOperator.REMOVE]',manipulateArrayValue[e_field.PUBLIC_GROUP.ADMINS_ID][e_manipulateOperator.REMOVE])
-        for (let singleEle of manipulateArrayValue[e_field.PUBLIC_GROUP.ADMINS_ID][e_manipulateOperator.REMOVE]){
-            // ap.wrn('singleEle',singleEle)
-            // ap.wrn('typeof singleEle',typeof singleEle)
-            if(singleEle===groupRecord[e_field.PUBLIC_GROUP.CREATOR_ID].toString()){
-                return Promise.reject(controllerError.creatorAddRemoveAdmin.cantDeletePublicGroupCreator)
-            }
-        }
+    //转换成NoSql
+    updateFieldsValue['$pullAll']={}
+    updateFieldsValue['$pullAll'][e_field.PUBLIC_GROUP.MEMBERS_ID]=[]
 
+    if(undefined!==manipulateArrayValue[e_field.PUBLIC_GROUP.MEMBERS_ID][e_manipulateOperator.REMOVE]){
+        updateFieldsValue['$pullAll'][e_field.PUBLIC_GROUP.MEMBERS_ID]=updateFieldsValue['$pullAll'][e_field.PUBLIC_GROUP.MEMBERS_ID].concat(manipulateArrayValue[e_field.PUBLIC_GROUP.MEMBERS_ID][e_manipulateOperator.REMOVE])
+        // updateFieldsValue['$addToSet'][e_field.PUBLIC_GROUP.MEMBERS_ID]={'$each':manipulateArrayValue[e_field.PUBLIC_GROUP.WAIT_APPROVE_ID][e_manipulateOperator.ADD]}
     }
 
-
-    //转换成Nosql
-    if(undefined!==manipulateArrayValue[e_field.PUBLIC_GROUP.ADMINS_ID][e_manipulateOperator.ADD]){
-        updateFieldsValue['$addToSet']={}
-        updateFieldsValue['$addToSet'][e_field.PUBLIC_GROUP.ADMINS_ID]=[]
-
-        //admin_id是否达到上限（无需检测，最多把所有成员都变成管理员）
-/*        let defineMaxNumber=globalConfiguration.PublicGroup.max.maxUserPerGroup
-        if(groupRecord[e_field.PUBLIC_GROUP.ADMINS_ID].length+manipulateArrayValue[e_field.PUBLIC_GROUP.ADMINS_ID][e_manipulateOperator.ADD].length>=defineMaxNumber){
-            return Promise.reject(controllerError.creatorAddRemoveAdmin.groupMemberReachMax)
-        }*/
-        // updateFieldsValue['$pullAll'][e_field.PUBLIC_GROUP.ADMINS_ID].concat(manipulateArrayValue[e_field.PUBLIC_GROUP.ADMINS_ID][e_manipulateOperator.ADD])
-        updateFieldsValue['$addToSet'][e_field.PUBLIC_GROUP.ADMINS_ID]={'$each':manipulateArrayValue[e_field.PUBLIC_GROUP.ADMINS_ID][e_manipulateOperator.ADD]}
-    }
-    if(undefined!==manipulateArrayValue[e_field.PUBLIC_GROUP.ADMINS_ID][e_manipulateOperator.REMOVE]){
-        updateFieldsValue['$pullAll']={}
-        updateFieldsValue['$pullAll'][e_field.PUBLIC_GROUP.ADMINS_ID]=[]
-        updateFieldsValue['$pullAll'][e_field.PUBLIC_GROUP.ADMINS_ID]=updateFieldsValue['$pullAll'][e_field.PUBLIC_GROUP.ADMINS_ID].concat(manipulateArrayValue[e_field.PUBLIC_GROUP.ADMINS_ID][e_manipulateOperator.REMOVE])
-        // updateFieldsValue['$addToSet'][e_field.PUBLIC_GROUP.MEMBERS_ID]={'$each':manipulateArrayValue[e_field.PUBLIC_GROUP.ADMINS_ID][e_manipulateOperator.ADD]}
-    }
 
 
 
@@ -193,5 +163,5 @@ async function creatorAddRemoveAdmin_async({req}){
 }
 
 module.exports={
-    creatorAddRemoveAdmin_async,
+    removeMember_async,
 }

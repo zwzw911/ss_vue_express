@@ -96,12 +96,15 @@ async function updatePublicGroup_async({req,applyRange}){
     /*********************************************/
     dataConvert.constructUpdateCriteria(docValue,fkConfig[collName])
 
-/*    /!************************************************!/
-    /!*****************  特殊处理(只能处理name和joinRule)     ************!/
-    /!************************************************!/
-    if(false===array.ifArrayEleAllInSpecificArray({sourceArray:Object.keys(docValue),specificArray:[e_field.PUBLIC_GROUP.NAME,e_field.PUBLIC_GROUP.JOIN_IN_RULE]})){
-        return Promise.reject(controllerError.update)
-    }*/
+    /**********************************************/
+    /***********      特定检测      **************/
+    /*********************************************/
+    //只能包含name和rule
+    let expectedFields=[e_field.PUBLIC_GROUP.NAME,e_field.PUBLIC_GROUP.JOIN_IN_RULE]
+    let inputKeys=Object.keys(docValue)
+    if(false===array.ifArrayEleContainInArray({expectedArray:expectedFields,toBeCheckArray:inputKeys})){
+        return Promise.reject(controllerError.update.unExpectedInputFiled)
+    }
 
     /**********************************************/
     /***********    用户权限检测    **************/

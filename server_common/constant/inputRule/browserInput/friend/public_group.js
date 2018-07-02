@@ -17,7 +17,8 @@ const regex=require('../../../regex/regex').regex
 // const mongoEnum=require('../../../enum/mongo')
 const enumValue=require('../../../../constant/genEnum//enumValue')
 
-
+/*              获得 某些设置值            */
+const maxNumber=require('../../../config/globalConfiguration').maxNumber
 
 const baseJSErrorCode=102300
 const baseMongoErrorCode=202300
@@ -41,9 +42,32 @@ const public_group= {
         [otherRuleFiledName.DATA_TYPE]: serverDataType.STRING,
         [otherRuleFiledName.APPLY_RANGE]:[applyRange.CREATE,applyRange.UPDATE_SCALAR],
 
-        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true,[applyRange.UPDATE_SCALAR]:false}, error: {rc: baseJSErrorCode+22, msg: '新成员加入规则不能为空'}, mongoError: {rc: baseMongoErrorCode+22, msg: '新成员加入规则不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true,[applyRange.UPDATE_SCALAR]:false}, error: {rc: baseJSErrorCode+6, msg: '新成员加入规则不能为空'}, mongoError: {rc: baseMongoErrorCode+6, msg: '新成员加入规则不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         // 'enum':{define:Object.values(mongoEnum.PublicGroupJoinInRule.DB),error:{rc:10354},mongoError:{rc:20354,msg:'新成员加入规则不正确'}},//server端使用
-        [ruleFiledName.ENUM]:{define:enumValue.PublicGroupJoinInRule,error:{rc:baseJSErrorCode+24,msg:'新成员加入规则不正确'},mongoError:{rc:baseMongoErrorCode+24,msg:'新成员加入规则不正确'}},//server端使用
+        [ruleFiledName.ENUM]:{define:enumValue.PublicGroupJoinInRule,error:{rc:baseJSErrorCode+8,msg:'新成员加入规则不正确'},mongoError:{rc:baseMongoErrorCode+8,msg:'新成员加入规则不正确'}},//server端使用
+    },
+
+    /**     通过其他url进行处理，而不是通过update处理       **/
+    adminsId: {
+        [otherRuleFiledName.CHINESE_NAME]: '群管理员',
+        [otherRuleFiledName.DATA_TYPE]: [serverDataType.OBJECT_ID],
+        [otherRuleFiledName.APPLY_RANGE]:[applyRange.UPDATE_ARRAY],
+
+        [ruleFiledName.REQUIRE]: {define: {[applyRange.UPDATE_ARRAY]:false}, error: {rc: baseJSErrorCode+10, msg: '群管理员不能为空'}, mongoError: {rc: baseMongoErrorCode+10, msg: '群管理员不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        [ruleFiledName.ARRAY_MIN_LENGTH]: {define: 1, error: {rc: baseJSErrorCode+12, msg: '群管理员至少有一个成员'}, mongoError: {rc: baseMongoErrorCode+12, msg: '群管理员至少有一个成员'}},
+        [ruleFiledName.ARRAY_MAX_LENGTH]: {define: maxNumber.friend.maxAdministratorPerPublicGroup, error: {rc: baseJSErrorCode+18, msg: `群最多有${maxNumber.friend.maxAdministratorPerPublicGroup}个群管理员`}, mongoError: {rc: baseMongoErrorCode+18, msg: `群最多有${maxNumber.friend.maxAdministratorPerPublicGroup}个群管理员`}},
+        [ruleFiledName.FORMAT]: {define: regex.objectId, error: {rc: baseJSErrorCode+14, msg: '群管理员必须是objectId'}, mongoError: {rc: baseMongoErrorCode+14, msg: '群管理员必须是objectId'}} //server端使用
+    },
+    /**     成员加入通过join_public_group_request间接管理，移除通过removeMember  **/
+    membersId: {
+        [otherRuleFiledName.CHINESE_NAME]: '群成员',
+        [otherRuleFiledName.DATA_TYPE]: [serverDataType.OBJECT_ID],
+        [otherRuleFiledName.APPLY_RANGE]:[applyRange.UPDATE_ARRAY],
+
+        [ruleFiledName.REQUIRE]: {define: {[applyRange.UPDATE_ARRAY]:false}, error: {rc: baseJSErrorCode+16, msg: '群成员不能为空'}, mongoError: {rc: baseMongoErrorCode+6, msg: '群成员不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        [ruleFiledName.ARRAY_MIN_LENGTH]: {define: 1, error: {rc: baseJSErrorCode+18, msg: '群至少有一个成员'}, mongoError: {rc: baseMongoErrorCode+8, msg: '群至少有一个成员'}},
+        [ruleFiledName.ARRAY_MAX_LENGTH]: {define: maxNumber.friend.maxMemberNumberPerPublicGroup, error: {rc: baseJSErrorCode+20, msg: `群最多有${maxNumber.friend.maxMemberNumberPerPublicGroup}个成员`}, mongoError: {rc: baseMongoErrorCode+10, msg: `群最多有${maxNumber.friend.maxMemberNumberPerPublicGroup}个成员`}},
+        [ruleFiledName.FORMAT]: {define: regex.objectId, error: {rc: baseJSErrorCode+22, msg: '群成员必须是objectId'}, mongoError: {rc: baseMongoErrorCode+12, msg: '群成员必须是objectId'}} //server端使用
     },
 /*    waitApproveId: {
         [otherRuleFiledName.CHINESE_NAME]: '等待批准加入',

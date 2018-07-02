@@ -811,8 +811,8 @@ function validateManipulateArrayFormat({inputValue,browseInputRule}){
 // ap.inf('inputValue',inputValue)
     for(let singleFieldName in inputValue){
         //2. 每个字段是否有对应的rule
-        // ap.inf('singleFieldName',singleFieldName)
-        // ap.inf('browseInputRule[singleFieldName]',browseInputRule[singleFieldName])
+        // ap.wrn('singleFieldName',singleFieldName)
+        // ap.wrn('browseInputRule[singleFieldName]',browseInputRule[singleFieldName])
         if(undefined===browseInputRule[singleFieldName]){
             return validateFormatError.manipulateArray.manipulateArrayNoRelatedRule
         }
@@ -823,7 +823,7 @@ function validateManipulateArrayFormat({inputValue,browseInputRule}){
             return validateFormatError.manipulateArray.manipulateArrayFieldValueMustBeObject
         }
 
-        //4 fieldValue中的字段数量是否正常(2~3个)
+        //4 fieldValue中的字段数量是否正常(1~2个)
         let vKeyLength=Object.keys(singleFieldValue).length
         if(1>vKeyLength || 2<vKeyLength){
             return validateFormatError.manipulateArray.manipulateArrayFieldKeyNumberWrong

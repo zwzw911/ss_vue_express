@@ -175,13 +175,28 @@ describe('impeach comment:',async function() {
             expectedErrorRc = controllerCheckerError.userTypeNotExpected.rc
             await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl: finalUrl,sess: adminRootSess,data: data,expectedErrorRc: expectedErrorRc,app: app})
         })
-        it('1.2 user2 try to create a public group with same name as user1s public group ', async function () {
+        it('1.2 user1 try to input unexpected field', async function () {
+            // let originName=publicGroupInfo1[e_field.PUBLIC_GROUP.NAME]
+            data.values={}
+            let tempInfo={
+                [e_field.PUBLIC_GROUP.NAME]:`<script></script>`,
+                [e_field.PUBLIC_GROUP.JOIN_IN_RULE]:e_publicGroupJoinInRule.ANYONE_ALLOW,
+                [e_field.PUBLIC_GROUP.ADMINS_ID]:[publicGroupId1CryptedByUser1],
+            }
+
+            data.values[e_part.RECORD_INFO]=tempInfo
+            expectedErrorRc = validateError.validateValue.fieldValueShouldNotExistSinceNoRelateApplyRange({}).rc
+            await misc_helper.postDataToAPI_compareFieldRc_async({APIUrl: finalUrl,sess: user1Sess,data: data,expectedErrorRc: expectedErrorRc,fieldName:[e_field.PUBLIC_GROUP.ADMINS_ID],app: app})
+
+            // publicGroupInfo1[e_field.PUBLIC_GROUP.NAME]=originName
+        })
+        it('1.3 user2 try to create a public group with same name as user1s public group ', async function () {
             data.values={}
             data.values[e_part.RECORD_INFO]=publicGroupInfo1
             expectedErrorRc = inputValueLogicCheckError.ifSingleFieldValueUnique_async.fieldValueNotUnique({}).rc
             await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl: finalUrl,sess: user2Sess,data: data,expectedErrorRc: expectedErrorRc,app: app})
         })
-        it('1.3 public group name XSS', async function () {
+        it('1.4 public group name XSS', async function () {
             let originName=publicGroupInfo1[e_field.PUBLIC_GROUP.NAME]
             data.values={}
             publicGroupInfo1[e_field.PUBLIC_GROUP.NAME]=`<script></script>`
@@ -191,7 +206,7 @@ describe('impeach comment:',async function() {
 
             publicGroupInfo1[e_field.PUBLIC_GROUP.NAME]=originName
         })
-        it('1.4 user1 reach max public group num ', async function () {
+        it('1.5 user1 reach max public group num ', async function () {
             let resourceRange=e_resourceRange.MAX_PUBLIC_GROUP_NUM
             let originalSetting=await db_operation_helper.getResourceProfileSetting_async({resourceRange:resourceRange,resourceType:e_resourceType.BASIC})
             // ap.wrn('originalSetting',originalSetting)
@@ -219,6 +234,26 @@ describe('impeach comment:',async function() {
             data.values[e_part.RECORD_INFO] = normalRecord
             expectedErrorRc = controllerCheckerError.userTypeNotExpected.rc
             await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl: finalUrl,sess: adminRootSess,data: data,expectedErrorRc: expectedErrorRc,app: app})
+        })
+        it('2.2 user1 try to input unexpected field', async function () {
+            // let originName=publicGroupInfo1[e_field.PUBLIC_GROUP.NAME]
+            data.values={}
+            let tempInfo={
+                [e_field.PUBLIC_GROUP.NAME]:`<script></script>`,
+                [e_field.PUBLIC_GROUP.JOIN_IN_RULE]:e_publicGroupJoinInRule.ANYONE_ALLOW,
+                [e_field.PUBLIC_GROUP.ADMINS_ID]:[publicGroupId1CryptedByUser1],
+            }
+            // publicGroupInfo1[e_field.PUBLIC_GROUP.NAME]=`<script></script>`
+            // publicGroupInfo1[e_field.PUBLIC_GROUP.JOIN_IN_RULE]=e_publicGroupJoinInRule.ANYONE_ALLOW
+            // publicGroupInfo1[e_field.PUBLIC_GROUP.ADMINS_ID]=[publicGroupId1CryptedByUser1]
+
+            data.values[e_part.RECORD_ID] = publicGroupId1CryptedByUser1
+            data.values[e_part.RECORD_INFO]=tempInfo
+
+            expectedErrorRc = validateError.validateValue.fieldValueShouldNotExistSinceNoRelateApplyRange({}).rc
+            await misc_helper.putDataToAPI_compareFieldRc_async({APIUrl: finalUrl,sess: user1Sess,data: data,expectedErrorRc: expectedErrorRc,fieldName:[e_field.PUBLIC_GROUP.ADMINS_ID],app: app})
+
+            // publicGroupInfo1[e_field.PUBLIC_GROUP.NAME]=originName
         })
         it('2.2 user2 try to update user1s public group', async function () {
             // normalRecord[e_field.IMPEACH_COMMENT.IMPEACH_ID] = impeachId1CryptedByAdminRoot

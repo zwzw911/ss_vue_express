@@ -66,8 +66,57 @@ async function deletePublicGroup_async({sess,data,app}){
             });
     })
 }
+
+async function removeMember_async({sess,data,app}){
+    // let data={values:{}}
+    // // data.values[e_part.METHOD]=e_method.CREATE
+    // data.values[e_part.RECORD_INFO]={[e_field.IMPEACH_COMMENT.IMPEACH_ID]:impeachId}
+    return new Promise(function(resolve,reject){
+        request(app).put('/public_group/removeMember').set('Accept', 'application/json').set('Cookie',[sess]).send(data)
+            .end(function(err, res) {
+                let parsedRes=JSON.parse(res.text)
+                // console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
+                assert.deepStrictEqual(parsedRes.rc,0)
+                return resolve(parsedRes.msg.id)
+            });
+    })
+}
+
+async function requestExit_async({sess,data,app}){
+    // let data={values:{}}
+    // // data.values[e_part.METHOD]=e_method.CREATE
+    // data.values[e_part.RECORD_INFO]={[e_field.IMPEACH_COMMENT.IMPEACH_ID]:impeachId}
+    return new Promise(function(resolve,reject){
+        request(app).put('/public_group/requestExit').set('Accept', 'application/json').set('Cookie',[sess]).send(data)
+            .end(function(err, res) {
+                let parsedRes=JSON.parse(res.text)
+                // console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
+                assert.deepStrictEqual(parsedRes.rc,0)
+                return resolve(parsedRes.msg.id)
+            });
+    })
+}
+
+async function manageAdminMember_async({sess,data,app}){
+    // let data={values:{}}
+    // // data.values[e_part.METHOD]=e_method.CREATE
+    // data.values[e_part.RECORD_INFO]={[e_field.IMPEACH_COMMENT.IMPEACH_ID]:impeachId}
+    return new Promise(function(resolve,reject){
+        request(app).put('/public_group/manageAdminMember').set('Accept', 'application/json').set('Cookie',[sess]).send(data)
+            .end(function(err, res) {
+                let parsedRes=JSON.parse(res.text)
+                // console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
+                assert.deepStrictEqual(parsedRes.rc,0)
+                return resolve(parsedRes)
+            });
+    })
+}
 module.exports={
     createPublicGroup_returnId_async,
     updatePublicGroup_returnReturn_async,
     deletePublicGroup_async,
+
+    removeMember_async,
+    requestExit_async,
+    manageAdminMember_async,
 }

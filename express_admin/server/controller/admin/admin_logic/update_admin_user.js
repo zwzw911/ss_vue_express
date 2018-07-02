@@ -135,7 +135,7 @@ async function updateUser_async({req}){
     // console.log(`update admin======>child pri ${JSON.stringify(docValue[e_field.ADMIN_USER.USER_PRIORITY])}`)
     if(undefined!==docValue[e_field.ADMIN_USER.USER_PRIORITY]){
         //权限在预订范围内
-        if(false===arr.ifArrayContainArray({parentArray:userPriority,childArray:docValue[e_field.ADMIN_USER.USER_PRIORITY]})){
+        if(false===arr.ifArrayEleContainInArray({expectedArray:userPriority,toBeCheckArray:docValue[e_field.ADMIN_USER.USER_PRIORITY]})){
             return Promise.reject(controllerError.update.updatePriorityNotInheritedFromParent)
         }
         //权限不能重复(权限为enum。重复检测已经包含在inputValueLogicValidCheck_async中)

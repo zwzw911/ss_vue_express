@@ -2,7 +2,6 @@
  * Created by ada on 2017/9/1.
  */
 'use strict'
-'use strict'
 /******************    内置lib和第三方lib  **************/
 const ap=require('awesomeprint')
 
@@ -32,6 +31,7 @@ const controllerChecker=server_common_file_require.controllerChecker
 const common_operation_model=server_common_file_require.common_operation_model
 const misc=server_common_file_require.misc
 const crypt=server_common_file_require.crypt
+const array=server_common_file_require.array
 const controllerInputValueLogicCheck=server_common_file_require.controllerInputValueLogicCheck
 /****************  公共常量 ********************/
 const nodeEnum=server_common_file_require.nodeEnum
@@ -85,6 +85,16 @@ async  function createPublicGroup_async({req,applyRange}){
     /********  删除null/undefined的字段  *********/
     /*********************************************/
     dataConvert.constructCreateCriteria(docValue)
+
+    /**********************************************/
+    /***********      特定检测      **************/
+    /*********************************************/
+    //只能包含name和rule
+    let expectedFields=[e_field.PUBLIC_GROUP.NAME,e_field.PUBLIC_GROUP.JOIN_IN_RULE]
+    let inputKeys=Object.keys(docValue)
+    if(false===array.ifArrayEleContainInArray({expectedArray:expectedFields,toBeCheckArray:inputKeys})){
+        return Promise.reject(controllerError.create.unExpectedInputFiled)
+    }
 
 
     /**********************************************/
