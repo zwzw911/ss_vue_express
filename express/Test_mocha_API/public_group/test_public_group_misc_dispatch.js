@@ -195,7 +195,15 @@ describe('user1 register unique check:',async  function() {
             data={values:{[e_part.RECORD_ID]:publicGroupId1CryptedByUser1,[e_part.MANIPULATE_ARRAY]:normalRecord}}
             await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,fieldName:e_field.PUBLIC_GROUP.ADMINS_ID,app:app})
         });
-        /**         ifObjectIdInPartCrypted_async       **/
+        /**     需要手工更改ARRAY_MAX_LENGTH的定义      **/
+        it('1.6 inputValue MANIPULATE_ARRAY:  fieldValue number exceed MAX_ARRAY', async function() {
+            normalRecord[e_field.PUBLIC_GROUP.ADMINS_ID]={'add':['3410cae041c38fcae905d65501cf7f776ea6b127850b0955269481f6a4db1b22','3410cae041c38fcae905d65501cf7f776ea6b127850b0955269481f6a4db1b22']}
+            // normalRecord[e_field.IMPEACH_COMMENT.IMPEACH_ID]=impeachId1CryptedByUser1
+            expectedErrorRc=browserInputRule.public_group.adminsId.arrayMaxLength.error.rc
+            data={values:{[e_part.RECORD_ID]:publicGroupId1CryptedByUser1,[e_part.MANIPULATE_ARRAY]:normalRecord}}
+            await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,fieldName:e_field.PUBLIC_GROUP.ADMINS_ID,app:app})
+        });
+        /**         ifObjectIdInPartCrypted_async  for    MANIPULATE_ARRAY   **/
         it('2.1 inputValue MANIPULATE_ARRAY:  encrypted value not objectId ', async function() {
             normalRecord={}
             let tmp=await commonAPI.cryptObjectId_async({objectId:1234,sess:user1Sess})

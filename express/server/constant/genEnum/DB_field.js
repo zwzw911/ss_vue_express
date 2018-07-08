@@ -133,12 +133,6 @@ const Field={
         USER_ID:'userId',
         CURRENT_JOIN_GROUP:'currentJoinGroup',
     },
-    ADD_FRIEND:{
-        ID:'id',
-        ORIGINATOR:'originator',
-        RECEIVER:'receiver',
-        STATUS:'status',
-    },
     PUBLIC_GROUP:{
         ID:'id',
         NAME:'name',
@@ -152,6 +146,15 @@ const Field={
         CREATOR_ID:'creatorId',
         PUBLIC_GROUP_ID:'publicGroupId',
         HANDLE_RESULT:'handleResult',
+    },
+    ADD_FRIEND_REQUEST:{
+        ID:'id',
+        ORIGINATOR:'originator',
+        RECEIVER:'receiver',
+        MESSAGE:'message',
+        STATUS:'status',
+        DECLINE_TIMES:'declineTimes',
+        ACCEPT_TIMES:'acceptTimes',
     },
     IMPEACH_ACTION:{
         ID:'id',
@@ -239,6 +242,14 @@ const Field={
         USER_ID:'userId',
         SUGAR:'sugar',
     },
+    USER_RESOURCE_PROFILE:{
+        ID:'id',
+        USER_ID:'userId',
+        RESOURCE_PROFILE_ID:'resource_profile_id',
+        DURATION:'duration',
+        START_DATE:'startDate',
+        END_DATE:'endDate',
+    },
     USER:{
         ID:'id',
         NAME:'name',
@@ -251,17 +262,10 @@ const Field={
         USER_TYPE:'userType',
         PHOTO_DATA_URL:'photoDataUrl',
         PHOTO_PATH_ID:'photoPathId',
+        ADD_FRIEND_RULE:'addFriendRule',
         PHOTO_HASH_NAME:'photoHashName',
         PHOTO_SIZE:'photoSize',
         LAST_SIGN_IN_DATE:'lastSignInDate',
-    },
-    USER_RESOURCE_PROFILE:{
-        ID:'id',
-        USER_ID:'userId',
-        RESOURCE_PROFILE_ID:'resource_profile_id',
-        DURATION:'duration',
-        START_DATE:'startDate',
-        END_DATE:'endDate',
     },
     READ_ARTICLE:{
         ID:'id',

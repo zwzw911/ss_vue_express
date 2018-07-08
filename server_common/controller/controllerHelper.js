@@ -802,7 +802,7 @@ async function setLoginUserInfo_async({req,userInfo}){
     if(undefined===userInfo){
         return Promise.reject(helperError.userInfoUndefine)
     }
-    let mandatoryFields=[e_userInfoField.USER_ID,e_userInfoField.USER_COLL_NAME,e_userInfoField.USER_TYPE,e_userInfoField.TEMP_SALT]
+    let mandatoryFields=[e_userInfoField.USER_ID,e_userInfoField.USER_COLL_NAME,e_userInfoField.USER_TYPE,e_userInfoField.TEMP_SALT,e_userInfoField.ADD_FRIEND_RULE]
     for(let singleMandatoryField of mandatoryFields){
         if(undefined===userInfo[singleMandatoryField]){
             return Promise.reject(helperError.mandatoryFieldValueUndefine(singleMandatoryField))

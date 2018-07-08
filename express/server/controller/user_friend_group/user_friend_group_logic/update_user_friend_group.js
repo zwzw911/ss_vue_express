@@ -1,5 +1,6 @@
 /**
  * Created by ada on 2017/9/1.
+ * 只能更新朋友群的名称
  */
 'use strict'
 /******************    内置lib和第三方lib  **************/
@@ -58,9 +59,10 @@ const array=server_common_file_require.array
 const regex=server_common_file_require.regex.regex
 const currentEnv=server_common_file_require.appSetting.currentEnv
 const fkConfig=server_common_file_require.fkConfig.fkConfig
+const compoundUniqueFieldConfig=server_common_file_require.compound_unique_field_config.compound_unique_field_config
 const globalConfiguration=server_common_file_require.globalConfiguration
 
-async function updateUserFriendGroup_async({req,expectedPart}){
+async function updateUserFriendGroup_async({req,applyRange}){
     // console.log(`updateUser_async in`)
     // ap.print('expectedPart',expectedPart)
     // console.log(`req.session ${JSON.stringify(req.session)}`)
@@ -77,13 +79,14 @@ async function updateUserFriendGroup_async({req,expectedPart}){
     // let {docValue,recordId,subFieldValue}=controllerHelper.getPartValue({req:req,arr_expectedPart:expectedPart})
     let docValue=req.body.values[e_part.RECORD_INFO]
     let recordId=req.body.values[e_part.RECORD_ID]
-    let subFieldValue=req.body.values[e_part.EDIT_SUB_FIELD]
+    // let subFieldValue=req.body.values[e_part.EDIT_SUB_FIELD]
     // console.log(`docValue============>${JSON.stringify(docValue)}`)
     // console.log(`recordId============>${JSON.stringify(recordId)}`)
-    /*******************************************************************************************/
-    /*                                     editSubField                                       */
-    /*******************************************************************************************/
 
+    //没有输入任何更改信息，直接返回
+    if(Object.keys(docValue).length===0){
+        return {rc:0}
+    }
     /************************************************/
     /*****************  用户类型检测     ************/
     /************************************************/
@@ -95,24 +98,15 @@ async function updateUserFriendGroup_async({req,expectedPart}){
     if(undefined!==docValue){
         dataConvert.constructUpdateCriteria(docValue,fkConfig[collName])
     }
+    if(0===Object.keys(docValue).length){
+        return {rc:0}
+    }
     // console.log(`docValue after constructUpdateCriteria============>${JSON.stringify(docValue)}`)
 
     /*******************************************************************************************/
     /*                                       authorization check                               */
     /*******************************************************************************************/
     //当前用户必须是user_group的创建人，且user_group未被删除
-/*    tmpResult=await controllerChecker.ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({
-        dbModel:e_dbModel.user_friend_group,
-        recordId:recordId,
-        ownerFieldsName:[e_field.USER_FRIEND_GROUP.OWNER_USER_ID],
-        userId:userId,
-        additionalCondition:undefined})
-    if(false===tmpResult){
-        return Promise.reject(controllerError.notUserGroupOwnerCantUpdate)
-    }
-    let originalDoc=misc.objectDeepCopy(tmpResult)
-
-    //当前用户必须是public_group的admin，且public_group未被删除*/
     let originalDoc
     if(userType===e_allUserType.USER_NORMAL){
         originalDoc=await controllerChecker.ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({
@@ -126,229 +120,140 @@ async function updateUserFriendGroup_async({req,expectedPart}){
             return Promise.reject(controllerError.update.notUserGroupOwnerCantUpdate)
         }
     }
-   /* /!*******************************************************************************************!/
-    /!*                          delete field cant be update from client                        *!/
-    /!*******************************************************************************************!/
-    //以下字段，CREATE是client输入，但是update时候，无法更改，所以不能存在
-    let forbidUpdateFields=[]
-    for(let singleForbidUpdateField of forbidUpdateFields){
-        if(undefined!==docValue && undefined!== docValue[singleForbidUpdateField]){
-            return Promise.reject(controllerError.forbidUpdateFieldExist(singleForbidUpdateField))
-        }
-        if(undefined!==subFieldValue && undefined!== subFieldValue[singleForbidUpdateField]){
-            return Promise.reject(controllerError.forbidUpdateFieldExist(singleForbidUpdateField))
-        }
-    }*/
-    /*******************************************************************************************/
-    /*                 check non-require, but mandatory field for update                       */
-    /*******************************************************************************************/
-    //以下字段，虽然定义是非required，但是在update的时候必须存在
-/*    let mandatoryUpdateFields=[e_field.ADD_FRIEND.STATUS]
-    for(let singleMandatoryUpdateField of mandatoryUpdateFields){
-        if(undefined=== docValue[singleMandatoryUpdateField]){
-            return Promise.reject(controllerError.mandatoryFieldNotExist)
-        }
-    }*/
-    /*******************************************************************************************/
-    /*                             value cant be changed                                       */
-    /*******************************************************************************************/
+    /**********************************************/
+    /*********    是否未做任何更改    ************/
+    /*********************************************/
+    controllerHelper.deleteNotChangedValue({inputValue:docValue,originalValue:originalDoc})
+    if(0===Object.keys(docValue).length){
+        return {rc:0}
+    }
+
+    /**********************************************/
+    /***********      特定检测      **************/
+    /*********************************************/
+    let defaultGroupName=globalConfiguration.userGroupFriend.defaultGroupName.enumFormat
+    let notAllowChangeField={
+        [e_field.USER_FRIEND_GROUP.FRIEND_GROUP_NAME]:[defaultGroupName.MyFriend,defaultGroupName.BlackList]
+    }
+/*    //名称不能改为默认名称
     if(undefined!==docValue){
-        let defaultGroupName=globalConfiguration.userGroupFriend.defaultGroupName.enumFormat
-        let notAllowChangeField={
-            [e_field.USER_FRIEND_GROUP.FRIEND_GROUP_NAME]:[defaultGroupName.MyFriend,defaultGroupName.BlackList]
-        }
         for(let singleNotAllowChangeField in notAllowChangeField){
             //如果要更改的字段处于notAllowChangeField中，且有值，其值位是默认值
             if(undefined!==originalDoc[singleNotAllowChangeField] && -1!==notAllowChangeField[singleNotAllowChangeField].indexOf(originalDoc[singleNotAllowChangeField])){
-                return Promise.reject(controllerError.notAllowUpdateDefaultRecord)
+                return Promise.reject(controllerError.update.notAllowUpdateDefaultRecord)
             }
         }
-    }
-    // ap.print('value cant be changed done')
-    /*******************************************************************************************/
-    /*                              edit sub field value check and convert                     */
-    /*******************************************************************************************/
-    // ap.print('subFieldValue',subFieldValue)
-    if(undefined!==subFieldValue){
-        // ap.print('start checkEditSubFieldEleArray_async')
-        // ap.print('subFieldValue',subFieldValue)
-        //对eleArray中的值进行检测:1.fk是否存在，2. To如果存在，满足数量要求否 3. （额外）其中每个记录，用户是否有权操作
-        for(let singleFieldName in subFieldValue){
-            let singleSubFieldValue=subFieldValue[singleFieldName] //subFieldValue中，单个字段的值
-            // ap.print('singleSubFieldValue',singleSubFieldValue)
-            // ap.print('singleFieldName',singleFieldName)
-            // ap.print('userId',userId)
-            //检查eleArray的值
-            // try{
-            await controllerHelper.checkEditSubFieldEleArray_async({
-                singleEditSubFieldValue:singleSubFieldValue,
-                eleAdditionalCondition:undefined,
-                collName:e_coll.USER_FRIEND_GROUP,
-                fieldName:singleFieldName,
-                // fkRecordOwnerFieldName:e_field.USER_FRIEND_GROUP.OWNER_USER_ID,
-                userId:userId,
-                // error:fromToError,
-            })
-            // }
-            // catch(e){
-            //     ap('e',e)
-            // }
-
+    }*/
+    //默认的组名称不能更改
+    if(-1!==notAllowChangeField[e_field.USER_FRIEND_GROUP.FRIEND_GROUP_NAME].indexOf(originalDoc[e_field.USER_FRIEND_GROUP.FRIEND_GROUP_NAME])){
+        if(undefined!==docValue[e_field.USER_FRIEND_GROUP.FRIEND_GROUP_NAME]){
+            return Promise.reject(controllerError.update.notAllowUpdateDefaultRecord)
         }
-        // {singleEditSubFieldValue,eleAdditionalCondition,collName,fieldName,userId}
-        // ap.print('checkEditSubFieldEleArray_async')
-        //转换成nosql
-        convertedNoSql=await dataConvert.convertEditSubFieldValueToNoSql({editSubFieldValue:subFieldValue})
-        // ap.print('convertedNoSql',convertedNoSql)
-        //从convertedNoSql中的key，查询id是否valid(convertedNoSql合并了form/to的id，检查更快)
-        //检查from/to的值
-        let fromToError={
-            fromToRecordIdNotExists:controllerError.fromToRecordIdNotExists,
-            notOwnFromToRecordId:controllerError.notOwnFromToRecordId,
-        }
-        // ap.print('checkEditSubFieldFromTo_async in')
-        await controllerHelper.checkEditSubFieldFromTo_async({
-            convertedNoSql:convertedNoSql,
-            fromToAdditionCondition:undefined, //验证from/to的id对应doc是否valid，是否需要额外的条件
-            collName:e_coll.USER_FRIEND_GROUP,
-            recordOwnerFieldName:e_field.USER_FRIEND_GROUP.OWNER_USER_ID,//验证from/to的id对应doc是否为当前用户所有
-            userId:userId,
-            error:fromToError,
-        })
-
-        // ap.print('checkEditSubFieldFromTo_async')
-    }
-    // ap.print('fkexist    check done1')
-    /*******************************************************************************************/
-    /*                              remove not change field                                    */
-    /*******************************************************************************************/
-    controllerHelper.deleteNotChangedValue({inputValue:docValue,originalValue:originalDoc})
-    /*******************************************************************************************/
-    /*                          check field number after delete                                */
-    /*******************************************************************************************/
-    //如果删除完 值没有变化 和 不能更改的字段后，docValue为空，则无需任何修改，直接返回0
-    //如果recordInfo不存在；或者存在，但是删除完未变化的字段后为空
-    if(undefined===docValue || 0===Object.keys(docValue).length){
-        recordInfoNotChange=true
-    }
-    //如果editSubFieldValue不存在；或者存在，但是转换后的nosql为空。那么说明editSub不需要做update
-    if(undefined===subFieldValue || undefined===convertedNoSql){
-        editSubFieldValueNotChange=true
-    }
-    if(true===recordInfoNotChange && true===editSubFieldValueNotChange){
-        return Promise.resolve({rc:0})
-    }
-    // ap.print('not chaget done')
-    /*******************************************************************************************/
-    /*                                       resource check                                    */
-    /*******************************************************************************************/
-
-    // let tmpResult=await common_operation_model.findById({dbModel:dbModel[e_coll.USER],id:objectId})
-    // let userId=tmpResult.msg[e_field.USER.]
-    /*******************************************************************************************/
-    /*                                     specific priority check                             */
-    /*******************************************************************************************/
-
-    /*******************************************************************************************/
-    /*                                    fk value是否存在                                     */
-    /*******************************************************************************************/
-    //在fkConfig中定义的外键检查(fkConfig中设置查询条件)
-    // ap.print('fkConfig[collName]',fkConfig[collName])
-    if(undefined!==fkConfig[collName] && undefined!==docValue){
-        await controllerChecker.ifFkValueExist_async({docValue:docValue,collFkConfig:fkConfig[collName],collFieldChineseName:e_chineseName[collName]})
-    }
-    // ap.print('fkexist    check done')
-    //自定义外键的检查
-    /*******************************************************************************************/
-    /*                                  enum unique check(enum in array)                       */
-    /*******************************************************************************************/
-    // console.log(`browserInputRule[collName]==========> ${JSON.stringify(browserInputRule[collName])}`)
-    // console.log(`docValue==========> ${JSON.stringify(docValue)}`)
-    tmpResult=controllerChecker.ifEnumHasDuplicateValue({collValue:docValue,collRule:browserInputRule[collName]})
-    // console.log(`duplicate check result ==========> ${JSON.stringify(tmpResult)}`)
-    if(tmpResult.rc>0){
-        return Promise.reject(tmpResult)
     }
 
-    /*******************************************************************************************/
-    /*                                       特定字段的处理（检查）                            */
-    /*******************************************************************************************/
-    if(undefined!==docValue){
-        let XssCheckField=[e_field.USER_FRIEND_GROUP.FRIEND_GROUP_NAME]
-        await controllerHelper.inputFieldValueXSSCheck({docValue:docValue,collName:collName,expectedXSSCheckField:XssCheckField})
-
+    /************************************************/
+    /*** CALL FUNCTION:inputValueLogicValidCheck ****/
+    /************************************************/
+    let commonParam={docValue:docValue,userId:userId,collName:collName}
+    // ap.inf('commonParam',commonParam)
+    let stepParam={
+        /********  ********/
+        [e_inputValueLogicCheckStep.FK_EXIST_AND_PRIORITY]:{flag:true,optionalParam:undefined},
+        [e_inputValueLogicCheckStep.ENUM_DUPLICATE]:{flag:true,optionalParam:undefined},
+        //object：coll中，对单个字段进行unique检测，需要的额外查询条件
+        [e_inputValueLogicCheckStep.SINGLE_FIELD_VALUE_UNIQUE]:{flag:true,optionalParam:{singleValueUniqueCheckAdditionalCondition:undefined}},
+        //数组，元素是字段名。默认对所有dataType===string的字段进行XSS检测，但是可以通过此变量，只选择部分字段
+        [e_inputValueLogicCheckStep.XSS]:{flag:true,optionalParam:{expectedXSSFields:undefined}},
+        //object，对compoundField进行unique检测需要的额外条件，key从model->mongo->compound_unique_field_config.js中获得
+        //[e_inputValueLogicCheckStep.COMPOUND_VALUE_UNIQUE]:{flag:true,optionalParam:{compoundFiledValueUniqueCheckAdditionalCheckCondition:undefined}},
+        //Object，配置resourceCheck的一些参数,{requiredResource,resourceProfileRange,userId,containerId}
+        /*****  无需对资源进行检查，因为都是更新操作  ******/
+        [e_inputValueLogicCheckStep.RESOURCE_USAGE]:{flag:false,optionalParam:{resourceUsageOption:{requiredResource:undefined,resourceProfileRange:undefined,userId:undefined,containerId:undefined}}},
     }
 
-    // ap.print('special check done')
-    /*******************************************************************************************/
-    /*                                  field value duplicate check                            */
-    /*******************************************************************************************/
-    if(undefined!==e_uniqueField[collName] && e_uniqueField[collName].length>0) {
-        let additionalCheckCondition
-        // additionalCheckCondition={[e_field.ADMIN_USER.DOC_STATUS]:e_docStatus.DONE}
-        await controllerChecker.ifFieldInDocValueUnique_async({collName: collName, docValue: docValue,additionalCheckCondition:additionalCheckCondition})
-    }
+    // ap.inf('stepParam',stepParam)
+    await controllerInputValueLogicCheck.inputValueLogicValidCheck_async({commonParam:commonParam,stepParam:stepParam})
 
-    // ap.print('duplicate check done')
+    /*********************************************/
+    /**********          业务处理        *********/
+    /*********************************************/
+    let updatedRecord=await businessLogic_async({docValue:docValue,userId:userId,collName:collName,recordId:recordId,applyRange:applyRange})
+
+    /*********************************************/
+    /**********      加密 敏感数据       *********/
+    /*********************************************/
+    controllerHelper.cryptRecordValue({record:updatedRecord,salt:tempSalt,collName:collName})
+    /*********************************************/
+    /**********      删除指定字段       *********/
+    /*********************************************/
+    controllerHelper.deleteFieldInRecord({record:updatedRecord,fieldsToBeDeleted:undefined})
+
+    //无需返回更新后记录，只需返回操作结果
+    return Promise.resolve({rc:0,msg:updatedRecord})
+
+
+
+}
+/*************************************************************/
+/***************   业务处理    *******************************/
+/*************************************************************/
+async function businessLogic_async({docValue,userId,collName,recordId,applyRange}) {
+    /******************************************/
+    /**    添加internal field，然后检查     **/
+    /******************************************/
     /*******************************************************************************************/
     /*                         添加internal field，然后检查                                    */
     /*******************************************************************************************/
     let internalValue={}
     if(e_env.DEV===currentEnv && Object.keys(internalValue).length>0){
-        let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInputRule:inputRule[collName],collInternalRule:internalInputRule[collName],method:req.body.values[e_part.METHOD]})
+        let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInternalRule:internalInputRule[collName],applyRange:applyRange})
         if(tmpResult.rc>0){
             return Promise.reject(tmpResult)
         }
     }
     //因为internalValue只是进行了转换，而不是新增，所以无需ObjectDeepCopy
-    if(undefined!==docValue){
+    if(undefined===docValue){
+        docValue=internalValue
+    }else{
         Object.assign(docValue,internalValue)
     }
 
 // ap.print('internal check done')
     /*******************************************************************************************/
-    /*                    复合字段unique check（需要internal field完成后）                     */
+    /******************          compound field value unique check                  ************/
     /*******************************************************************************************/
-    //根据compound_unique_field_config中的设置，进行唯一查询
-    //如果不唯一，返回已经存在的记录，以便进一步处理
     if(undefined!==docValue){
-        //复合字段的定义中，一个字段不能从client传入，需要手工构造；
-        let docValueTobeCheck=Object.assign({},{[e_field.USER_FRIEND_GROUP.OWNER_USER_ID]:userId},docValue)
-        let compoundUniqueCheckResult=await controllerChecker.ifCompoundFiledUnique_returnExistRecord_async({collName:collName,docValue:docValueTobeCheck})
-        // console.log(`compound field check result===================>${JSON.stringify(compoundUniqueCheckResult)}`)
-        //复合字段唯一返回true或者已有的doc
-        //有重复值，且重复记录数为1（大于1，已经直接reject）
-        if(true!==compoundUniqueCheckResult){
-            if(undefined!==docValue[e_field.USER_FRIEND_GROUP.FRIEND_GROUP_NAME]){
-                return Promise.reject(controllerError.groupNameAlreadyExistCantUpdate)
-            }
+        //2017-07-05：如果compound字段不为空+某些字段为internal+某些字段可以执行update，那么需要补全internal字段，以便执行检查（update=internal是否为unique）
+        let compoundDocValue=misc.objectDeepCopy(docValue)
+
+        if(undefined!==compoundUniqueFieldConfig[collName]){
+            compoundDocValue[e_field.USER_FRIEND_GROUP.OWNER_USER_ID]=userId
         }
+
+        let compoundFiledValueUniqueCheckAdditionalCheckCondition
+        await controllerInputValueLogicCheck.ifCompoundFiledValueUnique_returnExistRecord_async({
+            collName:collName,
+            docValue:compoundDocValue,
+            additionalCheckCondition:compoundFiledValueUniqueCheckAdditionalCheckCondition,
+        })
     }
 
     /*******************************************************************************************/
     /*                                  db operation                                           */
     /*******************************************************************************************/
-    let promiseTobeExec=[]
-    //edit_sub_field对应的nosql，转换成db操作
-    if(false===editSubFieldValueNotChange){
-        for(let singleRecordId in convertedNoSql){
-            promiseTobeExec.push(common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel[collName],id:singleRecordId,updateFieldsValue:convertedNoSql[singleRecordId]}))
-        }
+    // let promiseTobeExec=[]
 
-    }
-    if(false===recordInfoNotChange){
+    // if(false===recordInfoNotChange){
         //普通update操作
-        promiseTobeExec.push(common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel[collName],id:recordId,updateFieldsValue:docValue}))
-    }
-
+        // promiseTobeExec.push()
+    // }
+    let updatedRecord=await common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel[collName],id:recordId,updateFieldsValue:docValue})
 
     //同步执行
-    await Promise.all(promiseTobeExec)
-    return Promise.resolve({rc:0})
-
+    // await Promise.all(promiseTobeExec)
+    return Promise.resolve(updatedRecord)
 
 }
-
 module.exports={
     updateUserFriendGroup_async,
 }

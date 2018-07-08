@@ -49,6 +49,7 @@ async function dispatcher_async(req){
     let collName=controllerSetting.MAIN_HANDLED_COLL_NAME
     let expectedPart
     let result=dispatchError.common.unknownRequestUrl
+    let applyRange
     // let tmpResult
     //dispatcher只检测req的结构，以及req中method的格式和值，以便后续可以直接根据method进行调用
     //interval和robot检测
@@ -56,6 +57,7 @@ async function dispatcher_async(req){
     switch (req.route.stack[0].method){
         case 'post':
             if(originalUrl==='/admin_penalize/' || originalUrl==='/admin_penalize/'){
+                applyRange=e_applyRange.CREATE
                 userLoginCheck={
                     needCheck:true,
                     error:controllerError.dispatch.notLoginCantCreatePenalize
@@ -68,7 +70,7 @@ async function dispatcher_async(req){
                 if (result.rc > 0) {return Promise.reject(result)}
 
                 //对req中的recordId和recordInfo进行objectId（加密过的）格式判断
-                await controllerChecker.ifObjectIdInPartCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName]})
+                await controllerChecker.ifObjectIdInPartCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName],applyRange:applyRange})
                 // ap.inf('penlize: before decrypt',req.body.values)
                 //对req中的recordId和recordInfo中加密的objectId进行解密
                 let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
@@ -104,6 +106,7 @@ async function dispatcher_async(req){
         case 'get':
         case 'delete':
             if(originalUrl==='/admin_penalize/' || originalUrl==='/admin_penalize/'){
+                applyRange=e_applyRange.DELETE
                 userLoginCheck={
                     needCheck:true,
                     error:controllerError.dispatch.notLoginCantDeletePenalize
@@ -115,7 +118,7 @@ async function dispatcher_async(req){
                 if (result.rc > 0) {return Promise.reject(result)}
 
                 //对req中的recordId和recordInfo进行objectId（加密过的）格式判断
-                await controllerChecker.ifObjectIdInPartCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName]})
+                await controllerChecker.ifObjectIdInPartCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName],applyRange:applyRange})//
 
                 //对req中的recordId和recordInfo中加密的objectId进行解密
                 let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})

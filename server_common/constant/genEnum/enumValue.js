@@ -2,6 +2,7 @@
  
 "use strict"
 const ArticleStatus=["0","1","2",] 
+const AddFriendRule=["1","2","3",] 
 const AdminUserType=["1","2",] 
 const UserType=["10",] 
 const AllUserType=["1","2","10",] 
@@ -21,13 +22,14 @@ const DocStatus=["1","2","3",]
 const AccountType=["1","2",] 
 const StorePathUsage=["1","2","3","4","5",] 
 const StorePathStatus=["1","2",] 
-const ResourceRange=["1","10","12","14","16","18","20","100","102","104","106","108","110","112","114","116","118","120","122","124","126","128","130",] 
+const ResourceRange=["1","10","12","14","16","18","20","100","102","105","106","110","112","114","116","118","120","122","124","126","128","130",] 
 const ResourceType=["1","2",] 
 const DocumentStatus=["1","2",] 
-const AddFriendStatus=["1","2","3","4",] 
+const AddFriendStatus=["1","2","3",] 
 const JoinPublicGroupHandleResult=["1","2","3",] 
 module.exports={
     ArticleStatus,
+    AddFriendRule,
     AdminUserType,
     UserType,
     AllUserType,

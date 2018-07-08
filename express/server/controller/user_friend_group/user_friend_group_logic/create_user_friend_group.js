@@ -6,8 +6,8 @@
 const ap=require('awesomeprint')
 
 /**************  controller相关常量  ****************/
-const controller_setting=require('../public_group_setting/public_group_setting').setting
-const controllerError=require('../public_group_setting/public_group_controllerError').controllerError
+const controller_setting=require('../user_friend_group_setting/user_friend_group_setting').setting
+const controllerError=require('../user_friend_group_setting/user_friend_group_controllerError').controllerError
 
 /**************      rule             *************/
 const inputRule=require('../../../constant/inputRule/inputRule').inputRule
@@ -105,7 +105,7 @@ async  function createUserFriendGroup_async({req,applyRange}){
         // [e_inputValueLogicCheckStep.COMPOUND_VALUE_UNIQUE]:{flag:true,optionalParam:{compoundFiledValueUniqueCheckAdditionalCheckCondition:undefined}},
         //Object，配置resourceCheck的一些参数,{requiredResource,resourceProfileRange,userId,containerId}
         /**   public group num **/
-        [e_inputValueLogicCheckStep.RESOURCE_USAGE]:{flag:true,optionalParam:{resourceUsageOption:{requiredResource:{[e_resourceFieldName.USED_NUM]:1},resourceProfileRange:[e_resourceRange.MAX_USER_FRIEND_GROUP_NUM],userId:userId,containerId:undefined}}},
+        [e_inputValueLogicCheckStep.RESOURCE_USAGE]:{flag:true,optionalParam:{resourceUsageOption:{requiredResource:{[e_resourceFieldName.USED_NUM]:1},resourceProfileRange:[e_resourceRange.MAX_FRIEND_GROUP_NUM_PER_USER],userId:userId,containerId:undefined}}},
     }
     await controllerInputValueLogicCheck.inputValueLogicValidCheck_async({commonParam:commonParam,stepParam:stepParam})
 

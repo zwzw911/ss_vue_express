@@ -624,6 +624,7 @@ const genInputError=function(fieldRule,currentSingleRule){
  *   @ruleDefine： rule的定义
  *   return：true=满足；false=不满足
  */
+const ap=require('awesomeprint')
 function valueMatchRuleDefineCheck({ruleType,fieldValue,ruleDefine}){
 
     switch (ruleType){
@@ -632,9 +633,19 @@ function valueMatchRuleDefineCheck({ruleType,fieldValue,ruleDefine}){
                 return true
             }
             return dataTypeCheck.isSetValue(fieldValue) && !dataTypeCheck.isEmpty(fieldValue) //防止输入空字符/object/array等
+        case serverRuleType.ARRAY_MAX_LENGTH:
+            // ap.wrn('ARRAY_MAX_LENGTH in')
+            // ap.wrn('fieldValue in',fieldValue)
+            if(false===dataTypeCheck.isArray(fieldValue) ){
+                return false
+            }
+            // ap.wrn('fieldValue.length',fieldValue.length)
+            // ap.wrn('ruleDefine',ruleDefine)
+            return fieldValue.length <= ruleDefine
+            // break;
         case serverRuleType.MAX_LENGTH:
             //只有数组，数字和字符才能进行MAX_LENGTH的检测
-            if(false===dataTypeCheck.isArray(fieldValue) && false===dataTypeCheck.isStrictInt(fieldValue) && false===dataTypeCheck.isStrictFloat(fieldValue) && false===dataTypeCheck.isStrictNumber(fieldValue) && false===dataTypeCheck.isString(fieldValue)){
+            if( false===dataTypeCheck.isStrictInt(fieldValue) && false===dataTypeCheck.isStrictFloat(fieldValue) && false===dataTypeCheck.isStrictNumber(fieldValue) && false===dataTypeCheck.isString(fieldValue)){
                 // console.log( `exceed:type wrong`)
                 return false
             }

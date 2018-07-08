@@ -51,12 +51,12 @@ const component_function=server_common_file_require.component_function
 
 // const controllerError=require('../../server/controller/penalize/penalize_setting/penalize_controllerError').controllerError
 let rootSess
-let baseUrl="/add_friend/",finalUrl,url
-const controllerError=require('../../server/controller/add_friend/add_friend_setting/add_friend_controllerError').controllerError
+let baseUrl="/add_friend_request/",finalUrl,url
+const controllerError=require('../../server/controller/add_friend_request/add_friend_setting/add_friend_controllerError').controllerError
 let recordId //当有update/delete的时候，需要真实的recordid，来pass recordId的最后一个case（正确通过）
 let normalRecord={
-    // [e_field.ADD_FRIEND.ORIGINATOR]:undefined,
-    [e_field.ADD_FRIEND.RECEIVER]:undefined,
+    // [e_field.ADD_FRIEND_REQUEST.ORIGINATOR]:undefined,
+    [e_field.ADD_FRIEND_REQUEST.RECEIVER]:undefined,
 }
 
 
@@ -112,7 +112,7 @@ describe('dispatch', function() {
         console.log(`==============================================================`)
         console.log(`============    user1 add user2 as friend      ===============`)
         console.log(`==============================================================`)
-        normalRecord[e_field.ADD_FRIEND.RECEIVER]=user2Id
+        normalRecord[e_field.ADD_FRIEND_REQUEST.RECEIVER]=user2Id
         let result=await API_helper.createAddFriend_returnRecord_async({userData:normalRecord,sess:user1Sess,app:app})
         recordId=result['_id']
 
@@ -146,7 +146,7 @@ describe('dispatch', function() {
         await inputRule_API_tester.dispatch_partCheck_async(parameter)
     })
     it(`preCheck for update`,async function(){
-        normalRecord={[e_field.ADD_FRIEND.STATUS]:e_addFriendStatus.ACCEPT}
+        normalRecord={[e_field.ADD_FRIEND_REQUEST.STATUS]:e_addFriendStatus.ACCEPT}
         parameter[e_parameterPart.SESS]=user2Sess
         parameter[e_parameterPart.SESS_ERROR_RC]=controllerError.notLoginCantUpdateAddFriend.rc
         parameter[e_parameterPart.REQ_BODY_VALUES][e_part.METHOD]=e_method.UPDATE
@@ -174,8 +174,8 @@ describe('dispatch', function() {
 
     it(`inputRule for create`,async function(){
         normalRecord={
-            [e_field.ADD_FRIEND.RECEIVER]:user1Id,
-            [e_field.ADD_FRIEND.STATUS]:e_addFriendStatus.ACCEPT,
+            [e_field.ADD_FRIEND_REQUEST.RECEIVER]:user1Id,
+            [e_field.ADD_FRIEND_REQUEST.STATUS]:e_addFriendStatus.ACCEPT,
         }
         parameter[e_parameterPart.SESS]=user1Sess
         parameter[e_parameterPart.REQ_BODY_VALUES][e_part.RECORD_INFO]=normalRecord
@@ -192,8 +192,8 @@ describe('dispatch', function() {
 
     it(`inputRule for create`,async function(){
         normalRecord={
-            [e_field.ADD_FRIEND.RECEIVER]:user1Id,
-            [e_field.ADD_FRIEND.STATUS]:e_addFriendStatus.ACCEPT,
+            [e_field.ADD_FRIEND_REQUEST.RECEIVER]:user1Id,
+            [e_field.ADD_FRIEND_REQUEST.STATUS]:e_addFriendStatus.ACCEPT,
         }
         parameter[e_parameterPart.SESS]=user1Sess
         parameter[e_parameterPart.REQ_BODY_VALUES][e_part.RECORD_INFO]=normalRecord
@@ -210,8 +210,8 @@ describe('dispatch', function() {
 
     it(`inputRule for update`,async function(){
         normalRecord={
-            [e_field.ADD_FRIEND.RECEIVER]:user2Id,
-            [e_field.ADD_FRIEND.STATUS]:e_addFriendStatus.ACCEPT,
+            [e_field.ADD_FRIEND_REQUEST.RECEIVER]:user2Id,
+            [e_field.ADD_FRIEND_REQUEST.STATUS]:e_addFriendStatus.ACCEPT,
         }
         parameter[e_parameterPart.SESS]=user1Sess
         parameter[e_parameterPart.REQ_BODY_VALUES][e_part.RECORD_INFO]=normalRecord

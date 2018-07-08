@@ -39,7 +39,7 @@ const compound_unique_field_config={
     },
     [e_coll.ADD_FRIEND]:{
         unique_group_name_for_user:{
-            fields:[e_field.ADD_FRIEND.ORIGINATOR,e_field.ADD_FRIEND.RECEIVER],
+            fields:[e_field.ADD_FRIEND_REQUEST.ORIGINATOR,e_field.ADD_FRIEND_REQUEST.RECEIVER],
             errorMsg:`已为发送过好友请求`,
         },//一旦用户发起了添加的请求，无论状态如何，都不能继续再次添加同样的请求
     },

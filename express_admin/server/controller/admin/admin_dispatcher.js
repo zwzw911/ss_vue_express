@@ -59,6 +59,7 @@ async function dispatcher_async(req){
     let expectedPart
     let result=dispatchError.common.unknownRequestUrl
     let tmpResult
+    let applyRange
     //dispatcher只检测req的结构，以及req中method的格式和值，以便后续可以直接根据method进行调用
     //interval和robot检测
     await controllerPreCheck.commonPreCheck_async({req:req,collName:collName})
@@ -66,6 +67,7 @@ async function dispatcher_async(req){
     switch (req.route.stack[0].method){
         case 'put':
             if(originalUrl==='/admin_user/' || originalUrl==='/admin_user/') {
+                applyRange=e_applyRange.UPDATE_SCALAR
                 userLoginCheck={
                     needCheck:true,
                     error:controllerError.dispatch.notLoginCantUpdateUser
@@ -76,7 +78,7 @@ async function dispatcher_async(req){
                 if (result.rc > 0) {return Promise.reject(result)}
 
                 //对req中的recordId和recordInfo进行objectId（加密过的）格式判断
-                await controllerChecker.ifObjectIdInPartCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName]})
+                await controllerChecker.ifObjectIdInPartCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName],applyRange:applyRange})
 
                 //对req中的recordId和recordInfo中加密的objectId进行解密
                 let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
@@ -103,6 +105,7 @@ async function dispatcher_async(req){
             break
         case 'post':
             if(originalUrl==='/admin_user/' || originalUrl==='/admin_user/') {
+                applyRange=e_applyRange.CREATE
                 userLoginCheck={
                     needCheck:true,
                     error:controllerError.dispatch.notLoginCantCreateUser
@@ -114,7 +117,7 @@ async function dispatcher_async(req){
                 if (result.rc > 0) {return Promise.reject(result)}
 
                 //对req中的recordId和recordInfo进行objectId（加密过的）格式判断
-                await controllerChecker.ifObjectIdInPartCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName]})
+                await controllerChecker.ifObjectIdInPartCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName],applyRange:applyRange})
 
                 //对req中的recordId和recordInfo中加密的objectId进行解密
                 let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})

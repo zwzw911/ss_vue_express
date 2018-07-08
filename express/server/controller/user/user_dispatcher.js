@@ -76,6 +76,7 @@ async function dispatcher_async(req){
     let expectedPart
     let result=dispatchError.common.unknownRequestUrl
     let tmpResult
+    let applyRange
     //interval和robot检测
     await controllerPreCheck.commonPreCheck_async({req:req,collName:collName})
     ap.inf('commonPreCheck_async done')
@@ -228,6 +229,7 @@ async function dispatcher_async(req){
         case 'put':
             if(originalUrl==='/user' || originalUrl==='/user/') {
                 // ap.inf('req.body.values',req.body.values)
+                applyRange=e_applyRange.UPDATE_SCALAR
                 userLoginCheck={
                     needCheck:true,
                     error:controllerError.dispatch.put.notLoginCantUpdateUserInfo
@@ -239,7 +241,7 @@ async function dispatcher_async(req){
                 if (result.rc > 0) {return Promise.reject(result)}
 
                 //对req中的recordId和recordInfo进行objectId（加密过的）格式判断
-                await controllerChecker.ifObjectIdInPartCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName]})
+                await controllerChecker.ifObjectIdInPartCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName],applyRange:applyRange})
 
                 //对req中的recordId和recordInfo中加密的objectId进行解密
                 let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})

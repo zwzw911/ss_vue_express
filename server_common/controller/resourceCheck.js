@@ -263,8 +263,25 @@ async function ifEnoughResource_async({requiredResource,resourceProfileRange,use
                         return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.totalFolderNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
                     }
                     break
+                /**     friend  group       **/
+                case e_resourceRange.MAX_FRIEND_GROUP_NUM_PER_USER:
+                    usedResource=await numOnlyResourceCalc.calcUserFriendGroupNum_async({userId:userId,containerId:containerId})
+                    numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:resourceProfile})
+                    if(true===numExceedFlag){
+                        return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.totalUserFriendGroupNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
+                    }
+                    break
+
+                /**     add friend      **/
+                case e_resourceRange.MAX_FRIEND_NUM_PER_USER:
+                    usedResource=await numOnlyResourceCalc.calcFriendNumPerUser_async({userId:userId,containerId:containerId})
+                    numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:resourceProfile})
+                    if(true===numExceedFlag){
+                        return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.totalUserFriendNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
+                    }
+                    break
                 case e_resourceRange.MAX_UNTREATED_ADD_FRIEND_REQUEST_PER_USER:
-                    usedResource=await numOnlyResourceCalc.calcAddFriendNum_async({userId:userId})
+                    usedResource=await numOnlyResourceCalc.calcUntreatedFriendRequestNum_async({userId:userId})
                     // ap.inf('usedResource',usedResource)
                     // ap.inf('resourceProfile',resourceProfile)
                     //只要检测数量
@@ -273,6 +290,7 @@ async function ifEnoughResource_async({requiredResource,resourceProfileRange,use
                         return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.totalFolderNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
                     }
                     break;
+                    /**     文档      **/
                 case e_resourceRange.MAX_NEW_ARTICLE_PER_USER:
                     usedResource=await numOnlyResourceCalc.calcNewArticleNum_async({userId:userId})
                     // ap.inf('usedResource',usedResource)
@@ -378,14 +396,7 @@ async function ifEnoughResource_async({requiredResource,resourceProfileRange,use
                         return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.totalJoinPubliGroupDeclineNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
                     }
                     break
-                /**     user friend  group num       **/
-                case e_resourceRange.MAX_USER_FRIEND_GROUP_NUM:
-                    usedResource=await numOnlyResourceCalc.calcUserFriendGroupNum_async({userId:userId,containerId:containerId})
-                    numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:resourceProfile})
-                    if(true===numExceedFlag){
-                        return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.totalUserFriendGroupNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
-                    }
-                    break
+
                 default:
                     return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.noHandleCodeProfileRange())
                 //ap.err(`ResourceRange ${singleResourceProfileRange} no related method to calc resource usage`)

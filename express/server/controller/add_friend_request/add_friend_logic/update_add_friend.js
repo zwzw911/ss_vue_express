@@ -107,11 +107,11 @@ async function updateAddFriend_async({req,expectedPart,addFriendStatus,applyRang
     let originalDoc
     if(userType===e_allUserType.USER_NORMAL){
         originalDoc=await controllerChecker.ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({
-            dbModel:e_dbModel.add_friend,
+            dbModel:e_dbModel.add_friend_request,
             recordId:recordId,
-            ownerFieldsName:[e_field.ADD_FRIEND.RECEIVER],
+            ownerFieldsName:[e_field.ADD_FRIEND_REQUEST.RECEIVER],
             userId:userId,
-            additionalCondition:undefined,//为了显示具体错误，不能设置额外条件{[e_field.ADD_FRIEND.STATUS]:{$in:[e_addFriendStatus.UNTREATED,e_addFriendStatus.DECLINE]}}, //
+            additionalCondition:undefined,//为了显示具体错误，不能设置额外条件{[e_field.ADD_FRIEND_REQUEST.STATUS]:{$in:[e_addFriendStatus.UNTREATED,e_addFriendStatus.DECLINE]}}, //
         })
         // ap.inf('originalDoc',originalDoc)
         if(false===originalDoc){
@@ -123,13 +123,13 @@ async function updateAddFriend_async({req,expectedPart,addFriendStatus,applyRang
     /*****************************************************************************************/
     //如果被请求者要执行 拒绝 操作，那么原始请求的状态只能为UNTREATED
     if(e_addFriendStatus.DECLINE===addFriendStatus){
-        if(originalDoc[e_field.ADD_FRIEND.STATUS]!==e_addFriendStatus.UNTREATED){
+        if(originalDoc[e_field.ADD_FRIEND_REQUEST.STATUS]!==e_addFriendStatus.UNTREATED){
             return Promise.reject(controllerError.update.requestAlreadyBeTreatedCantDeclineAgain)
         }
     }
     //如果被请求者要执行 同意 操作，那么原始请求的状态只能为UNTREATED/REJECT（被请求者拒绝后，又同意）
     if(e_addFriendStatus.ACCEPT_BUT_NOT_ASSIGN===addFriendStatus){
-        if(originalDoc[e_field.ADD_FRIEND.STATUS]!==e_addFriendStatus.UNTREATED && originalDoc[e_field.ADD_FRIEND.STATUS]!==e_addFriendStatus.DECLINE){
+        if(originalDoc[e_field.ADD_FRIEND_REQUEST.STATUS]!==e_addFriendStatus.UNTREATED && originalDoc[e_field.ADD_FRIEND_REQUEST.STATUS]!==e_addFriendStatus.DECLINE){
             return Promise.reject(controllerError.update.requestAlreadyBeAcceptCantAcceptAgain)
         }
     }
@@ -206,9 +206,9 @@ async function updateAddFriend_async({req,expectedPart,addFriendStatus,applyRang
     /*******************************************************************************************/
     /*let promiseTobeExec=[]
     //如果用户接受添加朋友的请求，需要同时更新发起申请人的user_friend_group
-    if(e_addFriendStatus.ACCEPT===docValue[e_field.ADD_FRIEND.STATUS]){
+    if(e_addFriendStatus.ACCEPT===docValue[e_field.ADD_FRIEND_REQUEST.STATUS]){
         let friendGroupCondition={
-            [e_field.USER_FRIEND_GROUP.OWNER_USER_ID]:originalDoc[e_field.ADD_FRIEND.ORIGINATOR],
+            [e_field.USER_FRIEND_GROUP.OWNER_USER_ID]:originalDoc[e_field.ADD_FRIEND_REQUEST.ORIGINATOR],
             [e_field.USER_FRIEND_GROUP.FRIEND_GROUP_NAME]:globalConfiguration.userGroupFriend.defaultGroupName.enumFormat.MyFriend,
         }
         ap.print(`friendGroupCondition`,friendGroupCondition)
@@ -249,8 +249,8 @@ async function businessLogic_async({docValue,collName,recordId,addFriendStatus,a
     /*************       生成内部值          ***************/
     /********************************************************/
     let internalValue={}
-    internalValue[e_field.ADD_FRIEND.STATUS]=addFriendStatus
-    // internalValue[e_field.ADD_FRIEND.ORIGINATOR]=userId
+    internalValue[e_field.ADD_FRIEND_REQUEST.STATUS]=addFriendStatus
+    // internalValue[e_field.ADD_FRIEND_REQUEST.ORIGINATOR]=userId
     // internalValue[e_field.IMPEACH.CREATOR_ID]=userId
     // console.log(`7`)
     /*              对内部产生的值进行检测（开发时使用，上线后为了减低负荷，无需使用）           */
@@ -278,7 +278,17 @@ async function businessLogic_async({docValue,collName,recordId,addFriendStatus,a
             additionalCheckCondition:compoundFiledValueUniqueCheckAdditionalCheckCondition,
         })
     }
-
+    /***         根据处理结果，为accept/declineTimes字段自增            ***/
+    if(addFriendStatus===e_addFriendStatus.DECLINE){
+        docValue["$inc"]={
+            [e_field.ADD_FRIEND_REQUEST.DECLINE_TIMES]:1
+        }
+    }
+    if(addFriendStatus===e_addFriendStatus.ACCEPT){
+        docValue["$inc"]={
+            [e_field.ADD_FRIEND_REQUEST.ACCEPT_TIMES]:1
+        }
+    }
     /***         数据库操作            ***/
     let updatedRecord= await common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel[collName],id:recordId,updateFieldsValue:docValue,updateOption:undefined})
 

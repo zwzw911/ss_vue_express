@@ -11,7 +11,7 @@ const nodeEnum=server_common_file_include.nodeEnum
 const controllerHelper=server_common_file_include.controllerHelper
 
 const e_part=nodeEnum.ValidatePart
-const e_method=nodeEnum.Method//require('../../constant/enum/node').Method
+// const e_method=nodeEnum.Method//require('../../constant/enum/node').Method
 
 
 /*                          genEnum                           */

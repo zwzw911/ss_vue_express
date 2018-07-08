@@ -28,6 +28,7 @@ const assist=require('../../common/assist')
 //根据inputRule的rule设置，对mongoose设置内建validator
 const collInputRule=Object.assign({},browserInputRule,internalInputRule)
 
+const addFriendRule=require('../../../../constant/enum/mongoEnum').AddFriendRule
 // const store_path=require('../admin/store_path')
 /*
 * schema definition
@@ -48,6 +49,9 @@ const collFieldDefine={
     photoDataUrl:{type:String},//使用dataUrl存储头像，如此，可以一次http请求传输（代价是有重复，然而可以通过zip减少传输量）
     /*  理论上浏览器只会执行一次http请求，但是如果用户数多，会对每个用户执行http    */
     photoPathId:{type:mongoose.Schema.Types.ObjectId,ref:'store_path'},//
+
+    addFriendRule:{type:String,default:addFriendRule.DB.ANYONE_ALLOW},//被加朋友时的rule（enum）,默认可以被任意人添加为好友
+
     photoHashName:{type:String},//md5
     photoSize:{type:Number},//kb，头像以文件格式存储
 /*        头像size较小，采用base64Url。 好处：减少http请求；坏处：增加前后端处理复杂度

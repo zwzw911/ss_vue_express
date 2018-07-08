@@ -671,6 +671,15 @@ const userGroupFriend={
     },
 }
 
+const addFriendRequest={
+    max:{
+        maxDeclineTimes:10,//被拒10次以后，无法继续添加
+        // maxUserFriendGroupNum:10,//每个用户最多拥有10个好友分组（包括默认的分组：我的好友）
+
+        maxAcceptTimes:10,//对同一个用户，最大成功同意次数
+    },
+
+}
 /*const PublicGroup={
     max:{
         maxUserPerGroup:100,//每个群，最多容纳的成员数量 //因为直接使用数组字段存储成员，所以在inputRule中可以直接判别，而无需resourceCheck
@@ -706,6 +715,7 @@ module.exports={
     mailOption,
     mailAccount,
     userGroupFriend,
+    addFriendRequest,
     // PublicGroup,
 }
 

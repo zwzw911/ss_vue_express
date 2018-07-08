@@ -168,8 +168,8 @@ const fkConfig={
     /****************************************************************/
     /****************           ADD  FRIEND        *****************/
     /****************************************************************/
-    [e_coll.ADD_FRIEND]:{
-        [e_field.ADD_FRIEND.RECEIVER]:{relatedColl:e_coll.USER,forSelect:`${e_field.USER.NAME}`,forSetValue:[e_field.USER.NAME],validCriteria:undefined,fkCollOwnerFields:undefined},
+    [e_coll.ADD_FRIEND_REQUEST]:{
+        [e_field.ADD_FRIEND_REQUEST.RECEIVER]:{relatedColl:e_coll.USER,forSelect:`${e_field.USER.NAME}`,forSetValue:[e_field.USER.NAME],validCriteria:undefined,fkCollOwnerFields:undefined},
     },
 
     /****************************************************************/

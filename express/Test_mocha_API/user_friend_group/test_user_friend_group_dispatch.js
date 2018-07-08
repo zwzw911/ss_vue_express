@@ -3,255 +3,230 @@
  */
 'use strict'
 
+/**************  特定相关常量  ****************/
 const controllerError=require('../../server/controller/user_friend_group/user_friend_group_setting/user_friend_group_controllerError').controllerError
 let baseUrl="/user_friend_group/",finalUrl,url
 
 
-// const request=require('supertest')
+/******************    内置lib和第三方lib  **************/
+const ap=require(`awesomeprint`)
+
+/******************    待测函数  **************/
 const app=require('../../app')
-// const assert=require('assert')
 const adminApp=require(`../../../express_admin/app`)
 
 const server_common_file_require=require('../../server_common_file_require')
+/****************  公共常量 ********************/
 const e_serverRuleType=server_common_file_require.inputDataRuleType.ServerRuleType
-const nodeEnum=server_common_file_require.nodeEnum
-const nodeRuntimeEnum=server_common_file_require.nodeRuntimeEnum
-const mongoEnum=server_common_file_require.mongoEnum
 
+const nodeEnum=server_common_file_require.nodeEnum
 const e_part=nodeEnum.ValidatePart
-const e_method=nodeEnum.Method
+
+const nodeRuntimeEnum=server_common_file_require.nodeRuntimeEnum
+
+const mongoEnum=server_common_file_require.mongoEnum
+const e_addFriendStatus=mongoEnum.AddFriendStatus.DB
+const e_impeachAllAction=mongoEnum.ImpeachAllAction.DB
+const e_penalizeType=mongoEnum.PenalizeType.DB
+const e_penalizeSubType=mongoEnum.PenalizeSubType.DB
+const e_articleStatus=mongoEnum.ArticleStatus.DB
+const e_publicGroupJoinInRule=mongoEnum.PublicGroupJoinInRule.DB
+
 const e_coll=require('../../server/constant/genEnum/DB_Coll').Coll
 const e_field=require('../../server/constant/genEnum/DB_field').Field
 
-const e_impeachState=server_common_file_require.mongoEnum.ImpeachState.DB
-const e_impeachAllAction=server_common_file_require.mongoEnum.ImpeachAllAction.DB
 
-const e_penalizeType=server_common_file_require.mongoEnum.PenalizeType.DB
-const e_penalizeSubType=server_common_file_require.mongoEnum.PenalizeSubType.DB
 const e_parameterPart=server_common_file_require.testCaseEnum.ParameterPart
 const e_skipPart=server_common_file_require.testCaseEnum.SkipPart
-// const e_=server_common_file_require.mongoEnum.
-// const e_penalizeSubType=server_common_file_require.mongoEnum.PenalizeSubType.DB
 
-// const common_operation_model=server_common_file_require.common_operation_model
-// const dbModel=require('../../server/constant/genEnum/dbModel')
 
-// const inputRule=require('../../server/constant/inputRule/inputRule').inputRule
+
+/******************    数据库函数  **************/
+
+/****************  公共函数 ********************/
+const db_operation_helper=server_common_file_require.db_operation_helper//require("../../../server_common/Test/db_operation_helper")
+const testData=server_common_file_require.testData//require('../../../server_common/Test/testData')
+
+const userAPI=server_common_file_require.user_API//require('../API_helper/API_helper')
+const penalizeAPI=server_common_file_require.penalize_API
+const commonAPI=server_common_file_require.common_API
+const articleAPI=server_common_file_require.article_API
+const impeachAPI=server_common_file_require.impeach_API
+const friendGroupAPI=server_common_file_require.friend_group_API
+
+const userComponentFunction=server_common_file_require.user_component_function
+const adminUserComponentFunction=server_common_file_require.admin_user_component_function
+const misc_helper=server_common_file_require.misc_helper
+const crypt=server_common_file_require.crypt
+
+const generateTestData=server_common_file_require.generateTestData
+
 const browserInputRule=require('../../server/constant/inputRule/browserInputRule').browserInputRule
 
+
+/****************  公共错误 ********************/
 const validateError=server_common_file_require.validateError//require('../../server/constant/error/validateError').validateError
 const controllerHelperError=server_common_file_require.helperError.helper//require('../../server/constant/error/controller/helperError').helper
 // const controllerCheckerError=server_common_file_require.helperError.checker
-const globalConfiguration=server_common_file_require.globalConfiguration
-
+const controllerCheckerError=server_common_file_require.helperError.checker
+const systemError=server_common_file_require.systemError
 // const objectDeepCopy=server_common_file_require.misc.objectDeepCopy
 
-const db_operation_helper=server_common_file_require.db_operation_helper//require("../../../server_common/Test/db_operation_helper")
-const testData=server_common_file_require.testData//require('../../../server_common/Test/testData')
-const API_helper=server_common_file_require.API_helper//require('../../../server_common/Test/API')
-const inputRule_API_tester=server_common_file_require.inputRule_API_tester
-const component_function=server_common_file_require.component_function
+
 
 // const controllerError=require('../../server/controller/penalize/penalize_setting/penalize_controllerError').controllerError
 
-let rootSess
 
-let recordId //当有update/delete的时候，需要真实的recordid，来pass recordId的最后一个case（正确通过）
+let recordId1,recordId2,recordId3,expectedErrorRc
+
+let user1IdCryptedByUser1,user1IdCryptedByUser2,user1IdCryptedByUser3,
+    user2IdCryptedByUser1,user2IdCryptedByUser2,user2IdCryptedByUser3,
+    user3IdCryptedByUser1,user3IdCryptedByUser2,user3IdCryptedByUser3,
+    user3IdCryptedByAdminRoot,adminRootIdCryptedByUser1,
+    user1Sess,user2Sess,user3Sess,adminRootSess,
+    user1Id,user2Id,user3Id,adminRootId
+let unExistObjectCryptedByUser1
+let friendGroupId1,friendGroupId1CryptedByUser1
+let data={values:{}}
+
 let normalRecord={
-    [e_field.USER_FRIEND_GROUP.OWNER_USER_ID]:undefined,
-    [e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP]:undefined,
-    [e_field.USER_FRIEND_GROUP.FRIEND_GROUP_NAME]:undefined,
-    // [e_field.IMPEACH_ACTION.OWNER_ID]:undefined,
-
+    // [e_field.IMPEACH_COMMENT.]:'new impeach',
+    [e_field.USER_FRIEND_GROUP.FRIEND_GROUP_NAME]:'random group name',
+    // [e_field.PUBLIC_GROUP.JOIN_IN_RULE]:e_publicGroupJoinInRule.PERMIT_ALLOW,
 }
 
+describe('user friend group dispatch:',async  function() {
+    before('prepare', async function () {
+        let tmpResult = await generateTestData.getUserCryptedUserId_async({app: app, adminApp: adminApp})
 
-let adminUser1Info,adminUser2Info,adminUser3Info,adminUser1Id,adminUser2Id,adminUser3Id,adminUser1Sess,adminUser2Sess,adminUser3Sess,adminUser1Data,adminUser2Data,adminUser3Data
-let user1Info,user2Info,user3Info,user1Id,user2Id,user3Id,user1Sess,user2Sess,user3Sess,user1Data,user2Data,user3Data
-let adminRootSess,adminRootId,data={values:{}}
+        user1IdCryptedByUser1 = tmpResult['user1IdCryptedByUser1']
+        user1IdCryptedByUser2 = tmpResult['user1IdCryptedByUser2']
+        user1IdCryptedByUser3 = tmpResult['user1IdCryptedByUser3']
+        user2IdCryptedByUser1 = tmpResult['user2IdCryptedByUser1']
+        user2IdCryptedByUser2 = tmpResult['user2IdCryptedByUser2']
+        user2IdCryptedByUser3 = tmpResult['user2IdCryptedByUser3']
+        user3IdCryptedByUser1 = tmpResult['user3IdCryptedByUser1']
+        user3IdCryptedByUser2 = tmpResult['user3IdCryptedByUser2']
+        user3IdCryptedByUser3 = tmpResult['user3IdCryptedByUser3']
+        user3IdCryptedByAdminRoot = tmpResult['user3IdCryptedByAdminRoot']
+        adminRootIdCryptedByUser1 = tmpResult['adminRootIdCryptedByUser1']
+        user1Sess = tmpResult['user1Sess']
+        user2Sess = tmpResult['user2Sess']
+        user3Sess = tmpResult['user3Sess']
+        adminRootSess = tmpResult['adminRootSess']
+        user1Id = tmpResult['user1Id']
+        user2Id = tmpResult['user2Id']
+        user3Id = tmpResult['user3Id']
+        adminRootId = tmpResult['adminRootId']
 
-let recorderId //for update
-/*
- * @sess：是否需要sess
- * @sessErrorRc：测试sess是否存在时，使用的error
- * @APIUrl:测试使用的URL
- * @penalizeRelatedInfo: {penalizeType:,penalizeSubType:,penalizedUserData:,penalizedError:,rootSess:,adminApp}
- * @reqBodyValues: 各个part。包含recordInfo/recordId/searchParams等
- * @skipParts：某些特殊情况下，需要skip掉的某些part
- * @collName: 获得collRule，进行collName的对比等
- * */
-let parameter={
-    [e_parameterPart.SESS]:undefined,
-    [e_parameterPart.SESS_ERROR_RC]:undefined,
-    [e_parameterPart.API_URL]:undefined,
-    [e_parameterPart.PENALIZE_RELATED_INFO]:{penalizeType:e_penalizeType.NO_USER_FRIEND_GROUP,penalizeSubType:e_penalizeSubType.CREATE,penalizedUserData:testData.user.user1,penalizedError:controllerError.inPenalizeCantCreateUserFriendGroup,adminApp:adminApp},
-    [e_parameterPart.REQ_BODY_VALUES]:{[e_part.RECORD_INFO]:normalRecord},
-    [e_parameterPart.COLL_NAME]:e_coll.USER_FRIEND_GROUP,
-    [e_parameterPart.SKIP_PARTS]:undefined,
-    [e_parameterPart.APP]:app,
-}
-describe('dispatch', function() {
-
-    before('root admin user login', async function(){
-        url=''
-        finalUrl=baseUrl+url
-        parameter[`APIUrl`]=finalUrl
-        user1Info =await component_function.reCreateUser_returnSessUserId_async({userData:testData.user.user1,app:app})
-        // let {sess:user1Sess,userId}=userInfo
-        user1Id=user1Info[`userId`]
-        user1Sess=user1Info[`sess`]
-        parameter['sess']=user1Sess
-/*        let articledId=await component_function.createArticle_setToFinish_returnArticleId_async({userSess:user1Sess,app:app})
-        let impeachId=await API_helper.createImpeachForArticle_returnImpeachId_async({articleId:articledId,userSess:user1Sess,app:app})
-        normalRecord[e_field.IMPEACH_ACTION.IMPEACH_ID]=impeachId*/
-        // normalRecord[e_field.IMPEACH_ACTION.OWNER_COLL]=e_coll.USER
-        // normalRecord[e_field.IMPEACH_ACTION.OWNER_ID]=userId  //普通用户无需输入OWNERID
-
-        //设置penalize相关信息
-        rootSess=await API_helper.adminUserLogin_returnSess_async({userData:testData.admin_user.adminRoot,adminApp:adminApp})
-        parameter[`penalizeRelatedInfo`][`rootSess`]=rootSess
-
-        console.log(`==============================================================`)
-        console.log(`=================    before all done      ====================`)
-        console.log(`==============================================================`)
-    });
-
-/*    it(`penalize check`,async function(){
-        //reason:,penalizeType:,penalizeSubype:,duration:
-        let penalizeInfo={
-            [e_field.ADMIN_PENALIZE.REASON]:'test for test test test',
-            [e_field.ADMIN_PENALIZE.PENALIZE_TYPE]:e_penalizeType.NO_IMPEACH,
-            [e_field.ADMIN_PENALIZE.PENALIZE_SUB_TYPE]:e_penalizeSubType.CREATE,
-            [e_field.ADMIN_PENALIZE.DURATION]:1,
+        /**     unExistObjectId         **/
+        unExistObjectCryptedByUser1=await commonAPI.cryptObjectId_async({objectId:testData.unExistObjectId,sess:user1Sess})
+        /**     user1 create group      **/
+        let friendGroupData={}
+        friendGroupData.values={
+            [e_part.RECORD_INFO]:{
+                [e_field.USER_FRIEND_GROUP.FRIEND_GROUP_NAME]:'test test test'
+            }
         }
-        await API_helper.createPenalize_async({adminUserSess:rootSess,penalizeInfo:penalizeInfo,pernalizedUserData:testData.user.user1,adminApp:adminApp})
-    })*/
-    it(`preCheck for create`,async function(){
-        normalRecord={[e_field.USER_FRIEND_GROUP.FRIEND_GROUP_NAME]:'新的分组'}
-        parameter[e_parameterPart.SESS_ERROR_RC]=controllerError.notLoginCantCreateUserFriendGroup.rc
-        parameter[e_parameterPart.REQ_BODY_VALUES][e_part.METHOD]=e_method.CREATE
-        parameter[e_parameterPart.PENALIZE_RELATED_INFO][`penalizeType`]=e_penalizeType.NO_USER_FRIEND_GROUP
-        parameter[e_parameterPart.PENALIZE_RELATED_INFO][`penalizeSubType`]=e_penalizeSubType.CREATE
-        parameter[e_parameterPart.PENALIZE_RELATED_INFO][`penalizedUserData`]=testData.user.user1
-        parameter[e_parameterPart.PENALIZE_RELATED_INFO][`penalizedError`]=controllerError.inPenalizeCantCreateUserFriendGroup
-        // parameter[`sessErrorRc`]=controllerError.notLoginCantChangeState.rc
-        // parameter[`method`]=e_method.CREATE
-        await inputRule_API_tester.dispatch_partCheck_async(parameter)
-    })
-    it(`preCheck for update`,async function(){
-        let defaultGroupName=globalConfiguration.userGroupFriend.defaultGroupName.enumFormat
-        recordId=await db_operation_helper.getGroupId_async({userId:user1Id,groupName:defaultGroupName.MyFriend})
-
-        normalRecord={[e_field.USER_FRIEND_GROUP.FRIEND_GROUP_NAME]:'新的分组'}
-        parameter[e_parameterPart.REQ_BODY_VALUES][e_parameterPart.REQ_BODY_VALUES]=normalRecord
-        parameter[e_parameterPart.SESS_ERROR_RC]=controllerError.notLoginCantUpdateUserFriendGroup.rc
-        parameter[e_parameterPart.REQ_BODY_VALUES][e_part.METHOD]=e_method.UPDATE
-        parameter[e_parameterPart.PENALIZE_RELATED_INFO][`penalizeType`]=e_penalizeType.NO_USER_FRIEND_GROUP
-        parameter[e_parameterPart.PENALIZE_RELATED_INFO][`penalizeSubType`]=e_penalizeSubType.UPDATE
-        parameter[e_parameterPart.PENALIZE_RELATED_INFO][`penalizedUserData`]=testData.user.user1
-        parameter[e_parameterPart.PENALIZE_RELATED_INFO][`penalizedError`]=controllerError.inPenalizeCantUpdateUserFriendGroup
-        parameter[e_parameterPart.REQ_BODY_VALUES][e_part.RECORD_ID]=recordId
-        await inputRule_API_tester.dispatch_partCheck_async(parameter)
-        delete parameter[e_parameterPart.REQ_BODY_VALUES][e_part.RECORD_ID]
-    })
-/*    it(`preCheck for delete`,async function(){
-        // parameter[`sessErrorRc`]=controllerError.notLoginCantDeletePenalize.rc
-        // parameter[`method`]=e_method.DELETE
-        parameter[e_parameterPart.SESS_ERROR_RC]=controllerError.notLoginCantDeletePenalize.rc
-        parameter[e_parameterPart.REQ_BODY_VALUES][e_part.METHOD]=e_method.DELETE
-        parameter[e_parameterPart.REQ_BODY_VALUES][e_part.RECORD_ID]='59f882b8a260a901c0b34597'
-        // parameter[e_parameterPart.PENALIZE_RELATED_INFO][`penalizeSubType`]=undefined
-        // parameter[e_parameterPart.PENALIZE_RELATED_INFO][`penalizedError`]=undefined
-        await inputRule_API_tester.dispatch_partCheck_async(parameter)
-    })*/
-
-
-
-
-    it(`inputRule for create`,async function(){
-        parameter[e_parameterPart.REQ_BODY_VALUES][e_part.METHOD]=e_method.CREATE
-        await inputRule_API_tester.ruleCheckAll_async({
-            parameter:parameter,
-            expectedRuleToBeCheck:[],//[e_serverRuleType.REQUIRE],
-            expectedFieldName:[],
-            skipRuleToBeCheck:[],
-            skipFieldName:[],//此2个字段是内部设置，无需检查;第三个字段根据URL确定（是否需要skip）
+        tmpResult=await friendGroupAPI.createUserFriendGroup_returnRecord_async({data:friendGroupData,sess:user1Sess,app:app})
+        // ap.wrn('create friend group',tmpResult)
+        friendGroupId1CryptedByUser1=tmpResult['_id']
+        /**     admin create penalize for user3     **/
+            //create penalize for user3
+        let adminRootSalt = await commonAPI.getTempSalt_async({sess: adminRootSess})
+        // ap.inf('root user salt',adminRootSalt)
+        let cryptedUser3Id = crypt.cryptSingleFieldValue({fieldValue: user3Id, salt: adminRootSalt}).msg
+        // ap.inf('cryptedUser3Id',cryptedUser3Id)
+        let penalizeInfoForUser3 = {
+            penalizeType: e_penalizeType.NO_USER_FRIEND_GROUP,
+            penalizeSubType: e_penalizeSubType.ALL,
+            // penalizedError:undefined, //错误根据具体method定义
+            [e_field.ADMIN_PENALIZE.DURATION]: 0,
+            [e_field.ADMIN_PENALIZE.REASON]: 'test reason, no indication',
+        }
+        await penalizeAPI.createPenalize_returnPenalizeId_async({
+            adminUserSess: adminRootSess,
+            penalizeInfo: penalizeInfoForUser3,
+            penalizedUserId: cryptedUser3Id,
+            adminApp: adminApp
         })
     })
 
+    /***************    create  impeach  comment ***************/
+    describe('create user friend group:',async  function() {
+        let sess
+        before('prepare', async function () {
+            url=''
+            finalUrl=baseUrl+url
+            sess=await userAPI.getFirstSession({app})
+        })
+        it('1.0 unmatch url', async function() {
+            // ap.inf('sess',sess)
+            expectedErrorRc=systemError.systemError.noMatchRESTAPI.rc
+            await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:baseUrl+'test',sess:sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        });
+        it('1.1 user not login', async function() {
+            // ap.inf('sess',sess)
+            expectedErrorRc=controllerError.dispatch.post.notLoginCantCreateUserFriendGroup.rc
+            await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        });
+        it('1.2 user in penalize cant create public group', async function() {
+            expectedErrorRc=controllerError.dispatch.post.userInPenalizeCantCreateUserFriendGroup.rc
+            await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user3Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        });
+        it('1.3 inputValue recordInfo:  field friendsInGroup cant be input by create', async function() {
+            expectedErrorRc=controllerCheckerError.ifObjectIdCrypted.fieldNotMatchApplyRange.rc
+            data={values:{[e_part.RECORD_INFO]:{[e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP]:unExistObjectCryptedByUser1}}}
+            await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        });
+        /**     create的时候，没有objectId字段      **/
+        /*it('1.4 inputValue recordInfo:  fieldValue to be decrypt is string, but regex check failed', async function() {
+            expectedErrorRc=controllerCheckerError.ifObjectIdCrypted.recordInfoContainInvalidObjectId.rc
+            data={values:{[e_part.RECORD_INFO]:{[e_field.IMPEACH_COMMENT.IMPEACH_ID]:'1234'}}}
+            await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        });
+        it('1.5 inputValue recordInfo:  fieldValue after decrypt is string, but invalid objecId', async function() {
+            normalRecord[e_field.IMPEACH_COMMENT.IMPEACH_ID]='3410cae041c38fcae905d65501cf7f776ea6b127850b0955269481f6a4db1b22'
+            expectedErrorRc=browserInputRule.impeach_comment.impeachId.format.error.rc
+            data={values:{[e_part.RECORD_INFO]:normalRecord}}
+            await misc_helper.postDataToAPI_compareFieldRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,fieldName:e_field.IMPEACH_COMMENT.IMPEACH_ID,app:app})
+        });*/
+
+        /***************    update user friend group ***************/
+        describe('update user friend group',async  function() {
+            let sess
+            before('prepare', async function () {
+                url=''
+                finalUrl=baseUrl+url
+                sess=await userAPI.getFirstSession({app})
+                // normalRecord[e_field.IMPEACH.IMPEACHED_ARTICLE_ID]=adminRootIdCryptedByUser1
+            })
+            it('2.1 user not login', async function() {
+                // ap.inf('sess',sess)
+                expectedErrorRc=controllerError.dispatch.put.notLoginCantUpdateUserFriendGroup.rc
+                await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+            });
+            it('2.2 user in penalize cant update user friend group', async function() {
+                expectedErrorRc=controllerError.dispatch.put.userInPenalizeCantUpdateUserFriendGroup.rc
+                await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user3Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+            });
+            it('2.3 inputValue recordInfo: , fieldValue to be decrypt not string', async function() {
+                expectedErrorRc=validateError.validateFormat.inputValuePartRecordIdCryptedValueFormatWrong.rc
+                data={values:{[e_part.RECORD_ID]:1234,[e_part.RECORD_INFO]:normalRecord}}
+                await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+            });
+            it('2.4 inputValue recordInfo:  fieldValue to be decrypt is string, but regex check failed', async function() {
+                expectedErrorRc=validateError.validateFormat.inputValuePartRecordIdCryptedValueFormatWrong.rc
+                data={values:{[e_part.RECORD_ID]:'1234',[e_part.RECORD_INFO]:normalRecord}}
+                await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+            });
+            it('2.5 inputValue recordInfo:  fieldValue after decrypt is string, but invalid objectId', async function() {
+                // normalRecord[e_field.IMPEACH_COMMENT.IMPEACH_ID]=impeachId1CryptedByUser1
+                expectedErrorRc=validateError.validateFormat.inputValuePartRecordIdDecryptedValueFormatWrong.rc
+                data={values:{[e_part.RECORD_ID]:'3410cae041c38fcae905d65501cf7f776ea6b127850b0955269481f6a4db1b22',[e_part.RECORD_INFO]:normalRecord}}
+                await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,fieldName:e_field.IMPEACH_COMMENT.IMPEACH_ID,app:app})
+            });
+
+        })
+    })
 })
-
-
-/*describe('inputRule', async function() {
-
-    before('prepare', async function () {
-        /!*========== 设置parameter =======*!/
-        url=``
-        finalUrl = baseUrl + url
-        parameter[`APIUrl`]=finalUrl
-
-        // console.log(`######   delete exist record   ######`)
-        /!*              root admin login                    *!/
-        parameter.sess = await API_helper.adminUserLogin_returnSess_async({
-            userData: testData.admin_user.adminRoot,
-            adminApp: adminApp
-        })
-        // console.log(`testData.user.user1 is=============>${JSON.stringify(testData.user.user1)}`)
-        /!*              delete/create/getId  user1                    *!/
-        let result=await component_function.reCreateUser_returnSessUserId_async({userData:testData.user.user1,app:app})
-        let {userId,sess}=result
-        // await test_helper.deleteUserAndRelatedInfo_async({account:.account})
-        // await API_helper.createUser_async({userData:testData.user.user1,app:app})
-        // normalRecord[e_field.ADMIN_PENALIZE.PUNISHED_ID]={}
-        normalRecord[e_field.ADMIN_PENALIZE.PUNISHED_ID]=userId
-    });
-
-
-
-    it(`DELETE`,async function(){
-        parameter[`method`]=e_method.DELETE
-        await inputRule_API_tester.ruleCheckAll_async({
-            parameter:parameter,
-            expectedRuleToBeCheck:[],//[e_serverRuleType.REQUIRE],
-            expectedFieldName:[],//[e_field.ADMIN_PENALIZE.PUNISHED_ID]
-        })
-    })
-})*/
-
-/*describe('inputRule:DELETE', async function() {
-    before('prepare', async function () {
-        /!*========== 设置parameter =======*!/
-        url=``
-        finalUrl = baseUrl + url
-        parameter[`method`]=e_method.DELETE
-        parameter[`APIUrl`]=finalUrl
-
-        // console.log(`######   delete exist record   ######`)
-        /!*              root admin login                    *!/
-        parameter.sess = await API_helper.adminUserLogin_returnSess_async({
-            userData: testData.admin_user.adminRoot,
-            adminApp: adminApp
-        })
-        // console.log(`testData.user.user1 is=============>${JSON.stringify(testData.user.user1)}`)
-        /!*              delete/create/getId  user1                    *!/
-        let result=await component_function.reCreateUser_returnSessUserId_async({userData:testData.user.user1,app:app})
-        let userId=result.userId
-        // await test_helper.deleteUserAndRelatedInfo_async({account:.account})
-        // await API_helper.createUser_async({userData:testData.user.user1,app:app})
-        // normalRecord[e_field.ADMIN_PENALIZE.PUNISHED_ID]={}
-        normalRecord[e_field.ADMIN_PENALIZE.PUNISHED_ID]=userId
-        // console.log(`normalRecord===========>${JSON.stringify(normalRecord)}`)
-    });
-
-
-    it(`DELETE`,async function(){
-        await inputRule_API_tester.ruleCheckAll_async({
-            parameter:parameter,
-            expectedRuleToBeCheck:[],//[e_serverRuleType.REQUIRE],
-            expectedFieldName:[],//[e_field.ADMIN_PENALIZE.PUNISHED_ID]
-        })
-    })
-
-})*/
-
-

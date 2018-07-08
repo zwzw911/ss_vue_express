@@ -186,7 +186,7 @@ async function updatePublicGroup_async({req,applyRange}){
     /*                 check non-require, but mandatory field for update                       */
     /*******************************************************************************************/
     //以下字段，虽然定义是非required，但是在update的时候必须存在
-/*    let mandatoryUpdateFields=[e_field.ADD_FRIEND.STATUS]
+/*    let mandatoryUpdateFields=[e_field.ADD_FRIEND_REQUEST.STATUS]
     for(let singleMandatoryUpdateField of mandatoryUpdateFields){
         if(undefined=== docValue[singleMandatoryUpdateField]){
             return Promise.reject(controllerError.mandatoryFieldNotExist)

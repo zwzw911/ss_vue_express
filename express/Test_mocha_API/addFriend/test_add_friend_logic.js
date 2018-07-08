@@ -5,7 +5,7 @@
 
 
 /**************  controller相关常量  ****************/
-const controllerError=require('../../server/controller/add_friend/add_friend_setting/add_friend_controllerError').controllerError
+const controllerError=require('../../server/controller/add_friend_request/add_friend_setting/add_friend_controllerError').controllerError
 
 /******************    内置lib和第三方lib  **************/
 const ap=require(`awesomeprint`)
@@ -73,7 +73,7 @@ const resourceCheckError=server_common_file_require.helperError.resourceCheck
 
 // const controllerError=require('../../server/controller/penalize/penalize_setting/penalize_controllerError').controllerError
 /****************  变量 ********************/
-let baseUrl="/add_friend/",finalUrl,url
+let baseUrl="/add_friend_request/",finalUrl,url
 
 //管理员登录信息
 let adminUser1Info,adminUser2Info,adminUser3Info,adminUser1Id,adminUser2Id,adminUser3Id,adminUser1Sess,adminUser2Sess,adminUser3Sess,adminUser1Data,adminUser2Data,adminUser3Data
@@ -89,8 +89,8 @@ let unExistObjectIdCryptedByUser1
 
 let recordId //当有update/delete的时候，需要真实的recordid，来pass recordId的最后一个case（正确通过）
 let normalRecord={
-    // [e_field.ADD_FRIEND.ORIGINATOR]:undefined,
-    [e_field.ADD_FRIEND.RECEIVER]:undefined,
+    // [e_field.ADD_FRIEND_REQUEST.ORIGINATOR]:undefined,
+    [e_field.ADD_FRIEND_REQUEST.RECEIVER]:undefined,
 }
 
 let user1IdCryptedByUser1,user1IdCryptedByUser2,user1IdCryptedByUser3,
@@ -161,7 +161,7 @@ describe('add friend logic', async function() {
     describe('prepare', async function() {
         before('user1 add user3, and user3 accept; user1 add user2, user2 not response yet', async function(){
             let data={values:{}}
-            data.values={[e_part.SINGLE_FIELD]:{[e_field.ADD_FRIEND.RECEIVER]:user3IdCryptedByUser1}}
+            data.values={[e_part.SINGLE_FIELD]:{[e_field.ADD_FRIEND_REQUEST.RECEIVER]:user3IdCryptedByUser1}}
             await add_friend_API.createAddFriend_returnRecord_async({data:data,sess:user1Sess,app:app})
             recordId1=await db_operation_helper.getAddFriendRequest_async({originatorId:user1Id,receiverId:user3Id})
             recordId1CryptedByUser2=await commonAPI.cryptObjectId_async({objectId:recordId1,sess:user2Sess})
@@ -172,7 +172,7 @@ describe('add friend logic', async function() {
             await add_friend_API.acceptAddFriend_returnRecord_async({data:data,sess:user3Sess,app:app})
 
             /***    user1 add user2, user2 not response yet ***/
-            data.values={[e_part.SINGLE_FIELD]:{[e_field.ADD_FRIEND.RECEIVER]:user2IdCryptedByUser1}}
+            data.values={[e_part.SINGLE_FIELD]:{[e_field.ADD_FRIEND_REQUEST.RECEIVER]:user2IdCryptedByUser1}}
             await add_friend_API.createAddFriend_returnRecord_async({data:data,sess:user1Sess,app:app})
             recordId2=await db_operation_helper.getAddFriendRequest_async({originatorId:user1Id,receiverId:user2Id})
 
@@ -185,7 +185,7 @@ describe('add friend logic', async function() {
             console.log(`==============================================================`)
         })
         it('1.1 create:userType check, admin not allow for create', async function() {
-            normalRecord[e_field.ADD_FRIEND.RECEIVER]=user3IdCryptedByAdminRoot
+            normalRecord[e_field.ADD_FRIEND_REQUEST.RECEIVER]=user3IdCryptedByAdminRoot
             expectedErrorRc=controllerCheckerError.userTypeNotExpected.rc
             // let sess=await userAPI.getFirstSession({app})
             data.values={[e_part.SINGLE_FIELD]:normalRecord}
@@ -193,15 +193,15 @@ describe('add friend logic', async function() {
             await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:adminRootSess,data:data,expectedErrorRc:expectedErrorRc,app:app})
         });
         it('2.1 create:fk check,receiver not exist', async function() {
-            data.values={[e_part.SINGLE_FIELD]:{[e_field.ADD_FRIEND.RECEIVER]:unExistObjectIdCryptedByUser1}}
+            data.values={[e_part.SINGLE_FIELD]:{[e_field.ADD_FRIEND_REQUEST.RECEIVER]:unExistObjectIdCryptedByUser1}}
             expectedErrorRc=inputValueLogicCheckError.ifFkValueExist_And_FkHasPriority_async.fkValueNotExist().rc
             await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
         });
         it('3.1 create:user1 cant add user3 multiple times', async function() {
             data.values={}
             normalRecord={}
-            normalRecord[e_field.ADD_FRIEND.RECEIVER]=user3IdCryptedByUser1
-            // copyNormalRecord[e_field.ADD_FRIEND.]
+            normalRecord[e_field.ADD_FRIEND_REQUEST.RECEIVER]=user3IdCryptedByUser1
+            // copyNormalRecord[e_field.ADD_FRIEND_REQUEST.]
             data.values[e_part.SINGLE_FIELD]=normalRecord
             // data.values[e_part.METHOD]=e_method.CREATE
             expectedErrorRc=controllerCheckerError.compoundFieldHasMultipleDuplicateRecord({singleCompoundFieldName:'unique_group_name_for_user',collName:e_coll.ADD_FRIEND}).rc
@@ -211,8 +211,8 @@ describe('add friend logic', async function() {
         it('4.1 create:user1 cant add self as friend', async function() {
             data.values={}
             normalRecord={}
-            normalRecord[e_field.ADD_FRIEND.RECEIVER]=user1IdCryptedByUser1
-            // copyNormalRecord[e_field.ADD_FRIEND.]
+            normalRecord[e_field.ADD_FRIEND_REQUEST.RECEIVER]=user1IdCryptedByUser1
+            // copyNormalRecord[e_field.ADD_FRIEND_REQUEST.]
             data.values[e_part.SINGLE_FIELD]=normalRecord
             // data.values[e_part.METHOD]=e_method.CREATE
             expectedErrorRc=controllerError.create.cantAddSelfAsFriend.rc
@@ -223,8 +223,8 @@ describe('add friend logic', async function() {
         it('4.2 create:user1 cant add admin as friend', async function() {
             data.values={}
             normalRecord={}
-            normalRecord[e_field.ADD_FRIEND.RECEIVER]=adminRootIdCryptedByUser1
-            // copyNormalRecord[e_field.ADD_FRIEND.]
+            normalRecord[e_field.ADD_FRIEND_REQUEST.RECEIVER]=adminRootIdCryptedByUser1
+            // copyNormalRecord[e_field.ADD_FRIEND_REQUEST.]
             data.values[e_part.SINGLE_FIELD]=normalRecord
             // data.values[e_part.METHOD]=e_method.CREATE
             expectedErrorRc=inputValueLogicCheckError.ifFkValueExist_And_FkHasPriority_async.fkValueNotExist().rc
@@ -236,8 +236,8 @@ describe('add friend logic', async function() {
             await db_operation_helper.changeResourceProfileSetting_async({resourceRange:e_resourceRange.MAX_UNTREATED_ADD_FRIEND_REQUEST_PER_USER,resourceType:e_resourceType.BASIC,num:0})
             data.values={}
             normalRecord={}
-            normalRecord[e_field.ADD_FRIEND.RECEIVER]=user2IdCryptedByUser1
-            // copyNormalRecord[e_field.ADD_FRIEND.]
+            normalRecord[e_field.ADD_FRIEND_REQUEST.RECEIVER]=user2IdCryptedByUser1
+            // copyNormalRecord[e_field.ADD_FRIEND_REQUEST.]
             data.values[e_part.SINGLE_FIELD]=normalRecord
             // data.values[e_part.METHOD]=e_method.CREATE
             expectedErrorRc=resourceCheckError.ifEnoughResource_async.totalFolderNumExceed({}).rc

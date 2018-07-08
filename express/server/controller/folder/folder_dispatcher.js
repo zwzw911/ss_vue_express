@@ -154,7 +154,7 @@ async function dispatcher_async(req){
 
                 //对req中的recordId和recordInfo进行objectId（加密过的）格式判断
                 // ap.inf('before check decrypt',req.body.values[e_part.RECORD_INFO])
-                await controllerChecker.ifObjectIdInPartCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName]})
+                await controllerChecker.ifObjectIdInPartCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName],applyRange:applyRange})
                 // ap.inf('after check decrypt',req.body.values[e_part.RECORD_INFO])
                 //对req中的recordId和recordInfo中加密的objectId进行解密
                 let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
@@ -175,6 +175,7 @@ async function dispatcher_async(req){
         case 'delete':
             //delete可以如POST/PUT一样，传入参数
             if(originalUrl==='/folder' || originalUrl==='/folder/') {
+                applyRange=e_applyRange.DELETE
                 userLoginCheck={
                     needCheck:true,
                     error:controllerError.dispatch.delete.notLoginCantDeleteFolder
@@ -190,7 +191,7 @@ async function dispatcher_async(req){
 
                 //对req中的recordId和recordInfo进行objectId（加密过的）格式判断
                 // ap.inf('before check decrypt',req.body.values[e_part.RECORD_ID])
-                await controllerChecker.ifObjectIdInPartCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName]})
+                await controllerChecker.ifObjectIdInPartCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName],applyRange:applyRange})
                 // ap.inf('after check decrypt',req.body.values[e_part.RECORD_ID])
                 //对req中的recordId和recordInfo中加密的objectId进行解密
                 let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
@@ -223,7 +224,7 @@ async function dispatcher_async(req){
 
                 //对req中的recordId和recordInfo进行objectId（加密过的）格式判断
                 // ap.inf('before check',req.body.values)
-                await controllerChecker.ifObjectIdInPartCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName]})
+                await controllerChecker.ifObjectIdInPartCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName],applyRange:applyRange})
                 // ap.inf('after check',req.body.values)
                 //对req中的recordId和recordInfo中加密的objectId进行解密
                 let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})

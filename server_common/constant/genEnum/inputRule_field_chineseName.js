@@ -105,11 +105,6 @@ const ChineseName={
         'friendsInGroup':'好友分组',
         'ownerUserId':'用户',
     },
-    add_friend:{
-        'receiver':'添加的好友',
-        'originator':'发起人',
-        'status':'当前请求所处状态',
-    },
     join_public_group_request:{
         'publicGroupId':'公共群',
         'creatorId':'请求人',
@@ -121,6 +116,16 @@ const ChineseName={
         'adminsId':'群管理员',
         'membersId':'群成员',
         'creatorId':'群创建者',
+    },
+    not_used_to_be_friend_request:{
+    },
+    add_friend_request:{
+        'receiver':'添加的好友',
+        'message':'附加信息',
+        'originator':'发起人',
+        'status':'当前请求所处状态',
+        'declineTimes':'被拒次数',
+        'acceptTimes':'同意次数',
     },
     impeach_image:{
         'impeachId':'举报对象',
@@ -181,11 +186,19 @@ const ChineseName={
         'impeachAttachmentsId':'评论附件',
         'documentStatus':'记录状态',
     },
+    user_resource_profile:{
+        'userId':'用户',
+        'resource_profile_id':'资源配置',
+        'duration':'资源配置有效期',
+        'startDate':'生效时间',
+        'endDate':'结束时间',
+    },
     user:{
         'name':'昵称',
         'account':'账号',
         'password':'密码',
         'photoDataUrl':'用户头像',
+        'addFriendRule':'朋友规则',
         'userType':'用户类型',
         'photoPathId':'头像存储路径',
         'photoHashName':'头像hash名',
@@ -195,13 +208,6 @@ const ChineseName={
         'lastAccountUpdateDate':'账号更改日期',
         'lastSignInDate':'上次登录时间',
         'photoSize':'头像大小',
-    },
-    user_resource_profile:{
-        'userId':'用户',
-        'resource_profile_id':'资源配置',
-        'duration':'资源配置有效期',
-        'startDate':'生效时间',
-        'endDate':'结束时间',
     },
     collection:{
         'name':'收藏夹名',

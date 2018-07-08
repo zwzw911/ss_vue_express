@@ -20,6 +20,7 @@ const e_impeachState=require('../constant/enum/mongoEnum').ImpeachState.DB
 const e_addFriendStatus=require('../constant/enum/mongoEnum').AddFriendStatus.DB
 const e_articleStatus=require('../constant/enum/mongoEnum').ArticleStatus.DB
 const e_joinPublicGroupHandleResult=require('../constant/enum/mongoEnum').JoinPublicGroupHandleResult.DB
+// const e_toBeFriendHandleResult=require('../constant/enum/mongoEnum').ToBeFriendHandleResult.DB
 
 const e_resourceFieldName=require(`../constant/enum/nodeEnum`).ResourceFieldName
 /**********************************************************/
@@ -54,6 +55,72 @@ async function calcFolderNum_async({userId}){
     }
     let folderNum=await common_operation_model.count_async({dbModel:e_dbModel.folder,condition:condition})
     return Promise.resolve({[e_resourceFieldName.USED_NUM]:folderNum})
+}
+/**********************************************************************************/
+/**********************         user friend group     ****************************/
+/**********************************************************************************/
+//最大朋友群数量
+async function calcUserFriendGroupNum_async({userId,containerId}){
+    let condition={
+        [e_field.USER_FRIEND_GROUP.OWNER_USER_ID]:userId,
+        // [e_field.USER_FRIEND_GROUP.PUBLIC_GROUP_ID]:containerId,
+        // [e_field.USER_FRIEND_GROUP.HANDLE_RESULT]:e_joinPublicGroupHandleResult.DECLINE,
+        'dDate':{$exists:false},
+    }
+    let num=await common_operation_model.count_async({dbModel:e_dbModel.user_friend_group,condition:condition})
+    return Promise.resolve({[e_resourceFieldName.USED_NUM]:num})
+}
+/**********************************************************************************/
+/**********************      max add friend request   ****************************/
+/**********************************************************************************/
+/*  计算当前未处理的添加用户的请求数
+* */
+async function calcUntreatedFriendRequestNum_async({userId}){
+    let condition={
+        [e_field.ADD_FRIEND_REQUEST.ORIGINATOR]:userId,
+        [e_field.ADD_FRIEND_REQUEST.STATUS]:e_addFriendStatus.UNTREATED,
+        'dDate':{$exists:false},
+    }
+    let untreatedNum=await common_operation_model.count_async({dbModel:e_dbModel.add_friend_request,condition:condition})
+    return Promise.resolve({[e_resourceFieldName.USED_NUM]:untreatedNum})
+}
+/*  计算当前用户的朋友数量(包含default group的数量)
+* */
+async function calcFriendNumPerUser_async({userId,containerId}){
+    // {$match: {username : "Alex"}},
+    // {$unwind: "$tags"},
+    // {$project: {count:{$add:1}}},
+    // {$group: {_id: null, number: {$sum: "$count" }}
+    let aggregateParams=[
+        {
+            '$match':{
+                [e_field.USER_FRIEND_GROUP.OWNER_USER_ID]:userId,
+                // [e_field.IMPEACH_COMMENT.AUTHOR_ID]:userId,
+            }
+        },
+        {
+            '$project':{
+                'friendNum':{"$size":`$${e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP}`}
+            },
+        },
+            {
+                '$group':{
+                    _id:null,
+                    [e_resourceFieldName.USED_NUM]:{$sum:`$friendNum`}
+                }
+            },
+        {
+            '$project':{
+                _id:0,
+                [e_resourceFieldName.USED_NUM]:1
+                }
+         },
+        // },
+    ]
+
+    let untreatedNum=await e_dbModel.user_friend_group.aggregate(aggregateParams)
+    // console.log(`group result is ${JSON.stringify(re
+    return Promise.resolve({[e_resourceFieldName.USED_NUM]:untreatedNum})
 }
 /**********************************************************************************/
 /**********************           new article        *****************************/
@@ -183,20 +250,7 @@ async function calcMemberPerPublic_async({userId,containerId}){
     // ap.wrn('calc result',recordNum)
     return Promise.resolve({[e_resourceFieldName.USED_NUM]:record[e_field.PUBLIC_GROUP.MEMBERS_ID].length})
 }
-/**********************************************************************************/
-/**********************      max add friend request   ****************************/
-/**********************************************************************************/
-/*  计算当前未处理的添加用户的请求数
-* */
-async function calcAddFriendNum_async({userId}){
-    let condition={
-        [e_field.ADD_FRIEND.ORIGINATOR]:userId,
-        [e_field.ADD_FRIEND.STATUS]:e_addFriendStatus.UNTREATED,
-        'dDate':{$exists:false},
-    }
-    let untreatedNum=await common_operation_model.count_async({dbModel:e_dbModel.add_friend,condition:condition})
-    return Promise.resolve({[e_resourceFieldName.USED_NUM]:untreatedNum})
-}
+
 /**********************************************************************************/
 /**************      max join public group reject request times   *****************/
 /**********************************************************************************/
@@ -209,24 +263,19 @@ async function calcJoinPublicGroupDeclineNum_async({userId,containerId}){
         [e_field.JOIN_PUBLIC_GROUP_REQUEST.HANDLE_RESULT]:e_joinPublicGroupHandleResult.DECLINE,
         'dDate':{$exists:false},
     }
-    let untreatedNum=await common_operation_model.count_async({dbModel:e_dbModel.add_friend,condition:condition})
+    let untreatedNum=await common_operation_model.count_async({dbModel:e_dbModel.add_friend_request,condition:condition})
     return Promise.resolve({[e_resourceFieldName.USED_NUM]:untreatedNum})
 }
-/**********************************************************************************/
-/**************               max user friend  group num          *****************/
-/**********************************************************************************/
-async function calcUserFriendGroupNum_async({userId,containerId}){
-    let condition={
-        [e_field.USER_FRIEND_GROUP.OWNER_USER_ID]:userId,
-        // [e_field.USER_FRIEND_GROUP.PUBLIC_GROUP_ID]:containerId,
-        // [e_field.USER_FRIEND_GROUP.HANDLE_RESULT]:e_joinPublicGroupHandleResult.DECLINE,
-        'dDate':{$exists:false},
-    }
-    let num=await common_operation_model.count_async({dbModel:e_dbModel.user_friend_group,condition:condition})
-    return Promise.resolve({[e_resourceFieldName.USED_NUM]:num})
-}
+
+
+
 module.exports={
     calcFolderNum_async,
+
+    calcUserFriendGroupNum_async,
+    calcUntreatedFriendRequestNum_async,
+    calcFriendNumPerUser_async,
+
     calcNewArticleNum_async,
     calcArticleNum_async,
     calcCommentPerArticleNum_async,
@@ -237,12 +286,12 @@ module.exports={
 
     calcImpeachCommentPerUserNum_async,
 
-    calcAddFriendNum_async,
+    // calcAddFriendNum_async,
 
     calcPublicGroupNum_async,
     calcMemberPerPublic_async,
 
     calcJoinPublicGroupDeclineNum_async,
 
-    calcUserFriendGroupNum_async,
+
 }

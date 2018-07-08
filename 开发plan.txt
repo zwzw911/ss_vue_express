@@ -1,0 +1,6 @@
+添加to_be_friend_request
+1. 添加表===》done
+2. 添加rule====>done
+3. 添加limitiation及处理
+4. 添加code
+5. 添加测试

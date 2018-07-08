@@ -21,9 +21,9 @@ const public_group_event=require('H:/ss_vue_express/server_common/model/mongo/st
 const public_group_interaction=require('H:/ss_vue_express/server_common/model/mongo/structure/friend/public_group_interaction.js').collModel
 const user_friend_group=require('H:/ss_vue_express/server_common/model/mongo/structure/friend/user_friend_group.js').collModel
 const user_public_group=require('H:/ss_vue_express/server_common/model/mongo/structure/friend/user_public_group.js').collModel
-const add_friend=require('H:/ss_vue_express/server_common/model/mongo/structure/friend/add_friend.js').collModel
 const public_group=require('H:/ss_vue_express/server_common/model/mongo/structure/friend/public_group.js').collModel
 const join_public_group_request=require('H:/ss_vue_express/server_common/model/mongo/structure/friend/join_public_group_request.js').collModel
+const add_friend_request=require('H:/ss_vue_express/server_common/model/mongo/structure/friend/add_friend_request.js').collModel
 /*       impeach           */
 const impeach_action=require('H:/ss_vue_express/server_common/model/mongo/structure/impeach/impeach_action.js').collModel
 const impeach_image=require('H:/ss_vue_express/server_common/model/mongo/structure/impeach/impeach_image.js').collModel
@@ -36,8 +36,8 @@ const like_dislike_static=require('H:/ss_vue_express/server_common/model/mongo/s
 const user_resource_static=require('H:/ss_vue_express/server_common/model/mongo/structure/static/user_resource_static.js').collModel
 /*       user           */
 const sugar=require('H:/ss_vue_express/server_common/model/mongo/structure/user/sugar.js').collModel
-const user=require('H:/ss_vue_express/server_common/model/mongo/structure/user/user.js').collModel
 const user_resource_profile=require('H:/ss_vue_express/server_common/model/mongo/structure/user/user_resource_profile.js').collModel
+const user=require('H:/ss_vue_express/server_common/model/mongo/structure/user/user.js').collModel
 /*       user_behavior           */
 const read_article=require('H:/ss_vue_express/server_common/model/mongo/structure/user_behavior/read_article.js').collModel
 const user_input_keyword=require('H:/ss_vue_express/server_common/model/mongo/structure/user_behavior/user_input_keyword.js').collModel
@@ -67,9 +67,9 @@ module.exports={
     public_group_interaction,
     user_friend_group,
     user_public_group,
-    add_friend,
     public_group,
     join_public_group_request,
+    add_friend_request,
     /*       impeach           */
     impeach_action,
     impeach_image,
@@ -82,8 +82,8 @@ module.exports={
     user_resource_static,
     /*       user           */
     sugar,
-    user,
     user_resource_profile,
+    user,
     /*       user_behavior           */
     read_article,
     user_input_keyword,

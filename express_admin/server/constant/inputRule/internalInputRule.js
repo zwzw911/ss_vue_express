@@ -1,4 +1,4 @@
-/*    gene by H:\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-6-21   */ 
+/*    gene by H:\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-7-7   */ 
  
 "use strict"
 const internalInputRule={
@@ -281,15 +281,6 @@ const internalInputRule={
             format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":102252,"msg":"处罚发起者必须是objectId"},"mongoError":{"rc":202252,"msg":"处罚发起者必须是objectId"}},
         },
     },
-    public_group:{
-        creatorId:{
-            chineseName:"群创建者",
-            dataType:"objectId",
-            applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":102350,"msg":"群创建者不能为空"},"mongoError":{"rc":202350,"msg":"群创建者不能为空"}},
-            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":102352,"msg":"群创建者必须是objectId"},"mongoError":{"rc":202352,"msg":"群创建者必须是objectId"}},
-        },
-    },
     public_group_event:{
         sourceId:{
             chineseName:"事件发起者",
@@ -341,7 +332,32 @@ const internalInputRule={
             format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":102758,"msg":"用户所处群必须是objectId"},"mongoError":{"rc":202758,"msg":"用户所处群必须是objectId"}},
         },
     },
-    add_friend:{
+    join_public_group_request:{
+        creatorId:{
+            chineseName:"请求人",
+            dataType:"objectId",
+            applyRange:["create"],
+            require:{"define":{"create":true},"error":{"rc":102850,"msg":"请求人不能为空"},"mongoError":{"rc":202850,"msg":"请求人不能为空"}},
+            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":102852,"msg":"请求人必须是objectId"},"mongoError":{"rc":202852,"msg":"请求人必须是objectId"}},
+        },
+        handleResult:{
+            chineseName:"请求处理结果",
+            dataType:"string",
+            applyRange:["create","update_scalar"],
+            require:{"define":{"create":true,"update_scalar":true},"error":{"rc":102854,"msg":"请求处理结果不能为空"},"mongoError":{"rc":202854,"msg":"请求处理结果不能为空"}},
+            enum:{"define":["1","2","3"],"error":{"rc":102856,"msg":"请求处理结果未定义"},"mongoError":{"rc":202856,"msg":"请求处理结果未定义"}},
+        },
+    },
+    public_group:{
+        creatorId:{
+            chineseName:"群创建者",
+            dataType:"objectId",
+            applyRange:["create"],
+            require:{"define":{"create":true},"error":{"rc":102350,"msg":"群创建者不能为空"},"mongoError":{"rc":202350,"msg":"群创建者不能为空"}},
+            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":102352,"msg":"群创建者必须是objectId"},"mongoError":{"rc":202352,"msg":"群创建者必须是objectId"}},
+        },
+    },
+    add_friend_request:{
         originator:{
             chineseName:"发起人",
             dataType:"objectId",
@@ -354,7 +370,7 @@ const internalInputRule={
             dataType:"string",
             applyRange:["create","update_scalar"],
             require:{"define":{"create":true,"update_scalar":true},"error":{"rc":102154,"msg":"状态不能为空"},"mongoError":{"rc":202154,"msg":"状态不能为空"}},
-            enum:{"define":["1","2","3","4"],"error":{"rc":102156,"msg":"状态未定义"},"mongoError":{"rc":202156,"msg":"状态未定义"}},
+            enum:{"define":["1","2","3"],"error":{"rc":102156,"msg":"状态未定义"},"mongoError":{"rc":202156,"msg":"状态未定义"}},
         },
     },
     impeach_comment_image:{

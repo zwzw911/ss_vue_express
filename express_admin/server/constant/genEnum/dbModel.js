@@ -19,12 +19,13 @@ const article=require('H:/ss_vue_express/server_common/model/mongo/structure/art
 const article_like_dislike=require('H:/ss_vue_express/server_common/model/mongo/structure/article/article_like_dislike.js').collModel
 /*       friend           */
 const member_penalize=require('H:/ss_vue_express/server_common/model/mongo/structure/friend/member_penalize.js').collModel
-const public_group=require('H:/ss_vue_express/server_common/model/mongo/structure/friend/public_group.js').collModel
 const public_group_event=require('H:/ss_vue_express/server_common/model/mongo/structure/friend/public_group_event.js').collModel
 const public_group_interaction=require('H:/ss_vue_express/server_common/model/mongo/structure/friend/public_group_interaction.js').collModel
 const user_friend_group=require('H:/ss_vue_express/server_common/model/mongo/structure/friend/user_friend_group.js').collModel
 const user_public_group=require('H:/ss_vue_express/server_common/model/mongo/structure/friend/user_public_group.js').collModel
-const add_friend=require('H:/ss_vue_express/server_common/model/mongo/structure/friend/add_friend.js').collModel
+const public_group=require('H:/ss_vue_express/server_common/model/mongo/structure/friend/public_group.js').collModel
+const join_public_group_request=require('H:/ss_vue_express/server_common/model/mongo/structure/friend/join_public_group_request.js').collModel
+const add_friend_request=require('H:/ss_vue_express/server_common/model/mongo/structure/friend/add_friend_request.js').collModel
 /*       impeach           */
 const impeach_action=require('H:/ss_vue_express/server_common/model/mongo/structure/impeach/impeach_action.js').collModel
 const impeach_image=require('H:/ss_vue_express/server_common/model/mongo/structure/impeach/impeach_image.js').collModel
@@ -64,12 +65,13 @@ module.exports={
     article_like_dislike,
     /*       friend           */
     member_penalize,
-    public_group,
     public_group_event,
     public_group_interaction,
     user_friend_group,
     user_public_group,
-    add_friend,
+    public_group,
+    join_public_group_request,
+    add_friend_request,
     /*       impeach           */
     impeach_action,
     impeach_image,

@@ -337,6 +337,9 @@ async function ifCompoundFiledValueUnique_returnExistRecord_async({collName,docV
                 //因为在mongo中，某个字段不需要值，直接unset，而不是设成null等，所以如果传入的带检测值有空字段，直接忽略unqique检测
                 // console.log(`docValue[${singleField}] ===========>${JSON.stringify(docValue[singleField] )}`)
                 // console.log(`typeof docValue[${singleField}] ===========>${JSON.stringify(typeof docValue[singleField] )}`)
+                // ap.wrn('docValue',docValue)
+                // ap.wrn('singleField',singleField)
+                // ap.wrn('docValue[singleField]',docValue[singleField])
                 if(true===dataTypeCheck.isEmpty(docValue[singleField])){
                     allCompoundFiledAvailable=false
                     break
@@ -345,7 +348,7 @@ async function ifCompoundFiledValueUnique_returnExistRecord_async({collName,docV
                 condition[singleField]=docValue[singleField]
             }
             //检查单个compound field是否unique
-            // ap.inf('allCompoundFiledAvailable',allCompoundFiledAvailable)
+            // ap.wrn('allCompoundFiledAvailable',allCompoundFiledAvailable)
             if(true===allCompoundFiledAvailable){
                 //检查是否需要额外的查询条件(除了docValue中字段作为查询值，是否还需要其他  {字段:值}  作为查询值)
                 if(undefined!==compoundFiledValueUniqueCheckAdditionalCheckCondition){
@@ -356,11 +359,11 @@ async function ifCompoundFiledValueUnique_returnExistRecord_async({collName,docV
                     }
                 }
 
-                // ap.inf('Compound condition',condition)
+                // ap.wrn('Compound condition',condition)
                 if(false===dataTypeCheck.isEmpty((condition))){
                     let results=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel[collName],condition:condition})
                     // console.log(`compound result=============>${JSON.stringify(results)}`)
-                    // ap.inf('compound result',results)
+                    // ap.wrn('compound result',results)
                     if(results.length>0){
                         return Promise.reject( checkerError.compoundFieldHasMultipleDuplicateRecord({collName:collName,singleCompoundFieldName:singleCompoundFieldName}))
                     }

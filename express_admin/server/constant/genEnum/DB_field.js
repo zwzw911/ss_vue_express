@@ -122,15 +122,6 @@ const Field={
         PENALIZE_TYPE:'penalizeType',
         DURATION:'duration',
     },
-    PUBLIC_GROUP:{
-        ID:'id',
-        NAME:'name',
-        CREATOR_ID:'creatorId',
-        MEMBERS_ID:'membersId',
-        ADMINS_ID:'adminsId',
-        WAIT_APPROVE_ID:'waitApproveId',
-        JOIN_IN_RULE:'joinInRule',
-    },
     PUBLIC_GROUP_EVENT:{
         ID:'id',
         PUBLIC_GROUP_ID:'publicGroupId',
@@ -157,10 +148,25 @@ const Field={
         USER_ID:'userId',
         CURRENT_JOIN_GROUP:'currentJoinGroup',
     },
-    ADD_FRIEND:{
+    PUBLIC_GROUP:{
+        ID:'id',
+        NAME:'name',
+        CREATOR_ID:'creatorId',
+        MEMBERS_ID:'membersId',
+        ADMINS_ID:'adminsId',
+        JOIN_IN_RULE:'joinInRule',
+    },
+    JOIN_PUBLIC_GROUP_REQUEST:{
+        ID:'id',
+        CREATOR_ID:'creatorId',
+        PUBLIC_GROUP_ID:'publicGroupId',
+        HANDLE_RESULT:'handleResult',
+    },
+    ADD_FRIEND_REQUEST:{
         ID:'id',
         ORIGINATOR:'originator',
         RECEIVER:'receiver',
+        MESSAGE:'message',
         STATUS:'status',
     },
     IMPEACH_ACTION:{

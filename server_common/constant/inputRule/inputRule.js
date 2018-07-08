@@ -1,4 +1,4 @@
-/*    gene by H:\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-6-29   */ 
+/*    gene by H:\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-7-7   */ 
  
 "use strict"
 const inputRule={
@@ -195,7 +195,7 @@ const inputRule={
             dataType:"string",
             applyRange:["create"],
             require:{"define":{"create":true},"error":{"rc":100506,"msg":"资源配置范围不能为空"},"mongoError":{"rc":200506,"msg":"资源配置范围不能为空"}},
-            enum:{"define":["1","10","12","14","16","18","20","100","102","104","106","108","110","112","114","116","118","120","122","124","126","128","130"],"error":{"rc":100508,"msg":"资源配置范围的类型不正确"},"mongoError":{"rc":200508,"msg":"资源配置范围的类型不正确"}},
+            enum:{"define":["1","10","12","14","16","18","20","100","102","105","106","110","112","114","116","118","120","122","124","126","128","130"],"error":{"rc":100508,"msg":"资源配置范围的类型不正确"},"mongoError":{"rc":200508,"msg":"资源配置范围的类型不正确"}},
         },
         type:{
             chineseName:"资源配置类型",
@@ -567,29 +567,6 @@ const inputRule={
             format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":102652,"msg":"文档目录必须是objectId"},"mongoError":{"rc":202652,"msg":"文档目录必须是objectId"}},
         },
     },
-    add_friend:{
-        receiver:{
-            chineseName:"添加的好友",
-            dataType:"objectId",
-            applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":102100,"msg":"添加好友不能为空"},"mongoError":{"rc":202100,"msg":"添加好友不能为空"}},
-            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":102102,"msg":"好友必须是objectId"},"mongoError":{"rc":202102,"msg":"好友必须是objectId"}},
-        },
-        originator:{
-            chineseName:"发起人",
-            dataType:"objectId",
-            applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":102150,"msg":"发起人不能为空"},"mongoError":{"rc":202150,"msg":"发起人不能为空"}},
-            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":102152,"msg":"发起人必须是objectId"},"mongoError":{"rc":202152,"msg":"发起人必须是objectId"}},
-        },
-        status:{
-            chineseName:"当前请求所处状态",
-            dataType:"string",
-            applyRange:["create","update_scalar"],
-            require:{"define":{"create":true,"update_scalar":true},"error":{"rc":102154,"msg":"状态不能为空"},"mongoError":{"rc":202154,"msg":"状态不能为空"}},
-            enum:{"define":["1","2","3","4"],"error":{"rc":102156,"msg":"状态未定义"},"mongoError":{"rc":202156,"msg":"状态未定义"}},
-        },
-    },
     join_public_group_request:{
         publicGroupId:{
             chineseName:"公共群",
@@ -653,6 +630,53 @@ const inputRule={
             applyRange:["create"],
             require:{"define":{"create":true},"error":{"rc":102350,"msg":"群创建者不能为空"},"mongoError":{"rc":202350,"msg":"群创建者不能为空"}},
             format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":102352,"msg":"群创建者必须是objectId"},"mongoError":{"rc":202352,"msg":"群创建者必须是objectId"}},
+        },
+    },
+    not_used_to_be_friend_request:{
+    },
+    add_friend_request:{
+        receiver:{
+            chineseName:"添加的好友",
+            dataType:"objectId",
+            applyRange:["create"],
+            require:{"define":{"create":true},"error":{"rc":102100,"msg":"添加好友不能为空"},"mongoError":{"rc":202100,"msg":"添加好友不能为空"}},
+            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":102102,"msg":"好友必须是objectId"},"mongoError":{"rc":202102,"msg":"好友必须是objectId"}},
+        },
+        message:{
+            chineseName:"附加信息",
+            dataType:undefined,
+            applyRange:["create"],
+            require:{"define":{"create":false},"error":{"rc":102104,"msg":"附加信息不能为空"},"mongoError":{"rc":202104,"msg":"附加信息不能为空"}},
+            minLength:{"define":5,"error":{"rc":102106,"msg":"附加信息至少5个字符"},"mongoError":{"rc":202106,"msg":"附加信息至少5个字符"}},
+            maxLength:{"define":50,"error":{"rc":102108,"msg":"附加信息的长度不能超过50个字符"},"mongoError":{"rc":202108,"msg":"附加信息的长度不能超过50个字符"}},
+        },
+        originator:{
+            chineseName:"发起人",
+            dataType:"objectId",
+            applyRange:["create"],
+            require:{"define":{"create":true},"error":{"rc":102150,"msg":"发起人不能为空"},"mongoError":{"rc":202150,"msg":"发起人不能为空"}},
+            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":102152,"msg":"发起人必须是objectId"},"mongoError":{"rc":202152,"msg":"发起人必须是objectId"}},
+        },
+        status:{
+            chineseName:"当前请求所处状态",
+            dataType:"string",
+            applyRange:["create","update_scalar"],
+            require:{"define":{"create":true,"update_scalar":true},"error":{"rc":102154,"msg":"状态不能为空"},"mongoError":{"rc":202154,"msg":"状态不能为空"}},
+            enum:{"define":["1","2","3"],"error":{"rc":102156,"msg":"状态未定义"},"mongoError":{"rc":202156,"msg":"状态未定义"}},
+        },
+        declineTimes:{
+            chineseName:"被拒次数",
+            dataType:"int",
+            applyRange:["update_scalar"],
+            require:{"define":{"update_scalar":true},"error":{"rc":102158,"msg":"被拒次数不能为空"},"mongoError":{"rc":202158,"msg":"被拒次数不能为空"}},
+            max:{"define":10,"error":{"rc":102160,"msg":"拒绝次数最大10次"},"mongoError":{"rc":202160,"msg":"拒绝次数最大10次"}},
+        },
+        acceptTimes:{
+            chineseName:"同意次数",
+            dataType:"int",
+            applyRange:["update_scalar"],
+            require:{"define":{"update_scalar":true},"error":{"rc":102162,"msg":"同意次数不能为空"},"mongoError":{"rc":202162,"msg":"同意次数不能为空"}},
+            max:{"define":10,"error":{"rc":102164,"msg":"同意次数最大10次"},"mongoError":{"rc":202164,"msg":"同意次数最大10次"}},
         },
     },
     impeach_image:{
@@ -998,6 +1022,42 @@ const inputRule={
             enum:{"define":["1","2"],"error":{"rc":103276,"msg":"document状态不是预定义的值"},"mongoError":{"rc":203276,"msg":"document状态不是预定义的值"}},
         },
     },
+    user_resource_profile:{
+        userId:{
+            chineseName:"用户",
+            dataType:"objectId",
+            applyRange:["create"],
+            require:{"define":{"create":true},"error":{"rc":10760,"msg":"用户不能为空"},"mongoError":{"rc":20760,"msg":"用户不能为空"}},
+            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":10762,"msg":"用户格式不正确"},"mongoError":{"rc":20762,"msg":"用户格式不正确"}},
+        },
+        resource_profile_id:{
+            chineseName:"资源配置",
+            dataType:"objectId",
+            applyRange:["create"],
+            require:{"define":{"create":true},"error":{"rc":10764,"msg":"资源配置不能为空"},"mongoError":{"rc":20764,"msg":"资源配置不能为空"}},
+            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":10766,"msg":"资源配置格式不正确"},"mongoError":{"rc":20766,"msg":"资源配置格式不正确"}},
+        },
+        duration:{
+            chineseName:"资源配置有效期",
+            dataType:"number",
+            applyRange:["create"],
+            require:{"define":{"create":true},"error":{"rc":10768,"msg":"资源配置有效期不能为空"},"mongoError":{"rc":20768,"msg":"资源配置有效期不能为空"}},
+            min:{"define":0,"error":{"rc":10770,"msg":"源配置有效期最短1天"},"mongoError":{"rc":20770,"msg":"源配置有效期最短1天"}},
+            max:{"define":365,"error":{"rc":10772,"msg":"源配置有效期最长1年"},"mongoError":{"rc":20772,"msg":"源配置有效期最长1年"}},
+        },
+        startDate:{
+            chineseName:"生效时间",
+            dataType:"date",
+            applyRange:["create"],
+            require:{"define":{"create":true},"error":{"rc":10760,"msg":"生效时间不能为空"},"mongoError":{"rc":20760,"msg":"生效时间不能为空"}},
+        },
+        endDate:{
+            chineseName:"结束时间",
+            dataType:"date",
+            applyRange:["create"],
+            require:{"define":{"create":true},"error":{"rc":10764,"msg":"结束时间不能为空"},"mongoError":{"rc":20764,"msg":"结束时间不能为空"}},
+        },
+    },
     user:{
         name:{
             chineseName:"昵称",
@@ -1005,17 +1065,17 @@ const inputRule={
             applyRange:["create","update_scalar"],
             placeHolder:["昵称，由2-20个字符组成"],
             searchRange:["all"],
-            require:{"define":{"create":true,"update_scalar":false},"error":{"rc":10700,"msg":"昵称不能为空"},"mongoError":{"rc":20700,"msg":"昵称不能为空"}},
-            maxLength:{"define":20,"error":{"rc":10704,"msg":"昵称最多20个字符"},"mongoError":{"rc":20704,"msg":"昵称的长度不能超过20个字符"}},
-            format:{"define":/^[\u4E00-\u9FFF\w]{2,20}$/,"error":{"rc":10706,"msg":"昵称必须由2-20个字符组成"},"mongoError":{"rc":20706,"msg":"昵称必须由2-20个字符组成"}},
+            require:{"define":{"create":true,"update_scalar":false},"error":{"rc":104100,"msg":"昵称不能为空"},"mongoError":{"rc":204100,"msg":"昵称不能为空"}},
+            maxLength:{"define":20,"error":{"rc":104102,"msg":"昵称最多20个字符"},"mongoError":{"rc":204102,"msg":"昵称的长度不能超过20个字符"}},
+            format:{"define":/^[\u4E00-\u9FFF\w]{2,20}$/,"error":{"rc":104104,"msg":"昵称必须由2-20个字符组成"},"mongoError":{"rc":204104,"msg":"昵称必须由2-20个字符组成"}},
         },
         account:{
             chineseName:"账号",
             dataType:"string",
             applyRange:["create","update_scalar"],
             placeHolder:["请输入您的手机号","请输入您的电子邮件地址"],
-            require:{"define":{"create":true,"update_scalar":false},"error":{"rc":10708,"msg":"账号不能为空"},"mongoError":{"rc":20708,"msg":"账号不能为空"}},
-            format:{"define":/^(([\w\u4e00-\u9fa5\-]+\.)*[\w\u4e00-\u9fa5\-]+@([\w\u4e00-\u9fa5\-]+\.)+[A-Za-z]+|1\d{10})$/,"error":{"rc":10714,"msg":"账号必须是手机号或者email"},"mongoError":{"rc":20714,"msg":"账号必须是手机号或者email"}},
+            require:{"define":{"create":true,"update_scalar":false},"error":{"rc":104106,"msg":"账号不能为空"},"mongoError":{"rc":204106,"msg":"账号不能为空"}},
+            format:{"define":/^(([\w\u4e00-\u9fa5\-]+\.)*[\w\u4e00-\u9fa5\-]+@([\w\u4e00-\u9fa5\-]+\.)+[A-Za-z]+|1\d{10})$/,"error":{"rc":104108,"msg":"账号必须是手机号或者email"},"mongoError":{"rc":204108,"msg":"账号必须是手机号或者email"}},
         },
         password:{
             chineseName:"密码",
@@ -1029,8 +1089,16 @@ const inputRule={
             dataType:"string",
             applyRange:["upload"],
             placeHolder:[""],
-            require:{"define":{"upload":false},"error":{"rc":10717,"msg":"用户头像不能为空"},"mongoError":{"rc":20717,"msg":"用户头像不能为空"}},
-            format:{"define":/^data:image\/png;base64,/,"error":{"rc":10718,"msg":"用户头像必须是png"},"mongoError":{"rc":20718,"msg":"用户头像必须是png"}},
+            require:{"define":{"upload":false},"error":{"rc":104114,"msg":"用户头像不能为空"},"mongoError":{"rc":204114,"msg":"用户头像不能为空"}},
+            format:{"define":/^data:image\/png;base64,/,"error":{"rc":104116,"msg":"用户头像必须是png"},"mongoError":{"rc":204116,"msg":"用户头像必须是png"}},
+        },
+        addFriendRule:{
+            chineseName:"朋友规则",
+            dataType:"string",
+            applyRange:["create","update_scalar"],
+            placeHolder:[""],
+            require:{"define":{"create":false,"update_scalar":false},"error":{"rc":104118,"msg":"朋友规则不能为空"},"mongoError":{"rc":204118,"msg":"朋友规则不能为空"}},
+            enum:{"error":{"rc":104120,"msg":"未知规则"},"mongoError":{"rc":204120,"msg":"未知规则"}},
         },
         userType:{
             chineseName:"用户类型",
@@ -1092,42 +1160,6 @@ const inputRule={
             dataType:"number",
             applyRange:["create","update_scalar"],
             require:{"define":{"create":false,"update_scalar":false},"error":{"rc":10739,"msg":"头像大小不能为空"},"mongoError":{"rc":20739,"msg":"头像大小不能为空"}},
-        },
-    },
-    user_resource_profile:{
-        userId:{
-            chineseName:"用户",
-            dataType:"objectId",
-            applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":10760,"msg":"用户不能为空"},"mongoError":{"rc":20760,"msg":"用户不能为空"}},
-            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":10762,"msg":"用户格式不正确"},"mongoError":{"rc":20762,"msg":"用户格式不正确"}},
-        },
-        resource_profile_id:{
-            chineseName:"资源配置",
-            dataType:"objectId",
-            applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":10764,"msg":"资源配置不能为空"},"mongoError":{"rc":20764,"msg":"资源配置不能为空"}},
-            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":10766,"msg":"资源配置格式不正确"},"mongoError":{"rc":20766,"msg":"资源配置格式不正确"}},
-        },
-        duration:{
-            chineseName:"资源配置有效期",
-            dataType:"number",
-            applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":10768,"msg":"资源配置有效期不能为空"},"mongoError":{"rc":20768,"msg":"资源配置有效期不能为空"}},
-            min:{"define":0,"error":{"rc":10770,"msg":"源配置有效期最短1天"},"mongoError":{"rc":20770,"msg":"源配置有效期最短1天"}},
-            max:{"define":365,"error":{"rc":10772,"msg":"源配置有效期最长1年"},"mongoError":{"rc":20772,"msg":"源配置有效期最长1年"}},
-        },
-        startDate:{
-            chineseName:"生效时间",
-            dataType:"date",
-            applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":10760,"msg":"生效时间不能为空"},"mongoError":{"rc":20760,"msg":"生效时间不能为空"}},
-        },
-        endDate:{
-            chineseName:"结束时间",
-            dataType:"date",
-            applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":10764,"msg":"结束时间不能为空"},"mongoError":{"rc":20764,"msg":"结束时间不能为空"}},
         },
     },
     collection:{

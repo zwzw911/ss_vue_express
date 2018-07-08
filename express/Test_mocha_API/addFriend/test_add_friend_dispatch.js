@@ -4,7 +4,7 @@
 'use strict'
 
 /**************  controller相关常量  ****************/
-const controllerError=require('../../server/controller/add_friend/add_friend_setting/add_friend_controllerError').controllerError
+const controllerError=require('../../server/controller/add_friend_request/add_friend_setting/add_friend_controllerError').controllerError
 
 /******************    内置lib和第三方lib  **************/
 const ap=require(`awesomeprint`)
@@ -68,7 +68,7 @@ const controllerCheckerError=server_common_file_require.helperError.checker
 
 // const controllerError=require('../../server/controller/penalize/penalize_setting/penalize_controllerError').controllerError
 /****************  变量 ********************/
-let baseUrl="/add_friend/",finalUrl,url
+let baseUrl="/add_friend_request/",finalUrl,url
 
 //管理员登录信息
 let adminUser1Info,adminUser2Info,adminUser3Info,adminUser1Id,adminUser2Id,adminUser3Id,adminUser1Sess,adminUser2Sess,adminUser3Sess,adminUser1Data,adminUser2Data,adminUser3Data
@@ -82,8 +82,8 @@ let user1IdCrypted,user1IdGetByUser2Crypted
 
 let recordId //当有update/delete的时候，需要真实的recordid，来pass recordId的最后一个case（正确通过）
 let normalRecord={
-    // [e_field.ADD_FRIEND.ORIGINATOR]:undefined,
-    [e_field.ADD_FRIEND.RECEIVER]:undefined,
+    // [e_field.ADD_FRIEND_REQUEST.ORIGINATOR]:undefined,
+    [e_field.ADD_FRIEND_REQUEST.RECEIVER]:undefined,
 }
 
 
@@ -182,17 +182,17 @@ describe('dispatch', function() {
 
     it('3.1 inputValue singleField: fieldValue to be decrypt not string', async function() {
         expectedErrorRc=controllerCheckerError.ifObjectIdCrypted.singleFieldValueContainInvalidObjectId.rc
-        data={values:{[e_part.SINGLE_FIELD]:{[e_field.ADD_FRIEND.RECEIVER]:1234}}}
+        data={values:{[e_part.SINGLE_FIELD]:{[e_field.ADD_FRIEND_REQUEST.RECEIVER]:1234}}}
         await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
     });
     it('3.2 inputValue singleField: fieldValue to be decrypt is string, but regex check failed', async function() {
         expectedErrorRc=controllerCheckerError.ifObjectIdCrypted.singleFieldValueContainInvalidObjectId.rc
-        data={values:{[e_part.SINGLE_FIELD]:{[e_field.ADD_FRIEND.RECEIVER]:'1234'}}}
+        data={values:{[e_part.SINGLE_FIELD]:{[e_field.ADD_FRIEND_REQUEST.RECEIVER]:'1234'}}}
         await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
     });
     it('3.3 inputValue singleField: fieldValue after decrypt is string, but invalid objectId', async function() {
         expectedErrorRc=browserInputRule.add_friend.receiver.format.error.rc
-        data={values:{[e_part.SINGLE_FIELD]:{[e_field.ADD_FRIEND.RECEIVER]:'3410cae041c38fcae905d65501cf7f776ea6b127850b0955269481f6a4db1b22'}}}
+        data={values:{[e_part.SINGLE_FIELD]:{[e_field.ADD_FRIEND_REQUEST.RECEIVER]:'3410cae041c38fcae905d65501cf7f776ea6b127850b0955269481f6a4db1b22'}}}
         await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,fieldName:e_field.FOLDER.PARENT_FOLDER_ID,app:app})
     });
 
@@ -204,7 +204,7 @@ describe('dispatch', function() {
     //无法走到，undefined传入后变成空对象
     it('4.2 inputValue singleField format:field value cant be undefined', async function() {
         expectedErrorRc=validateError.validateFormat.singleFieldMustOnlyOneField.rc
-        data={values:{[e_part.SINGLE_FIELD]:{[e_field.ADD_FRIEND.RECEIVER]:undefined}}}
+        data={values:{[e_part.SINGLE_FIELD]:{[e_field.ADD_FRIEND_REQUEST.RECEIVER]:undefined}}}
         await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,fieldName:e_field.FOLDER.NAME,app:app})
     });
     it('4.3 inputValue singleField format:field cant be id', async function() {
@@ -220,7 +220,7 @@ describe('dispatch', function() {
 
     it('5.1 inputValue singleField: fieldValue is null', async function() {
         expectedErrorRc=validateError.validateValue.CUDTypeWrong.rc
-        data={values:{[e_part.SINGLE_FIELD]:{[e_field.ADD_FRIEND.RECEIVER]:null}}}
+        data={values:{[e_part.SINGLE_FIELD]:{[e_field.ADD_FRIEND_REQUEST.RECEIVER]:null}}}
         await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
     });
     /***************    update    ***************/

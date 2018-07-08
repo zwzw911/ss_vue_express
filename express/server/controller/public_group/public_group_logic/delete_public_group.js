@@ -2,7 +2,7 @@
  * Created by ada on 2017/9/1.
  */
 'use strict'
-'use strict'
+
 /******************    内置lib和第三方lib  **************/
 const ap=require('awesomeprint')
 

@@ -135,3 +135,5 @@
 
 
 1. validateValue中对searchParam的检测可能不再需要（format和value的检测包含在SearchFormat中）
+
+1. 如果字段类型是object，且为数组，那么在进行格式检查的同时，先检查长度和applyRange，防止数组过长，或者applyRange不正确=======>done

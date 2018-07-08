@@ -21,9 +21,9 @@ const Coll={
     PUBLIC_GROUP_INTERACTION:'public_group_interaction',
     USER_FRIEND_GROUP:'user_friend_group',
     USER_PUBLIC_GROUP:'user_public_group',
-    ADD_FRIEND:'add_friend',
     PUBLIC_GROUP:'public_group',
     JOIN_PUBLIC_GROUP_REQUEST:'join_public_group_request',
+    ADD_FRIEND_REQUEST:'add_friend_request',
     /*       impeach           */
     IMPEACH_ACTION:'impeach_action',
     IMPEACH_IMAGE:'impeach_image',
@@ -36,8 +36,8 @@ const Coll={
     USER_RESOURCE_STATIC:'user_resource_static',
     /*       user           */
     SUGAR:'sugar',
-    USER:'user',
     USER_RESOURCE_PROFILE:'user_resource_profile',
+    USER:'user',
     /*       user_behavior           */
     READ_ARTICLE:'read_article',
     USER_INPUT_KEYWORD:'user_input_keyword',

@@ -101,6 +101,7 @@ async function login_async({req}){
     userInfo[e_userInfoField.USER_TYPE]=userTmpResult[0][e_field.USER.USER_TYPE]
     userInfo[e_userInfoField.USER_COLL_NAME]=e_coll.USER
     userInfo[e_userInfoField.TEMP_SALT]=misc.generateRandomString({})
+    userInfo[e_userInfoField.ADD_FRIEND_RULE]=userTmpResult[0][e_field.USER.ADD_FRIEND_RULE]
     // ap.inf('data save into redis',userInfo)
     await controllerHelper.setLoginUserInfo_async({req:req,userInfo:userInfo})
     // console.log(`req.session after user login ==============>${JSON.stringify(req.session)}`)

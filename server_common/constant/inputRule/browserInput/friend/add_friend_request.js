@@ -23,7 +23,7 @@ const enumValue=require('../../../../constant/genEnum/enumValue')
 const baseJSErrorCode=102100
 const baseMongoErrorCode=202100
 
-const add_friend= {
+const add_friend_request= {
     receiver: {
         [otherRuleFiledName.CHINESE_NAME]: '添加的好友',
         [otherRuleFiledName.DATA_TYPE]: serverDataType.OBJECT_ID,
@@ -33,7 +33,16 @@ const add_friend= {
         // 'maxLength': {define: 20, error: {rc: 10414}, mongoError: {rc: 20414, msg: '朋友分组名的长度不能超过20个字符'}},
         [ruleFiledName.FORMAT]: {define: regex.objectId, error: {rc: baseJSErrorCode+2, msg: '好友必须是objectId'}, mongoError: {rc: baseMongoErrorCode+2, msg: '好友必须是objectId'}} //server端使用
     },
-
+    message: {
+        [otherRuleFiledName.CHINESE_NAME]: '附加信息',
+        [otherRuleFiledName.DATA_TYPE]: serverDataType.S,
+        [otherRuleFiledName.APPLY_RANGE]:[applyRange.CREATE],
+        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:false,}, error: {rc: baseJSErrorCode+4, msg: '附加信息不能为空'}, mongoError: {rc: baseMongoErrorCode+4, msg: '附加信息不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        [ruleFiledName.MIN_LENGTH]: {define: 5, error: {rc: baseJSErrorCode+6, msg: '附加信息至少5个字符'}, mongoError: {rc: baseMongoErrorCode+6, msg: '附加信息至少5个字符'}},
+        [ruleFiledName.MAX_LENGTH]: {define: 50, error: {rc: baseJSErrorCode+8, msg: '附加信息的长度不能超过50个字符'}, mongoError: {rc: baseMongoErrorCode+8, msg: '附加信息的长度不能超过50个字符'}},
+        // [ruleFiledName.FORMAT]: {define: regex.folderFileName, error: {rc: 10005}, mongoError: {rc: 30005, msg: '文档名必须由1-255个字符组成'}} //server端使用
+        // [ruleFiledName.FORMAT]: {define: regex.objectId, error: {rc: baseJSErrorCode+2, msg: '好友必须是objectId'}, mongoError: {rc: baseMongoErrorCode+2, msg: '好友必须是objectId'}} //server端使用
+    },
 
 /*    status:{
         [otherRuleFiledName.CHINESE_NAME]: '当前请求所处状态',
@@ -49,5 +58,5 @@ const add_friend= {
 }
 
 module.exports={
-    add_friend,
+    add_friend_request,
 }

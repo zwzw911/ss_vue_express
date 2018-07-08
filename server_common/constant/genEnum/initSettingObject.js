@@ -1,4 +1,4 @@
-/*    gene by server/maintain/getInitSettingId  in 2018-6-29   */ 
+/*    gene by server/maintain/getInitSettingId  in 2018-7-3   */ 
  
     "use strict"
 const iniSettingObject={

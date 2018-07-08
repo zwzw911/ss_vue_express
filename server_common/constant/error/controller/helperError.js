@@ -218,6 +218,7 @@ const checker={
     /*      ifFileSuffixMatchContentType_async          */
     uploadFileHasNoSuffix:{rc:checkerBaseErrorCode+52,msg:{client:`上传文件没有后缀，无法区分文件类型`}},
     ifObjectIdCrypted:{
+        fieldNotMatchApplyRange:{rc:checkerBaseErrorCode+53,msg:{client:`参数错误`,server:'字段不允许在当前applyRange时输入'}},
         recordIdFormatWrong:{rc:checkerBaseErrorCode+54,msg:{client:`参数错误`,server:'加密的recordId的格式不正确'}},
         singleFieldValueContainInvalidObjectId:{rc:checkerBaseErrorCode+55,msg:{client:`参数错误`,server:'singleField中，类型为objectId，值的格式不正确'}},
         recordInfoContainInvalidObjectId:{rc:checkerBaseErrorCode+56,msg:{client:`参数错误`,server:'recordInfo中，类型为objectId的字段，值的格式不正确'}},
@@ -374,11 +375,18 @@ const resourceCheck={
         },
         /**     join public group       **/
         totalJoinPubliGroupDeclineNumExceed({resourceProfileNum}){
-            return {rc:resourceCheckBaseErrorCode+120,msg:{client:`入群请求达到最大数量${resourceProfileNum}，无法继续发起请求`}}
+            return {rc:resourceCheckBaseErrorCode+122,msg:{client:`入群请求达到最大数量${resourceProfileNum}，无法继续发起请求`}}
         },
         /**     user friend group       **/
         totalUserFriendGroupNumExceed({resourceProfileNum}){
-            return {rc:resourceCheckBaseErrorCode+122,msg:{client:`朋友群达到最大数量${resourceProfileNum}，无法继续建立`}}
+            return {rc:resourceCheckBaseErrorCode+124,msg:{client:`朋友群达到最大数量${resourceProfileNum}，无法继续建立`}}
+        },
+        totalUserFriendNumExceed({resourceProfileNum}){
+            return {rc:resourceCheckBaseErrorCode+126,msg:{client:`朋友数达到最大数量${resourceProfileNum}，无法继续添加`}}
+        },
+        /**     add friend      **/
+        totalUntreatedFriendRequest({resourceProfileNum}){
+            return {rc:resourceCheckBaseErrorCode+128,msg:{client:`申请加好友的数量过多，达到最大数量${resourceProfileNum}，无法继续申请，请等待一段时间后继续`}}
         },
     }
 }

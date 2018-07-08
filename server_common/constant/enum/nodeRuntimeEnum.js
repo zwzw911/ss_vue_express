@@ -48,6 +48,7 @@ const UserInfoField={
     USER_TYPE:`userType`,
     USER_PRIORITY:'userPriority',//adminUser权限
     TEMP_SALT:'tempSalt', //临时salt，用来加密显示给用户的敏感信息（例如objectId）
+    ADD_FRIEND_RULE:'addFriendRule',//用户被添加为他人朋友是，如何处理
 }
 
 const DataTypeInfoFieldName={

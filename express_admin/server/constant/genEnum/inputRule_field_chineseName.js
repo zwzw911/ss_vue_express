@@ -87,14 +87,6 @@ const ChineseName={
         'duration':'处罚时间',
         'creatorId':'处罚发起者',
     },
-    public_group:{
-        'name':'群名称',
-        'membersId':'群成员',
-        'adminsId':'群管理员',
-        'joinInRule':'新成员加入规则',
-        'waitApproveId':'等待批准加入',
-        'creatorId':'群创建者',
-    },
     public_group_event:{
         'publicGroupId':'群',
         'eventType':'群事件类型',
@@ -113,8 +105,23 @@ const ChineseName={
         'friendsInGroup':'好友分组',
         'ownerUserId':'用户',
     },
-    add_friend:{
+    join_public_group_request:{
+        'publicGroupId':'公共群',
+        'creatorId':'请求人',
+        'handleResult':'请求处理结果',
+    },
+    public_group:{
+        'name':'群名称',
+        'joinInRule':'新成员加入规则',
+        'adminsId':'群管理员',
+        'membersId':'群成员',
+        'creatorId':'群创建者',
+    },
+    not_used_to_be_friend_request:{
+    },
+    add_friend_request:{
         'receiver':'添加的好友',
+        'message':'附加信息',
         'originator':'发起人',
         'status':'当前请求所处状态',
     },

@@ -29,7 +29,19 @@ const AdminUserType={
     }
 
 }
+const AddFriendRule={
+    DB:{
+        ANYONE_ALLOW:'1',
+        PERMIT_ALLOW:'2',
+        NOONE_ALLOW:'3',
+    },
+    SHOW:{
+        ANYONE_ALLOW:'任意加入',
+        PERMIT_ALLOW:'批准加入',
+        NOONE_ALLOW:'拒绝加入',
+    },
 
+}
 const UserType={
     DB:{
 
@@ -145,7 +157,7 @@ const PenalizeType={
         //user_friend_group
         NO_USER_FRIEND_GROUP:'20',
 
-        //add_friend
+        //add_friend_request
         NO_ADD_FRIEND:'21',
 
         //public_group
@@ -171,7 +183,7 @@ const PenalizeType={
         //user_friend_group
         NO_USER_FRIEND_GROUP:'禁止好友分组',
 
-        //add_friend
+        //add_friend_request
         NO_ADD_FRIEND:'禁止添加好友',
 
         //public_group
@@ -419,14 +431,19 @@ const ResourceRange={
         // IMAGE_PER_IMPEACH_OR_COMMENT:'14', //每个impeach或者comment的图片
         // IMAGE_PER_PERSON_FOR_WHOLE_IMPEACH:'16', //每个用户，在整个impeach和comment的图片
 
+        /****************************/
         /**     只有记录数量      **/
+        /****************************/
         MAX_FOLDER_NUM_PER_USER:'100', //最大目录数量
 
+        /**     user friend group               **/
         MAX_FRIEND_GROUP_NUM_PER_USER:'102',//朋友群数量
-        MAX_PERSON_NUM_PER_FRIEND_GROUP:'104',//群中人数最大数量
+        // MAX_PERSON_NUM_PER_FRIEND_GROUP:'104',//群中人数最大数量(move的时候使用)
 
+        /**     add friend      **/
+        MAX_FRIEND_NUM_PER_USER:'105',//最大朋友数量
         MAX_UNTREATED_ADD_FRIEND_REQUEST_PER_USER:'106', //最大未处理的 添加朋友的请求数
-        MAX_ACCEPT_BUT_NOT_ASSIGN_ADD_FRIEND_REQUEST_PER_USER:'108', //最大已同意但是未被分配到某个朋友群的 添加朋友的请求数
+        // MAX_ACCEPT_BUT_NOT_ASSIGN_ADD_FRIEND_REQUEST_PER_USER:'108', //最大已同意但是未被分配到某个朋友群的 添加朋友的请求数
 
         MAX_NEW_ARTICLE_PER_USER:'110',//新建但未做过任何处理的文档数
         MAX_ARTICLE_PER_USER:'112',//最大文档数（所有状态（删除的不算））
@@ -447,7 +464,7 @@ const ResourceRange={
 
         MAX_DECLINE_JOIN_REQUEST:'130',//单个public group，每个用户最大可以被拒绝次数
 
-        MAX_USER_FRIEND_GROUP_NUM:'132',//每个用户最大可创建的朋友群
+        // MAX_USER_FRIEND_GROUP_NUM:'132',//每个用户最大可创建的朋友群
     },
     SHOW:{
         /**     存储在coll中    **/
@@ -467,14 +484,19 @@ const ResourceRange={
         // IMAGE_PER_IMPEACH_OR_COMMENT:'举报（或者评论）图片', //举报或者举报评论
         // // IMAGE_PER_COMMENT:'举报图片', //举报或者举报出路
         // IMAGE_PER_PERSON_FOR_WHOLE_IMPEACH:'举报中的用户',  //整个举报中，每个用户
-
+        /**********************/
+        /******  number  *****/
+        /**********************/
         MAX_FOLDER_NUM_PER_USER:'最大目录数量', //
 
+        /**     user friend group       **/
         MAX_FRIEND_GROUP_NUM_PER_USER:'最大朋友群数量',//朋友群数量
-        MAX_PERSON_NUM_PER_FRIEND_GROUP:'群人数数量',//群中人数最大数量
 
+        // MAX_PERSON_NUM_PER_FRIEND_GROUP:'群人数数量',//群中人数最大数量
+        /**     add friend request      **/
+        MAX_FRIEND_NUM_PER_USER:'最大朋友数量',//最大朋友数量
         MAX_UNTREATED_ADD_FRIEND_REQUEST_PER_USER:'最大未处理的添加朋友的请求数',
-        MAX_ACCEPT_BUT_NOT_ASSIGN_ADD_FRIEND_REQUEST_PER_USER:'最大已同意但是未被分配的添加朋友的请求数', //最大 已同意但是未被分配到某个朋友群的 添加朋友的请求数
+        // MAX_ACCEPT_BUT_NOT_ASSIGN_ADD_FRIEND_REQUEST_PER_USER:'最大已同意但是未被分配的添加朋友的请求数', //最大 已同意但是未被分配到某个朋友群的 添加朋友的请求数
 
         MAX_NEW_ARTICLE_PER_USER:'新建但未做过任何处理的文档数',//新建但未做过任何处理的文档数
         MAX_ARTICLE_PER_USER:'最大文档数',//最大文档数
@@ -494,7 +516,7 @@ const ResourceRange={
 
         MAX_DECLINE_JOIN_REQUEST:'入群最大被拒次数',//单个public group，每个用户最大可以被拒绝次数
 
-        MAX_USER_FRIEND_GROUP_NUM:'用户最大朋友群',//每个用户最大可创建的朋友群
+
     },
 }
 
@@ -535,16 +557,18 @@ const AddFriendStatus={
     DB:{
         UNTREATED:'1',
         DECLINE:'2',
-        ACCEPT_BUT_NOT_ASSIGN:'3', //被请求者已经同意，但是请求者没有进行处理（分配到某个group）
-        ACCEPT_AND_ASSIGN:'4',
+        ACCEPT:'3',//同意
+        // ACCEPT_BUT_NOT_ASSIGN:'3', //被请求者已经同意，但是请求者没有进行处理（分配到某个group）
+        // ACCEPT_AND_ASSIGN:'4',
 
 
     },
     SHOW:{
         UNTREATED:'尚未处理',
         DECLINE:'拒绝',
-        ACCEPT_BUT_NOT_ASSIGN:'接受但未分配',
-        ACCEPT_AND_ASSIGN:'接受',
+        ACCEPT:'接受',
+        // ACCEPT_BUT_NOT_ASSIGN:'接受但未分配',
+        // ACCEPT_AND_ASSIGN:'接受',
     },
 }
 
@@ -564,8 +588,26 @@ const JoinPublicGroupHandleResult={
         ACCEPT:'接受',
     },
 }
+
+/**     请求加为好友后，可能的状态      **/
+// const ToBeFriendHandleResult={
+//     DB:{
+//         UNTREATED:'1',
+//         DECLINE:'2',
+//         ACCEPT:'3',
+//
+//
+//
+//     },
+//     SHOW:{
+//         UNTREATED:'尚未处理',
+//         DECLINE:'拒绝',
+//         ACCEPT:'接受',
+//     },
+// }
 module.exports={
     ArticleStatus,
+    AddFriendRule,
     AdminUserType,
     UserType,
     AllUserType,
@@ -593,4 +635,5 @@ module.exports={
     DocumentStatus,
     AddFriendStatus,
     JoinPublicGroupHandleResult,
+    // ToBeFriendHandleResult,
 }

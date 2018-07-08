@@ -113,7 +113,7 @@ async function article_dispatcher_async({req}) {
 
                     //对req中的recordId和recordInfo进行objectId（加密过的）格式判断
                     // ap.inf('before check',req.body.values)
-                    await controllerChecker.ifObjectIdInPartCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName]})
+                    await controllerChecker.ifObjectIdInPartCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName],applyRange:applyRange})
                     // ap.inf('after check',req.body.values)
                     //对req中的recordId和recordInfo中加密的objectId进行解密
                     let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
@@ -146,7 +146,7 @@ async function article_dispatcher_async({req}) {
 
                     //对req中的recordId和recordInfo进行objectId（加密过的）格式判断
                     // ap.inf('before check',req.body.values)
-                    await controllerChecker.ifObjectIdInPartCrypted_async({req: req,expectedPart: expectedPart,browserCollRule: browserInputRule[collName]})
+                    await controllerChecker.ifObjectIdInPartCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName],applyRange:applyRange})
                     // ap.inf('after check',req.body.values)
                     //对req中的recordId和recordInfo中加密的objectId进行解密
                     let userInfo = await controllerHelper.getLoginUserInfo_async({req: req})
@@ -181,7 +181,7 @@ async function article_dispatcher_async({req}) {
 
                     //对req中的recordId和recordInfo进行objectId（加密过的）格式判断
                     // ap.inf('before check',req.body.values)
-                    await controllerChecker.ifObjectIdInPartCrypted_async({req: req,expectedPart: expectedPart,browserCollRule: browserInputRule[collName]})
+                    await controllerChecker.ifObjectIdInPartCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName],applyRange:applyRange})
                     // ap.inf('after check',req.body.values)
                     //对req中的recordId和recordInfo中加密的objectId进行解密
                     let userInfo = await controllerHelper.getLoginUserInfo_async({req: req})
@@ -223,7 +223,7 @@ async function article_dispatcher_async({req}) {
 
                 //对req中的recordId和recordInfo进行objectId（加密过的）格式判断
                 // ap.inf('before check',req.body.values)
-                await controllerChecker.ifObjectIdInPartCrypted_async({req: req,expectedPart: expectedPart,browserCollRule: browserInputRule[collName]})
+                await controllerChecker.ifObjectIdInPartCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName],applyRange:applyRange})
                 // ap.inf('after check',req.body.values)
                 //对req中的recordId和recordInfo中加密的objectId进行解密
                 let userInfo = await controllerHelper.getLoginUserInfo_async({req: req})
@@ -245,6 +245,7 @@ async function article_dispatcher_async({req}) {
             break;
         case 'delete':
             if (baseUrl === '/article' || baseUrl === '/article/') {
+                applyRange=e_applyRange.DELETE
                 if (originalUrl === '/article/articleAttachment' || originalUrl === '/article/articleAttachment/') {
                     userLoginCheck = {
                         needCheck: true,
@@ -261,7 +262,7 @@ async function article_dispatcher_async({req}) {
 
                     //对req中的recordId和recordInfo进行objectId（加密过的）格式判断
                     // ap.inf('before check',req.body.values)
-                    await controllerChecker.ifObjectIdInPartCrypted_async({req: req,expectedPart: expectedPart,browserCollRule: browserInputRule[collName]})
+                    await controllerChecker.ifObjectIdInPartCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName],applyRange:applyRange})
                     // ap.inf('after check',req.body.values)
                     //对req中的recordId和recordInfo中加密的objectId进行解密
                     let userInfo = await controllerHelper.getLoginUserInfo_async({req: req})

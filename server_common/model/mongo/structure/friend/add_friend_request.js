@@ -15,8 +15,8 @@ const connectedDb=require('../../common/connection').dbSS;
 //mongoose.Promise = Promise
 const mongoSetting=require('../../common/configuration')
 
-const browserInputRule=require('../../../../constant/inputRule/browserInput/friend/add_friend').add_friend
-const internalInputRule=require('../../../../constant/inputRule/internalInput/friend/add_friend').add_friend
+const browserInputRule=require('../../../../constant/inputRule/browserInput/friend/add_friend_request').add_friend_request
+const internalInputRule=require('../../../../constant/inputRule/internalInput/friend/add_friend_request').add_friend_request
 //根据inputRule的rule设置，对mongoose设置内建validator
 const collInputRule=Object.assign({},browserInputRule,internalInputRule)
 // let collInputRule=internalInputRule
@@ -63,8 +63,10 @@ const currentJoinGroup_arrayMaxLengthValidator={
 const collFieldDefine={
     originator:{type:mongoose.Schema.Types.ObjectId,ref:"user"},
     receiver:{type:mongoose.Schema.Types.ObjectId,ref:"user"},
+    message:{type:String},//验证信息
     status:{type:String},//enum
-
+    declineTimes:{type:Number},//对同一个用户发起加朋友的被拒次数（防止无限 加/被拒）
+    acceptTimes:{type:Number},//对同一个用户发起加朋友的同意次数（防止无限 加/同意/删除/加/同意/删除被拒）
     cDate:{type:Date,default:Date.now},
     uDate:{type:Date,default:Date.now},
     dDate:{type:Date},

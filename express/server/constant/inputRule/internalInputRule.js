@@ -1,4 +1,4 @@
-/*    gene by H:\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-6-29   */ 
+/*    gene by H:\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-7-7   */ 
  
 "use strict"
 const internalInputRule={
@@ -288,22 +288,6 @@ const internalInputRule={
             format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":102758,"msg":"用户所处群必须是objectId"},"mongoError":{"rc":202758,"msg":"用户所处群必须是objectId"}},
         },
     },
-    add_friend:{
-        originator:{
-            chineseName:"发起人",
-            dataType:"objectId",
-            applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":102150,"msg":"发起人不能为空"},"mongoError":{"rc":202150,"msg":"发起人不能为空"}},
-            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":102152,"msg":"发起人必须是objectId"},"mongoError":{"rc":202152,"msg":"发起人必须是objectId"}},
-        },
-        status:{
-            chineseName:"当前请求所处状态",
-            dataType:"string",
-            applyRange:["create","update_scalar"],
-            require:{"define":{"create":true,"update_scalar":true},"error":{"rc":102154,"msg":"状态不能为空"},"mongoError":{"rc":202154,"msg":"状态不能为空"}},
-            enum:{"define":["1","2","3","4"],"error":{"rc":102156,"msg":"状态未定义"},"mongoError":{"rc":202156,"msg":"状态未定义"}},
-        },
-    },
     join_public_group_request:{
         creatorId:{
             chineseName:"请求人",
@@ -327,6 +311,36 @@ const internalInputRule={
             applyRange:["create"],
             require:{"define":{"create":true},"error":{"rc":102350,"msg":"群创建者不能为空"},"mongoError":{"rc":202350,"msg":"群创建者不能为空"}},
             format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":102352,"msg":"群创建者必须是objectId"},"mongoError":{"rc":202352,"msg":"群创建者必须是objectId"}},
+        },
+    },
+    add_friend_request:{
+        originator:{
+            chineseName:"发起人",
+            dataType:"objectId",
+            applyRange:["create"],
+            require:{"define":{"create":true},"error":{"rc":102150,"msg":"发起人不能为空"},"mongoError":{"rc":202150,"msg":"发起人不能为空"}},
+            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":102152,"msg":"发起人必须是objectId"},"mongoError":{"rc":202152,"msg":"发起人必须是objectId"}},
+        },
+        status:{
+            chineseName:"当前请求所处状态",
+            dataType:"string",
+            applyRange:["create","update_scalar"],
+            require:{"define":{"create":true,"update_scalar":true},"error":{"rc":102154,"msg":"状态不能为空"},"mongoError":{"rc":202154,"msg":"状态不能为空"}},
+            enum:{"define":["1","2","3"],"error":{"rc":102156,"msg":"状态未定义"},"mongoError":{"rc":202156,"msg":"状态未定义"}},
+        },
+        declineTimes:{
+            chineseName:"被拒次数",
+            dataType:"int",
+            applyRange:["update_scalar"],
+            require:{"define":{"update_scalar":true},"error":{"rc":102158,"msg":"被拒次数不能为空"},"mongoError":{"rc":202158,"msg":"被拒次数不能为空"}},
+            max:{"define":10,"error":{"rc":102160,"msg":"拒绝次数最大10次"},"mongoError":{"rc":202160,"msg":"拒绝次数最大10次"}},
+        },
+        acceptTimes:{
+            chineseName:"同意次数",
+            dataType:"int",
+            applyRange:["update_scalar"],
+            require:{"define":{"update_scalar":true},"error":{"rc":102162,"msg":"同意次数不能为空"},"mongoError":{"rc":202162,"msg":"同意次数不能为空"}},
+            max:{"define":10,"error":{"rc":102164,"msg":"同意次数最大10次"},"mongoError":{"rc":202164,"msg":"同意次数最大10次"}},
         },
     },
     impeach_comment_image:{
