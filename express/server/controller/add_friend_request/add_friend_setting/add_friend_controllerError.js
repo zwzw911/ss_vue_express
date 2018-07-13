@@ -13,7 +13,9 @@ const controllerError={
         },
         'put':{
             notLoginCantUpdateAddFriend:{rc:51904,msg:`尚未登录，无法处理添加好友请求`},
-            // userInPenalizeCantUpdateAddFriend:{rc:51906,msg:`您被禁止处理添加好友请求`},
+            // userInPenalizeCantUpdateAddFriend:{rc:51906,msg:`您被禁止添加好友`},
+            // notLoginCantMoveFriend:{rc:51908,msg:`尚未登录，无法移动好友`},
+            // userInPenalizeCantMoveFriend:{rc:51910,msg:`您被禁止添加好友`},
         },
     },
     //create
@@ -26,13 +28,14 @@ const controllerError={
     //08～20预留给其他method
     //51920~51940
     create:{
-        addFriendNotAllow:{rc:51920,msg:{client:`用户不允许添加朋友`,server:`用户不允许添加朋友`}},
-        cantAddSelfAsFriend:{rc:51921,msg:{client:`无法添加自己作为好友`,server:`无法添加自己作为好友`}},
-        alreadyFriendCantAddAgain:{rc:51922,msg:{client:`对方已经是您的好友`,server:`已经是好友，无法继续添加`}},
-        addFriendRuleUndefined:{rc:51923,msg:{client:`用户信息错误`,server:`用户信息中，addFriendRule为undefined`}},
-        acceptTimesExceed:{rc:51924,msg:{client:`您将当前用户添加过好友的次数过多，无法继续添加`,server:`添加同一好友次数过多`}},
-        declineTimesExceed:{rc:51926,msg:{client:`您被当前用户拒绝次数过多，无法继续添加`,server:`添加同一好友被拒次数过多`}},
-        userGroupNotFind:{rc:51927,msg:{client:`用户未找到，无法添加为朋友`,server:`用户未找到，无法添加为朋友`}},
+        receiverNotExist:{rc:51920,msg:{client:`用户不存在`,server:`用户不存在`}},
+        addFriendNotAllow:{rc:51922,msg:{client:`用户不允许添加朋友`,server:`用户不允许添加朋友`}},
+        cantAddSelfAsFriend:{rc:51924,msg:{client:`无法添加自己作为好友`,server:`无法添加自己作为好友`}},
+        alreadyFriendCantAddAgain:{rc:51926,msg:{client:`对方已经是您的好友`,server:`已经是好友，无法继续添加`}},
+        // addFriendRuleUndefined:{rc:51928,msg:{client:`用户信息错误`,server:`用户信息中，addFriendRule为undefined`}},
+        acceptTimesExceed:{rc:51930,msg:{client:`您将当前用户添加过好友的次数过多，无法继续添加`,server:`添加同一好友次数过多`}},
+        declineTimesExceed:{rc:51932,msg:{client:`您被当前用户拒绝次数过多，无法继续添加`,server:`添加同一好友被拒次数过多`}},
+        userGroupNotFind:{rc:51934,msg:{client:`用户未找到，无法添加为朋友`,server:`用户未找到，无法添加为朋友`}},
         // defaultGroupNotExist:{rc:51920,msg:{client:`内部错误，请联系管理员`,server:`好友分组：'我的好友'不存在`}},
         // defaultGroupNumberExceed:{rc:51922,msg:{client:`内部错误，请联系管理员`,server:`好友分组：'我的好友'已经达到上限`}},
         // receiverAlreadyBeFriend(userName){return {rc:51924,msg:`用户${userName}已经是是好友`}},

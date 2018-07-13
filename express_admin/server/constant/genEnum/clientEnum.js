@@ -4,6 +4,9 @@
 const ArticleStatus=
     {"0":"新建文档","1":"编辑中","2":"编辑完成"}
 
+const AddFriendRule=
+    {"1":"任意加入","2":"批准加入","3":"拒绝加入"}
+
 const AdminUserType=
     {"1":"超级管理员","2":"管理员"}
 
@@ -69,6 +72,7 @@ const JoinPublicGroupHandleResult=
 
 module.exports={
     ArticleStatus,
+    AddFriendRule,
     AdminUserType,
     UserType,
     AllUserType,

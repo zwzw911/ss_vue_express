@@ -13,10 +13,7 @@ const systemError=server_common_file_require.systemError
 const dispatcher_async=require('./impeach_action_dispatch').dispatcher_async
 
 
-/*        通过method，判断是CRUDM中的那个操作
- *   C: register
- *   M: match(login)
- * */
+
 router.post('/',function(req,res,next){
 //     console.log(`req in`)
 // console.log(`req is ${JSON.stringify(req.body)}`)

@@ -85,11 +85,11 @@ async function dispatcher_async({req}){
                     penalizeCheckError:controllerError.dispatch.post.userInPenalizeCantCreateAddFriend
                 }
                 await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
-                // ap.inf('create use userStateCheck_async done')
+                // ap.wrn('create use userStateCheck_async done')
                 expectedPart=[e_part.SINGLE_FIELD] //{RECEIVER:objectId}
                 //是否为期望的part
                 result = controllerPreCheck.inputCommonCheck({req:req, expectedPart:expectedPart})
-                // ap.inf('inputCommonCheck result',result)
+                // ap.wrn('inputCommonCheck result',result)
                 if (result.rc > 0) {return Promise.reject(result)}
 
                 //对req中的recordId和recordInfo进行objectId（加密过的）格式判断

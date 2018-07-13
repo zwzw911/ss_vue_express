@@ -30,10 +30,12 @@ const e_penalizeType=mongoEnum.PenalizeType.DB
 const e_penalizeSubType=mongoEnum.PenalizeSubType.DB
 const e_resourceRange=mongoEnum.ResourceRange.DB
 const e_resourceType=mongoEnum.ResourceType.DB
+const e_addFriendRule=mongoEnum.AddFriendRule.DB
+// const e_addFriendStatus=mongoEnum.ResourceType.AddFriendStatus.DB
 
 const e_coll=require('../../server/constant/genEnum/DB_Coll').Coll
 const e_field=require('../../server/constant/genEnum/DB_field').Field
-
+const e_dbModel=require('../../server/constant/genEnum/dbModel')
 
 const e_parameterPart=server_common_file_require.testCaseEnum.ParameterPart
 const e_skipPart=server_common_file_require.testCaseEnum.SkipPart
@@ -45,6 +47,7 @@ const browserInputRule=require('../../server/constant/inputRule/browserInputRule
 const compound_unique_field_config=server_common_file_require.compound_unique_field_config.compound_unique_field_config
 /******************    数据库函数  **************/
 const db_operation_helper=server_common_file_require.db_operation_helper//require("../../../server_common/Test/db_operation_helper")
+const common_operation_model=server_common_file_require.common_operation_model
 /****************  公共函数 ********************/
 const userAPI=server_common_file_require.user_API//require('../API_helper/API_helper')
 const penalizeAPI=server_common_file_require.penalize_API
@@ -100,7 +103,7 @@ let user1IdCryptedByUser1,user1IdCryptedByUser2,user1IdCryptedByUser3,
     user1Sess,user2Sess,user3Sess,adminRootSess,
     user1Id,user2Id,user3Id,adminRootId
 
-let recordId2CryptedByAdminRoot,recordId1CryptedByUser2,recordId1CryptedByUser3,recordId2CryptedByUser2
+let recordId2CryptedByAdminRoot,recordId2CryptedByUser1,recordId2CryptedByUser3,recordId2CryptedByUser2
 /*                             */
 describe('add friend logic', async function() {
 
@@ -161,142 +164,251 @@ describe('add friend logic', async function() {
     describe('prepare', async function() {
         before('user1 add user3, and user3 accept; user1 add user2, user2 not response yet', async function(){
             let data={values:{}}
+            /**         user1 add user3, while user3  allow anyone  **/
             data.values={[e_part.SINGLE_FIELD]:{[e_field.ADD_FRIEND_REQUEST.RECEIVER]:user3IdCryptedByUser1}}
             await add_friend_API.createAddFriend_returnRecord_async({data:data,sess:user1Sess,app:app})
-            recordId1=await db_operation_helper.getAddFriendRequest_async({originatorId:user1Id,receiverId:user3Id})
-            recordId1CryptedByUser2=await commonAPI.cryptObjectId_async({objectId:recordId1,sess:user2Sess})
-            recordId1CryptedByUser3=await commonAPI.cryptObjectId_async({objectId:recordId1,sess:user3Sess})
-            recordId1=await commonAPI.cryptObjectId_async({objectId:recordId1,sess:user3Sess})
-            data.values={[e_part.RECORD_ID]:recordId1}
-            // ap.inf('data',data)
-            await add_friend_API.acceptAddFriend_returnRecord_async({data:data,sess:user3Sess,app:app})
 
-            /***    user1 add user2, user2 not response yet ***/
+            console.log(`==============================================================`)
+            console.log(`=================     user3 add done        ====================`)
+            console.log(`==============================================================`)
+
+            /***    user1 add user2, while user2 permit join, and user2 not response yet ***/
+            //user2 friend rule change to permit
+            // await common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel.user,id:user2Id,updateFieldsValue:{[e_field.USER.ADD_FRIEND_RULE]:e_addFriendRule.PERMIT_ALLOW}})
+
             data.values={[e_part.SINGLE_FIELD]:{[e_field.ADD_FRIEND_REQUEST.RECEIVER]:user2IdCryptedByUser1}}
             await add_friend_API.createAddFriend_returnRecord_async({data:data,sess:user1Sess,app:app})
             recordId2=await db_operation_helper.getAddFriendRequest_async({originatorId:user1Id,receiverId:user2Id})
-
+            // ap.wrn('recordId2CryptedByUser1',recordId2CryptedByUser1)
+            // recordId2=await commonAPI.decryptObjectId_async({objectId:recordId2CryptedByUser1,sess:user1Sess})
+            recordId2CryptedByUser1=await commonAPI.cryptObjectId_async({objectId:recordId2,sess:user1Sess})
             recordId2CryptedByAdminRoot=await commonAPI.cryptObjectId_async({objectId:recordId2,sess:adminRootSess})
             recordId2CryptedByUser2=await commonAPI.cryptObjectId_async({objectId:recordId2,sess:user2Sess})
-            recordId2=await commonAPI.cryptObjectId_async({objectId:recordId2,sess:user2Sess})
+            recordId2CryptedByUser3=await commonAPI.cryptObjectId_async({objectId:recordId2,sess:user3Sess})
+            // recordId2=await commonAPI.cryptObjectId_async({objectId:recordId2,sess:user2Sess})
             // data.values={[e_part.RECORD_ID]:recordId1}
             console.log(`==============================================================`)
-            console.log(`=================      create done        ====================`)
+            console.log(`=================      user2 add  done        ====================`)
             console.log(`==============================================================`)
         })
-        it('1.1 create:userType check, admin not allow for create', async function() {
-            normalRecord[e_field.ADD_FRIEND_REQUEST.RECEIVER]=user3IdCryptedByAdminRoot
-            expectedErrorRc=controllerCheckerError.userTypeNotExpected.rc
-            // let sess=await userAPI.getFirstSession({app})
-            data.values={[e_part.SINGLE_FIELD]:normalRecord}
+        describe('create add friend', async function() {
+            it('1.1 create:userType check, admin not allow for create', async function() {
+                normalRecord[e_field.ADD_FRIEND_REQUEST.RECEIVER]=user3IdCryptedByAdminRoot
+                expectedErrorRc=controllerCheckerError.userTypeNotExpected.rc
+                // let sess=await userAPI.getFirstSession({app})
+                data.values={[e_part.SINGLE_FIELD]:normalRecord}
 
-            await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:adminRootSess,data:data,expectedErrorRc:expectedErrorRc,app:app})
-        });
-        it('2.1 create:fk check,receiver not exist', async function() {
-            data.values={[e_part.SINGLE_FIELD]:{[e_field.ADD_FRIEND_REQUEST.RECEIVER]:unExistObjectIdCryptedByUser1}}
-            expectedErrorRc=inputValueLogicCheckError.ifFkValueExist_And_FkHasPriority_async.fkValueNotExist().rc
-            await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
-        });
-        it('3.1 create:user1 cant add user3 multiple times', async function() {
-            data.values={}
-            normalRecord={}
-            normalRecord[e_field.ADD_FRIEND_REQUEST.RECEIVER]=user3IdCryptedByUser1
-            // copyNormalRecord[e_field.ADD_FRIEND_REQUEST.]
-            data.values[e_part.SINGLE_FIELD]=normalRecord
-            // data.values[e_part.METHOD]=e_method.CREATE
-            expectedErrorRc=controllerCheckerError.compoundFieldHasMultipleDuplicateRecord({singleCompoundFieldName:'unique_group_name_for_user',collName:e_coll.ADD_FRIEND}).rc
-            await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
-            // normalRecord[e_field.IMPEACH_ACTION.ACTION]=e_impeachUserAction.SUBMIT
-        });
-        it('4.1 create:user1 cant add self as friend', async function() {
-            data.values={}
-            normalRecord={}
-            normalRecord[e_field.ADD_FRIEND_REQUEST.RECEIVER]=user1IdCryptedByUser1
-            // copyNormalRecord[e_field.ADD_FRIEND_REQUEST.]
-            data.values[e_part.SINGLE_FIELD]=normalRecord
-            // data.values[e_part.METHOD]=e_method.CREATE
-            expectedErrorRc=controllerError.create.cantAddSelfAsFriend.rc
-            await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
-            // normalRecord[e_field.IMPEACH_ACTION.ACTION]=e_impeachUserAction.SUBMIT
-        });
-        //adminRootId cant be found in user collection
-        it('4.2 create:user1 cant add admin as friend', async function() {
-            data.values={}
-            normalRecord={}
-            normalRecord[e_field.ADD_FRIEND_REQUEST.RECEIVER]=adminRootIdCryptedByUser1
-            // copyNormalRecord[e_field.ADD_FRIEND_REQUEST.]
-            data.values[e_part.SINGLE_FIELD]=normalRecord
-            // data.values[e_part.METHOD]=e_method.CREATE
-            expectedErrorRc=inputValueLogicCheckError.ifFkValueExist_And_FkHasPriority_async.fkValueNotExist().rc
-            await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
-            // normalRecord[e_field.IMPEACH_ACTION.ACTION]=e_impeachUserAction.SUBMIT
-        });
-        it('5.1 create:user1 try to add friend user2 , exceed profile defined', async function() {
-            let originalSetting=await db_operation_helper.getResourceProfileSetting_async({resourceRange:e_resourceRange.MAX_UNTREATED_ADD_FRIEND_REQUEST_PER_USER,resourceType:e_resourceType.BASIC})
-            await db_operation_helper.changeResourceProfileSetting_async({resourceRange:e_resourceRange.MAX_UNTREATED_ADD_FRIEND_REQUEST_PER_USER,resourceType:e_resourceType.BASIC,num:0})
-            data.values={}
-            normalRecord={}
-            normalRecord[e_field.ADD_FRIEND_REQUEST.RECEIVER]=user2IdCryptedByUser1
-            // copyNormalRecord[e_field.ADD_FRIEND_REQUEST.]
-            data.values[e_part.SINGLE_FIELD]=normalRecord
-            // data.values[e_part.METHOD]=e_method.CREATE
-            expectedErrorRc=resourceCheckError.ifEnoughResource_async.totalFolderNumExceed({}).rc
-            ap.inf('expectedErrorRc',expectedErrorRc)
-            await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
-            //恢复原始设置
-            await db_operation_helper.changeResourceProfileSetting_async({resourceRange:e_resourceRange.MAX_UNTREATED_ADD_FRIEND_REQUEST_PER_USER,resourceType:e_resourceType.BASIC,num:originalSetting['num'],size:originalSetting['size']})
-        });
-        /***            update      ****/
-        it('10.1 update:userType check, admin not allow for create', async function() {
-            url='accept'
-            finalUrl=baseUrl+url
+                await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:adminRootSess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+            });
+            //因为需要提前获得receiver的addFriendRule，所以fk检查手动执行
+            it('1.2 create: fk check,receiver not exist', async function() {
+                data.values={[e_part.SINGLE_FIELD]:{[e_field.ADD_FRIEND_REQUEST.RECEIVER]:unExistObjectIdCryptedByUser1}}
+                expectedErrorRc=controllerError.create.receiverNotExist.rc
+                await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+            });
+            it('1.3 create:user2 try to add user1, while user not allow to be add', async function() {
+                data.values={[e_part.SINGLE_FIELD]:{[e_field.ADD_FRIEND_REQUEST.RECEIVER]:user1IdCryptedByUser2}}
+                expectedErrorRc=controllerError.create.addFriendNotAllow.rc
+                await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user2Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+            });
+            it('1.4 create:user1 already add user3 as friend', async function() {
+                data.values={}
+                normalRecord={}
+                normalRecord[e_field.ADD_FRIEND_REQUEST.RECEIVER]=user3IdCryptedByUser1
+                // copyNormalRecord[e_field.ADD_FRIEND_REQUEST.]
+                data.values[e_part.SINGLE_FIELD]=normalRecord
+                // data.values[e_part.METHOD]=e_method.CREATE
+                expectedErrorRc=controllerError.create.alreadyFriendCantAddAgain.rc
+                await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+                // normalRecord[e_field.IMPEACH_ACTION.ACTION]=e_impeachUserAction.SUBMIT
+            });
+            it('1.5 create:user2 cant add self as friend', async function() {
+                data.values={}
+                normalRecord={}
+                normalRecord[e_field.ADD_FRIEND_REQUEST.RECEIVER]=user2IdCryptedByUser2
+                // copyNormalRecord[e_field.ADD_FRIEND_REQUEST.]
+                data.values[e_part.SINGLE_FIELD]=normalRecord
+                // data.values[e_part.METHOD]=e_method.CREATE
+                expectedErrorRc=controllerError.create.cantAddSelfAsFriend.rc
+                await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user2Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+                // normalRecord[e_field.IMPEACH_ACTION.ACTION]=e_impeachUserAction.SUBMIT
+            });
+            //adminRootId cant be found in user collection
+           /* it('1.5 create:user1 cant add admin as friend', async function() {
+                data.values={}
+                normalRecord={}
+                normalRecord[e_field.ADD_FRIEND_REQUEST.RECEIVER]=adminRootIdCryptedByUser1
+                // copyNormalRecord[e_field.ADD_FRIEND_REQUEST.]
+                data.values[e_part.SINGLE_FIELD]=normalRecord
+                // data.values[e_part.METHOD]=e_method.CREATE
+                expectedErrorRc=inputValueLogicCheckError.ifFkValueExist_And_FkHasPriority_async.fkValueNotExist().rc
+                await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+                // normalRecord[e_field.IMPEACH_ACTION.ACTION]=e_impeachUserAction.SUBMIT
+            });*/
+           /**          permit          **/
+            it('1.6 create:user1 try to add friend user2 , exceed profile defined', async function() {
+                let originalSetting=await db_operation_helper.getResourceProfileSetting_async({resourceRange:e_resourceRange.MAX_UNTREATED_ADD_FRIEND_REQUEST_PER_USER,resourceType:e_resourceType.BASIC})
+                await db_operation_helper.changeResourceProfileSetting_async({resourceRange:e_resourceRange.MAX_UNTREATED_ADD_FRIEND_REQUEST_PER_USER,resourceType:e_resourceType.BASIC,num:0})
+                data.values={}
+                normalRecord={}
+                normalRecord[e_field.ADD_FRIEND_REQUEST.RECEIVER]=user2IdCryptedByUser1
+                // copyNormalRecord[e_field.ADD_FRIEND_REQUEST.]
+                data.values[e_part.SINGLE_FIELD]=normalRecord
+                // data.values[e_part.METHOD]=e_method.CREATE
+                expectedErrorRc=resourceCheckError.ifEnoughResource_async.totalFolderNumExceed({}).rc
+                ap.inf('expectedErrorRc',expectedErrorRc)
+                await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+                //恢复原始设置
+                await db_operation_helper.changeResourceProfileSetting_async({resourceRange:e_resourceRange.MAX_UNTREATED_ADD_FRIEND_REQUEST_PER_USER,resourceType:e_resourceType.BASIC,num:originalSetting['num'],size:originalSetting['size']})
+            });
+            it('1.7 create: user1 try to add friend user2 , request already exist and be reject, and decline time exceed', async function() {
+                let updateValues={
+                    // [e_field.ADD_FRIEND_REQUEST.STATUS]:e_addFriendStatus.DECLINE,
+                    [e_field.ADD_FRIEND_REQUEST.DECLINE_TIMES]:10000,
+                    [e_field.ADD_FRIEND_REQUEST.ACCEPT_TIMES]:0,
+                }
+                await common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel.add_friend_request,id:recordId2,updateFieldsValue:updateValues})
+                data.values={}
+                normalRecord={}
+                normalRecord[e_field.ADD_FRIEND_REQUEST.RECEIVER]=user2IdCryptedByUser1
 
-            expectedErrorRc=controllerCheckerError.userTypeNotExpected.rc
-            // let sess=await userAPI.getFirstSession({app})
-            data.values={[e_part.RECORD_ID]:recordId2CryptedByAdminRoot}
+                data.values[e_part.SINGLE_FIELD]=normalRecord
 
-            await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:adminRootSess,data:data,expectedErrorRc:expectedErrorRc,app:app})
-        });
-        it('10.2 update:recordId not exist', async function() {
-            url='accept'
-            finalUrl=baseUrl+url
-            let unexistIdCryptedByUser2=await commonAPI.cryptObjectId_async({objectId:testData.unExistObjectId,sess:user2Sess})
-            data.values={[e_part.RECORD_ID]:unexistIdCryptedByUser2}
-            expectedErrorRc=controllerError.update.notReceiverCantUpdate.rc
-            await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user2Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
-        });
-        it('10.2.2 update:user2 try to update record while receiver not self', async function() {
-            url='accept'
-            finalUrl=baseUrl+url
+                expectedErrorRc=controllerError.create.declineTimesExceed.rc
+                // ap.inf('expectedErrorRc',expectedErrorRc)
+                await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
 
-            data.values={[e_part.RECORD_ID]:recordId1CryptedByUser2}
-            expectedErrorRc=controllerError.update.notReceiverCantUpdate.rc
-            await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user2Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
-        });
-        it('11.1 update:user3 accept before, and try to decline which not allow in addFriend', async function() {
-            url='decline'
-            finalUrl=baseUrl+url
+                updateValues={
+                    // [e_field.ADD_FRIEND_REQUEST.STATUS]:e_addFriendStatus.DECLINE,
+                    [e_field.ADD_FRIEND_REQUEST.DECLINE_TIMES]:0,
+                    [e_field.ADD_FRIEND_REQUEST.ACCEPT_TIMES]:0,
+                }
+                // ap.wrn('recordId2',recordId2)
+                await common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel.add_friend_request,id:recordId2,updateFieldsValue:updateValues})
+            });
+            it('1.8 create: user1 try to add friend user2 , request already exist and be accept, and accept time exceed', async function() {
+                let updateValues={
+                    // [e_field.ADD_FRIEND_REQUEST.STATUS]:e_addFriendStatus.DECLINE,
+                    [e_field.ADD_FRIEND_REQUEST.DECLINE_TIMES]:0,
+                    [e_field.ADD_FRIEND_REQUEST.ACCEPT_TIMES]:10000,
+                }
+                // ap.wrn('recordId2',recordId2)
+                await common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel.add_friend_request,id:recordId2,updateFieldsValue:updateValues})
+                data.values={}
+                normalRecord={}
+                normalRecord[e_field.ADD_FRIEND_REQUEST.RECEIVER]=user2IdCryptedByUser1
 
-            data.values={[e_part.RECORD_ID]:recordId1CryptedByUser3}
-            expectedErrorRc=controllerError.update.requestAlreadyBeTreatedCantDeclineAgain.rc
-            await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user3Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
-        });
-        it('11.2 update:user3 accept before, and try to accept again which not allow ', async function() {
-            url='accept'
-            finalUrl=baseUrl+url
+                data.values[e_part.SINGLE_FIELD]=normalRecord
 
-            data.values={[e_part.RECORD_ID]:recordId1CryptedByUser3}
-            expectedErrorRc=controllerError.update.requestAlreadyBeAcceptCantAcceptAgain.rc
-            await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user3Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
-        });
-        it('12.1 update:user2 decline request ', async function() {
-            url='decline'
-            finalUrl=baseUrl+url
+                expectedErrorRc=controllerError.create.acceptTimesExceed.rc
+                // ap.inf('expectedErrorRc',expectedErrorRc)
+                await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
 
-            data.values={[e_part.RECORD_ID]:recordId2CryptedByUser2}
-            expectedErrorRc=0
-            await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user2Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
-        });
+
+                updateValues={
+                    // [e_field.ADD_FRIEND_REQUEST.STATUS]:e_addFriendStatus.DECLINE,
+                    [e_field.ADD_FRIEND_REQUEST.DECLINE_TIMES]:0,
+                    [e_field.ADD_FRIEND_REQUEST.ACCEPT_TIMES]:0,
+                }
+                // ap.wrn('recordId2',recordId2)
+                await common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel.add_friend_request,id:recordId2,updateFieldsValue:updateValues})
+            });
+            it('1.9 create: user1 try to add friend user2 , request already exist and not handle', async function() {
+
+
+                data.values={}
+                normalRecord={}
+                normalRecord[e_field.ADD_FRIEND_REQUEST.RECEIVER]=user2IdCryptedByUser1
+
+                data.values[e_part.SINGLE_FIELD]=normalRecord
+
+                expectedErrorRc=0
+                ap.inf('expectedErrorRc',expectedErrorRc)
+                await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+            });
+
+        })
+        describe('update add friend', async function() {
+            // before('user1 add user3, and user3 accept; user1 add user2, user2 not response yet', async function(){
+            //
+            // })
+            /***            update      ****/
+            it('2.1 update:userType check, admin not allow for create', async function() {
+                url='accept'
+                finalUrl=baseUrl+url
+
+                expectedErrorRc=controllerCheckerError.userTypeNotExpected.rc
+                // let sess=await userAPI.getFirstSession({app})
+                data.values={[e_part.RECORD_ID]:recordId2CryptedByAdminRoot}
+
+                await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:adminRootSess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+            });
+            it('2.2 update:recordId not exist', async function() {
+                url='accept'
+                finalUrl=baseUrl+url
+                let unexistIdCryptedByUser2=await commonAPI.cryptObjectId_async({objectId:testData.unExistObjectId,sess:user2Sess})
+                data.values={[e_part.RECORD_ID]:unexistIdCryptedByUser2}
+                expectedErrorRc=controllerError.update.notReceiverCantUpdate.rc
+                await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user2Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+            });
+            it('2.3 update:user1 try to update record while receiver not self', async function() {
+                url='accept'
+                finalUrl=baseUrl+url
+
+                data.values={[e_part.RECORD_ID]:recordId2CryptedByUser1}
+                expectedErrorRc=controllerError.update.notReceiverCantUpdate.rc
+                await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+            });
+            it('2.4 update:user2 accept before, and try to decline which not allow in addFriend', async function() {
+                let updateValues={
+                    // [e_field.ADD_FRIEND_REQUEST.STATUS]:e_addFriendStatus.DECLINE,
+                    [e_field.ADD_FRIEND_REQUEST.STATUS]:e_addFriendStatus.ACCEPT,
+                }
+                await common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel.add_friend_request,id:recordId2,updateFieldsValue:updateValues})
+
+                url='decline'
+                finalUrl=baseUrl+url
+
+                data.values={[e_part.RECORD_ID]:recordId2CryptedByUser2}
+                expectedErrorRc=controllerError.update.requestAlreadyBeTreatedCantDeclineAgain.rc
+                await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user2Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+
+                updateValues={
+                    // [e_field.ADD_FRIEND_REQUEST.STATUS]:e_addFriendStatus.DECLINE,
+                    [e_field.ADD_FRIEND_REQUEST.STATUS]:e_addFriendStatus.DECLINE,
+                }
+                // ap.wrn('recordId2',recordId2)
+                await common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel.add_friend_request,id:recordId2,updateFieldsValue:updateValues})
+            });
+            it('2.5 update:user2 accept before, and try to accept again which not allow ', async function() {
+                let updateValues={
+                    // [e_field.ADD_FRIEND_REQUEST.STATUS]:e_addFriendStatus.DECLINE,
+                    [e_field.ADD_FRIEND_REQUEST.STATUS]:e_addFriendStatus.ACCEPT,
+                }
+                await common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel.add_friend_request,id:recordId2,updateFieldsValue:updateValues})
+                url='accept'
+                finalUrl=baseUrl+url
+
+                data.values={[e_part.RECORD_ID]:recordId2CryptedByUser2}
+                expectedErrorRc=controllerError.update.requestAlreadyBeAcceptCantAcceptAgain.rc
+                await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user2Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+
+                updateValues={
+                    // [e_field.ADD_FRIEND_REQUEST.STATUS]:e_addFriendStatus.DECLINE,
+                    [e_field.ADD_FRIEND_REQUEST.STATUS]:e_addFriendStatus.UNTREATED,
+                }
+                await common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel.add_friend_request,id:recordId2,updateFieldsValue:updateValues})
+            });
+            it('2.6 update:user2 decline request ', async function() {
+                url='decline'
+                finalUrl=baseUrl+url
+
+                data.values={[e_part.RECORD_ID]:recordId2CryptedByUser2}
+                expectedErrorRc=0
+                await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user2Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+            });
+        })
+
     })
 
 

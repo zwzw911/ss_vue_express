@@ -10,7 +10,7 @@
 const e_coll=require('../../../constant/genEnum/DB_Coll').Coll
 
 const setting={
-    MAIN_HANDLED_COLL_NAME:e_coll.ADD_FRIEND
+    MAIN_HANDLED_COLL_NAME:e_coll.ADD_FRIEND_REQUEST
 }
 
 module.exports={

@@ -1,4 +1,4 @@
-/*    gene by H:\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-7-7   */ 
+/*    gene by H:\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-7-13   */ 
  
 "use strict"
 const browserInputRule={
@@ -607,7 +607,7 @@ const browserInputRule={
             applyRange:["create","update_scalar"],
             placeHolder:[""],
             require:{"define":{"create":false,"update_scalar":false},"error":{"rc":104118,"msg":"朋友规则不能为空"},"mongoError":{"rc":204118,"msg":"朋友规则不能为空"}},
-            enum:{"error":{"rc":104120,"msg":"未知规则"},"mongoError":{"rc":204120,"msg":"未知规则"}},
+            enum:{"define":["1","2","3"],"error":{"rc":104120,"msg":"未知规则"},"mongoError":{"rc":204120,"msg":"未知规则"}},
         },
     },
     collection:{

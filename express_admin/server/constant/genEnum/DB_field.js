@@ -168,6 +168,8 @@ const Field={
         RECEIVER:'receiver',
         MESSAGE:'message',
         STATUS:'status',
+        DECLINE_TIMES:'declineTimes',
+        ACCEPT_TIMES:'acceptTimes',
     },
     IMPEACH_ACTION:{
         ID:'id',

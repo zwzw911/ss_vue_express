@@ -61,7 +61,7 @@ const fkConfig=server_common_file_require.fkConfig.fkConfig
 
 
 async function acceptAddFriend_async({req,expectedPart,applyRange}){
-    return await updateAddFriend_async({req:req,expectedPart:expectedPart,addFriendStatus:e_addFriendStatus.ACCEPT_BUT_NOT_ASSIGN,applyRange:applyRange})
+    return await updateAddFriend_async({req:req,expectedPart:expectedPart,addFriendStatus:e_addFriendStatus.ACCEPT,applyRange:applyRange})
 }
 async function declineAddFriend_async({req,expectedPart,applyRange}){
     return await updateAddFriend_async({req:req,expectedPart:expectedPart,addFriendStatus:e_addFriendStatus.DECLINE,applyRange:applyRange})
@@ -128,7 +128,7 @@ async function updateAddFriend_async({req,expectedPart,addFriendStatus,applyRang
         }
     }
     //如果被请求者要执行 同意 操作，那么原始请求的状态只能为UNTREATED/REJECT（被请求者拒绝后，又同意）
-    if(e_addFriendStatus.ACCEPT_BUT_NOT_ASSIGN===addFriendStatus){
+    if(e_addFriendStatus.ACCEPT===addFriendStatus){
         if(originalDoc[e_field.ADD_FRIEND_REQUEST.STATUS]!==e_addFriendStatus.UNTREATED && originalDoc[e_field.ADD_FRIEND_REQUEST.STATUS]!==e_addFriendStatus.DECLINE){
             return Promise.reject(controllerError.update.requestAlreadyBeAcceptCantAcceptAgain)
         }
@@ -157,7 +157,7 @@ async function updateAddFriend_async({req,expectedPart,addFriendStatus,applyRang
     /**********          业务处理        *********/
     /*********************************************/
     let updatedRecord=await businessLogic_async({docValue:docValue,collName:collName,recordId:recordId,addFriendStatus:addFriendStatus,applyRange:applyRange})
-
+    // ap.inf('businessLogic_async done')
 /*    /!*********************************************!/
     /!**********      加密 敏感数据       *********!/
     /!*********************************************!/
@@ -170,63 +170,7 @@ async function updateAddFriend_async({req,expectedPart,addFriendStatus,applyRang
     //无需返回更新后记录，只需返回操作结果
     return Promise.resolve({rc:0})
 
-    /*******************************************************************************************/
-    /*                         添加internal field，然后检查                                    */
-    /*******************************************************************************************/
-/*    let internalValue={}
-    if(e_env.DEV===currentEnv && Object.keys(internalValue).length>0){
-        let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInputRule:inputRule[collName],collInternalRule:internalInputRule[collName],method:req.body.values[e_part.METHOD]})
-        if(tmpResult.rc>0){
-            return Promise.reject(tmpResult)
-        }
-    }
-    //因为internalValue只是进行了转换，而不是新增，所以无需ObjectDeepCopy
-    Object.assign(docValue,internalValue)*/
 
-    /*******************************************************************************************/
-    /*                    复合字段unique check（需要internal field完成后）                     */
-    /*******************************************************************************************/
-    //根据compound_unique_field_config中的设置，进行唯一查询
-    //如果不唯一，返回已经存在的记录，以便进一步处理
-    /*let compoundUniqueCheckResult=await controllerChecker.ifCompoundFiledUnique_returnExistRecord_async({collName:collName,docValue:docValue})
-    // console.log(`compound field check result===================>${JSON.stringify(compoundUniqueCheckResult)}`)
-    //复合字段唯一返回true或者已有的doc
-    //有重复值，且重复记录数为1（大于1，已经直接reject）
-    if(true!==compoundUniqueCheckResult){
-        if(undefined!==docValue[e_field.IMPEACH.IMPEACHED_ARTICLE_ID]){
-            return Promise.reject(controllerError.articleAlreadyImpeached)
-        }
-        if(undefined!==docValue[e_field.IMPEACH.IMPEACHED_COMMENT_ID]){
-            return Promise.reject(controllerError.articleCommentAlreadyImpeached)
-        }
-    }
-    ap.print(`docValue`,docValue)*/
-    /*******************************************************************************************/
-    /*                                  db operation                                           */
-    /*******************************************************************************************/
-    /*let promiseTobeExec=[]
-    //如果用户接受添加朋友的请求，需要同时更新发起申请人的user_friend_group
-    if(e_addFriendStatus.ACCEPT===docValue[e_field.ADD_FRIEND_REQUEST.STATUS]){
-        let friendGroupCondition={
-            [e_field.USER_FRIEND_GROUP.OWNER_USER_ID]:originalDoc[e_field.ADD_FRIEND_REQUEST.ORIGINATOR],
-            [e_field.USER_FRIEND_GROUP.FRIEND_GROUP_NAME]:globalConfiguration.userGroupFriend.defaultGroupName.enumFormat.MyFriend,
-        }
-        ap.print(`friendGroupCondition`,friendGroupCondition)
-        let friendGroupResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.user_friend_group,condition:friendGroupCondition})
-        ap.print(`friendGroupResult`,friendGroupResult)
-        let friendGroupId=friendGroupResult[0][`_id`]
-        // for(let singleRecordId in convertedNoSql){
-        promiseTobeExec.push(common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel[e_coll.USER_FRIEND_GROUP],id:friendGroupId,updateFieldsValue:{"$addToSet":{[e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP]:userId}}}))
-        // }
-
-    }
-
-    //普通update操作
-    promiseTobeExec.push(common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel[collName],id:recordId,updateFieldsValue:docValue}))
-
-    //同步执行
-    await Promise.all(promiseTobeExec)
-    return Promise.resolve({rc:0})*/
 
 
 
@@ -236,20 +180,14 @@ async function updateAddFriend_async({req,expectedPart,addFriendStatus,applyRang
 /***************   业务处理    *******************************/
 /*************************************************************/
 async function businessLogic_async({docValue,collName,recordId,addFriendStatus,applyRange}){
-/*    /!********************************************************!/
-    /!*************      define variant        ***************!/
-    /!********************************************************!/
-    let tmpResult,collName=controller_setting.MAIN_HANDLED_COLL_NAME
-    // console.log(`req============>${JSON.stringify(req)}`)
-    let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
-    let {userId,userCollName,userType,userPriority,tempSalt}=userInfo
-    // console.log(`userInfo============>${JSON.stringify(userInfo)}`)
-    let {docValue,recordId,subFieldValue}=controllerHelper.getPartValue({req:req,arr_expectedPart:expectedPart})*/
+
     /********************************************************/
     /*************       生成内部值          ***************/
     /********************************************************/
     let internalValue={}
     internalValue[e_field.ADD_FRIEND_REQUEST.STATUS]=addFriendStatus
+
+    // ap.wrn('before checkInternalValue')
     // internalValue[e_field.ADD_FRIEND_REQUEST.ORIGINATOR]=userId
     // internalValue[e_field.IMPEACH.CREATOR_ID]=userId
     // console.log(`7`)
@@ -278,6 +216,8 @@ async function businessLogic_async({docValue,collName,recordId,addFriendStatus,a
             additionalCheckCondition:compoundFiledValueUniqueCheckAdditionalCheckCondition,
         })
     }
+
+
     /***         根据处理结果，为accept/declineTimes字段自增            ***/
     if(addFriendStatus===e_addFriendStatus.DECLINE){
         docValue["$inc"]={

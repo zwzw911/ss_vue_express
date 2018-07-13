@@ -124,6 +124,8 @@ const ChineseName={
         'message':'附加信息',
         'originator':'发起人',
         'status':'当前请求所处状态',
+        'declineTimes':'被拒次数',
+        'acceptTimes':'同意次数',
     },
     impeach_image:{
         'impeachId':'举报对象',

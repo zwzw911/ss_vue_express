@@ -18,7 +18,7 @@ async function postDataToAPI_compareFieldRc_async({APIUrl,sess,data,expectedErro
                 if (err) return reject(err);
                 // console.log(`res is ${JSON.stringify(res)}`)
                 let parsedRes = JSON.parse(res.text)
-                console.log(`data.values===========>${JSON.stringify(data.values)}`)
+                // console.log(`data.values===========>${JSON.stringify(data.values)}`)
                 console.log(`parsedRes  ===========>${JSON.stringify(parsedRes)}`)
                 assert.deepStrictEqual(parsedRes.rc, 99999)
                 assert.deepStrictEqual(parsedRes.msg[fieldName].rc, expectedErrorRc)
@@ -39,6 +39,7 @@ async function postDataToAPI_compareCommonRc_async({APIUrl,sess,data,expectedErr
                 // console.log(`data.values of common===========>${JSON.stringify(data.values)}`)
                 // console.log(`parsedRes of common  ===========>${JSON.stringify(parsedRes)}`)
                 // assert.deepStrictEqual(parsedRes.rc, 99999)
+                console.log(`parsedRes  ===========>${JSON.stringify(parsedRes)}`)
                 assert.deepStrictEqual(parsedRes.rc, expectedErrorRc)
                 return resolve(parsedRes)
             });
@@ -58,7 +59,7 @@ async function postDataWithFileToAPI_compareCommonRc_async({APIUrl,sess,data,fil
             // console.log(`res ${JSON.stringify(res['header']['set-cookie']['connect.sid'])}`)
             // console.log(`parsedRes ${JSON.stringify(res)}`)
             let parsedRes=JSON.parse(res.text)
-            // console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
+            console.log(`parsedRes ${JSON.stringify(parsedRes)}`)
             assert.deepStrictEqual(parsedRes.rc,expectedErrorRc)
             // assert.deepStrictEqual(parsedRes.msg.password.rc,10722)
             return resolve()
@@ -73,7 +74,7 @@ async function putDataToAPI_compareFieldRc_async({APIUrl,sess,data,expectedError
                 if (err) return reject(err);
                 // console.log(`res is ${JSON.stringify(res)}`)
                 let parsedRes = JSON.parse(res.text)
-                console.log(`data.values===========>${JSON.stringify(data.values)}`)
+                // console.log(`data.values===========>${JSON.stringify(data.values)}`)
                 console.log(`parsedRes  ===========>${JSON.stringify(parsedRes)}`)
                 assert.deepStrictEqual(parsedRes.rc, 99999)
                 assert.deepStrictEqual(parsedRes.msg[fieldName].rc, expectedErrorRc)
@@ -94,6 +95,7 @@ async function putDataToAPI_compareCommonRc_async({APIUrl,sess,data,expectedErro
                 // console.log(`data.values of common===========>${JSON.stringify(data.values)}`)
                 // console.log(`parsedRes of common  ===========>${JSON.stringify(parsedRes)}`)
                 // assert.deepStrictEqual(parsedRes.rc, 99999)
+                console.log(`parsedRes  ===========>${JSON.stringify(parsedRes)}`)
                 assert.deepStrictEqual(parsedRes.rc, expectedErrorRc)
                 return resolve(parsedRes)
             });

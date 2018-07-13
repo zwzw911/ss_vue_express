@@ -60,6 +60,7 @@ async function dispatcher_async(req){
     let result=dispatchError.common.unknownRequestUrl
     let tmpResult
     let applyRange
+    ap.inf('req.route.stack[0].method',req.route.stack[0].method)
     //dispatcher只检测req的结构，以及req中method的格式和值，以便后续可以直接根据method进行调用
     //interval和robot检测
     await controllerPreCheck.commonPreCheck_async({req:req,collName:collName})
@@ -70,7 +71,7 @@ async function dispatcher_async(req){
                 applyRange=e_applyRange.UPDATE_SCALAR
                 userLoginCheck={
                     needCheck:true,
-                    error:controllerError.dispatch.notLoginCantUpdateUser
+                    error:controllerError.dispatch.put.notLoginCantUpdateUser
                 }
                 await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
                 expectedPart=[e_part.RECORD_INFO,e_part.RECORD_ID] //有权限的用户可以更改其他admin账号的信息
@@ -78,28 +79,18 @@ async function dispatcher_async(req){
                 if (result.rc > 0) {return Promise.reject(result)}
 
                 //对req中的recordId和recordInfo进行objectId（加密过的）格式判断
+                // ap.inf('before decrypt',req.body.values)
                 await controllerChecker.ifObjectIdInPartCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName],applyRange:applyRange})
 
                 //对req中的recordId和recordInfo中加密的objectId进行解密
                 let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
                 let tempSalt=userInfo.tempSalt
                 controllerHelper.decryptInputValue({req:req,expectedPart:expectedPart,salt:tempSalt,browserCollRule:browserInputRule[collName]})
-
-                /*/!**********************************************!/
-                /!****** 传入的敏感数据（objectId）解密  ******!/
-                /!****** 在inputPreCheck前完成，保证解密后的objectId可以使用rule进行判别  ******!/
-                /!*********************************************!/
-                let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
-                let tempSalt=userInfo.tempSalt
-                if(undefined!==req.body.values[e_part.RECORD_INFO]){
-                    result=controllerHelper.decryptRecordValue({record:req.body.values[e_part.RECORD_INFO],salt:tempSalt,collName:collName})
-                    if(result.rc>0){
-                        return Promise.reject(result)
-                    }
-                }*/
+                // ap.inf('after decrypt',req.body.values)
                 result=controllerPreCheck.inputPreCheck({req:req,expectedPart:expectedPart,collName:collName,applyRange:e_applyRange.UPDATE_SCALAR,arr_currentSearchRange:arr_currentSearchRange})
+                // ap.inf('result',result)
                 if(result.rc>0){return Promise.reject(result)}
-                result = await updateUser_async({req: req})
+                result = await updateUser_async({req: req,applyRange:applyRange})
                 return Promise.resolve(result)
             }
             break
@@ -108,7 +99,7 @@ async function dispatcher_async(req){
                 applyRange=e_applyRange.CREATE
                 userLoginCheck={
                     needCheck:true,
-                    error:controllerError.dispatch.notLoginCantCreateUser
+                    error:controllerError.dispatch.post.notLoginCantCreateUser
                 }
                 await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
                 expectedPart=[e_part.RECORD_INFO,e_part.CAPTCHA]
@@ -123,23 +114,11 @@ async function dispatcher_async(req){
                 let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
                 let tempSalt=userInfo.tempSalt
                 controllerHelper.decryptInputValue({req:req,expectedPart:expectedPart,salt:tempSalt,browserCollRule:browserInputRule[collName]})
-
-                /*/!**********************************************!/
-                /!****** 传入的敏感数据（objectId）解密  ******!/
-                /!****** 在inputPreCheck前完成，保证解密后的objectId可以使用rule进行判别  ******!/
-                /!*********************************************!/
-                let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
-                let tempSalt=userInfo.tempSalt
-                if(undefined!==req.body.values[e_part.RECORD_INFO]){
-                    result=controllerHelper.decryptRecordValue({record:req.body.values[e_part.RECORD_INFO],salt:tempSalt,collName:collName})
-                    if(result.rc>0){
-                        return Promise.reject(result)
-                    }
-                }*/
-
+                // ap.wrn('before result')
                 result=controllerPreCheck.inputPreCheck({req:req,expectedPart:expectedPart,collName:collName,applyRange:e_applyRange.CREATE,arr_currentSearchRange:arr_currentSearchRange})
+                // ap.wrn('result',result)
                 if(result.rc>0){return Promise.reject(result)}
-                result = await createUser_async({req: req})
+                result = await createUser_async({req: req,applyRange:applyRange})
                 return Promise.resolve(result)
             }
 
@@ -150,19 +129,6 @@ async function dispatcher_async(req){
                 //是否为期望的part
                 result = controllerPreCheck.inputCommonCheck({req:req, expectedPart:expectedPart})
                 if (result.rc > 0) {return Promise.reject(result)}
-
-                /*/!**********************************************!/
-                /!****** 传入的敏感数据（objectId）解密  ******!/
-                /!****** 在inputPreCheck前完成，保证解密后的objectId可以使用rule进行判别  ******!/
-                /!*********************************************!/
-                let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
-                let tempSalt=userInfo.tempSalt
-                if(undefined!==req.body.values[e_part.RECORD_INFO]){
-                    result=controllerHelper.decryptRecordValue({record:req.body.values[e_part.RECORD_INFO],salt:tempSalt,collName:collName})
-                    if(result.rc>0){
-                        return Promise.reject(result)
-                    }
-                }*/
 
                 result=controllerPreCheck.inputPreCheck({req:req,expectedPart:expectedPart,collName:collName,applyRange:undefined,arr_currentSearchRange:arr_currentSearchRange})
                 if(result.rc>0){return Promise.reject(result)}
@@ -198,14 +164,30 @@ async function dispatcher_async(req){
             if(originalUrl==='/admin_user/' || originalUrl==='/admin_user/') {
                 userLoginCheck={
                     needCheck:true,
-                    error:controllerError.dispatch.notLoginCantDeleteUser
+                    error:controllerError.dispatch.delete.notLoginCantDeleteUser
                 }
                 await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
                 expectedPart=[e_part.RECORD_ID]
                 //是否为期望的part
                 result = controllerPreCheck.inputCommonCheck({req:req, expectedPart:expectedPart})
                 if (result.rc > 0) {return Promise.reject(result)}
-                
+
+                await controllerChecker.ifObjectIdInPartCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName],applyRange:applyRange})
+                // ap.inf('after check',req.body.values)
+                //对req中的recordId和recordInfo中加密的objectId进行解密
+                let userInfo = await controllerHelper.getLoginUserInfo_async({req: req})
+                // ap.inf('userInfo',userInfo)
+                let tempSalt = userInfo.tempSalt
+                // ap.inf('userInfo。tempSalt',userInfo.tempSalt)
+                // ap.inf('before decrypt',req.body.values)
+                // ap.inf('salt',tempSalt)
+                controllerHelper.decryptInputValue({req: req,expectedPart: expectedPart,salt: tempSalt,browserCollRule: browserInputRule[collName]})
+                ap.inf('after decrypt',req.body.values)
+                //对输入值进行检测（此时objectId已经解密）
+                result = controllerPreCheck.inputPreCheck({req: req,expectedPart: expectedPart,collName: collName,applyRange: applyRange, arr_currentSearchRange: arr_currentSearchRange})
+                // ap.inf('create use inputPreCheck result',result)
+                if (result.rc > 0) {return Promise.reject(result)}
+
                 result=controllerPreCheck.inputPreCheck({req:req,expectedPart:expectedPart,collName:collName,applyRange:e_applyRange.DELETE,arr_currentSearchRange:arr_currentSearchRange})
                 if(result.rc>0){return Promise.reject(result)}
                 result = await deleteUser_async({req: req})
@@ -213,7 +195,7 @@ async function dispatcher_async(req){
             }
 
             if(originalUrl==='/admin_user/logout' || originalUrl==='/admin_user/logout/') {
-                result=await userLogout_async({req:req})
+                result=await userLogout_async({req:req,applyRange:applyRange})
                 return Promise.resolve(result)
             }
             break

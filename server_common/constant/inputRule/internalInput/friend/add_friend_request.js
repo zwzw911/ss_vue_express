@@ -48,11 +48,12 @@ const add_friend_request= {
         [ruleFiledName.ENUM]: {define: enumValue.AddFriendStatus, error: {rc: baseJSErrorCode+6, msg: '状态未定义'}, mongoError: {rc: baseMongoErrorCode+6, msg: '状态未定义'}} //server端使用
     },
 
+    //false；因为不好在internal value中检查
     declineTimes:{
         [otherRuleFiledName.CHINESE_NAME]: '被拒次数',
         [otherRuleFiledName.DATA_TYPE]: serverDataType.INT,
         [otherRuleFiledName.APPLY_RANGE]:[applyRange.UPDATE_SCALAR],
-        [ruleFiledName.REQUIRE]: {define: {[applyRange.UPDATE_SCALAR]:true}, error: {rc: baseJSErrorCode+8, msg: '被拒次数不能为空'}, mongoError: {rc: baseMongoErrorCode+8, msg: '被拒次数不能为空'}},//
+        [ruleFiledName.REQUIRE]: {define: {[applyRange.UPDATE_SCALAR]:false}, error: {rc: baseJSErrorCode+8, msg: '被拒次数不能为空'}, mongoError: {rc: baseMongoErrorCode+8, msg: '被拒次数不能为空'}},//
         // [ruleFiledName.MIN]: {define: 0, error: {rc: 10770, msg: '源配置有效期最短1天'}, mongoError: {rc: 20770, msg: '源配置有效期最短1天'}},
         [ruleFiledName.MAX]: {define: maxAddFriendRequest.maxDeclineTimes, error: {rc: baseJSErrorCode+10, msg:`拒绝次数最大${maxAddFriendRequest.maxAcceptTimes}次`}, mongoError: {rc: baseMongoErrorCode+10, msg: `拒绝次数最大${maxAddFriendRequest.maxAcceptTimes}次`}},
     },
@@ -61,7 +62,7 @@ const add_friend_request= {
         [otherRuleFiledName.CHINESE_NAME]: '同意次数',
         [otherRuleFiledName.DATA_TYPE]: serverDataType.INT,
         [otherRuleFiledName.APPLY_RANGE]:[applyRange.UPDATE_SCALAR],
-        [ruleFiledName.REQUIRE]: {define: {[applyRange.UPDATE_SCALAR]:true}, error: {rc: baseJSErrorCode+12, msg: '同意次数不能为空'}, mongoError: {rc: baseMongoErrorCode+12, msg: '同意次数不能为空'}},//
+        [ruleFiledName.REQUIRE]: {define: {[applyRange.UPDATE_SCALAR]:false}, error: {rc: baseJSErrorCode+12, msg: '同意次数不能为空'}, mongoError: {rc: baseMongoErrorCode+12, msg: '同意次数不能为空'}},//
         // [ruleFiledName.MIN]: {define: 0, error: {rc: 10770, msg: '源配置有效期最短1天'}, mongoError: {rc: 20770, msg: '源配置有效期最短1天'}},
         [ruleFiledName.MAX]: {define: maxAddFriendRequest.maxAcceptTimes, error: {rc: baseJSErrorCode+14, msg: `同意次数最大${maxAddFriendRequest.maxAcceptTimes}次`}, mongoError: {rc: baseMongoErrorCode+14, msg: `同意次数最大${maxAddFriendRequest.maxAcceptTimes}次`}},
     },

@@ -1,4 +1,4 @@
-/*    gene by H:\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-7-7   */ 
+/*    gene by H:\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-7-13   */ 
  
 "use strict"
 const inputRule={
@@ -668,14 +668,14 @@ const inputRule={
             chineseName:"被拒次数",
             dataType:"int",
             applyRange:["update_scalar"],
-            require:{"define":{"update_scalar":true},"error":{"rc":102158,"msg":"被拒次数不能为空"},"mongoError":{"rc":202158,"msg":"被拒次数不能为空"}},
+            require:{"define":{"update_scalar":false},"error":{"rc":102158,"msg":"被拒次数不能为空"},"mongoError":{"rc":202158,"msg":"被拒次数不能为空"}},
             max:{"define":10,"error":{"rc":102160,"msg":"拒绝次数最大10次"},"mongoError":{"rc":202160,"msg":"拒绝次数最大10次"}},
         },
         acceptTimes:{
             chineseName:"同意次数",
             dataType:"int",
             applyRange:["update_scalar"],
-            require:{"define":{"update_scalar":true},"error":{"rc":102162,"msg":"同意次数不能为空"},"mongoError":{"rc":202162,"msg":"同意次数不能为空"}},
+            require:{"define":{"update_scalar":false},"error":{"rc":102162,"msg":"同意次数不能为空"},"mongoError":{"rc":202162,"msg":"同意次数不能为空"}},
             max:{"define":10,"error":{"rc":102164,"msg":"同意次数最大10次"},"mongoError":{"rc":202164,"msg":"同意次数最大10次"}},
         },
     },
@@ -1098,7 +1098,7 @@ const inputRule={
             applyRange:["create","update_scalar"],
             placeHolder:[""],
             require:{"define":{"create":false,"update_scalar":false},"error":{"rc":104118,"msg":"朋友规则不能为空"},"mongoError":{"rc":204118,"msg":"朋友规则不能为空"}},
-            enum:{"error":{"rc":104120,"msg":"未知规则"},"mongoError":{"rc":204120,"msg":"未知规则"}},
+            enum:{"define":["1","2","3"],"error":{"rc":104120,"msg":"未知规则"},"mongoError":{"rc":204120,"msg":"未知规则"}},
         },
         userType:{
             chineseName:"用户类型",

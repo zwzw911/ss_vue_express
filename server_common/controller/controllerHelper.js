@@ -315,23 +315,23 @@ function checkInternalValue({internalValue,collInternalRule,applyRange}){
             return tmpResult
         }
 
-        // let applyRange
-        /*switch (method){
-            case e_method.CREATE:
-                applyRange=e_applyRange.CREATE
-                break;
-            case e_method.UPDATE:
-                applyRange=e_applyRange.UPDATE_SCALAR  //本函数内只对recordInfo进行检查，所以只能使用UPDATE_SCALAR
-                break;
-            case e_method.UPLOAD:
-                applyRange=e_applyRange.CREATE  //上传文件相当于新建一个记录
-                break;
-            default:
-                return helperError.undefinedMethod
-        }*/
+
         //字段值是整体创建/替换
         tmpResult=validateValue.validateScalarInputValue({inputValue:internalValue,collRule:collInternalRule,p_applyRange:applyRange})
     // console.log(`internal check format=============> ${JSON.stringify(tmpResult)}`)
+    // ap.wrn('internal chenck tmpResult',tmpResult)
+    // ap.wrn('internalValue',internalValue)
+    //某些字段可能不是key:value，例如 "$inc":{field:1}，此时，需要额外检查
+        for(let singleFieldName in tmpResult){
+            if(tmpResult[singleFieldName]['rc']>0){
+                if(undefined!==internalValue["$inc"]){
+                    if(undefined!==internalValue["$inc"][singleFieldName]){
+                        tmpResult[singleFieldName]['rc']=0
+                        delete tmpResult[singleFieldName]['msg']
+                    }
+                }
+            }
+        }
         for(let singleFieldName in tmpResult){
             if(tmpResult[singleFieldName]['rc']>0){
                 tmpResult['rc']=99999
@@ -802,12 +802,14 @@ async function setLoginUserInfo_async({req,userInfo}){
     if(undefined===userInfo){
         return Promise.reject(helperError.userInfoUndefine)
     }
-    let mandatoryFields=[e_userInfoField.USER_ID,e_userInfoField.USER_COLL_NAME,e_userInfoField.USER_TYPE,e_userInfoField.TEMP_SALT,e_userInfoField.ADD_FRIEND_RULE]
+    let mandatoryFields=[e_userInfoField.USER_ID,e_userInfoField.USER_COLL_NAME,e_userInfoField.USER_TYPE,e_userInfoField.TEMP_SALT]
+    //[e_userInfoField.ADD_FRIEND_RULE]
     for(let singleMandatoryField of mandatoryFields){
         if(undefined===userInfo[singleMandatoryField]){
             return Promise.reject(helperError.mandatoryFieldValueUndefine(singleMandatoryField))
         }
     }
+    // if()
     //保存信息到session中
     // console.log(`userInfo to be saved into session==========>${JSON.stringify(userInfo)}`)
     req.session.userInfo=userInfo
@@ -1044,7 +1046,7 @@ async function checkEditSubFieldEleArray_async({singleEditSubFieldValue,eleAddit
     // 1. fkConfig是否存在
     // 2. eleArray中元素数量符合字段定义的数量（预检）
     // 3. 元素没有重复
-    // 4. To如果存在，满足数量要求否
+    // 4. To如果存在，满足数量要求否 //只有总朋友数的要求，没有单个friend group的人数要求了
     // 5. eleArray中每个记录是否存在
     // 6. （额外）其中每个记录，用户是否有权操作
 // ap('singleEditSubFieldValue',singleEditSubFieldValue)
@@ -1077,7 +1079,8 @@ async function checkEditSubFieldEleArray_async({singleEditSubFieldValue,eleAddit
                 return Promise.reject(helperError.eleArrayContainDuplicateEle)
             }
             // ap.print('misc.ifArrayHasDuplicate(singleEditSubFieldValue[e_subField.ELE_ARRAY]',misc.ifArrayHasDuplicate(singleEditSubFieldValue[e_subField.ELE_ARRAY]))
-            //4. 如果有to，需要测算对应recordId的容量是否够
+/**     只有总朋友数的要求，没有单个friend group的人数要求了        **/
+            /*            //4. 如果有to，需要测算对应recordId的容量是否够
             tmpResult=await common_operation_model.findById_returnRecord_async({dbModel:e_dbModel[collName],id:singleEditSubFieldValue[e_subField.TO]})
             //需要预防from/to对应的id不存在（eleArray先于from/to进行检测）
             if(null===tmpResult){
@@ -1090,7 +1093,7 @@ async function checkEditSubFieldEleArray_async({singleEditSubFieldValue,eleAddit
             // ap.print('ruleDefineArrayMaxLength',ruleDefineArrayMaxLength)
             if(eleArrayLength+tmpResult[fieldName].length>ruleDefineArrayMaxLength){
                 return Promise.reject(helperError.toRecordNotEnoughRoom)
-            }
+            }*/
             // ap.print('de[]')
             // 5. eleArray中每个记录是否存在
             condition={'dDate':{$exists:false}}
@@ -1262,6 +1265,47 @@ function decryptInputValue({req,expectedPart,salt,browserCollRule}){
         if(true===dataTypeCheck.isSetValue(req.body.values[singlePart])){
             let partValue=req.body.values[singlePart]
             switch (singlePart){
+                case e_part.EDIT_SUB_FIELD:
+                    for(let singleFieldName in partValue){
+
+                        if(false===dataTypeCheck.isSetValue(partValue[singleFieldName])){
+                            continue
+                        }
+                        //检查from/to recordId格式是否正确
+                        if(undefined!==partValue[singleFieldName][e_subField.FROM]){
+                            partValue[singleFieldName][e_subField.FROM]=decryptSingleFieldValue({fieldValue:partValue[singleFieldName][e_subField.FROM],salt:salt}).msg
+                        }
+                        if(undefined!==partValue[singleFieldName][e_subField.TO]){
+                            partValue[singleFieldName][e_subField.TO]=decryptSingleFieldValue({fieldValue:partValue[singleFieldName][e_subField.TO],salt:salt}).msg
+                        }
+                        if(undefined!==partValue[singleFieldName][e_subField.ELE_ARRAY] && true===dataTypeCheck.isArray(partValue[singleFieldName][e_subField.ELE_ARRAY]) ){
+                            //获得数据类型
+                            let singleFieldDataTypeInRule
+                            let dataTypeArrayFlag
+                            let dataType
+                            //获得field的数据类型
+                            if(undefined!==browserCollRule[singleFieldName] ){
+                                if(true===dataTypeCheck.isSetValue(partValue[singleFieldName])) {
+                                    singleFieldDataTypeInRule = browserCollRule[singleFieldName][e_otherRuleFiledName.DATA_TYPE]
+                                    dataTypeArrayFlag = dataTypeCheck.isArray(singleFieldDataTypeInRule)
+                                    dataType = dataTypeArrayFlag ? singleFieldDataTypeInRule[0] : singleFieldDataTypeInRule
+                                }
+                            }
+
+                            //如果数据类型是objectId
+                            if(e_dataType.OBJECT_ID===dataType){
+                                //必定是数组，数组可以为空
+                                let eleArrayValue=partValue[singleFieldName][e_subField.ELE_ARRAY]
+                                if( eleArrayValue.length>0){
+                                    for(let idx in eleArrayValue){
+                                        // let singleEle=eleArrayValue[idx]
+                                        partValue[singleFieldName][e_subField.ELE_ARRAY][idx]=decryptSingleFieldValue({fieldValue:partValue[singleFieldName][e_subField.ELE_ARRAY][idx],salt:salt}).msg
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    break;
                 case e_part.MANIPULATE_ARRAY:
                     for(let singleFieldName in partValue){
                         // ap.inf('singleFieldName',singleFieldName)
@@ -1292,23 +1336,6 @@ function decryptInputValue({req,expectedPart,salt,browserCollRule}){
                                         partValue[singleFieldName]['remove'][idx]=decryptSingleFieldValue({fieldValue:fieldSubPartValue[idx],salt:salt}).msg
                                     }
                                 }
-/*                                    for(let idx in partValue[singleFieldName]){
-                                        //非空值才进行解密
-                                        if(true===dataTypeCheck.isSetValue(partValue[singleFieldName][idx])){
-                                            partValue[singleFieldName][idx]=decryptSingleFieldValue({fieldValue:partValue[singleFieldName][idx],salt:salt}).msg
-                                        }
-
-                                    }*/
-                                /*}else{
-                                    // ap.inf('before decryptSingleFieldValue  partValue[singleFieldName]',partValue[singleFieldName])
-                                    // ap.inf('before decryptSingleFieldValue  salt',salt)
-                                    // ap.inf('decryptSingleFieldValue({fieldValue:partValue[singleFieldName],salt:salt})',decryptSingleFieldValue({fieldValue:partValue[singleFieldName],salt:salt}))
-                                    //非空值才进行解密
-                                    if(true===dataTypeCheck.isSetValue(partValue[singleFieldName])){
-                                        partValue[singleFieldName]=decryptSingleFieldValue({fieldValue:partValue[singleFieldName],salt:salt}).msg
-                                    }
-
-                                }*/
                             }
                         }
 

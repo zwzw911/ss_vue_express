@@ -9,8 +9,10 @@
 const mongoEnum=require(`../constant/enum/mongoEnum`)
 const e_userType=mongoEnum.UserType.DB
 const e_adminUserType=mongoEnum.AdminUserType.DB
-// const e_accountType=require('../server/constant/enum/mongo').AccountType.DB
-// const e_field=require('../server/constant/enum/DB_field').Field
+const e_adminPriorityType=mongoEnum.AdminPriorityType.DB
+
+const e_field=require('../constant/genEnum/DB_field').Field
+const e_addFriendRule=require('../constant/enum/mongoEnum').AddFriendRule.DB
 
 const absolutePath=require(`../constant/config/appSetting`).absolutePath
 
@@ -22,9 +24,9 @@ const user={
     //
     // user3NewAccount:'wei.ag.zhang@alcate-sbell.com.cn',
     // userNotExist:{name:'userNotExist',account:'13912341234',password:'123456',userType:e_userType.USER_NORMAL},
-    user1:{name:'user1',account:'15912345678',password:'123456'},
-    user2:{name:'user2',account:'15987654321',password:'654321'},
-    user3:{name:'user3',account:'1952206639@qq.com',password:'654321'},
+    user1:{name:'user1',account:'15912345678',password:'123456',[e_field.USER.ADD_FRIEND_RULE]:e_addFriendRule.NOONE_ALLOW},
+    user2:{name:'user2',account:'15987654321',password:'654321',[e_field.USER.ADD_FRIEND_RULE]:e_addFriendRule.PERMIT_ALLOW},
+    user3:{name:'user3',account:'1952206639@qq.com',password:'654321',[e_field.USER.ADD_FRIEND_RULE]:e_addFriendRule.ANYONE_ALLOW},
     user4:{name:'user4',account:'user4@qq.com',password:'654321'},
 
     user3NewAccount:'wei.ag.zhang@alcate-sbell.com.cn',
@@ -33,9 +35,9 @@ const user={
 
 const admin_user={
     adminRoot:{name:'root',password:'123456',userType:e_adminUserType.ADMIN_ROOT},
-    adminUser1:{name:'adminUser1',password:'123456',userType:e_adminUserType.ADMIN_NORMAL},
-    adminUser2:{name:'adminUser2',password:'654321',userType:e_adminUserType.ADMIN_NORMAL},
-    adminUser3:{name:'adminUser3',password:'654321',userType:e_adminUserType.ADMIN_NORMAL},
+    adminUser1:{name:'adminUser1',password:'123456',userType:e_adminUserType.ADMIN_NORMAL,[e_field.ADMIN_USER.USER_PRIORITY]:[e_adminPriorityType.CREATE_ADMIN_USER]},//no update
+    adminUser2:{name:'adminUser2',password:'654321',userType:e_adminUserType.ADMIN_NORMAL,[e_field.ADMIN_USER.USER_PRIORITY]:[e_adminPriorityType.UPDATE_ADMIN_USER,e_adminPriorityType.DELETE_ADMIN_USER]},//no create
+    adminUser3:{name:'adminUser3',password:'654321',userType:e_adminUserType.ADMIN_NORMAL,[e_field.ADMIN_USER.USER_PRIORITY]:[e_adminPriorityType.CREATE_ADMIN_USER]},//no delete
     // useNotExistForModel:{name:'test',password:'123456',userType:e_adminUserType.NORMAL},
 }
 

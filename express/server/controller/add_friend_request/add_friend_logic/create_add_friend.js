@@ -68,7 +68,7 @@ const defaultGroupName=server_common_file_require.globalConfiguration.userGroupF
 // const userGroupFriend=server_common_file_require.globalConfiguration.userGroupFriend
 
 async  function createAddFriend_async({req,applyRange}){
-    // console.log(`add friend in`)
+    // ap.wrn('createAddFriend_async in')
     /********************************************************/
     /*************      define variant        ***************/
     /********************************************************/
@@ -77,13 +77,25 @@ async  function createAddFriend_async({req,applyRange}){
     let docValue=req.body.values[e_part.SINGLE_FIELD]
     let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
     // console.log(`userInfo===> ${JSON.stringify(userInfo)}`)
-    let {userId,userCollName,userType,userPriority,tempSalt,addFriendRule}=userInfo
+    let {userId,userCollName,userType,userPriority,tempSalt,}=userInfo
     // ap.print('docValue',docValue)
 
+    /**     特殊，addFriendRule应该是被添加人的addFriendRule   **/
+    let addFriendRule
+    //查找被添加用户的信息
+    if(undefined!==docValue[e_field.ADD_FRIEND_REQUEST.RECEIVER]){
+        tmpResult=await common_operation_model.findById_returnRecord_async({dbModel:e_dbModel.user,id:docValue[e_field.ADD_FRIEND_REQUEST.RECEIVER]})
+        if(tmpResult===null || tmpResult.length===0){
+            return Promise.reject(controllerError.create.receiverNotExist)
+        }
+    }
+    addFriendRule=tmpResult[e_field.USER.ADD_FRIEND_RULE]
+    // ap.wrn('addFriendRule',addFriendRule)
     /*************************************************************/
     /***************   业务特定逻辑检查    ***********************/
     /*************************************************************/
     if(addFriendRule===e_addFriendRule.NOONE_ALLOW){
+        // ap.wrn('NOONE_ALLOW in')
         return Promise.reject(controllerError.create.addFriendNotAllow)
     }
 /*    /!************************************************!/
@@ -126,9 +138,9 @@ async  function createAddFriend_async({req,applyRange}){
         return Promise.reject(controllerError.create.alreadyFriendCantAddAgain)
     }
 
-    if(undefined===addFriendRule){
-        return Promise.reject(controllerError.create.addFriendRuleUndefined)
-    }
+    // if(undefined===addFriendRule){
+    //     return Promise.reject(controllerError.create.addFriendRuleUndefined)
+    // }
 
 
 
@@ -136,6 +148,7 @@ async  function createAddFriend_async({req,applyRange}){
 
     //addFriendRule是否为permit，是的话，需要检查addFriendRequest
     if(addFriendRule===e_addFriendRule.PERMIT_ALLOW){
+        // ap.wrn('permit in')
         /**********************************************/
         /**  CALL FUNCTION:inputValueLogicValidCheck **/
         /**********************************************/
@@ -163,21 +176,19 @@ async  function createAddFriend_async({req,applyRange}){
 
         }
         tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.add_friend_request,condition:condition})
+        // ap.wrn('exist request tmpResult',tmpResult)
         if(tmpResult.length>0){
-            //请求已经存在，且 未被处理，直接返回
+            //请求已经存在，
+            //否则判断decline/acceptTimes是否超出
+            if(tmpResult[0][e_field.ADD_FRIEND_REQUEST.ACCEPT_TIMES]>maxAddFriendRequest.maxAcceptTimes){
+                return Promise.reject(controllerError.create.acceptTimesExceed)
+            }
+            if(tmpResult[0][e_field.ADD_FRIEND_REQUEST.DECLINE_TIMES]>maxAddFriendRequest.maxDeclineTimes){
+                return Promise.reject(controllerError.create.declineTimesExceed)
+            }
+            //未被处理，直接返回
             if(tmpResult[0][e_field.ADD_FRIEND_REQUEST.STATUS]===e_addFriendStatus.UNTREATED){
                 return {rc:0}
-            }
-            //请求已经存在，且被处理（accept/decline），判断accept/decline次数是否超过界限
-            if(tmpResult[0][e_field.ADD_FRIEND_REQUEST.STATUS]===e_addFriendStatus.ACCEPT){
-                if(tmpResult[0][e_field.ADD_FRIEND_REQUEST.ACCEPT_TIMES]>maxAddFriendRequest.maxAcceptTimes){
-                    return Promise.reject(controllerError.create.acceptTimesExceed)
-                }
-            }
-            if(tmpResult[0][e_field.ADD_FRIEND_REQUEST.STATUS]===e_addFriendStatus.DECLINE){
-                if(tmpResult[0][e_field.ADD_FRIEND_REQUEST.DECLINE_TIMES]>maxAddFriendRequest.maxDeclineTimes){
-                    return Promise.reject(controllerError.create.declineTimesExceed)
-                }
             }
         }
 
@@ -202,6 +213,7 @@ async  function createAddFriend_async({req,applyRange}){
     }
 
     if(addFriendRule===e_addFriendRule.ANYONE_ALLOW){
+        // ap.wrn('ANYONE_ALLOW in')
         /**********************************************/
         /**  CALL FUNCTION:inputValueLogicValidCheck **/
         /**********************************************/
@@ -233,8 +245,9 @@ async  function createAddFriend_async({req,applyRange}){
         if(tmpResult.length===0){
             return Promise.reject(controllerError.create.userGroupNotFind)
         }
+        // ap.wrn('user default group', tmpResult)
         //直接把当前用户加入被请求用户的默认朋友组的列表
-        await common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel.user_friend_group,id:tmpResult[0]['_id'],updateFieldsValue:{"$pull":{[e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP]:userId}}})
+        await common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel.user_friend_group,id:tmpResult[0]['_id'],updateFieldsValue:{"$push":{[e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP]:userId}}})
         return {rc:0,msg:'添加好友成功'}
     }
 

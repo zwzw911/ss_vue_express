@@ -244,10 +244,13 @@ async function ifSingleFieldValueUnique_async({fieldName,fieldValue,collName,sin
             if(false===dataTypeCheck.isEmpty(fieldValue)){
                 condition[fieldName]=fieldValue
             }
-
+        // ap.inf('single field unique check condition',condition)
             //对应的字段有额外的检测条件
-            if(undefined!==singleValueUniqueCheckAdditionalCondition && undefined!==singleValueUniqueCheckAdditionalCondition[fieldName]){
-                condition[fieldName]=singleValueUniqueCheckAdditionalCondition[fieldName]
+            if(undefined!==singleValueUniqueCheckAdditionalCondition ){
+                for(let singleFieldName in singleValueUniqueCheckAdditionalCondition){
+                    condition[singleFieldName]=singleValueUniqueCheckAdditionalCondition[singleFieldName]
+                }
+
             }
 // ap.inf('single field unique check condition',condition)
             //查询条件不为空，才进行find
@@ -259,6 +262,8 @@ async function ifSingleFieldValueUnique_async({fieldName,fieldValue,collName,sin
 
 
                     //fieldValue:只供user/account使用，用来区分是phone还是email
+                    // ap.wrn('chineseName',chineseName)
+                    // ap.wrn('fieldValue',fieldValue)
                     return Promise.reject(inputValueLogicCheckError.ifSingleFieldValueUnique_async.fieldValueNotUnique({collName:collName,fieldName:fieldName,fieldChineseName:chineseName,fieldValue:fieldValue}))
                 }
             }
@@ -277,6 +282,8 @@ async function ifSingleFieldValueUnique_async({fieldName,fieldValue,collName,sin
 function ifValueXSS({fieldDataTypeInfo,fieldName,fieldValue,expectedXSSFields}){
     // ap.inf('ifValueXSS in')
     // ap.inf('fieldName in',fieldName)
+    // ap.inf('fieldValue',fieldValue)
+    // ap.inf('expectedXSSFields',expectedXSSFields)
     // fieldName
     //如果不是string，无需XSS
     if(fieldDataTypeInfo[e_dataTypeInfoFieldName.DATA_TYPE]!==e_serverDataType.STRING){
@@ -296,12 +303,17 @@ function ifValueXSS({fieldDataTypeInfo,fieldName,fieldValue,expectedXSSFields}){
     // ap.inf('2')
     //如果字段是数组，遍历数组
     if(true===fieldDataTypeInfo[e_dataTypeInfoFieldName.IS_ARRAY]){
+        // ap.wrn('field is array')
         for(let singleEle of fieldValue){
+            // ap.wrn('singleEle',singleEle)
+            // ap.wrn('DOMPurify.sanitize(singleEle)',DOMPurify.sanitize(singleEle))
+            // ap.wrn('typeof DOMPurify.sanitize(singleEle)',typeof DOMPurify.sanitize(singleEle))
+            // ap.wrn('DOMPurify.sanitize(singleEle)!==singleEle',DOMPurify.sanitize(singleEle)!==singleEle)
             if(DOMPurify.sanitize(singleEle)!==singleEle){
-                return false
+                return true
             }
         }
-        return true
+        return false
     }else{
         // ap.inf('3')
         // ap.inf('DOMPurify.sanitize(fieldValue)',DOMPurify.sanitize(fieldValue))

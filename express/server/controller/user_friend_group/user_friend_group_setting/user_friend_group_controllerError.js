@@ -15,10 +15,14 @@ const controllerError={
         'put':{
             notLoginCantUpdateUserFriendGroup:{rc:51704,msg:`尚未登录，无法更新好友分组`},
             userInPenalizeCantUpdateUserFriendGroup:{rc:51706,msg:`您被禁止对好友分组更新`},
+
+            // userInPenalizeCantUpdateAddFriend:{rc:51906,msg:`您被禁止添加好友`},
+            notLoginCantMoveFriend:{rc:51708,msg:`尚未登录，无法移动好友`},
+            userInPenalizeCantMoveFriend:{rc:51710,msg:`您被禁止添加好友`},
         },
         'delete':{
-            notLoginCantDeleteUserFriendGroup:{rc:51708,msg:`尚未登录，无法删除好友分组`},
-            userInPenalizeCantDeleteUserFriendGroup:{rc:51710,msg:`您被禁止删除好友分组`},
+            notLoginCantDeleteUserFriendGroup:{rc:51712,msg:`尚未登录，无法删除好友分组`},
+            userInPenalizeCantDeleteUserFriendGroup:{rc:51714,msg:`您被禁止删除好友分组`},
         },
     },
 
@@ -51,11 +55,13 @@ const controllerError={
     moveFriend:{
         fromToRecordIdNotExists:{rc:51746,msg:{'client':"数据不存在，无法操作",server:`editSubField中，from或者to所指的记录不存在`}},
         notOwnFromToRecordId:{rc:51748,msg:{'client':"无法操作他人好友分组",server:`editSubField中，from或者to所指的记录非当前用户所有`}},
+        // fromRecordIdNotExists:{rc:51724,msg:{'client':"数据不存在，无法操作",server:`editSubField中，from所指的记录不存在`}},
+        // notOwnFromRecordId:{rc:51726,msg:{'client':"无法操作他人好友分组",server:`editSubField中，from所指的记录非当前用户所有`}},
+        // toRecordIdNotExists:{rc:51720,msg:{'client':"数据不存在，无法操作",server:`editSubField中，to所指的记录不存在`}},
+        // notOwnToRecordId:{rc:51730,msg:{'client':"无法操作他人好友分组",server:`editSubField中，to所指的记录非当前用户所有`}},
+
     },
-/*    fromRecordIdNotExists:{rc:51724,msg:{'client':"数据不存在，无法操作",server:`editSubField中，from所指的记录不存在`}},
-    notOwnFromRecordId:{rc:51726,msg:{'client':"无法操作他人好友分组",server:`editSubField中，from所指的记录非当前用户所有`}},
-    toRecordIdNotExists:{rc:51720,msg:{'client':"数据不存在，无法操作",server:`editSubField中，to所指的记录不存在`}},
-    notOwnToRecordId:{rc:51730,msg:{'client':"无法操作他人好友分组",server:`editSubField中，to所指的记录非当前用户所有`}},*/
+
     /*//upload
     notImpeachCreatorCantUploadFile:{rc:50716,msg:`无权为他人举报评论上传文件`},
     imageFormatNotSupport:{rc:50717,msg:`只支持JPG/PNG格式的图片`},

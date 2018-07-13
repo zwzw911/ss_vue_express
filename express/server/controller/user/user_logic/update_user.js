@@ -93,7 +93,7 @@ async function updateUser_async({req}){
         [e_inputValueLogicCheckStep.ENUM_DUPLICATE]:{flag:true,optionalParam:undefined},
         //object：coll中，对单个字段进行unique检测，需要的额外查询条件
         //在注册完毕，且不是自己的用户中查找，是否有重复的字段值
-        [e_inputValueLogicCheckStep.SINGLE_FIELD_VALUE_UNIQUE]:{flag:true,optionalParam:{singleValueUniqueCheckAdditionalCondition:{[e_field.USER.DOC_STATUS]:e_docStatus.DONE,[e_field.USER.ID]:{'$not':userId}}}},
+        [e_inputValueLogicCheckStep.SINGLE_FIELD_VALUE_UNIQUE]:{flag:true,optionalParam:{singleValueUniqueCheckAdditionalCondition:{[e_field.USER.DOC_STATUS]:e_docStatus.DONE,'_id':{'$nin':[userId]}}}},
         //数组，元素是字段名。默认对所有dataType===string的字段进行XSS检测，但是可以通过此变量，只选择部分字段
         [e_inputValueLogicCheckStep.XSS]:{flag:true,optionalParam:{expectedXSSFields:undefined}},
         //object，对compoundField进行unique检测需要的额外条件，key从model->mongo->compound_unique_field_config.js中获得

@@ -54,6 +54,8 @@ const validateFormat={
     inputValuePartRecIdArrValueFormatWrong:{rc:40121,msg:{client:`输入值格式错误`,server:`输入参数中，recIdArr的值必须为数组`}},
     inputValuePartEventValueFormatWrong:{rc:40122,msg:{client:`输入值格式错误`,server:`输入参数中，event的值必须为对象`}},
     inputValuePartEditSubFieldValueFormatWrong:{rc:40123,msg:{client:`输入值格式错误`,server:`输入参数中，editSubField的值必须为对象`}},
+    // inputValuePartEditSubFieldCryptedValueFormatWrong:{rc:40123,msg:{client:`输入值格式错误`,server:`输入参数中，editSubField的值必须为对象`}},
+    // inputValuePartEditSubFieldDecryptedValueFormatWrong:{rc:40124,msg:{client:`输入值格式错误`,server:`输入参数中，editSubField的值必须为对象`}},
     //inputValuePartDataUrlValueFormatWrong:{rc:40124,msg:{client:`输入值格式错误`,server:`输入参数中，dataUrl的值必须为字符`}},
     inputValuePartUndefinedPart:{rc:40125,msg:{client:`输入值格式错误`,server:`输入参数中，part未定义`}},
 

@@ -13,11 +13,11 @@ const systemError=server_common_file_require.systemError
 /*              dispatch require                 */
 const dispatcher_async=require('./user_friend_group_dispatch').dispatcher_async
 
-const nodeEnum=server_common_file_require.nodeEnum
+// const nodeEnum=server_common_file_require.nodeEnum
 // const i=server_common_file_require.inputDataRuleType
-const e_method=nodeEnum.Method
-const e_part=nodeEnum.ValidatePart
-const e_updateType=nodeEnum.UpdateType
+// const e_method=nodeEnum.Method
+// const e_part=nodeEnum.ValidatePart
+// const e_updateType=nodeEnum.UpdateType
 
 router.post('/',function(req,res,next){
 
@@ -62,6 +62,21 @@ router.delete('/',function(req,res,next){
     )
 })
 
+
+router.put('/move_friend',function(req,res,next){
+
+    dispatcher_async({req:req}).then(
+        (v)=>{
+            console.log(`move friend success, result:  ${JSON.stringify(v)}`)
+            return res.json(v)
+        },
+        (err)=>{
+            console.log(`move friend fail: ${JSON.stringify(err)}`)
+            return res.json(genFinalReturnResult(err))
+
+        }
+    )
+})
 router.all('*',function(req,res,next){
     // ap.inf('systemError.systemError.noMatchRESTAPI',systemError.systemError.noMatchRESTAPI)
     return res.json(genFinalReturnResult(systemError.systemError.noMatchRESTAPI))

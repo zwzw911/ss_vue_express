@@ -3,7 +3,7 @@
  */
 'use strict'
 const regex=require('../../regex/regex').regex
-
+const ap=require('awesomeprint')
 const baseErrorCode=60000
 
 const helperBaseErrorCode=baseErrorCode
@@ -73,7 +73,7 @@ const helper={
     fkConfigUndefined:{rc:helperBaseErrorCode+32,msg:{'client':"内部错误，请联系管理员",server:`eleArray数据类型为objectId，但是没有对应的fkConfig`}},
     eleArrayLengthExceed:{rc:helperBaseErrorCode+34,msg:{'client':"要移动数据过多",server:`eleArray中包含的元素数量，超过字段array_max_length中定义`}},
     eleArrayContainDuplicateEle:{rc:helperBaseErrorCode+36,msg:{'client':"要移动数据有重复值",server:`eleArray中有重复数据`}},
-    toIdNotExist:{rc:helperBaseErrorCode+38,msg:{'client':"数据错误",server:`to的id没有对应的记录`}},
+    // toIdNotExist:{rc:helperBaseErrorCode+38,msg:{'client':"数据错误",server:`to的id没有对应的记录`}},
     toRecordNotEnoughRoom:{rc:helperBaseErrorCode+40,msg:{'client':"要移动数据过多",server:`to对应的记录，无法容纳eleArray中的数据`}},
     eleArrayRecordIdNotExists:{rc:helperBaseErrorCode+42,msg:{'client':"数据不存在，无法操作",server:`editSubField中，eleArray所指的记录部分或者全部不存在`}},
     // fkConfigNotDefineOwnerField:{rc:60035,msg:{'client':"内部错误，请联系管理员",server:`fkConfig中，没有为ELE_ARRAY对应的coll，定义对应的owner的字段名称`}},
@@ -224,6 +224,9 @@ const checker={
         recordInfoContainInvalidObjectId:{rc:checkerBaseErrorCode+56,msg:{client:`参数错误`,server:'recordInfo中，类型为objectId的字段，值的格式不正确'}},
         manipulateArraySubPartAddContainInvalidObjectId:{rc:checkerBaseErrorCode+58,msg:{client:`参数错误`,server:'manipulateArray中，add中，类型为objectId的字段，值的格式不正确'}},
         manipulateArraySubParRemoveContainInvalidObjectId:{rc:checkerBaseErrorCode+60,msg:{client:`参数错误`,server:'manipulateArray中，remove中，类型为objectId的字段，值的格式不正确'}},
+        editSubFromIsInvalidObjectId:{rc:checkerBaseErrorCode+62,msg:{client:`参数错误`,server:'editSub中，key from的类型为objectId的字段，值的格式不正确'}},
+        editSubToIsInvalidObjectId:{rc:checkerBaseErrorCode+64,msg:{client:`参数错误`,server:'editSub中，key to的类型为objectId的字段，值的格式不正确'}},
+        editSubEleArrayIsInvalidObjectId:{rc:checkerBaseErrorCode+66,msg:{client:`参数错误`,server:'editSub中，key elearray中，类型为objectId的字段，值的格式不正确'}},
         // unSupportPart:{rc:checkerBaseErrorCode+58,msg:{client:`内部错误，请联系`,server:'recordInfo中，类型为objectId的字段，值的格式不正确'}}
     },
     ifObjectIdInGetCrypted:{
@@ -400,17 +403,17 @@ const inputValueLogicCheck={
     /*              checkIfFkExist_async            */
     ifFkValueExist_And_FkHasPriority_async:{
         fkValueNotExist(chineseFieldName,fieldInputValue){
-            return {rc:inputValueLogicCheckError+8,msg:{client:`${chineseFieldName}不存在或者无法使用`, server:`字段:${chineseFieldName}  的外键值${fieldInputValue}不存在`}}
+            return {rc:inputValueLogicCheckError+2,msg:{client:`${chineseFieldName}不存在或者无法使用`, server:`字段:${chineseFieldName}  的外键值${fieldInputValue}不存在`}}
         },
         notHasPriorityForFkField(chineseFieldName,fieldInputValue){
-            return {rc:inputValueLogicCheckError+10,msg:{client:`无权对${chineseFieldName}的值进行操作`, server:`当前用户无权对外键字段:${chineseFieldName}  的值${fieldInputValue}所对应的记录进行操作`}}
+            return {rc:inputValueLogicCheckError+4,msg:{client:`无权对${chineseFieldName}的值进行操作`, server:`当前用户无权对外键字段:${chineseFieldName}  的值${fieldInputValue}所对应的记录进行操作`}}
         },
     },
 
     ifEnumHasDuplicateValue:{
         // 'collRuleNotDefinedCantCheckEnumArray':{rc:checkerBaseErrorCode,msg:{client:'内部错误',server:'collRule未定义，无法检测对应的collValue中是否有enum array'}},
         containDuplicateValue({fieldName}){
-            return {rc:inputValueLogicCheckError+2,msg:{client:`${fieldName}的值有重复`,server:`${fieldName}的值有重复`}}
+            return {rc:inputValueLogicCheckError+6,msg:{client:`${fieldName}的值有重复`,server:`${fieldName}的值有重复`}}
         },
 /*        fieldInValueNoMatchedRule({fieldName}){
             return {rc:inputValueLogicCheckError+4,msg:{client:`未知字段${fieldName}`,server:`${fieldName}在对应的collRule中没有对应的rule`}}
@@ -418,12 +421,14 @@ const inputValueLogicCheck={
     },
     ifSingleFieldValueUnique_async:{
         fieldValueNotUnique({collName,fieldName,fieldChineseName,fieldValue}){
-            return {rc:inputValueLogicCheckError+26,msg:{client:`${fieldChineseName} ${fieldValue}已经存在`,server:`集合${collName}的字段${fieldName}，值${fieldValue}已经存在`}}
+            // ap.wrn('unique result',`${fieldChineseName} ${fieldValue}已经存在`)
+            // ap.wrn('unique result',`集合${collName}的字段${fieldName}，值${fieldValue}已经存在`)
+            return {rc:inputValueLogicCheckError+8,msg:{client:`${fieldChineseName} ${fieldValue}已经存在`,server:`集合${collName}的字段${fieldName}，值${fieldValue}已经存在`}}
         }
     },
     ifValueXSS:{
         fieldValueXSS({fieldName}){
-            return {rc:inputValueLogicCheckError+2,msg:{client:`${fieldName}的值包含有害内容`,server:`${fieldName}的值有XSS内容`}}
+            return {rc:inputValueLogicCheckError+10,msg:{client:`${fieldName}的值包含有害内容`,server:`${fieldName}的值有XSS内容`}}
         }
     },
 }

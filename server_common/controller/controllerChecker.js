@@ -40,6 +40,8 @@ const compound_unique_field_config=require(`../model/mongo/compound_unique_field
 const fkConfig=require('../model/mongo/fkConfig').fkConfig
 
 const e_dataType=require('../constant/enum/inputDataRuleType').ServerDataType
+
+
 /****************  公共函数  ********************/
 const misc=require('../function/assist/misc')
 const arr=require('../function/assist/array')
@@ -434,6 +436,80 @@ async function ifObjectIdInPartCrypted_async({req,expectedPart,browserCollRule,a
             // ap.wrn('')
             let partValue=req.body.values[singlePart]
             switch (singlePart){
+                case e_part.EDIT_SUB_FIELD:
+                    for(let singleFieldName in partValue){
+
+
+
+                        if(false===dataTypeCheck.isSetValue(partValue[singleFieldName])){
+                            continue
+                        }
+                        //检查from/to recordId格式是否正确
+                        if(undefined!==partValue[singleFieldName][e_subField.FROM]){
+                            if(false===ifObjectIdCrypted({objectId:partValue[singleFieldName][e_subField.FROM]})){
+                                return Promise.reject(checkerError.ifObjectIdCrypted.editSubFromIsInvalidObjectId)
+                            }
+                        }
+                        if(undefined!==partValue[singleFieldName][e_subField.TO]){
+                            if(false===ifObjectIdCrypted({objectId:partValue[singleFieldName][e_subField.TO]})){
+                                return Promise.reject(checkerError.ifObjectIdCrypted.editSubToIsInvalidObjectId)
+                            }
+                        }
+                        if(undefined!==partValue[singleFieldName][e_subField.ELE_ARRAY] && true===dataTypeCheck.isArray(partValue[singleFieldName][e_subField.ELE_ARRAY]) ){
+                            //获得数据类型
+                            let singleFieldDataTypeInRule
+                            let dataTypeArrayFlag
+                            let dataType
+                            //获得field的数据类型
+                            if(undefined!==browserCollRule[singleFieldName] ){
+                                if(true===dataTypeCheck.isSetValue(partValue[singleFieldName])) {
+                                    singleFieldDataTypeInRule = browserCollRule[singleFieldName][e_otherRuleFiledName.DATA_TYPE]
+                                    dataTypeArrayFlag = dataTypeCheck.isArray(singleFieldDataTypeInRule)
+                                    dataType = dataTypeArrayFlag ? singleFieldDataTypeInRule[0] : singleFieldDataTypeInRule
+                                }
+                            }
+
+                            //如果数据类型是objectId
+                            if(e_dataType.OBJECT_ID===dataType){
+                                //2018-07-04：传入的applyRange是否是rule中applyRange中
+                                if(-1===browserCollRule[singleFieldName][e_otherRuleFiledName.APPLY_RANGE].indexOf(applyRange)){
+                                    return Promise.reject(checkerError.ifObjectIdCrypted.fieldNotMatchApplyRange)
+                                }
+                                //数组，对每个元素进行判别
+                                // if(true===dataTypeArrayFlag){
+                                //必定是数组，数组可以为空
+                                let eleArrayValue=partValue[singleFieldName][e_subField.ELE_ARRAY]
+                                if( eleArrayValue.length>0){
+                                    //2018-07-04: 如果有ARRAY_MAX_LENGTH，要检查长度
+                                    if(undefined!==browserCollRule[singleFieldName][e_ruleFiledName.ARRAY_MAX_LENGTH]){
+                                        //复用validateValue中的error
+                                        let fieldRule=browserCollRule[singleFieldName]//,fieldValue=partValue[singleFieldName]
+                                        let maxLengthDefine=fieldRule[e_ruleFiledName.ARRAY_MAX_LENGTH]['define']
+                                        if(false===valueMatchRuleDefineCheck({ruleType:e_serverRuleType.ARRAY_MAX_LENGTH,fieldValue:eleArrayValue,ruleDefine:maxLengthDefine})){
+                                            return Promise.reject(genInputError(fieldRule,e_serverRuleType.ARRAY_MAX_LENGTH))
+                                        }
+
+                                    }
+                                    //检查objectId的format
+                                    for(let singleEle of eleArrayValue){
+                                        // let singleEle=eleArrayValue[idx]
+                                        if(false===ifObjectIdCrypted({objectId:singleEle})){
+                                            return Promise.reject(checkerError.ifObjectIdCrypted.editSubEleArrayIsInvalidObjectId)
+                                        }
+                                    }
+                                }
+                                // }else{
+                                //     if(false===ifObjectIdCrypted({objectId:partValue[singleFieldName]})){
+                                //         return Promise.reject(checkerError.ifObjectIdCrypted.recordInfoContainInvalidObjectId)
+                                //     }
+                                // }
+                            }
+                        }
+
+
+
+                    }
+                    break;
                 case e_part.MANIPULATE_ARRAY:
                     // {fieldName:{remove:[id1],add:[id2]},fieldName2:{remove:[id1],add:[id2]}}
                     // if(partValue.length>0){
@@ -442,7 +518,7 @@ async function ifObjectIdInPartCrypted_async({req,expectedPart,browserCollRule,a
                         if(false===dataTypeCheck.isSetValue(partValue[singleFieldName])){
                             continue
                         }
-                        //1 获得数据类型
+
                         //字段有对应的rule，且字段值设置
                         if(undefined!==browserCollRule[singleFieldName] ){
                             //字段值不为空（空值交给后续代码处理，而不在解密代码中处理）
@@ -531,6 +607,8 @@ async function ifObjectIdInPartCrypted_async({req,expectedPart,browserCollRule,a
                     // ap.inf('partValue',partValue)
                     let fieldName=Object.keys(partValue)[0]
                     // ap.inf('fieldName',fieldName)
+                    // ap.wrn('browserCollRule',browserCollRule)
+                    // ap.wrn('browserCollRule[fieldName]',browserCollRule[fieldName])
                     // ap.inf('dataTypeCheck.isSetValue(fieldName)',dataTypeCheck.isSetValue(fieldName))
 
                     //fieldName是有效的（在rule中有定义）
@@ -543,6 +621,9 @@ async function ifObjectIdInPartCrypted_async({req,expectedPart,browserCollRule,a
                         // ap.wrn('dataType',dataType)
                         //字段类型是objectId
                         if(e_dataType.OBJECT_ID===dataType){
+                            // ap.wrn('fieldName',fieldName)
+                            // ap.wrn('browserCollRule[fieldName]',browserCollRule[fieldName])
+                            // ap.wrn('browserCollRule[fieldName][e_otherRuleFiledName.APPLY_RANGE]',browserCollRule[fieldName][e_otherRuleFiledName.APPLY_RANGE])
                             //2018-07-04：传入的applyRange是否是rule中applyRange中
                             if(-1===browserCollRule[fieldName][e_otherRuleFiledName.APPLY_RANGE].indexOf(applyRange)){
                                 return Promise.reject(checkerError.ifObjectIdCrypted.fieldNotMatchApplyRange)

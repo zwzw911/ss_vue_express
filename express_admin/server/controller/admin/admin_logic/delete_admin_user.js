@@ -57,7 +57,7 @@ const hash=server_common_file_require.crypt.hash
  * 更新用户资料
  * 1. 需要对比req中的userId和session中的id是否一致
  * */
-async function deleteUser_async(req){
+async function deleteUser_async({req,applyRange}){
     /********************************************************/
     /*************      define variant        ***************/
     /********************************************************/
@@ -76,7 +76,7 @@ async function deleteUser_async(req){
     // controllerHelper.decryptRecordValue({record:docValue,collName:collName})
     recordId=crypt.decryptSingleFieldValue({fieldValue:recordId,salt:tempSalt})*/
     /**********************************************/
-    /******    当前用户是否有创建用户的权限   ****/
+    /******    当前用户是否有创删除用户的权限   ****/
     /*********************************************/
     let hasDeletePriority=await controllerChecker.ifAdminUserHasExpectedPriority_async({userPriority:userPriority,arr_expectedPriority:[e_adminPriorityType.DELETE_ADMIN_USER]})
     // console.log(`hasDeletePriority===========>${JSON.stringify(hasDeletePriority)}`)

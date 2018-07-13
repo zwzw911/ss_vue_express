@@ -191,7 +191,7 @@ describe('dispatch', function() {
         await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
     });
     it('3.3 inputValue singleField: fieldValue after decrypt is string, but invalid objectId', async function() {
-        expectedErrorRc=browserInputRule.add_friend.receiver.format.error.rc
+        expectedErrorRc=browserInputRule.add_friend_request.receiver.format.error.rc
         data={values:{[e_part.SINGLE_FIELD]:{[e_field.ADD_FRIEND_REQUEST.RECEIVER]:'3410cae041c38fcae905d65501cf7f776ea6b127850b0955269481f6a4db1b22'}}}
         await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,fieldName:e_field.FOLDER.PARENT_FOLDER_ID,app:app})
     });

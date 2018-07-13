@@ -56,7 +56,7 @@ const fkConfig=server_common_file_require.fkConfig
  * 更新用户资料
  * 1. 需要对比req中的userId和session中的id是否一致
  * */
-async function updateUser_async({req}){
+async function updateUser_async({req,applyRange}){
     /********************************************************/
     /*************      define variant        ***************/
     /********************************************************/
@@ -72,6 +72,9 @@ async function updateUser_async({req}){
     /**********************************************/
     /******    当前用户是否有创建用户的权限   ****/
     /*********************************************/
+    // ap.wrn('userPriority',userPriority)
+    // ap.wrn('[e_adminPriorityType.UPDATE_ADMIN_USER]',[e_adminPriorityType.UPDATE_ADMIN_USER])
+    // ap.wrn('docValue[e_field.ADMIN_USER.USER_PRIORITY]',docValue[e_field.ADMIN_USER.USER_PRIORITY])
     let hasCreatePriority=await controllerChecker.ifAdminUserHasExpectedPriority_async({userPriority:userPriority,arr_expectedPriority:[e_adminPriorityType.UPDATE_ADMIN_USER]})
     if(false===hasCreatePriority){
         return Promise.reject(controllerError.update.currentUserHasNotPriorityToUpdateUser)
@@ -94,8 +97,8 @@ async function updateUser_async({req}){
         if(userToBeUpdate['_id']!==userId){
             return Promise.reject(controllerError.update.onlyRootCanUpdateRoot)
         }
-
     }
+    // ap.wrn('bdfore call runc')
     /************************************************/
     /*** CALL FUNCTION:inputValueLogicValidCheck ****/
     /************************************************/
@@ -105,7 +108,7 @@ async function updateUser_async({req}){
         [e_inputValueLogicCheckStep.ENUM_DUPLICATE]:{flag:true,optionalParam:undefined},
         //object：coll中，对单个字段进行unique检测，需要的额外查询条件
         //在注册完毕，且不是当前要更新的用户
-        [e_inputValueLogicCheckStep.SINGLE_FIELD_VALUE_UNIQUE]:{flag:true,optionalParam:{singleValueUniqueCheckAdditionalCondition:{[e_field.ADMIN_USER.DOC_STATUS]:e_docStatus.DONE,[e_field.ADMIN_USER.ID]:{'$not':recordId}}}},
+        [e_inputValueLogicCheckStep.SINGLE_FIELD_VALUE_UNIQUE]:{flag:true,optionalParam:{singleValueUniqueCheckAdditionalCondition:{[e_field.ADMIN_USER.DOC_STATUS]:e_docStatus.DONE,'_id':{'$nin':[recordId]}}}},
         //数组，元素是字段名。默认对所有dataType===string的字段进行XSS检测，但是可以通过此变量，只选择部分字段
         [e_inputValueLogicCheckStep.XSS]:{flag:true,optionalParam:{expectedXSSFields:undefined}},
         //object，对compoundField进行unique检测需要的额外条件，key从model->mongo->compound_unique_field_config.js中获得
@@ -116,6 +119,7 @@ async function updateUser_async({req}){
     }
 
     await controllerInputValueLogicCheck.inputValueLogicValidCheck_async({commonParam:commonParam,stepParam:stepParam})
+    // ap.wrn('after call runc')
     /*              检测enum+array的字段是否有重复值       */
     // console.log(`browserInputRule[collName]==========> ${JSON.stringify(browserInputRule[collName])}`)
     // console.log(`docValue==========> ${JSON.stringify(docValue)}`)
@@ -135,6 +139,7 @@ async function updateUser_async({req}){
     // console.log(`update admin======>child pri ${JSON.stringify(docValue[e_field.ADMIN_USER.USER_PRIORITY])}`)
     if(undefined!==docValue[e_field.ADMIN_USER.USER_PRIORITY]){
         //权限在预订范围内
+
         if(false===arr.ifArrayEleContainInArray({expectedArray:userPriority,toBeCheckArray:docValue[e_field.ADMIN_USER.USER_PRIORITY]})){
             return Promise.reject(controllerError.update.updatePriorityNotInheritedFromParent)
         }

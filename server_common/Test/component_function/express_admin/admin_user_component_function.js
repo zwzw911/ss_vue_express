@@ -49,30 +49,37 @@ async function getAdminUserSessUserId({userData,adminApp}){
     return Promise.resolve({userId:adminRootId,sess:adminRootSess})
 }
 
-async function reCreateAdminUser_returnSessUserId_async({userData,rootSess,adminApp}){
+//创建admin用户只能通过有权限的admin用户，此处使用adminRootSess
+async function reCreateAdminUser_returnSessUserId_async({userData,adminRootSess,adminApp}){
     //删除用户
     await db_operation_helper.deleteAdminUserAndRelatedInfo_async(userData.name)
 
-    //生成并获得captcha(for create user)
-    await adminUserAPI.genAdminCaptcha({sess:sess,adminApp:adminApp})
-    let captcha=await adminUserAPI.getAdminCaptcha({sess:rootSess})
-    //建立用户
-    await adminUserAPI.createAdminUser_async({userData:userData,sess:rootSess,captcha:captcha,adminApp:adminApp})
 
+    //生成并获得captcha(for create user)
+    await adminUserAPI.genAdminCaptcha({sess:adminRootSess,adminApp:adminApp})
+    // ap.wrn('generate captcha done')
+    let captcha=await adminUserAPI.getAdminCaptcha({sess:adminRootSess})
+    // ap.wrn('get captcha done')
+    //只能由已经登录的有权限的admin，才能建立用户（而不是可以任意注册）
+    await adminUserAPI.createAdminUser_async({userData:userData,sess:adminRootSess,captcha:captcha,adminApp:adminApp})
+
+
+    let rootSess=await adminUserAPI.getFirstAdminSession({adminApp:adminApp})
     //生成并获得captcha(for user login)
-    await adminUserAPI.genAdminCaptcha({sess:sess,adminApp:adminApp})
+    await adminUserAPI.genAdminCaptcha({sess:rootSess,adminApp:adminApp})
     captcha=await adminUserAPI.getAdminCaptcha({sess:rootSess})
     //登录获得sess
-    let sess=await adminUserAPI.adminUserLogin_returnSess_async({userData:userData,captcha:captcha,adminApp:adminApp})
-
+    rootSess=await adminUserAPI.adminUserLogin_returnSess_async({userData:userData,captcha:captcha,adminApp:adminApp,sess:rootSess})
+// ap.wrn('userData',userData)
     //获得userId
     let userId=await db_operation_helper.getAdminUserId_async({userName:userData.name})
+    // ap.wrn('userId',userId)
     //获得tempSalt
-    let tempSalt=await commonAPI.getTempSalt_async({sess:rootSess})
+/*    let tempSalt=await commonAPI.getTempSalt_async({sess:rootSess})
     //模拟加密objectId
-    userId=cryptSingleFieldValue({fieldValue:userId,salt:tempSalt}).msg
+    userId=cryptSingleFieldValue({fieldValue:userId,salt:tempSalt}).msg*/
 
-    return Promise.resolve({userId:userId,sess:sess})
+    return Promise.resolve({userId:userId,sess:rootSess})
 }
 
 /******     重通过操作db，新创建admin root **************/

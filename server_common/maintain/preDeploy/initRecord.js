@@ -229,7 +229,8 @@ const resource_profile= [
         [e_field.RESOURCE_PROFILE.MAX_NUM]:10,
         //[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]:20, //假设每个文件大小为2M
     },
-    {
+    //每个朋友群中人数不限，只要总朋友数受控即可
+/*    {
         [e_field.RESOURCE_PROFILE.NAME]:"普通用户朋友群人数",
         [e_field.RESOURCE_PROFILE.RESOURCE_RANGE]:e_resourceRange.MAX_PERSON_NUM_PER_FRIEND_GROUP,
         [e_field.RESOURCE_PROFILE.RESOURCE_TYPE]:e_resourceType.BASIC,
@@ -242,7 +243,7 @@ const resource_profile= [
         [e_field.RESOURCE_PROFILE.RESOURCE_TYPE]:e_resourceType.ADVANCED,
         [e_field.RESOURCE_PROFILE.MAX_NUM]:200,
         //[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]:20, //假设每个文件大小为2M
-    },
+    },*/
     {
         [e_field.RESOURCE_PROFILE.NAME]:"普通用户最大朋友数",
         [e_field.RESOURCE_PROFILE.RESOURCE_RANGE]:e_resourceRange.MAX_FRIEND_NUM_PER_USER,
@@ -264,13 +265,13 @@ const resource_profile= [
         [e_field.RESOURCE_PROFILE.RESOURCE_TYPE]:e_resourceType.BASIC,
         [e_field.RESOURCE_PROFILE.MAX_NUM]:50,
     },
-    //同上，只有basic
-    {
+    //不再需要，因为默认分配到默认好友分组中（好于分组上限为朋友总数）
+/*    {
         [e_field.RESOURCE_PROFILE.NAME]:"最大已同意但是未分配的添加朋友的请求数",
         [e_field.RESOURCE_PROFILE.RESOURCE_RANGE]:e_resourceRange.MAX_ACCEPT_BUT_NOT_ASSIGN_ADD_FRIEND_REQUEST_PER_USER,
         [e_field.RESOURCE_PROFILE.RESOURCE_TYPE]:e_resourceType.BASIC,
         [e_field.RESOURCE_PROFILE.MAX_NUM]:50,
-    },
+    },*/
     /**         article             **/
     //同上，只有basic。防止用户大量插入无用文档
     {

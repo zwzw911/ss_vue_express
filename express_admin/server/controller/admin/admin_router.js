@@ -20,6 +20,7 @@ const userDispatcher_async=require('./admin_dispatcher').dispatcher_async
 const userMiscFunc=require('./admin_logic/admin_misc_func')
 /*let originalUrl=req.originalUrl
 ap.inf('originalUrl',originalUrl)*/
+// ap.wrn('admin router in')
 /*              create          */
 router.post('/',function(req,res,next){
     userDispatcher_async(req).then(
@@ -154,8 +155,11 @@ router.get('/captcha',function(req,res,next){
 
 })
 
+
 router.all('*',function(req,res,next){
+    // ap.wrn('* in')
     // ap.inf('systemError.systemError.noMatchRESTAPI',systemError.systemError.noMatchRESTAPI)
     return res.json(genFinalReturnResult(systemError.systemError.noMatchRESTAPI))
 })
+
 module.exports={router}

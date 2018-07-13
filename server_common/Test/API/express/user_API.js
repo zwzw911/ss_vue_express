@@ -87,9 +87,10 @@ async function userLogin_returnSess_async({userData,captcha,sess,app}){
     let data={}
     data.values={}
     // data.values.method=e_method.MATCH
-    let userTmp=objectDeepCopy(userData)
-    delete userTmp['name']
-    delete userTmp['userType']
+    let userTmp={}
+    userTmp['account']=userData['account']
+    userTmp['password']=userData['password']
+
     // ap.inf('userLogin_returnSess_async data',userTmp)
     // console.log(`userTmp====>${JSON.stringify(userTmp)}`)
     data.values[e_part.RECORD_INFO]=userTmp//,notExist:{value:123}

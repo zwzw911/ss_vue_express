@@ -25,11 +25,12 @@ const e_field=require('../../../constant/genEnum/DB_field').Field
 //无需传入任何数据
 async function getFirstAdminSession({adminApp}){
     return new Promise(function(resolve,reject){
-        request(adminApp).post('/adminUser/').set('Accept', 'application/json').send({})
+        request(adminApp).post('/admin_user/').set('Accept', 'application/json').send({})
             .end(function(err, res) {
+                ap.inf('returnSess', res)
                 let returnSess=res['header']['set-cookie'][0].split(';')[0]
                 let parsedRes=JSON.parse(res.text)
-                // ap.inf('returnSess', returnSess)
+                ap.inf('returnSess', parsedRes)
                 // assert.deepStrictEqual(parsedRes.rc,0)
                 return resolve(returnSess)
             });
@@ -91,6 +92,7 @@ async function createAdminUser_async({userData,sess,captcha,adminApp}){
 //返回一个promise，那么无需done
 //userData:{name:{value:xxx},password:{value:yyyyy}}
 async function adminUserLogin_returnSess_async({userData,captcha,sess,adminApp}){
+    // ap.wrn('adminUserLogin_returnSess_async in')
     // console.log(`adminUserLogin_returnSess_async userData =============>${JSON.stringify(userData)}`)
     let data={}
     data.values={}
@@ -100,6 +102,7 @@ async function adminUserLogin_returnSess_async({userData,captcha,sess,adminApp})
     delete userDataCopy[e_field.ADMIN_USER.USER_PRIORITY]
     data.values[e_part.RECORD_INFO]=userDataCopy//,notExist:{value:123}
     data.values[e_part.CAPTCHA]=captcha
+    // ap.wrn('data for login',data)
     // console.log(`adminUser login data ===>${JSON.stringify(data)}`)
     return new Promise(function(resolve,reject){
         request.agent(adminApp).post('/admin_user/login/').set('Accept', 'application/json').set('Cookie',[sess]).send(data)

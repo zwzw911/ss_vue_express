@@ -77,7 +77,8 @@ const systemError=server_common_file_require.systemError
 // const controllerError=require('../../server/controller/penalize/penalize_setting/penalize_controllerError').controllerError
 
 
-let recordId1,recordId2,recordId3,expectedErrorRc
+let recordId1,recordId2,recordId3
+let expectedErrorRc
 
 let user1IdCryptedByUser1,user1IdCryptedByUser2,user1IdCryptedByUser3,
     user2IdCryptedByUser1,user2IdCryptedByUser2,user2IdCryptedByUser3,
@@ -150,6 +151,9 @@ describe('user friend group dispatch:',async  function() {
             penalizedUserId: cryptedUser3Id,
             adminApp: adminApp
         })
+        ap.inf('****************************************************************************')
+        ap.inf('****************************************************************************')
+
     })
 
     /***************    create  impeach  comment ***************/
@@ -227,6 +231,68 @@ describe('user friend group dispatch:',async  function() {
                 await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,fieldName:e_field.IMPEACH_COMMENT.IMPEACH_ID,app:app})
             });
 
+        })
+        /***************    move friend in different user friend group ***************/
+        describe('move friend',async  function() {
+            let sess,editSubFieldValue
+            before('prepare', async function () {
+                url='move_friend'
+                finalUrl=baseUrl+url
+                sess=await userAPI.getFirstSession({app})
+                editSubFieldValue={
+                    [e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP]:{}
+                }
+                // normalRecord[e_field.IMPEACH.IMPEACHED_ARTICLE_ID]=adminRootIdCryptedByUser1
+            })
+            it('3.1 user not login', async function() {
+                // ap.inf('sess',sess)
+                expectedErrorRc=controllerError.dispatch.put.notLoginCantMoveFriend.rc
+                await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+            });
+            it('3.2 user in penalize cant update user friend group', async function() {
+                expectedErrorRc=controllerError.dispatch.put.userInPenalizeCantMoveFriend.rc
+                await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user3Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+            })
+
+            it('3.3 inputValue editSubValue: from value to be decrypt not string', async function() {
+                expectedErrorRc=controllerCheckerError.ifObjectIdCrypted.editSubFromIsInvalidObjectId.rc
+                editSubFieldValue[e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP]={'from':1234,'eleArray':['3410cae041c38fcae905d65501cf7f776ea6b127850b0955269481f6a4db1b22']}
+                data={values:{[e_part.EDIT_SUB_FIELD]:editSubFieldValue}}
+                await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+            });
+            it('3.4 inputValue editSubValue:  from value to be decrypt is string, but regex check failed', async function() {
+                editSubFieldValue[e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP]={'from':'1234','eleArray':['3410cae041c38fcae905d65501cf7f776ea6b127850b0955269481f6a4db1b22']}
+                expectedErrorRc=controllerCheckerError.ifObjectIdCrypted.editSubFromIsInvalidObjectId.rc
+                data={values:{[e_part.EDIT_SUB_FIELD]:editSubFieldValue}}
+                await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+            });
+            it('3.5 inputValue editSubValue:  from value  after decrypt is string, but invalid objectId', async function() {
+                editSubFieldValue[e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP]={'from':'3410cae041c38fcae905d65501cf7f776ea6b127850b0955269481f6a4db1b22','eleArray':['3410cae041c38fcae905d65501cf7f776ea6b127850b0955269481f6a4db1b22']}
+                expectedErrorRc=validateError.validateValue.fromMustBeObjectId.rc
+                data={values:{[e_part.EDIT_SUB_FIELD]:editSubFieldValue}}
+                await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,fieldName:e_field.IMPEACH_COMMENT.IMPEACH_ID,app:app})
+            });
+
+            it('3.6 inputValue editSubValue: to value to be decrypt not string', async function() {
+                editSubFieldValue[e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP]={'to':1234,'eleArray':['3410cae041c38fcae905d65501cf7f776ea6b127850b0955269481f6a4db1b22']}
+                expectedErrorRc=controllerCheckerError.ifObjectIdCrypted.editSubToIsInvalidObjectId.rc
+                data={values:{[e_part.EDIT_SUB_FIELD]:editSubFieldValue}}
+                await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+            });
+
+            it('3.7 inputValue editSubValue: eleArray value to be decrypt not string', async function() {
+                editSubFieldValue[e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP]={'from':'3410cae041c38fcae905d65501cf7f776ea6b127850b0955269481f6a4db1b22','eleArray':[1234]}
+                expectedErrorRc=controllerCheckerError.ifObjectIdCrypted.editSubEleArrayIsInvalidObjectId.rc
+                data={values:{[e_part.EDIT_SUB_FIELD]:editSubFieldValue}}
+                await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+            });
+
+/*            it('3.8 inputValue editSubValue: empty', async function() {
+                editSubFieldValue[e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP]={}
+                expectedErrorRc=controllerCheckerError.ifObjectIdCrypted.editSubEleArrayIsInvalidObjectId.rc
+                data={values:{[e_part.EDIT_SUB_FIELD]:editSubFieldValue}}
+                await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+            });*/
         })
     })
 })

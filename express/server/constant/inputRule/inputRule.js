@@ -1,4 +1,4 @@
-/*    gene by H:\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-7-7   */ 
+/*    gene by H:\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-7-13   */ 
  
 "use strict"
 const inputRule={
@@ -617,14 +617,14 @@ const inputRule={
             chineseName:"被拒次数",
             dataType:"int",
             applyRange:["update_scalar"],
-            require:{"define":{"update_scalar":true},"error":{"rc":102158,"msg":"被拒次数不能为空"},"mongoError":{"rc":202158,"msg":"被拒次数不能为空"}},
+            require:{"define":{"update_scalar":false},"error":{"rc":102158,"msg":"被拒次数不能为空"},"mongoError":{"rc":202158,"msg":"被拒次数不能为空"}},
             max:{"define":10,"error":{"rc":102160,"msg":"拒绝次数最大10次"},"mongoError":{"rc":202160,"msg":"拒绝次数最大10次"}},
         },
         acceptTimes:{
             chineseName:"同意次数",
             dataType:"int",
             applyRange:["update_scalar"],
-            require:{"define":{"update_scalar":true},"error":{"rc":102162,"msg":"同意次数不能为空"},"mongoError":{"rc":202162,"msg":"同意次数不能为空"}},
+            require:{"define":{"update_scalar":false},"error":{"rc":102162,"msg":"同意次数不能为空"},"mongoError":{"rc":202162,"msg":"同意次数不能为空"}},
             max:{"define":10,"error":{"rc":102164,"msg":"同意次数最大10次"},"mongoError":{"rc":202164,"msg":"同意次数最大10次"}},
         },
     },
@@ -1047,7 +1047,7 @@ const inputRule={
             applyRange:["create","update_scalar"],
             placeHolder:[""],
             require:{"define":{"create":false,"update_scalar":false},"error":{"rc":104118,"msg":"朋友规则不能为空"},"mongoError":{"rc":204118,"msg":"朋友规则不能为空"}},
-            enum:{"define":{"ArticleStatus":["0","1","2"],"addFriendRule":["1","2","3"],"AdminUserType":["1","2"],"UserType":["10"],"AllUserType":["1","2","10"],"AdminPriorityType":["1","2","3","10","11","12","20","21"],"PublicGroupJoinInRule":["1","2","3"],"PublicGroupEventType":["0","1","2","3","4","5"],"EventStatus":["0","1","2"],"PenalizeType":["1","2","3","4","10","20","21","30","31","40","50","60","61"],"PenalizeSubType":["1","2","3","4","9"],"ImpeachType":["0","1"],"ImpeachAllAction":["1","2","3","4","5","6","7"],"ImpeachUserAction":["1","2","3"],"ImpeachAdminAction":["4","5","6","7"],"ImpeachState":["1","2","3","4","5","6"],"ImpeachImageReferenceColl":["1","2"],"DocStatus":["1","2","3"],"AccountType":["1","2"],"StorePathUsage":["1","2","3","4","5"],"StorePathStatus":["1","2"],"ResourceRange":["1","10","12","14","16","18","20","100","102","105","106","110","112","114","116","118","120","122","124","126","128","130"],"ResourceType":["1","2"],"DocumentStatus":["1","2"],"AddFriendStatus":["1","2","3"],"JoinPublicGroupHandleResult":["1","2","3"]},"error":{"rc":104120,"msg":"未知规则"},"mongoError":{"rc":204120,"msg":"未知规则"}},
+            enum:{"define":["1","2","3"],"error":{"rc":104120,"msg":"未知规则"},"mongoError":{"rc":204120,"msg":"未知规则"}},
         },
         userType:{
             chineseName:"用户类型",

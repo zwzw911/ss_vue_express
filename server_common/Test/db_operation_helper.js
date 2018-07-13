@@ -245,19 +245,21 @@ async function getAddFriendRequest_async({originatorId,receiverId}){
         [e_field.ADD_FRIEND_REQUEST.ORIGINATOR]:originatorId,
         [e_field.ADD_FRIEND_REQUEST.STATUS]:e_addFriendStatus.UNTREATED,
     }
+    // ap.wrn('condition',condition)
     // 查找userId
     let tmpResult = await common_operation_model.find_returnRecords_async({dbModel: e_dbModel.add_friend_request, condition: condition})
+    // ap.wrn('tmpResult',tmpResult)
     // condition = {}
     // condition[e_field.FOLDER.AUTHOR_ID] = tmpResult[0]['_id']
-    let options = {$sort: {cDate: 1}}
+/*    let options = {$sort: {cDate: 1}}
     tmpResult = await common_operation_model.find_returnRecords_async({
         dbModel: e_dbModel.add_friend_request,
         condition: condition,
         options: options
-    })
-    // ap.inf('getAddFriendRequest_async tmpResult',tmpResult)
+    })*/
+    // ap.wrn('getAddFriendRequest_async tmpResult',tmpResult)
     // console.log(`folderis =====================>${JSON.stringify(tmpResult[0]['_id'].toString())}`)
-    return Promise.resolve(tmpResult[0]['_id'].toString())
+    return Promise.resolve(tmpResult[0]['id'].toString())
 }
 /*async function findByIdAndUpdate_returnRecord_async({dbModel,id,updateFieldsValue,updateOption}){
     // console.log(`find by id :${id}`)

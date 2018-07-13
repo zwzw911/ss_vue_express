@@ -6,10 +6,18 @@
 
 const controllerError={
     dispatch:{
-        notLoginCantCreateUser:{rc:51000,msg:`尚未登录，无法创建新用户`},
-        notLoginCantUpdateUser:{rc:51001,msg:`尚未登录，无法更新用户`},
-        notLoginCantDeleteUser:{rc:51002,msg:`尚未登录，无法删除用户`},
-        notLoginCantSearchUser:{rc:51002,msg:`尚未登录，无法搜索用户`},
+        post:{
+            notLoginCantCreateUser:{rc:51000,msg:`尚未登录，无法创建新用户`},
+        },
+        put:{
+            notLoginCantUpdateUser:{rc:51001,msg:`尚未登录，无法更新用户`},
+        },
+        'delete':{
+            notLoginCantDeleteUser:{rc:51002,msg:`尚未登录，无法删除用户`},
+        },
+        get:{
+            notLoginCantSearchUser:{rc:51002,msg:`尚未登录，无法搜索用户`},
+        },
     },
 
     create:{
@@ -27,7 +35,8 @@ const controllerError={
         currentUserHasNotPriorityToUpdateUser:{rc:51005,msg:`当前用户无权更新用户`},
         currentUserHasNotPriorityToSearchUser:{rc:51007,msg:`当前用户无权搜索用户`},
         updatePriorityNotInheritedFromParent:{rc:51022,msg:'更新用户时，权限不能超出创建者的权限'},
-        userNotExist:{rc:51116,msg:`用户信息不存在`},//update的时候，无法根据req.session.userId找到对应的记录
+        // userNotExist:{rc:51116,msg:`用户信息不存在`},//update的时候，无法根据req.session.userId找到对应的记录
+        onlyRootCanUpdateRoot:{rc:51012,msg:'无法更新root用户'},
         // updateUserPriorityCantDuplicate:{rc:51024,msg:'创建新用户时，权限不能重复'},
     },
 
@@ -41,7 +50,7 @@ const controllerError={
         destroySessionFailed:{rc:51111,msg:`退出失败`},
     },
 
-    onlyRootCanUpdateRoot:{rc:51012,msg:'无法更新root用户'},
+
 
 
     // nameAlreadyExists:{rc:50100,msg:`用户名已经存在`}, //key名字必须固定为 field+AlreadyExists

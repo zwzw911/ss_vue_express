@@ -48,7 +48,7 @@ const update_async=require('./user_friend_group_logic/update_user_friend_group')
 // const updateSubFieldOnly_async=require('./user_friend_group_logic/update_user_friend_group_sub_field_only').updateUserFriendGroup_async
 const delete_async=require('./user_friend_group_logic/delete_user_friend_group').deleteUserFriendGroup_async
 // const uploadImage_async=require('./impeach_logic/upload_impeach_image').uploadImpeachCommentFile_async
-
+const moveFriend_async=require('./user_friend_group_operation/move_friend').moveFriends_async
 
 async function dispatcher_async({req}){
     /***   初始化参数   ***/
@@ -119,43 +119,84 @@ async function dispatcher_async({req}){
             }
             break;
         case 'put':
-            if(originalUrl=== `/${expectedBaseUrl}` || originalUrl===  `/${expectedBaseUrl}/` ){
-                applyRange = e_applyRange.UPDATE_SCALAR
-                userLoginCheck = {
-                    needCheck: true,
-                    error: controllerError.dispatch.put.notLoginCantUpdateUserFriendGroup
-                }
-                penalizeCheck = {
-                    penalizeType: e_penalizeType.NO_USER_FRIEND_GROUP,
-                    penalizeSubType: e_penalizeSubType.UPDATE,
-                    penalizeCheckError: controllerError.dispatch.put.userInPenalizeCantUpdateUserFriendGroup
-                }
-                await controllerPreCheck.userStateCheck_async({req: req,userLoginCheck: userLoginCheck,penalizeCheck: penalizeCheck})
-                expectedPart = [e_part.RECORD_ID,e_part.RECORD_INFO] //impeachId
-                //是否为期望的part
-                result = controllerPreCheck.inputCommonCheck({req: req, expectedPart: expectedPart})
-                // ap.inf('inputCommonCheck result',result)
-                if (result.rc > 0) {return Promise.reject(result)}
+            if (baseUrl === `/${expectedBaseUrl}` || baseUrl === `/${expectedBaseUrl}/`) {
+                if(originalUrl=== `/${expectedBaseUrl}` || originalUrl===  `/${expectedBaseUrl}/` ){
+                    applyRange = e_applyRange.UPDATE_SCALAR
+                    userLoginCheck = {
+                        needCheck: true,
+                        error: controllerError.dispatch.put.notLoginCantMoveFriend
+                    }
+                    penalizeCheck = {
+                        penalizeType: e_penalizeType.NO_USER_FRIEND_GROUP,
+                        penalizeSubType: e_penalizeSubType.UPDATE,
+                        penalizeCheckError: controllerError.dispatch.put.userInPenalizeCantMoveFriend
+                    }
+                    await controllerPreCheck.userStateCheck_async({req: req,userLoginCheck: userLoginCheck,penalizeCheck: penalizeCheck})
+                    expectedPart = [e_part.RECORD_ID,e_part.RECORD_INFO] //impeachId
+                    //是否为期望的part
+                    result = controllerPreCheck.inputCommonCheck({req: req, expectedPart: expectedPart})
+                    // ap.inf('inputCommonCheck result',result)
+                    if (result.rc > 0) {return Promise.reject(result)}
 
-                //对req中的recordId和recordInfo进行objectId（加密过的）格式判断
-                // ap.inf('before check',req.body.values)
-                await controllerChecker.ifObjectIdInPartCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName],applyRange:applyRange})
-                // ap.inf('after check',req.body.values)
-                //对req中的recordId和recordInfo中加密的objectId进行解密
-                let userInfo = await controllerHelper.getLoginUserInfo_async({req: req})
-                // ap.inf('userInfo',userInfo)
-                let tempSalt = userInfo.tempSalt
-                // ap.inf('userInfo。tempSalt',userInfo.tempSalt)
-                // ap.inf('before decrypt',req.body.values)
-                // ap.inf('salt',tempSalt)
-                controllerHelper.decryptInputValue({req: req,expectedPart: expectedPart,salt: tempSalt,browserCollRule: browserInputRule[collName]})
-                // ap.inf('after decrypt',req.body.values)
-                //对输入值进行检测（此时objectId已经解密）
-                result = controllerPreCheck.inputPreCheck({req: req,expectedPart: expectedPart,collName: collName,applyRange: applyRange, arr_currentSearchRange: arr_currentSearchRange})
-                // ap.inf('create use inputPreCheck result',result)
-                if (result.rc > 0) {return Promise.reject(result)}
-                return await update_async({req: req,applyRange:applyRange})
+                    //对req中的recordId和recordInfo进行objectId（加密过的）格式判断
+                    // ap.inf('before check',req.body.values)
+                    await controllerChecker.ifObjectIdInPartCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName],applyRange:applyRange})
+                    // ap.inf('after check',req.body.values)
+                    //对req中的recordId和recordInfo中加密的objectId进行解密
+                    let userInfo = await controllerHelper.getLoginUserInfo_async({req: req})
+                    // ap.inf('userInfo',userInfo)
+                    let tempSalt = userInfo.tempSalt
+                    // ap.inf('userInfo。tempSalt',userInfo.tempSalt)
+                    // ap.inf('before decrypt',req.body.values)
+                    // ap.inf('salt',tempSalt)
+                    controllerHelper.decryptInputValue({req: req,expectedPart: expectedPart,salt: tempSalt,browserCollRule: browserInputRule[collName]})
+                    // ap.inf('after decrypt',req.body.values)
+                    //对输入值进行检测（此时objectId已经解密）
+                    result = controllerPreCheck.inputPreCheck({req: req,expectedPart: expectedPart,collName: collName,applyRange: applyRange, arr_currentSearchRange: arr_currentSearchRange})
+                    // ap.inf('create use inputPreCheck result',result)
+                    if (result.rc > 0) {return Promise.reject(result)}
+                    return await update_async({req: req,applyRange:applyRange})
+                }
+                //在不同的朋友组中移动朋友
+                if(originalUrl=== `/${expectedBaseUrl}/move_friend` || originalUrl===  `/${expectedBaseUrl}/move_friend/` ){
+                    applyRange = e_applyRange.UPDATE_ARRAY
+                    userLoginCheck = {
+                        needCheck: true,
+                        error: controllerError.dispatch.put.notLoginCantMoveFriend
+                    }
+                    penalizeCheck = {
+                        penalizeType: e_penalizeType.NO_USER_FRIEND_GROUP,
+                        penalizeSubType: e_penalizeSubType.UPDATE,
+                        penalizeCheckError: controllerError.dispatch.put.userInPenalizeCantMoveFriend
+                    }
+                    await controllerPreCheck.userStateCheck_async({req: req,userLoginCheck: userLoginCheck,penalizeCheck: penalizeCheck})
+                    expectedPart = [e_part.EDIT_SUB_FIELD] //在2个不同的group中移动用户
+                    //是否为期望的part
+                    result = controllerPreCheck.inputCommonCheck({req: req, expectedPart: expectedPart})
+                    // ap.inf('inputCommonCheck result',result)
+                    if (result.rc > 0) {return Promise.reject(result)}
+
+                    //对req中的recordId和recordInfo进行objectId（加密过的）格式判断
+                    // ap.inf('before check',req.body.values)
+                    await controllerChecker.ifObjectIdInPartCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName],applyRange:applyRange})
+                    // ap.inf('after check',req.body.values)
+                    //对req中的recordId和recordInfo中加密的objectId进行解密
+                    let userInfo = await controllerHelper.getLoginUserInfo_async({req: req})
+                    // ap.inf('userInfo',userInfo)
+                    let tempSalt = userInfo.tempSalt
+                    // ap.inf('userInfo。tempSalt',userInfo.tempSalt)
+                    // ap.inf('before decrypt',req.body.values)
+                    // ap.inf('salt',tempSalt)
+                    controllerHelper.decryptInputValue({req: req,expectedPart: expectedPart,salt: tempSalt,browserCollRule: browserInputRule[collName]})
+                    // ap.inf('after decrypt',req.body.values)
+                    //对输入值进行检测（此时objectId已经解密）
+                    result = controllerPreCheck.inputPreCheck({req: req,expectedPart: expectedPart,collName: collName,applyRange: applyRange, arr_currentSearchRange: arr_currentSearchRange})
+                    // ap.inf('create use inputPreCheck result',result)
+                    if (result.rc > 0) {return Promise.reject(result)}
+                    return await moveFriend_async({req: req,applyRange:applyRange})
+                }
             }
+
             break;
         case 'delete':
             applyRange = e_applyRange.DELETE

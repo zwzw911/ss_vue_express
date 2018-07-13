@@ -18,7 +18,7 @@ const e_serverRuleType=server_common_file_require.inputDataRuleType.ServerRuleTy
 
 const nodeEnum=server_common_file_require.nodeEnum
 const e_part=nodeEnum.ValidatePart
-
+const e_subField=nodeEnum.SubField
 const nodeRuntimeEnum=server_common_file_require.nodeRuntimeEnum
 
 const mongoEnum=server_common_file_require.mongoEnum
@@ -61,7 +61,7 @@ const impeachActionAPI=server_common_file_require.impeachAction_API
 const impeachCommentAPI=server_common_file_require.impeachComment_API
 const publicGroupAPI=server_common_file_require.publicGroup_API
 const friendGroupAPI=server_common_file_require.friend_group_API
-
+const addFriendAPI=server_common_file_require.add_friend_API
 
 const userComponentFunction=server_common_file_require.user_component_function
 const adminUserComponentFunction=server_common_file_require.admin_user_component_function
@@ -109,10 +109,11 @@ let normalRecord={
     // [e_field.IMPEACH_ACTION.OWNER_ID]:undefined, //普通用户无需操作此字段
 }
 
+let tmpResult
 /*              create user friend group               */
 describe('user friend group', async function() {
     before('prepare', async function () {
-        let tmpResult = await generateTestData.getUserCryptedUserId_async({app: app, adminApp: adminApp})
+        tmpResult = await generateTestData.getUserCryptedUserId_async({app: app, adminApp: adminApp})
 
         user1IdCryptedByUser1 = tmpResult['user1IdCryptedByUser1']
         user1IdCryptedByUser2 = tmpResult['user1IdCryptedByUser2']
@@ -160,7 +161,7 @@ describe('user friend group', async function() {
         defaultGroup1CryptedByUser1=await commonAPI.cryptObjectId_async({objectId:defaultGroup1,sess:user1Sess})
         // ap.wrn('defaultGroup',defaultGroup)
         console.log(`==============================================================`)
-        console.log(`=================    before all done      ====================`)
+        console.log(`===============    move friend all done      =================`)
         console.log(`==============================================================`)
     });
     /****************************************/
@@ -326,208 +327,224 @@ describe('user friend group', async function() {
         })
     })
 
-
-    /*                  edit sub field check                */
-    //此错误在checkEditSubFieldEleArray_async检测到
-    it('user1 try to move double user3', async function() {
-        data.values={}
-        // data.values[e_part.RECORD_INFO]=normalRecord
-        data.values[e_part.RECORD_ID]=defaultGroupId1
-        data.values[e_part.EDIT_SUB_FIELD]={
-            [e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP]:{
-                [e_subField.FROM]:groupId3,
-                [e_subField.TO]:defaultGroupId2,
-                [e_subField.ELE_ARRAY]:[user3Id,user3Id],
-            }
-        }
-        data.values[e_part.METHOD]=e_method.UPDATE
-        expectedErrorRc=helperError.eleArrayContainDuplicateEle.rc
-        await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
-    });
-    it('user1 try to move user3 to unknown groupId)', async function() {
-        data.values={}
-        // data.values[e_part.RECORD_INFO]=normalRecord
-        data.values[e_part.RECORD_ID]=defaultGroupId1
-        data.values[e_part.EDIT_SUB_FIELD]={
-            [e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP]:{
-                [e_subField.FROM]:groupId3,
-                [e_subField.TO]:testData.unExistObjectId,
-                [e_subField.ELE_ARRAY]:[user3Id],
-            }
-        }
-        data.values[e_part.METHOD]=e_method.UPDATE
-        expectedErrorRc=helperError.toIdNotExist.rc
-        await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
-    });
-    it('user1 try to move user3 from normal group to default group, while this group reach max num(manual test，maxUserPerDefaultGroup/maxUserPerGroup =1)', async function() {
-        data.values={}
-        // data.values[e_part.RECORD_INFO]=normalRecord
-        data.values[e_part.RECORD_ID]=defaultGroupId1
-        data.values[e_part.EDIT_SUB_FIELD]={
-            [e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP]:{
-                [e_subField.FROM]:groupId3,
-                [e_subField.TO]:defaultGroupId1,
-                [e_subField.ELE_ARRAY]:[user3Id],
-            }
-        }
-        data.values[e_part.METHOD]=e_method.UPDATE
-        expectedErrorRc=helperError.toRecordNotEnoughRoom.rc
-        await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
-    });
-    it('user1 try to move not exist userId)', async function() {
-        data.values={}
-        // data.values[e_part.RECORD_INFO]=normalRecord
-        data.values[e_part.RECORD_ID]=defaultGroupId1
-        data.values[e_part.EDIT_SUB_FIELD]={
-            [e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP]:{
-                [e_subField.FROM]:groupId3,
-                [e_subField.TO]:defaultGroupId1,
-                [e_subField.ELE_ARRAY]:[testData.unExistObjectId],
-            }
-        }
-        data.values[e_part.METHOD]=e_method.UPDATE
-        expectedErrorRc=helperError.eleArrayRecordIdNotExists.rc
-        await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
-    });
-
-    //checkEditSubFieldFromTo_async
-    it('user1 try to move user3 from unknown groupId', async function() {
-        let fromToError={
-            fromToRecordIdNotExists:controllerError.fromToRecordIdNotExists,
-            notOwnFromToRecordId:controllerError.notOwnFromToRecordId,
-        }
-        data.values={}
-        // data.values[e_part.RECORD_INFO]=normalRecord
-        data.values[e_part.RECORD_ID]=defaultGroupId1
-        data.values[e_part.EDIT_SUB_FIELD]={
-            [e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP]:{
-                [e_subField.FROM]:testData.unExistObjectId,
-                [e_subField.TO]:defaultGroupId2,
-                [e_subField.ELE_ARRAY]:[user3Id],
-            }
-        }
-        data.values[e_part.METHOD]=e_method.UPDATE
-        expectedErrorRc=fromToError.fromToRecordIdNotExists.rc
-        await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
-    });
-    it('user2 try to move user3 from group3 which own by user1', async function() {
-        let fromToError={
-            fromToRecordIdNotExists:controllerError.fromToRecordIdNotExists,
-            notOwnFromToRecordId:controllerError.notOwnFromToRecordId,
-        }
-        data.values={}
-        // data.values[e_part.RECORD_INFO]=normalRecord
-        data.values[e_part.RECORD_ID]=defaultGroupId1OfUser1
-        data.values[e_part.EDIT_SUB_FIELD]={
-            [e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP]:{
-                [e_subField.FROM]:groupId3,
-                [e_subField.TO]:defaultGroupId2,
-                [e_subField.ELE_ARRAY]:[user3Id],
-            }
-        }
-        data.values[e_part.METHOD]=e_method.UPDATE
-        expectedErrorRc=fromToError.notOwnFromToRecordId.rc
-        await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user2Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
-    });
-
-
-
-    it('user1 try to update with old values(not change)', async function() {
-        data.values={}
-        // data.values[e_part.RECORD_INFO]=normalRecord
-        data.values[e_part.RECORD_ID]=groupId3
-        data.values[e_part.RECORD_INFO]={
-            [e_field.USER_FRIEND_GROUP.FRIEND_GROUP_NAME]:'新的分组'
-
-        }
-        data.values[e_part.EDIT_SUB_FIELD]={
-            [e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP]:{
-                [e_subField.FROM]:groupId3,
-                [e_subField.TO]:groupId3,
-                [e_subField.ELE_ARRAY]:[user3Id],
-            }
-        }
-        data.values[e_part.METHOD]=e_method.UPDATE
-        expectedErrorRc=0
-        await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
-    });
-
-    it('user1 try to update group name with XSS', async function() {
-        data.values={}
-        // data.values[e_part.RECORD_INFO]=normalRecord
-        data.values[e_part.RECORD_ID]=groupId3
-        data.values[e_part.RECORD_INFO]={
-            [e_field.USER_FRIEND_GROUP.FRIEND_GROUP_NAME]:'<alert>a'
-
-        }
-
-        data.values[e_part.METHOD]=e_method.UPDATE
-        expectedErrorRc=helperError.XSSCheckFailed('group name').rc
-        await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
-    });
-
-    it('user1 try to update group name with default group name', async function() {
-        data.values={}
-        // data.values[e_part.RECORD_INFO]=normalRecord
-        data.values[e_part.RECORD_ID]=groupId3
-        data.values[e_part.RECORD_INFO]={
-            [e_field.USER_FRIEND_GROUP.FRIEND_GROUP_NAME]:userGroupFriend_Configuration.defaultGroupName.enumFormat.MyFriend
-
-        }
-
-        data.values[e_part.METHOD]=e_method.UPDATE
-        expectedErrorRc=controllerError.groupNameAlreadyExistCantUpdate.rc
-        await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
-    });
-
     /****************************************/
-    /*              delete                  */
+    /*              move friend              /
     /****************************************/
-    it('userType check, admin not allow for delete', async function() {
-        data.values={}
-        // data.values[e_part.RECORD_INFO]=normalRecord
-        data.values[e_part.RECORD_ID]=groupId3
-        data.values[e_part.METHOD]=e_method.DELETE
-        expectedErrorRc=controllerCheckerError.userTypeNotExpected.rc
-        await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:adminRootSess,data:data,expectedErrorRc:expectedErrorRc,app:app})
-    });
-    it('not owner cant delete', async function() {
-        data.values={}
-        // data.values[e_part.RECORD_INFO]=normalRecord
-        data.values[e_part.RECORD_ID]=groupId3
-        data.values[e_part.METHOD]=e_method.DELETE
-        expectedErrorRc=controllerError.notUserGroupOwnerCantDelete.rc
-        await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user2Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
-    });
-    it('cant delete default group', async function() {
-        data.values={}
-        // data.values[e_part.RECORD_INFO]=normalRecord
-        data.values[e_part.RECORD_ID]=defaultGroupId1
-        data.values[e_part.METHOD]=e_method.DELETE
-        expectedErrorRc=controllerError.cantDeleteDefaultGroup.rc
-        await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
-    });
+    describe('move friend',async  function() {
+        let user1DefaultGroupId,user1DefaultGroupIdCryptedByUser1,user1DefaultGroupIdCryptedByUser3,user1GroupId1,user1GroupId1CryptedByUser1
+        let user3DefaultGroupId,user3DefaultGroupIdCryptedByUser3,user3DefaultGroupIdCryptedByUser1
+        let unKnownGroupIdCryptedByUser1
+        before('prepare', async function () {
+            data.values = {}
+            url = 'move_friend'
+            finalUrl = baseUrl + url
+            /**     user1 add user3 to be friend        **/
+            let addFriendData={
+                'values':{
+                    [e_part.SINGLE_FIELD]:{
+                        [e_field.ADD_FRIEND_REQUEST.RECEIVER]:user3IdCryptedByUser1
+                    }
+                }
 
-    it('cant delete group still contain friend', async function() {
-        let userDataForEditSubField={
-            [e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP]:{
-                [e_subField.FROM]:defaultGroupId1,
-                [e_subField.TO]:groupId3,
-                [e_subField.ELE_ARRAY]:[user3Id],
             }
-        }
-        await API_helper.updateUserFriendGroup_returnRecord_async({
-            userDataForRecordInfo:undefined,
-            recordId:defaultGroupId1,
-            userDataForEditSubField:userDataForEditSubField,
-            sess:user1Sess,
-            app:app})
-        data.values={}
-        // data.values[e_part.RECORD_INFO]=normalRecord
-        data.values[e_part.RECORD_ID]=groupId3
-        data.values[e_part.METHOD]=e_method.DELETE
-        expectedErrorRc=controllerError.cantDeleteGroupContainFriend.rc
-        await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
-    });
+            // data.values[e_part.RECORD_INFO]=addFriendData
+            await addFriendAPI.createAddFriend_returnRecord_async({data:addFriendData,sess:user1Sess,app:app})
+            /**     unknown group id        **/
+            unKnownGroupIdCryptedByUser1=await commonAPI.cryptObjectId_async({objectId:testData.unExistObjectId,sess:user1Sess})
+            /**     user1 default group id      **/
+            let condition={
+                [e_field.USER_FRIEND_GROUP.OWNER_USER_ID]:user1Id,
+                [e_field.USER_FRIEND_GROUP.FRIEND_GROUP_NAME]:userGroupFriend_Configuration.defaultGroupName.enumFormat.MyFriend,
+            }
+            // ap.wrn('condition',condition)
+            tmpResult=await  common_operation_model.find_returnRecords_async({dbModel:e_dbModel.user_friend_group,condition:condition})
+
+            user1DefaultGroupId=tmpResult[0]['_id']
+            user1DefaultGroupIdCryptedByUser1=await commonAPI.cryptObjectId_async({objectId:user1DefaultGroupId,sess:user1Sess})
+            user1DefaultGroupIdCryptedByUser3=await commonAPI.cryptObjectId_async({objectId:user1DefaultGroupId,sess:user3Sess})
+            /**     user1 create new group     **/
+            let friendGroupData={
+                'values':{
+                    [e_part.RECORD_INFO]:{
+                        [e_field.USER_FRIEND_GROUP.FRIEND_GROUP_NAME]:'new'
+                    }
+                }
+
+            }
+            tmpResult=await friendGroupAPI.createUserFriendGroup_returnRecord_async({data:friendGroupData,sess:user1Sess,app:app})
+            // ap.wrn('tmpResult',tmpResult)
+            user1GroupId1CryptedByUser1=tmpResult['id']
+            user1GroupId1=await commonAPI.decryptObjectId_async({objectId:user1GroupId1CryptedByUser1,sess:user1Sess})
+
+            /**     user3DefaultGroupId     **/
+            condition={
+                [e_field.USER_FRIEND_GROUP.OWNER_USER_ID]:user3Id,
+                [e_field.USER_FRIEND_GROUP.FRIEND_GROUP_NAME]:userGroupFriend_Configuration.defaultGroupName.enumFormat.MyFriend,
+            }
+            tmpResult=await  common_operation_model.find_returnRecords_async({dbModel:e_dbModel.user_friend_group,condition:condition})
+            user3DefaultGroupId=tmpResult[0]['_id']
+            user3DefaultGroupIdCryptedByUser1=await commonAPI.cryptObjectId_async({objectId:user3DefaultGroupId,sess:user1Sess})
+            user3DefaultGroupIdCryptedByUser3=await commonAPI.cryptObjectId_async({objectId:user3DefaultGroupId,sess:user3Sess})
+        })
+        /*                  edit sub field check                */
+        //此错误在checkEditSubFieldEleArray_async检测到
+        it('4.1 duplicate ele in ele array', async function() {
+            data.values={}
+            // data.values[e_part.RECORD_INFO]=normalRecord
+            // data.values[e_part.RECORD_ID]=defaultGroupId1
+            data.values[e_part.EDIT_SUB_FIELD]={
+                [e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP]:{
+                    [e_subField.FROM]:user1GroupId1CryptedByUser1,
+                    [e_subField.TO]:user1DefaultGroupIdCryptedByUser1,
+                    [e_subField.ELE_ARRAY]:[user3IdCryptedByUser1,user3IdCryptedByUser1],
+                }
+            }
+            // data.values[e_part.METHOD]=e_method.UPDATE
+            expectedErrorRc=controllerHelperError.eleArrayContainDuplicateEle.rc
+            await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        });
+        it('4.2 to record not exist', async function() {
+            data.values={}
+            // data.values[e_part.RECORD_INFO]=normalRecord
+            // data.values[e_part.RECORD_ID]=defaultGroupId1
+            data.values[e_part.EDIT_SUB_FIELD]={
+                [e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP]:{
+                    [e_subField.FROM]:user1GroupId1CryptedByUser1,
+                    [e_subField.TO]:unKnownGroupIdCryptedByUser1,
+                    [e_subField.ELE_ARRAY]:[user3IdCryptedByUser1],
+                }
+            }
+            // data.values[e_part.METHOD]=e_method.UPDATE
+            expectedErrorRc=controllerError.moveFriend.fromToRecordIdNotExists.rc
+            await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        });
+        it('4.3 to record not belong to user1', async function() {
+            data.values={}
+            // data.values[e_part.RECORD_INFO]=normalRecord
+            // data.values[e_part.RECORD_ID]=defaultGroupId1
+            data.values[e_part.EDIT_SUB_FIELD]={
+                [e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP]:{
+                    [e_subField.FROM]:user1DefaultGroupIdCryptedByUser1,
+                    [e_subField.TO]:user3DefaultGroupIdCryptedByUser1,
+                    [e_subField.ELE_ARRAY]:[user3IdCryptedByUser1],
+                }
+            }
+            // data.values[e_part.METHOD]=e_method.UPDATE
+            expectedErrorRc=controllerError.moveFriend.notOwnFromToRecordId.rc
+            await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        });
+        /*it('user1 try to move user3 to unknown groupId)', async function() {
+            data.values={}
+            // data.values[e_part.RECORD_INFO]=normalRecord
+            // data.values[e_part.RECORD_ID]=defaultGroupId1
+            data.values[e_part.EDIT_SUB_FIELD]={
+                [e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP]:{
+                    [e_subField.FROM]:user1DefaultGroupIdCryptedByUser1,
+                    [e_subField.TO]:unKnownGroupIdCryptedByUser1,
+                    [e_subField.ELE_ARRAY]:[user3Id],
+                }
+            }
+            data.values[e_part.METHOD]=e_method.UPDATE
+            expectedErrorRc=helperError.toIdNotExist.rc
+            await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        });*/
+/*        it('user1 try to move user3 from normal group to default group, while this group reach max num(manual test，maxUserPerDefaultGroup/maxUserPerGroup =1)', async function() {
+            data.values={}
+            // data.values[e_part.RECORD_INFO]=normalRecord
+            data.values[e_part.RECORD_ID]=defaultGroupId1
+            data.values[e_part.EDIT_SUB_FIELD]={
+                [e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP]:{
+                    [e_subField.FROM]:groupId3,
+                    [e_subField.TO]:defaultGroupId1,
+                    [e_subField.ELE_ARRAY]:[user3Id],
+                }
+            }
+            data.values[e_part.METHOD]=e_method.UPDATE
+            expectedErrorRc=helperError.toRecordNotEnoughRoom.rc
+            await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        });*/
+        it('4.4 user1 try to move not exist userId)', async function() {
+            data.values={}
+            // data.values[e_part.RECORD_INFO]=normalRecord
+            // data.values[e_part.RECORD_ID]=defaultGroupId1
+            data.values[e_part.EDIT_SUB_FIELD]={
+                [e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP]:{
+                    [e_subField.FROM]:user1DefaultGroupIdCryptedByUser1,
+                    [e_subField.TO]:user1GroupId1CryptedByUser1,
+                    [e_subField.ELE_ARRAY]:[unKnownGroupIdCryptedByUser1],
+                }
+            }
+            // data.values[e_part.METHOD]=e_method.UPDATE
+            expectedErrorRc=controllerHelperError.eleArrayRecordIdNotExists.rc
+            await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        });
+
+        /*//checkEditSubFieldFromTo_async
+        it('user1 try to move user3 from unknown groupId', async function() {
+            let fromToError={
+                fromToRecordIdNotExists:controllerError.fromToRecordIdNotExists,
+                notOwnFromToRecordId:controllerError.notOwnFromToRecordId,
+            }
+            data.values={}
+            // data.values[e_part.RECORD_INFO]=normalRecord
+            data.values[e_part.RECORD_ID]=defaultGroupId1
+            data.values[e_part.EDIT_SUB_FIELD]={
+                [e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP]:{
+                    [e_subField.FROM]:testData.unExistObjectId,
+                    [e_subField.TO]:defaultGroupId2,
+                    [e_subField.ELE_ARRAY]:[user3Id],
+                }
+            }
+            data.values[e_part.METHOD]=e_method.UPDATE
+            expectedErrorRc=fromToError.fromToRecordIdNotExists.rc
+            await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        });*/
+        /*it('user2 try to move user3 from group3 which own by user1', async function() {
+            let fromToError={
+                fromToRecordIdNotExists:controllerError.fromToRecordIdNotExists,
+                notOwnFromToRecordId:controllerError.notOwnFromToRecordId,
+            }
+            data.values={}
+            // data.values[e_part.RECORD_INFO]=normalRecord
+            data.values[e_part.RECORD_ID]=defaultGroupId1OfUser1
+            data.values[e_part.EDIT_SUB_FIELD]={
+                [e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP]:{
+                    [e_subField.FROM]:groupId3,
+                    [e_subField.TO]:defaultGroupId2,
+                    [e_subField.ELE_ARRAY]:[user3Id],
+                }
+            }
+            data.values[e_part.METHOD]=e_method.UPDATE
+            expectedErrorRc=fromToError.notOwnFromToRecordId.rc
+            await misc_helper.sendDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user2Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        });*/
+
+
+
+        it('4.5 user1 try to update with same from/to', async function() {
+            data.values={}
+            // data.values[e_part.RECORD_INFO]=normalRecord
+            // data.values[e_part.RECORD_ID]=groupId3
+            // data.values[e_part.RECORD_INFO]={
+            //     [e_field.USER_FRIEND_GROUP.FRIEND_GROUP_NAME]:'新的分组'
+            //
+            // }
+            data.values[e_part.EDIT_SUB_FIELD]={
+                [e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP]:{
+                    [e_subField.FROM]:user1DefaultGroupIdCryptedByUser1,
+                    [e_subField.TO]:user1DefaultGroupIdCryptedByUser1,
+                    [e_subField.ELE_ARRAY]:[user3IdCryptedByUser1],
+                }
+            }
+            // data.values[e_part.METHOD]=e_method.UPDATE
+            expectedErrorRc=0
+            await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        });
+
+
+    })
+
+
+
 })
 
