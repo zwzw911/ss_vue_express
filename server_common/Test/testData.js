@@ -35,8 +35,8 @@ const user={
 
 const admin_user={
     adminRoot:{name:'root',password:'123456',userType:e_adminUserType.ADMIN_ROOT},
-    adminUser1:{name:'adminUser1',password:'123456',userType:e_adminUserType.ADMIN_NORMAL,[e_field.ADMIN_USER.USER_PRIORITY]:[e_adminPriorityType.CREATE_ADMIN_USER]},//no update
-    adminUser2:{name:'adminUser2',password:'654321',userType:e_adminUserType.ADMIN_NORMAL,[e_field.ADMIN_USER.USER_PRIORITY]:[e_adminPriorityType.UPDATE_ADMIN_USER,e_adminPriorityType.DELETE_ADMIN_USER]},//no create
+    adminUser1:{name:'adminUser1',password:'123456',userType:e_adminUserType.ADMIN_NORMAL,[e_field.ADMIN_USER.USER_PRIORITY]:[e_adminPriorityType.CREATE_ADMIN_USER,e_adminPriorityType.IMPEACH_DEAL]},//no update
+    adminUser2:{name:'adminUser2',password:'654321',userType:e_adminUserType.ADMIN_NORMAL,[e_field.ADMIN_USER.USER_PRIORITY]:[e_adminPriorityType.UPDATE_ADMIN_USER,e_adminPriorityType.DELETE_ADMIN_USER,e_adminPriorityType.IMPEACH_ASSIGN]},//no create
     adminUser3:{name:'adminUser3',password:'654321',userType:e_adminUserType.ADMIN_NORMAL,[e_field.ADMIN_USER.USER_PRIORITY]:[e_adminPriorityType.CREATE_ADMIN_USER]},//no delete
     // useNotExistForModel:{name:'test',password:'123456',userType:e_adminUserType.NORMAL},
 }

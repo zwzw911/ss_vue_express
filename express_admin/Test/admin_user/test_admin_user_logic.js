@@ -121,11 +121,11 @@ describe('admin user dispatch:',async  function() {
 
         tmpResult = await generateTestData.getAdminUserCryptedUserId_async({app: app, adminRootSess:adminRootSess,adminApp: adminApp})
         // ap.wrn('tmp',tmpResult)
-        adminUser1IdCryptedByAdminUser1 = tmpResult['adminUser1IdCryptedByUser1']
+        adminUser1IdCryptedByAdminUser1 = tmpResult['adminUser1IdCryptedByAdminUser1']
         adminUser1IdCryptedByAdminUser2 = tmpResult['adminUser1IdCryptedByAdminUser2']
         // adminUser1IdCryptedByUser3 = tmpResult['adminUser1IdCryptedByUser3']
         adminUser2IdCryptedByAdminUser1 = tmpResult['adminUser2IdCryptedByAdminUser1']
-        adminUser2IdCryptedByAdminUser2 = tmpResult['adminUser2IdCryptedByUser2']
+        adminUser2IdCryptedByAdminUser2 = tmpResult['adminUser2IdCryptedByAdminUser2']
         // adminUser2IdCryptedByUser3 = tmpResult['adminUser2IdCryptedByUser3']
         // adminUser3IdCryptedByUser1 = tmpResult['adminUser3IdCryptedByUser1']
         // adminUser3IdCryptedByUser2 = tmpResult['adminUser3IdCryptedByUser2']

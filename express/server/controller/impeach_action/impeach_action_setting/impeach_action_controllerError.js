@@ -16,7 +16,7 @@ const controllerError={
     //50640～50950
     create:{
         invalidActionForUser:{rc:50940,msg:`操作不正确`},
-        forbidActionForUser:{rc:50942,msg:`操作不允许`},
+        // forbidActionForUser:{rc:50942,msg:`操作不允许`},
         forbidInputOwnerId:{rc:50944,msg:{client:`输入错误`,server:`普通用户不允许设置处理人`}},
 
         relatedImpeachAlreadyDeleted:{rc:50946,msg:`举报已被删除，无法继续操作`},

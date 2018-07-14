@@ -51,13 +51,14 @@ async function dispatcher_async(req){
     let tmpResult
     let applyRange
     ap.inf('req.route.stack[0].method',req.route.stack[0].method)
+    ap.inf('req.body.values',req.body.values)
     //dispatcher只检测req的结构，以及req中method的格式和值，以便后续可以直接根据method进行调用
     //interval和robot检测
     await controllerPreCheck.commonPreCheck_async({req:req,collName:collName})
 
     switch (req.route.stack[0].method){
         case 'post':
-            if(originalUrl==='/admin_user/' || originalUrl==='/admin_user/') {
+            if(originalUrl==='/impeach_action' || originalUrl==='/impeach_action/') {
                 applyRange=e_applyRange.CREATE
                 userLoginCheck={
                     needCheck:true,
@@ -80,59 +81,10 @@ async function dispatcher_async(req){
                 result=controllerPreCheck.inputPreCheck({req:req,expectedPart:expectedPart,collName:collName,applyRange:e_applyRange.CREATE,arr_currentSearchRange:arr_currentSearchRange})
                 // ap.wrn('result',result)
                 if(result.rc>0){return Promise.reject(result)}
-                result = await createImpeachAction_async({req: req,applyRange:applyRange})
-                return Promise.resolve(result)
+                return await createImpeachAction_async({req: req,applyRange:applyRange})
+                // return Promise.resolve(result)
             }
     }
-}
-async function dispatcher_async(req){
-    let collName=controllerSetting.MAIN_HANDLED_COLL_NAME,tmpResult
-    // console.log(`impeach action for admin  in`)
-    //dispatcher只检测req的结构，以及req中method的格式和值，以便后续可以直接根据method进行调用
-    tmpResult=controllerHelper.checkMethod({req:req})
-    if(tmpResult.rc>0){
-        return Promise.reject(tmpResult)
-    }
-
-    //因为method已经检测过，所有要从req.body.values中删除，防止重复检查
-    let method=req.body.values[e_part.METHOD]
-    delete req.body.values[e_part.METHOD]
-
-    let userLoginCheck,penalizeCheck,expectedPart
-    switch (method){
-        case e_method.CREATE: //create
-            // console.log(`impeach action for admin create in`)
-            userLoginCheck={
-                needCheck:true,
-                error:controllerError.notLoginCantChangeAction
-            }
-            penalizeCheck={
-                /*                penalizeType:e_penalizeType.NO_ARTICLE,
-                 penalizeSubType:e_penalizeSubType.CREATE,
-                 penalizeCheckError:controllerError.userInPenalizeNoCommentCreate*/
-            }
-            expectedPart=[e_part.RECORD_INFO]
-            //console.log(`==============>userLoginChecke for impeach action================>${JSON.stringify(controllerError.notLoginCantChangeAction)}`)
-            await controllerHelper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart})
-            //await helper.preCheck_async({req:req,collName:collName,method:method,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck,expectedPart:expectedPart,e_field:e_field,e_coll:e_coll,e_internal_field:e_internal_field,maxSearchKeyNum:maxSearchKeyNum,maxSearchPageNum:maxSearchPageNum})
-// console.log(`precheck done=====.`)
-            tmpResult=await create_async(req)
-            // console.log(`create  tmpResult ${JSON.stringify(tmpResult)}`)
-            break;
-        case e_method.SEARCH:// search
-            break;
-        case e_method.UPDATE: //update
-            break;
-        case e_method.DELETE: //delete
-            break;
-        case e_method.MATCH: //match(login_async)
-            break;
-        default:
-            console.log(`======>ERR:Wont in cause method check before`)
-        // console.log(`match tmpResult ${JSON.stringify(tmpResult)}`)
-    }
-
-    return Promise.resolve(tmpResult)
 }
 
 

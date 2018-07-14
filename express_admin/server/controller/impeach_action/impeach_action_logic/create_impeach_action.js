@@ -92,9 +92,31 @@ async  function createImpeachAction_async({req,applyRange}){
     /*********************************************/
     dataConvert.constructCreateCriteria(docValue)
 // console.log(`convert docValue============>${JSON.stringify(docValue)}`)
-    /*******************************************************************************************/
-    /*                                     特殊字段 预 处理                                    */
-    /*******************************************************************************************/
+
+    /**********************************************/
+    /**  CALL FUNCTION:inputValueLogicValidCheck **/
+    /**********************************************/
+    let commonParam={docValue:docValue,userId:userId,collName:collName}
+    // ap.inf('userId',userId)
+    let stepParam={
+        [e_inputValueLogicCheckStep.FK_EXIST_AND_PRIORITY]:{flag:false,optionalParam:undefined},//impeachId可以被creator和adminUser操作，所以不能自行PRIORITY的操作
+        [e_inputValueLogicCheckStep.ENUM_DUPLICATE]:{flag:true,optionalParam:undefined},
+        //object：coll中，对单个字段进行unique检测，需要的额外查询条件
+        [e_inputValueLogicCheckStep.SINGLE_FIELD_VALUE_UNIQUE]:{flag:true,optionalParam:{singleValueUniqueCheckAdditionalCondition:undefined}},
+        //数组，元素是字段名。默认对所有dataType===string的字段进行XSS检测，但是可以通过此变量，只选择部分字段
+        [e_inputValueLogicCheckStep.XSS]:{flag:true,optionalParam:{expectedXSSFields:undefined}},
+        //object，对compoundField进行unique检测需要的额外条件，key从model->mongo->compound_unique_field_config.js中获得
+        //在internalValue之后执行
+        // [e_inputValueLogicCheckStep.COMPOUND_VALUE_UNIQUE]:{flag:true,optionalParam:{compoundFiledValueUniqueCheckAdditionalCheckCondition:undefined}},
+        //Object，配置resourceCheck的一些参数,{requiredResource,resourceProfileRange,userId,containerId}
+        /**   判断 撤销/编辑中/提交但未被处理 的举报数是否超出预订范围 **/
+        [e_inputValueLogicCheckStep.RESOURCE_USAGE]:{flag:false,optionalParam:{resourceUsageOption:{requiredResource:undefined,resourceProfileRange:undefined,userId:undefined,containerId:undefined}}},
+    }
+    await controllerInputValueLogicCheck.inputValueLogicValidCheck_async({commonParam:commonParam,stepParam:stepParam})
+
+    /*********************************************/
+    /******      特殊处理（impeach）       *******/
+    /*********************************************/
 
     /*******************************************************************************************/
     /******************         ACTION是否有对应的priority支持          ************************/
@@ -118,13 +140,6 @@ async  function createImpeachAction_async({req,applyRange}){
         return Promise.reject(controllerError.create.ownerIdMustExists)
     }
 
-
-    /*******************************************************************************************/
-    /*                                    fk value是否存在                                     */
-    /*******************************************************************************************/
-    if(undefined!==fkConfig[collName]){
-        await controllerChecker.ifFkValueExist_async({docValue:docValue,collFkConfig:fkConfig[collName],collFieldChineseName:e_chineseName[collName]})
-    }
 
     /**********************************************************************************************************************************/
     /* *****************************************         特殊字段检查(cont)       ***********************************************/
@@ -160,59 +175,12 @@ async  function createImpeachAction_async({req,applyRange}){
     }
     // console.log(`after special field check docValue=======>${JSON.stringify(docValue)}`)
 
-    /*******************************************************************************************/
-    /*                                  enum unique check(enum in array)                       */
-    /*******************************************************************************************/
-    // console.log(`browserInputRule[collName]==========> ${JSON.stringify(browserInputRule[collName])}`)
-    // console.log(`docValue==========> ${JSON.stringify(docValue)}`)
-    tmpResult=controllerChecker.ifEnumHasDuplicateValue({collValue:docValue,collRule:browserInputRule[collName]})
-    // console.log(`duplicate check result ==========> ${JSON.stringify(tmpResult)}`)
-    if(tmpResult.rc>0){
-        return Promise.reject(tmpResult)
-    }
-    /*******************************************************************************************/
-    /*                                       authorization check                               */
-    /*******************************************************************************************/
-    /*
-    *   以下检测可以省略，因为
-    *   impeach已经删除(如果已经删除，在fkValue check中就会报错)
-    *   impeach已经结束（会在action check）
-    * */
-   /* //检查impeach 1. 是否为删除 2. 是否为结束（DONE（finish/reject））
-    impeachId=docValue[e_field.IMPEACH_ACTION.IMPEACH_ID]
-    //impeach为删除，则无法更改state（由ifFkValueExist_async确保impeachId是存在的)
-    impeachDoc=await common_operation_model.findById_returnRecord_async({dbModel:e_dbModel.impeach,id:impeachId,selectedFields:'-cDate'})
-    // 1. impeach已经删除(如果已经删除，在fkValue check中就会报错)
-    if(undefined!==impeachDoc['dDate']){
-        return Promise.reject(controllerError.relatedImpeachAlreadyDeleted)
-    }
-    //2. impeach已经结束（会在action check）
-    if(undefined!==impeachDoc[e_field.IMPEACH.CURRENT_STATE] && -1!==endState.indexOf(impeachDoc[e_field.IMPEACH.CURRENT_STATE])){
-        return Promise.reject(controllerError.impeachAlreadyDone)
-    }*/
 
 
 
 
 
-
-    /*******************************************************************************************/
-    /*                                       preCondition check                               */
-    /*******************************************************************************************/
-
-    /*******************************************************************************************/
-    /*                                       resource check                                    */
-    /*******************************************************************************************/
-
-// console.log(`createUser_async docValue===> ${JSON.stringify(docValue)}`)
-    /*******************************************************************************************/
-    /*                                          unique check                                   */
-    /*******************************************************************************************/
-    //单字段的unique check
-    if(undefined!==e_uniqueField[collName] &&  e_uniqueField[collName].length>0) {
-        let additionalCheckCondition//={[e_field.ADMIN_USER.DOC_STATUS]:e_docStatus.DONE}
-        await controllerChecker.ifFieldInDocValueUnique_async({collName: collName, docValue: docValue,additionalCheckCondition:additionalCheckCondition})
-    }
+    return await businessLogic_async({docValue:docValue,collName:collName,userId:userId,applyRange:applyRange})
 
 
 
@@ -227,17 +195,21 @@ async function businessLogic_async({docValue,collName,userId,applyRange}){
     /*******************************************************************************************/
     // console.log(`before hash is ${JSON.stringify(docValue)}`)
     let internalValue={}
-    internalValue[e_field.IMPEACH_ACTION.CREATOR_COLL]=userCollName
+    internalValue[e_field.IMPEACH_ACTION.CREATOR_COLL]=e_coll.ADMIN_USER
     internalValue[e_field.IMPEACH_ACTION.CREATOR_ID]=userId
 
     if(e_env.DEV===currentEnv){
-        let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInputRule:inputRule[collName],collInternalRule:internalInputRule[collName],method:req.body.values[e_part.METHOD]})
+        let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInternalRule:internalInputRule[collName],applyRange:applyRange})
         // console.log(`internalValue check result====>   ${JSON.stringify(tmpResult)}`)
         if(tmpResult.rc>0){
             return Promise.reject(tmpResult)
         }
     }
-    Object.assign(docValue,internalValue)
+    if(undefined===docValue){
+        docValue=internalValue
+    }else{
+        Object.assign(docValue,internalValue)
+    }
     // console.log(`internal check  is ${JSON.stringify(docValue)}`)
     // let currentColl=e_coll.USER_SUGAR
     // console.log(`value to be insert is ${JSON.stringify(docValue)}`)
@@ -261,6 +233,7 @@ async function businessLogic_async({docValue,collName,userId,applyRange}){
     //action插入 db
     await common_operation_model.create_returnRecord_async({dbModel:e_dbModel.impeach_action,value:docValue})
     //state更新到impeach
+    let impeachId=docValue[e_field.IMPEACH_ACTION.IMPEACH_ID]
     await  common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel.impeach,id:impeachId,updateFieldsValue:docValueForUpdateImpeach})
     return Promise.resolve({rc:0})
 }

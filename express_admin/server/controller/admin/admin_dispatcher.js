@@ -182,7 +182,7 @@ async function dispatcher_async(req){
                 // ap.inf('before decrypt',req.body.values)
                 // ap.inf('salt',tempSalt)
                 controllerHelper.decryptInputValue({req: req,expectedPart: expectedPart,salt: tempSalt,browserCollRule: browserInputRule[collName]})
-                ap.inf('after decrypt',req.body.values)
+                // ap.inf('after decrypt',req.body.values)
                 //对输入值进行检测（此时objectId已经解密）
                 result = controllerPreCheck.inputPreCheck({req: req,expectedPart: expectedPart,collName: collName,applyRange: applyRange, arr_currentSearchRange: arr_currentSearchRange})
                 // ap.inf('create use inputPreCheck result',result)

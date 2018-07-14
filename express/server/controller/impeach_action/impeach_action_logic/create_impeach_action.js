@@ -101,9 +101,10 @@ async  function createImpeachAction_async({req,applyRange}){
         return Promise.reject(controllerError.create.invalidActionForUser)
     }
     /**     操作不能为CREATE(create是创建impeach的时候自动创建的)     **/
-    if(e_impeachUserAction.CREATE=== docValue[e_field.IMPEACH_ACTION.ACTION]){
+    //已经在上一步cover了
+/*    if(e_impeachUserAction.CREATE=== docValue[e_field.IMPEACH_ACTION.ACTION]){
         return Promise.reject(controllerError.create.forbidActionForUser)
-    }
+    }*/
     /**  adminOwnerId只能由admin设置  **/
     if(undefined!==docValue[e_field.IMPEACH_ACTION.ADMIN_OWNER_ID]){
         return Promise.reject(controllerError.create.forbidInputOwnerId)
