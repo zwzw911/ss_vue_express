@@ -50,12 +50,14 @@ const generalCookieSetting={
     httpOnly:true, //通过http传递cookie
 }
 
+const baseDir=`D:/U/`
 const absolutePath={
-    'express':'H:/ss_vue_express/express/',
-    'express_admin':'H:/ss_vue_express/express_admin/',
-    'server_common':'H:/ss_vue_express/server_common/',
-    'image_path_for_test':'H:/ss_vue_express/test_data/',
-    'tmpImage':'H:/ss_vue_express/tmp/',//临时存储图片的目录（userPhoto上传为dataUrl，临时转换成图片后获得解析度，然后删除）
+    'express':`${baseDir}ss_vue_express/express/`,
+    'express_admin':`${baseDir}ss_vue_express/express_admin/`,
+    'server_common':`${baseDir}ss_vue_express/server_common/`,
+    'image_path_for_test':`${baseDir}ss_vue_express/test_data/`,
+    'tmpImage':`${baseDir}ss_vue_express/tmp/`,//临时存储图片的目录（userPhoto上传为dataUrl，临时转换成图片后获得解析度，然后删除）
+    'ss_vue_view':`${baseDir}ss_vue_view/`,
 }
 module.exports={
     currentEnv,

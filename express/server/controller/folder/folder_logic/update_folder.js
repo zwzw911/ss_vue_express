@@ -148,6 +148,7 @@ async function updateFolder_async({req,applyRange}){
     /**********          业务处理        *********/
     /*********************************************/
     let updatedRecord=await businessLogic_async({docValue:docValue,collName:collName,recordId:recordId,applyRange:applyRange})
+    // ap.inf('businessLogic_async done')
     /*********************************************/
     /**********      加密 敏感数据       *********/
     /*********************************************/
@@ -157,7 +158,7 @@ async function updateFolder_async({req,applyRange}){
     /*********************************************/
     controllerHelper.deleteFieldInRecord({record:updatedRecord,fieldsToBeDeleted:undefined})
 
-    return Promise.resolve(updatedRecord)
+    return Promise.resolve({rc:0,msg:updatedRecord})
 }
 
 

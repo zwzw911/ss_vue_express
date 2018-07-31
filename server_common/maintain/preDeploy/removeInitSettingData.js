@@ -10,30 +10,41 @@ const dbModelArray=require('../../constant/genEnum/dbModelInArray')
 
 async function remove_all_init_data_async(){
     let dbModelInArray=[e_dbModel.store_path,e_dbModel.category,e_dbModel.resource_profile,e_dbModel.admin_user,e_dbModel.admin_sugar]
+    let promiseTobeExec=[]
     for(let singleDbModel of dbModelInArray){
-        await common_operation_model.removeAll_async({dbModel:singleDbModel})
+        promiseTobeExec.push(common_operation_model.removeAll_async({dbModel:singleDbModel}))
+        // await
     }
+    return await Promise.all(promiseTobeExec)
 }
 async function remove_all_async(){
     // let dbModelInArray=[e_dbModel.store_path,e_dbModel.category,e_dbModel.resource_profile,e_dbModel.admin_user]
+    let promiseTobeExec=[]
     for(let singleDbModel of dbModelArray){
-        await common_operation_model.removeAll_async({dbModel:singleDbModel})
+        promiseTobeExec.push(common_operation_model.removeAll_async({dbModel:singleDbModel}))
     }
+    return await Promise.all(promiseTobeExec)
+    // ap.inf('remove_all_async done')
 }
-remove_all_init_data_async().then(
-    (result)=>{
-        ap.inf('remove_all_init_data_async done',result)
-    },
-    (err)=>{
-        ap.err('remove_all_init_data_async fail',err)
-        // console.log(`removeAll fail========>${JSON.stringify(err)}`)
-    }
-)
-remove_all_async().then(
-    (result)=>{
-        ap.inf('remove_all_async done',result)
-    },
-    (err)=>{
-        ap.err('remove_all_async fail',err)
-    }
-)
+// remove_all_init_data_async().then(
+//     (result)=>{
+//         ap.inf('remove_all_init_data_async done',result)
+//     },
+//     (err)=>{
+//         ap.err('remove_all_init_data_async fail',err)
+//         // console.log(`removeAll fail========>${JSON.stringify(err)}`)
+//     }
+// )
+// remove_all_async().then(
+//     (result)=>{
+//         ap.inf('remove_all_async done',result)
+//     },
+//     (err)=>{
+//         ap.err('remove_all_async fail',err)
+//     }
+// )
+
+module.exports={
+    remove_all_init_data_async,
+    remove_all_async,
+}

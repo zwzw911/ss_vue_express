@@ -7,7 +7,7 @@ const controllerError=require('../../server/controller/user_friend_group/user_fr
 let baseUrl="/user_friend_group/",finalUrl,url
 /******************    内置lib和第三方lib  **************/
 const ap=require(`awesomeprint`)
-const assert=require(`assert`)
+// const assert=require(`assert`)
 /******************    待测函数  **************/
 const app=require('../../app')
 const adminApp=require(`../../../express_admin/app`)

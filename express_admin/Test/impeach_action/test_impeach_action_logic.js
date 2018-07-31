@@ -214,14 +214,14 @@ describe('admin user dispatch:',async  function() {
         let impeachId2=await commonAPI.decryptObjectId_async({objectId:impeachId2CryptedByUser2,sess:user2Sess})
         // ap.wrn('impeachId2',impeachId2)
         impeachId2CryptedByAdminUser2=await commonAPI.cryptObjectId_async({objectId:impeachId2,sess:adminUser2Sess})
-        ap.wrn('impeachId2',impeachId2)
+        // ap.wrn('impeachId2',impeachId2)
         impeachActionInfo={
             [e_field.IMPEACH_ACTION.ACTION]:e_impeachAdminAction.ASSIGN,
             [e_field.IMPEACH_ACTION.IMPEACH_ID]:impeachId2CryptedByAdminUser2,
             // [e_field.IMPEACH_ACTION.]:adminUser2Id,
             [e_field.IMPEACH_ACTION.ADMIN_OWNER_ID]:adminUser1IdCryptedByAdminUser2,
         }
-        ap.wrn('ASSIGN')
+        // ap.wrn('ASSIGN')
         await impeachActionAPI.createImpeachAction_async({sess:adminUser2Sess,impeachActionInfo:impeachActionInfo,app:adminApp})
         //accept impeach
         impeachId2CryptedByAdminUser1=await commonAPI.cryptObjectId_async({objectId:impeachId2,sess:adminUser1Sess})
@@ -230,7 +230,8 @@ describe('admin user dispatch:',async  function() {
             [e_field.IMPEACH_ACTION.IMPEACH_ID]:impeachId2CryptedByAdminUser1,
             [e_field.IMPEACH_ACTION.ADMIN_OWNER_ID]:adminUser1IdCryptedByAdminUser1,
         }
-        ap.wrn('ACCEPT')
+        // ap.wrn('adminUser1IdCryptedByAdminUser1',adminUser1IdCryptedByAdminUser1)
+        // ap.wrn('ACCEPT')
         // ap.wrn('adminUser1IdCryptedByAdminUser1',adminUser1IdCryptedByAdminUser1)
         await impeachActionAPI.createImpeachAction_async({sess:adminUser1Sess,impeachActionInfo:impeachActionInfo,app:adminApp})
         //finish impeach

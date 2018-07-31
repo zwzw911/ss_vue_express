@@ -302,18 +302,21 @@ describe('impeach:',async  function() {
             await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
         })
 
-        it('2.3 user2 try to update impeach with impeached object change', async function () {
-            data.values = {
-                [e_part.RECORD_ID]: impeachId1CryptedByUser2,
-                [e_part.RECORD_INFO]: {
-                    [e_field.IMPEACH.IMPEACHED_ARTICLE_ID]: impeachId1CryptedByUser2,
-                }
-            }
-            expectedErrorRc = browserInputRule.impeach.impeachedArticleId.require.error.rc
-            await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user2Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
-        })
+        // it('2.3 user2 try to update impeach with impeached object change', async function () {
+        //     data.values = {
+        //         [e_part.RECORD_ID]: impeachId1CryptedByUser2,
+        //         [e_part.RECORD_INFO]: {
+        //             [e_field.IMPEACH.IMPEACHED_ARTICLE_ID]: impeachId1CryptedByUser2,
+        //         }
+        //     }
+        //     expectedErrorRc = browserInputRule.impeach.impeachedArticleId.require.error.rc
+        //     await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user2Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        // })
 
         it('2.4 user2 try to update impeach with CSS', async function () {
+            let tmpResult=await common_operation_model.findById_returnRecord_async({dbModel:e_dbModel.impeach,id:impeachId1})
+// ap.inf('tmpResult',tmpResult)
+            await common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel.impeach,id:impeachId1,updateFieldsValue:{[e_field.IMPEACH.CURRENT_STATE]:e_impeachState.NEW}})
             data.values = {
                 [e_part.RECORD_ID]: impeachId1CryptedByUser2,
                 [e_part.RECORD_INFO]: {
@@ -322,9 +325,11 @@ describe('impeach:',async  function() {
             }
             expectedErrorRc = inputValueLogicCheckError.ifValueXSS.fieldValueXSS({}).rc
             await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user2Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+
+            await common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel.impeach,id:impeachId1,updateFieldsValue:{[e_field.IMPEACH.CURRENT_STATE]:tmpResult[e_field.IMPEACH.CURRENT_STATE]}})
         })
         it('2.5 user2 try to update submitted impeach', async function () {
-            await common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel.impeach,updateFieldsValue:{[e_field.IMPEACH.CURRENT_STATE]:e_impeachState.WAIT_ASSIGN}})
+            await common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel.impeach,id:impeachId1,updateFieldsValue:{[e_field.IMPEACH.CURRENT_STATE]:e_impeachState.WAIT_ASSIGN}})
             data.values = {
                 [e_part.RECORD_ID]: impeachId1CryptedByUser2,
                 [e_part.RECORD_INFO]: {

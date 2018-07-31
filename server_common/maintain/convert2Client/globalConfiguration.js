@@ -108,5 +108,5 @@ module.exports={
 
 
 
-convertGlobalConfiguration({absFilePath:'D:/ss_vue_express/server_common/constant/config/globalConfiguration.js',resultPath:'D:/ss_vue_view/src/constant/globalConfiguration/globalConfiguration.js'})
+//convertGlobalConfiguration({absFilePath:'D:/ss_vue_express/server_common/constant/config/globalConfiguration.js',resultPath:'D:/ss_vue_view/src/constant/globalConfiguration/globalConfiguration.js'})
 

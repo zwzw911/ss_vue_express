@@ -1,4 +1,4 @@
-/*    gene by H:\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-7-13   */ 
+/*    gene by D:\U\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-7-30   */ 
  
 "use strict"
 const internalInputRule={
@@ -241,6 +241,21 @@ const internalInputRule={
             format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":101672,"msg":"所属文档必须是objectId"},"mongoError":{"rc":201672,"msg":"所属文档必须是objectId"}},
         },
     },
+    article_like_dislike:{
+        authorId:{
+            chineseName:"提交者",
+            dataType:"objectId",
+            applyRange:["create"],
+            require:{"define":{"create":true},"error":{"rc":101350,"msg":"提交者不能为空"},"mongoError":{"rc":201350,"msg":"提交者不能为空"}},
+            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":101352,"msg":"提交者必须是objectId"},"mongoError":{"rc":201352,"msg":"提交者必须是objectId"}},
+        },
+        like:{
+            chineseName:"喜欢",
+            dataType:"boolean",
+            applyRange:["create"],
+            require:{"define":{"create":true},"error":{"rc":101354,"msg":"喜欢不能为空"},"mongoError":{"rc":201354,"msg":"喜欢不能为空"}},
+        },
+    },
     folder:{
         authorId:{
             chineseName:"创建人",
@@ -257,19 +272,50 @@ const internalInputRule={
             min:{"define":1,"error":{"rc":101256,"msg":"目录层级最小为1"},"mongoError":{"rc":201256,"msg":"目录层级最小为1"}},
         },
     },
-    article_like_dislike:{
-        authorId:{
-            chineseName:"提交者",
+    add_friend_request:{
+        originator:{
+            chineseName:"发起人",
             dataType:"objectId",
             applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":101350,"msg":"提交者不能为空"},"mongoError":{"rc":201350,"msg":"提交者不能为空"}},
-            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":101352,"msg":"提交者必须是objectId"},"mongoError":{"rc":201352,"msg":"提交者必须是objectId"}},
+            require:{"define":{"create":true},"error":{"rc":102150,"msg":"发起人不能为空"},"mongoError":{"rc":202150,"msg":"发起人不能为空"}},
+            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":102152,"msg":"发起人必须是objectId"},"mongoError":{"rc":202152,"msg":"发起人必须是objectId"}},
         },
-        like:{
-            chineseName:"喜欢",
-            dataType:"boolean",
+        status:{
+            chineseName:"当前请求所处状态",
+            dataType:"string",
+            applyRange:["create","update_scalar"],
+            require:{"define":{"create":true,"update_scalar":true},"error":{"rc":102154,"msg":"状态不能为空"},"mongoError":{"rc":202154,"msg":"状态不能为空"}},
+            enum:{"define":["1","2","3"],"error":{"rc":102156,"msg":"状态未定义"},"mongoError":{"rc":202156,"msg":"状态未定义"}},
+        },
+        declineTimes:{
+            chineseName:"被拒次数",
+            dataType:"int",
+            applyRange:["update_scalar"],
+            require:{"define":{"update_scalar":false},"error":{"rc":102158,"msg":"被拒次数不能为空"},"mongoError":{"rc":202158,"msg":"被拒次数不能为空"}},
+            max:{"define":10,"error":{"rc":102160,"msg":"拒绝次数最大10次"},"mongoError":{"rc":202160,"msg":"拒绝次数最大10次"}},
+        },
+        acceptTimes:{
+            chineseName:"同意次数",
+            dataType:"int",
+            applyRange:["update_scalar"],
+            require:{"define":{"update_scalar":false},"error":{"rc":102162,"msg":"同意次数不能为空"},"mongoError":{"rc":202162,"msg":"同意次数不能为空"}},
+            max:{"define":10,"error":{"rc":102164,"msg":"同意次数最大10次"},"mongoError":{"rc":202164,"msg":"同意次数最大10次"}},
+        },
+    },
+    join_public_group_request:{
+        creatorId:{
+            chineseName:"请求人",
+            dataType:"objectId",
             applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":101354,"msg":"喜欢不能为空"},"mongoError":{"rc":201354,"msg":"喜欢不能为空"}},
+            require:{"define":{"create":true},"error":{"rc":102850,"msg":"请求人不能为空"},"mongoError":{"rc":202850,"msg":"请求人不能为空"}},
+            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":102852,"msg":"请求人必须是objectId"},"mongoError":{"rc":202852,"msg":"请求人必须是objectId"}},
+        },
+        handleResult:{
+            chineseName:"请求处理结果",
+            dataType:"string",
+            applyRange:["create","update_scalar"],
+            require:{"define":{"create":true,"update_scalar":true},"error":{"rc":102854,"msg":"请求处理结果不能为空"},"mongoError":{"rc":202854,"msg":"请求处理结果不能为空"}},
+            enum:{"define":["1","2","3"],"error":{"rc":102856,"msg":"请求处理结果未定义"},"mongoError":{"rc":202856,"msg":"请求处理结果未定义"}},
         },
     },
     member_penalize:{
@@ -279,6 +325,15 @@ const internalInputRule={
             applyRange:["create"],
             require:{"define":{"create":true},"error":{"rc":102250,"msg":"处罚发起者不能为空"},"mongoError":{"rc":202250,"msg":"处罚发起者不能为空"}},
             format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":102252,"msg":"处罚发起者必须是objectId"},"mongoError":{"rc":202252,"msg":"处罚发起者必须是objectId"}},
+        },
+    },
+    public_group:{
+        creatorId:{
+            chineseName:"群创建者",
+            dataType:"objectId",
+            applyRange:["create"],
+            require:{"define":{"create":true},"error":{"rc":102350,"msg":"群创建者不能为空"},"mongoError":{"rc":202350,"msg":"群创建者不能为空"}},
+            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":102352,"msg":"群创建者必须是objectId"},"mongoError":{"rc":202352,"msg":"群创建者必须是objectId"}},
         },
     },
     public_group_event:{
@@ -330,188 +385,6 @@ const internalInputRule={
             require:{"define":{"create":false,"update_scalar":false},"error":{"rc":102754,"msg":"用户所处群不能为空"},"mongoError":{"rc":202754,"msg":"用户所处群不能为空"}},
             arrayMaxLength:{"define":20,"error":{"rc":102756,"msg":"用户最多加入20个群"},"mongoError":{"rc":202756,"msg":"用户最多加入20个群"}},
             format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":102758,"msg":"用户所处群必须是objectId"},"mongoError":{"rc":202758,"msg":"用户所处群必须是objectId"}},
-        },
-    },
-    join_public_group_request:{
-        creatorId:{
-            chineseName:"请求人",
-            dataType:"objectId",
-            applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":102850,"msg":"请求人不能为空"},"mongoError":{"rc":202850,"msg":"请求人不能为空"}},
-            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":102852,"msg":"请求人必须是objectId"},"mongoError":{"rc":202852,"msg":"请求人必须是objectId"}},
-        },
-        handleResult:{
-            chineseName:"请求处理结果",
-            dataType:"string",
-            applyRange:["create","update_scalar"],
-            require:{"define":{"create":true,"update_scalar":true},"error":{"rc":102854,"msg":"请求处理结果不能为空"},"mongoError":{"rc":202854,"msg":"请求处理结果不能为空"}},
-            enum:{"define":["1","2","3"],"error":{"rc":102856,"msg":"请求处理结果未定义"},"mongoError":{"rc":202856,"msg":"请求处理结果未定义"}},
-        },
-    },
-    public_group:{
-        creatorId:{
-            chineseName:"群创建者",
-            dataType:"objectId",
-            applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":102350,"msg":"群创建者不能为空"},"mongoError":{"rc":202350,"msg":"群创建者不能为空"}},
-            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":102352,"msg":"群创建者必须是objectId"},"mongoError":{"rc":202352,"msg":"群创建者必须是objectId"}},
-        },
-    },
-    add_friend_request:{
-        originator:{
-            chineseName:"发起人",
-            dataType:"objectId",
-            applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":102150,"msg":"发起人不能为空"},"mongoError":{"rc":202150,"msg":"发起人不能为空"}},
-            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":102152,"msg":"发起人必须是objectId"},"mongoError":{"rc":202152,"msg":"发起人必须是objectId"}},
-        },
-        status:{
-            chineseName:"当前请求所处状态",
-            dataType:"string",
-            applyRange:["create","update_scalar"],
-            require:{"define":{"create":true,"update_scalar":true},"error":{"rc":102154,"msg":"状态不能为空"},"mongoError":{"rc":202154,"msg":"状态不能为空"}},
-            enum:{"define":["1","2","3"],"error":{"rc":102156,"msg":"状态未定义"},"mongoError":{"rc":202156,"msg":"状态未定义"}},
-        },
-        declineTimes:{
-            chineseName:"被拒次数",
-            dataType:"int",
-            applyRange:["update_scalar"],
-            require:{"define":{"update_scalar":false},"error":{"rc":102158,"msg":"被拒次数不能为空"},"mongoError":{"rc":202158,"msg":"被拒次数不能为空"}},
-            max:{"define":10,"error":{"rc":102160,"msg":"拒绝次数最大10次"},"mongoError":{"rc":202160,"msg":"拒绝次数最大10次"}},
-        },
-        acceptTimes:{
-            chineseName:"同意次数",
-            dataType:"int",
-            applyRange:["update_scalar"],
-            require:{"define":{"update_scalar":false},"error":{"rc":102162,"msg":"同意次数不能为空"},"mongoError":{"rc":202162,"msg":"同意次数不能为空"}},
-            max:{"define":10,"error":{"rc":102164,"msg":"同意次数最大10次"},"mongoError":{"rc":202164,"msg":"同意次数最大10次"}},
-        },
-    },
-    impeach_comment_image:{
-        name:{
-            chineseName:"举报图片名称",
-            dataType:"string",
-            applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":103350,"msg":"举报图片名称不能为空"},"mongoError":{"rc":203350,"msg":"举报图片名称不能为空"}},
-            format:{"define":/^[\u4E00-\u9FFF\w]{1,250}\.(jpg|png|jpeg)$/,"error":{"rc":103352,"msg":"举报图片名必须由4-255个字符组成"},"mongoError":{"rc":203352,"msg":"举报图片名必须由4-255个字符组成"}},
-        },
-        hashName:{
-            chineseName:"举报图片名称",
-            dataType:"string",
-            applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":103354,"msg":"举报图片名称不能为空"},"mongoError":{"rc":203354,"msg":"举报图片名称不能为空"}},
-            format:{"define":/^[0-9a-f]{32}\.(jpg|jpeg|png)$/,"error":{"rc":103356,"msg":"hash名必须由35~36个字符组成"},"mongoError":{"rc":203356,"msg":"hash名必须由35~36个字符组成"}},
-        },
-        pathId:{
-            chineseName:"存储路径",
-            dataType:"objectId",
-            applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":103358,"msg":"存储路径不能为空"},"mongoError":{"rc":203358,"msg":"存储路径不能为空"}},
-            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":103360,"msg":"存储路径必须是objectId"},"mongoError":{"rc":203360,"msg":"存储路径必须是objectId"}},
-        },
-        sizeInMb:{
-            chineseName:"图片大小",
-            dataType:"int",
-            applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":103362,"msg":"图片大小不能为空"},"mongoError":{"rc":203362,"msg":"图片大小不能为空"}},
-            max:{"define":2,"error":{"rc":103364,"msg":"图片大小不能超过2MB"},"mongoError":{"rc":203364,"msg":"图片大小不能超过2MB"}},
-        },
-        authorId:{
-            chineseName:"图片上传者",
-            dataType:"objectId",
-            applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":103366,"msg":"图片上传者不能为空"},"mongoError":{"rc":203366,"msg":"图片上传者不能为空"}},
-            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":103368,"msg":"图片上传者必须是objectId"},"mongoError":{"rc":203368,"msg":"图片上传者必须是objectId"}},
-        },
-    },
-    impeach_attachment:{
-        name:{
-            chineseName:"举报附件名称",
-            dataType:"string",
-            applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":103650,"msg":"举报附件名称不能为空"},"mongoError":{"rc":203650,"msg":"举报附件名称不能为空"}},
-            format:{"define":/^[\u4E00-\u9FFF\w]{1,250}\.[a-z]{3,4}$/,"error":{"rc":103652,"msg":"举报附件必须由4-255个字符组成"},"mongoError":{"rc":203652,"msg":"举报附件必须由4-255个字符组成"}},
-        },
-        hashName:{
-            chineseName:"举报附件名称",
-            dataType:"string",
-            applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":103654,"msg":"举报附件名称不能为空"},"mongoError":{"rc":203654,"msg":"举报附件名称不能为空"}},
-            format:{"define":/[0-9a-f]{40}\.(txt|7z|log)/,"error":{"rc":103656,"msg":"举报附件的hash名必须由27~28个字符组成"},"mongoError":{"rc":203656,"msg":"举报附件的hash名必须由27~28个字符组成"}},
-        },
-        authorId:{
-            chineseName:"附件上传者",
-            dataType:"objectId",
-            applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":103658,"msg":"附件上传者不能为空"},"mongoError":{"rc":203658,"msg":"附件上传者不能为空"}},
-            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":103660,"msg":"附件上传者必须是objectId"},"mongoError":{"rc":203660,"msg":"附件上传者必须是objectId"}},
-        },
-        sizeInMb:{
-            chineseName:"附件大小",
-            dataType:"int",
-            applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":10662,"msg":"附件大小不能为空"},"mongoError":{"rc":203662,"msg":"附件大小不能为空"}},
-            max:{"define":10,"error":{"rc":103664,"msg":"附件大小不能超过10MB"},"mongoError":{"rc":203664,"msg":"附件大小不能超过10MB"}},
-        },
-        pathId:{
-            chineseName:"存储路径",
-            dataType:"objectId",
-            applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":103666,"msg":"存储路径不能为空"},"mongoError":{"rc":203666,"msg":"存储路径不能为空"}},
-            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":103668,"msg":"存储路径必须是objectId"},"mongoError":{"rc":203668,"msg":"存储路径必须是objectId"}},
-        },
-    },
-    impeach_image:{
-        name:{
-            chineseName:"举报图片名称",
-            dataType:"string",
-            applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":103550,"msg":"举报图片名称不能为空"},"mongoError":{"rc":203550,"msg":"举报图片名称不能为空"}},
-            format:{"define":/^[\u4E00-\u9FFF\w]{1,250}\.(jpg|png|jpeg)$/,"error":{"rc":103552,"msg":"举报图片名必须由4-255个字符组成"},"mongoError":{"rc":203552,"msg":"举报图片名必须由4-255个字符组成"}},
-        },
-        hashName:{
-            chineseName:"举报图片名称",
-            dataType:"string",
-            applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":103554,"msg":"举报图片名称不能为空"},"mongoError":{"rc":203554,"msg":"举报图片名称不能为空"}},
-            format:{"define":/^[0-9a-f]{32}\.(jpg|jpeg|png)$/,"error":{"rc":103556,"msg":"hash名必须由35~36个字符组成"},"mongoError":{"rc":203556,"msg":"hash名必须由35~36个字符组成"}},
-        },
-        pathId:{
-            chineseName:"存储路径",
-            dataType:"objectId",
-            applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":103558,"msg":"存储路径不能为空"},"mongoError":{"rc":203558,"msg":"存储路径不能为空"}},
-            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":103560,"msg":"存储路径必须是objectId"},"mongoError":{"rc":203560,"msg":"存储路径必须是objectId"}},
-        },
-        sizeInMb:{
-            chineseName:"图片大小",
-            dataType:"int",
-            applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":103562,"msg":"图片大小不能为空"},"mongoError":{"rc":203562,"msg":"图片大小不能为空"}},
-            max:{"define":2,"error":{"rc":103564,"msg":"图片大小不能超过2MB"},"mongoError":{"rc":203564,"msg":"图片大小不能超过2MB"}},
-        },
-        authorId:{
-            chineseName:"图片上传者",
-            dataType:"objectId",
-            applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":103566,"msg":"图片上传者不能为空"},"mongoError":{"rc":203566,"msg":"图片上传者不能为空"}},
-            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":103568,"msg":"图片上传者必须是objectId"},"mongoError":{"rc":203568,"msg":"图片上传者必须是objectId"}},
-        },
-    },
-    impeach_action:{
-        creatorId:{
-            chineseName:"状态改变人",
-            dataType:"objectId",
-            applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":103450,"msg":"状态改变人不能为空"},"mongoError":{"rc":203450,"msg":"状态改变人不能为空"}},
-            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":103452,"msg":"状态改变人必须是objectId"},"mongoError":{"rc":203452,"msg":"状态改变人必须是objectId"}},
-        },
-        creatorColl:{
-            chineseName:"状态改变人表",
-            dataType:"string",
-            applyRange:["create"],
-            require:{"define":{"create":true},"error":{"rc":103454,"msg":"状态改变人表不能为空"},"mongoError":{"rc":203454,"msg":"状态改变人表不能为空"}},
-            enum:{"define":["user","admin_user"],"error":{"rc":103456,"msg":"受罚子类型不正确"},"mongoError":{"rc":203456,"msg":"受罚子类型不正确"}},
         },
     },
     impeach:{
@@ -599,6 +472,59 @@ const internalInputRule={
             require:{"define":{"create":false,"update_scalar":false},"error":{"rc":103194,"msg":"附件总大小不能为空"},"mongoError":{"rc":203194,"msg":"附件总大小不能为空"}},
         },
     },
+    impeach_action:{
+        creatorId:{
+            chineseName:"状态改变人",
+            dataType:"objectId",
+            applyRange:["create"],
+            require:{"define":{"create":true},"error":{"rc":103450,"msg":"状态改变人不能为空"},"mongoError":{"rc":203450,"msg":"状态改变人不能为空"}},
+            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":103452,"msg":"状态改变人必须是objectId"},"mongoError":{"rc":203452,"msg":"状态改变人必须是objectId"}},
+        },
+        creatorColl:{
+            chineseName:"状态改变人表",
+            dataType:"string",
+            applyRange:["create"],
+            require:{"define":{"create":true},"error":{"rc":103454,"msg":"状态改变人表不能为空"},"mongoError":{"rc":203454,"msg":"状态改变人表不能为空"}},
+            enum:{"define":["user","admin_user"],"error":{"rc":103456,"msg":"受罚子类型不正确"},"mongoError":{"rc":203456,"msg":"受罚子类型不正确"}},
+        },
+    },
+    impeach_attachment:{
+        name:{
+            chineseName:"举报附件名称",
+            dataType:"string",
+            applyRange:["create"],
+            require:{"define":{"create":true},"error":{"rc":103650,"msg":"举报附件名称不能为空"},"mongoError":{"rc":203650,"msg":"举报附件名称不能为空"}},
+            format:{"define":/^[\u4E00-\u9FFF\w]{1,250}\.[a-z]{3,4}$/,"error":{"rc":103652,"msg":"举报附件必须由4-255个字符组成"},"mongoError":{"rc":203652,"msg":"举报附件必须由4-255个字符组成"}},
+        },
+        hashName:{
+            chineseName:"举报附件名称",
+            dataType:"string",
+            applyRange:["create"],
+            require:{"define":{"create":true},"error":{"rc":103654,"msg":"举报附件名称不能为空"},"mongoError":{"rc":203654,"msg":"举报附件名称不能为空"}},
+            format:{"define":/[0-9a-f]{40}\.(txt|7z|log)/,"error":{"rc":103656,"msg":"举报附件的hash名必须由27~28个字符组成"},"mongoError":{"rc":203656,"msg":"举报附件的hash名必须由27~28个字符组成"}},
+        },
+        authorId:{
+            chineseName:"附件上传者",
+            dataType:"objectId",
+            applyRange:["create"],
+            require:{"define":{"create":true},"error":{"rc":103658,"msg":"附件上传者不能为空"},"mongoError":{"rc":203658,"msg":"附件上传者不能为空"}},
+            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":103660,"msg":"附件上传者必须是objectId"},"mongoError":{"rc":203660,"msg":"附件上传者必须是objectId"}},
+        },
+        sizeInMb:{
+            chineseName:"附件大小",
+            dataType:"int",
+            applyRange:["create"],
+            require:{"define":{"create":true},"error":{"rc":10662,"msg":"附件大小不能为空"},"mongoError":{"rc":203662,"msg":"附件大小不能为空"}},
+            max:{"define":10,"error":{"rc":103664,"msg":"附件大小不能超过10MB"},"mongoError":{"rc":203664,"msg":"附件大小不能超过10MB"}},
+        },
+        pathId:{
+            chineseName:"存储路径",
+            dataType:"objectId",
+            applyRange:["create"],
+            require:{"define":{"create":true},"error":{"rc":103666,"msg":"存储路径不能为空"},"mongoError":{"rc":203666,"msg":"存储路径不能为空"}},
+            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":103668,"msg":"存储路径必须是objectId"},"mongoError":{"rc":203668,"msg":"存储路径必须是objectId"}},
+        },
+    },
     impeach_comment:{
         authorId:{
             chineseName:"评论作者",
@@ -648,6 +574,80 @@ const internalInputRule={
             applyRange:["create","update_scalar"],
             require:{"define":{"create":true,"update_scalar":true},"error":{"rc":103274,"msg":"记录状态不能为空"},"mongoError":{"rc":203274,"msg":"记录状态不能为空"}},
             enum:{"define":["1","2"],"error":{"rc":103276,"msg":"document状态不是预定义的值"},"mongoError":{"rc":203276,"msg":"document状态不是预定义的值"}},
+        },
+    },
+    impeach_comment_image:{
+        name:{
+            chineseName:"举报图片名称",
+            dataType:"string",
+            applyRange:["create"],
+            require:{"define":{"create":true},"error":{"rc":103350,"msg":"举报图片名称不能为空"},"mongoError":{"rc":203350,"msg":"举报图片名称不能为空"}},
+            format:{"define":/^[\u4E00-\u9FFF\w]{1,250}\.(jpg|png|jpeg)$/,"error":{"rc":103352,"msg":"举报图片名必须由4-255个字符组成"},"mongoError":{"rc":203352,"msg":"举报图片名必须由4-255个字符组成"}},
+        },
+        hashName:{
+            chineseName:"举报图片名称",
+            dataType:"string",
+            applyRange:["create"],
+            require:{"define":{"create":true},"error":{"rc":103354,"msg":"举报图片名称不能为空"},"mongoError":{"rc":203354,"msg":"举报图片名称不能为空"}},
+            format:{"define":/^[0-9a-f]{32}\.(jpg|jpeg|png)$/,"error":{"rc":103356,"msg":"hash名必须由35~36个字符组成"},"mongoError":{"rc":203356,"msg":"hash名必须由35~36个字符组成"}},
+        },
+        pathId:{
+            chineseName:"存储路径",
+            dataType:"objectId",
+            applyRange:["create"],
+            require:{"define":{"create":true},"error":{"rc":103358,"msg":"存储路径不能为空"},"mongoError":{"rc":203358,"msg":"存储路径不能为空"}},
+            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":103360,"msg":"存储路径必须是objectId"},"mongoError":{"rc":203360,"msg":"存储路径必须是objectId"}},
+        },
+        sizeInMb:{
+            chineseName:"图片大小",
+            dataType:"int",
+            applyRange:["create"],
+            require:{"define":{"create":true},"error":{"rc":103362,"msg":"图片大小不能为空"},"mongoError":{"rc":203362,"msg":"图片大小不能为空"}},
+            max:{"define":2,"error":{"rc":103364,"msg":"图片大小不能超过2MB"},"mongoError":{"rc":203364,"msg":"图片大小不能超过2MB"}},
+        },
+        authorId:{
+            chineseName:"图片上传者",
+            dataType:"objectId",
+            applyRange:["create"],
+            require:{"define":{"create":true},"error":{"rc":103366,"msg":"图片上传者不能为空"},"mongoError":{"rc":203366,"msg":"图片上传者不能为空"}},
+            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":103368,"msg":"图片上传者必须是objectId"},"mongoError":{"rc":203368,"msg":"图片上传者必须是objectId"}},
+        },
+    },
+    impeach_image:{
+        name:{
+            chineseName:"举报图片名称",
+            dataType:"string",
+            applyRange:["create"],
+            require:{"define":{"create":true},"error":{"rc":103550,"msg":"举报图片名称不能为空"},"mongoError":{"rc":203550,"msg":"举报图片名称不能为空"}},
+            format:{"define":/^[\u4E00-\u9FFF\w]{1,250}\.(jpg|png|jpeg)$/,"error":{"rc":103552,"msg":"举报图片名必须由4-255个字符组成"},"mongoError":{"rc":203552,"msg":"举报图片名必须由4-255个字符组成"}},
+        },
+        hashName:{
+            chineseName:"举报图片名称",
+            dataType:"string",
+            applyRange:["create"],
+            require:{"define":{"create":true},"error":{"rc":103554,"msg":"举报图片名称不能为空"},"mongoError":{"rc":203554,"msg":"举报图片名称不能为空"}},
+            format:{"define":/^[0-9a-f]{32}\.(jpg|jpeg|png)$/,"error":{"rc":103556,"msg":"hash名必须由35~36个字符组成"},"mongoError":{"rc":203556,"msg":"hash名必须由35~36个字符组成"}},
+        },
+        pathId:{
+            chineseName:"存储路径",
+            dataType:"objectId",
+            applyRange:["create"],
+            require:{"define":{"create":true},"error":{"rc":103558,"msg":"存储路径不能为空"},"mongoError":{"rc":203558,"msg":"存储路径不能为空"}},
+            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":103560,"msg":"存储路径必须是objectId"},"mongoError":{"rc":203560,"msg":"存储路径必须是objectId"}},
+        },
+        sizeInMb:{
+            chineseName:"图片大小",
+            dataType:"int",
+            applyRange:["create"],
+            require:{"define":{"create":true},"error":{"rc":103562,"msg":"图片大小不能为空"},"mongoError":{"rc":203562,"msg":"图片大小不能为空"}},
+            max:{"define":2,"error":{"rc":103564,"msg":"图片大小不能超过2MB"},"mongoError":{"rc":203564,"msg":"图片大小不能超过2MB"}},
+        },
+        authorId:{
+            chineseName:"图片上传者",
+            dataType:"objectId",
+            applyRange:["create"],
+            require:{"define":{"create":true},"error":{"rc":103566,"msg":"图片上传者不能为空"},"mongoError":{"rc":203566,"msg":"图片上传者不能为空"}},
+            format:{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":103568,"msg":"图片上传者必须是objectId"},"mongoError":{"rc":203568,"msg":"图片上传者必须是objectId"}},
         },
     },
     like_dislike_static:{

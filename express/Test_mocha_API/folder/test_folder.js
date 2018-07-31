@@ -29,7 +29,7 @@ const mongoEnum=server_common_file_require.mongoEnum
 const e_applyRange=server_common_file_require.inputDataRuleType.ApplyRange
 
 const e_part=nodeEnum.ValidatePart
-const e_method=nodeEnum.Method
+
 const e_coll=require('../../server/constant/genEnum/DB_Coll').Coll
 const e_field=require('../../server/constant/genEnum/DB_field').Field
 //for fkValue check
@@ -125,11 +125,11 @@ describe('dispatch', function() {
         // ap.inf('user3Info',user3Info)
         user3Id=user3Info[`userId`]//非加密
         user3Sess=user3Info[`sess`]
-
+        // ap.wrn('user recreate done')
         // adminRootSess=await API_helper.adminUserLogin_returnSess_async({userData:testData.admin_user.adminRoot,adminApp:adminApp})
         adminRootSess=await adminUserComponentFunction.adminUserLogin_returnSess_async({userData:testData.admin_user.adminRoot,adminApp:adminApp})
         adminRootId=db_operation_helper.getAdminUserId_async({userName:testData.admin_user.adminRoot.name})
-
+        // ap.wrn('admin root recreate done')
         /*** create penalize for user3 ***/
         let adminRootSalt=await commonAPI.getTempSalt_async({sess:adminRootSess})
         // ap.inf('root user salt',adminRootSalt)
@@ -368,6 +368,11 @@ describe('dispatch', function() {
     /****** manual test   *******/
     /** 需要手工在db中改门限值 ***/
     it('5.1 create: resource check', async function() {
+        let resourceRange=e_resourceRange.MAX_FOLDER_NUM_PER_USER
+        let originalSetting=await db_operation_helper.getResourceProfileSetting_async({resourceRange:resourceRange,resourceType:e_resourceType.BASIC})
+        // ap.wrn('originalSetting',originalSetting)
+        await db_operation_helper.changeResourceProfileSetting_async({resourceRange:resourceRange,resourceType:e_resourceType.BASIC,num:0})
+
         finalUrl=baseUrl
         // normalRecord[e_field.FOLDER.NAME]='test'
         normalRecord[e_field.FOLDER.PARENT_FOLDER_ID]=user1ParentFolderIdCrypted
@@ -375,10 +380,13 @@ describe('dispatch', function() {
         // let sess=await userAPI.getFirstSession({app})
         data.values={[e_part.RECORD_INFO]:normalRecord}
         await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+
+        //恢复原始设置
+        await db_operation_helper.changeResourceProfileSetting_async({resourceRange:resourceRange,resourceType:e_resourceType.BASIC,num:originalSetting['num'],size:originalSetting['size']})
     });
-    it('5.2 update:parentId can be null', async function() {
+    it('5.2 update sucessfully:parentId can be null', async function() {
         finalUrl=baseUrl
-        expectedErrorRc=controllerError.update.parentFolderIdCantBeSelf.rc
+        expectedErrorRc=0
         normalRecord[e_field.FOLDER.PARENT_FOLDER_ID]=null
         data.values={[e_part.RECORD_INFO]:normalRecord,[e_part.RECORD_ID]:user1ParentFolderIdCrypted}
         await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})

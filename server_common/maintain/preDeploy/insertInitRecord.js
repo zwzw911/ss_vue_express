@@ -111,15 +111,19 @@ async function createRoot(){
 
 async function all(){
     // await removeAll().catch(e=>{console.log(`remove all failed with cause ${JSON.stringify(e)}`)})
-    await storePath().catch(e=>{console.log(`storePath failed with cause ${JSON.stringify(e)}`)})
-    await category().catch(e=>{console.log(`category failed with cause ${JSON.stringify(e)}`)})
-    await resourceProfile().catch(e=>{console.log(`resourceProfile failed with cause ${JSON.stringify(e)}`)})
-    await createRoot().catch(e=>{console.log(`createRoot failed with cause ${JSON.stringify(e)}`)})
+    await storePath().catch(e=>{ap.err(`storePath failed with cause ${JSON.stringify(e)}`)})
+    await category().catch(e=>{ap.err(`category failed with cause ${JSON.stringify(e)}`)})
+    await resourceProfile().catch(e=>{ap.err(`resourceProfile failed with cause ${JSON.stringify(e)}`)})
+    await createRoot().catch(e=>{ap.err(`createRoot failed with cause ${JSON.stringify(e)}`)})
+    ap.inf('init all done')
 }
 
-all().then(
-    (v)=>{ap.inf('insert all init done',v)},
-    (e)=>{ap.inf('insert all init fail',e)}
-)
+// all().then(
+//     (v)=>{ap.inf('insert all init done',v)},
+//     (e)=>{ap.inf('insert all init fail',e)}
+// )
 
+module.exports={
+    all,
+}
 

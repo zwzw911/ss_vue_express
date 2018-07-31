@@ -67,7 +67,7 @@ const controllerHelperError=server_common_file_require.helperError.helper//requi
 // const controllerCheckerError=server_common_file_require.helperError.checker
 const controllerCheckerError=server_common_file_require.helperError.checker
 const systemError=server_common_file_require.systemError
-// const objectDeepCopy=server_common_file_require.misc.objectDeepCopy
+const objectDeepCopy=server_common_file_require.misc.objectDeepCopy
 
 
 
@@ -239,12 +239,14 @@ describe('user1 register unique check:',async  function() {
             data={values:{[e_part.RECORD_ID]:'1234',[e_part.RECORD_INFO]:normalRecord}}
             await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
         });
-        it('2.5 inputValue recordInfo:  fieldValue after decrypt is string, but invalid objecId', async function() {
-            normalRecord[e_field.IMPEACH_COMMENT.IMPEACH_ID]=impeachId1CryptedByUser1
-            expectedErrorRc=validateError.validateFormat.inputValuePartRecordIdDecryptedValueFormatWrong.rc
-            data={values:{[e_part.RECORD_ID]:'3410cae041c38fcae905d65501cf7f776ea6b127850b0955269481f6a4db1b22',[e_part.RECORD_INFO]:normalRecord}}
-            await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,fieldName:e_field.IMPEACH_COMMENT.IMPEACH_ID,app:app})
-        });
+        //impeachId is not apply for update
+        // it('2.5 inputValue recordInfo:  fieldValue after decrypt is string, but invalid objecId', async function() {
+        //     normalRecord[e_field.IMPEACH_COMMENT.IMPEACH_ID]=impeachId1CryptedByUser1
+        //     let recordInfo=objectDeepCopy(normalRecord)
+        //     expectedErrorRc=validateError.validateFormat.inputValuePartRecordIdDecryptedValueFormatWrong.rc
+        //     data={values:{[e_part.RECORD_ID]:'3410cae041c38fcae905d65501cf7f776ea6b127850b0955269481f6a4db1b22',[e_part.RECORD_INFO]:normalRecord}}
+        //     await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,fieldName:e_field.IMPEACH_COMMENT.IMPEACH_ID,app:app})
+        // });
     })
 })
 

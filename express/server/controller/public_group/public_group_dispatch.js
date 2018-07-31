@@ -224,7 +224,7 @@ async function dispatcher_async({req}){
                     return requestExit_async({req:req})
                 }
                 if(originalUrl===`/${expectedBaseUrl}/manageAdminMember` || originalUrl===`/${expectedBaseUrl}/manageAdminMember/`){
-                    ap.wrn('manageAdminMember in')
+                    // ap.wrn('manageAdminMember in')
                     applyRange = e_applyRange.UPDATE_ARRAY
                     userLoginCheck = {
                         needCheck: true,

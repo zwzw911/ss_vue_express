@@ -36,6 +36,7 @@ router.post('/',function(req,res,next){
     )
     // next()
 })
+
 router.put('/',function(req,res,next){
     userDispatcher_async(req).then(
         (v)=>{
@@ -116,6 +117,20 @@ router.delete('/logout',function(req,res,next){
         }
     )
 })
+router.put('/uploadUserPhoto',function(req,res,next){
+    // ap.inf('put upload user photo in')
+    userDispatcher_async(req).then(
+        (v)=>{
+            ap.inf(`upload photo  success, result:  ${JSON.stringify(v)}`)
+            return res.json(v)
+        },
+        (err)=>{
+            ap.err(`upload photo  fail: ${JSON.stringify(err)}`)
+            return res.json(genFinalReturnResult(err))
+        }
+    )
+})
+
 router.post('/uniqueCheck',function(req,res,next){
     userDispatcher_async(req).then(
         (v)=>{
@@ -155,19 +170,7 @@ router.put('/changePassword',function(req,res,next){
     )
 })
 
-router.put('/uploadUserPhoto',function(req,res,next){
-    // ap.inf('put upload user photo in')
-    userDispatcher_async(req).then(
-        (v)=>{
-            ap.inf(`upload photo  success, result:  ${JSON.stringify(v)}`)
-            return res.json(v)
-        },
-        (err)=>{
-            ap.err(`upload photo  fail: ${JSON.stringify(err)}`)
-            return res.json(genFinalReturnResult(err))
-        }
-    )
-})
+
 
 router.get('/captcha',function(req,res,next){
 // ap.inf('router in')

@@ -315,8 +315,9 @@ describe('impeach comment:',async function() {
             data.values[e_part.RECORD_INFO] = normalRecord
             data.values[e_part.RECORD_ID] = impeachCommentId1CryptedByUser1
 
-            expectedErrorRc = validateError.validateValue.fieldValueShouldNotExistSinceNoRelateApplyRange({}).rc
-            await misc_helper.putDataToAPI_compareFieldRc_async({APIUrl: finalUrl,sess: user1Sess,data: data,expectedErrorRc: expectedErrorRc,fieldName:[e_field.IMPEACH_COMMENT.IMPEACH_ID],app: app})
+            //expectedErrorRc = validateError.validateValue.fieldValueShouldNotExistSinceNoRelateApplyRange({}).rc
+            expectedErrorRc=controllerCheckerError.ifObjectIdCrypted.fieldNotMatchApplyRange.rc
+            await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl: finalUrl,sess: user1Sess,data: data,expectedErrorRc: expectedErrorRc,fieldName:[e_field.IMPEACH_COMMENT.IMPEACH_ID],app: app})
 
             delete normalRecord[e_field.IMPEACH_COMMENT.IMPEACH_ID]
         })

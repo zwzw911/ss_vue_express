@@ -40,7 +40,7 @@ const browserInputRule=require('../../constant/inputRule/browserInputRule').brow
 // const convertError=require('../../constant/error/maintainError').convertBrowserRuleError
 const objectDeepCopy=require('../../function/assist/misc').objectDeepCopy
 
-const clientEnumValue=require('../../constant/genEnum/clientEnumValue')
+const clientEnumValue=require('../../constant/genEnum/clientEnum')
 
 const rightResult={rc:0}
 let indent=`    `
@@ -69,7 +69,7 @@ function generateClientInputAttribute({originRulePath,absResultPath}){
 
 
     // let allCollResult={'inputValueForCreate':{},'inputValueForUpdate':{}}
-    // ap.inf('fileexport',fileExport)
+    // ap.inf('fileexport',Object.keys(fileExport))
     let allCollAttribute={}
     for(let collName in fileExport){
         //对每个coll的rule定义，转换成iview的rule格式（但是require尚未处理）
@@ -98,12 +98,15 @@ function generateSingleCollInputAttribute({collName,collRuleDefinition,absFilesP
 
     //获得匹配js文件，并读取文件内容（JSON.strinify object或有\，影响正则匹配）
     for(let singleFilePath of absFilesPath){
-        // ap.inf('singleFilePath',singleFilePath)
+
         if(path.basename(singleFilePath).split('.')[0]===collName){
+            // ap.inf('path.basename(singleFilePath).split(\'.\')[0]',path.basename(singleFilePath).split('.')[0])
             fileContent =fs.readFileSync(singleFilePath,'utf8')
+
         }
     }
     //去除注释，空白和换行
+    // ap.inf('fileContent',fileContent)
     fileContent=str.deleteCommentSpaceReturn({string:fileContent})
     // ap.inf('fileciontent',fileContent)
     // for(let coll in ruleForCreate){

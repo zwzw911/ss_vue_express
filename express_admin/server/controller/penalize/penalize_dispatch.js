@@ -50,6 +50,7 @@ async function dispatcher_async(req){
     let expectedPart
     let result=dispatchError.common.unknownRequestUrl
     let applyRange
+    ap.inf('req.body.values',req.body.values)
     // let tmpResult
     //dispatcher只检测req的结构，以及req中method的格式和值，以便后续可以直接根据method进行调用
     //interval和robot检测
@@ -124,6 +125,7 @@ async function dispatcher_async(req){
                 let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
                 let tempSalt=userInfo.tempSalt
                 controllerHelper.decryptInputValue({req:req,expectedPart:expectedPart,salt:tempSalt,browserCollRule:browserInputRule[collName]})
+                // ap.wrn('decryoted result',req.body.values)
                 /*/!**********************************************!/
                 /!****** 传入的敏感数据（objectId）解密  ******!/
                 /!****** 在inputPreCheck前完成，保证解密后的objectId可以使用rule进行判别  ******!/
@@ -139,7 +141,7 @@ async function dispatcher_async(req){
 
                 result=controllerPreCheck.inputPreCheck({req:req,expectedPart:expectedPart,collName:collName,applyRange:e_applyRange.DELETE,arr_currentSearchRange:arr_currentSearchRange})
                 if(result.rc>0){return Promise.reject(result)}
-                result =await delete_async(req)
+                result =await delete_async({req})
                 return Promise.resolve(result)
             }
             break

@@ -255,13 +255,14 @@ describe('impeach:',async  function() {
             expectedErrorRc=controllerError.create.invalidActionForUser.rc
             await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
         })
-        it('1.8 user1 try to create create_action ', async function () {
+        it('1.8 user1 try to change action to an exist impeach action ', async function () {
             normalRecord[e_field.IMPEACH_ACTION.IMPEACH_ID]=impeachId1CryptedByUser1
             // normalRecord[e_field.IMPEACH_ACTION.CREATOR_ID]=user1IdCryptedByUser1
             normalRecord[e_field.IMPEACH_ACTION.ACTION]=e_impeachAllAction.CREATE
 
             data.values[e_part.RECORD_INFO]=normalRecord
-            expectedErrorRc=controllerError.create.forbidActionForUser.rc
+            // expectedErrorRc=controllerError.create.invalidActionBaseOnCurrentAction.rc
+            expectedErrorRc=
             await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
         })
         it('1.9 admin owner id not allow for normal user ', async function () {

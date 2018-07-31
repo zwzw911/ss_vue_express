@@ -94,7 +94,7 @@ function generateInitInputValue({collName,collRuleDefinition}){
             }
 
             if(undefined!==collRuleDefinition[field][ruleFiledName.REQUIRE]['define'][e_applyRange.UPDATE_SCALAR] || undefined!==collRuleDefinition[field][ruleFiledName.REQUIRE]['define'][e_applyRange.UPDATE_ARRAY]){
-                inputValueForUpdate[field]=null //设成null，而不是undefined，否则字段会不存在
+                inputValueForUpdate[field]='notUsed' //设成notUsed(null会影响update的fieldValue；undefined，会导致字段会存在)
             }
 
         }

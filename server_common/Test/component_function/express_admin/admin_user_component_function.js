@@ -56,10 +56,11 @@ async function reCreateAdminUser_returnSessUserId_async({userData,adminRootSess,
 
 
     //生成并获得captcha(for create user)
+    // ap.wrn('adminRootSess',adminRootSess)
     await adminUserAPI.genAdminCaptcha({sess:adminRootSess,adminApp:adminApp})
     // ap.wrn('generate captcha done')
     let captcha=await adminUserAPI.getAdminCaptcha({sess:adminRootSess})
-    // ap.wrn('get captcha done')
+    // ap.wrn('get root captcha done')
     //只能由已经登录的有权限的admin，才能建立用户（而不是可以任意注册）
     await adminUserAPI.createAdminUser_async({userData:userData,sess:adminRootSess,captcha:captcha,adminApp:adminApp})
 

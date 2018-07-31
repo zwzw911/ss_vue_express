@@ -57,6 +57,7 @@ async function genAdminCaptcha({sess,adminApp}){
 //首次上，需要获得临时session
 //无需传入任何数据
 async function getAdminCaptcha({sess}){
+    // ap.wrn('getAdminCaptcha:sess',sess)
     let sessContent=sess.split('=')[1]
     let sessId=sessContent.split('.')[0].replace('s%3A','')
     // ap.inf('key',`${sessId}:captcha`)

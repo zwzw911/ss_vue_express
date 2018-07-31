@@ -196,7 +196,7 @@ describe('admin user dispatch:',async  function() {
             data.values[e_part.CAPTCHA]=adminRootCaptcha
             // data.values[e_part.METHOD]=e_method.CREATE
             // console.log(`Object.assign(testData.admin_user.adminUser1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]})=========>${JSON.stringify(Object.assign(testData.admin_user.adminUser1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]}))}`)
-            data.values[e_part.RECORD_INFO]=Object.assign({},testData.admin_user.adminUser3,{[e_field.ADMIN_USER.USER_PRIORITY]:['1','1']})
+            data.values[e_part.RECORD_INFO]=Object.assign({},testData.admin_user.adminUser4,{[e_field.ADMIN_USER.USER_PRIORITY]:['1','1']})
             expectedErrorRc=inputValueLogicCheckError.ifEnumHasDuplicateValue.containDuplicateValue({}).rc
             await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:adminRootSess,data:data,expectedErrorRc:expectedErrorRc,app:adminApp})
 
@@ -218,7 +218,7 @@ describe('admin user dispatch:',async  function() {
             // data.values[e_part.METHOD]=e_method.CREATE
             data.values[e_part.CAPTCHA]=adminUser1Captcha
             // console.log(`Object.assign(testData.admin_user.adminUser1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]})=========>${JSON.stringify(Object.assign(testData.admin_user.adminUser1,{[e_field.ADMIN_USER.USER_PRIORITY]:[99999]}))}`)
-            data.values[e_part.RECORD_INFO]=Object.assign({},testData.admin_user.adminUser3,{[e_field.ADMIN_USER.USER_PRIORITY]:[e_adminPriorityType.IMPEACH_REVIEW]})
+            data.values[e_part.RECORD_INFO]=Object.assign({},testData.admin_user.adminUser4,{[e_field.ADMIN_USER.USER_PRIORITY]:[e_adminPriorityType.IMPEACH_REVIEW]})
             // console.log(`data=====>${JSON.stringify(data.values[e_part.RECORD_INFO])}`)
             expectedErrorRc=controllerError.create.createUserPriorityNotInheritedFromParent.rc
             await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:adminUser1Sess,data:data,expectedErrorRc:expectedErrorRc,app:adminApp})

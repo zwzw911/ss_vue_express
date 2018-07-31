@@ -46,7 +46,7 @@ const assist=require('../../common/assist')
 * */
 
 /*                           department                        */
-const collName='add_friend'
+const collName='add_friend_request'
 
 /*               直接自定义validator（而不是通过函数产生），为了加快执行速度         */
 /*

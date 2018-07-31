@@ -23,6 +23,17 @@ const ChineseName={
         'lastAccountUpdateDate':'账号更改日期',
         'lastSignInDate':'上次登录时间',
     },
+    category:{
+        'name':'分类名称',
+        'parentCategoryId':'上级分类',
+    },
+    resource_profile:{
+        'name':'资源配置名称',
+        'range':'资源配置范围',
+        'type':'资源配置类型',
+        'maxNum':'最大文件数量',
+        'maxDiskSpaceInMb':'最大存储空间',
+    },
     store_path:{
         'name':'存储路径名称',
         'path':'存储路径',
@@ -32,31 +43,6 @@ const ChineseName={
         'highThreshold':'容量上限值',
         'usedSize':'已使用容量',
         'status':'存储路径状态',
-    },
-    resource_profile:{
-        'name':'资源配置名称',
-        'range':'资源配置范围',
-        'type':'资源配置类型',
-        'maxNum':'最大文件数量',
-        'maxDiskSpaceInMb':'最大存储空间',
-    },
-    category:{
-        'name':'分类名称',
-        'parentCategoryId':'上级分类',
-    },
-    article_comment:{
-        'articleId':'文档',
-        'content':'评论内容',
-        'authorId':'评论作者',
-    },
-    folder:{
-        'name':'目录名称',
-        'parentFolderId':'上级目录',
-        'authorId':'创建人',
-        'level':'目录层级',
-    },
-    tag:{
-        'name':'标签名称',
     },
     article:{
         'name':'文档标题',
@@ -75,10 +61,37 @@ const ChineseName={
         'imagesNum':'文档图片总数',
         'imagesSizeInMb':'文档图片总大小',
     },
+    article_comment:{
+        'articleId':'文档',
+        'content':'评论内容',
+        'authorId':'评论作者',
+    },
     article_like_dislike:{
         'articleId':'文档',
         'authorId':'提交者',
         'like':'喜欢',
+    },
+    folder:{
+        'name':'目录名称',
+        'parentFolderId':'上级目录',
+        'authorId':'创建人',
+        'level':'目录层级',
+    },
+    tag:{
+        'name':'标签名称',
+    },
+    add_friend_request:{
+        'receiver':'添加的好友',
+        'message':'附加信息',
+        'originator':'发起人',
+        'status':'当前请求所处状态',
+        'declineTimes':'被拒次数',
+        'acceptTimes':'同意次数',
+    },
+    join_public_group_request:{
+        'publicGroupId':'公共群',
+        'creatorId':'请求人',
+        'handleResult':'请求处理结果',
     },
     member_penalize:{
         'publicGroupId':'群',
@@ -86,6 +99,15 @@ const ChineseName={
         'penalizeType':'处罚类型',
         'duration':'处罚时间',
         'creatorId':'处罚发起者',
+    },
+    not_used_to_be_friend_request:{
+    },
+    public_group:{
+        'name':'群名称',
+        'joinInRule':'新成员加入规则',
+        'adminsId':'群管理员',
+        'membersId':'群成员',
+        'creatorId':'群创建者',
     },
     public_group_event:{
         'publicGroupId':'群',
@@ -104,44 +126,6 @@ const ChineseName={
         'friendGroupName':'朋友分组名',
         'friendsInGroup':'好友分组',
         'ownerUserId':'用户',
-    },
-    join_public_group_request:{
-        'publicGroupId':'公共群',
-        'creatorId':'请求人',
-        'handleResult':'请求处理结果',
-    },
-    public_group:{
-        'name':'群名称',
-        'joinInRule':'新成员加入规则',
-        'adminsId':'群管理员',
-        'membersId':'群成员',
-        'creatorId':'群创建者',
-    },
-    not_used_to_be_friend_request:{
-    },
-    add_friend_request:{
-        'receiver':'添加的好友',
-        'message':'附加信息',
-        'originator':'发起人',
-        'status':'当前请求所处状态',
-        'declineTimes':'被拒次数',
-        'acceptTimes':'同意次数',
-    },
-    impeach_image:{
-        'impeachId':'举报对象',
-        'name':'举报图片名称',
-        'hashName':'举报图片名称',
-        'pathId':'存储路径',
-        'sizeInMb':'图片大小',
-        'authorId':'图片上传者',
-    },
-    impeach_comment_image:{
-        'impeachCommentId':'举报处理',
-        'name':'举报图片名称',
-        'hashName':'举报图片名称',
-        'pathId':'存储路径',
-        'sizeInMb':'图片大小',
-        'authorId':'图片上传者',
     },
     impeach:{
         'title':'举报名',
@@ -186,12 +170,21 @@ const ChineseName={
         'impeachAttachmentsId':'评论附件',
         'documentStatus':'记录状态',
     },
-    user_resource_profile:{
-        'userId':'用户',
-        'resource_profile_id':'资源配置',
-        'duration':'资源配置有效期',
-        'startDate':'生效时间',
-        'endDate':'结束时间',
+    impeach_comment_image:{
+        'impeachCommentId':'举报处理',
+        'name':'举报图片名称',
+        'hashName':'举报图片名称',
+        'pathId':'存储路径',
+        'sizeInMb':'图片大小',
+        'authorId':'图片上传者',
+    },
+    impeach_image:{
+        'impeachId':'举报对象',
+        'name':'举报图片名称',
+        'hashName':'举报图片名称',
+        'pathId':'存储路径',
+        'sizeInMb':'图片大小',
+        'authorId':'图片上传者',
     },
     user:{
         'name':'昵称',
@@ -208,6 +201,13 @@ const ChineseName={
         'lastAccountUpdateDate':'账号更改日期',
         'lastSignInDate':'上次登录时间',
         'photoSize':'头像大小',
+    },
+    user_resource_profile:{
+        'userId':'用户',
+        'resource_profile_id':'资源配置',
+        'duration':'资源配置有效期',
+        'startDate':'生效时间',
+        'endDate':'结束时间',
     },
     collection:{
         'name':'收藏夹名',

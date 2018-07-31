@@ -116,9 +116,15 @@ async function updateImpeach_async({req,applyRange}){
     /**********************************************/
     /** 特定检查（非new或editing，无法update）**/
     /*********************************************/
-    if(e_impeachState.NEW!==originalDoc || e_impeachState.EDITING!==originalDoc){
+    // ap.wrn('originalDoc[e_field.IMPEACH.CURRENT_STATE]',typeof originalDoc[e_field.IMPEACH.CURRENT_STATE])
+    // ap.wrn('e_impeachState.NEW',typeof e_impeachState.NEW)
+    // ap.wrn('e_impeachState.EDITING',e_impeachState.EDITING)
+    if(-1===[e_impeachState.NEW,e_impeachState.EDITING].indexOf(originalDoc[e_field.IMPEACH.CURRENT_STATE])){
         return Promise.reject(controllerError.update.impeachedSubmittedCantUpdate)
     }
+    // if(e_impeachState.NEW!==originalDoc[e_field.IMPEACH.CURRENT_STATE] || e_impeachState.EDITING!==originalDoc[e_field.IMPEACH.CURRENT_STATE]){
+    //     return Promise.reject(controllerError.update.impeachedSubmittedCantUpdate)
+    // }
 
     /************************************************/
     /*** CALL FUNCTION:inputValueLogicValidCheck ****/

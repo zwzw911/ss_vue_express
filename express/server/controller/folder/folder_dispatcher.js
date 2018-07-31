@@ -77,7 +77,7 @@ async function dispatcher_async(req){
     let applyRange
     // ap.inf('originalUrl',originalUrl)
     // ap.inf('req.route.stack[0].method',req.route.stack[0].method)
-    // ap.inf('req.body',req.body)
+    ap.inf('req.body.values',req.body.values)
     // ap.inf('req.params',req.params)
     /***   1. interval和robot检测   ***/
     await controllerPreCheck.commonPreCheck_async({req:req,collName:collName})

@@ -1434,7 +1434,12 @@ function deleteFieldInRecord({record,fieldsToBeDeleted}){
 /*  在一个record中保留指定的字段 */
 //record:必须是Object
 function keepFieldInRecord({record,fieldsToBeKeep}){
-    for(let singleFieldName of record){
+    // ap.wrn('record',record)
+    // ap.wrn('fieldsToBeKeep',fieldsToBeKeep)
+    let recordFieldName=Object.keys(record)
+    // ap.wrn('recordFieldName',recordFieldName)
+    for(let singleFieldName of recordFieldName){
+        // ap.wrn('fieldsToBeKeep',fieldsToBeKeep)
         if(-1===fieldsToBeKeep.indexOf(singleFieldName)){
             delete record[singleFieldName]
         }

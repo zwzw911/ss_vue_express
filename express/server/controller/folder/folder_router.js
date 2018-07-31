@@ -24,7 +24,7 @@ const e_intervalCheckPrefix=server_common_file_require.nodeEnum.IntervalCheckPre
 // let originalUrl=req.originalUrl
 // ap.inf('originalUrl',originalUrl)
 // ap.inf('req.route.stack[0].method',req.route.stack[0].method)
-ap.inf('router',router)
+// ap.inf('router',router)
 
 //create folder
 router.post('/',function(req,res,next){

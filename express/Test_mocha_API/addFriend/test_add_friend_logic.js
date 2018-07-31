@@ -144,7 +144,7 @@ describe('add friend logic', async function() {
         // ap.inf('test')
         // parameter[`APIUrl`]=finalUrl
 
-
+ap.wrn('user3IdCryptedByAdminRoot',user3IdCryptedByAdminRoot)
         /**     admin create penalize for user3     **/
         await penalizeAPI.createPenalize_returnPenalizeId_async({
             adminUserSess: adminRootSess,

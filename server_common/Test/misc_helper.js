@@ -28,6 +28,7 @@ async function postDataToAPI_compareFieldRc_async({APIUrl,sess,data,expectedErro
 }
 
 async function postDataToAPI_compareCommonRc_async({APIUrl,sess,data,expectedErrorRc,app}){
+    ap.inf('postDataToAPI_compareCommonRc_async data',data)
     return new Promise(function(resolve,reject){
 
         supertest(app).post(APIUrl).set('Accept', 'application/json').set('Cookie', [sess]).send(data)
@@ -67,6 +68,7 @@ async function postDataWithFileToAPI_compareCommonRc_async({APIUrl,sess,data,fil
 }
 
 async function putDataToAPI_compareFieldRc_async({APIUrl,sess,data,expectedErrorRc,fieldName,app}){
+
     return new Promise(function(resolve,reject){
 
         supertest(app).put(APIUrl).set('Accept', 'application/json').set('Cookie', [sess]).send(data)
@@ -84,6 +86,7 @@ async function putDataToAPI_compareFieldRc_async({APIUrl,sess,data,expectedError
 }
 
 async function putDataToAPI_compareCommonRc_async({APIUrl,sess,data,expectedErrorRc,app}){
+    // ap.inf('putDataToAPI_compareCommonRc_async data',data)
     return new Promise(function(resolve,reject){
 
         supertest(app).put(APIUrl).set('Accept', 'application/json').set('Cookie', [sess]).send(data)
@@ -139,7 +142,27 @@ async function deleteAPI_compareCommonRc_async({APIUrl,sess,data,expectedErrorRc
             });
     })
 }
+async function deleteAPI_compareFieldRc_async({APIUrl,sess,data,expectedErrorRc,fieldName,app}){
+    return new Promise(function(resolve,reject){
 
+        supertest(app).delete(APIUrl).set('Accept', 'application/json').set('Cookie', [sess]).send(data)
+            .end(function (err, res) {
+                if (err) return reject(err);
+                // console.log(`res is ${JSON.stringify(res)}`)
+                let parsedRes = JSON.parse(res.text)
+                // console.log(`sess=======>${JSON.stringify(sess)}`)
+                // console.log(`data.values of common===========>${JSON.stringify(data.values)}`)
+                // console.log(`parsedRes of common  ===========>${JSON.stringify(parsedRes)}`)
+                // assert.deepStrictEqual(parsedRes.rc, 99999)
+                assert.deepStrictEqual(parsedRes.rc, 99999)
+                // ap.wrn('parsedRes.msg[fieldName].rc',parsedRes.msg[fieldName].rc)
+                // ap.wrn('expectedErrorRc',expectedErrorRc)
+                assert.deepStrictEqual(parsedRes.msg[fieldName].rc, expectedErrorRc)
+                // assert.deepStrictEqual(parsedRes.rc, expectedErrorRc)
+                return resolve(parsedRes)
+            });
+    })
+}
 /*async function postFile_async({APIUrl,sess,data,expectedErrorRc,app,fileAbsPath}) {
     return new Promise(function(resolve,reject){
         request({
@@ -204,6 +227,7 @@ module.exports={
     putDataToAPI_compareFieldRc_async,
     putDataToAPI_compareCommonRc_async,
     deleteAPI_compareCommonRc_async,
+    deleteAPI_compareFieldRc_async,
     getDataFromAPI_async,
     postFile_async,
 }

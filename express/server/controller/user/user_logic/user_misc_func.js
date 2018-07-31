@@ -106,7 +106,7 @@ async  function  uniqueCheck_async({req}) {
     let singleUniqueAdditionalCondition
     //已经登录，unique检查需要排除自己的记录
     if(undefined!==userId){
-        singleUniqueAdditionalCondition={[e_field.USER.DOC_STATUS]:e_docStatus.DONE,[e_field.USER.ID]:{'$not':userId}}
+        singleUniqueAdditionalCondition={[e_field.USER.DOC_STATUS]:e_docStatus.DONE,[e_field.USER.ID]:{'$nin':[userId]}}
     }else{
         singleUniqueAdditionalCondition={[e_field.USER.DOC_STATUS]:e_docStatus.DONE}
     }
@@ -168,9 +168,9 @@ async function retrievePassword_async({req}){
 
     condition[e_field.USER.ACCOUNT]=fieldValue
     condition[e_field.USER.DOC_STATUS]=e_docStatus.DONE
-    ap.inf('condition',condition)
+    // ap.inf('condition',condition)
     let currentAccount=await common_operation_model.find_returnRecords_async({dbModel:dbModel.user,condition:condition})
-    ap.inf('retrieve ped: find current account',currentAccount)
+    // ap.inf('retrieve ped: find current account',currentAccount)
     // console.log(`retrieve ped: find current account=====>${JSON.stringify(tmpResult)}`)
     if(currentAccount.length>1){
         return Promise.reject(controllerError.retrievePassword.accountNotUnique)
@@ -203,7 +203,7 @@ async function retrievePassword_async({req}){
     if(hashedValue.rc>0){return Promise.reject(hashedValue)}
 
     let hashedPassword=hashedValue.msg
-    ap.inf('hashedPassword',hashedPassword)
+    // ap.inf('hashedPassword',hashedPassword)
     // console.log(`hashedPassword ${JSON.stringify(hashedPassword)}`)
     await common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:dbModel.user,id:userId,updateFieldsValue:{'password':hashedPassword}})
     console.log(`update pwd tmpResult ${JSON.stringify(tmpResult)}`)

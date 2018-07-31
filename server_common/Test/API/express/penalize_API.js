@@ -25,7 +25,7 @@ const e_field=require('../../../constant/genEnum/DB_field').Field
 * @penalizeInfo:{reason:,penalizeType:,penalizeSubype:,duration:}
 * @penalizedUserData:受处罚的人
 * */
-async function createPenalize_returnPenalizeId_async({adminUserSess,penalizeInfo,penalizedUserData,penalizedUserId,adminApp}){
+async function createPenalize_returnPenalizeId_async({adminUserSess,penalizeInfo,penalizedUserId,adminApp}){
     let condition={}
     // console.log(`penalizedUserData========>${JSON.stringify(penalizedUserData)}`)
     /*    condition={
@@ -35,6 +35,7 @@ async function createPenalize_returnPenalizeId_async({adminUserSess,penalizeInfo
         let userInfo=await common_operation_model.find_returnRecords_async({dbModel:e_dbMoodel[e_coll.USER],condition:condition})
         // console.log(`tmpResult========>${JSON.stringify(tmpResult)}`)
         let punishedId=userInfo[0][`_id`]*/
+    // ap.wrn('penalizedUserId',penalizedUserId)
     penalizeInfo[e_field.ADMIN_PENALIZE.PUNISHED_ID]=penalizedUserId
 
     let data={values:{}}
@@ -43,7 +44,7 @@ async function createPenalize_returnPenalizeId_async({adminUserSess,penalizeInfo
     // console.log(`data.values ===>${JSON.stringify(data.values)}`)
     // data.values[e_part.METHOD]=e_method.CREATE
     data.values[e_part.RECORD_INFO]=penalizeInfo
-    ap.inf('create penalize data',data.values)
+    // ap.inf('create penalize data',data.values)
     // console.log(`data.values ===>${JSON.stringify(data.values)}`)
     return new Promise(function(resolve,reject){
         request(adminApp).post('/admin_penalize/').set('Accept', 'application/json').set('Cookie',[adminUserSess]).send(data)
@@ -113,18 +114,12 @@ async function deletePenalize_async({adminUserSess,penalizeInfo,penalizedUserDat
     return Promise.resolve({rc:0})
 }
 
-async function deletePenalizeById_async({adminUserSess,penalizeId,adminApp}){
+async function deletePenalizeById_async({adminUserSess,data,adminApp}){
 
-    let data={values:{}}
-    // data.values={}
-    //console.log(`adminUserSess of ===>${JSON.stringify(adminUserSess)}`)
-    // console.log(`data.values ===>${JSON.stringify(data.values)}`)
-    data.values[e_part.METHOD]=e_method.DELETE
-    data.values[e_part.RECORD_ID]=penalizeId
-    data.values[e_part.RECORD_INFO]={[e_field.ADMIN_PENALIZE.REVOKE_REASON]:'test for revoke penalize by id'}
+
     // console.log(`data.values ===>${JSON.stringify(data.values)}`)
     return new Promise(function(resolve,reject){
-        request(adminApp).post('/admin_penalize/').set('Accept', 'application/json').set('Cookie',[adminUserSess]).send(data)
+        request(adminApp).delete('/admin_penalize/').set('Accept', 'application/json').set('Cookie',[adminUserSess]).send(data)
             .end(function(err, res) {
                 // if (err) return done(err);
                 // console.log(`res ios ${JSON.stringify(res)}`)

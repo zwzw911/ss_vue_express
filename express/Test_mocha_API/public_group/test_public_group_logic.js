@@ -175,7 +175,7 @@ describe('impeach comment:',async function() {
             expectedErrorRc = controllerCheckerError.userTypeNotExpected.rc
             await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl: finalUrl,sess: adminRootSess,data: data,expectedErrorRc: expectedErrorRc,app: app})
         })
-        it('1.2 user1 try to input unexpected field', async function () {
+        it('1.2 user1 try to create unexpected field ADMINS_ID', async function () {
             // let originName=publicGroupInfo1[e_field.PUBLIC_GROUP.NAME]
             data.values={}
             let tempInfo={
@@ -185,8 +185,8 @@ describe('impeach comment:',async function() {
             }
 
             data.values[e_part.RECORD_INFO]=tempInfo
-            expectedErrorRc = validateError.validateValue.fieldValueShouldNotExistSinceNoRelateApplyRange({}).rc
-            await misc_helper.postDataToAPI_compareFieldRc_async({APIUrl: finalUrl,sess: user1Sess,data: data,expectedErrorRc: expectedErrorRc,fieldName:[e_field.PUBLIC_GROUP.ADMINS_ID],app: app})
+            expectedErrorRc = controllerCheckerError.ifObjectIdCrypted.fieldNotMatchApplyRange.rc
+            await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl: finalUrl,sess: user1Sess,data: data,expectedErrorRc: expectedErrorRc,fieldName:[e_field.PUBLIC_GROUP.ADMINS_ID],app: app})
 
             // publicGroupInfo1[e_field.PUBLIC_GROUP.NAME]=originName
         })
@@ -235,7 +235,7 @@ describe('impeach comment:',async function() {
             expectedErrorRc = controllerCheckerError.userTypeNotExpected.rc
             await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl: finalUrl,sess: adminRootSess,data: data,expectedErrorRc: expectedErrorRc,app: app})
         })
-        it('2.2 user1 try to input unexpected field', async function () {
+        it('2.2 user1 try to input unexpected field ADMINS_ID', async function () {
             // let originName=publicGroupInfo1[e_field.PUBLIC_GROUP.NAME]
             data.values={}
             let tempInfo={
@@ -250,8 +250,8 @@ describe('impeach comment:',async function() {
             data.values[e_part.RECORD_ID] = publicGroupId1CryptedByUser1
             data.values[e_part.RECORD_INFO]=tempInfo
 
-            expectedErrorRc = validateError.validateValue.fieldValueShouldNotExistSinceNoRelateApplyRange({}).rc
-            await misc_helper.putDataToAPI_compareFieldRc_async({APIUrl: finalUrl,sess: user1Sess,data: data,expectedErrorRc: expectedErrorRc,fieldName:[e_field.PUBLIC_GROUP.ADMINS_ID],app: app})
+            expectedErrorRc = controllerCheckerError.ifObjectIdCrypted.fieldNotMatchApplyRange.rc
+            await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl: finalUrl,sess: user1Sess,data: data,expectedErrorRc: expectedErrorRc,fieldName:[e_field.PUBLIC_GROUP.ADMINS_ID],app: app})
 
             // publicGroupInfo1[e_field.PUBLIC_GROUP.NAME]=originName
         })

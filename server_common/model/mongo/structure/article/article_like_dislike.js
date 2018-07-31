@@ -36,7 +36,7 @@ const assist=require('../../common/assist')
 * */
 
 /*                           department                        */
-const collName='like_dislike'
+const collName='article_like_dislike'
 
 const collFieldDefine={
 

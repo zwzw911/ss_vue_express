@@ -76,11 +76,14 @@ async function deletePenalize_async({req}){
     /*********************************************/
     //检测当前用户是否为adminUser
     await controllerChecker.ifExpectedUserType_async({currentUserType:userType,arr_expectedUserType:[e_allUserType.ADMIN_NORMAL,e_allUserType.ADMIN_ROOT]})
+    // ap.wrn('userPriority',userPriority)
+    // ap.wrn('userPriority',userPriority)
     let hasCreatePriority=await controllerChecker.ifAdminUserHasExpectedPriority_async({userPriority:userPriority,arr_expectedPriority:[e_adminPriorityType.REVOKE_PENALIZE]})
     // console.log(`hasCreatePriority===>${JSON.stringify(hasCreatePriority)}`)
     if(false===hasCreatePriority){
         return Promise.reject(controllerError.delete.currentUserHasNotPriorityToRevokePenalize)
     }
+    // ap.wrn('type chekc odne')
     /*******************************************************************************************/
     /*                                     specific field check                             */
     /*******************************************************************************************/
@@ -91,6 +94,7 @@ async function deletePenalize_async({req}){
     if(undefined===docValue[e_field.ADMIN_PENALIZE.REVOKE_REASON]){
         return Promise.reject(controllerError.delete.missMandatoryFieldRevokeReason)
     }
+    // ap.wrn('special chekc odne')
     // console.log(`docVlue======>${JSON.stringify(docValue)}`)
     /*******************************************************************************************/
     /*                                     specific priority check                             */

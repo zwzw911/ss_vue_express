@@ -33,6 +33,22 @@ router.post('/',function(req,res,next){
     )
 })
 
+router.delete('/',function(req,res,next){
+    // console.log(`req in`)
+// console.log(`req is ${JSON.stringify(req.body)}`)
+    dispatcher_async(req).then(
+        (v)=>{
+            console.log(`create   penalize   success, result:  ${JSON.stringify(v)}`)
+            return res.json(v)
+        },
+        (err)=>{
+            console.log(`create   penalize    fail: ${JSON.stringify(err)}`)
+            return res.json(genFinalReturnResult(err))
+
+        }
+    )
+})
+
 router.all('*',function(req,res,next){
     // ap.inf('systemError.systemError.noMatchRESTAPI',systemError.systemError.noMatchRESTAPI)
     return res.json(genFinalReturnResult(systemError.systemError.noMatchRESTAPI))

@@ -277,7 +277,8 @@ describe('user1 register unique check:',async  function() {
             expectedErrorRc=controllerCheckerError.ifSingleFieldContainExpectField.singleFieldNotContainExpectedField.rc
             await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
         })
-        it('2.2.4 upload photo: pci wh exceed', async function() {
+        it('2.2.4 upload photo: pic wh exceed', async function() {
+            // ap.wrn('testData.dataUrl.bigPicPNG',testData.dataUrl.bigPicPNG.length)
             data.values[e_part.SINGLE_FIELD]={[e_field.USER.PHOTO_DATA_URL]:testData.dataUrl.bigPicPNG}
 
             expectedErrorRc=controllerError.uploadUserPhoto.imageSizeInvalid.rc
@@ -293,6 +294,7 @@ describe('user1 register unique check:',async  function() {
         })*/
         /**     rule检测出，而不是gm       **/
         it('2.2.5 update user1 with  upload photo jpg failed', async  function() {
+
             data.values[e_part.SINGLE_FIELD]={[e_field.USER.PHOTO_DATA_URL]:testData.dataUrl.iconJPG}
             // ap.inf('data.values',data.values)
             expectedErrorRc=browserInputRule.user.photoDataUrl.format.error.rc
@@ -360,6 +362,7 @@ describe('user1 register unique check:',async  function() {
             let user1Tmp=objectDeepCopy(testData.user.user1)
             delete user1Tmp['name']        //使用账号登录
             delete user1Tmp['userType']
+            delete user1Tmp['addFriendRule']
             // condition['account']['value']='12341234132'
             // console.log(`testData.user.user1Tmp==============> ${JSON.stringify(testData.user.user1Tmp)}`)
             user1Tmp['password']='12341234132'
@@ -378,6 +381,7 @@ describe('user1 register unique check:',async  function() {
             let user1Tmp=objectDeepCopy(testData.user.user1)
             delete user1Tmp['name']
             delete user1Tmp['userType']
+            delete user1Tmp['addFriendRule']
             data.values[e_part.RECORD_INFO]=user1Tmp//,notExist:{value:123}
             await userAPI.genCaptcha({sess:sess,app:app})
             let captcha=await userAPI.getCaptcha({sess:sess})

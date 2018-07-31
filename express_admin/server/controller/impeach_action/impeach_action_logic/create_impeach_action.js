@@ -163,6 +163,7 @@ async  function createImpeachAction_async({req,applyRange}){
     // console.log(`typeof impeachStateRecords[0][e_field.IMPEACH_ACTION.ADMIN_OWNER_ID]===========>${JSON.stringify(typeof impeachStateRecords[0][e_field.IMPEACH_ACTION.ADMIN_OWNER_ID])}`)
     // console.log(`typeof impeachStateRecords[0][e_field.IMPEACH_ACTION.ADMIN_OWNER_ID]===========>${JSON.stringify(typeof impeachStateRecords[0][e_field.IMPEACH_ACTION.ADMIN_OWNER_ID].toString())}`)
     // console.log(`typeof userId===========>${JSON.stringify(typeof userId)}`)
+    // ap.wrn('userId',userId)
     if(impeachStateRecords[0][e_field.IMPEACH_ACTION.ADMIN_OWNER_ID].toString()!==userId){
         return Promise.reject(controllerError.create.forbidToTakeActionForCurrentImpeach)
     }

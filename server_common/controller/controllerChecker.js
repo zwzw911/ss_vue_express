@@ -544,7 +544,8 @@ async function ifObjectIdInPartCrypted_async({req,expectedPart,browserCollRule,a
                                     let fieldValue=partValue[singleFieldName]
                                     //对每个部分进行检测
                                     let fieldSubPartValue
-                                    if(undefined!==fieldValue['add'] && true===dataTypeCheck.isSetValue(fieldValue['add'] )){
+                                    //add 的值必须是数组，否则不做任何处理（而交给validateFormat处理）
+                                    if(undefined!==fieldValue['add'] && true===dataTypeCheck.isSetValue(fieldValue['add']) && true===dataTypeCheck.isArray(fieldValue['add'])){
                                         fieldSubPartValue=fieldValue['add']
                                         // 2018-07-04：add/remove数组需要检测长度
                                         if(undefined!==browserCollRule[singleFieldName][e_ruleFiledName.ARRAY_MAX_LENGTH]){
@@ -552,6 +553,7 @@ async function ifObjectIdInPartCrypted_async({req,expectedPart,browserCollRule,a
                                             let fieldRule=browserCollRule[singleFieldName]//,fieldValue=partValue[singleFieldName]
                                             let maxLengthDefine=fieldRule[e_ruleFiledName.ARRAY_MAX_LENGTH]['define']
                                             // ap.wrn('maxLengthDefine',maxLengthDefine)
+                                            // ap.wrn('fieldSubPartValue',fieldSubPartValue)
                                             if(false===valueMatchRuleDefineCheck({ruleType:e_serverRuleType.ARRAY_MAX_LENGTH,fieldValue:fieldSubPartValue,ruleDefine:maxLengthDefine})){
                                                 return Promise.reject(genInputError(fieldRule,e_serverRuleType.ARRAY_MAX_LENGTH))
                                             }
@@ -567,7 +569,8 @@ async function ifObjectIdInPartCrypted_async({req,expectedPart,browserCollRule,a
                                         }
 
                                     }
-                                    if(undefined!==fieldValue['remove'] && true===dataTypeCheck.isSetValue(fieldValue['remove'])){
+                                    //remove 的值必须是数组，否则不做任何处理（而交给validateFormat处理）
+                                    if(undefined!==fieldValue['remove'] && true===dataTypeCheck.isSetValue(fieldValue['remove']) &&  true===dataTypeCheck.isArray(fieldValue['remove'])){
                                         fieldSubPartValue=fieldValue['remove']
 
                                         // 2018-07-04：add/remove数组需要检测长度

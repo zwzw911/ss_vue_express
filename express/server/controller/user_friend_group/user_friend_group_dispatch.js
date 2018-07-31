@@ -124,12 +124,12 @@ async function dispatcher_async({req}){
                     applyRange = e_applyRange.UPDATE_SCALAR
                     userLoginCheck = {
                         needCheck: true,
-                        error: controllerError.dispatch.put.notLoginCantMoveFriend
+                        error: controllerError.dispatch.put.notLoginCantUpdateUserFriendGroup
                     }
                     penalizeCheck = {
                         penalizeType: e_penalizeType.NO_USER_FRIEND_GROUP,
                         penalizeSubType: e_penalizeSubType.UPDATE,
-                        penalizeCheckError: controllerError.dispatch.put.userInPenalizeCantMoveFriend
+                        penalizeCheckError: controllerError.dispatch.put.userInPenalizeCantUpdateUserFriendGroup
                     }
                     await controllerPreCheck.userStateCheck_async({req: req,userLoginCheck: userLoginCheck,penalizeCheck: penalizeCheck})
                     expectedPart = [e_part.RECORD_ID,e_part.RECORD_INFO] //impeachId
