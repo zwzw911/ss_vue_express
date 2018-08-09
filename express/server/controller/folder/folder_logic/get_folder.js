@@ -163,17 +163,17 @@ async function getNonRootFolder_async({req}){
     // ap.inf('getRecord',getRecord)
     if(undefined!==getRecord['folder']){
         for(let singleEle of getRecord['folder']){
-            controllerHelper.keepFieldInRecord({record:singleEle,fieldsToBeKeep:['id','name','childNum']})
+            controllerHelper.keepFieldInRecord({record:singleEle,fieldsToBeKeep:['id','name','childNum',e_field.FOLDER.LEVEL]})
         }
     }
-    ap.wrn('after keep folder getRecord',getRecord)
+    // ap.wrn('after keep folder getRecord',getRecord)
     if(undefined!==getRecord['article']){
         for(let singleEle of getRecord['article']){
             ap.inf('article singleEle',singleEle)
             controllerHelper.keepFieldInRecord({record:singleEle,fieldsToBeKeep:['id','name']})
         }
     }
-    ap.wrn('after keep article getRecord',getRecord)
+    // ap.wrn('after keep article getRecord',getRecord)
     /*********************************************/
     /**********      加密 敏感数据       *********/
     /*********************************************/
@@ -204,28 +204,34 @@ async function getNonRootFolder_async({req}){
 /**************************************/
 async function businessLogic_async({folderId,userId}){
     // ap.inf('businessLogic_async in')
-    const mongoose=require('mongoose');
+    const mongoose=require('mongoose');//用于转换objectId，以便aggreate使用
     let parentFolderId,folderResult,articleResult,childArticleResult,childFolderResult
     //使用aggregate，则objectId必须是mongoose格式
     let folderCondition={},articleCondition={},childFolderCondition={},childArticleCondition={}
 
     childFolderCondition[e_field.FOLDER.AUTHOR_ID]=mongoose.Types.ObjectId(userId)
+    childFolderCondition['dDate']={"$exists":false}
     folderCondition[e_field.FOLDER.AUTHOR_ID]=mongoose.Types.ObjectId(userId)
+    folderCondition['dDate']={"$exists":false}
 
     childArticleCondition[e_field.FOLDER.AUTHOR_ID]=mongoose.Types.ObjectId(userId)
+    childArticleCondition['dDate']={"$exists":false}
     //顶级目录的查询条件
     if(undefined===folderId){
         folderCondition[e_field.FOLDER.PARENT_FOLDER_ID]={"$exists":false}
 
         //获得所有顶级目录的id，加入查询条件
         folderResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.folder,condition:folderCondition})
-        // ap.wrn('folderResult',folderResult)
+        // ap.wrn('top folder Result',folderResult)
         /**     转换成object   **/
         if(folderResult.length>0){
             for(let idx in folderResult) {
                 // ap.inf('folder indx',idx)
                 folderResult[idx] = folderResult[idx].toObject()
                 folderResult[idx]['childNum']=0
+                // ap.wrn('before typeof',typeof folderResult[idx][e_field.FOLDER.AUTHOR_ID])
+                // folderResult[idx][e_field.FOLDER.AUTHOR_ID]=mongoose.Types.ObjectId(userId)
+                // ap.wrn('after typeof',typeof folderResult[idx][e_field.FOLDER.AUTHOR_ID])
             }
         }
         childFolderCondition[e_field.FOLDER.PARENT_FOLDER_ID]={"$in":[]}
@@ -237,6 +243,7 @@ async function businessLogic_async({folderId,userId}){
                 childArticleCondition[e_field.ARTICLE.FOLDER_ID]['$in'].push(mongoose.Types.ObjectId(singleFolder['id']))
             }
         }
+        // childFolderCondition[e_field.FOLDER.AUTHOR_ID]={"$in":[]}
         // ap.wrn('childFolderCondition',childFolderCondition)
         // ap.wrn('childArticleCondition',childArticleCondition)
     }
@@ -290,7 +297,7 @@ async function businessLogic_async({folderId,userId}){
         //folder还要获悉是否有文档或者目录，以便决定是否可以点开
         let childFolderAggregateParams=[
             {
-                '$match':{[e_field.FOLDER.PARENT_FOLDER_ID]:childFolderCondition},
+                '$match':childFolderCondition,
             },
             {
                 '$project':{
@@ -312,9 +319,9 @@ async function businessLogic_async({folderId,userId}){
                     'childNum':1
                 }
             },
-            // },
+
         ]
-        // ap.inf('aggregateParams',aggregateParams)
+        // ap.inf('childFolderAggregateParams',childFolderAggregateParams)
         // ap.inf('before folderResult')
         childFolderResult=await e_dbModel.folder.aggregate(childFolderAggregateParams)
         // ap.wrn('childFolderResult',childFolderResult)

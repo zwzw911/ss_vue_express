@@ -113,7 +113,7 @@ async function createFolder_async({req,applyRange}){
     /*********************************************/
     /**********      删除指定字段       *********/
     /*********************************************/
-    controllerHelper.deleteFieldInRecord({record:createdRecord,fieldsToBeDeleted:undefined})
+    controllerHelper.keepFieldInRecord({record:createdRecord,fieldsToBeKeep:['id',e_field.FOLDER.NAME,e_field.FOLDER.LEVEL]})
     /*********************************************/
     /**********      加密 敏感数据       *********/
     /*********************************************/

@@ -170,7 +170,7 @@ const maxNumber={
 
     },
     folder:{
-        folderLevel:3,//目录最大成熟
+        folderLevel:4,//目录最大成熟
     },
     friend:{
         maxFriendsNumberPerGroup:500, //每个朋友分组最多500人
