@@ -11,7 +11,7 @@ const appSetting=require('./server_common_file_require').appSetting
 const e_env=require('./server_common_file_require').nodeEnum.Env
 // const index = require('./routes/index');
 // var users = require('./routes/users');
-ap.inf('app in ')
+// ap.inf('app in ')
 const app = express();
 
 const e_intervalCheckPrefix=require('./server_common_file_require').nodeEnum.IntervalCheckPrefix

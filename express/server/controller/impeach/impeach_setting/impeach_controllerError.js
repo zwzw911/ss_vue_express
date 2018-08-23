@@ -70,8 +70,9 @@ upload:{
     notImpeachCreatorCantUploadFile:{rc:50626,msg:`无权为他人举报评论上传文件`},
     cantUploadImageForNonNewEditingImpeach:{rc:50727,msg:`无法上传图片`},//hacker error
 
-    imageFormatNotSupport:{rc:50628,msg:`只支持JPG/PNG格式的图片`},
-    imageResolutionNotSupport:{rc:50629,msg:`图片的分辨率过高`},
+    noUploadImage:{rc:50628,msg:`无上传图片`},
+    imageFormatNotSupport:{rc:50629,msg:`只支持JPG/PNG格式的图片`},
+    imageResolutionNotSupport:{rc:50630,msg:`图片的分辨率过高`},
 
 },
 

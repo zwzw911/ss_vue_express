@@ -434,10 +434,10 @@ function convertFileSize({num,unit,newUnit}){
                 convertedSize=(originFileInByte/1024).toFixed(2)*1
                 break;
             case e_sizeUnit.MB:
-                convertedSize=(originFileInByte/1024/1024).toFixed(2)*1
+                convertedSize=(originFileInByte/1024/1024).toFixed(3)*1
                 break;
             case e_sizeUnit.GB:
-                convertedSize=(originFileInByte/1024/1024/1024).toFixed(2)*1
+                convertedSize=(originFileInByte/1024/1024/1024).toFixed(4)*1
                 break;
             default:
                 return miscError.unknownUnit

@@ -332,6 +332,7 @@ async function ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({dbMod
     // ap.inf('condition',condition)
     tmpResult=await  common_operation_model.find_returnRecords_async({dbModel:dbModel,condition:condition})
     // ap.inf('result',tmpResult)
+
     if(tmpResult.length===1){
         return Promise.resolve(tmpResult[0])
     }else{
@@ -375,16 +376,17 @@ async function ifCurrentUserCreatorOfImpeach_async({userId, impeachId}){
 async function ifFileSuffixMatchContentType_returnSuffixOrFalse_async({uploadFileResult}){
     let originalFilename=uploadFileResult[`originalFilename`]
     let contentType=uploadFileResult[`headers`][`content-type`]
-
+    // ap.inf('contentType',contentType)
     //检查后缀名是否存在
     let tmp=originalFilename.split('.')
     if(tmp.length<2){
         return Promise.reject(helperError.uploadFileHasNoSuffix)
     }
     let suffix=tmp.pop()
-
+    // ap.inf('suffix',suffix)
     //根据content-type获得对应的后缀
-    let matchedSuffix=mime.extension(contentType)
+    let matchedSuffix=mime.getExtension(contentType)
+    // ap.inf('matchedSuffix',matchedSuffix)
     if(-1===matchedSuffix.indexOf(suffix)){
         return Promise.resolve(false)
     }else{

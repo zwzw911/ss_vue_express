@@ -26,11 +26,11 @@ const e_intervalCheckPrefix=server_common_file_require.nodeEnum.IntervalCheckPre
 router.post('/',function(req,res,next){
     userDispatcher_async(req).then(
         (v)=>{
-            ap.inf(`user register success, result:  ${JSON.stringify(v)}`)
+            ap.inf(`user create success, result:  ${JSON.stringify(v)}`)
             return res.json(v)
         },
         (err)=>{
-            ap.err(`user register fail: ${JSON.stringify(err)}`)
+            ap.err(`user create fail: ${JSON.stringify(err)}`)
             return res.json(genFinalReturnResult(err))
         }
     )

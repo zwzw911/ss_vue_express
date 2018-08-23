@@ -49,6 +49,8 @@ const controllerSetting=require('./article_setting/article_setting').setting
 /**************  逻辑处理  ****************/
 const createArticle_async=require('./article_logic/create_article').createArticle_async
 const updateArticle_async=require('./article_logic/update_article').updateArticle_async
+const getArticle_async=require('./article_logic/get_article').normalGetArticle_async
+const getUpdateArticle_async=require('./article_logic/get_article').getArticleFroUpdate_async
 
 const uploadArticleImage_async=require('./article_upload_file_logic/upload_article_image').uploadArticleImage_async
 const uploadArticleAttachment_async=require('./article_upload_file_logic/upload_article_attachment').uploadArticleAttachment_async
@@ -74,15 +76,50 @@ async function article_dispatcher_async({req}) {
     let result = dispatchError.common.unknownRequestUrl
     let tmpResult
     let applyRange
+    ap.inf('req.baseUrl', req.baseUrl)
     ap.inf('originalUrl',originalUrl)
     // ap.inf('req.route.stack[0].method',req.route.stack[0].method)
     ap.inf('req.body', req.body)
+    ap.inf('req.path', req.path)
     // ap.inf('req.params',req.params)
     /***   1. interval和robot检测   ***/
     await controllerPreCheck.commonPreCheck_async({req: req, collName: collName})
     /***   2. 根据method，以及url，进行对应的检查，最后调用处理函数   ***/
     /**    检查包括：用户是否登录/用户是否被处罚/输入值的格式和范围是否正确（POST/PUT） **/
     switch (req.route.stack[0].method) {
+        case 'get':
+            if (baseUrl === '/article' || baseUrl === '/article/') {
+                /**     读取他人文档        **/
+                if (originalUrl === '/article' || originalUrl === '/article/') {
+
+                    //检测url中objectId并解密
+                    await controllerPreCheck.checkObjectIdInReqParams_async({req:req,parameterName:'articleId',cryptedError:controllerError.dispatch.get.cryptedArticleIdFormatInvalid,decryptedError:controllerError.dispatch.get.decryptedArticleIdFormatInvalid})
+
+                    result = await getArticle_async({req: req})
+                    return Promise.resolve(result)
+                }
+                /**     读取（为了更新）自己文档        **/
+                if ( -1!==originalUrl.search( '/article/getUpdateArticle/')) {
+                    // ap.wrn('in')
+                    userLoginCheck = {
+                        needCheck: true,
+                        error: controllerError.dispatch.get.notLoginCantGetArticle
+                    }
+                    penalizeCheck = {
+                        penalizeType: e_penalizeType.NO_ARTICLE,
+                        penalizeSubType: e_penalizeSubType.READ,
+                        penalizeCheckError: controllerError.dispatch.get.userInPenalizeCantGetArticle
+                    }
+                    await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
+
+                    //检测url中objectId并解密objectId
+                    await controllerPreCheck.checkObjectIdInReqParams_async({req:req,parameterName:'articleId',cryptedError:controllerError.dispatch.get.cryptedArticleIdFormatInvalid,decryptedError:controllerError.dispatch.get.decryptedArticleIdFormatInvalid})
+
+                    result = await getUpdateArticle_async({req: req})
+                    return Promise.resolve(result)
+                }
+            }
+            break;
         case 'post':
             if (baseUrl === '/article' || baseUrl === '/article/') {
                 // ap.inf('upload req',req)
@@ -104,68 +141,27 @@ async function article_dispatcher_async({req}) {
                         penalizeCheck: penalizeCheck
                     })
                     /***        create article 无需任何输入参数     ***/
-                    // ap.inf('create use userStateCheck_async done')
-                    /*expectedPart=[e_part.SINGLE_FIELD] //{RECEIVER:objectId}
-                    //是否为期望的part
-                    result = controllerPreCheck.inputCommonCheck({req:req, expectedPart:expectedPart})
-                    // ap.inf('inputCommonCheck result',result)
-                    if (result.rc > 0) {return Promise.reject(result)}
 
-                    //对req中的recordId和recordInfo进行objectId（加密过的）格式判断
-                    // ap.inf('before check',req.body.values)
-                    await controllerChecker.ifObjectIdInPartCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName],applyRange:applyRange})
-                    // ap.inf('after check',req.body.values)
-                    //对req中的recordId和recordInfo中加密的objectId进行解密
-                    let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
-                    // ap.inf('userInfo',userInfo)
-                    let tempSalt=userInfo.tempSalt
-                    // ap.inf('userInfo。tempSalt',userInfo.tempSalt)
-                    // ap.inf('before decrypt',req.body.values)
-                    // ap.inf('salt',tempSalt)
-                    controllerHelper.decryptInputValue({req:req,expectedPart:expectedPart,salt:tempSalt,browserCollRule:browserInputRule[collName]})
-                    // ap.inf('after decrypt',req.body.values)
-                    //对输入值进行检测（此时objectId已经解密）
-                    result=controllerPreCheck.inputPreCheck({req:req,expectedPart:expectedPart,collName:collName,applyRange:applyRange,arr_currentSearchRange:arr_currentSearchRange})
-                    // ap.inf('create use inputPreCheck result',result)
-                    if(result.rc>0){return Promise.reject(result)}*/
 
                     result = await createArticle_async({req: req, expectedPart: undefined, applyRange: applyRange})
                     return Promise.resolve(result)
                 }
-                if (originalUrl === '/article/articleImage' || originalUrl === '/article/articleImage/') {
+                /**     上传图片，articleId放在URL中，以便简化（复用）对articleId的处理  **/
+                if (-1!==originalUrl.search('/article/articleImage/')) {
                     userLoginCheck = {
                         needCheck: true,
                         error: controllerError.dispatch.post.notLoginCantCreateArticleImage
                     }
                     await controllerPreCheck.userStateCheck_async({req: req,userLoginCheck: userLoginCheck,penalizeCheck: penalizeCheck})
-                    expectedPart = [e_part.RECORD_ID] //articleId
-                    //是否为期望的part
-                    result = controllerPreCheck.inputCommonCheck({req: req, expectedPart: expectedPart})
-                    // ap.inf('inputCommonCheck result',result)
-                    if (result.rc > 0) {return Promise.reject(result)}
 
-                    //对req中的recordId和recordInfo进行objectId（加密过的）格式判断
-                    // ap.inf('before check',req.body.values)
-                    await controllerChecker.ifObjectIdInPartCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName],applyRange:applyRange})
-                    // ap.inf('after check',req.body.values)
-                    //对req中的recordId和recordInfo中加密的objectId进行解密
-                    let userInfo = await controllerHelper.getLoginUserInfo_async({req: req})
-                    // ap.inf('userInfo',userInfo)
-                    let tempSalt = userInfo.tempSalt
-                    // ap.inf('userInfo。tempSalt',userInfo.tempSalt)
-                    // ap.inf('before decrypt',req.body.values)
-                    // ap.inf('salt',tempSalt)
-                    controllerHelper.decryptInputValue({req: req,expectedPart: expectedPart,salt: tempSalt,browserCollRule: browserInputRule[collName]})
-                    // ap.inf('after decrypt',req.body.values)
-                    //对输入值进行检测（此时objectId已经解密）
-                    result = controllerPreCheck.inputPreCheck({req: req,expectedPart: expectedPart,collName: collName,applyRange: applyRange, arr_currentSearchRange: arr_currentSearchRange})
-                    // ap.inf('create use inputPreCheck result',result)
-                    if (result.rc > 0) {return Promise.reject(result)}
-
+                    //检测url中objectId并解密objectId
+                    await controllerPreCheck.checkObjectIdInReqParams_async({req:req,parameterName:'articleId',cryptedError:controllerError.dispatch.post.cryptedArticleIdFormatInvalidCantUploadImage,decryptedError:controllerError.dispatch.post.decryptedArticleIdFormatInvalidCantUploadImage})
                     return await uploadArticleImage_async({req: req})
 
                 }
-                if (originalUrl === '/article/articleAttachment' || originalUrl === '/article/articleAttachment/') {
+                /**     上传附件 .articleId放在URl中，以便简化（复用）对articleId的处理       **/
+                // ap.inf('originalUrl.search(\'/article/articleAttachment/\')',originalUrl.search('/article/articleAttachment/'))
+                if (-1!==originalUrl.search('/article/articleAttachment/')) {
                     userLoginCheck = {
                         needCheck: true,
                         error: controllerError.dispatch.post.notLoginCantCreateArticleAttachment
@@ -173,30 +169,8 @@ async function article_dispatcher_async({req}) {
                     await controllerPreCheck.userStateCheck_async({req: req,userLoginCheck: userLoginCheck,penalizeCheck: penalizeCheck})
 
 
-                    expectedPart = [e_part.RECORD_ID] //此处RECORD_ID为article的id
-                    //是否为期望的part
-                    result = controllerPreCheck.inputCommonCheck({req: req, expectedPart: expectedPart})
-                    // ap.inf('inputCommonCheck result',result)
-                    if (result.rc > 0) {return Promise.reject(result)}
-
-                    //对req中的recordId和recordInfo进行objectId（加密过的）格式判断
-                    // ap.inf('before check',req.body.values)
-                    await controllerChecker.ifObjectIdInPartCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName],applyRange:applyRange})
-                    // ap.inf('after check',req.body.values)
-                    //对req中的recordId和recordInfo中加密的objectId进行解密
-                    let userInfo = await controllerHelper.getLoginUserInfo_async({req: req})
-                    // ap.inf('userInfo',userInfo)
-                    let tempSalt = userInfo.tempSalt
-                    // ap.inf('userInfo。tempSalt',userInfo.tempSalt)
-                    // ap.inf('before decrypt',req.body.values)
-                    // ap.inf('salt',tempSalt)
-                    controllerHelper.decryptInputValue({req: req,expectedPart: expectedPart,salt: tempSalt,browserCollRule: browserInputRule[collName]})
-                    // ap.inf('after decrypt',req.body.values)
-                    //对输入值进行检测（此时objectId已经解密）
-                    result = controllerPreCheck.inputPreCheck({req: req,expectedPart: expectedPart,collName: collName,applyRange: applyRange, arr_currentSearchRange: arr_currentSearchRange})
-                    // ap.inf('create use inputPreCheck result',result)
-                    if (result.rc > 0) {return Promise.reject(result)}
-
+                    await controllerPreCheck.checkObjectIdInReqParams_async({req:req,parameterName:'articleId',cryptedError:controllerError.dispatch.post.cryptedArticleIdFormatInvalidCantUploadAttachment,decryptedError:controllerError.dispatch.post.decryptedArticleIdFormatInvalidCantUploadAttachment})
+// ap.inf('articleAttachment in')
                     return await uploadArticleAttachment_async({req: req})
                 }
             }

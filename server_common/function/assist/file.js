@@ -136,9 +136,21 @@ function deleteFiles({arr_fileAbsPath}){
         fs.unlink(singleFilePath)
     }
 }
+
+/**  如果upload的文件不符合条件，进行删除
+ * @formParseFiles: formParse_async后，返回的files数组（每个元素包括originalFilename/path等）
+ * **/
+function deleteUploadedTmpFile({formParseFiles}){
+    for(let singleFile of formParseFiles){
+        // ap.inf('singleFile',singleFile)
+        // ap.inf('singleFile[\'path\']',singleFile['path'])
+        fs.unlink(singleFile['path'])
+    }
+}
 module.exports={
     recursiveReadFileAbsPath,//递归读取一个目录下所有文件的路径
     readFileExportItem,
     recursiveRequireAllFileInDir,//将数组中所有文件名require到指定文件中
     deleteFiles,//
+    deleteUploadedTmpFile,
 }

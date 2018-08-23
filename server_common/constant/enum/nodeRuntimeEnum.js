@@ -68,6 +68,14 @@ const InputValueLogicCheckStep={
     RESOURCE_USAGE:'diskUsage',
 
 }
+
+//区分上传文件，以便选择tmpDir
+const UploadFileRange={
+    ARTICLE_IMAGE:'articleImage',
+    ARTICLE_ATTACHMENT:'articleAttachment',
+    IMPEACH_IMAGE:'impeachImage',
+    IMPEACH_COMMENT_IMAGE:'impeachCommentImage',
+}
 module.exports={
     HashType,
     CryptType,
@@ -77,4 +85,6 @@ module.exports={
     UserInfoField,
     DataTypeInfoFieldName,
     InputValueLogicCheckStep,
+
+    UploadFileRange,
 }

@@ -17,6 +17,8 @@ const objectDeepCopy=require('../../function/assist/misc').objectDeepCopy
 
 const rightResult={rc:0}
 
+//某些需要放到client的设置
+let neededItem=['searchSetting','suggestLimit','uploadFileDefine','maxNumber','userGroupFriend']
 
 /*  读取rule文件内容并调用checkRule函数对rule检查
 * @absFilePath：rule文件绝对路径
@@ -44,7 +46,7 @@ function readGlobalConfiguration({absFilePath,skipFilesArray}){
         // ap.print('allExportsInFile',allExportsInFile)
 
         for(let singleExportsItem of allExportsInFile){
-            if(''!==singleExportsItem ){ //&& 'uploadFileDefine'===singleExportsItem
+            if(-1!==neededItem.indexOf(singleExportsItem) ){ //&& 'uploadFileDefine'===singleExportsItem
                 // ap.print('tmpFileDir',tmpFileDir)
                 // ap.print('singleExportsItem',singleExportsItem)
                 let ruleDefineContent=require(`${absFilePath}`)[singleExportsItem]

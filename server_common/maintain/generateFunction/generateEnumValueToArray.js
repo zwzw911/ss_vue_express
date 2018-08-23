@@ -55,10 +55,7 @@ function genContent({fileExport}){
         }
         convertedEnum+=`] `
         convertedEnum+="\r\n"
-        // convertedEnum+=String.fromCharCode(10)
-        // convertedEnum=`const ${singleEnumName}`
-        // console.log(`${JSON.stringify(serverEnum[singleEnumName]['DB'])}`)
-        // console.log(`${JSON.stringify(serverEnum[singleEnumName]['SHOW'])}`)
+
         exp+=indent
         exp+=singleEnumName
         exp+=`,\r\n`

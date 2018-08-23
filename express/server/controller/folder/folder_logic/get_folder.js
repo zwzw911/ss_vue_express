@@ -48,7 +48,7 @@ const regex=server_common_file_require.regex
 /***************        获得所有一级目录      ****************/
 /*************************************************************/
 async function getRootFolder_async({req}){
-    ap.inf('getRootFolder_async in')
+    // ap.inf('getRootFolder_async in')
     /********************************************************/
     /*************      define variant        ***************/
     /********************************************************/
@@ -71,9 +71,9 @@ async function getRootFolder_async({req}){
     /*********************************************/
     /**********        获得数据         *********/
     /*********************************************/
-    ap.wrn('before businessLogic_async  ')
+    // ap.wrn('before businessLogic_async  ')
     let getRecord=await businessLogic_async({userId:userId,folderId:undefined})
-ap.wrn('root result ',getRecord)
+// ap.wrn('root result ',getRecord)
     /*********************************************/
     /********        删除指定字段         *******/
     /*********************************************/
@@ -81,7 +81,7 @@ ap.wrn('root result ',getRecord)
     for(let singleEle of getRecord['folder']){
         controllerHelper.keepFieldInRecord({record:singleEle,fieldsToBeKeep:['id','name','childNum']})//
     }
-    ap.wrn('keepFieldInRecord ',getRecord)
+    // ap.wrn('keepFieldInRecord ',getRecord)
     /*********************************************/
     /**********      加密 敏感数据       *********/
     /*********************************************/

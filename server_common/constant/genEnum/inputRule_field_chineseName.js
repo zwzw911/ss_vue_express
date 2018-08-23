@@ -100,8 +100,6 @@ const ChineseName={
         'duration':'处罚时间',
         'creatorId':'处罚发起者',
     },
-    not_used_to_be_friend_request:{
-    },
     public_group:{
         'name':'群名称',
         'joinInRule':'新成员加入规则',

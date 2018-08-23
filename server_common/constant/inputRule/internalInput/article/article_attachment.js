@@ -56,7 +56,7 @@ const article_attachment= {
         [otherRuleFiledName.APPLY_RANGE]:[applyRange.CREATE],
         [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true}, error: {rc: baseJSErrorCode+12, msg: '附件大小不能为空'}, mongoError: {rc: baseMongoErrorCode+12, msg: '附件大小不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         // 'min': {define: 1, error: {rc: 10002}, mongoError: {rc: 20002, msg: '图片大小至少6个字符'}},
-        'max': {define: uploadFileDefine.article_attachment[e_uploadFileDefinitionFieldName.MAX_SIZE_IN_MB], error: {rc: baseJSErrorCode+14, msg: `附件大小不能超过${uploadFileDefine.article_attachment.maxSizeInMB}MB`}, mongoError: {rc: baseMongoErrorCode+14, msg: `附件大小不能超过${uploadFileDefine.article_attachment.maxSizeInMB}MB`}},
+        'max': {define: uploadFileDefine.article.article_attachment[e_uploadFileDefinitionFieldName.MAX_SIZE_IN_MB], error: {rc: baseJSErrorCode+14, msg: `附件大小不能超过${uploadFileDefine.article.article_attachment.maxSizeInMB}MB`}, mongoError: {rc: baseMongoErrorCode+14, msg: `附件大小不能超过${uploadFileDefine.article.article_attachment.maxSizeInMB}MB`}},
         // [ruleFiledName.FORMAT]: {define: regex.objectId, error: {rc: 10005}, mongoError: {rc: 20005, msg: '存储路径必须是objectId'}} //server端使用
     },
     authorId: {

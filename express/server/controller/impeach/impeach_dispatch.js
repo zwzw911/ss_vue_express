@@ -123,17 +123,19 @@ async function impeach_dispatcher_async({req}) {
                     }
                 }
 
-                if(originalUrl === '/impeach/uploadImage' || originalUrl === '/impeach/uploadImage/'){
+                //为了获得articleId，将articleId放在URL，简化处理（否则需要formParse_async后处理fields）
+                // if(originalUrl === '/impeach/uploadImage' || originalUrl === '/impeach/uploadImage/'){
+                if(-1!==originalUrl.search('/impeach/uploadImage')){
                     userLoginCheck = {
                         needCheck: true,
                         error: controllerError.dispatch.post.notLoginCantCreateArticleImage
                     }
                     await controllerPreCheck.userStateCheck_async({req: req,userLoginCheck: userLoginCheck,penalizeCheck: penalizeCheck})
-                    expectedPart = [e_part.RECORD_ID] //articleId
-                    //是否为期望的part
-                    result = controllerPreCheck.inputCommonCheck({req: req, expectedPart: expectedPart})
-                    // ap.inf('inputCommonCheck result',result)
-                    if (result.rc > 0) {return Promise.reject(result)}
+                    // expectedPart = [e_part.RECORD_ID] //articleId
+                    // //是否为期望的part
+                    // result = controllerPreCheck.inputCommonCheck({req: req, expectedPart: expectedPart})
+                    // // ap.inf('inputCommonCheck result',result)
+                    // if (result.rc > 0) {return Promise.reject(result)}
 
                     //对req中的recordId和recordInfo进行objectId（加密过的）格式判断
                     // ap.inf('before check',req.body.values)
@@ -152,7 +154,8 @@ async function impeach_dispatcher_async({req}) {
                     result = controllerPreCheck.inputPreCheck({req: req,expectedPart: expectedPart,collName: collName,applyRange: applyRange, arr_currentSearchRange: arr_currentSearchRange})
                     // ap.inf('create use inputPreCheck result',result)
                     if (result.rc > 0) {return Promise.reject(result)}
-
+//检测url中objectId并解密objectId
+                    await controllerPreCheck.checkObjectIdInReqParams_async({req:req,parameterName:'articleId',cryptedError:controllerError.dispatch.get.cryptedArticleIdFormatInvalid,decryptedError:controllerError.dispatch.get.decryptedArticleIdFormatInvalid})
                     return await uploadImage_async({req: req,applyRange:applyRange})
                 }
             }

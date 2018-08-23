@@ -96,9 +96,9 @@ function writeResult({content,resultPath,ruleType}){
 
     // convertedEnum+=`${description}${indent}${useStrict}\r\nconst ${exportObjectName}=`
     for(let collName in content){
-        convertedEnum+=`${indent}${collName}:{\r\n`
+        convertedEnum+=`${indent}'${collName}':{\r\n`
         for(let fieldName in content[collName]){
-            convertedEnum+=`${indent}${indent}${fieldName}:{\r\n`
+            convertedEnum+=`${indent}${indent}'${fieldName}':{\r\n`
             for(let ruleName in content[collName][fieldName]){
                 let ruleContent=``
                 if(ruleName===e_ruleFieldName.FORMAT){
@@ -115,7 +115,7 @@ function writeResult({content,resultPath,ruleType}){
                     ruleContent=JSON.stringify(content[collName][fieldName][ruleName])
 
                 }
-                convertedEnum+=`${indent}${indent}${indent}${ruleName}:${ruleContent},\r\n`
+                convertedEnum+=`${indent}${indent}${indent}'${ruleName}':${ruleContent},\r\n`
             }
             convertedEnum+=`${indent}${indent}},\r\n`
         }

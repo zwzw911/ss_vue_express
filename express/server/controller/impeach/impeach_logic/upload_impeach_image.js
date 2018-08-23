@@ -38,12 +38,13 @@ const e_resourceFieldName=nodeEnum.ResourceFieldName
 const e_uploadFileDefinitionFieldName=nodeEnum.UploadFileDefinitionFieldName
 
 const e_fileSizeUnit=nodeRuntimeEnum.FileSizeUnit
+const e_uploadFileRange=nodeRuntimeEnum.UploadFileRange
 
 const e_resourceRange=mongoEnum.ResourceRange.DB
 // const e_resourceRange=mongoEnum.AdminUserType.DB
 const e_storePathUsage=mongoEnum.StorePathUsage.DB
 const e_resourceType=mongoEnum.ResourceType.DB
-
+const e_allUserType=mongoEnum.AllUserType.DB
 const e_impeachState=mongoEnum.ImpeachState.DB
 /** 需要同时更新IMAGE和ARTICLE，applyRange需要分别设置    **/
 const e_applyRange=server_common_file_require.inputDataRuleType.ApplyRange
@@ -55,7 +56,8 @@ const common_operation_model=server_common_file_require.common_operation_model
 const misc=server_common_file_require.misc
 const hash=server_common_file_require.crypt.hash
 const resourceCheck=server_common_file_require.resourceCheck
-
+const uploadFile=server_common_file_require.upload
+const file=server_common_file_require.file
 /*************** 配置信息 *********************/
 const regex=server_common_file_require.regex.regex
 const currentEnv=server_common_file_require.appSetting.currentEnv
@@ -79,7 +81,7 @@ async function uploadImpeachCommentFile_async({req}){
     let {userId,userCollName,userType,userPriority,tempSalt}=userInfo
     // console.log(`userInfo============>${JSON.stringify(userInfo)}`)
     // let docValue=req.body.values[e_part.RECORD_INFO]
-    let recordId=req.body.values[e_part.RECORD_ID]  //impeach的id
+    let recordId=req.params['impeachId']  //impeach的id
     // console.log(`docValue============>${JSON.stringify(docValue)}`)
     // console.log(`recordId============>${JSON.stringify(recordId)}`)
     /************************************************/
@@ -117,189 +119,135 @@ async function uploadImpeachCommentFile_async({req}){
         if(originalDoc[e_field.IMPEACH_COMMENT.CURRENT_STATE]!==e_impeachState.NEW && originalDoc[e_field.IMPEACH_COMMENT.CURRENT_STATE]!==e_impeachState.EDITING){
             return Promise.reject(controllerError.upload.cantUploadImageForNonNewEditingImpeach)
         }
-    // }
-    /*let condition={}
-    condition['_id']=recordId
-    condition[e_field.ARTICLE.AUTHOR_ID]=userId
-// console.log(`condition to check user =====>${JSON.stringify(condition)}`)
-    tmpResult=await  common_operation_model.find_returnRecords_async({dbModel:e_dbModel[collName],condition:condition})
-    // console.log(`tmpResult =====>${JSON.stringify(tmpResult)}`)
-    if(tmpResult.length!==1){
-        return Promise.reject(controllerError.notArticleAuthorCantInsertFile)
-    }*/
-    // console.log(`authorization check  =====>`)
-    /*******************************************************************************************/
-    /*                          delete field cant be update from client                        */
-    /*******************************************************************************************/
 
-    /*******************************************************************************************/
-    /*                              remove not change field                                    */
-    /*******************************************************************************************/
+    /***********************************************************************/
+    /*************  获得上传文件的信息并判断 文件是否valid        *********/
+    /***********************************************************************/
+    let tmpPath=controllerHelper.chooseTmpDir({uploadFileRange:e_uploadFileRange.IMPEACH_IMAGE})
+    let uploadOption={
+        // maxFilesSize:2097152,
+        maxFilesSize:uploadFileDefine.impeach.image[e_uploadFileDefinitionFieldName.MAX_SIZE_IN_BYTE],//300k   头像文件大小100k
+        maxFileNumPerTrans:1,//每次只能上传一个头像文件
+        // maxFields:1,
+        name:'file',
+        uploadDir:tmpPath,
+    }
+    //检查上传参数设置的是否正确
+    tmpResult=uploadFile.checkOption(uploadOption)
+    if(tmpResult.rc>0){
+        return Promise.reject(tmpResult)
+    }
+    //读取上传的文件，获得文件信息
+    tmpResult=await uploadFile.formParse_async({req:req,option:uploadOption})
+    if(0===tmpResult.msg.files.length){
+        return Promise.reject(controllerError.upload.noUploadImage)
+    }
+    let filesInfo= controllerHelper.getUploadFileNameAndSize({formParseFiles:tmpResult.msg.files,expectedFileSizeUnit:e_fileSizeUnit.MB})
 
-    /*******************************************************************************************/
-    /*                          check field number after delete                                */
-    /*******************************************************************************************/
 
-    /*******************************************************************************************/
-    /*                          获得上传文件的信息并判断 文件是否valid                         */
-    /*******************************************************************************************/
-    let maxFileSize=uploadFileDefine.impeach.image[e_uploadFileDefinitionFieldName.MAX_SIZE_IN_BYTE]
-    let uploadResult=await controllerHelper.uploadFileToTmpDir_async({req:req, uploadTmpDir:e_iniSettingObject.store_path.UPLOAD_TMP.upload_tmp_dir.path, maxFileSize:maxFileSize,fileSizeUnit:e_fileSizeUnit.MB})
-    let {originalFilename,path,size}=uploadResult
+    /**         检测        **/
+    let totalFileSize=0,filesPath=[]
+    //检测格式/size/解析度（图片）
+    for(let singleFileInfo of filesInfo){
+        let {originalFilename,path,size}=singleFileInfo
 
-    //判断图片格式是否允许
-    let suffix
-    let gmInst=gmImage.initImage({originalFilename})
-    suffix=await gmImage.getImageProperty_async(gmInst,e_gmGetter.FORMAT)
-    if(-1===uploadFileDefine.common.imageType.indexOf(suffix)){
-        fs.unlink(path)
-        return Promise.reject(controllerError.upload.imageFormatNotSupport)
+        //判断图片格式是否允许
+        let suffix
+        let gmInst=gmImage.initImage({originalFilename})
+        suffix=await gmImage.getImageProperty_async(gmInst,e_gmGetter.FORMAT)
+        if(-1===uploadFileDefine.common.imageType.indexOf(suffix)){
+            file.deleteUploadedTmpFile({formParseFiles:filesInfo})
+            return Promise.reject(controllerError.upload.imageFormatNotSupport)
+        }
+        /** 添加suffix，后续改名用  **/
+        singleFileInfo['suffix']=suffix
+
+        //判断图片的长，宽，是否符合
+        let wh=await gmImage.getImageProperty_async(gmInst,e_gmGetter.SIZE)
+        if(wh.width > uploadFileDefine[e_coll.impeach_comment][e_uploadFileDefinitionFieldName.MAX_WIDTH]
+            || wh.height > uploadFileDefine[e_coll.impeach_comment][e_uploadFileDefinitionFieldName.MAX_HEIGHT]
+        ){
+            file.deleteUploadedTmpFile({formParseFiles:filesInfo})
+            return Promise.reject(controllerError.upload.imageResolutionNotSupport)
+        }
+
+        totalFileSize+=singleFileInfo.size
+        filesPath.push(singleFileInfo.path)
     }
 
-    //判断图片的长，宽，是否符合
-    let wh=await gmImage.getImageProperty_async(gmInst,e_gmGetter.SIZE)
-    if(wh.width > uploadFileDefine[e_coll.impeach_comment][e_uploadFileDefinitionFieldName.MAX_WIDTH]
-    || wh.height > uploadFileDefine[e_coll.impeach_comment][e_uploadFileDefinitionFieldName.MAX_HEIGHT]
-    ){
-        return Promise.reject(controllerError.upload.imageResolutionNotSupport)
-    }
-
+    /**********************************************/
+    /**    resource check （impeachComment）     **/
+    /**********************************************/
     let requiredResource={
-        [e_resourceFieldName.USED_NUM]:1,
-        [e_resourceFieldName.DISK_USAGE_SIZE_IN_MB]:size,
-        [e_resourceFieldName.FILE_ABS_PATH]:path,
+        [e_resourceFieldName.USED_NUM]:filesInfo.length,
+        [e_resourceFieldName.DISK_USAGE_SIZE_IN_MB]:totalFileSize,
+        [e_resourceFieldName.FILE_ABS_PATH]:filesPath,
     }
-    // console.log(`get upload fild info  =====>${JSON.stringify(uploadResult)}`)
-    /*******************************************************************************************/
-    /*                               resource check （impeachComment）                         */
-    /*******************************************************************************************/
     let resourceProfileRangeToBeCheck=[e_resourceRange.IMAGE_PER_IMPEACH_OR_COMMENT,e_resourceRange.IMAGE_IN_WHOLE_IMPEACH,e_resourceRange.IMAGE_PER_USER_IN_WHOLE_IMPEACH]
     await resourceCheck.ifEnoughResource_async({requiredResource:requiredResource,resourceProfileRange:resourceProfileRangeToBeCheck,userId:userId,containerId:recordId})
-    /*/!*              获得通用资源配置，并检查当前占用的资源（磁盘空间）+文件的资源（sizeInMB）后，还小于==>所有<==的资源配置（）                         *!/
-    let resourceProfileRangeToBeCheck=[e_resourceRange.IMAGE_PER_IMPEACH_OR_COMMENT,e_resourceRange.IMAGE_PER_PERSON_FOR_WHOLE_IMPEACH]
-    //查找对应的resource profile
-    let resourceResult=await controllerHelper.findResourceProfileRecords_async({arr_resourceProfileRange:resourceProfileRangeToBeCheck})
 
-    //此处recordId指的是impeachComment
-    let calcResult
-    for(let singleResourceProfileRecord of resourceResult){
-        switch (singleResourceProfileRecord[e_field.RESOURCE_PROFILE.RANGE]){
-            case e_resourceRange.IMAGE_PER_IMPEACH_OR_COMMENT:
-                calcResult=await controllerHelper.calcExistResource_async({resourceProfileRange:e_resourceRange.IMAGE_PER_IMPEACH_OR_COMMENT,impeach_comment_id:recordId})
-                if(singleResourceProfileRecord[e_resourceFieldName.MAX_FILE_NUM]<calcResult[e_resourceFieldName.MAX_FILE_NUM]+1)
-                {
-                    fs.unlink(path)
-                    return Promise.reject(controllerError.impeachCommentImageNumExceed)
-                }
-                if(singleResourceProfileRecord[e_resourceFieldName.TOTAL_FILE_SIZE_IN_MB]<calcResult[e_resourceFieldName.TOTAL_FILE_SIZE_IN_MB])
-                {
-                    fs.unlink(path)
-                    return Promise.reject(controllerError.impeachCommentImageSizeExceed)
-                }
-                break;
-            case e_resourceRange.IMAGE_PER_PERSON_FOR_WHOLE_IMPEACH:
-                //根据impeachId在impeach_comment查找所有对应的comment
-                tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.impeach_comment,condition:{[e_field.IMPEACH_COMMENT.IMPEACH_ID]:recordId}})
-                //impeachId+commentId作为match条件传给calcExistResource_async
-                let arr_impeach_and_comment_id=[]
-                arr_impeach_and_comment_id.push(recordId)
-                if(tmpResult.length>0){
-                    for(let singleEle of tmpResult){
-                        arr_impeach_and_comment_id.push(singleEle[e_field.IMPEACH_COMMENT.ID])
-                    }
-                }
-                //计算impeach和comment的image
-                calcResult=await controllerHelper.calcExistResource_async({resourceProfileRange:e_resourceRange.IMAGE_PER_PERSON_FOR_WHOLE_IMPEACH,userId:userId,arr_impeach_and_comment_id:arr_impeach_and_comment_id})
-                if(singleResourceProfileRecord[e_resourceFieldName.MAX_FILE_NUM]<calcResult[e_resourceFieldName.MAX_FILE_NUM])
-                {
-                    fs.unlink(path)
-                    return Promise.reject(controllerError.wholeImpeachImageNumExceed)
-                }
-                if(singleResourceProfileRecord[e_resourceFieldName.TOTAL_FILE_SIZE_IN_MB]<calcResult[e_resourceFieldName.TOTAL_FILE_SIZE_IN_MB])
-                {
-                    fs.unlink(path)
-                    return Promise.reject(controllerError.wholeImpeachImageSizeExceed)
-                }
-                break;
-            default:
-                return Promise.reject(controllerError.resourceRangeNotExpected)
-        }
-    }*/
-// console.log(`rexource check done ======================`)
-    /*              文件move到永久存储目录                           */
-    let finalFileName
 
-    //对原始文件名进行md5化，然后加上suffix
-    let md5NameWithoutSuffix=hash(`${originalFilename}${Date.now()}`,e_hashType.MD5)
-    finalFileName=`${md5NameWithoutSuffix.msg}.${suffix.toLowerCase()}`
+    let records=[]  //所有要被插入的数据
+    let fileCollName=e_coll.IMPEACH_IMAGE
+    let fieldToBeChanged=e_field.IMPEACH.IMPEACH_IMAGES_ID
 
+    /**        产生文件最终路径和名称（hashName），以及对应的数据           **/
     //获得合适的存储路径，并move文件
     tmpResult=await controllerHelper.chooseStorePath_async({usage:e_storePathUsage.IMPEACH_IMAGE})
-        //tmpResult=await controllerHelper.chooseStorePath_async({usage:e_storePathUsage.ARTICLE_INNER_IMAGE,e_field:e_field})
-
-    let finalPath=tmpResult.path+finalFileName
+    let storePath=tmpResult.path
     let pathId=tmpResult._id
-    fs.renameSync(path,finalPath)
+    for(let singleFileInfo of filesInfo) {
+        let {originalFilename, path, size, suffix} = singleFileInfo
+        //对原始文件名进行md5化，然后加上suffix
+        let md5NameWithoutSuffix = hash(`${originalFilename}${Date.now()}`, e_hashType.MD5)
+        let finalFileName = `${md5NameWithoutSuffix.msg}.${suffix.toLowerCase()}`
+        //tmpResult=await controllerHelper.chooseStorePath_async({usage:e_storePathUsage.ARTICLE_INNER_IMAGE,e_field:e_field})
+        singleFileInfo['finalPath'] = storePath + finalFileName
 
-
-
-    /*******************************************************************************************/
-    /*                         添加internal field，然后检查                                    */
-    /*******************************************************************************************/
-    let internalValue={},fieldToBeChanged,fileCollName
-    // if(e_uploadFileType.IMAGE===type){
+        let internalValue={}
+        // if(e_uploadFileType.IMAGE===type){
         internalValue[e_field.IMPEACH_IMAGE.NAME]=originalFilename
         internalValue[e_field.IMPEACH_IMAGE.HASH_NAME]=finalFileName
         internalValue[e_field.IMPEACH_IMAGE.PATH_ID]=pathId
         internalValue[e_field.IMPEACH_IMAGE.SIZE_IN_MB]=size
         internalValue[e_field.IMPEACH_IMAGE.AUTHOR_ID]=userId
         internalValue[e_field.IMPEACH_IMAGE.IMPEACH_ID]=recordId
-        // internalValue[e_field.IMPEACH_IMAGE.REFERENCE_COLL]=e_coll.IMPEACH
 
-        fileCollName=e_coll.IMPEACH_IMAGE
-        fieldToBeChanged=e_field.IMPEACH.IMPEACH_IMAGES_ID
-    // }
-    /*if(e_uploadFileType.ATTACHMENT===type){
-        internalValue[e_field.ARTICLE_ATTACHMENT.NAME]=originalFilename
-        internalValue[e_field.ARTICLE_ATTACHMENT.HASH_NAME]=finalFileName
-        internalValue[e_field.ARTICLE_ATTACHMENT.PATH_ID]=pathId
-        internalValue[e_field.ARTICLE_ATTACHMENT.SIZE_IN_MB]=size
-        internalValue[e_field.ARTICLE_ATTACHMENT.AUTHOR_ID]=userId
-        internalValue[e_field.ARTICLE_ATTACHMENT.ARTICLE_ID]=recordId
-        fileCollName=e_coll.ARTICLE_ATTACHMENT
-        fieldToBeChanged=e_field.ARTICLE.ARTICLE_ATTACHMENTS_ID
-    }*/
-    if(e_env.DEV===currentEnv){
-        let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInternalRule:internalInputRule[fileCollName],applyRange:e_applyRange.CREATE})
+        if(e_env.DEV===currentEnv){
+            let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInternalRule:internalInputRule[fileCollName],applyRange:e_applyRange.CREATE})
 // console.log(`internalValue check result====>   ${JSON.stringify(tmpResult)}`)
-        if(tmpResult.rc>0){
-            return Promise.reject(tmpResult)
+            if(tmpResult.rc>0){
+                return Promise.reject(tmpResult)
+            }
+        }
+        records.push(internalValue)
+    }
+
+    /********************************************/
+    /**            db operation              **/
+    /********************************************/
+    tmpResult=await common_operation_model.insertMany_returnRecord_async({dbModel:e_dbModel[fileCollName],docs:records})
+    // tmpResult=await common_operation_model.create_returnRecord_async({dbModel:e_dbModel[fileCollName],value:internalValue})
+    let fileId=[]
+    if(tmpResult.length>0){
+        for(let singleFile of tmpResult){
+            fileId.push(singleFile.id)
         }
     }
-    /*******************************************************************************************/
-    /*                                          unique check                                   */
-    /*******************************************************************************************/
+    /*              更新记录到关联表：IMPEACH_COMMENT                  */
+    let updateValues={}
+    updateValues["$push"]={[e_field.IMPEACH.IMPEACH_IMAGES_ID]:fileId}
+    updateValues["$inc"]={
+        [e_field.IMPEACH.IMAGES_NUM]:filesInfo.length,
+        [e_field.IMPEACH.IMAGES_SIZE_IN_MB]:totalFileSize,
+    }
+    await common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel.impeach_comment,id:recordId,updateFieldsValue:updateValues})
 
+    /*      移动文件        */
+    for(let singleFileInfo of filesInfo){
+        fs.rename(path,singleFileInfo['finalPath'])  //只执行，不关心结果（默认操作完成了）
+    }
 
-    /*******************************************************************************************/
-    /*                                  db operation                                           */
-    /*******************************************************************************************/
-
-    tmpResult=await common_operation_model.create_returnRecord_async({dbModel:e_dbModel[fileCollName],value:internalValue})
-    let fileId=tmpResult._id
-    /*              更新记录到IMPEACH_COMMENT                  */
-    tmpResult=await e_dbModel.article.update({_id:recordId},{$push:{[fieldToBeChanged]:fileId}})
-    /**     impeach 不计入user_resource_static   **/
-/*    /!*              更新user_resource_static          *!/
-    tmpResult=await e_dbModel.user_resource_static.update({
-        [e_field.USER_RESOURCE_STATIC.USER_ID]:userId,
-        [e_field.USER_RESOURCE_STATIC.RESOURCE_TYPE]:e_resourceType.IMPEACH_COMMENT_IMAGE
-    },{
-        $inc:{
-            [e_field.USER_RESOURCE_STATIC.UPLOADED_FILE_NUM]:1,
-            [e_field.USER_RESOURCE_STATIC.UPLOADED_FILE_SIZE_IN_MB]:size,
-        }
-    })*/
 
     return Promise.resolve({rc:0})
 

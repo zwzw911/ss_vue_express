@@ -40,7 +40,7 @@ const assist=require('../../common/assist')
 const collName='user_resource_static'
 const collFieldDefine={
     userId:{type:mongoose.Schema.Types.ObjectId},
-    resourceRange:{type:String}, //统计的范围
+    resourceRange:{type:String}, //统计的范围(现在是WHOLE_FILE_RESOURCE_PER_PERSON，合并article image/attachment，便于操作)
     uploadedFileNum:{type:Number},
     uploadedFileSizeInMb:{type:Number},
     //isActive: boolean   //当前的resource_profile是否还有效

@@ -43,7 +43,7 @@ function checkOption({ maxFilesSize=2097152 ,maxFileNumPerTrans=1 ,uploadDir }){
 }
 
 
-async function formParse_async(req,option){
+async function formParse_async({req,option}){
     // console.log(`formParse_async in ============`)
     let form=new multiparty.Form(option)
     // console.log(`formParse_async new ============`)
@@ -52,6 +52,8 @@ async function formParse_async(req,option){
             // console.log(`err ====>${JSON.stringify(err)}`)
             // console.log(`fields ====>${JSON.stringify(fields)}`)
             // console.log(`files ====>${JSON.stringify(files)}`)
+            // ap.inf('fields',fields)
+            // ap.inf('files',files)
             // let filesTmp = JSON.stringify(files);
             // let fieldsTemp = JSON.stringify(fields);
             // console.log(`filesTmp===>${JSON.stringify(filesTmp)}`)
@@ -85,8 +87,8 @@ async function formParse_async(req,option){
             }
 
 // console.log(`files===>${JSON.stringify(files)}`)
-            //返回文件数组
-            return resolve({rc: 0, msg: files[option['name']]})
+            //返回 附件参数/文件 数组
+            return resolve({rc: 0, msg: {files:files[option['name']],fields:fields}})
         })
 
     })

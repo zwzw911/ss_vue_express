@@ -47,8 +47,9 @@ const controllerError={
         notImpeachCommentCreatorCantUploadFile:{rc:50716,msg:`无权为他人举报评论上传文件`},
         cantUploadImageForNonNewImpeachComment:{rc:50717,msg:`无法修改已经提交的举报`},//hacker error
 
-        imageFormatNotSupport:{rc:50718,msg:`只支持JPG/PNG格式的图片`},
-        imageResolutionNotSupport:{rc:50719,msg:`图片的分辨率过高`},
+        noUploadImage:{rc:50718,msg:`没有获得上传图片`},
+        imageFormatNotSupport:{rc:50719,msg:`只支持JPG/PNG格式的图片`},
+        imageResolutionNotSupport:{rc:50720,msg:`图片的分辨率过高`},
     },
 
 

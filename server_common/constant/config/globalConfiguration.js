@@ -252,16 +252,19 @@ const uploadFileDefine={
         attachmentType:['7z','txt','log'],
         userPhotoType:['PNG'], //因为使用了dataUrl，所以此设置无效了
     },
-    article_image:{
-        [e_uploadFileDefinitionFieldName.MAX_SIZE_IN_BYTE]:2*1024*1024, //byte
-        [e_uploadFileDefinitionFieldName.MAX_SIZE_IN_MB]:2, //byte
-        [e_uploadFileDefinitionFieldName.MAX_WIDTH]:750,//最宽750px，超过自动缩减
-        [e_uploadFileDefinitionFieldName.MAX_HEIGHT]:600,//最高600px，超过自动缩减
+    article:{
+        article_image:{
+            [e_uploadFileDefinitionFieldName.MAX_SIZE_IN_BYTE]:2*1024*1024, //byte
+            [e_uploadFileDefinitionFieldName.MAX_SIZE_IN_MB]:2, //Mb
+            [e_uploadFileDefinitionFieldName.MAX_WIDTH]:750,//最宽750px，超过自动缩减
+            [e_uploadFileDefinitionFieldName.MAX_HEIGHT]:600,//最高600px，超过自动缩减
+        },
+        article_attachment:{
+            [e_uploadFileDefinitionFieldName.MAX_SIZE_IN_BYTE]:10*1024*1024, //byte
+            [e_uploadFileDefinitionFieldName.MAX_SIZE_IN_MB]:10, //
+        },
     },
-    article_attachment:{
-        [e_uploadFileDefinitionFieldName.MAX_SIZE_IN_BYTE]:10*1024*1024, //byte
-        [e_uploadFileDefinitionFieldName.MAX_SIZE_IN_MB]:10, //byte
-    },
+
     user_photo:{
         [e_uploadFileDefinitionFieldName.MAX_SIZE_IN_BYTE]:32*100*100,// in byte  32：颜色深度
         [e_uploadFileDefinitionFieldName.MAX_HEIGHT]:100,//px

@@ -112,7 +112,7 @@ router.delete('/',function(req,res,next){
 /* @uploadFileType: 上传的是image还是attachment
 * @forColl： 上传的文件是for impeach还是impeachComment（因为这2者共用处理代码以及同一个coll）
 * */
-router.post('/uploadImage',function(req,res,next){
+router.post('/uploadImage/:impeachId',function(req,res,next){
 
     impeach_dispatcher_async({req:req}).then(
         (v)=>{

@@ -8,6 +8,9 @@ const interval=require('../function/security/interval')
 const checkRobot_async=require('../function/assist/checkRobot').checkRobot_async
 const ifPenalizeOngoing_async=require(`./controllerChecker`).ifPenalizeOngoing_async
 const dataTypeCheck=require('../function/validateInput/validateHelper').dataTypeCheck
+const controllerHelper=require('./controllerHelper')
+const controllerChecker=require('./controllerChecker')
+const crypt=require('../function/assist/crypt')
 
 const preCheckError=require('../constant/error/controller/helperError').preCheck
 const validateFormatError=require('../constant/error/validateError').validateFormat
@@ -21,11 +24,12 @@ const collValue=require('../constant/genEnum/DB_CollValue').Coll
 const fkConfig=require('../model/mongo/fkConfig').fkConfig
 
 const e_part=require('../constant/enum/nodeEnum').ValidatePart
-const e_method=require('../constant/enum/nodeEnum').Method
+// const e_method=require('../constant/enum/nodeEnum').Method
 const e_applyRange=require('../constant/enum/inputDataRuleType').ApplyRange
 
 const currentEnv=require('../constant/config/appSetting').currentEnv
 const e_env=require('../constant/enum/nodeEnum').Env
+const e_userInfoField=require('../constant/enum/nodeRuntimeEnum').UserInfoField
 
 const regex=require('../constant/regex/regex').regex
 
@@ -62,7 +66,7 @@ async function userStateCheck_async({req,userLoginCheck={needCheck:false},penali
             return Promise.reject(preCheckError.userStateCheck.demandUserLoginCheckButWithoutRelatedError)
             // ap.err(`need to check **user login**, but not supply related error`)
         }
-        if(undefined===req.session.userInfo){
+        if(undefined===req.session.userInfo || undefined===req.session.userInfo[e_userInfoField.USER_ID]){
             return Promise.reject(error)
         }
     }
@@ -400,7 +404,33 @@ function validatePartValue({req,expectedPart,collName,applyRange,fkConfig}){
     return {rc:0}
 }
 
-
+/**    在get中，如果填入的参数是objectId，那么通过这个函数检测    **/
+//req+parameterName: 组成cryptedObjectId http://127.0.0.1/article/cryptedObjectId
+//cryptedError: cryptedObjectId格式错误，返回的error
+//decryptedError：解密后objectId的格式错误，返回的error
+async function checkObjectIdInReqParams_async({req,parameterName,cryptedError,decryptedError}){
+    let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
+    let tempSalt=userInfo.tempSalt
+    //判断加密的objectId格式
+    let cryptedObjectId=req.params[parameterName]
+    // ap.wrn('cryptedObjectId',cryptedObjectId)
+    if(false===controllerChecker.ifObjectIdCrypted({objectId:cryptedObjectId})){
+        return Promise.reject(cryptedError)
+    }
+    //解密
+    let tmpResult=crypt.decryptSingleFieldValue({fieldValue:cryptedObjectId,salt:tempSalt})
+    // ap.wrn('tmpResult',tmpResult)
+    if(tmpResult.rc>0){
+        return Promise.reject(tmpResult)
+    }
+    //解密后的object替换加密值，以后后续直接使用
+    req.params[parameterName]=tmpResult.msg
+    // ap.inf('decryptedObjectId',req.params.folderId)
+    //判断解密的objectId
+    if(false===regex.objectId.test(req.params[parameterName])){
+        return Promise.reject(decryptedError)
+    }
+}
 /********************************************************************/
 /********************************************************************/
 /********************************************************************/
@@ -409,4 +439,5 @@ module.exports={
     commonPreCheck_async,
     userStateCheck_async,
     inputPreCheck,
+    checkObjectIdInReqParams_async,
 }

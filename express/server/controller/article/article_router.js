@@ -32,7 +32,6 @@ const article_dispatcher_async=require('./article_dispatch').article_dispatcher_
 
 /***    创建新文档（无任何参数）    ***/
 router.post('/',function(req,res,next){
-
     article_dispatcher_async({req}).then(
         (v)=>{
             if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV){
@@ -53,7 +52,6 @@ router.post('/',function(req,res,next){
 })
 /***    更改新文档（recordId+recordInfo）    ***/
 router.put('/',function(req,res,next){
-
     article_dispatcher_async({req}).then(
         (v)=>{
             if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV){
@@ -74,29 +72,60 @@ router.put('/',function(req,res,next){
 })
 /***    删除文档（recordId）    ***/
 router.delete('/',function(req,res,next){
-
     article_dispatcher_async({req}).then(
         (v)=>{
             if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV){
                 console.log(`update   article   success, result:  ${JSON.stringify(v)}`)
             }
-
             return res.json(v)
         },
         (err)=>{
             if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV){
                 console.log(`update   article    fail: ${JSON.stringify(err)}`)
             }
-
             return res.json(genFinalReturnResult(err))
-
         }
     )
 })
 
-
+/***    更新时需要首先获得原始文档内容（recordId）    ***/
+router.get('/getUpdateArticle/:articleId',function(req,res,next){
+    //articleId通过req.params.articleId获得
+    article_dispatcher_async({req}).then(
+        (v)=>{
+            if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV){
+                console.log(`update   article   success, result:  ${JSON.stringify(v)}`)
+            }
+            return res.json(v)
+        },
+        (err)=>{
+            if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV){
+                console.log(`update   article    fail: ${JSON.stringify(err)}`)
+            }
+            return res.json(genFinalReturnResult(err))
+        }
+    )
+})
+//非更新获得文档（例如，阅读他人写的文档）
+router.get('/:articleId',function(req,res,next){
+    //articleId通过req.params.articleId获得
+    article_dispatcher_async({req}).then(
+        (v)=>{
+            if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV){
+                console.log(`update   article   success, result:  ${JSON.stringify(v)}`)
+            }
+            return res.json(v)
+        },
+        (err)=>{
+            if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV){
+                console.log(`update   article    fail: ${JSON.stringify(err)}`)
+            }
+            return res.json(genFinalReturnResult(err))
+        }
+    )
+})
 /***    上传图片(只包含上传文件，db操作由article的update，通过对article的content分析进行)    ***/
-router.post('/articleImage',function(req,res,next){
+router.post('/articleImage/:articleId',function(req,res,next){
 
     article_dispatcher_async({req:req}).then(
         (v)=>{
@@ -119,7 +148,7 @@ router.post('/articleImage',function(req,res,next){
 
 
 /***    上传附件    ***/
-router.post('/articleAttachment',function(req,res,next){
+router.post('/articleAttachment/:articleId',function(req,res,next){
 // ap.inf('upload Attachment in')
     article_dispatcher_async({req:req}).then(
         (v)=>{

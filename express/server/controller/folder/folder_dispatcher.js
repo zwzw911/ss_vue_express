@@ -104,12 +104,11 @@ async function dispatcher_async(req){
             }else{
                 //获得非顶层目录的内容
                 /*********  url（get）中的objectId的检查，不使用单一函数，因为需要具体的错误信息  *********/
-                let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
+                await controllerPreCheck.checkObjectIdInReqParams_async({req:req,parameterName:'folderId',cryptedError:controllerError.dispatch.get.cryptedFolderIdFormatInvalid,decryptedError:controllerError.dispatch.get.decryptedFolderIdFormatInvalid})
+                /*let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
                 let tempSalt=userInfo.tempSalt
                 //判断加密的objectId格式
                 let cryptedObjectId=req.params.folderId
-                // ap.inf('cryptedObjectId',cryptedObjectId)
-                // ap.inf('tempSalt',tempSalt)
                 if(false===controllerChecker.ifObjectIdCrypted({objectId:cryptedObjectId})){
                     return Promise.reject(controllerError.dispatch.get.cryptedFolderIdFormatInvalid)
                 }
@@ -123,8 +122,7 @@ async function dispatcher_async(req){
                 //判断解密的objectId
                 if(false===regex.objectId.test(req.params.folderId)){
                     return Promise.reject(controllerError.dispatch.get.decryptedFolderIdFormatInvalid)
-                }
-// ap.inf('req.params',req.params)
+                }*/
                 //逻辑
                 result = await getNonRootFolder_async({req: req})
             }

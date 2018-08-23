@@ -26,6 +26,7 @@ const mongoEnum=server_common_file_require.mongoEnum
 const e_accountType=mongoEnum.AccountType.DB
 const e_docStatus=mongoEnum.DocStatus.DB
 const e_userType=mongoEnum.UserType.DB
+const e_resourceRange=mongoEnum.ResourceRange.DB
 const e_resourceType=mongoEnum.ResourceType.DB
 
 const nodeEnum=server_common_file_require.nodeEnum
@@ -258,21 +259,22 @@ async  function createUser_async({req}){
         // ap.inf('folder result',tmp)
     }
     await common_operation_model.insertMany_returnRecord_async({dbModel:e_dbModel.user_resource_profile,docs:userResourceProfile})
-
+ap.inf('basic insert done')
     //对关联表user_resource_static进行insert操作，为article_image和article_attachment插入fileNum和size为0 的记录
+    //现在合并article_image和aricle_attachment=WHOLE_FILE_RESOURCE_PER_PERSON，简化处理
     let userResourceStaticValue=[
         {
             [e_field.USER_RESOURCE_STATIC.USER_ID]:userCreateTmpResult._id,
-            [e_field.USER_RESOURCE_STATIC.RESOURCE_TYPE]:e_resourceType.ARTICLE_IMAGE,
+            [e_field.USER_RESOURCE_STATIC.RESOURCE_RANGE]:e_resourceRange.WHOLE_FILE_RESOURCE_PER_PERSON,
             [e_field.USER_RESOURCE_STATIC.UPLOADED_FILE_NUM]:0,
             [e_field.USER_RESOURCE_STATIC.UPLOADED_FILE_SIZE_IN_MB]:0,
-        },
-        {
+        }
+        /*{
             [e_field.USER_RESOURCE_STATIC.USER_ID]:userCreateTmpResult._id,
-            [e_field.USER_RESOURCE_STATIC.RESOURCE_TYPE]:e_resourceType.ARTICLE_ATTACHMENT,
+            [e_field.USER_RESOURCE_STATIC.RESOURCE_RANGE]:e_resourceRange.ARTICLE_ATTACHMENT,
             [e_field.USER_RESOURCE_STATIC.UPLOADED_FILE_NUM]:0,
             [e_field.USER_RESOURCE_STATIC.UPLOADED_FILE_SIZE_IN_MB]:0,
-        },
+        },*/
         ]
     // console.log(`sugarValue ${JSON.stringify(sugarValue)}`)
     await common_operation_model.insertMany_returnRecord_async({dbModel:e_dbModel.user_resource_static,docs:userResourceStaticValue})

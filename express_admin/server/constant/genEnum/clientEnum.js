@@ -1,4 +1,4 @@
-/*    gene by H:\ss_vue_express\server_common\maintain\generateFunction\generateClientEnum.js     */ 
+/*    gene by D:\U\ss_vue_express\server_common\maintain\generateFunction\generateClientEnum.js     */ 
  
 "use strict"
 const ArticleStatus=

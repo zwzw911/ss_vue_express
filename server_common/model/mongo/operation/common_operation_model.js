@@ -267,23 +267,28 @@ async function readName({dbModel,readNameField,nameToBeSearched,recorderLimit=10
 
 //作为外键时，是否存在(存在放回doc，否则返回null)
 //selectedFields:'-cDate -uDate -dDate'
-async function findById_returnRecord_async({dbModel,id,selectedFields='-cDate -uDate -dDate'}){
+async function findById_returnRecord_async({dbModel,id,selectedFields='-cDate -uDate -dDate',populateOpt}){
     // console.log(`find by id :${id}`)
-    let result=await dbModel.findById(id,selectedFields)
-        .catch(
-        function(err){
-            console.log(`findbyid errr is ${JSON.stringify(err)}`)
-            // console.log(`converted err is ${JSON.stringify(mongooseErrorHandler(mongooseOpEnum.findById,err))}`)
-            return Promise.reject(mongooseErrorHandler(err))
-        })
-    // let finalResult=result.toObject()
-    // delete finalResult.__v
-    // console.log(`findbyid result is ${JSON.stringify(result)}`)
-/*    if(returnResult){
-        return Promise.resolve({rc:0,msg:result})
+    let result
+    if(undefined===populateOpt){
+        result=await dbModel.findById(id,selectedFields)
+            .catch(
+                function(err){
+                    console.log(`findbyid errr is ${JSON.stringify(err)}`)
+                    // console.log(`converted err is ${JSON.stringify(mongooseErrorHandler(mongooseOpEnum.findById,err))}`)
+                    return Promise.reject(mongooseErrorHandler(err))
+                })
     }else{
-        return Promise.resolve({rc:0})
-    }*/
+        result=await dbModel.findById(id,selectedFields).populate(populateOpt)
+            .catch(
+                function(err){
+                    console.log(`findbyid errr is ${JSON.stringify(err)}`)
+                    // console.log(`converted err is ${JSON.stringify(mongooseErrorHandler(mongooseOpEnum.findById,err))}`)
+                    return Promise.reject(mongooseErrorHandler(err))
+                })
+    }
+
+
     return Promise.resolve(result)
 }
 
@@ -291,19 +296,25 @@ async function findById_returnRecord_async({dbModel,id,selectedFields='-cDate -u
 async function find_returnRecords_async({dbModel,condition,selectedFields='-cDate -uDate -dDate',options={},populateOpt}){
     // console.log(`find by id :${id}`)
     // console.log(`find condition==========================>${JSON.stringify(condition)}`)
-    let result
+    // let result
+    ap.inf('find_returnRecords_async dbModel',dbModel)
+    ap.inf('find_returnRecords_async condition',condition)
+    ap.inf('find_returnRecords_async selectedFields',selectedFields)
+    ap.inf('find_returnRecords_async options',options)
+    ap.inf('find_returnRecords_async populateOpt',populateOpt)
     if(undefined===populateOpt){
-        // ap.print('populateOpt undefined')
-        result=await dbModel.find(condition,selectedFields,options)
+
+        return await dbModel.find(condition,selectedFields,options)
             .catch(
                 function(err){
+                    ap.err('find_returnRecords_async err',err)
                     // console.log(`find errr is ${JSON.stringify(err)}`)
                     // console.log(`converted err is ${JSON.stringify(mongooseErrorHandler(mongooseOpEnum.findById,err))}`)
                     return Promise.reject(mongooseErrorHandler(err))
                 })
     }else{
-        // ap.print('populateOpt defined')
-        result=await dbModel.find(condition,selectedFields,options).populate(populateOpt)
+        ap.inf('populateOpt defined')
+        return await dbModel.find(condition,selectedFields,options).populate(populateOpt)
             .catch(
                 function(err){
                     // console.log(`find errr is ${JSON.stringify(err)}`)
@@ -320,7 +331,7 @@ async function find_returnRecords_async({dbModel,condition,selectedFields='-cDat
     }else{
         return Promise.resolve({rc:0})
     }*/
-    return Promise.resolve(result)
+    //return Promise.resolve(result)
 }
 
 async function findByIdAndUpdate_returnRecord_async({dbModel,id,updateFieldsValue,updateOption}){

@@ -42,6 +42,8 @@ const nodeRuntimeEnum=require('../constant/enum/nodeRuntimeEnum')
 const e_hashType=nodeRuntimeEnum.HashType
 const e_fileSizeUnit=nodeRuntimeEnum.FileSizeUnit
 const e_userInfoField=nodeRuntimeEnum.UserInfoField
+const e_uploadFileRange=nodeRuntimeEnum.uploadFileRange
+
 
 const e_serverDataType=require(`../constant/enum/inputDataRuleType`).ServerDataType
 const e_serverRuleType=require(`../constant/enum/inputDataRuleType`).ServerRuleType
@@ -54,7 +56,7 @@ const e_coll=require('../constant/genEnum/DB_Coll').Coll
 const e_field=require('../constant/genEnum/DB_field').Field
 const e_internal_field=require('../constant/genEnum/DB_internal_field').Field
 
-
+const e_iniSettingObject=require('../constant/genEnum/initSettingObject').iniSettingObject
 // const calcResourceCriteria=require(`../constant/define/calcResourceConfig`).calcResourceCriteria
 /*                      error               */
 const helperError=require('../constant/error/controller/helperError').helper
@@ -457,8 +459,17 @@ function deleteInternalField({docValue,collInternalFieldEnum,collBrowserInputRul
     return Promise.resolve({rc:0})
 }*/
 
-
-
+/**  选择合适的零食存储路径
+ * @uploadFileRange:用于区分上传文件，以便决定使用那个临时目录
+ *
+ * return：临时目录
+ * **/
+function chooseTmpDir({uploadFileRange}){
+    return e_iniSettingObject.store_path.UPLOAD_TMP.upload_tmp_dir.path
+    // switch (uploadFileRange){
+    //     // case
+    // }
+}
 /*      使用multiPart获得并保存上传的文件
 *
 * @maxFileSizeInByte:提供被multipart使用，限制最大文件size
@@ -484,7 +495,7 @@ async function uploadFileToTmpDir_async({req,uploadTmpDir,maxFileSizeInByte,file
     }
     //读取上传的文件，获得文件信息
     tmpResult=await uploadFile.formParse_async(req,uploadOption)
-
+ap.inf('upload content',tmpResult)
     let {originalFilename,path,size}=tmpResult.msg[0]
 
     //检测原始文件名
@@ -502,6 +513,36 @@ async function uploadFileToTmpDir_async({req,uploadTmpDir,maxFileSizeInByte,file
 }
 
 
+/**
+ * @formParseFiles: 通过uploadFile.formParse_async处理req后，得到的files的信息
+ * @expectedFileSizeUnit: formParse获得file size是byte，期望转换成的unit
+ *
+ * 返回：数据。{originalFilename:文件的名称，path}
+ * **/
+function getUploadFileNameAndSize({formParseFiles,expectedFileSizeUnit}){
+    let result=[]
+    if(formParseFiles.length>0){
+        for(let singleFile of formParseFiles){
+            //保存headers是为了后续对后缀和content-type比较
+            let {originalFilename,path,size,headers}=singleFile
+
+            //检测原始文件名
+            if(sanityHtml(originalFilename)!==originalFilename){
+                return Promise.reject(helperError.uploadFileNameSanityFail)
+            }
+            //转换size
+            let tmpResult=convertFileSize({num:size,newUnit:expectedFileSizeUnit})
+            // ap.inf('convertFileSize',tmpResult)
+            if(tmpResult.rc>0){
+                return Promise.reject(tmpResult)
+            }
+
+            //保存headers是为了后续对后缀和content-type比较
+            result.push({originalFilename:originalFilename,path:path,size:tmpResult.msg,headers:headers})
+        }
+    }
+    return result
+}
 /*如果client输入的字段包含用户输入，需要进行XSS检查
 * @content;要进行检查的content
 * @error；如果检查失败，要返回的错误
@@ -799,6 +840,7 @@ function generateSugarAndHashPassword({ifAdminUser,ifUser,password}){
 * */
 async function setLoginUserInfo_async({req,userInfo}){
     // console.log(`setLoginUserInfo in==========>`)
+    ap.inf('userInfo',userInfo)
     if(undefined===userInfo){
         return Promise.reject(helperError.userInfoUndefine)
     }
@@ -1134,14 +1176,18 @@ async function checkEditSubFieldEleArray_async({singleEditSubFieldValue,eleAddit
 /*  如果req不带任何cookie（sessionId），server对每个req自动生成新的session，导致同一client的请求产生过多session
 *   因此，如果出现以上情况，先在server产生一个session（设置req.session.field），然后传递给client，以便client保存到cookie中
 *   client收到后，自动重发req（带sessionId）
+*   session还需要设置tempSalt，以便可以在为登录的情况下读取他人文档
 * */
 async function setSessionByServer_async({req}){
     return new Promise(function(resolve, reject){
         // ap.inf('setSessionByServer_async in')
-        let field='req1'
+        let field='tempSalt'
         // ap.inf('session id',req.session.id)
-        if(undefined===req.session[field]){
-            req.session[field]=1
+        if(undefined===req.session['userInfo'] ){
+            req.session['userInfo']={}
+        }
+        if(undefined===req.session['userInfo'][field]){
+            req.session['userInfo'][field]=misc.generateRandomString({})
             // return Promise.reject(helperError.sessionNotSet)
             // ap.inf('helperError.sessionNotSet',helperError.sessionNotSet)
             reject(misc.genFinalReturnResult(helperError.sessionNotSet))
@@ -1434,14 +1480,19 @@ function deleteFieldInRecord({record,fieldsToBeDeleted}){
 /*  在一个record中保留指定的字段 */
 //record:必须是Object
 function keepFieldInRecord({record,fieldsToBeKeep}){
+
     // ap.wrn('record',record)
     // ap.wrn('fieldsToBeKeep',fieldsToBeKeep)
     let recordFieldName=Object.keys(record)
     // ap.wrn('recordFieldName',recordFieldName)
-    for(let singleFieldName of recordFieldName){
-        // ap.wrn('fieldsToBeKeep',fieldsToBeKeep)
-        if(-1===fieldsToBeKeep.indexOf(singleFieldName)){
-            delete record[singleFieldName]
+    if(undefined===fieldsToBeKeep || 0===fieldsToBeKeep.length){
+        delete record['_id']
+    }else{
+        for(let singleFieldName of recordFieldName){
+            // ap.wrn('fieldsToBeKeep',fieldsToBeKeep)
+            if(-1===fieldsToBeKeep.indexOf(singleFieldName)){
+                delete record[singleFieldName]
+            }
         }
     }
 }
@@ -1480,7 +1531,9 @@ module.exports= {
     deleteInternalField,//检查client端输入的值（recordInfo），如果其中包含了internalField，直接删除
     //preCheck_async,//user login+robot+penalize+delete internal+ CRUD
 
+    chooseTmpDir,
     uploadFileToTmpDir_async,
+    getUploadFileNameAndSize,
 
     contentXSSCheck_async,//如果输入的html，要进行XSS检查
     inputFieldValueXSSCheck,

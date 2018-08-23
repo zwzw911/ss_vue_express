@@ -45,7 +45,7 @@ router.put('/',function(req,res,next){
         }
     )
 })
-router.post('/uploadImage',function(req,res,next){
+router.post('/uploadImage/:impeachCommentId',function(req,res,next){
 //     console.log(`req in`)
 // console.log(`req is ${JSON.stringify(req.body)}`)
     dispatcher_async({req:req,type:e_uploadFileType.IMAGE}).then(

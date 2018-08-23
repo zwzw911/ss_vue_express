@@ -98,11 +98,6 @@ function _genForGeneral_part2(absoluteDestDirForInputRule,absoluteDestDirForEnum
     }
     const e_ruleType=require('./generateFunction/generateAllRuleInOneFile').RuleType
 
-
-
-
-
-
     let {skipFilesArray,skipCollNameArray}=skipObject
 
     /*                  inputRule                      */
@@ -118,6 +113,14 @@ function _genForGeneral_part2(absoluteDestDirForInputRule,absoluteDestDirForEnum
     ap.inf(`start generateAllRuleInOneFile for both`)
     //generateAllRuleInOneFile(modelCollRootDir,`${absoluteDestDirForInputRule}inputRule.js`,e_ruleType.BOTH,skipFilesArray,inputRuleBaseDir)
     generateAllRuleInOneFile({inputRuleBaseDir:inputRuleBaseDir,resultAbsPath:`${absoluteDestDirForInputRule}inputRule.js`,ruleType:e_ruleType.BOTH,skipFilesArray:skipFilesArray})
+
+
+    const generateCreateField=require('./generateFunction/generateCreateUpdateField').generateCreateField
+    ap.inf(`start generateCreateFieldToArray`)
+    generateCreateField({browserInputRuleFileAbsPath:`${absoluteDestDirForInputRule}browserInputRule.js`,resultFileAbsPath:`${absoluteDestDirForEnum}createField.js`})
+    const generateUpdateField=require('./generateFunction/generateCreateUpdateField').generateUpdateField
+    ap.inf(`start generateUpdateField`)
+    generateUpdateField({browserInputRuleFileAbsPath:`${absoluteDestDirForInputRule}browserInputRule.js`,resultFileAbsPath:`${absoluteDestDirForEnum}updateField.js`})
 
     ap.inf(`start generateMongoInternalFieldToEnum`)
     const generateMongoInternalFieldToEnum=require('./generateFunction/generateMongoInternalFieldToEnum').writeFinalResult
