@@ -1,4 +1,4 @@
-/*    gene by D:\U\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-8-21   */ 
+/*    gene by D:\U\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-8-25   */ 
  
 "use strict"
 const internalInputRule={
@@ -660,6 +660,32 @@ const internalInputRule={
         },
     },
     'user_resource_static':{
+        'userId':{
+            'chineseName':"用户",
+            'dataType':"objectId",
+            'applyRange':["create"],
+            'require':{"define":{"create":true},"error":{"rc":11210,"msg":"用户不能为空"},"mongoError":{"rc":21210,"msg":"用户不能为空"}},
+            'format':{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":11212,"msg":"用户必须是objectId"},"mongoError":{"rc":21212,"msg":"用户必须是objectId"}},
+        },
+        'resourceRange':{
+            'chineseName':"统计资源类别",
+            'dataType':"string",
+            'applyRange':["create"],
+            'require':{"define":{"create":true},"error":{"rc":11214,"msg":"统计资源类别不能为空"},"mongoError":{"rc":21214,"msg":"统计资源类别不能为空"}},
+            'enum':{"define":["1","10","12","14","16","18","20","100","102","105","106","110","112","114","116","118","120","122","124","126","128","130"],"error":{"rc":10020,"msg":"用户权限不正确"},"mongoError":{"rc":20020,"msg":"用户权限不正确"}},
+        },
+        'uploadedFileNum':{
+            'chineseName':"上传文件数量",
+            'dataType':"number",
+            'applyRange':["create","update_scalar"],
+            'require':{"define":{"create":true,"update_scalar":true},"error":{"rc":11218,"msg":"上传文件数量不能为空"},"mongoError":{"rc":21218,"msg":"上传文件数量不能为空"}},
+        },
+        'uploadedFileSizeInMb':{
+            'chineseName':"上传文件占用空间",
+            'dataType':"number",
+            'applyRange':["create","update_scalar"],
+            'require':{"define":{"create":true,"update_scalar":true},"error":{"rc":11220,"msg":"上传文件占用空间不能为空"},"mongoError":{"rc":21220,"msg":"上传文件占用空间不能为空"}},
+        },
     },
     'suagr':{
     },

@@ -254,6 +254,10 @@ const ChineseName={
         'articleId':'文档',
     },
     user_resource_static:{
+        'userId':'用户',
+        'resourceRange':'统计资源类别',
+        'uploadedFileNum':'上传文件数量',
+        'uploadedFileSizeInMb':'上传文件占用空间',
     },
     suagr:{
     },

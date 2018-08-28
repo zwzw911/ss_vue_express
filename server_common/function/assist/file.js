@@ -133,7 +133,7 @@ function recursiveRequireAllFileInDir(filesArray,absoluteDestFilePath) {
 //删除数组中指定的文件
 function deleteFiles({arr_fileAbsPath}){
     for(let singleFilePath of arr_fileAbsPath){
-        fs.unlink(singleFilePath)
+        fs.unlink(singleFilePath,function(err,res){})
     }
 }
 
@@ -141,10 +141,11 @@ function deleteFiles({arr_fileAbsPath}){
  * @formParseFiles: formParse_async后，返回的files数组（每个元素包括originalFilename/path等）
  * **/
 function deleteUploadedTmpFile({formParseFiles}){
+    // ap.inf('pass in formParseFiles',formParseFiles)
     for(let singleFile of formParseFiles){
         // ap.inf('singleFile',singleFile)
         // ap.inf('singleFile[\'path\']',singleFile['path'])
-        fs.unlink(singleFile['path'])
+        fs.unlink(singleFile['path'],function(err,res){})
     }
 }
 module.exports={

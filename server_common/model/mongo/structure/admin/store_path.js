@@ -9,7 +9,7 @@ const mongoose=require('mongoose');
 const fs=require('fs')
 const regex=require('../../../../constant/regex/regex').regex
 const connectedDb=require('../../common/connection_admin').dbAdmin;
-
+const ap=require('awesomeprint')
 //使用ES6的promise
 //mongoose.Promise=Promise
 //mongoose.Promise = Promise
@@ -20,7 +20,7 @@ const internalInputRule=require('../../../../constant/inputRule/internalInput/ad
 //根据inputRule的rule设置，对mongoose设置内建validator
 // const collInputRule=browserInputRule
 const collInputRule=Object.assign({},browserInputRule,internalInputRule)
-
+// ap.inf('collInputRule',collInputRule)
 const serverRuleType=require('../../../../constant/enum/inputDataRuleType').ServerRuleType
 
 

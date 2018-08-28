@@ -4,6 +4,7 @@
 'use strict'
 /******************    内置lib和第三方lib  **************/
 const ap=require(`awesomeprint`)
+const fs=require('fs')
 /**************  controller相关常量  ****************/
 const controller_setting=require('../article_setting/article_setting').setting
 const controllerError=require('../article_setting/article_controllerError').controllerError
@@ -37,6 +38,7 @@ const e_uploadFileDefinitionFieldName=nodeEnum.UploadFileDefinitionFieldName
 // const e_resourceRange=nodeEnum.Resource
 const e_fileSizeUnit=nodeRuntimeEnum.FileSizeUnit
 const e_uploadFileRange=nodeRuntimeEnum.UploadFileRange
+const e_hashType=nodeRuntimeEnum.HashType
 
 const e_resourceRange=mongoEnum.ResourceRange.DB
 const e_storePathUsage=mongoEnum.StorePathUsage.DB
@@ -95,6 +97,7 @@ async function uploadArticleAttachment_async({req}){
     /**********************************************/
     /***********    用户权限检测    **************/
     /*********************************************/
+    // ap.wrn('before authority check')
     let originalDoc
     if(userType===e_allUserType.USER_NORMAL){
         originalDoc=await controllerChecker.ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({
@@ -109,7 +112,7 @@ async function uploadArticleAttachment_async({req}){
             return Promise.reject(controllerError.upload.notAuthorCantUploadAttachment)
         }
     }
-// ap.inf('priority check done')
+// ap.wrn('priority check done')
 
     /***********************************************************************/
     /*************  获得上传文件的信息并判断 文件是否valid        *********/
@@ -143,16 +146,21 @@ async function uploadArticleAttachment_async({req}){
         //判断后缀和content-type是否一致
         let suffix=await controllerChecker.ifFileSuffixMatchContentType_returnSuffixOrFalse_async({uploadFileResult:singleFileInfo})
         // ap.inf('check suffix result',suffix)
+        // ap.inf('check suffix result',typeof suffix)
         if(false===suffix){
+            // ap.inf('before deleteUploadedTmpFile')
             file.deleteUploadedTmpFile({formParseFiles:filesInfo})
             // ap.inf('after deleteUploadedTmpFile')
             return Promise.reject(controllerError.upload.attachmentFormatIncorrect)
         }
         //判断格式是否允许
+        // ap.inf('check suffix')
         if(-1===uploadFileDefine.common.attachmentType.indexOf(suffix)){
+
             file.deleteUploadedTmpFile({formParseFiles:filesInfo})
             return Promise.reject(controllerError.upload.attachmentFormatNotSupport)
         }
+        // ap.inf('check done')
         /** 添加suffix，后续改名用 **/
         singleFileInfo['suffix']=suffix
 
@@ -160,8 +168,9 @@ async function uploadArticleAttachment_async({req}){
         filesPath.push(singleFileInfo.path)
     }
 
-    ap.inf('filesInfo new field',filesInfo)
-
+    // ap.inf('filesInfo new field',filesInfo)
+    // ap.inf('totalFileSize ',totalFileSize)
+    ap.inf('filesPath ',filesPath)
     /**********************************************/
     /**    resource check （impeachComment）     **/
     /**********************************************/
@@ -170,10 +179,11 @@ async function uploadArticleAttachment_async({req}){
         [e_resourceFieldName.DISK_USAGE_SIZE_IN_MB]:totalFileSize,
         [e_resourceFieldName.FILE_ABS_PATH]:filesPath,
     }
+    ap.inf('requiredResource',requiredResource)
     /*              获得用户当前的所有资源配置，并检查当前占用的资源（磁盘空间）+文件的资源（sizeInMB）后，还小于==>所有<==的资源配置（）                         */
     let resourceProfileRangeToBeCheck=[e_resourceRange.ATTACHMENT_PER_ARTICLE,e_resourceRange.WHOLE_FILE_RESOURCE_PER_PERSON]
     await resourceCheck.ifEnoughResource_async({requiredResource:requiredResource,resourceProfileRange:resourceProfileRangeToBeCheck,userId:userId,containerId:recordId})
-    ap.inf('resource check done')
+    // ap.inf('resource check done')
 
     let records=[]  //所有要被插入的数据
     let fileCollName=e_coll.ARTICLE_ATTACHMENT
@@ -181,6 +191,7 @@ async function uploadArticleAttachment_async({req}){
     /**        产生文件最终路径和名称（hashName），以及对应的数据           **/
     //获得合适的存储路径，并move文件
     tmpResult=await controllerHelper.chooseStorePath_async({usage:e_storePathUsage.ARTICLE_INNER_ATTACHMENT})
+    // ap.inf('chooseStorePath_async reult',tmpResult)
     let storePath=tmpResult.path
     let pathId=tmpResult._id
     for(let singleFileInfo of filesInfo) {
@@ -190,7 +201,7 @@ async function uploadArticleAttachment_async({req}){
         let finalFileName = `${md5NameWithoutSuffix.msg}.${suffix.toLowerCase()}`
         //tmpResult=await controllerHelper.chooseStorePath_async({usage:e_storePathUsage.ARTICLE_INNER_IMAGE,e_field:e_field})
         singleFileInfo['finalPath'] = storePath + finalFileName
-
+        // ap.inf('singleFileInfo reult',singleFileInfo)
         /***************************************************/
         /**                 产生对应的数据                **/
         /****************************************************/
@@ -198,11 +209,11 @@ async function uploadArticleAttachment_async({req}){
 
         internalValue[e_field.ARTICLE_ATTACHMENT.NAME]=originalFilename
         internalValue[e_field.ARTICLE_ATTACHMENT.HASH_NAME]=finalFileName
-        internalValue[e_field.ARTICLE_ATTACHMENT.PATH_ID]=pathId
+        internalValue[e_field.ARTICLE_ATTACHMENT.PATH_ID]=pathId.toString() //_id为object，要转换成string
         internalValue[e_field.ARTICLE_ATTACHMENT.SIZE_IN_MB]=size
         internalValue[e_field.ARTICLE_ATTACHMENT.AUTHOR_ID]=userId
         internalValue[e_field.ARTICLE_ATTACHMENT.ARTICLE_ID]=recordId
-
+// ap.inf('internalValue',internalValue)
         if(e_env.DEV===currentEnv){
             let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInternalRule:internalInputRule[fileCollName],applyRange:e_applyRange.CREATE})
 // console.log(`internalValue check result====>   ${JSON.stringify(tmpResult)}`)
@@ -212,6 +223,7 @@ async function uploadArticleAttachment_async({req}){
         }
 
         records.push(internalValue)
+        // ap.inf('records',records)
     }
     /************************************************/
     /*************      db operation   *************/
@@ -224,6 +236,7 @@ async function uploadArticleAttachment_async({req}){
             fileId.push(singleFile.id)
         }
     }
+    // ap.inf('attachemnt is',fileId)
     /*              更新记录到:ARTICLE       */
     let updateValues={}
     updateValues["$push"]={[e_field.ARTICLE.ARTICLE_ATTACHMENTS_ID]:fileId}
@@ -232,6 +245,7 @@ async function uploadArticleAttachment_async({req}){
         [e_field.ARTICLE.ATTACHMENTS_NUM]:filesInfo.length,
         [e_field.ARTICLE.ATTACHMENTS_SIZE_IN_MB]:totalFileSize,
     }
+    // ap.inf('updateValues is',updateValues)
     await common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel.article,id:recordId,updateFieldsValue:updateValues})
     /*              更新记录到关联表:USER_RESOURCE_STATIC       */
     //合并image和attachment，简化处理
@@ -245,25 +259,43 @@ async function uploadArticleAttachment_async({req}){
         }
     })
 
-
+    // ap.inf('update resource done')
     for(let singleFileInfo of filesInfo){
-        fs.rename(path,singleFileInfo['finalPath'])  //只执行，不关心结果（默认操作完成了）
+        ap.inf('singleFileInfo[\'path\']',singleFileInfo['path'])
+        ap.inf('singleFileInfo[\'finalPath\']',singleFileInfo['finalPath'])
+        // if(fs.existsSync())
+        // ap.inf('singleFileInfo[\'path\'].replace(\'\\\\\\\\\',\'\\/\')',singleFileInfo['path'].replace(/\\/g,'/'))
+        // ap.inf('fs.existsSync(path)',fs.existsSync(singleFileInfo['path'],function(e,r){}))
+        // ap.inf('fs.existsSync(finalPath)',fs.existsSync(singleFileInfo['finalPath'],function(e,r){}))
+/*        fs.renameSync(singleFileInfo['path'],singleFileInfo['finalPath']
+/!*            ,function(e,r){
+            // if(e){ap.err('err',e)}
+            // if(r){ap.wrn('res',r)}
+        }*!/
+        )  //只执行，不关心结果（默认操作完成了）*/
+        fs.rename(singleFileInfo['path'],singleFileInfo['finalPath'],function(e,r){})  //只执行，不关心结果（默认操作完成了）
     }
-
+    ap.inf('after rename')
     //创建的附件需要返回信息，以便显示在页面
-    createdAttachment=createdAttachment.toObject()
-    for(let singleCreatedRecord of createdAttachment){
+    // createdAttachment=createdAttachment.toObject()
+    // ap.inf('after toobject',createdAttachment)
+    for(let idx in createdAttachment){
+        // let singleCreatedRecord=createdAttachment[idx].toObject()
+        createdAttachment[idx]=createdAttachment[idx].toObject()
+        let singleCreatedRecord=createdAttachment[idx]
         /*********************************************/
         /**********      删除指定字段       *********/
         /*********************************************/
-        controllerHelper.keepFieldInRecord({record:singleCreatedRecord,fieldsToBeDeleted:[e_field.ARTICLE_ATTACHMENT.HASH_NAME,e_field.ARTICLE_ATTACHMENT.NAME]})
+        controllerHelper.keepFieldInRecord({record:singleCreatedRecord,fieldsToBeKeep:[e_field.ARTICLE_ATTACHMENT.HASH_NAME,e_field.ARTICLE_ATTACHMENT.NAME]})
+        // ap.inf('after delete field',createdAttachment)
         /*********************************************/
         /**********      加密 敏感数据       *********/
         /*********************************************/
         controllerHelper.cryptRecordValue({record:singleCreatedRecord,salt:tempSalt,collName:collName})
+        // ap.inf('after crypted',createdAttachment)
     }
 
-    return Promise.resolve({rc:0,msg:createdAttachment.to})
+    return Promise.resolve({rc:0,msg:createdAttachment})
 
 }
 

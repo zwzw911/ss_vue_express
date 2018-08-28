@@ -214,6 +214,8 @@ function validateSingleRecorderFieldValue({fieldValue,fieldRule,applyRange}){
         valueTypeCheckResult= valueTypeCheck(fieldValue,fieldRule[e_otherRuleFiledName.DATA_TYPE])
     }
     // ap.inf('fieldRule[e_otherRuleFiledName.DATA_TYPE]',fieldRule[e_otherRuleFiledName.DATA_TYPE])
+    // ap.inf('fieldValue',fieldValue)
+    // ap.inf('fieldValue type',typeof fieldValue)
     // ap.inf('valueTypeCheckResult',valueTypeCheckResult)
     // ap.inf('fieldValue',fieldValue)
     // ap.inf('fieldRule',fieldRule)

@@ -297,23 +297,23 @@ async function find_returnRecords_async({dbModel,condition,selectedFields='-cDat
     // console.log(`find by id :${id}`)
     // console.log(`find condition==========================>${JSON.stringify(condition)}`)
     // let result
-    ap.inf('find_returnRecords_async dbModel',dbModel)
-    ap.inf('find_returnRecords_async condition',condition)
-    ap.inf('find_returnRecords_async selectedFields',selectedFields)
-    ap.inf('find_returnRecords_async options',options)
-    ap.inf('find_returnRecords_async populateOpt',populateOpt)
+    // ap.inf('find_returnRecords_async dbModel',dbModel)
+    // ap.inf('find_returnRecords_async condition',condition)
+    // ap.inf('find_returnRecords_async selectedFields',selectedFields)
+    // ap.inf('find_returnRecords_async options',options)
+    // ap.err('find_returnRecords_async populateOpt',populateOpt)
     if(undefined===populateOpt){
 
         return await dbModel.find(condition,selectedFields,options)
             .catch(
                 function(err){
-                    ap.err('find_returnRecords_async err',err)
+                    // ap.err('find_returnRecords_async err',err)
                     // console.log(`find errr is ${JSON.stringify(err)}`)
                     // console.log(`converted err is ${JSON.stringify(mongooseErrorHandler(mongooseOpEnum.findById,err))}`)
                     return Promise.reject(mongooseErrorHandler(err))
                 })
     }else{
-        ap.inf('populateOpt defined')
+        // ap.inf('populateOpt defined')
         return await dbModel.find(condition,selectedFields,options).populate(populateOpt)
             .catch(
                 function(err){

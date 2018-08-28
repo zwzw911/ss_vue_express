@@ -15,11 +15,11 @@ const connectedDb=require('../../common/connection').dbSS;
 //mongoose.Promise = Promise
 const mongoSetting=require('../../common/configuration')
 
-const browserInputRule=require('../../../../constant/inputRule/browserInput/user/user_resource_profile').user_resource_profile
-// const internalInputRule=require('../../../../constant/inputRule/internalInput/user/user').user
+// const browserInputRule=require('../../../../constant/inputRule/browserInput/s').user_resource_profile
+const internalInputRule=require('../../../../constant/inputRule/internalInput/static/user_resource_static').user_resource_static
 //根据inputRule的rule设置，对mongoose设置内建validator
 // const collInputRule=Object.assign({},browserInputRule,internalInputRule)
-const collInputRule=browserInputRule
+const collInputRule=internalInputRule
 
 const serverRuleType=require('../../../../constant/enum/inputDataRuleType').ServerRuleType
 
@@ -69,7 +69,7 @@ const collSchema=new mongoose.Schema(
     mongoSetting.schemaOptions
 )
 
-collSchema.virtual('isActive').get(function(){
+/*collSchema.virtual('isActive').get(function(){
     // console.log(`id=======>${this._id}`)
     // console.log(`userId=======>${this.userId}`)
     // console.log(`resource_profile_id=======>${this.resource_profile_id}`)
@@ -85,7 +85,7 @@ collSchema.virtual('isActive').get(function(){
         return (this.cDate.getTime()+this.duration*86400000)>Date.now()
     }
 
-})
+})*/
 
 /*      mongoose使用新的方式设置model，没有的话会导致populate报错       */
 mongoose.model(collName,collSchema)

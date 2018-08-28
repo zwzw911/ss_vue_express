@@ -160,7 +160,8 @@ router.post('/articleAttachment/:articleId',function(req,res,next){
         },
         (err)=>{
             if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV){
-                console.log(`articleAttachment upload fail: ${JSON.stringify(err)}`)
+                // console.log(`articleAttachment upload fail: ${JSON.stringify(err)}`)
+                ap.wrn('articleAttachment upload fail: ',err)
             }
 
             return res.json(genFinalReturnResult(err))

@@ -13,14 +13,12 @@ const deleteFiles=require('../function/assist/file').deleteFiles
 const e_field=require(`../constant/genEnum/DB_field`).Field
 const e_coll=require(`../constant/genEnum/DB_Coll`).Coll
 const e_dbModel=require(`../constant/genEnum/dbModel`)
-
+/**********************************************************/
+/******************  公共常量     ***********************/
+/**********************************************************/
 const e_resourceFieldName=require(`../constant/enum/nodeEnum`).ResourceFieldName
 const e_resourceConfigFieldName=require(`../constant/enum/nodeEnum`).ResourceConfigFieldName
 
-
-
-
-// const e_resourceType=require(`../constant/enum/mongoEnum`).ResourceType.DB
 
 const e_resourceRange=require(`../constant/enum/mongoEnum`).ResourceRange.DB
 /**********************************************************/
@@ -71,7 +69,7 @@ async function findValidResourceProfiles_async({singleResourceProfileRange,userI
     condition["$and"].push({[e_field.RESOURCE_PROFILE.RESOURCE_RANGE]:singleResourceProfileRange})
     // ap.inf('findValidResourceProfiles_async->condition',condition)
     let resourceProfileResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.resource_profile,condition:condition})
-    ap.inf('findValidResourceProfiles_async->resourceProfileResult',resourceProfileResult)
+    // ap.inf('findValidResourceProfiles_async->resourceProfileResult',resourceProfileResult)
     //根据所有查找到的resourceProfile id，在user_profile查找所有对应的，且尚未过期的记录
     let currentDate=new Date()
     let userResourceProfileCondition={"$and":[
@@ -89,14 +87,14 @@ async function findValidResourceProfiles_async({singleResourceProfileRange,userI
         //ap.inf('userResourceProfileCondition["$and"][0][\'$in\']',userResourceProfileCondition["$and"][0][e_field.USER_RESOURCE_PROFILE.RESOURCE_PROFILE_ID]['$in'])
         userResourceProfileCondition["$and"][0][e_field.USER_RESOURCE_PROFILE.RESOURCE_PROFILE_ID]['$in'].push(singleResourceProfileResult[e_field.RESOURCE_PROFILE.ID])
     }
-    ap.inf('findValidResourceProfiles_async->userResourceProfileCondition',userResourceProfileCondition)
+    // ap.inf('findValidResourceProfiles_async->userResourceProfileCondition',userResourceProfileCondition)
     let validResultForSingleResourceProfileRange=await common_operation_model.find_returnRecords_async({
         dbModel:e_dbModel.user_resource_profile,
         selectedFields:userResourceProfileSelectFields,
         options:option,
         condition:userResourceProfileCondition
     })
-    ap.wrn('findValidResourceProfiles_async->validResultForSingleResourceProfileRange',validResultForSingleResourceProfileRange)
+    // ap.wrn('findValidResourceProfiles_async->validResultForSingleResourceProfileRange',validResultForSingleResourceProfileRange)
     //根据返回记录的数量判断valida的profile id
     if(0===validResultForSingleResourceProfileRange.length){
         await recordInternalError_async({})
@@ -114,6 +112,8 @@ async function findValidResourceProfiles_async({singleResourceProfileRange,userI
 
 //
 function ifSpaceExceed({currentUsedSpace,requiredSpace,resourceProfileRecord}){
+    // ap.inf('resourceProfileRecord',resourceProfileRecord)
+    // ap.inf('currentUsedSpace',currentUsedSpace)
     return currentUsedSpace+requiredSpace > resourceProfileRecord[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]
 }
 function ifNumExceed({currentUsedNum,requiredNum,resourceProfileRecord}){
@@ -142,7 +142,7 @@ async function ifEnoughResource_async({requiredResource,resourceProfileRange,use
         // ap.inf('singleResourceProfileRange',singleResourceProfileRange)
         //1. 根据resourceProfileRange获得对应的当前可用的 资源配置文件（valid resourceProfile）
         let resourceProfile=await findValidResourceProfiles_async({singleResourceProfileRange:singleResourceProfileRange,userId:userId})
-        ap.wrn('valida resourceProfile',resourceProfile)
+        // ap.wrn('valida resourceProfile',resourceProfile)
         //2. 根据resourceProfileRange和（或） userId/containerId，获得当前使用资源量
         let usedResource,spaceExceedFlag,numExceedFlag//,
 
@@ -150,107 +150,111 @@ async function ifEnoughResource_async({requiredResource,resourceProfileRange,use
         let fileResourceFlag=ifCalcFileResource({singleResourceRange:singleResourceProfileRange})//是否统计文件资源（需要计算SIZE）
         /**     对文件进行资源判定       **/
         if(true===fileResourceFlag){
-            ap.inf('fileResourceFlag true singleResourceProfileRange',singleResourceProfileRange)
+            // ap.inf('fileResourceFlag true singleResourceProfileRange',singleResourceProfileRange)
             // ap.inf('e_resourceRange.ATTACHMENT_PER_ARTICLE',e_resourceRange.ATTACHMENT_PER_ARTICLE)
             switch (singleResourceProfileRange){
                 case e_resourceRange.ATTACHMENT_PER_ARTICLE:
-                    ap.inf('ATTACHMENT_PER_ARTICLE in')
+                    // ap.inf('ATTACHMENT_PER_ARTICLE in')
                     usedResource=await fileResourceCalc.calcArticleResourceUsage_async({singleResourceProfileRange:singleResourceProfileRange,articleId:containerId})
-                    ap.inf('usedResource',usedResource)
-                    spaceExceedFlag=ifSpaceExceed({currentUsedSpace:usedResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],requiredSpace:requiredResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],resourceProfileRecord:[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]})
+                    // ap.inf('usedResource',usedResource)
+                    // ap.inf('usedResource',usedResource)
+                    spaceExceedFlag=ifSpaceExceed({currentUsedSpace:usedResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],requiredSpace:requiredResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],resourceProfileRecord:resourceProfile})
                     if(true===spaceExceedFlag){
                         //如果超出，将所有文件都删除（需要用户取舍后重新上传）
-                        deleteFiles({arr_fileAbsPath:requiredResource.filesAbsPath})
+                        deleteFiles({arr_fileAbsPath:requiredResource[e_resourceFieldName.FILE_ABS_PATH]})
                         return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.articleAttachmentDiskUsageExceed({resourceProfileRangeSizeInMb:resourceProfile[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]}))
                     }
 
                     numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:resourceProfile})
                     if(true===numExceedFlag){
-                        deleteFiles({arr_fileAbsPath:requiredResource.filesAbsPath})
+                        // ap.inf('attachment num exceed')
+                        // ap.inf('requiredResource[e_resourceFieldName.FILE_ABS_PATH]',requiredResource[e_resourceFieldName.FILE_ABS_PATH])
+                        deleteFiles({arr_fileAbsPath:requiredResource[e_resourceFieldName.FILE_ABS_PATH]})
+                        // ap.inf('delete done')
                         return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.articleAttachmentNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
                     }
-                    ap.inf('ATTACHMENT_PER_ARTICLE done')
+                    // ap.inf('ATTACHMENT_PER_ARTICLE done')
                     break;
                 case e_resourceRange.IMAGE_PER_ARTICLE:
                     usedResource=await fileResourceCalc.calcArticleResourceUsage_async({singleResourceProfileRange:singleResourceProfileRange,articleId:containerId})
-                    spaceExceedFlag=ifSpaceExceed({currentUsedSpace:usedResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],requiredSpace:requiredResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],resourceProfileRecord:[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]})
+                    spaceExceedFlag=ifSpaceExceed({currentUsedSpace:usedResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],requiredSpace:requiredResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],resourceProfileRecord:resourceProfile})
                     if(true===spaceExceedFlag){
-                        deleteFiles({arr_fileAbsPath:requiredResource.filesAbsPath})
+                        deleteFiles({arr_fileAbsPath:requiredResource[e_resourceFieldName.FILE_ABS_PATH]})
                         return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.articleImageDiskUsageExceed({resourceProfileRangeSizeInMb:resourceProfile[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]}))
                     }
 
                     numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:resourceProfile})
                     if(true===numExceedFlag){
-                        deleteFiles({arr_fileAbsPath:requiredResource.filesAbsPath})
+                        deleteFiles({arr_fileAbsPath:requiredResource[e_resourceFieldName.FILE_ABS_PATH]})
                         return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.articleImageNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
                     }
                     break
                 case e_resourceRange.WHOLE_FILE_RESOURCE_PER_PERSON:
-                    ap.inf('ifEnoughResource_async WHOLE_FILE_RESOURCE_PER_PERSON in')
+                    // ap.inf('ifEnoughResource_async WHOLE_FILE_RESOURCE_PER_PERSON in')
                     usedResource=await fileResourceCalc.calcUserTotalResourceUsage_async({userId:userId})
-                    ap.inf('usedResource',usedResource)
-                    spaceExceedFlag=ifSpaceExceed({currentUsedSpace:usedResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],requiredSpace:requiredResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],resourceProfileRecord:[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]})
+                    // ap.inf('usedResource',usedResource)
+                    spaceExceedFlag=ifSpaceExceed({currentUsedSpace:usedResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],requiredSpace:requiredResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],resourceProfileRecord:resourceProfile})
                     if(true===spaceExceedFlag){
-                        deleteFiles({arr_fileAbsPath:requiredResource.filesAbsPath})
+                        deleteFiles({arr_fileAbsPath:requiredResource[e_resourceFieldName.FILE_ABS_PATH]})
                         return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.userTotalDiskUsageExceed({resourceProfileRangeSizeInMb:resourceProfile[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]}))
                     }
                     numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:resourceProfile})
                     if(true===numExceedFlag){
-                        deleteFiles({arr_fileAbsPath:requiredResource.filesAbsPath})
+                        deleteFiles({arr_fileAbsPath:requiredResource[e_resourceFieldName.FILE_ABS_PATH]})
                         return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.userTotalFileNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
                     }
-                    ap.inf('WHOLE_FILE_RESOURCE_PER_PERSON done')
+                    // ap.inf('WHOLE_FILE_RESOURCE_PER_PERSON done')
                     break
                 /****     举报图片资源      ****/
                 case e_resourceRange.IMAGE_PER_IMPEACH_OR_COMMENT:
                     usedResource=await fileResourceCalc.calcImageResourcePerImpeachOrComment_async({userId:userId,containerId:containerId})
-                    spaceExceedFlag=ifSpaceExceed({currentUsedSpace:usedResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],requiredSpace:requiredResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],resourceProfileRecord:[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]})
+                    spaceExceedFlag=ifSpaceExceed({currentUsedSpace:usedResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],requiredSpace:requiredResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],resourceProfileRecord:resourceProfile})
                     if(true===spaceExceedFlag){
-                        deleteFiles({arr_fileAbsPath:requiredResource.filesAbsPath})
+                        deleteFiles({arr_fileAbsPath:requiredResource[e_resourceFieldName.FILE_ABS_PATH]})
                         return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.impeachImageDiskUsageExceed({resourceProfileRangeSizeInMb:resourceProfile[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]}))
                     }
                     numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:resourceProfile})
                     if(true===numExceedFlag){
-                        deleteFiles({arr_fileAbsPath:requiredResource.filesAbsPath})
+                        deleteFiles({arr_fileAbsPath:requiredResource[e_resourceFieldName.FILE_ABS_PATH]})
                         return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.impeachImageNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
                     }
                     break;
                 case e_resourceRange.ATTACHMENT_PER_IMPEACH:
                     usedResource=await fileResourceCalc.calcAttachmentResourcePerImpeachOrComment_async({userId:userId,containerId:containerId})
-                    spaceExceedFlag=ifSpaceExceed({currentUsedSpace:usedResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],requiredSpace:requiredResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],resourceProfileRecord:[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]})
+                    spaceExceedFlag=ifSpaceExceed({currentUsedSpace:usedResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],requiredSpace:requiredResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],resourceProfileRecord:resourceProfile})
                     if(true===spaceExceedFlag){
-                        deleteFiles({arr_fileAbsPath:requiredResource.filesAbsPath})
+                        deleteFiles({arr_fileAbsPath:requiredResource[e_resourceFieldName.FILE_ABS_PATH]})
                         return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.impeachAttachmentDiskUsageExceed({resourceProfileRangeSizeInMb:resourceProfile[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]}))
                     }
                     numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:resourceProfile})
                     if(true===numExceedFlag){
-                        deleteFiles({arr_fileAbsPath:requiredResource.filesAbsPath})
+                        deleteFiles({arr_fileAbsPath:requiredResource[e_resourceFieldName.FILE_ABS_PATH]})
                         return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.impeachAttachmentNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
                     }
                     break;
                 case e_resourceRange.IMAGE_PER_USER_IN_WHOLE_IMPEACH:
                     usedResource=await fileResourceCalc.calcImageResourcePerNormalUserInWholeImpeach_async({userId:userId,containerId:containerId})
-                    spaceExceedFlag=ifSpaceExceed({currentUsedSpace:usedResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],requiredSpace:requiredResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],resourceProfileRecord:[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]})
+                    spaceExceedFlag=ifSpaceExceed({currentUsedSpace:usedResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],requiredSpace:requiredResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],resourceProfileRecord:resourceProfile})
                     if(true===spaceExceedFlag){
-                        deleteFiles({arr_fileAbsPath:requiredResource.filesAbsPath})
+                        deleteFiles({arr_fileAbsPath:requiredResource[e_resourceFieldName.FILE_ABS_PATH]})
                         return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.impeachImageDiskUsagePerUserInWholeImpeachExceed({resourceProfileRangeSizeInMb:resourceProfile[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]}))
                     }
                     numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:resourceProfile})
                     if(true===numExceedFlag){
-                        deleteFiles({arr_fileAbsPath:requiredResource.filesAbsPath})
+                        deleteFiles({arr_fileAbsPath:requiredResource[e_resourceFieldName.FILE_ABS_PATH]})
                         return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.impeachImageNumPerUserInWholeImpeachExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
                     }
                     break;
                 case e_resourceRange.IMAGE_IN_WHOLE_IMPEACH:
                     usedResource=await fileResourceCalc.calcImageResourceInWholeImpeach_async({userId:userId,containerId:containerId})
-                    spaceExceedFlag=ifSpaceExceed({currentUsedSpace:usedResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],requiredSpace:requiredResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],resourceProfileRecord:[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]})
+                    spaceExceedFlag=ifSpaceExceed({currentUsedSpace:usedResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],requiredSpace:requiredResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],resourceProfileRecord:resourceProfile})
                     if(true===spaceExceedFlag){
-                        deleteFiles({arr_fileAbsPath:requiredResource.filesAbsPath})
+                        deleteFiles({arr_fileAbsPath:requiredResource[e_resourceFieldName.FILE_ABS_PATH]})
                         return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.impeachImageDiskUsageInWholeImpeachExceed({resourceProfileRangeSizeInMb:resourceProfile[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]}))
                     }
                     numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:resourceProfile})
                     if(true===numExceedFlag){
-                        deleteFiles({arr_fileAbsPath:requiredResource.filesAbsPath})
+                        deleteFiles({arr_fileAbsPath:requiredResource[e_resourceFieldName.FILE_ABS_PATH]})
                         return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.impeachImageNumInWholeImpeachExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
                     }
                     break;

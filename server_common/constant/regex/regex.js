@@ -31,7 +31,7 @@ const regex={
     // account:/[(\w+\.)*\w+@(\w+\.)+[A-Za-z]+|^1\d{10}$]/,
     imageName:/^[\u4E00-\u9FFF\w]{1,250}\.(jpg|png|jpeg)$/,
     hashImageName:/[0-9a-f]{40}\.(jpg|png|jpeg)/,
-    md5AttachmentName:/[0-9a-f]{40}\.(txt|7z|log)/,
+    md5AttachmentName:/[0-9a-f]{32}\.(txt|7z|log)/,
     folderName:/^[\u4E00-\u9FFF\w]{1,255}$/,
     fileName:/^[\u4E00-\u9FFF\w]{1,250}\.[a-z]{3,4}$/,
     tagName:/^[\u4E00-\u9FFF\w]{2,20}$/,//查询关键字，中文，英文

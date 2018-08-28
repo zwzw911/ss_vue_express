@@ -26,7 +26,7 @@ const Field={
     impeach_comment_image:['name','hashName','pathId','sizeInMb','authorId',],
     impeach_image:['name','hashName','pathId','sizeInMb','authorId',],
     like_dislike_static:['articleId',],
-    user_resource_static:[],
+    user_resource_static:['userId','resourceRange','uploadedFileNum','uploadedFileSizeInMb',],
     suagr:[],
     user:['userType','password','photoPathId','photoHashName','docStatus','accountType','usedAccount','lastAccountUpdateDate','lastSignInDate','photoSize',],
     user_resource_profile:['startDate','endDate','duration',],

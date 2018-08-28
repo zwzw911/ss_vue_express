@@ -13,7 +13,7 @@ const applyRange=inputDataRuleType.ApplyRange
 
 const regex=require('../../../regex/regex').regex
 const enumValue=require('../../../../constant/genEnum/enumValue')
-const resource_profile_static= {
+const user_resource_static= {
     //
     userId: {
         [otherRuleFiledName.CHINESE_NAME]: '用户',
@@ -55,5 +55,5 @@ const resource_profile_static= {
 }
 
 module.exports={
-    resource_profile_static
+    user_resource_static
 }

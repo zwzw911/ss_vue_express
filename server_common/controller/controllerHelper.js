@@ -237,13 +237,14 @@ async function chooseStorePath_async({usage}){
         return Promise.reject(systemError.noDefinedStorePath)
     }
     // console.log(`all store path===>${JSON.stringify(tmpResult)}`)
-
+// ap.inf('chooseStorePath_async tmpResult',tmpResult)
     //选择存储路径，并判断是否达到上限
     for(let singleRec of tmpResult){
         // console.log(`singleRec['percentage'] ${singleRec['percentage']}`)
         // console.log(`singleRec[e_field.STORE_PATH.HIGH_THRESHOLD] ${singleRec[e_field.STORE_PATH.HIGH_THRESHOLD]}`)
         if(singleRec['percentage']<singleRec[e_field.STORE_PATH.HIGH_THRESHOLD]){
             choosenStorePathRecord=singleRec
+            // ap.inf('choosenStorePathRecord',choosenStorePathRecord)
             break;
         }
     }
@@ -1491,6 +1492,7 @@ function keepFieldInRecord({record,fieldsToBeKeep}){
         for(let singleFieldName of recordFieldName){
             // ap.wrn('fieldsToBeKeep',fieldsToBeKeep)
             if(-1===fieldsToBeKeep.indexOf(singleFieldName)){
+                // ap.wrn('field name to be delete',singleFieldName)
                 delete record[singleFieldName]
             }
         }

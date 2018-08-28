@@ -54,9 +54,9 @@ async function calcUserTotalResourceUsage_async({userId}){
         [e_field.USER_RESOURCE_STATIC.USER_ID]:userId,
         [e_field.USER_RESOURCE_STATIC.RESOURCE_RANGE]:e_resourceRange.WHOLE_FILE_RESOURCE_PER_PERSON,
     }
-    ap.wrn('calcUserTotalResourceUsage_async condition',condition)
+    // ap.wrn('calcUserTotalResourceUsage_async condition',condition)
     let result=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.user_resource_static,condition:condition})
-    ap.wrn('calcUserTotalResourceUsage_async result',result)
+    // ap.wrn('calcUserTotalResourceUsage_async result',result)
     if(0===result.length){
         await recordInternalError_async({})
         return Promise.reject(helperError.resourceCheck.calcUserTotalResourceUsage_async.userNotExistCantGetUsage)
@@ -79,16 +79,16 @@ async function calcArticleResourceUsage_async({singleResourceProfileRange,articl
             return Promise.resolve({})
         }*/
     //首先读取数据库（无路是image还是attachment的resourceUsage，都存在同一条记录中）
-    ap.inf('articleId',articleId)
+    // ap.inf('articleId',articleId)
     let articleRecord=await common_operation_model.findById_returnRecord_async({dbModel:e_dbModel.article,id:articleId})
-    ap.inf('calcArticleResourceUsage_async articleRecord',articleRecord)
+    // ap.inf('calcArticleResourceUsage_async articleRecord',articleRecord)
     if(null===articleRecord){
         return Promise.reject(helperError.resourceCheck.calcArticleResourceUsage_async.articleNotExistCantCalcResource)
     }
     //为每个resourceProfileRange获得统计信息
     // for(let singleResourceProfileRange of arr_resourceProfileRange){
-    ap.inf('calcArticleResourceUsage_async singleResourceProfileRange',singleResourceProfileRange)
-    ap.inf('calcArticleResourceUsage_async e_resourceRange.ATTACHMENT_PER_ARTICLE',e_resourceRange.ATTACHMENT_PER_ARTICLE)
+    // ap.inf('calcArticleResourceUsage_async singleResourceProfileRange',singleResourceProfileRange)
+    // ap.inf('calcArticleResourceUsage_async e_resourceRange.ATTACHMENT_PER_ARTICLE',e_resourceRange.ATTACHMENT_PER_ARTICLE)
     switch (singleResourceProfileRange){
         case e_resourceRange.IMAGE_PER_ARTICLE:
             // result[singleResourceProfileRange]={

@@ -171,7 +171,8 @@ async function article_dispatcher_async({req}) {
 
                     await controllerPreCheck.checkObjectIdInReqParams_async({req:req,parameterName:'articleId',cryptedError:controllerError.dispatch.post.cryptedArticleIdFormatInvalidCantUploadAttachment,decryptedError:controllerError.dispatch.post.decryptedArticleIdFormatInvalidCantUploadAttachment})
 // ap.inf('articleAttachment in')
-                    return await uploadArticleAttachment_async({req: req})
+                    result= await uploadArticleAttachment_async({req: req})
+                    return Promise.resolve(result)
                 }
             }
             break;

@@ -4,7 +4,7 @@
 'use strict'
 /******************    内置lib和第三方lib  **************/
 const ap=require(`awesomeprint`)
-
+const fs=require('fs')
 /**************  controller相关常量  ****************/
 const controller_setting=require('../impeach_comment_setting/impeach_comment_setting').setting
 const controllerError=require('../impeach_comment_setting/impeach_comment_controllerError').controllerError
