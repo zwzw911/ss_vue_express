@@ -1,4 +1,4 @@
-/*    gene by D:\U\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-8-25   */ 
+/*    gene by D:\U\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-9-17   */ 
  
 "use strict"
 const internalInputRule={
@@ -157,7 +157,7 @@ const internalInputRule={
             'dataType':"string",
             'applyRange':["create"],
             'require':{"define":{"create":true},"error":{"rc":101554,"msg":"文档附件名称不能为空"},"mongoError":{"rc":201554,"msg":"文档附件名称不能为空"}},
-            'format':{"define":/[0-9a-f]{40}\.(txt|7z|log)/,"error":{"rc":101556,"msg":"hash文档名必须由35~36个字符组成"},"mongoError":{"rc":201556,"msg":"hash文档名必须由35~36个字符组成"}},
+            'format':{"define":/[0-9a-f]{32}\.(txt|7z|log)/,"error":{"rc":101556,"msg":"hash文档名必须由35~36个字符组成"},"mongoError":{"rc":201556,"msg":"hash文档名必须由35~36个字符组成"}},
         },
         'pathId':{
             'chineseName':"存储路径",
@@ -168,7 +168,7 @@ const internalInputRule={
         },
         'sizeInMb':{
             'chineseName':"附件大小",
-            'dataType':"int",
+            'dataType':"number",
             'applyRange':["create"],
             'require':{"define":{"create":true},"error":{"rc":101562,"msg":"附件大小不能为空"},"mongoError":{"rc":201562,"msg":"附件大小不能为空"}},
             'max':{"define":10,"error":{"rc":101564,"msg":"附件大小不能超过10MB"},"mongoError":{"rc":201564,"msg":"附件大小不能超过10MB"}},
@@ -221,7 +221,7 @@ const internalInputRule={
         },
         'sizeInMb':{
             'chineseName':"图片大小",
-            'dataType':"int",
+            'dataType':"number",
             'applyRange':["create"],
             'require':{"define":{"create":true},"error":{"rc":101662,"msg":"图片大小不能为空"},"mongoError":{"rc":201662,"msg":"图片大小不能为空"}},
             'max':{"define":2,"error":{"rc":101664,"msg":"图片大小不能超过2MB"},"mongoError":{"rc":201664,"msg":"图片大小不能超过2MB"}},
@@ -455,7 +455,7 @@ const internalInputRule={
         },
         'imagesSizeInMb':{
             'chineseName':"图片总大小",
-            'dataType':"int",
+            'dataType':"number",
             'applyRange':["create","update_scalar"],
             'require':{"define":{"create":false,"update_scalar":false},"error":{"rc":103190,"msg":"图片总大小不能为空"},"mongoError":{"rc":203190,"msg":"图片总大小不能为空"}},
         },
@@ -467,7 +467,7 @@ const internalInputRule={
         },
         'attachmentsSizeInMb':{
             'chineseName':"附件总大小",
-            'dataType':"int",
+            'dataType':"number",
             'applyRange':["create","update_scalar"],
             'require':{"define":{"create":false,"update_scalar":false},"error":{"rc":103194,"msg":"附件总大小不能为空"},"mongoError":{"rc":203194,"msg":"附件总大小不能为空"}},
         },
@@ -501,7 +501,7 @@ const internalInputRule={
             'dataType':"string",
             'applyRange':["create"],
             'require':{"define":{"create":true},"error":{"rc":103654,"msg":"举报附件名称不能为空"},"mongoError":{"rc":203654,"msg":"举报附件名称不能为空"}},
-            'format':{"define":/[0-9a-f]{40}\.(txt|7z|log)/,"error":{"rc":103656,"msg":"举报附件的hash名必须由27~28个字符组成"},"mongoError":{"rc":203656,"msg":"举报附件的hash名必须由27~28个字符组成"}},
+            'format':{"define":/[0-9a-f]{32}\.(txt|7z|log)/,"error":{"rc":103656,"msg":"举报附件的hash名必须由27~28个字符组成"},"mongoError":{"rc":203656,"msg":"举报附件的hash名必须由27~28个字符组成"}},
         },
         'authorId':{
             'chineseName':"附件上传者",
@@ -512,7 +512,7 @@ const internalInputRule={
         },
         'sizeInMb':{
             'chineseName':"附件大小",
-            'dataType':"int",
+            'dataType':"number",
             'applyRange':["create"],
             'require':{"define":{"create":true},"error":{"rc":10662,"msg":"附件大小不能为空"},"mongoError":{"rc":203662,"msg":"附件大小不能为空"}},
             'max':{"define":10,"error":{"rc":103664,"msg":"附件大小不能超过10MB"},"mongoError":{"rc":203664,"msg":"附件大小不能超过10MB"}},
@@ -556,7 +556,7 @@ const internalInputRule={
         },
         'imagesSizeInMb':{
             'chineseName':"图片总大小",
-            'dataType':"int",
+            'dataType':"number",
             'applyRange':["create","update_scalar"],
             'require':{"define":{"create":false,"update_scalar":false},"error":{"rc":103266,"msg":"图片总大小不能为空"},"mongoError":{"rc":203266,"msg":"图片总大小不能为空"}},
         },
@@ -600,7 +600,7 @@ const internalInputRule={
         },
         'sizeInMb':{
             'chineseName':"图片大小",
-            'dataType':"int",
+            'dataType':"number",
             'applyRange':["create"],
             'require':{"define":{"create":true},"error":{"rc":103362,"msg":"图片大小不能为空"},"mongoError":{"rc":203362,"msg":"图片大小不能为空"}},
             'max':{"define":2,"error":{"rc":103364,"msg":"图片大小不能超过2MB"},"mongoError":{"rc":203364,"msg":"图片大小不能超过2MB"}},
@@ -637,7 +637,7 @@ const internalInputRule={
         },
         'sizeInMb':{
             'chineseName':"图片大小",
-            'dataType':"int",
+            'dataType':"number",
             'applyRange':["create"],
             'require':{"define":{"create":true},"error":{"rc":103562,"msg":"图片大小不能为空"},"mongoError":{"rc":203562,"msg":"图片大小不能为空"}},
             'max':{"define":2,"error":{"rc":103564,"msg":"图片大小不能超过2MB"},"mongoError":{"rc":203564,"msg":"图片大小不能超过2MB"}},

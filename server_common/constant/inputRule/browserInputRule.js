@@ -1,4 +1,4 @@
-/*    gene by D:\U\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-8-25   */ 
+/*    gene by D:\U\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-9-17   */ 
  
 "use strict"
 const browserInputRule={

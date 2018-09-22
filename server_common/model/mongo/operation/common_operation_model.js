@@ -7,7 +7,9 @@
 // const dbModel=require('../../structure/admin/admin_user').collModel
 const ap=require(`awesomeprint`)
 
+const dataTypeCheck=require('../../../function/validateInput/validateHelper').dataTypeCheck
 const mongooseErrorHandler=require('../../../constant/error/mongo/mongoError').mongooseErrorHandler
+const mongooseError=require('../../../constant/error/mongo/mongoError').error
 
 //var pageSetting=require('../../config/global/globalSettingRule').pageSetting
 const pagination=require('../../../function/assist/pagination').pagination
@@ -267,10 +269,12 @@ async function readName({dbModel,readNameField,nameToBeSearched,recorderLimit=10
 
 //作为外键时，是否存在(存在放回doc，否则返回null)
 //selectedFields:'-cDate -uDate -dDate'
+//populateOpt:数组，以便确定使用几次populate
 async function findById_returnRecord_async({dbModel,id,selectedFields='-cDate -uDate -dDate',populateOpt}){
     // console.log(`find by id :${id}`)
+    ap.inf('populateOpt',populateOpt)
     let result
-    if(undefined===populateOpt){
+    if(undefined===populateOpt || (true===dataTypeCheck.isArray(populateOpt) && populateOpt.length===0)){
         result=await dbModel.findById(id,selectedFields)
             .catch(
                 function(err){
@@ -279,19 +283,75 @@ async function findById_returnRecord_async({dbModel,id,selectedFields='-cDate -u
                     return Promise.reject(mongooseErrorHandler(err))
                 })
     }else{
-        result=await dbModel.findById(id,selectedFields).populate(populateOpt)
+/*        await dbModel.findById(id,selectedFields,function(err,result){
+            ap.inf('err',err)
+            ap.inf('result',result)
+            dbModel.populate(result, populateOpt, function (populateErr, populateResult) {
+                ap.inf('populateErr',populateErr)
+                ap.inf('populateResult',populateResult)
+                return Promise.resolve(populateResult)
+            });
+        })*/
+        if(false===dataTypeCheck.isArray(populateOpt)){
+            return Promise.reject(mongooseError.findByIdReturnRecord.populateOptTypeError)
+        }
+        let populateLength=populateOpt.length
+        //防止populate字段过多
+        if(populateLength>5){
+            return Promise.reject(mongooseError.findByIdReturnRecord.populateOptFieldNumExceed)
+        }
+        result=await dbModel.findById(id,selectedFields)
+ /*           .populate(populateOpt[0])
             .catch(
-                function(err){
-                    console.log(`findbyid errr is ${JSON.stringify(err)}`)
-                    // console.log(`converted err is ${JSON.stringify(mongooseErrorHandler(mongooseOpEnum.findById,err))}`)
-                    return Promise.reject(mongooseErrorHandler(err))
-                })
+            function(err){
+                console.log(`findbyid errr is ${JSON.stringify(err)}`)
+                // console.log(`converted err is ${JSON.stringify(mongooseErrorHandler(mongooseOpEnum.findById,err))}`)
+                return Promise.reject(mongooseErrorHandler(err))
+            })*/
+        // ap.inf('before populate result',result)
+        while (populateLength>0){
+            // ap.inf('populateOpt[populateLength-1]',populateOpt[populateLength-1])
+            result=await result.populate(populateOpt[populateLength-1])
+            populateLength--
+        }
+        // ap.inf('populate result',result)
+        result=result.execPopulate().catch(
+            function(err){
+                console.log(`findbyid errr is ${JSON.stringify(err)}`)
+                // console.log(`converted err is ${JSON.stringify(mongooseErrorHandler(mongooseOpEnum.findById,err))}`)
+                return Promise.reject(mongooseErrorHandler(err))
+            })
+        // result.catch
+        // result=await dbModel.findById(id,selectedFields).populate(populateOpt).catch(
+        //     function(err){
+        //         console.log(`findbyid errr is ${JSON.stringify(err)}`)
+        //         // console.log(`converted err is ${JSON.stringify(mongooseErrorHandler(mongooseOpEnum.findById,err))}`)
+        //         return Promise.reject(mongooseErrorHandler(err))
+        //     })
     }
 
 
     return Promise.resolve(result)
 }
 
+async function findById_returnRecordWithPopulate_async({dbModel,id,selectedFields='-cDate -uDate -dDate',populateOpt}){
+    return new Promise(function(resolve,reject){
+        dbModel.findById(id).populate(populateOpt).exec(function(populateErr, populateResult){
+            ap.inf('populateErr', populateErr)
+            ap.inf('populateResult', populateResult)
+            return resolve(populateResult)
+        })
+        /*dbModel.findById(id,function(err,result) {
+            ap.inf('err', err)
+            ap.inf('result', result)
+            dbModel.populate(result, populateOpt, function (populateErr, populateResult) {
+                ap.inf('populateErr', populateErr)
+                ap.inf('populateResult', populateResult)
+                return resolve(populateResult)
+            });
+        })*/
+    })
+}
 //返回（空）数组
 async function find_returnRecords_async({dbModel,condition,selectedFields='-cDate -uDate -dDate',options={},populateOpt}){
     // console.log(`find by id :${id}`)
@@ -683,6 +743,7 @@ module.exports= {
     readName,
     findById_returnRecord_async,
     find_returnRecords_async,
+    findById_returnRecordWithPopulate_async,
     findByIdAndUpdate_returnRecord_async,
     findByIdAndDelete_async, //逻辑删除
     findByIdAndRemove_async, //真正删除
@@ -702,6 +763,7 @@ module.exports= {
     insertMany_returnRecord_async,
 
     group_async,
+
 
 }
 

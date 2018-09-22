@@ -52,7 +52,7 @@ const article_attachment= {
     // in MB
     sizeInMb:{
         [otherRuleFiledName.CHINESE_NAME]: '附件大小',
-        [otherRuleFiledName.DATA_TYPE]: serverDataType.INT,
+        [otherRuleFiledName.DATA_TYPE]: serverDataType.NUMBER,
         [otherRuleFiledName.APPLY_RANGE]:[applyRange.CREATE],
         [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true}, error: {rc: baseJSErrorCode+12, msg: '附件大小不能为空'}, mongoError: {rc: baseMongoErrorCode+12, msg: '附件大小不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         // 'min': {define: 1, error: {rc: 10002}, mongoError: {rc: 20002, msg: '图片大小至少6个字符'}},

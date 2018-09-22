@@ -4,6 +4,7 @@
 'use strict'
 /******************    内置lib和第三方lib  **************/
 const ap=require(`awesomeprint`)
+const fs=require('fs')
 /**************  controller相关常量  ****************/
 const controller_setting=require('../article_setting/article_setting').setting
 const controllerError=require('../article_setting/article_controllerError').controllerError
@@ -15,6 +16,7 @@ const e_coll=require('../../../constant/genEnum/DB_Coll').Coll
 const e_field=require('../../../constant/genEnum/DB_field').Field
 const e_dbModel=require('../../../constant/genEnum/dbModel')
 const e_iniSettingObject=require('../../../constant/genEnum/initSettingObject').iniSettingObject
+
 /***************  rule   ****************/
 const inputRule=require('../../../constant/inputRule/inputRule').inputRule
 const internalInputRule=require('../../../constant/inputRule/internalInputRule').internalInputRule
@@ -40,6 +42,7 @@ const e_fileSizeUnit=nodeRuntimeEnum.FileSizeUnit
 
 const e_resourceRange=mongoEnum.ResourceRange.DB
 // const e_resourceRange=mongoEnum.AdminUserType.DB
+const e_allUserType=mongoEnum.AllUserType.DB
 const e_storePathUsage=mongoEnum.StorePathUsage.DB
 const e_resourceType=mongoEnum.ResourceType.DB
 
@@ -76,6 +79,7 @@ async function deleteArticleAttachment_async({req}){
     // console.log(`userInfo============>${JSON.stringify(userInfo)}`)
     // let docValue=req.body.values[e_part.RECORD_INFO]
     let recordId=req.body.values[e_part.RECORD_ID]
+    ap.inf('deleted attachmenid',recordId)
     // console.log(`docValue============>${JSON.stringify(docValue)}`)
     // console.log(`recordId============>${JSON.stringify(recordId)}`)
     /*******************************************************************************************/
@@ -95,6 +99,7 @@ async function deleteArticleAttachment_async({req}){
             userId:userId,
             additionalCondition:undefined,
         })
+        ap.inf('attachment onwer ship result',originalAttachmentDoc)
         if(false===originalAttachmentDoc){
             return Promise.reject(controllerError.delete.notAttachmentAuthorCantDeleteAttachment)
         }
@@ -103,15 +108,16 @@ async function deleteArticleAttachment_async({req}){
         originalArticleDoc=await controllerChecker.ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({
             dbModel:e_dbModel.article,
             recordId:originalAttachmentDoc[e_field.ARTICLE_ATTACHMENT.ARTICLE_ID],
-            ownerFieldsName:[e_field.article.AUTHOR_ID],
+            ownerFieldsName:[e_field.ARTICLE.AUTHOR_ID],
             userId:userId,
             additionalCondition:undefined,
         })
+        // ap.inf('article onwer ship result',originalArticleDoc)
         if(false===originalArticleDoc){
             return Promise.reject(controllerError.delete.notArticleAuthorCantDeleteAttachment)
         }
     }
-
+// ap.inf('ownership check done')
 
     /**********************************************/
     /***********    读取附件信息    **************/
@@ -120,9 +126,9 @@ async function deleteArticleAttachment_async({req}){
     let sizeInMb=originalAttachmentDoc[e_field.ARTICLE_ATTACHMENT.SIZE_IN_MB]
     let absPathResult=await common_operation_model.findById_returnRecord_async({dbModel:e_dbModel.store_path,id:originalAttachmentDoc[e_field.ARTICLE_ATTACHMENT.PATH_ID]})
     let absPath=absPathResult[e_field.STORE_PATH.PATH]+originalAttachmentDoc[e_field.ARTICLE_ATTACHMENT.HASH_NAME]
-
-    fs.unlink(absPath)
-
+// ap.inf('abspath',absPath)
+    fs.unlinkSync(absPath)
+    // ap.inf('delete in disk done')
 
 
 
@@ -135,13 +141,14 @@ async function deleteArticleAttachment_async({req}){
 
     /*              更新记录到article                  */
     let updateValues={}
-    updateValues["$pull"]={[e_field.ARTICLE.ARTICLE_ATTACHMENTS_ID]:attachmentId}
+    updateValues["$pull"]={[e_field.ARTICLE.ARTICLE_ATTACHMENTS_ID]:dataConvert.convertToObjectId(attachmentId)}
     //image/attachment移动到article本身了
     updateValues["$inc"]={
         [e_field.ARTICLE.ATTACHMENTS_NUM]:-1,
         [e_field.ARTICLE.ATTACHMENTS_SIZE_IN_MB]:-sizeInMb,
     }
-
+ap.inf('updateValues',updateValues)
+    ap.inf('')
     await common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel.article,id:recordId,updateFieldsValue:updateValues})
 
     return Promise.resolve({rc:0})

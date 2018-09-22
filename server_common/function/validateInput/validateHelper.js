@@ -16,7 +16,7 @@ import {serverRuleType} from '../../define/enum/validEnum'
 import {regex} from '../../define/regex/regex'
  import {serverDataType,serverRuleType} from '../../define/enum/validEnum'
  */
-
+const ap=require('awesomeprint')
 const fs=require('fs')
 const inputDataRuleType=require('../../constant/enum/inputDataRuleType')
 const serverRuleType=inputDataRuleType.ServerRuleType
@@ -138,6 +138,11 @@ const dataTypeCheck= {
     isStrictNumber(value){
         //json格式，可以传送原始数据格式
         //可能会出现1.0===>1  1234567891234567891234567899===>1.23456789e25，所以只能通过NaN判断是否为浮点
+        // ap.inf('value',value)
+        // ap.inf('typeof value',typeof value)
+        // ap.inf('Number(value)',Number(value))
+        // ap.inf('isNaN(Number(value))',isNaN(Number(value)))
+
         return ('number'===typeof value && !isNaN(Number(value)) && value===Number(value))
 
     },
@@ -624,7 +629,7 @@ const genInputError=function(fieldRule,currentSingleRule){
  *   @ruleDefine： rule的定义
  *   return：true=满足；false=不满足
  */
-const ap=require('awesomeprint')
+// const ap=require('awesomeprint')
 function valueMatchRuleDefineCheck({ruleType,fieldValue,ruleDefine}){
 
     switch (ruleType){

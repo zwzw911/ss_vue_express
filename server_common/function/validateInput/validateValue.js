@@ -207,12 +207,14 @@ function validateSingleRecorderFieldValue({fieldValue,fieldRule,applyRange}){
     //2 检查value的类型是否符合type中的定义
     let valueTypeCheckResult
     // console.log(`fieldRule is ${JSON.stringify(fieldRule)}`)
-
+// ap.inf('fieldValue',fieldValue)
+//     ap.inf('fieldRule[e_otherRuleFiledName.DATA_TYPE]',fieldRule[e_otherRuleFiledName.DATA_TYPE])
     if(dataTypeCheck.isArray(fieldRule[e_otherRuleFiledName.DATA_TYPE])){
         valueTypeCheckResult= valueTypeCheck(fieldValue,fieldRule[e_otherRuleFiledName.DATA_TYPE][0])
     }else{
         valueTypeCheckResult= valueTypeCheck(fieldValue,fieldRule[e_otherRuleFiledName.DATA_TYPE])
     }
+    // ap.inf('valueTypeCheckResult',valueTypeCheckResult)
     // ap.inf('fieldRule[e_otherRuleFiledName.DATA_TYPE]',fieldRule[e_otherRuleFiledName.DATA_TYPE])
     // ap.inf('fieldValue',fieldValue)
     // ap.inf('fieldValue type',typeof fieldValue)

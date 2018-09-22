@@ -140,6 +140,7 @@ const folder=require('./server/controller/folder/folder_router').router
 app.use('/user', user);
 app.use('/article', article);
 app.use('/article_comment', articleComment);
+app.use('/article_attachment', article);
 app.use('/article_like_dislike', articleLikeDislike);
 app.use('/impeach', impeach);
 app.use('/impeach_action', impeach_action);

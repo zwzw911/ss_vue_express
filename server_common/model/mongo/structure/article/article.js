@@ -5,6 +5,8 @@
  */
 
 'use strict'
+// let ArticleAttachment=require('./article_attachment').collModel
+const ap=require('awesomeprint')
 const mongoose=require('mongoose');
 const fs=require('fs')
 const regex=require('../../../../constant/regex/regex').regex
@@ -70,6 +72,7 @@ const image_arrayMaxLengthValidator={
 
 const attachment_arrayMaxLengthValidator={
     validator(v){
+        ap.inf('attachem length',v.length)
         return v.length<=collInputRule['articleAttachmentsId'][serverRuleType.ARRAY_MAX_LENGTH]['define']
     },
     message:`错误代码${collInputRule['articleAttachmentsId'][serverRuleType.ARRAY_MAX_LENGTH]['mongoError']['rc']}:${collInputRule['articleAttachmentsId'][serverRuleType.ARRAY_MAX_LENGTH]['mongoError']['msg']}`
@@ -90,12 +93,15 @@ const collFieldDefine={
     // pureContent:{type:String},
     htmlContent:{type:String},//一般设置成pureContent的2倍大小
     categoryId:{type:mongoose.Schema.Types.ObjectId,ref:"category"},
-    tags:{type:[String],validate:[tag_arrayMaxLengthValidator]},//tag_arrayMinLengthValidator
+    // tags:{type:[String],validate:[tag_arrayMaxLengthValidator]},//tag_arrayMinLengthValidator
+    tags:[{type:String,validate:tag_arrayMaxLengthValidator}],//tag_arrayMinLengthValidator
     allowComment:{type:Boolean},
-    articleImagesId:{type:[mongoose.Schema.Types.ObjectId],ref:'article_image',validate:[image_arrayMaxLengthValidator]},
-    articleAttachmentsId:{type:[mongoose.Schema.Types.ObjectId],ref:'article_attachment',validate:[attachment_arrayMaxLengthValidator]},
-    articleCommentsId:{type:[mongoose.Schema.Types.ObjectId],ref:'article_comment',validate:[comment_arrayMaxLengthValidator]},
-
+    // articleImagesId:{type:[mongoose.Schema.Types.ObjectId],ref:'article_image',validate:[image_arrayMaxLengthValidator]},
+    articleImagesId:[{type:mongoose.Schema.Types.ObjectId,ref:'article_image',validate:image_arrayMaxLengthValidator}],
+    // articleAttachmentsId:[{type:mongoose.Schema.Types.ObjectId,ref:'article_attachment'}],//,
+    articleAttachmentsId:[{type:mongoose.Schema.Types.ObjectId,ref:'article_attachment',validate:attachment_arrayMaxLengthValidator}],
+    // articleCommentsId:{type:[mongoose.Schema.Types.ObjectId],ref:'article_comment',validate:[comment_arrayMaxLengthValidator]},
+    articleCommentsId:[{type:mongoose.Schema.Types.ObjectId,ref:'article_comment',validate:comment_arrayMaxLengthValidator}],
     attachmentsNum:{type:Number, default:0},//记录文档中附件总数
     attachmentsSizeInMb:{type:Number, default:0},//记录文档中附件总大小
     imagesNum:{type:Number, default:0},//记录文档中图片总数

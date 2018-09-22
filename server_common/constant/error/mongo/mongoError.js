@@ -155,6 +155,7 @@ const error={
 		uniqueFieldValue(coll,fieldName,fieldValue){
             return {rc:30004,msg:{client:`${fieldName}的值已经存在`,server:`集合:${coll}-字段:${fieldName}-值:${fieldValue},已经存在`}}
         },
+
 		/*insertMany:function(err){
 			return {rc:30003,msg:{client:`数据库错误，请联系管理员`,server:`insertMany err is ${JSON.stringify(err)}`}}
 		},
@@ -179,6 +180,10 @@ const error={
         count:function(err){
             return {rc:30014,msg:{client:`数据库错误，请联系管理员`,server:`count err is ${JSON.stringify(err)}`}}
         },*/
+    },
+    findByIdReturnRecord:{
+        populateOptTypeError:{rc:30006,msg:{client:`内部错误`,server:`findById_returnRecord的参数populateOpt必须是数组`}},
+        populateOptFieldNumExceed:{rc:30008,msg:{client:`内部错误`,server:`findById_returnRecord的参数populateOpt中需要populate的字段数量过多`}},
     }
 }
 

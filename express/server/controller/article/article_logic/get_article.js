@@ -44,8 +44,9 @@ const e_env=nodeEnum.Env
 const currentEnv=server_common_file_require.appSetting.currentEnv
 const regex=server_common_file_require.regex
 
+const maxNum=server_common_file_require.globalConfiguration.maxNumber
 
-//读取他人文档
+//读取自己（他人）文档
 async function normalGetArticle_async({req}){
     return await getArticle_async({req:req,forUpdate:false})
 }
@@ -102,18 +103,27 @@ async function getArticle_async({req,forUpdate}){
     /**********        获得数据         *********/
     /*********************************************/
     let getRecord=await businessLogic_async({articleId:recordId,forUpdate:forUpdate})
-
+// ap.inf('getRecord',getRecord)
 
     /*********************************************/
-    /********        删除（保留）指定字段         *******/
+    /********    删除（保留）指定字段     *******/
     /*********************************************/
-    controllerHelper.keepFieldInRecord({record:getRecord,fieldsToBeKeep:[e_field.ARTICLE.NAME,e_field.ARTICLE.STATUS,e_field.ARTICLE.TAGS,e_field.ARTICLE.HTML_CONTENT,e_field.ARTICLE.ALLOW_COMMENT,e_field.ARTICLE.ARTICLE_ATTACHMENTS_ID,e_field.ARTICLE.ARTICLE_IMAGES_ID,e_field.ARTICLE.CATEGORY_ID]})
+    let keepFields=[]
+    if(true===forUpdate){
+        //读取自己文档为了更新
+        keepFields=[e_field.ARTICLE.NAME,e_field.ARTICLE.STATUS,e_field.ARTICLE.TAGS,e_field.ARTICLE.HTML_CONTENT,e_field.ARTICLE.ALLOW_COMMENT,e_field.ARTICLE.ARTICLE_ATTACHMENTS_ID,e_field.ARTICLE.ARTICLE_IMAGES_ID,e_field.ARTICLE.CATEGORY_ID]
+    }else{
+        //纯粹读取
+        keepFields=[e_field.ARTICLE.NAME,e_field.ARTICLE.STATUS,e_field.ARTICLE.TAGS,e_field.ARTICLE.HTML_CONTENT,e_field.ARTICLE.ALLOW_COMMENT,e_field.ARTICLE.ARTICLE_ATTACHMENTS_ID,e_field.ARTICLE.ARTICLE_IMAGES_ID,e_field.ARTICLE.CATEGORY_ID,e_field.ARTICLE.ARTICLE_COMMENTS_ID]
+    }
+    controllerHelper.keepFieldInRecord({record:getRecord,fieldsToBeKeep:keepFields})
 
     /*********************************************/
     /**********      加密 敏感数据       *********/
     /*********************************************/
+    // ap.inf('before cryote',getRecord)
     controllerHelper.cryptRecordValue({record:getRecord,salt:tempSalt,collName:e_coll.ARTICLE})
-
+    // ap.inf('after cryote',getRecord)
     return Promise.resolve({rc:0,msg:getRecord})
 }
 
@@ -124,13 +134,47 @@ async function getArticle_async({req,forUpdate}){
 /**************************************/
 async function businessLogic_async({articleId,forUpdate}){
     /***        数据库操作            ****/
-    let populateOpt={
-        path:e_field.ARTICLE.ARTICLE_ATTACHMENTS_ID,
-        // match:{},
-        select:`${e_field.ARTICLE_ATTACHMENT.ID} ${e_field.ARTICLE_ATTACHMENT.NAME} ${e_field.ARTICLE_ATTACHMENT.HASH_NAME}`,
-        options:{limit:4},
+    let populateOpt=[
+        {
+            path:e_field.ARTICLE.ARTICLE_ATTACHMENTS_ID,
+            // match:{},
+            // select:`{id:0, ${e_field.ARTICLE_ATTACHMENT.NAME}:1, ${e_field.ARTICLE_ATTACHMENT.HASH_NAME}:1}`,
+            select:`${e_field.ARTICLE_ATTACHMENT.NAME} `, //${e_field.ARTICLE_ATTACHMENT.HASH_NAME}是为了防止文件名冲突，导致文件覆盖，无需传递到前端
+            options:{limit:maxNumber.article.attachmentNumberPerArticle},
+        },
+    ]
+    if(true===forUpdate){
+        // populateOpt=[
+        //     {
+        //     path:e_field.ARTICLE.ARTICLE_ATTACHMENTS_ID,
+        //     // match:{},
+        //     // select:`{id:0, ${e_field.ARTICLE_ATTACHMENT.NAME}:1, ${e_field.ARTICLE_ATTACHMENT.HASH_NAME}:1}`,
+        //     select:`${e_field.ARTICLE_ATTACHMENT.NAME} `, //${e_field.ARTICLE_ATTACHMENT.HASH_NAME}是为了防止文件名冲突，导致文件覆盖，无需传递到前端
+        //     options:{limit:maxNumber.article.attachmentNumberPerArticle},
+        // },
+        // ]
+    }else{
+        populateOpt.push({
+            path:e_field.ARTICLE.ARTICLE_COMMENTS_ID,
+            // match:{},
+            // select:`{id:0, ${e_field.ARTICLE_ATTACHMENT.NAME}:1, ${e_field.ARTICLE_ATTACHMENT.HASH_NAME}:1}`,
+            select:`${e_field.ARTICLE_COMMENT.AUTHOR_ID} ${e_field.ARTICLE_COMMENT.CONTENT} `, //${e_field.ARTICLE_ATTACHMENT.HASH_NAME}是为了防止文件名冲突，导致文件覆盖，无需传递到前端
+            options:{limit:maxNumber.article.attachmentNumberPerArticle},
+            populate:{
+                path:e_field.USER.ARTICLE_COMMENTS_ID,
+                // match:{},
+                // select:`{id:0, ${e_field.ARTICLE_ATTACHMENT.NAME}:1, ${e_field.ARTICLE_ATTACHMENT.HASH_NAME}:1}`,
+                select:`${e_field.ARTICLE_COMMENT.AUTHOR_ID} ${e_field.ARTICLE_COMMENT.CONTENT} `, //${e_field.ARTICLE_ATTACHMENT.HASH_NAME}是为了防止文件名冲突，导致文件覆盖，无需传递到前端
+                options:{limit:maxNumber.article.attachmentNumberPerArticle},
+            },
+        })
     }
+
+
+    // populateOpt=e_field.ARTICLE.ARTICLE_ATTACHMENTS_ID
+    // ap.inf('populateOpt',populateOpt)
     let result=await common_operation_model.findById_returnRecord_async({dbModel:e_dbModel.article,id:articleId,populateOpt:populateOpt})
+    // ap.inf('populate result',result)
     if(null===result){
         return Promise.reject(controllerError.get.articleNotExist)
     }
@@ -138,6 +182,16 @@ async function businessLogic_async({articleId,forUpdate}){
     if(false===forUpdate && result[e_field.ARTICLE.STATUS]!==e_articleStatus.FINISHED){
         return Promise.reject(controllerError.get.articleEditing)
     }
+    //delete _id
+    // result=result.toObject()
+    // ap.inf('toobject doen')
+    // for(let idx in result[e_field.ARTICLE.ARTICLE_ATTACHMENTS_ID]){
+    //     ap.inf('typeof result[e_field.ARTICLE.ARTICLE_ATTACHMENTS_ID][idx]]',typeof result[e_field.ARTICLE.ARTICLE_ATTACHMENTS_ID][idx])
+    //     ap.inf('result[e_field.ARTICLE.ARTICLE_ATTACHMENTS_ID][idx]',result[e_field.ARTICLE.ARTICLE_ATTACHMENTS_ID][idx])
+    //     ap.inf('result[e_field.ARTICLE.ARTICLE_ATTACHMENTS_ID][idx][\'_id\']',result[e_field.ARTICLE.ARTICLE_ATTACHMENTS_ID][idx]['_id'])
+    //     ap.inf('typeof result[e_field.ARTICLE.ARTICLE_ATTACHMENTS_ID][idx][\'_id\']',typeof result[e_field.ARTICLE.ARTICLE_ATTACHMENTS_ID][idx]['_id'])
+    //     delete result[e_field.ARTICLE.ARTICLE_ATTACHMENTS_ID][idx]['_id']
+    // }
     return Promise.resolve(result.toObject())
 
 }

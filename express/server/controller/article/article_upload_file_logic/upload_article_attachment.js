@@ -170,7 +170,9 @@ async function uploadArticleAttachment_async({req}){
 
     // ap.inf('filesInfo new field',filesInfo)
     // ap.inf('totalFileSize ',totalFileSize)
-    ap.inf('filesPath ',filesPath)
+    // ap.inf('filesPath ',filesPath)
+    // ap.inf('filesInfo.length ',filesInfo.length)
+    // ap.inf('totalFileSize ',totalFileSize)
     /**********************************************/
     /**    resource check （impeachComment）     **/
     /**********************************************/
@@ -179,7 +181,7 @@ async function uploadArticleAttachment_async({req}){
         [e_resourceFieldName.DISK_USAGE_SIZE_IN_MB]:totalFileSize,
         [e_resourceFieldName.FILE_ABS_PATH]:filesPath,
     }
-    ap.inf('requiredResource',requiredResource)
+    // ap.inf('requiredResource',requiredResource)
     /*              获得用户当前的所有资源配置，并检查当前占用的资源（磁盘空间）+文件的资源（sizeInMB）后，还小于==>所有<==的资源配置（）                         */
     let resourceProfileRangeToBeCheck=[e_resourceRange.ATTACHMENT_PER_ARTICLE,e_resourceRange.WHOLE_FILE_RESOURCE_PER_PERSON]
     await resourceCheck.ifEnoughResource_async({requiredResource:requiredResource,resourceProfileRange:resourceProfileRangeToBeCheck,userId:userId,containerId:recordId})
@@ -214,6 +216,7 @@ async function uploadArticleAttachment_async({req}){
         internalValue[e_field.ARTICLE_ATTACHMENT.AUTHOR_ID]=userId
         internalValue[e_field.ARTICLE_ATTACHMENT.ARTICLE_ID]=recordId
 // ap.inf('internalValue',internalValue)
+        ap.inf('internalInputRule[fileCollName]',internalInputRule[fileCollName])
         if(e_env.DEV===currentEnv){
             let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInternalRule:internalInputRule[fileCollName],applyRange:e_applyRange.CREATE})
 // console.log(`internalValue check result====>   ${JSON.stringify(tmpResult)}`)
@@ -223,11 +226,12 @@ async function uploadArticleAttachment_async({req}){
         }
 
         records.push(internalValue)
-        // ap.inf('records',records)
+        ap.inf('records',records)
     }
     /************************************************/
     /*************      db operation   *************/
     /************************************************/
+    //插入attachment
     let createdAttachment=await common_operation_model.insertMany_returnRecord_async({dbModel:e_dbModel[fileCollName],docs:records})
     // tmpResult=await common_operation_model.create_returnRecord_async({dbModel:e_dbModel[fileCollName],value:internalValue})
     let fileId=[]
@@ -239,7 +243,7 @@ async function uploadArticleAttachment_async({req}){
     // ap.inf('attachemnt is',fileId)
     /*              更新记录到:ARTICLE       */
     let updateValues={}
-    updateValues["$push"]={[e_field.ARTICLE.ARTICLE_ATTACHMENTS_ID]:fileId}
+    updateValues["$push"]={[e_field.ARTICLE.ARTICLE_ATTACHMENTS_ID]:{$each:fileId}}//fileId是数组，需要$each解耦
     //image/attachment移动到article本身了
     updateValues["$inc"]={
         [e_field.ARTICLE.ATTACHMENTS_NUM]:filesInfo.length,
@@ -261,8 +265,8 @@ async function uploadArticleAttachment_async({req}){
 
     // ap.inf('update resource done')
     for(let singleFileInfo of filesInfo){
-        ap.inf('singleFileInfo[\'path\']',singleFileInfo['path'])
-        ap.inf('singleFileInfo[\'finalPath\']',singleFileInfo['finalPath'])
+        // ap.inf('singleFileInfo[\'path\']',singleFileInfo['path'])
+        // ap.inf('singleFileInfo[\'finalPath\']',singleFileInfo['finalPath'])
         // if(fs.existsSync())
         // ap.inf('singleFileInfo[\'path\'].replace(\'\\\\\\\\\',\'\\/\')',singleFileInfo['path'].replace(/\\/g,'/'))
         // ap.inf('fs.existsSync(path)',fs.existsSync(singleFileInfo['path'],function(e,r){}))
@@ -275,7 +279,7 @@ async function uploadArticleAttachment_async({req}){
         )  //只执行，不关心结果（默认操作完成了）*/
         fs.rename(singleFileInfo['path'],singleFileInfo['finalPath'],function(e,r){})  //只执行，不关心结果（默认操作完成了）
     }
-    ap.inf('after rename')
+    // ap.inf('after rename')
     //创建的附件需要返回信息，以便显示在页面
     // createdAttachment=createdAttachment.toObject()
     // ap.inf('after toobject',createdAttachment)
@@ -284,9 +288,9 @@ async function uploadArticleAttachment_async({req}){
         createdAttachment[idx]=createdAttachment[idx].toObject()
         let singleCreatedRecord=createdAttachment[idx]
         /*********************************************/
-        /**********      删除指定字段       *********/
+        /**********      保留指定字段       *********/
         /*********************************************/
-        controllerHelper.keepFieldInRecord({record:singleCreatedRecord,fieldsToBeKeep:[e_field.ARTICLE_ATTACHMENT.HASH_NAME,e_field.ARTICLE_ATTACHMENT.NAME]})
+        controllerHelper.keepFieldInRecord({record:singleCreatedRecord,fieldsToBeKeep:[e_field.ARTICLE_ATTACHMENT.ID,e_field.ARTICLE_ATTACHMENT.NAME]})
         // ap.inf('after delete field',createdAttachment)
         /*********************************************/
         /**********      加密 敏感数据       *********/

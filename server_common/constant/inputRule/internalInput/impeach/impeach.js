@@ -113,7 +113,7 @@ const impeach= {
     },
     imagesSizeInMb: {
         [otherRuleFiledName.CHINESE_NAME]: '图片总大小',
-        [otherRuleFiledName.DATA_TYPE]: serverDataType.INT,
+        [otherRuleFiledName.DATA_TYPE]: serverDataType.NUMBER,
         [otherRuleFiledName.APPLY_RANGE]:[applyRange.CREATE,applyRange.UPDATE_SCALAR],
         [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:false,[applyRange.UPDATE_SCALAR]:false}, error: {rc: baseJSErrorCode+40, msg: '图片总大小不能为空'}, mongoError: {rc: baseMongoErrorCode+40, msg: '图片总大小不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         // [ruleFiledName.ENUM]:{define:Object.values(mongoEnum.ImpeachType.DB),error:{rc:10532},mongoError:{rc:20532,msg:'未知举报的对象'}},//server端使用
@@ -130,7 +130,7 @@ const impeach= {
     },
     attachmentsSizeInMb: {
         [otherRuleFiledName.CHINESE_NAME]: '附件总大小',
-        [otherRuleFiledName.DATA_TYPE]: serverDataType.INT,
+        [otherRuleFiledName.DATA_TYPE]: serverDataType.NUMBER,
         [otherRuleFiledName.APPLY_RANGE]:[applyRange.CREATE,applyRange.UPDATE_SCALAR],
         [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:false,[applyRange.UPDATE_SCALAR]:false}, error: {rc: baseJSErrorCode+44, msg: '附件总大小不能为空'}, mongoError: {rc: baseMongoErrorCode+44, msg: '附件总大小不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         // [ruleFiledName.ENUM]:{define:Object.values(mongoEnum.ImpeachType.DB),error:{rc:10532},mongoError:{rc:20532,msg:'未知举报的对象'}},//server端使用
