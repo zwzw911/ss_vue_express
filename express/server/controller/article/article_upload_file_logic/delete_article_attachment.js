@@ -127,8 +127,8 @@ async function deleteArticleAttachment_async({req}){
     let absPathResult=await common_operation_model.findById_returnRecord_async({dbModel:e_dbModel.store_path,id:originalAttachmentDoc[e_field.ARTICLE_ATTACHMENT.PATH_ID]})
     let absPath=absPathResult[e_field.STORE_PATH.PATH]+originalAttachmentDoc[e_field.ARTICLE_ATTACHMENT.HASH_NAME]
 // ap.inf('abspath',absPath)
-    fs.unlinkSync(absPath)
-    // ap.inf('delete in disk done')
+//     fs.unlinkSync(absPath)
+    ap.inf('delete in disk done')
 
 
 
