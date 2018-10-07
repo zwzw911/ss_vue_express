@@ -117,8 +117,8 @@ router.delete('/logout',function(req,res,next){
         }
     )
 })
-router.put('/uploadUserPhoto',function(req,res,next){
-    // ap.inf('put upload user photo in')
+router.post('/uploadUserPhoto',function(req,res,next){
+    ap.inf('post upload user photo in')
     userDispatcher_async(req).then(
         (v)=>{
             ap.inf(`upload photo  success, result:  ${JSON.stringify(v)}`)
@@ -130,7 +130,19 @@ router.put('/uploadUserPhoto',function(req,res,next){
         }
     )
 })
-
+router.put('/uploadUserPhoto',function(req,res,next){
+    ap.inf('put upload user photo in')
+    userDispatcher_async(req).then(
+        (v)=>{
+            ap.inf(`upload photo  success, result:  ${JSON.stringify(v)}`)
+            return res.json(v)
+        },
+        (err)=>{
+            ap.err(`upload photo  fail: ${JSON.stringify(err)}`)
+            return res.json(genFinalReturnResult(err))
+        }
+    )
+})
 router.post('/uniqueCheck',function(req,res,next){
     userDispatcher_async(req).then(
         (v)=>{

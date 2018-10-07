@@ -1,4 +1,4 @@
-/*    gene by D:\U\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-9-17   */ 
+/*    gene by D:\U\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-10-7   */ 
  
 "use strict"
 const browserInputRule={
@@ -234,9 +234,10 @@ const browserInputRule={
         },
         'allowComment':{
             'chineseName':"允许评论",
-            'dataType':"boolean",
+            'dataType':"string",
             'applyRange':["create","update_scalar"],
-            'require':{"define":{"create":false,"update_scalar":false},"error":{"rc":101028,"msg":"文档分类不能为空"},"mongoError":{"rc":201028,"msg":"允许评论不能为空"}},
+            'require':{"define":{"create":false,"update_scalar":false},"error":{"rc":101028,"msg":"评论设置不能为空"},"mongoError":{"rc":201028,"msg":"评论设置不能为空"}},
+            'enum':{"define":["1","2"],"error":{"rc":101030,"msg":"文档评论设置不正确"},"mongoError":{"rc":201030,"msg":"文档评论设置不正确"}},
         },
     },
     'article_comment':{

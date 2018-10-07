@@ -88,6 +88,24 @@ router.delete('/',function(req,res,next){
     )
 })
 
+/***    读取首页文档，通过单独的URL来获取（而不是post 参数，防止恶意用户自己输入查询参数）      ****/
+router.get('/mainPage',function(req,res,next){
+    //articleId通过req.params.articleId获得
+    article_dispatcher_async({req}).then(
+        (v)=>{
+            if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV){
+                console.log(`get main page   article   success, result:  ${JSON.stringify(v)}`)
+            }
+            return res.json(v)
+        },
+        (err)=>{
+            if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV){
+                console.log(`get main page   article    fail: ${JSON.stringify(err)}`)
+            }
+            return res.json(genFinalReturnResult(err))
+        }
+    )
+})
 /***    更新时需要首先获得原始文档内容（recordId）    ***/
 router.get('/getUpdateArticle/:articleId',function(req,res,next){
     //articleId通过req.params.articleId获得
@@ -112,13 +130,13 @@ router.get('/:articleId',function(req,res,next){
     article_dispatcher_async({req}).then(
         (v)=>{
             if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV){
-                console.log(`update   article   success, result:  ${JSON.stringify(v)}`)
+                console.log(`get article success, result:  ${JSON.stringify(v)}`)
             }
             return res.json(v)
         },
         (err)=>{
             if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV){
-                console.log(`update   article    fail: ${JSON.stringify(err)}`)
+                console.log(`get article fail: ${JSON.stringify(err)}`)
             }
             return res.json(genFinalReturnResult(err))
         }

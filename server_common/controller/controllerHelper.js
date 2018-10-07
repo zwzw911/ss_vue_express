@@ -1347,8 +1347,16 @@ function ifExactCryptedObjectId(value){
     return typeof value === 'string' && true===regex.cryptedObjectId.test(value)
 }
 
-function cryptRecordValue({record,collName,salt}){
+function cryptRecordValue({record,collName,salt,populateFields}){
+    if(undefined!==populateFields && populateFields.length>0){
+        ap.inf('populateFields',populateFields)
+        for(let singlePopulateField of populateFields){
+            ap.inf('singlePopulateField',singlePopulateField)
+            cryptDecryptSingleRecord({record:record[singlePopulateField['fieldName']],salt:salt,collName:singlePopulateField['fkCollName'],cryptDecryptType:'crypt'})
+        }
+    }
     return cryptDecryptSingleRecord({record:record,salt:salt,collName:collName,cryptDecryptType:'crypt'})
+
     // return result
 }
 function decryptRecordValue({record,collName,salt}){

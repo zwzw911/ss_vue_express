@@ -42,12 +42,7 @@ const nodeRuntimeEnum=server_common_file_require.nodeRuntimeEnum
 const e_inputValueLogicCheckStep=nodeRuntimeEnum.InputValueLogicCheckStep
 
 const mongoEnum=server_common_file_require.mongoEnum
-const e_accountType=mongoEnum.AccountType.DB
-const e_docStatus=mongoEnum.DocStatus.DB
-const e_impeachType=mongoEnum.ImpeachType.DB
-const e_impeachUserAction=mongoEnum.ImpeachUserAction.DB
-const e_impeachState=mongoEnum.ImpeachState.DB
-const e_addFriendStatus=mongoEnum.AddFriendStatus.DB
+const e_articleAllowComment=mongoEnum.ArticleAllowComment.DB
 const e_allUserType=mongoEnum.AllUserType.DB
 const e_resourceRange=mongoEnum.ResourceRange.DB
 const e_articleStatus=mongoEnum.ArticleStatus.DB
@@ -102,7 +97,7 @@ async  function createArticle_async({req,applyRange}){
     /**         无需默认分类       **/
     // docValue[e_field.ARTICLE.CATEGORY_ID]=e_iniSettingObject.category.other
     docValue[e_field.ARTICLE.HTML_CONTENT]=`<i>请在此输入文档内容......</i>`
-    docValue[e_field.ARTICLE.ALLOW_COMMENT]=false
+    docValue[e_field.ARTICLE.ALLOW_COMMENT]=e_articleAllowComment.Allow //和db中default的值一致
 
     /**********************************************/
     /**  CALL FUNCTION:inputValueLogicValidCheck **/
@@ -134,9 +129,10 @@ async  function createArticle_async({req,applyRange}){
     let createdRecord=await businessLogic_async({docValue:docValue,collName:collName,userId:userId,applyRange:applyRange})
 // ap.inf('createdRecord',createdRecord)
     /*********************************************/
-    /**********      删除指定字段       *********/
+    /**********      保留指定字段       *********/
     /*********************************************/
-    controllerHelper.deleteFieldInRecord({record:createdRecord,fieldsToBeDeleted:undefined})
+    // controllerHelper.deleteFieldInRecord({record:createdRecord,fieldsToBeDeleted:undefined})
+    controllerHelper.keepFieldInRecord({record:createdRecord,fieldsToBeKeep:[e_field.ARTICLE.ID]})
     /*********************************************/
     /**********      加密 敏感数据       *********/
     /*********************************************/

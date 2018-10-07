@@ -4,6 +4,9 @@
 const ArticleStatus=
     {"0":"新建文档","1":"编辑中","2":"编辑完成"}
 
+const ArticleAllowComment=
+    {"1":"允许评论","2":"禁止评论"}
+
 const AddFriendRule=
     {"1":"任意加入","2":"批准加入","3":"拒绝加入"}
 
@@ -72,6 +75,7 @@ const JoinPublicGroupHandleResult=
 
 module.exports={
     ArticleStatus,
+    ArticleAllowComment,
     AddFriendRule,
     AdminUserType,
     UserType,

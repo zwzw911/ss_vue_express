@@ -2,6 +2,7 @@
  
 "use strict"
 const ArticleStatus=["0","1","2",] 
+const ArticleAllowComment=["1","2",] 
 const AddFriendRule=["1","2","3",] 
 const AdminUserType=["1","2",] 
 const UserType=["10",] 
@@ -29,6 +30,7 @@ const AddFriendStatus=["1","2","3",]
 const JoinPublicGroupHandleResult=["1","2","3",] 
 module.exports={
     ArticleStatus,
+    ArticleAllowComment,
     AddFriendRule,
     AdminUserType,
     UserType,

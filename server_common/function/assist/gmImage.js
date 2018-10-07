@@ -51,6 +51,7 @@ async function getImageProperty_async (gmInst,propertyType){
     return new Promise(function(resolve,reject) {
         // ap.inf('getImageProperty_async in')
         // ap.inf('propertyType in',propertyType)
+        // ap.inf('gmInst',gmInst)
         switch (propertyType) {
             case e_gmGetter.FORMAT:
 
@@ -77,11 +78,13 @@ async function getImageProperty_async (gmInst,propertyType){
                 // ap.inf('size in')
                 // return new Promise(function (resolve, reject) {
                     gmInst.size(function (err, result) {
+                        // ap.inf('zize err',err)
+                        // ap.inf('zize result',result)
                         if (err) {
-                            // ap.inf('zize err',err)
+
                             return reject(imageErrorDefine.size)
                         } else {
-// ap.inf('zize result',result)
+
                             return resolve(result)
                         }
 

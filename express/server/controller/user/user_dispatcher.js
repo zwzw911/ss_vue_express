@@ -17,6 +17,7 @@ const controllerPreCheck=server_common_file_require.controllerPreCheck
 const dispatchError=server_common_file_require.helperError.dispatch
 const controllerChecker=server_common_file_require.controllerChecker
 const controllerHelper=server_common_file_require.controllerHelper
+const crypt=server_common_file_require.crypt
 /************   公共常量 ***************/
 const nodeEnum=server_common_file_require.nodeEnum
 const mongoEnum=server_common_file_require.mongoEnum
@@ -79,7 +80,7 @@ async function dispatcher_async(req){
     let applyRange
     //interval和robot检测
     await controllerPreCheck.commonPreCheck_async({req:req,collName:collName})
-    ap.inf('commonPreCheck_async done')
+    // ap.inf('commonPreCheck_async done')
     switch (req.route.stack[0].method) {
         case 'get':
             if(originalUrl==='/user' || originalUrl==='/user/') {
@@ -89,11 +90,8 @@ async function dispatcher_async(req){
                 }
                 await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
 
-                //验证URL中的userId并重新赋值
+                //如果是获取他人数据，需要验证URL中的userId并重新赋值
                 if(undefined!==req.params.userId){
-
-
-
                     //获得他人的userId
                     /*********  url（get）中的objectId的检查，不使用单一函数，因为需要具体的错误信息  *********/
                     let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
@@ -116,9 +114,9 @@ async function dispatcher_async(req){
                     if(false===regex.objectId.test(req.params.userId)){
                         return Promise.reject(controllerError.dispatch.get.decryptedUserIdFormatInvalid)
                     }
-// ap.inf('req.params',req.params)
                 }
 
+                //URL中未带userId，说明获取自己的信息，直接getUser
                 result= await getUser_async({req: req})
                 return Promise.resolve(result)
             }
@@ -217,7 +215,6 @@ async function dispatcher_async(req){
                 result = await retrievePassword_async({req: req})
                 return Promise.resolve(result)
             }
-
             break
         case 'delete':
             if(originalUrl==='/user/logout' || originalUrl==='/user/logout/') {
@@ -293,7 +290,7 @@ async function dispatcher_async(req){
                 result = controllerPreCheck.inputCommonCheck({req:req, expectedPart:expectedPart})
                 if (result.rc > 0) {return Promise.reject(result)}
                 result=controllerPreCheck.inputPreCheck({req:req,expectedPart:expectedPart,collName:collName,applyRange:e_applyRange.UPDATE_SCALAR,arr_currentSearchRange:arr_currentSearchRange})
-                // ap.inf('inputPreCheck result',result)
+                ap.inf('inputPreCheck result',result)
                 if(result.rc>0){return Promise.reject(result)}
                 result = await uploadUserPhoto_async({req: req})
                 return Promise.resolve(result)

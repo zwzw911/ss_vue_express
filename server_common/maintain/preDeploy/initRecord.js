@@ -147,8 +147,8 @@ const resource_profile= [
         [e_field.RESOURCE_PROFILE.NAME]:"普通用户单个文档附件资源设定",
         [e_field.RESOURCE_PROFILE.RESOURCE_RANGE]:e_resourceRange.ATTACHMENT_PER_ARTICLE,
         [e_field.RESOURCE_PROFILE.RESOURCE_TYPE]:e_resourceType.BASIC,
-        [e_field.RESOURCE_PROFILE.MAX_NUM]:5,
-        [e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]:100, //假设每个文件大小为20M
+        [e_field.RESOURCE_PROFILE.MAX_NUM]:10,
+        [e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]:100, //假设每个文件大小为10M
     },
     {
         [e_field.RESOURCE_PROFILE.NAME]:"升级用户单个文档图片设定",

@@ -30,8 +30,7 @@ async function getUser_async({req}){
         userId=req.params.userId
         /****   需要进一步的权限检查，例如，如果是陌生人，只能看名称，如果是朋友，可以看名称账号和头像等**/
     }
-
-
+// ap.inf('userId',userId)
     /*********************************************/
     /**********        获得数据         *********/
     /*********************************************/
@@ -47,82 +46,24 @@ async function getUser_async({req}){
     }else{
         allowFieldName=[e_field.USER.NAME,e_field.USER.LAST_SIGN_IN_DATE,e_field.USER.ACCOUNT,e_field.USER.PHOTO_DATA_URL]
     }
-
-    controllerHelper.keepFieldInRecord({record:getRecord,fieldsToBeKeep:allowFieldName})
-
+// ap.inf('before keepFieldInRecord',getRecord)
+//     controllerHelper.keepFieldInRecord({record:getRecord,fieldsToBeKeep:allowFieldName})
+//     ap.inf('after keepFieldInRecord',getRecord)
     /*********************************************/
     /**********      加密 敏感数据       *********/
     /*********************************************/
-    controllerHelper.cryptRecordValue({record:getRecord,salt:tempSalt,collName:collName})
-
-
-
+    controllerHelper.cryptRecordValue({record:getRecord,salt:tempSalt,collName:userCollName})
+    // ap.inf('after cryptRecordValue',getRecord)
     return Promise.resolve({rc:0,msg:getRecord})
-    // ap.inf('userid',userId)
-
-/*
-    await handleResult({result:result})
-    return Promise.resolve({rc:0,msg:result})*/
-}
-/*async function getOtherUser_async({req}){
-    let userId=await operationSpecificCheck({req:req})
-    // ap.inf('userid',userId)
-    let result=await businessOperation({userId:userId})
-
-    await handleResult({result:result})
-    return Promise.resolve({rc:0,msg:result})
 }
 
-
-async function operationSpecificCheck({req}){
-
-}
-/!* 操作特定的检查
-* *!/
-async function ownSpecificCheck({req}){
-        let origUrl=req.originalUrl
-
-}
-async function otherSpecificCheck({req}){
-    let origUrl=req.originalUrl
-    //1. 如果没有带id，说明是获取自己的信息
-
-    //1.1 获得登录信息（从session中）
-    let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
-    let {userId,userCollName,userType,userPriority}=userInfo
-    // ap.inf('userid',userId)
-    if(undefined===userId){
-        return Promise.reject(getUser_async.userIdUndefined)
-    }
-    // ap.inf('regex.objectId.test(userId)',regex.objectId.test(userId))
-    if(false===regex.objectId.test(userId)){
-        return Promise.reject(getUser_async.userIdFormatIncorrect)
-    }
-    //2. 如果带id，说明是获取他人的信息
-    //2.1 检测是否有权限获得他人信息
-    return Promise.resolve(userId)
-}*/
-/*  具体的业务操作
-* */
 async function businessLogic_async({userId}){
     // ap.inf('userid',userId)
     let result=await common_operation_model.findById_returnRecord_async({dbModel:e_dbModel.user,id:userId})
     return Promise.resolve(result.toObject())
 }
 
-/*  对最终的结果进行处理(可能需要删除某些字段，或者加密某些字段。。。)
-* */
-/*async function handleResult({result}){
-    ap.inf('before result',result)
-    //看自己的信息
-    let allowFieldName=[e_field.USER.NAME,e_field.USER.LAST_SIGN_IN_DATE,e_field.USER.ACCOUNT,e_field.USER.PHOTO_DATA_URL]
-    for(let singleField in result){
-        if(-1===allowFieldName.indexOf(singleField)){
-            delete result[singleField]
-        }
-    }
-    ap.inf('after result',result)
-}*/
+
 
 
 module.exports={

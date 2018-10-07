@@ -18,6 +18,18 @@ const ArticleStatus={
     }
 }
 
+const ArticleAllowComment={
+    DB:{
+        'Allow':'1',
+        'Forbid':'2',
+
+    },
+    SHOW:{
+        'Allow':'允许评论',
+        'Forbid':'禁止评论',
+    }
+}
+
 const AdminUserType={
     DB:{
         ADMIN_ROOT:'1',
@@ -607,6 +619,7 @@ const JoinPublicGroupHandleResult={
 // }
 module.exports={
     ArticleStatus,
+    ArticleAllowComment,
     AddFriendRule,
     AdminUserType,
     UserType,

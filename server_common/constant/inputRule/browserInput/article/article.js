@@ -98,10 +98,10 @@ const article= {
     },
     allowComment: {
         [otherRuleFiledName.CHINESE_NAME]: '允许评论',
-        [otherRuleFiledName.DATA_TYPE]: serverDataType.BOOLEAN,
+        [otherRuleFiledName.DATA_TYPE]: serverDataType.STRING,
         [otherRuleFiledName.APPLY_RANGE]:[applyRange.CREATE,applyRange.UPDATE_SCALAR], //必须在create，可以在update，的recordInfo中出现
-        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:false,[applyRange.UPDATE_SCALAR]:false}, error: {rc: baseJSErrorCode+28, msg: '文档分类不能为空'}, mongoError: {rc: baseMongoErrorCode+28, msg: '允许评论不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
-        // [ruleFiledName.FORMAT]: {define: regex.objectId, error: {rc: baseJSErrorCode+30, msg: '文档分类必须是objectId'}, mongoError: {rc: baseMongoErrorCode+30, msg: '允许评论必须是boolean'}} //server端使用
+        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:false,[applyRange.UPDATE_SCALAR]:false}, error: {rc: baseJSErrorCode+28, msg: '评论设置不能为空'}, mongoError: {rc: baseMongoErrorCode+28, msg: '评论设置不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        [ruleFiledName.ENUM]:{define:enumValue.ArticleAllowComment,error:{rc:baseJSErrorCode+30,msg:'文档评论设置不正确'},mongoError:{rc:baseMongoErrorCode+30,msg:'文档评论设置不正确'}},//server端使用
     },
 }
 

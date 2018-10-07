@@ -27,6 +27,7 @@ const serverRuleType=require('../../../../constant/enum/inputDataRuleType').Serv
 
 const assist=require('../../common/assist')
 
+const e_articleAllowComment=require('../../../../constant/enum/mongoEnum').ArticleAllowComment
 //根据inputRule的rule设置，对mongoose设置内建validator
 const collInputRule=Object.assign({},browserInputRule,internalInputRule)
 
@@ -95,7 +96,7 @@ const collFieldDefine={
     categoryId:{type:mongoose.Schema.Types.ObjectId,ref:"category"},
     // tags:{type:[String],validate:[tag_arrayMaxLengthValidator]},//tag_arrayMinLengthValidator
     tags:[{type:String,validate:tag_arrayMaxLengthValidator}],//tag_arrayMinLengthValidator
-    allowComment:{type:Boolean},
+    allowComment:{type:String, default:e_articleAllowComment.DB.Allow},//默认允许评论
     // articleImagesId:{type:[mongoose.Schema.Types.ObjectId],ref:'article_image',validate:[image_arrayMaxLengthValidator]},
     articleImagesId:[{type:mongoose.Schema.Types.ObjectId,ref:'article_image',validate:image_arrayMaxLengthValidator}],
     // articleAttachmentsId:[{type:mongoose.Schema.Types.ObjectId,ref:'article_attachment'}],//,

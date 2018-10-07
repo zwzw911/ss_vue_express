@@ -272,9 +272,11 @@ async function readName({dbModel,readNameField,nameToBeSearched,recorderLimit=10
 //populateOpt:数组，以便确定使用几次populate
 async function findById_returnRecord_async({dbModel,id,selectedFields='-cDate -uDate -dDate',populateOpt}){
     // console.log(`find by id :${id}`)
-    ap.inf('populateOpt',populateOpt)
+    // ap.inf('populateOpt',populateOpt)
     let result
     if(undefined===populateOpt || (true===dataTypeCheck.isArray(populateOpt) && populateOpt.length===0)){
+        // ap.inf('id',id)
+        // ap.inf('selectedFields',selectedFields)
         result=await dbModel.findById(id,selectedFields)
             .catch(
                 function(err){
@@ -282,6 +284,7 @@ async function findById_returnRecord_async({dbModel,id,selectedFields='-cDate -u
                     // console.log(`converted err is ${JSON.stringify(mongooseErrorHandler(mongooseOpEnum.findById,err))}`)
                     return Promise.reject(mongooseErrorHandler(err))
                 })
+        // ap.inf('find bu id result',result)
     }else{
 /*        await dbModel.findById(id,selectedFields,function(err,result){
             ap.inf('err',err)

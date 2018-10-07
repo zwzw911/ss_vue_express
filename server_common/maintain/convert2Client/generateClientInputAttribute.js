@@ -133,22 +133,24 @@ function generateSingleCollInputAttribute({collName,collRuleDefinition,absFilesP
             if(undefined!==collRuleDefinition[field][ruleFiledName.ENUM]){
                 //读取rule文件内容
 
-
+                collAttribute[field][e_inputAttributeFieldName.ENUM_VALUE]=browserInputRule[collName][field][ruleFiledName.ENUM]['define']
                 // fileContent=fileContent.replace(/\/,'')
 
 
 
                         // ap.inf('fileContent',fileContent)
                         // ap.inf('field',field)
-                        let regexp=new RegExp(`${field}:{.*ruleFiledName.ENUM.+?:{define:(.*?),`)
+                        // let regexp=new RegExp(`${field}:{.*ruleFiledName.ENUM.+?:{define:(.*?),`)
+                        let regexp=new RegExp(`${field}:{.*?ruleFiledName.ENUM\]:{define:([^,]+?),`)
                         // let regexp=new RegExp(`userType:{(.+)}`,'g')
                         // let regexp=/userType:{.*\[ruleFiledName.ENUM\]:{define:(.*?),/
-                        // ap.inf('regexp',regexp.toString())
+                        ap.inf('regexp',regexp.toString())
                         let result=fileContent.match(regexp)
-                        // ap.inf('result',result)
+                        // ap.inf('enum value match result',result)
                         if(undefined!==result[1]){
+                            ap.inf('enum value match result',result[1])
                             let enumName=result[1].replace('enumValue.','')
-                            collAttribute[field][e_inputAttributeFieldName.ENUM_VALUE]=clientEnumValue[enumName]
+                            collAttribute[field][e_inputAttributeFieldName.ENUM_VALUE]=misc.objectDeepCopy(clientEnumValue[enumName])
                         }else{
                             ap.err('not match enum define')
                         }
@@ -160,7 +162,7 @@ function generateSingleCollInputAttribute({collName,collRuleDefinition,absFilesP
             }
             // let enumDef=JSON.stringify(collRuleDefinition[ruleFiledName.ENUM])
         }
-
+// ap.inf('collAttribute',collAttribute)
         return collAttribute
 
 }

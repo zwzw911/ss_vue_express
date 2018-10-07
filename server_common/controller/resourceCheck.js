@@ -117,9 +117,9 @@ function ifSpaceExceed({currentUsedSpace,requiredSpace,resourceProfileRecord}){
     return currentUsedSpace+requiredSpace > resourceProfileRecord[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]
 }
 function ifNumExceed({currentUsedNum,requiredNum,resourceProfileRecord}){
-    // ap.inf('currentUsedNum',currentUsedNum)
-    // ap.inf('requiredNum',requiredNum)
-    // ap.inf('resourceProfileRecord',resourceProfileRecord)
+    ap.inf('currentUsedNum',currentUsedNum)
+    ap.inf('requiredNum',requiredNum)
+    ap.inf('resourceProfileRecord',resourceProfileRecord)
     return currentUsedNum+requiredNum > resourceProfileRecord[e_field.RESOURCE_PROFILE.MAX_NUM]
 }
 
@@ -136,8 +136,8 @@ function ifNumExceed({currentUsedNum,requiredNum,resourceProfileRecord}){
 * return: boolean
 * */
 async function ifEnoughResource_async({requiredResource,resourceProfileRange,userId,containerId}){
-    // ap.inf('requiredResource',requiredResource)
-    // ap.inf('resourceProfileRange',resourceProfileRange)
+    ap.inf('requiredResource',requiredResource)
+    ap.inf('resourceProfileRange',resourceProfileRange)
     for(let singleResourceProfileRange of resourceProfileRange){
         // ap.inf('singleResourceProfileRange',singleResourceProfileRange)
         //1. 根据resourceProfileRange获得对应的当前可用的 资源配置文件（valid resourceProfile）
@@ -154,9 +154,9 @@ async function ifEnoughResource_async({requiredResource,resourceProfileRange,use
             // ap.inf('e_resourceRange.ATTACHMENT_PER_ARTICLE',e_resourceRange.ATTACHMENT_PER_ARTICLE)
             switch (singleResourceProfileRange){
                 case e_resourceRange.ATTACHMENT_PER_ARTICLE:
-                    // ap.inf('ATTACHMENT_PER_ARTICLE in')
+                    ap.inf('ATTACHMENT_PER_ARTICLE in')
                     usedResource=await fileResourceCalc.calcArticleResourceUsage_async({singleResourceProfileRange:singleResourceProfileRange,articleId:containerId})
-                    // ap.inf('usedResource',usedResource)
+                    ap.inf('usedResource',usedResource)
                     // ap.inf('usedResource',usedResource)
                     spaceExceedFlag=ifSpaceExceed({currentUsedSpace:usedResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],requiredSpace:requiredResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],resourceProfileRecord:resourceProfile})
                     if(true===spaceExceedFlag){

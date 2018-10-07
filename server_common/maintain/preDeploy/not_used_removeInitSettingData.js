@@ -26,23 +26,6 @@ async function remove_all_async(){
     return await Promise.all(promiseTobeExec)
     // ap.inf('remove_all_async done')
 }
-// remove_all_init_data_async().then(
-//     (result)=>{
-//         ap.inf('remove_all_init_data_async done',result)
-//     },
-//     (err)=>{
-//         ap.err('remove_all_init_data_async fail',err)
-//         // console.log(`removeAll fail========>${JSON.stringify(err)}`)
-//     }
-// )
-// remove_all_async().then(
-//     (result)=>{
-//         ap.inf('remove_all_async done',result)
-//     },
-//     (err)=>{
-//         ap.err('remove_all_async fail',err)
-//     }
-// )
 
 module.exports={
     remove_all_init_data_async,

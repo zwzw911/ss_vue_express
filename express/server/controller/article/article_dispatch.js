@@ -34,6 +34,7 @@ const e_applyRange=server_common_file_require.inputDataRuleType.ApplyRange
 
 const e_fieldChineseName=require('../../constant/genEnum/inputRule_field_chineseName').ChineseName
 
+const regex=server_common_file_require.regex.regex
 /**************  rule  ****************/
 const internalInputRule=require('../../constant/inputRule/internalInputRule').internalInputRule
 const inputRule=require('../../constant/inputRule/inputRule').inputRule
@@ -50,6 +51,7 @@ const controllerSetting=require('./article_setting/article_setting').setting
 const createArticle_async=require('./article_logic/create_article').createArticle_async
 const updateArticle_async=require('./article_logic/update_article').updateArticle_async
 const getArticle_async=require('./article_logic/get_article').normalGetArticle_async
+const getMainPageArticle_async=require('./article_logic/search_article').getMainPArticle_async
 const getUpdateArticle_async=require('./article_logic/get_article').getArticleFroUpdate_async
 
 const uploadArticleImage_async=require('./article_upload_file_logic/upload_article_image').uploadArticleImage_async
@@ -89,9 +91,17 @@ async function article_dispatcher_async({req}) {
     switch (req.route.stack[0].method) {
         case 'get':
             if (baseUrl === '/article' || baseUrl === '/article/') {
+                /**     读取 首页的文档        **/
+                if (originalUrl=== '/article/mainPage' || originalUrl === '/article/mainPage/') {
+                    //除了公共的interval和robot检查，无需其他任何检查，直接获取数据
+                    result = await getMainPageArticle_async({req: req})
+                    return Promise.resolve(result)
+                }
                 /**     读取他人文档        **/
-                if (originalUrl === '/article' || originalUrl === '/article/') {
-
+                let otherArticleUrl=new RegExp(`/article/[0-9a-fA-F]{64}/?`)
+                // ap.inf('otherArticleUrl',otherArticleUrl)
+                // ap.inf('otherArticleUrl.test(originalUrl)',otherArticleUrl.test(originalUrl))
+                if (true===otherArticleUrl.test(originalUrl)) {
                     //检测url中objectId并解密
                     await controllerPreCheck.checkObjectIdInReqParams_async({req:req,parameterName:'articleId',cryptedError:controllerError.dispatch.get.cryptedArticleIdFormatInvalid,decryptedError:controllerError.dispatch.get.decryptedArticleIdFormatInvalid})
 

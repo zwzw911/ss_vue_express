@@ -54,11 +54,9 @@ async function normalGetArticle_async({req}){
 async function getArticleFroUpdate_async({req}){
     return await getArticle_async({req:req,forUpdate:true})
 }
-/*************************************************************/
-/***************        获得所有一级目录      ****************/
-/*************************************************************/
+
 async function getArticle_async({req,forUpdate}){
-    // ap.inf('getArticle_async in')
+    ap.inf('getArticle_async in')
     /********************************************************/
     /*************      define variant        ***************/
     /********************************************************/
@@ -114,7 +112,7 @@ async function getArticle_async({req,forUpdate}){
         keepFields=[e_field.ARTICLE.NAME,e_field.ARTICLE.STATUS,e_field.ARTICLE.TAGS,e_field.ARTICLE.HTML_CONTENT,e_field.ARTICLE.ALLOW_COMMENT,e_field.ARTICLE.ARTICLE_ATTACHMENTS_ID,e_field.ARTICLE.ARTICLE_IMAGES_ID,e_field.ARTICLE.CATEGORY_ID]
     }else{
         //纯粹读取
-        keepFields=[e_field.ARTICLE.NAME,e_field.ARTICLE.STATUS,e_field.ARTICLE.TAGS,e_field.ARTICLE.HTML_CONTENT,e_field.ARTICLE.ALLOW_COMMENT,e_field.ARTICLE.ARTICLE_ATTACHMENTS_ID,e_field.ARTICLE.ARTICLE_IMAGES_ID,e_field.ARTICLE.CATEGORY_ID,e_field.ARTICLE.ARTICLE_COMMENTS_ID]
+        keepFields=[e_field.ARTICLE.NAME,e_field.ARTICLE.AUTHOR_ID,e_field.ARTICLE.STATUS,e_field.ARTICLE.TAGS,e_field.ARTICLE.HTML_CONTENT,e_field.ARTICLE.ALLOW_COMMENT,e_field.ARTICLE.ARTICLE_ATTACHMENTS_ID,e_field.ARTICLE.ARTICLE_IMAGES_ID,e_field.ARTICLE.CATEGORY_ID,e_field.ARTICLE.ARTICLE_COMMENTS_ID]
     }
     controllerHelper.keepFieldInRecord({record:getRecord,fieldsToBeKeep:keepFields})
 
@@ -130,7 +128,7 @@ async function getArticle_async({req,forUpdate}){
 
 
 /**************************************/
-/*** 读取目录下的内容（目录和文档） ***/
+/*** 读取文档的附件信息和评论信息 ***/
 /**************************************/
 async function businessLogic_async({articleId,forUpdate}){
     /***        数据库操作            ****/
@@ -155,17 +153,25 @@ async function businessLogic_async({articleId,forUpdate}){
         // ]
     }else{
         populateOpt.push({
+            path:e_field.ARTICLE.AUTHOR_ID,
+            // match:{},
+            // select:`{id:0, ${e_field.ARTICLE_ATTACHMENT.NAME}:1, ${e_field.ARTICLE_ATTACHMENT.HASH_NAME}:1}`,
+            select:`${e_field.USER.PHOTO_DATA_URL} ${e_field.USER.NAME} `, //${e_field.ARTICLE_ATTACHMENT.HASH_NAME}是为了防止文件名冲突，导致文件覆盖，无需传递到前端
+            // options:{limit:maxNumber.article.attachmentNumberPerArticle},
+
+        })
+        populateOpt.push({
             path:e_field.ARTICLE.ARTICLE_COMMENTS_ID,
             // match:{},
             // select:`{id:0, ${e_field.ARTICLE_ATTACHMENT.NAME}:1, ${e_field.ARTICLE_ATTACHMENT.HASH_NAME}:1}`,
             select:`${e_field.ARTICLE_COMMENT.AUTHOR_ID} ${e_field.ARTICLE_COMMENT.CONTENT} `, //${e_field.ARTICLE_ATTACHMENT.HASH_NAME}是为了防止文件名冲突，导致文件覆盖，无需传递到前端
             options:{limit:maxNumber.article.attachmentNumberPerArticle},
             populate:{
-                path:e_field.USER.ARTICLE_COMMENTS_ID,
+                path:e_field.ARTICLE_COMMENT.AUTHOR_ID,
                 // match:{},
                 // select:`{id:0, ${e_field.ARTICLE_ATTACHMENT.NAME}:1, ${e_field.ARTICLE_ATTACHMENT.HASH_NAME}:1}`,
-                select:`${e_field.ARTICLE_COMMENT.AUTHOR_ID} ${e_field.ARTICLE_COMMENT.CONTENT} `, //${e_field.ARTICLE_ATTACHMENT.HASH_NAME}是为了防止文件名冲突，导致文件覆盖，无需传递到前端
-                options:{limit:maxNumber.article.attachmentNumberPerArticle},
+                select:`${e_field.USER.PHOTO_DATA_URL} ${e_field.USER.NAME} `, //${e_field.ARTICLE_ATTACHMENT.HASH_NAME}是为了防止文件名冲突，导致文件覆盖，无需传递到前端
+                // options:{limit:maxNumber.article.attachmentNumberPerArticle},
             },
         })
     }
@@ -179,6 +185,9 @@ async function businessLogic_async({articleId,forUpdate}){
         return Promise.reject(controllerError.get.articleNotExist)
     }
     //读取他人文档，状态必须为public(读取自己文档，无需检查)
+    // ap.inf('forUpdate',forUpdate)
+    // ap.inf('result[e_field.ARTICLE.STATUS]',result[e_field.ARTICLE.STATUS])
+    // ap.inf('e_articleStatus.FINISHED',e_articleStatus.FINISHED)
     if(false===forUpdate && result[e_field.ARTICLE.STATUS]!==e_articleStatus.FINISHED){
         return Promise.reject(controllerError.get.articleEditing)
     }

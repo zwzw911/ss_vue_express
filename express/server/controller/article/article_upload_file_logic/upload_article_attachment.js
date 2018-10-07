@@ -181,7 +181,7 @@ async function uploadArticleAttachment_async({req}){
         [e_resourceFieldName.DISK_USAGE_SIZE_IN_MB]:totalFileSize,
         [e_resourceFieldName.FILE_ABS_PATH]:filesPath,
     }
-    // ap.inf('requiredResource',requiredResource)
+    ap.inf('requiredResource',requiredResource)
     /*              获得用户当前的所有资源配置，并检查当前占用的资源（磁盘空间）+文件的资源（sizeInMB）后，还小于==>所有<==的资源配置（）                         */
     let resourceProfileRangeToBeCheck=[e_resourceRange.ATTACHMENT_PER_ARTICLE,e_resourceRange.WHOLE_FILE_RESOURCE_PER_PERSON]
     await resourceCheck.ifEnoughResource_async({requiredResource:requiredResource,resourceProfileRange:resourceProfileRangeToBeCheck,userId:userId,containerId:recordId})

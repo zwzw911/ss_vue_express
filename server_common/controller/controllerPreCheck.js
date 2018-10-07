@@ -117,20 +117,6 @@ function inputPreCheck({req,expectedPart,collName,arr_currentSearchRange,applyRa
             return preCheckError.inputPreCheck.undefinedColl
         }
 
-        // ap.inf('collValue done')
-        //检查输入参数中part的值（格式预先检查好，某些part的值简单。例如method/currentPage，同时检测了value）
-/*        result = inputCommonCheck({req:req, expectedPart:expectedPart})
-        // inputCommonCheck({req,expectedPart})
-        if (result.rc > 0) {
-            return result
-        }*/
-
-        //检查输入参数格式是否正确
-        // ap.inf('expectedPart',expectedPart)
-        // ap.inf('collName',collName)
-        // ap.inf('method',method)
-        // ap.inf('fkConfig',fkConfig)
-        // ap.inf('arr_currentSearchRange',arr_currentSearchRange)
         result = validatePartValueFormat({
             req: req,
             expectedPart: expectedPart,
@@ -425,7 +411,7 @@ async function checkObjectIdInReqParams_async({req,parameterName,cryptedError,de
     }
     //解密后的object替换加密值，以后后续直接使用
     req.params[parameterName]=tmpResult.msg
-    // ap.inf('decryptedObjectId',req.params.folderId)
+    // ap.inf('decryptedObjectId',req.params[parameterName])
     //判断解密的objectId
     if(false===regex.objectId.test(req.params[parameterName])){
         return Promise.reject(decryptedError)

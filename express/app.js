@@ -151,6 +151,10 @@ app.use('/public_group', public_group);
 app.use('/join_public_group_request', join_public_group_request);
 app.use('/folder',folder)
 
+const routerOnly=require('./routerOnly').router
+app.use('/',routerOnly)
+
+
 // app.use('/register/uniqueCheck', register);
 // app.use('/users', users);
 
