@@ -29,6 +29,7 @@ const controllerError={
     /**              logic                           **/
     create:{
         unExpectedInputFiled:{rc:51440,msg:`输入字段有误`},
+        userNoDefaultFolder:{rc:51442,msg:`无默认目录`},
     },
     update:{
         unExpectedInputFiled:{rc:51450,msg:`输入字段有误`},

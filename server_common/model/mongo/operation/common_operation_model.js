@@ -270,7 +270,7 @@ async function readName({dbModel,readNameField,nameToBeSearched,recorderLimit=10
 //作为外键时，是否存在(存在放回doc，否则返回null)
 //selectedFields:'-cDate -uDate -dDate'
 //populateOpt:数组，以便确定使用几次populate
-async function findById_returnRecord_async({dbModel,id,selectedFields='-cDate -uDate -dDate',populateOpt}){
+async function findById_returnRecord_async({dbModel,id,selectedFields='-dDate',populateOpt}){
     // console.log(`find by id :${id}`)
     // ap.inf('populateOpt',populateOpt)
     let result

@@ -257,10 +257,10 @@ async function uploadDataUrlPhoto_async({req}){
     // ap.inf('fileAbsPath',fileAbsPath)
 
     let inst=gmImage.initImage(fileAbsPath)
-    ap.inf('inst done',inst)
+    // ap.inf('inst done',inst)
     //检查size(width&&height)不符合，直接返回错误（而不是试图转换）,因为在client已经确保了height和width的正确
     tmpResult=await gmImage.getImageProperty_async(inst,e_gmGetter.SIZE)
-    ap.inf('size',tmpResult)
+    // ap.inf('size',tmpResult)
     // ap.inf('userPhotoConfiguration',userPhotoConfiguration)
     if(tmpResult.width>userPhotoConfiguration.maxWidth || tmpResult.height>userPhotoConfiguration.maxHeight){
         fs.unlinkSync(fileAbsPath)

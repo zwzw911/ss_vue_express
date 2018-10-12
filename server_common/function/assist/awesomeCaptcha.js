@@ -148,7 +148,8 @@ async function captcha_async({params,captchaString}){
 
         let characterSpacing=0//Math.round(realCharacterWidth/4); //ps, the spacing between current char and next char, this is a constant
 
-        let color=["rgb(255,165,0)","rgb(16,78,139)","rgb(0,139,0)","rgb(255,0,0)"];
+        // let color=["rgb(255,165,0)","rgb(16,78,139)","rgb(0,139,0)","rgb(255,0,0)"];
+        let color=["rgb(16,78,139)"]; //深蓝色
         let bgColor='rgba(255,255,255,0)'; //背景透明
         let borderColor='rgb(153, 102, 102)';
 

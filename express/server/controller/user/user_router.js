@@ -118,7 +118,7 @@ router.delete('/logout',function(req,res,next){
     )
 })
 router.post('/uploadUserPhoto',function(req,res,next){
-    ap.inf('post upload user photo in')
+    // ap.inf('post upload user photo in')
     userDispatcher_async(req).then(
         (v)=>{
             ap.inf(`upload photo  success, result:  ${JSON.stringify(v)}`)

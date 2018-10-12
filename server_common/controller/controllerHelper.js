@@ -1207,7 +1207,7 @@ async  function genCaptchaAdnSave_async({req,params,db=2}){
 // ap.inf('params',params)
 //     ap.inf('db',db)
 // ap.inf('interval done')
-    let captchaString=misc.generateRandomString({})
+    let captchaString=misc.generateRandomString({type:'captcha'})//去除 0o1l等容易混淆的字符
     // ap.inf('captchaString',captchaString)
     //获得session或者ip
     let userIdentify=await misc.getIdentify_async({req:req})

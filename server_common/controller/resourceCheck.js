@@ -136,8 +136,9 @@ function ifNumExceed({currentUsedNum,requiredNum,resourceProfileRecord}){
 * return: boolean
 * */
 async function ifEnoughResource_async({requiredResource,resourceProfileRange,userId,containerId}){
-    ap.inf('requiredResource',requiredResource)
-    ap.inf('resourceProfileRange',resourceProfileRange)
+    // ap.inf('requiredResource',requiredResource)
+    // ap.inf('resourceProfileRange',resourceProfileRange)
+    // ap.inf('userId',userId)
     for(let singleResourceProfileRange of resourceProfileRange){
         // ap.inf('singleResourceProfileRange',singleResourceProfileRange)
         //1. 根据resourceProfileRange获得对应的当前可用的 资源配置文件（valid resourceProfile）

@@ -13,7 +13,8 @@ const TimeUnit={
 const RandomStringType={
     BASIC:'basic',
     NORMAL:'normal',
-    COMPLICATED:'complicated'
+    COMPLICATED:'complicated',
+    CAPTCHA:'captcha',//需要去除1l0Oo等容易混淆的字符
 }
 
 const UserState={

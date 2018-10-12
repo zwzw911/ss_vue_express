@@ -87,13 +87,12 @@ async  function createArticle_async({req,applyRange}){
 
     //新建且未做过任何更新的文档
     docValue[e_field.ARTICLE.STATUS]=e_articleStatus.NEW
-    //查找默认目录
-    /*    tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.folder,condition:{authorId:userId,name:'我的文档'}})
-        if(tmpResult.length===0){
-            return Promise.reject(controllerError.create.userNoDefaultFolder)
-        }*/
-    /**         无需默认目录，默认不放在任何目录下       **/
-    // docValue[e_field.ARTICLE.FOLDER_ID]=tmpResult[0]['id']
+    //查找默认目录（否则界面上无法更新）
+    tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.folder,condition:{authorId:userId,name:'我的文档'}})
+    if(tmpResult.length===0){
+        return Promise.reject(controllerError.create.userNoDefaultFolder)
+    }
+    docValue[e_field.ARTICLE.FOLDER_ID]=tmpResult[0]['id']
     /**         无需默认分类       **/
     // docValue[e_field.ARTICLE.CATEGORY_ID]=e_iniSettingObject.category.other
     docValue[e_field.ARTICLE.HTML_CONTENT]=`<i>请在此输入文档内容......</i>`

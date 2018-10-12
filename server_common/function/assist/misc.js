@@ -125,6 +125,9 @@ function generateRandomString({len=4,type=e_randomStringType.NORMAL}){
     let basicString='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
     //console.log(`misc==>e_randomStringType is ${JSON.stringify(type)}`)
     switch (type){
+        case e_randomStringType.CAPTCHA:
+            validString='23456789ABCDEFGHIJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz'
+            break;
         case e_randomStringType.BASIC:
             validString=basicString
             break;
