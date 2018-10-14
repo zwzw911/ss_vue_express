@@ -313,9 +313,12 @@ async function findById_returnRecord_async({dbModel,id,selectedFields='-dDate',p
             })*/
         // ap.inf('before populate result',result)
         while (populateLength>0){
+            // ap.inf('before popul;te reult',result)
             // ap.inf('populateOpt[populateLength-1]',populateOpt[populateLength-1])
             result=await result.populate(populateOpt[populateLength-1])
+            // ap.inf(`the ${populateLength} times result`,result)
             populateLength--
+
         }
         // ap.inf('populate result',result)
         result=result.execPopulate().catch(

@@ -9,6 +9,7 @@ const mongoose=require('mongoose');
 const fs=require('fs')
 const regex=require('../../../../constant/regex/regex').regex
 const connectedDb=require('../../common/connection_admin').dbAdmin;
+// const connectedDb=require('../../common/connection').dbSS;
 const ap=require('awesomeprint')
 //使用ES6的promise
 //mongoose.Promise=Promise

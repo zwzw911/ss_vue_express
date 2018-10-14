@@ -41,7 +41,7 @@ const collName='article_attachment'
 const collFieldDefine={
     name:{type:String,},
     hashName:{type:String,},
-    pathId:{type:mongoose.Schema.Types.ObjectId,ref:"path"},
+    pathId:{type:mongoose.Schema.Types.ObjectId,ref:"store_path"},
     sizeInMb:{type:Number}, //
     articleId:{type:mongoose.Schema.Types.ObjectId,ref:'article'},
     authorId:{type:mongoose.Schema.Types.ObjectId,ref:"user"}, //

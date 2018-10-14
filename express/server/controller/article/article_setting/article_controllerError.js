@@ -11,6 +11,10 @@ const controllerError={
             userInPenalizeCantGetArticle:{rc:50202,msg:`管理员禁止读取文档`},
             cryptedArticleIdFormatInvalid:{rc:50204,msg:`文档编号不正确`},
             decryptedArticleIdFormatInvalid:{rc:50206,msg:`文档编号不正确`},
+            notLoginCantDownloadAttachment:{rc:50207,msg:`尚未登录，无法下载附件`},
+            cryptedAAttachmentIdFormatInvalidCantDownload:{rc:50208,msg:`附件编号格式错误，无法下载`},
+            decryptedAttachmentIdFormatInvalidCantDownload:{rc:50209,msg:`附件编号格式错误，无法下载`},
+
         },
         'post':{
             notLoginCantCreateArticle:{rc:50210,msg:`尚未登录，无法创建文档`},
@@ -70,6 +74,10 @@ const controllerError={
         notAuthorCantGetFolder:{rc:50280,msg:`非文档作者，无法更新文档`},
         articleNotExist:{rc:50282,msg:`文档不存在`},
         articleEditing:{rc:50284,msg:`文档更新中，无法读取`},
+    },
+    //50290~50299
+    download:{
+        attachmentNotExist:{rc:50290,msg:`附件不存在`},
     },
     // userNotLoginCantUpdate:{rc:50208,msg:`用户尚未登录，无法更改文档`},
     // userInPenalizeNoArticleUpdate:{rc:50209,msg:`管理员禁止更新文档`},

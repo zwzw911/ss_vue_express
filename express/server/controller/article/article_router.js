@@ -186,6 +186,31 @@ router.post('/articleAttachment/:articleId',function(req,res,next){
         }
     )
 })
+/***    下载附件    ***/
+router.get('/articleAttachment/:attachmentId',function(req,res,next){
+// ap.inf('upload Attachment in')
+    article_dispatcher_async({req:req}).then(
+        (v)=>{
+            if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV){
+                console.log(`articleAttachment download success, result:  ${JSON.stringify(v)}`)
+            }
+
+            //clieng端，只需要将URL设置成标签a的href即可（axios只返回文件内容，且无法被浏览器识别为文件）
+            return res.download(v.msg.path,v.msg.fileName)
+            // return res.json({rc:0,msg:{fileContent}})
+                // ,{headers:{'Content-Type':'arraybuffer','Content-Disposition':'attachment'}
+        },
+        (err)=>{
+            if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV){
+                // console.log(`articleAttachment upload fail: ${JSON.stringify(err)}`)
+                ap.wrn('articleAttachment download fail: ',err)
+            }
+
+            return res.json(genFinalReturnResult(err))
+        }
+    )
+})
+/***    删除附件    ***/
 router.delete('/articleAttachment',function(req,res,next){
 
     article_dispatcher_async({req:req}).then(

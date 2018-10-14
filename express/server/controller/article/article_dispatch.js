@@ -54,6 +54,7 @@ const getArticle_async=require('./article_logic/get_article').normalGetArticle_a
 const getMainPageArticle_async=require('./article_logic/search_article').getMainPArticle_async
 const getUpdateArticle_async=require('./article_logic/get_article').getArticleFroUpdate_async
 
+const downloadArticleAttachment_async=require('./article_upload_file_logic/download_article_attachment').downloadArticleAttachment_async
 const uploadArticleImage_async=require('./article_upload_file_logic/upload_article_image').uploadArticleImage_async
 const uploadArticleAttachment_async=require('./article_upload_file_logic/upload_article_attachment').uploadArticleAttachment_async
 const deleteArticleAttachment_async=require('./article_upload_file_logic/delete_article_attachment').deleteArticleAttachment_async
@@ -99,8 +100,6 @@ async function article_dispatcher_async({req}) {
                 }
                 /**     读取他人文档        **/
                 let otherArticleUrl=new RegExp(`/article/[0-9a-fA-F]{64}/?`)
-                // ap.inf('otherArticleUrl',otherArticleUrl)
-                // ap.inf('otherArticleUrl.test(originalUrl)',otherArticleUrl.test(originalUrl))
                 if (true===otherArticleUrl.test(originalUrl)) {
                     //检测url中objectId并解密
                     await controllerPreCheck.checkObjectIdInReqParams_async({req:req,parameterName:'articleId',cryptedError:controllerError.dispatch.get.cryptedArticleIdFormatInvalid,decryptedError:controllerError.dispatch.get.decryptedArticleIdFormatInvalid})
@@ -128,7 +127,29 @@ async function article_dispatcher_async({req}) {
                     result = await getUpdateArticle_async({req: req})
                     return Promise.resolve(result)
                 }
+                /**             下载附件        **/
+                if (-1!==originalUrl.search('/article/articleAttachment/')) {
+                    //登录才能下载附件
+                    userLoginCheck = {
+                        needCheck: true,
+                        error: controllerError.dispatch.get.notLoginCantDownloadAttachment
+                    }
+                    /*penalizeCheck = {
+                        penalizeType: e_penalizeType.NO_ARTICLE,
+                        penalizeSubType: e_penalizeSubType.UPDATE,
+                        penalizeCheckError: controllerError.dispatch.put.userInPenalizeCantUpdateArticle
+                    }*/
+                    await controllerPreCheck.userStateCheck_async({req: req,userLoginCheck: userLoginCheck,penalizeCheck: penalizeCheck})
+    // ap.inf('userStateCheck_async done')
+                    //检测url中objectId并解密objectId
+                    await controllerPreCheck.checkObjectIdInReqParams_async({req:req,parameterName:'attachmentId',cryptedError:controllerError.dispatch.get.cryptedAAttachmentIdFormatInvalidCantDownload,decryptedError:controllerError.dispatch.get.decryptedAttachmentIdFormatInvalidCantDownload})
+                    // ap.inf('checkObjectIdInReqParams_async done')
+                    result = await downloadArticleAttachment_async({req: req})
+                    // ap.inf('result done',result)
+                    return Promise.resolve(result)
+                }
             }
+
             break;
         case 'post':
             if (baseUrl === '/article' || baseUrl === '/article/') {

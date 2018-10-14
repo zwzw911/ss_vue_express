@@ -29,7 +29,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 // ap.inf('bodyParser.urlencoded done')
 app.use(cookieParser());
 app.set('trust proxy',appSetting['trust_proxy'])
-// app.use(express.static(path.join(__dirname, 'public')));
+// app.use(express.static(path.join(__dirname, '../test_data/tmp/')));
 
 // app.set('views', path.join(__dirname, 'server/views'));
 // app.set('view engine', 'ejs');
