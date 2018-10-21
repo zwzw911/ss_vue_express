@@ -43,6 +43,7 @@ const controllerSetting=require('./user_friend_group_setting/user_friend_group_s
 
 
 /*                          controller                          */
+const getUserFriendGroup_async=require('./user_friend_group_logic/get_user_friend_group').getUserFriendGroup_async
 const create_async=require('./user_friend_group_logic/create_user_friend_group').createUserFriendGroup_async
 const update_async=require('./user_friend_group_logic/update_user_friend_group').updateUserFriendGroup_async
 // const updateSubFieldOnly_async=require('./user_friend_group_logic/update_user_friend_group_sub_field_only').updateUserFriendGroup_async
@@ -79,6 +80,16 @@ async function dispatcher_async({req}){
     /***   2. 根据method，以及url，进行对应的检查，最后调用处理函数   ***/
     /**    检查包括：用户是否登录/用户是否被处罚/输入值的格式和范围是否正确（POST/PUT） **/
     switch (req.route.stack[0].method) {
+        case 'get':
+            if(originalUrl===baseUrl){
+                userLoginCheck = {
+                    needCheck: true,
+                    error: controllerError.dispatch.get.notLoginCantGetUserFriendGroup
+                }
+                await controllerPreCheck.userStateCheck_async({req: req,userLoginCheck: userLoginCheck,penalizeCheck: penalizeCheck})
+                return await getUserFriendGroup_async({req: req})
+            }
+            break;
         case 'post':
             applyRange = e_applyRange.CREATE
             if (baseUrl === `/${expectedBaseUrl}` || baseUrl === `/${expectedBaseUrl}/`) {

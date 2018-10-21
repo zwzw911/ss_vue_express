@@ -1,0 +1,20 @@
+#%RAML 1.0
+title: friend group
+baseUri: http://127.0.0.1
+mediaType: application/json
+protocols: [HTTP,HTTPS]
+version:1.0
+/user_friend_group:
+  displayName: friend group
+  get:
+    description: |
+      获得当前用户所有的friend group
+      用户必须已经登录
+    responses:
+      200:
+        body:
+          application/json:
+            example: |
+              [
+                {"name":"SG7", "id":"5bc57d18c7ea6262dcf2fbbc"}
+              ]

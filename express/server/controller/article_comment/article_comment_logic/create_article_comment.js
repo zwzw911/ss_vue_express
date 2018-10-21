@@ -42,9 +42,7 @@ const e_resourceFieldName=nodeEnum.ResourceFieldName
 
 const e_articleStatus=mongoEnum.ArticleStatus.DB
 const e_docStatus=mongoEnum.DocStatus.DB
-const e_impeachType=mongoEnum.ImpeachType.DB
-const e_impeachUserAction=mongoEnum.ImpeachUserAction.DB
-const e_impeachState=mongoEnum.ImpeachState.DB
+const e_articleAllowComment=mongoEnum.ArticleAllowComment.DB
 const e_allUserType=mongoEnum.AllUserType.DB
 const e_resourceRange=mongoEnum.ResourceRange.DB
 
@@ -92,6 +90,8 @@ async  function createArticleComment_async({req,applyRange}){
     // ap.inf('用户类型检测 done')
 
 
+
+
     /**********************************************/
     /**  CALL FUNCTION:inputValueLogicValidCheck **/
     /**********************************************/
@@ -115,18 +115,18 @@ async  function createArticleComment_async({req,applyRange}){
     await controllerInputValueLogicCheck.inputValueLogicValidCheck_async({commonParam:commonParam,stepParam:stepParam})
 
     /**********************************************/
-    /***********    特定检查(在fk检查中被检出)       **************/
+    /***********    特定检查(文档状态的检查在fkConfig中设定，通过inputValueLogicValidCheck_async检查)       **************/
     /*********************************************/
-/*    //article状态必须是FINISN且字段ALLOW_COMMENT为true
+    //article状态必须是FINISN且字段ALLOW_COMMENT为true
     let articleRecord=await common_operation_model.findById_returnRecord_async({dbModel:e_dbModel.article,id:articleId})
-    if(e_articleStatus.FINISHED!==articleRecord[e_field.ARTICLE.STATUS] || false===articleRecord[e_field.ARTICLE.ALLOW_COMMENT]){
-        return Promise.reject(controllerError.create.cantCommentArticle)
-    }*/
+    if(e_articleAllowComment.Forbid===articleRecord[e_field.ARTICLE.ALLOW_COMMENT]){
+        return Promise.reject(controllerError.create.forbidCommentArticle)
+    }
 
     /**********************************************/
     /***********    逻辑操作       **************/
     /*********************************************/
-    let createdRecord=await businessLogic_async({docValue:docValue,collName:collName,userId:userId,applyRange:applyRange})
+    let createdRecord=await businessLogic_async({docValue:docValue,collName:collName,userId:userId,articleId:articleId,applyRange:applyRange})
 
     /*********************************************/
     /**********      删除指定字段       *********/
@@ -146,7 +146,7 @@ async  function createArticleComment_async({req,applyRange}){
 /*************************************************************/
 /***************   业务处理    *******************************/
 /*************************************************************/
-async function businessLogic_async({docValue,collName,userId,applyRange}){
+async function businessLogic_async({docValue,collName,userId,articleId,applyRange}){
     let internalValue={}
     internalValue[e_field.ARTICLE_COMMENT.AUTHOR_ID]=userId
     if(e_env.DEV===currentEnv && Object.keys(internalValue).length>0){
@@ -177,11 +177,20 @@ async function businessLogic_async({docValue,collName,userId,applyRange}){
     }
 
     /*******************************************************************************************/
-    /*                                  db operation                                           */
+    /**                                  db operation                                         **/
     /*******************************************************************************************/
     let createdRecord= await common_operation_model.create_returnRecord_async({dbModel:e_dbModel[collName],value:docValue})
     // console.log(`create result is ====>${JSON.stringify(tmpResult)}`)
     // console.log(`db op done=========>`)
+    /*********************/
+    /** 关联表更新    ***/
+    /********************/
+    if(undefined!==createdRecord['id']){
+        ap.inf('createdRecord[\'id\']',createdRecord['id'])
+        let updateValue={$push:{[e_field.ARTICLE.ARTICLE_COMMENTS_ID]:createdRecord['id']}}
+        let result=await common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel.article,id:articleId,updateFieldsValue:updateValue})
+        ap.inf('result',result)
+    }
     return Promise.resolve(createdRecord.toObject())
 }
 module.exports={

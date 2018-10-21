@@ -50,8 +50,8 @@ const maxNum=server_common_file_require.globalConfiguration.maxNumber
 /*************************************************************/
 /**********              获得主页文档             ***********/
 /*************************************************************/
-async function getMainPageArticle_async({req}){
-    // ap.inf('getMainPageArticle_async in')
+async function getLatestArticle_async({req}){
+    // ap.inf('getLatestArticle_async in')
     /********************************************************/
     /*************      define variant        ***************/
     /********************************************************/
@@ -62,7 +62,7 @@ async function getMainPageArticle_async({req}){
     // let docValue=req.body.values[e_part.RECORD_INFO]
     // ap.inf('docValue',docValue)
     let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
-    // ap.inf('userInfo',userInfo)
+    ap.inf('userInfo',userInfo)
     let {userId,userCollName,userType,userPriority,tempSalt}=userInfo
     // let recordId=req.params['articleId']
 // ap.wrn('recordId',recordId)
@@ -83,32 +83,34 @@ async function getMainPageArticle_async({req}){
         let keepFields=[
             'id',
             e_field.ARTICLE.NAME,
-            e_field.ARTICLE.STATUS,
+            /*e_field.ARTICLE.STATUS,
             e_field.ARTICLE.TAGS,
             e_field.ARTICLE.HTML_CONTENT,
             e_field.ARTICLE.AUTHOR_ID,
             // e_field.ARTICLE.ARTICLE_ATTACHMENTS_ID,
             // e_field.ARTICLE.ARTICLE_IMAGES_ID,
-            e_field.ARTICLE.CATEGORY_ID,
+            e_field.ARTICLE.CATEGORY_ID,*/
             // e_field.ARTICLE.ARTICLE_COMMENTS_ID
         ]
-        //那些字段是被populate过的，以便对其中的objectId字段进行加解密
+        /*//那些字段是被populate过的，以便对其中的objectId字段进行加解密
         let populateFields=[
             {
             fieldName:e_field.ARTICLE.AUTHOR_ID,
             fkCollName:e_coll.USER,},
-        ]
+        ]*/
         for(let idx in getRecord){
             /*********************************************/
             /********    删除（保留）指定字段     *******/
             /*********************************************/
+            // ap.inf('before keep',getRecord[idx])
             controllerHelper.keepFieldInRecord({record:getRecord[idx],fieldsToBeKeep:keepFields})
+            // ap.inf('after keep',getRecord[idx])
             /*********************************************/
             /**********      加密 敏感数据       *********/
             /*********************************************/
-            // ap.inf('before cryote',getRecord)
-            controllerHelper.cryptRecordValue({record:getRecord[idx],salt:tempSalt,collName:e_coll.ARTICLE,populateFields:populateFields})
-            // ap.inf('after cryote',getRecord)
+            // ap.inf('before cryote',getRecord[idx])
+            controllerHelper.cryptRecordValue({record:getRecord[idx],salt:tempSalt,collName:e_coll.ARTICLE,populateFields:undefined})
+            // ap.inf('after cryote',getRecord[idx])
 
         }
     }
@@ -124,14 +126,12 @@ async function getMainPageArticle_async({req}){
 /**************************************/
 async function businessLogic_async({}){
     /***        数据库操作            ****/
-    let condition={
-        [e_field.ARTICLE.STATUS]:e_articleStatus.FINISHED
-    }
+    let condition={}
     let options={
         sort:{'cDate':-1},
         limit:5,
     }
-    let populateOpt=[
+    /*let populateOpt=[
         {
             path:e_field.ARTICLE.AUTHOR_ID,
             // match:{},
@@ -139,9 +139,9 @@ async function businessLogic_async({}){
             select:`${e_field.USER.NAME} ${e_field.USER.PHOTO_DATA_URL}`, //${e_field.ARTICLE_ATTACHMENT.HASH_NAME}是为了防止文件名冲突，导致文件覆盖，无需传递到前端
             // options:{limit:maxNumber.article.attachmentNumberPerArticle},
         },
-    ]
+    ]*/
     // ap.inf('populateOpt',populateOpt)
-    let result=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.article,condition:condition,options:options,populateOpt:populateOpt})
+    let result=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.article,condition:condition,options:options,populateOpt:undefined})
 // ap.inf('result',result)
 
     if(result.length>0){
@@ -152,11 +152,11 @@ async function businessLogic_async({}){
             result[idx]=result[idx].toObject()
             // ap.inf('after result[idx]',result[idx])
             //每个被populate的字段，需要删除多余的_id字段
-            if(undefined!==populateOpt && populateOpt.length>0){
+/*            if(undefined!==populateOpt && populateOpt.length>0){
                 for(let singlePopulateOpt of populateOpt){
                     delete result[idx][singlePopulateOpt['path']]['_id']
                 }
-            }
+            }*/
         }
     }
     return Promise.resolve(result)
@@ -167,5 +167,5 @@ async function businessLogic_async({}){
 
 
 module.exports={
-    getMainPageArticle_async,
+    getLatestArticle_async,
 }

@@ -1254,61 +1254,81 @@ async function getCaptchaAndCheck_async({req,db=2}){
 //对单个记录的值(主要是objectId)进行加密
 //record必须是object，可能需要.toObject()方法转换
 //inputRule已经require，无需参数传递
-function cryptDecryptSingleRecord({record,collName,salt,cryptDecryptType}){
+//populateFields:只有crypt时才使用
+function cryptDecryptSingleRecord({record,collName,salt,populateFields,cryptDecryptType}){
     let collRule=inputRule[collName]
     for(let singleFieldName in record){
-        let currentFieldIsArray=false
-        //当前，只对objectId的数据进行加解密
-        let objectIdFlag=false
+        //初始，字段既不是objectId，也不是array
+        let fieldDataTypeIsArray=false
+        let fieldDataTypeIsObjectId=false
+
+        //_id活着id，说明是objectId，但不是array
         if( 'id'===singleFieldName || '_id'===singleFieldName){
-            objectIdFlag=true
-        }
-        //读取rule中字符类型的定义，预判断是否为objectId（要加密/加密）
-        if(undefined!==collRule[singleFieldName] && undefined!==collRule[singleFieldName][e_otherRuleFiledName.DATA_TYPE] ){
-            let fieldRuleDefinition=collRule[singleFieldName][e_otherRuleFiledName.DATA_TYPE]
-            currentFieldIsArray=dataTypeCheck.isArray(fieldRuleDefinition)
-            let fieldDataType=currentFieldIsArray ? fieldRuleDefinition[0]:fieldRuleDefinition
-            // ap.inf('fieldDataType',fieldDataType)
-            if(e_serverDataType.OBJECT_ID===fieldDataType){
-                // ap.inf('fieldDataType is objId')
-                objectIdFlag=true
+            fieldDataTypeIsObjectId=true
+        }else{
+            //否则，需要通过读取rule中字符类型的定义，预判断是否为objectId（要加密/加密），是否为array
+            if(undefined!==collRule[singleFieldName] && undefined!==collRule[singleFieldName][e_otherRuleFiledName.DATA_TYPE] ){
+                let fieldRuleDefinition=collRule[singleFieldName][e_otherRuleFiledName.DATA_TYPE]
+                fieldDataTypeIsArray=dataTypeCheck.isArray(fieldRuleDefinition)
+                let fieldDataType=fieldDataTypeIsArray ? fieldRuleDefinition[0]:fieldRuleDefinition
+                // ap.inf('fieldDataType',fieldDataType)
+                if(e_serverDataType.OBJECT_ID===fieldDataType){
+                    // ap.inf('fieldDataType is objId')
+                    fieldDataTypeIsObjectId=true
+                }
             }
         }
 
+
+
         //根据实际字段值进行处理（rule中定义为Object，可能实际被populate成一个记录，需要对记录中每个值进行再次判断）
-        if(true===objectIdFlag && undefined!==record[singleFieldName]){
-            if(cryptDecryptType==='crypt'){
-                // ap.inf('cryptSingleFieldValue({fieldValue:record[singleFieldName]}).msg',cryptSingleFieldValue({fieldValue:record[singleFieldName]}).msg)
-                if(true===currentFieldIsArray){
-                    for(let idx in record[singleFieldName]){
-                        //数组元素是objectId，直接加解密
-                        if(ifExactObjectId(record[singleFieldName][idx])){
-                            record[singleFieldName][idx]=cryptSingleFieldValue({fieldValue:record[singleFieldName][idx],salt:salt}).msg
-                            continue
-                        }
-                        //数组元素是object，遍历每个元素，
-                        if(typeof record[singleFieldName][idx] === 'object' && record[singleFieldName][idx]!==null && Object == record[singleFieldName][idx].constructor){
-                            // cryptDecryptSingleRecord({record:,collName,salt,cryptDecryptType})
-                            let ele=record[singleFieldName][idx]
-                            for(let singleEleField in ele){
-                                // ap.inf(` ${singleEleField}`)
-                                // ap.inf(` type pf value}`, typeof ele[singleEleField])
-                                // ap.inf('value',ele[singleEleField])
-                                // ap.inf('typeof value === \'string\'',typeof ele[singleEleField] === 'string')
-                                // ap.inf('regex.objectId.test(value)',regex.objectId.test(ele[singleEleField]))
-                                if(ifExactObjectId(ele[singleEleField])){
-
-                                    ele[singleEleField]=cryptSingleFieldValue({fieldValue:ele[singleEleField],salt:salt}).msg
-                                }
-                            }
-                        }
+        if(true===fieldDataTypeIsObjectId && undefined!==record[singleFieldName]){
+            let fieldPopulated=false //记录字段是否被populate了
+            if(undefined!==populateFields ){
+                for(let singlePopulateEle of populateFields){
+                    if(singlePopulateEle['fieldName']===singleFieldName){
+                        fieldPopulated=true
+                        break
                     }
-                }else{
-                    if(ifExactObjectId(record[singleFieldName])){
-                        record[singleFieldName]=cryptSingleFieldValue({fieldValue:record[singleFieldName],salt:salt}).msg
-                    }
-
                 }
+            }
+
+
+            if(cryptDecryptType==='crypt'){
+                //未被populate的field，才进行加解密
+                if(false===fieldPopulated){
+                    if(true===fieldDataTypeIsArray){
+                        for(let idx in record[singleFieldName]){
+                            //数组元素是objectId，并未populate，直接加解密
+                            if(ifExactObjectId(record[singleFieldName][idx])){
+                                record[singleFieldName][idx]=cryptSingleFieldValue({fieldValue:record[singleFieldName][idx],salt:salt}).msg
+                                continue
+                            }
+                            /*//数组元素是object（已经被populate），遍历每个元素，
+                            if(typeof record[singleFieldName][idx] === 'object' && record[singleFieldName][idx]!==null && Object == record[singleFieldName][idx].constructor){
+                                // cryptDecryptSingleRecord({record:,collName,salt,cryptDecryptType})
+                                let ele=record[singleFieldName][idx]
+                                for(let singleEleField in ele){
+                                    // ap.inf(` ${singleEleField}`)
+                                    // ap.inf(` type pf value}`, typeof ele[singleEleField])
+                                    // ap.inf('value',ele[singleEleField])
+                                    // ap.inf('typeof value === \'string\'',typeof ele[singleEleField] === 'string')
+                                    // ap.inf('regex.objectId.test(value)',regex.objectId.test(ele[singleEleField]))
+                                    if(ifExactObjectId(ele[singleEleField])){
+
+                                        ele[singleEleField]=cryptSingleFieldValue({fieldValue:ele[singleEleField],salt:salt}).msg
+                                    }
+                                }
+                            }*/
+                        }
+                    }else{
+                        if(ifExactObjectId(record[singleFieldName])){
+                            record[singleFieldName]=cryptSingleFieldValue({fieldValue:record[singleFieldName],salt:salt}).msg
+                        }
+
+                    }
+                }
+
 
             }
             if(cryptDecryptType==='decrypt'){
@@ -1318,7 +1338,7 @@ function cryptDecryptSingleRecord({record,collName,salt,cryptDecryptType}){
                 if(false===dataTypeCheck.isString(record[singleFieldName]) || false===regex.cryptedObjectId.test(record[singleFieldName])){
                     return helperError.cryptDecryptSingleRecord.encryptedObjectIdInvalid
                 }
-                if(true===currentFieldIsArray){
+                if(true===fieldDataTypeIsArray){
                     for(let idx in record[singleFieldName]){
                         //数组元素是objectId，直接加解密
                         if(true===ifExactCryptedObjectId(record[singleFieldName][idx])){
@@ -1338,6 +1358,23 @@ function cryptDecryptSingleRecord({record,collName,salt,cryptDecryptType}){
     return {rc:0}
 }
 
+/*
+* records：可以是单一记录（对象），或者数组（对象）
+* */
+function cryptDecryptRecord({records,collName,salt,populateFields,cryptDecryptType}){
+    if(undefined!==records && null!==records){
+        if(true===dataTypeCheck.isArray(records)){
+            //records是数组
+            for(let singleRecord of records){
+                cryptDecryptSingleRecord({record:singleRecord,collName:collName,salt:salt,populateFields:populateFields,cryptDecryptType:cryptDecryptType})
+            }
+        }else{
+            //records是单条记录
+            cryptDecryptSingleRecord({record:records,collName:collName,salt:salt,populateFields:populateFields,cryptDecryptType:cryptDecryptType})
+        }
+    }
+
+}
 //辅助函数，值是否为objectId
 function ifExactObjectId(value){
     // typeof value === 'string' &&
@@ -1347,15 +1384,44 @@ function ifExactCryptedObjectId(value){
     return typeof value === 'string' && true===regex.cryptedObjectId.test(value)
 }
 
+/*
+* populateFields：指明单条记录中，那些字段是被populate的，需要检查是否有id，进行加解密
+* [{fieldName:string,fkCollName:string}]
+* */
 function cryptRecordValue({record,collName,salt,populateFields}){
+    //首先，对本记录进行crypt
+    cryptDecryptSingleRecord({
+        record:record,
+        salt:salt,
+        collName:collName,
+        populateFields:populateFields,
+        cryptDecryptType:'crypt'
+    })
+    //对本记录的populate字段进行crypt
     if(undefined!==populateFields && populateFields.length>0){
-        ap.inf('populateFields',populateFields)
+        // ap.inf('populateFields',populateFields)
         for(let singlePopulateField of populateFields){
-            ap.inf('singlePopulateField',singlePopulateField)
-            cryptDecryptSingleRecord({record:record[singlePopulateField['fieldName']],salt:salt,collName:singlePopulateField['fkCollName'],cryptDecryptType:'crypt'})
+            // ap.inf('singlePopulateField',singlePopulateField)
+            cryptDecryptRecord({
+                records:record[singlePopulateField['fieldName']],
+                salt:salt,
+                collName:singlePopulateField['fkCollName'],
+                populateFields:singlePopulateField['child'],
+                cryptDecryptType:'crypt'
+            })
+/*            //对本记录的populate字段中populate字段进行crypt
+            if(undefined!==singlePopulateField['child']){
+                cryptDecryptRecord({
+                    records:record[singlePopulateField['fieldName']],
+                    salt:salt,
+                    collName:singlePopulateField['fkCollName'],
+                    populateFields:singlePopulateField['child'],
+                    cryptDecryptType:'crypt'
+                })
+            }*/
         }
     }
-    return cryptDecryptSingleRecord({record:record,salt:salt,collName:collName,cryptDecryptType:'crypt'})
+    // return cryptDecryptSingleRecord({record:record,salt:salt,collName:collName,cryptDecryptType:'crypt'})
 
     // return result
 }

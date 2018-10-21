@@ -22,7 +22,7 @@ const controllerError={
     /*          create new comment              */
 
     create:{
-        cantCommentArticle:{rc:50360,msg:{client:`无法评论`,server:`文档未完成，或者作者进行进行评论`}}
+        forbidCommentArticle:{rc:50360,msg:{client:`作者禁止评论`,server:`作者禁止评论`}}
     },
 
     // userInPenalizeNoArticleUpdate:{rc:50232,msg:`管理员禁止更新文档`},

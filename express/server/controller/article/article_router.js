@@ -94,13 +94,30 @@ router.get('/mainPage',function(req,res,next){
     article_dispatcher_async({req}).then(
         (v)=>{
             if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV){
-                console.log(`get main page   article   success, result:  ${JSON.stringify(v)}`)
+                // console.log(`get main page   article   success, result:  ${JSON.stringify(v)}`)
             }
             return res.json(v)
         },
         (err)=>{
             if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV){
                 console.log(`get main page   article    fail: ${JSON.stringify(err)}`)
+            }
+            return res.json(genFinalReturnResult(err))
+        }
+    )
+})
+router.get('/latestArticle',function(req,res,next){
+
+    article_dispatcher_async({req}).then(
+        (v)=>{
+            if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV){
+                console.log(`get latest   article   success, result:  ${JSON.stringify(v)}`)
+            }
+            return res.json(v)
+        },
+        (err)=>{
+            if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV){
+                console.log(`get latest   article    fail: ${JSON.stringify(err)}`)
             }
             return res.json(genFinalReturnResult(err))
         }
@@ -130,7 +147,7 @@ router.get('/:articleId',function(req,res,next){
     article_dispatcher_async({req}).then(
         (v)=>{
             if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV){
-                console.log(`get article success, result:  ${JSON.stringify(v)}`)
+                // console.log(`get article success, result:  ${JSON.stringify(v)}`)
             }
             return res.json(v)
         },

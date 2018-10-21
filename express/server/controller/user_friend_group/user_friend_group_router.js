@@ -18,6 +18,20 @@ const dispatcher_async=require('./user_friend_group_dispatch').dispatcher_async
 // const e_method=nodeEnum.Method
 // const e_part=nodeEnum.ValidatePart
 // const e_updateType=nodeEnum.UpdateType
+router.get('/',function(req,res,next){
+
+    dispatcher_async({req:req}).then(
+        (v)=>{
+            console.log(`get  user friend group   success, result:  ${JSON.stringify(v)}`)
+            return res.json(v)
+        },
+        (err)=>{
+            console.log(`get   user friend group    fail: ${JSON.stringify(err)}`)
+            return res.json(genFinalReturnResult(err))
+
+        }
+    )
+})
 
 router.post('/',function(req,res,next){
 

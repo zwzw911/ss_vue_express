@@ -24,6 +24,9 @@ const controllerError={
             notLoginCantDeleteUserFriendGroup:{rc:51712,msg:`尚未登录，无法删除好友分组`},
             userInPenalizeCantDeleteUserFriendGroup:{rc:51714,msg:`您被禁止删除好友分组`},
         },
+        'get':{
+            notLoginCantGetUserFriendGroup:{rc:51716,msg:`尚未登录，无法获得好友分组`},
+        },
     },
 
 

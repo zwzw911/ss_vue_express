@@ -1,0 +1,33 @@
+#%RAML 1.0
+title: article like dislike
+baseUri: http://127.0.0.1/article_like_dislike
+version: 1
+protocols: [HTTP, HTTPS]
+mediaType:
+  - application/json
+/like:
+  post:
+    protocols:
+      - HTTP
+      - HTTPS
+    displayName: like dislike
+    description: 记录对文档的踩赞
+    body:
+      application/json:
+        type: |
+          {
+            "SINGLE_FIELD":{
+                "type": "object",
+                "required": true,
+                "articleId": {
+                    "type":"string",
+                    "required":true
+                }
+            }
+          }
+        example: |
+          {
+            "SINGLE_FIELD":{
+                "articleId":"5bc57d18c7ea6262dcf2fbbc"
+              }
+          }

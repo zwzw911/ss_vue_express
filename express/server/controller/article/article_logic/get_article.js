@@ -5,7 +5,7 @@
 
 /******************    内置lib和第三方lib  **************/
 const ap=require('awesomeprint')
-
+const moment=require('moment')
 /**************  controller相关常量  ****************/
 const controllerError=require('../article_setting/article_controllerError').controllerError
 const controllerSetting=require('../article_setting/article_setting').setting
@@ -115,14 +115,56 @@ async function getArticle_async({req,forUpdate}){
         keepFields=["cDate",e_field.ARTICLE.NAME,e_field.ARTICLE.AUTHOR_ID,e_field.ARTICLE.STATUS,e_field.ARTICLE.TAGS,e_field.ARTICLE.HTML_CONTENT,e_field.ARTICLE.ALLOW_COMMENT,e_field.ARTICLE.ARTICLE_ATTACHMENTS_ID,e_field.ARTICLE.ARTICLE_IMAGES_ID,e_field.ARTICLE.CATEGORY_ID,e_field.ARTICLE.ARTICLE_COMMENTS_ID]
     }
     controllerHelper.keepFieldInRecord({record:getRecord,fieldsToBeKeep:keepFields})
+    /*********************************************/
+    /********    删除_id(否则和id重复)     *******/
+    /*********************************************/
+    // 删除_id
+    let tmp=JSON.stringify(getRecord).replace(/"_id":"[0-9a-f]{24}",?/g,'')
 
+    // ap.inf('after replace tmp',tmp)
+    getRecord=JSON.parse(tmp)
     /*********************************************/
     /**********      加密 敏感数据       *********/
     /*********************************************/
     // ap.inf('before cryote',getRecord)
-    controllerHelper.cryptRecordValue({record:getRecord,salt:tempSalt,collName:e_coll.ARTICLE})
-    // ap.inf('after cryote',getRecord)
-    return Promise.resolve({rc:0,msg:getRecord})
+    let populateFields=[
+        {
+            fieldName:e_field.ARTICLE.AUTHOR_ID,
+            fkCollName:e_coll.USER,
+        },
+        {
+            fieldName:e_field.ARTICLE.ARTICLE_ATTACHMENTS_ID,
+            fkCollName:e_coll.ARTICLE_ATTACHMENT,
+        },
+        {
+            fieldName:e_field.ARTICLE.ARTICLE_COMMENTS_ID,
+            fkCollName:e_coll.ARTICLE_COMMENT,
+        },
+    ]
+    controllerHelper.cryptRecordValue({record:getRecord,salt:tempSalt,collName:e_coll.ARTICLE,populateFields:populateFields})
+
+    //comment还populate了authorId
+    if(undefined!==getRecord[e_field.ARTICLE.ARTICLE_COMMENTS_ID] && getRecord[e_field.ARTICLE.ARTICLE_COMMENTS_ID].length>0){
+        populateFields=[
+            {
+                fieldName:e_field.ARTICLE_COMMENT.AUTHOR_ID,
+                fkCollName:e_coll.USER,},
+        ]
+        for(let singleComment of getRecord[e_field.ARTICLE.ARTICLE_COMMENTS_ID]){
+            controllerHelper.cryptRecordValue({record:singleComment,salt:tempSalt,collName:e_coll.ARTICLE_COMMENT,populateFields:populateFields})
+        }
+    }
+
+    /*********************************************/
+    /**********      如果是读取文档，则要获得文档统计信息       *********/
+    /*********************************************/
+    let staticResult
+    if(false===forUpdate){
+        staticResult=await static_async({articleId:recordId})
+        // ap.inf('staticResult',staticResult)
+    }
+
+    return Promise.resolve({rc:0,msg:{article:getRecord,staticResult:staticResult}})
 }
 
 
@@ -156,7 +198,7 @@ async function businessLogic_async({articleId,forUpdate}){
             path:e_field.ARTICLE.AUTHOR_ID,
             // match:{},
             // select:`{id:0, ${e_field.ARTICLE_ATTACHMENT.NAME}:1, ${e_field.ARTICLE_ATTACHMENT.HASH_NAME}:1}`,
-            select:`${e_field.USER.PHOTO_DATA_URL} ${e_field.USER.NAME} `, //${e_field.ARTICLE_ATTACHMENT.HASH_NAME}是为了防止文件名冲突，导致文件覆盖，无需传递到前端
+            select:`${e_field.USER.PHOTO_DATA_URL} ${e_field.USER.NAME} `, // ${e_field.ARTICLE_ATTACHMENT.HASH_NAME}是为了防止文件名冲突，导致文件覆盖，无需传递到前端
             // options:{limit:maxNumber.article.attachmentNumberPerArticle},
 
         })
@@ -164,13 +206,13 @@ async function businessLogic_async({articleId,forUpdate}){
             path:e_field.ARTICLE.ARTICLE_COMMENTS_ID,
             // match:{},
             // select:`{id:0, ${e_field.ARTICLE_ATTACHMENT.NAME}:1, ${e_field.ARTICLE_ATTACHMENT.HASH_NAME}:1}`,
-            select:`${e_field.ARTICLE_COMMENT.AUTHOR_ID} ${e_field.ARTICLE_COMMENT.CONTENT} `, //${e_field.ARTICLE_ATTACHMENT.HASH_NAME}是为了防止文件名冲突，导致文件覆盖，无需传递到前端
+            select:`${e_field.ARTICLE_COMMENT.AUTHOR_ID} ${e_field.ARTICLE_COMMENT.CONTENT} cDate`, //${e_field.ARTICLE_ATTACHMENT.HASH_NAME}是为了防止文件名冲突，导致文件覆盖，无需传递到前端
             options:{limit:maxNumber.article.attachmentNumberPerArticle},
             populate:{
                 path:e_field.ARTICLE_COMMENT.AUTHOR_ID,
                 // match:{},
                 // select:`{id:0, ${e_field.ARTICLE_ATTACHMENT.NAME}:1, ${e_field.ARTICLE_ATTACHMENT.HASH_NAME}:1}`,
-                select:`${e_field.USER.PHOTO_DATA_URL} ${e_field.USER.NAME} `, //${e_field.ARTICLE_ATTACHMENT.HASH_NAME}是为了防止文件名冲突，导致文件覆盖，无需传递到前端
+                select:`${e_field.USER.PHOTO_DATA_URL} ${e_field.USER.NAME} `, //${e_field.USER.PHOTO_DATA_URL}   ${e_field.ARTICLE_ATTACHMENT.HASH_NAME}是为了防止文件名冲突，导致文件覆盖，无需传递到前端
                 // options:{limit:maxNumber.article.attachmentNumberPerArticle},
             },
         })
@@ -203,6 +245,24 @@ async function businessLogic_async({articleId,forUpdate}){
     // }
     return Promise.resolve(result.toObject())
 
+}
+
+
+/**************************************/
+/***      读取文档的统计信息       ***/
+/**************************************/
+async function static_async({articleId}){
+    let condition={
+        [e_field.ARTICLE_LIKE_DISLIKE.ARTICLE_ID]:articleId,
+        [e_field.ARTICLE_LIKE_DISLIKE.LIKE]:true,
+    }
+    let likeCount=await common_operation_model.count_async({dbModel:e_dbModel.article_like_dislike,condition:condition})
+    condition={
+        [e_field.ARTICLE_LIKE_DISLIKE.ARTICLE_ID]:articleId,
+        [e_field.ARTICLE_LIKE_DISLIKE.LIKE]:false,
+    }
+    let dislikeCount=await common_operation_model.count_async({dbModel:e_dbModel.article_like_dislike,condition:condition})
+    return Promise.resolve({like:likeCount,dislike:dislikeCount})
 }
 module.exports={
     normalGetArticle_async,

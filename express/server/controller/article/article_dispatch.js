@@ -51,8 +51,9 @@ const controllerSetting=require('./article_setting/article_setting').setting
 const createArticle_async=require('./article_logic/create_article').createArticle_async
 const updateArticle_async=require('./article_logic/update_article').updateArticle_async
 const getArticle_async=require('./article_logic/get_article').normalGetArticle_async
-const getMainPageArticle_async=require('./article_logic/search_article').getMainPArticle_async
+const getMainPageArticle_async=require('./article_logic/search_article').getMainPageArticle_async
 const getUpdateArticle_async=require('./article_logic/get_article').getArticleFroUpdate_async
+const getLatestArticle_async=require('./article_logic/get_latest_article').getLatestArticle_async
 
 const downloadArticleAttachment_async=require('./article_upload_file_logic/download_article_attachment').downloadArticleAttachment_async
 const uploadArticleImage_async=require('./article_upload_file_logic/upload_article_image').uploadArticleImage_async
@@ -125,6 +126,26 @@ async function article_dispatcher_async({req}) {
                     await controllerPreCheck.checkObjectIdInReqParams_async({req:req,parameterName:'articleId',cryptedError:controllerError.dispatch.get.cryptedArticleIdFormatInvalid,decryptedError:controllerError.dispatch.get.decryptedArticleIdFormatInvalid})
 
                     result = await getUpdateArticle_async({req: req})
+                    return Promise.resolve(result)
+                }
+                /**     主页读取最新文档        **/
+                if ( -1!==originalUrl.search( '/article/latestArticle')) {
+                    // ap.wrn('in')
+                    /*userLoginCheck = {
+                        needCheck: true,
+                        error: controllerError.dispatch.get.notLoginCantGetArticle
+                    }
+                    penalizeCheck = {
+                        penalizeType: e_penalizeType.NO_ARTICLE,
+                        penalizeSubType: e_penalizeSubType.READ,
+                        penalizeCheckError: controllerError.dispatch.get.userInPenalizeCantGetArticle
+                    }
+                    await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
+
+                    //检测url中objectId并解密objectId
+                    await controllerPreCheck.checkObjectIdInReqParams_async({req:req,parameterName:'articleId',cryptedError:controllerError.dispatch.get.cryptedArticleIdFormatInvalid,decryptedError:controllerError.dispatch.get.decryptedArticleIdFormatInvalid})
+*/
+                    result = await getLatestArticle_async({req: req})
                     return Promise.resolve(result)
                 }
                 /**             下载附件        **/

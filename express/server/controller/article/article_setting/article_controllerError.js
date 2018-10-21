@@ -73,7 +73,7 @@ const controllerError={
     'get':{
         notAuthorCantGetFolder:{rc:50280,msg:`非文档作者，无法更新文档`},
         articleNotExist:{rc:50282,msg:`文档不存在`},
-        articleEditing:{rc:50284,msg:`文档更新中，无法读取`},
+        articleEditing:{rc:50284,msg:`文档尚未完成编辑，无法读取`},
     },
     //50290~50299
     download:{
