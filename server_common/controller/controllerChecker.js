@@ -50,12 +50,14 @@ const dataTypeCheck=require('../function/validateInput/validateHelper').dataType
 const validateHelper=require('../function/validateInput/validateHelper')
 const genInputError=validateHelper.genInputError
 const valueMatchRuleDefineCheck=validateHelper.valueMatchRuleDefineCheck
+const validateSingleValueForSearch=require('../function/validateInput/validateValue').validateSingleValueForSearch
 /*************** 配置信息 *********************/
 const appSetting=require('../constant/config/appSetting').currentAppSetting
 
 
 /****************  其他  ********************/
 const inputRule=require('../constant/inputRule/inputRule').inputRule
+const searchInputRule=require('../constant/inputRule/searchInputRule').searchInputRule
 // const browserInputRule=require('../constant/inputRule/browserInputRule').browserInputRule
 
 const regex=require('../constant/regex/regex').regex
@@ -753,7 +755,45 @@ function ifSingleFieldContainExpectField({singleFieldValue,expectedFieldNames}){
     return {rc:0}
 }
 
-
+/*
+*   对queryString中，指定的查询字段的值进行检查，是否符合rule中定义
+*   @arr_queryParams: 数组，元素是对象，键名为paramName,fieldName和collName。因为queryString中，paramName可能和fieldName不一致，且不同的fieldName可能位于不同的coll中
+*       [{paramName:"name",fieldName:"userName",collName:"user"}]
+*   值空：返回false；
+* */
+function ifQueryStringAllParamValid({req,arr_queryParams}){
+    //1. 如果arr_queryParams为空数组，返回false（说明根本没有必要进行查询）
+    if(arr_queryParams.length===0){
+        return false
+    }
+    let paramName,fieldName,collName,singleValueResult
+    for(let singleParam of arr_queryParams){
+        paramName=singleParam['paramName']
+        fieldName=singleParam['fieldName']
+        collName=singleParam['collName']
+        //2 任意一个参数为空，返回false（空还不如不加参数）
+        if(undefined===req.query[paramName] || null===req.query[paramName] || ''===req.query[paramName]){
+            return false
+        }
+        //3 根据rule（不包含require）进行检测，是否合适，如果不合适，说明此查询值只能获得空记录，所以无需传入查询
+        let fieldValue=req.query[paramName]
+        if(undefined===searchInputRule[collName]){
+            ap.err(`searchInputRule中，coll ${collName}不存在`)
+            return false
+        }
+        if(undefined===searchInputRule[collName][fieldName]){
+            ap.err(`searchInputRule中，coll中，fieldName${fieldName}不存在`)
+            return false
+        }
+        let fieldRule=searchInputRule[collName][fieldName]
+        singleValueResult=validateSingleValueForSearch({fieldValue:fieldValue,fieldRule:fieldRule})
+        if(singleValueResult.rc>0){
+            ap.err(`in query string, param ${paramName} value ${fieldValue} invalid`)
+            return false
+        }
+    }
+    return true
+}
 module.exports= {
     // ifFieldValueExistInColl_async,// 检测字段值是否已经在db中存在
     ifSingleFieldFkValueExist_async, //根据coll中的2个字段（外键和外键对应coll），动态确定外键是否在指定的coll中存在
@@ -785,4 +825,5 @@ module.exports= {
     // checkInterval_async,
 
     ifSingleFieldContainExpectField,
+    ifQueryStringAllParamValid,
 }

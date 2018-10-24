@@ -310,8 +310,113 @@ function validateSingleRecorderFieldValue({fieldValue,fieldRule,applyRange}){
 // console.log(`test tset`)
     return rightResult
 }
+/*
+* 根据rule，验证单个字段值（不包含require，默认是有值，一般用于url中query string的检查）
+* 其中，字符的MIN_LENGTH必须排除（因为即使查询字符长度小于MIN_LENGTH，也是合法的查询字符）
+*/
+function validateSingleValueForSearch({fieldValue,fieldRule}){
+    let rc={rc:0}
+    let chineseName=fieldRule['chineseName']
 
 
+    //2 检查value的类型是否符合type中的定义
+    let valueTypeCheckResult
+
+    if(dataTypeCheck.isArray(fieldRule[e_otherRuleFiledName.DATA_TYPE])){
+        valueTypeCheckResult= valueTypeCheck(fieldValue,fieldRule[e_otherRuleFiledName.DATA_TYPE][0])
+    }else{
+        valueTypeCheckResult= valueTypeCheck(fieldValue,fieldRule[e_otherRuleFiledName.DATA_TYPE])
+    }
+
+    if(valueTypeCheckResult.rc && 0<valueTypeCheckResult.rc){
+        rc['rc']=valueTypeCheckResult.rc
+        rc['msg']=`${chineseName}${valueTypeCheckResult.msg}`
+        return rc
+    }
+    if(false===valueTypeCheckResult){
+        // ap.inf('in')
+        rc['rc']=validateValueError.CUDTypeWrong.rc
+        rc['msg']=`${chineseName}${validateValueError.CUDTypeWrong.msg}`
+        return rc
+    }
+
+    //3 如果有format，直接使用format,如果正确，还要继续其他的检测，例如：数字的格式检查完后，还要判断min和max.
+    if(fieldRule[e_serverRuleType.FORMAT] && fieldRule[e_serverRuleType.FORMAT]['define']){
+        let formatDefine=fieldRule[e_serverRuleType.FORMAT]['define']
+        if(false===valueMatchRuleDefineCheck({ruleType:e_serverRuleType.FORMAT,fieldValue:fieldValue,ruleDefine:formatDefine})){
+            return genInputError(fieldRule,e_serverRuleType.FORMAT)
+        }else{
+            //如果是objectId，通过format check后，后续rule无需检测，直接返回rc:0
+            if(regex.objectId===fieldRule[e_serverRuleType.FORMAT]['define']){
+                return rightResult
+            }
+        }
+    }
+
+    //4 如果有maxLength属性，首先检查（防止输入的参数过于巨大）
+    if(fieldRule[e_serverRuleType.MAX_LENGTH] && fieldRule[e_serverRuleType.MAX_LENGTH]['define']){
+        let maxLengthDefine=fieldRule[e_serverRuleType.MAX_LENGTH]['define']
+        if(false===valueMatchRuleDefineCheck({ruleType:e_serverRuleType.MAX_LENGTH,fieldValue:fieldValue,ruleDefine:maxLengthDefine})){
+            return genInputError(fieldRule,e_serverRuleType.MAX_LENGTH)
+        }
+        //继续往下检查其他rule
+    }
+
+    //5 检查enum
+    if(fieldRule[e_serverRuleType.ENUM] && fieldRule[e_serverRuleType.ENUM]['define']){
+        let enumDefine=fieldRule[e_serverRuleType.ENUM]['define']
+        if(false===valueMatchRuleDefineCheck({ruleType:e_serverRuleType.ENUM,fieldValue:fieldValue,ruleDefine:enumDefine})){
+            return genInputError(fieldRule,e_serverRuleType.ENUM)
+        }
+    }
+
+    //6 检查除了require/format(objectId)/maxLength/enum之外的每个rule进行检测
+    //已经预检过的rule
+    let alreadyCheckedRule=[e_serverRuleType.REQUIRE,e_serverRuleType.FORMAT,e_serverRuleType.MAX_LENGTH,e_serverRuleType.ENUM]
+    //非rule的key;value对()
+    let nonRuleKey=[e_otherRuleFiledName.DATA_TYPE,e_otherRuleFiledName.CHINESE_NAME,e_otherRuleFiledName.APPLY_RANGE]
+    //无需检测的rule
+    let ignoreRule=[]
+    //合并需要skip的rule或者key
+    let skipKey=alreadyCheckedRule.concat(alreadyCheckedRule,nonRuleKey,ignoreRule)
+    for(let singleItemRuleName in fieldRule){
+        if(-1!==skipKey.indexOf(singleItemRuleName)){
+            continue
+        }
+        // console.log(`allow check rule is ${singleItemRuleName}`)
+        // if('chineseName'!==singleItemRuleName && 'default'!==singleItemRuleName && 'type'!==singleItemRuleName && 'unit'!== singleItemRuleName){
+        let ruleDefine=fieldRule[singleItemRuleName]['define']
+        switch (singleItemRuleName){
+/*            case e_serverRuleType.MIN_LENGTH:
+                if(false===valueMatchRuleDefineCheck({ruleType:e_serverRuleType.MIN_LENGTH,fieldValue:fieldValue,ruleDefine:ruleDefine})){
+                    return genInputError(fieldRule,e_serverRuleType.MIN_LENGTH)
+                }
+                break;*/
+            case e_serverRuleType.EXACT_LENGTH:
+                if(false===valueMatchRuleDefineCheck({ruleType:e_serverRuleType.EXACT_LENGTH,fieldValue:fieldValue,ruleDefine:ruleDefine})){
+                    return genInputError(fieldRule,e_serverRuleType.EXACT_LENGTH)
+                }
+                break;
+            case e_serverRuleType.MAX:
+                if(false===valueMatchRuleDefineCheck({ruleType:e_serverRuleType.MAX,fieldValue:fieldValue,ruleDefine:ruleDefine})){
+                    return genInputError(fieldRule,e_serverRuleType.MAX)
+                }
+                break;
+            case e_serverRuleType.MIN:
+                if(false===valueMatchRuleDefineCheck({ruleType:e_serverRuleType.MIN,fieldValue:fieldValue,ruleDefine:ruleDefine})){
+                    return genInputError(fieldRule,e_serverRuleType.MIN)
+                }
+                break;
+            default: //未知的rule就不进行任何检测了
+            // ap.err('unknown rule',singleItemRuleName)
+            // console.log(`unknown ruel ${singleItemRuleName}`)
+            //其他的rule，要么已经检测过了，要么是未知的，不用检测。所以default不能返回任何错误rc（前面检测过的rule可能进入default）
+            // return validateValueError.unknownRuleType
+        }
+    }
+
+    return rightResult
+}
 
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -1046,6 +1151,7 @@ module.exports= {
     // validateUpdateRecorderValue,        //调用_validateRecorderValue
     validateSingleRecorderFieldValue,   //validateRecorderValue=>validateSingleRecorderFieldValue
 
+    validateSingleValueForSearch,//对单个字段值进行除了require之外，其他所有rule的验证
     // searchParamValue 的check已经由文件validateSearchFormat下的2个函数arrayValueStringLogicCheck/arrayValueDigitLogicCheck 完成
 /*    validateSearchParamsValue,
     validateSingleSearchFieldValue,//辅助函数，一般不直接使用*/

@@ -116,8 +116,8 @@ async function article_dispatcher_async({req}) {
                         error: controllerError.dispatch.get.notLoginCantGetArticle
                     }
                     penalizeCheck = {
-                        penalizeType: e_penalizeType.NO_ARTICLE,
-                        penalizeSubType: e_penalizeSubType.READ,
+                        penalizeType: e_penalizeType.NO_USER,
+                        penalizeSubType: e_penalizeSubType.SEARCH,
                         penalizeCheckError: controllerError.dispatch.get.userInPenalizeCantGetArticle
                     }
                     await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})

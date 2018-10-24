@@ -63,6 +63,9 @@ router.delete('/',function(req,res,next){
     )
     // next()
 })
+
+
+
 router.get('/',function(req,res,next){
     // ap.inf('match url')
     userDispatcher_async(req).then(
@@ -76,6 +79,7 @@ router.get('/',function(req,res,next){
         }
     )
 })
+/**     获取他人信息      **/
 router.get('/:userId',function(req,res,next){
     // ap.inf('match url')
     userDispatcher_async(req).then(
@@ -89,7 +93,20 @@ router.get('/:userId',function(req,res,next){
         }
     )
 })
-
+/**     查询用户      **/
+router.get('/search',function(req,res,next){
+    ap.inf('search in url')
+    userDispatcher_async(req).then(
+        (v)=>{
+            ap.inf(`search user success, result:  ${JSON.stringify(v)}`)
+            return res.json(v)
+        },
+        (err)=>{
+            ap.err(`search user get fail: ${JSON.stringify(err)}`)
+            return res.json(genFinalReturnResult(err))
+        }
+    )
+})
 
 router.post('/login',function(req,res,next){
     // ap.inf('match url')

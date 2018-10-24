@@ -74,6 +74,7 @@ const decryptSingleFieldValue=hashCrypt.decryptSingleFieldValue
 const browserInputRule=require('../constant/inputRule/browserInputRule').browserInputRule
 const internalInputRule=require('../constant/inputRule/internalInputRule').internalInputRule
 const inputRule=require('../constant/inputRule/inputRule').inputRule
+const searchInputRule=require('../constant/inputRule/searchInputRule').searchInputRule
 
 const fkConfig=require('../model/mongo/fkConfig').fkConfig
 const e_dataType=require('../constant/enum/inputDataRuleType').ServerDataType
@@ -97,7 +98,7 @@ const  redisOperation=require(`../model/redis/operation/redis_common_operation`)
 
 const captcha_async=require('../function/assist/awesomeCaptcha').captcha_async
 
-
+const validateSingleValueForSearch=require('../function/validateInput/validateValue').validateSingleValueForSearch
 // const complicatedCheckInterval_async=redisCommonScript.complicatedCheckInterval_async
 /*  根据findType，在req中检测是否存在optionPart中定义的part
 * @req
@@ -1628,6 +1629,53 @@ function keepFieldInRecord({record,fieldsToBeKeep}){
     }
 }
 
+/*
+*   对queryString中，指定的查询字段的值进行检查，删除不合格的参数
+*   @arr_queryParams: 数组，元素是对象，键名为paramName,fieldName和collName。因为queryString中，paramName可能和fieldName不一致，且不同的fieldName可能位于不同的coll中
+*       [{paramName:"name",fieldName:"userName",collName:"user"}]
+*
+* */
+function sanityQueryStringParam({req,arr_queryParams}){
+    // ap.wrn('req.query',req.query)
+    //1. 如果arr_queryParams为空数组，返回false（说明根本没有必要进行sanity）
+    if(arr_queryParams.length===0){
+        return false
+    }
+    let paramName,fieldName,collName,singleValueResult
+    for(let singleParam of arr_queryParams){
+        paramName=singleParam['paramName']
+        fieldName=singleParam['fieldName']
+        collName=singleParam['collName']
+        // ap.wrn('req.query paramName',paramName)
+        // ap.inf('sanityQueryStringParam req.query[paramName]',req.query[paramName])
+
+        //2 任意一个参数为空，返回false（空还不如不加参数）
+        if(undefined===req.query[paramName] || null===req.query[paramName] || ''===req.query[paramName]){
+            delete req.query[paramName]
+        }
+        //3 根据rule（不包含require）进行检测，是否合适，如果不合适，说明此查询值只能获得空记录，所以无需传入查询
+        let fieldValue=req.query[paramName]
+        if(undefined===searchInputRule[collName]){
+            ap.err(`searchInputRule中，coll ${collName}不存在`)
+            delete req.query[paramName]
+        }
+        if(undefined===searchInputRule[collName][fieldName]){
+            ap.err(`searchInputRule中，coll中，fieldName${fieldName}不存在`)
+            delete req.query[paramName]
+        }
+        let fieldRule=searchInputRule[collName][fieldName]
+        // ap.wrn('fieldValue',fieldValue)
+        // ap.wrn('fieldRule',fieldRule)
+        singleValueResult=validateSingleValueForSearch({fieldValue:fieldValue,fieldRule:fieldRule})
+        // ap.wrn('singleValueResult',singleValueResult)
+        if(singleValueResult.rc>0){
+            delete req.query[paramName]
+            // ap.err(`in query string, param ${paramName} value ${fieldValue} invalid`)
+            // return false
+        }
+    }
+    // return true
+}
 
 module.exports= {
     checkOptionPartExist,//检查option中那些part是存在
@@ -1703,6 +1751,8 @@ module.exports= {
 
     deleteFieldInRecord,
     keepFieldInRecord,
+
+    sanityQueryStringParam,
 }
 
 

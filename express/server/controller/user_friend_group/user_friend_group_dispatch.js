@@ -44,6 +44,8 @@ const controllerSetting=require('./user_friend_group_setting/user_friend_group_s
 
 /*                          controller                          */
 const getUserFriendGroup_async=require('./user_friend_group_logic/get_user_friend_group').getUserFriendGroup_async
+const searchFriendInGroup_async=require('./user_friend_group_logic/search_friend_in_group').searchFriendInGroup_async
+
 const create_async=require('./user_friend_group_logic/create_user_friend_group').createUserFriendGroup_async
 const update_async=require('./user_friend_group_logic/update_user_friend_group').updateUserFriendGroup_async
 // const updateSubFieldOnly_async=require('./user_friend_group_logic/update_user_friend_group_sub_field_only').updateUserFriendGroup_async
@@ -88,6 +90,22 @@ async function dispatcher_async({req}){
                 }
                 await controllerPreCheck.userStateCheck_async({req: req,userLoginCheck: userLoginCheck,penalizeCheck: penalizeCheck})
                 return await getUserFriendGroup_async({req: req})
+            }
+            /**     搜索朋友    **/
+            if ( -1!==originalUrl.search( '/user_friend_group/friend')) {
+                userLoginCheck = {
+                    needCheck: true,
+                    error: controllerError.dispatch.get.notLoginCantSearchFriend
+                }
+                await controllerPreCheck.userStateCheck_async({req: req,userLoginCheck: userLoginCheck,penalizeCheck: penalizeCheck})
+
+                let searchParamName=[{"paramName":"name","fieldName":e_field.USER.NAME,collName:e_coll.USER}]
+                let result=controllerChecker.ifQueryStringAllParamValid({req:req,arr_queryParams:searchParamName})
+                if(false===result){
+                    return Promise.resolve({rc:0,msg:[]})
+                }
+
+                return await searchFriendInGroup_async({req: req,arr_queryParams:searchParamName})
             }
             break;
         case 'post':

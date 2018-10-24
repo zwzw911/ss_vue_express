@@ -25,6 +25,7 @@ const mongoEnum=server_common_file_require.mongoEnum
 // const e_userState=require('../../constant/enum/node').UserState
 const e_part=nodeEnum.ValidatePart
 const e_method=nodeEnum.Method//require('../../constant/enum/node').Method
+const e_field=require('../../constant/genEnum/DB_field').Field
 const e_coll=require('../../constant/genEnum/DB_Coll').Coll
 
 const e_penalizeType=mongoEnum.PenalizeType.DB
@@ -40,6 +41,7 @@ const browserInputRule=require('../../constant/inputRule/browserInputRule').brow
 
 
 const getUser_async=require('./user_logic/get_user').getUser_async
+const searchUser_async=require('./user_logic/search_user').searchUser_async
 // const getOtherUser_async=require('./user_logic/get_user').getOtherUser_async
 const createUser_async=require('./user_logic/create_user').createUser_async
 const updateUser_async=require('./user_logic/update_user').updateUser_async
@@ -81,6 +83,8 @@ async function dispatcher_async(req){
     //interval和robot检测
     await controllerPreCheck.commonPreCheck_async({req:req,collName:collName})
     // ap.inf('commonPreCheck_async done')
+    ap.inf('original url',originalUrl)
+    // ap.inf('base url',originalUrl)
     switch (req.route.stack[0].method) {
         case 'get':
             if(originalUrl==='/user' || originalUrl==='/user/') {
@@ -127,6 +131,28 @@ async function dispatcher_async(req){
                 result = await generateCaptcha_async({req: req})
                 return Promise.resolve(result)
             }
+            /** 查询用户信息  **/
+            if( -1!==originalUrl.search( '/user/search')){
+                userLoginCheck={
+                    needCheck:true,
+                    error:controllerError.dispatch.get.notLoginCantSearchUser
+                }
+                penalizeCheck = {
+                    penalizeType: e_penalizeType.NO_USER,
+                    penalizeSubType: e_penalizeSubType.READ,
+                    penalizeCheckError: controllerError.dispatch.get.userInPenalizeCantSearch
+                }
+                await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
+                let searchParam=[
+                    {"paramName":"name","fieldName":e_field.USER.NAME,"collName":e_coll.USER},
+                    {"paramName":"account","fieldName":e_field.USER.ACCOUNT,"collName":e_coll.USER},
+                ]
+                controllerHelper.sanityQueryStringParam({req:req,arr_queryParams:searchParam})
+
+// ap.wrn('after sanity',req.query)
+                return await searchUser_async({req:req,searchParam:searchParam})
+            }
+
             break;
         case 'post':
             if(originalUrl==='/user' || originalUrl==='/user/') {

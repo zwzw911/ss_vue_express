@@ -559,16 +559,7 @@ const convertToClient=function(document,skipFields){
     return clientDoc
 }
 
-//为了实现validateCreateRecorderValue/validateUpdateRecorderValue的验证，需要将{field:val}=====》{field:{value:val}}
-/*const addSubFieldKeyValue=function(obj){
-    let newValue={}
-    for(let fieldName in obj){
-        // newValue[fieldName]={'value':obj[fieldName]}
-        newValue[fieldName]=obj[fieldName]
-    }
 
-    return newValue
-}*/
 
 function convertToObjectId(str){
     return mongoose.Types.ObjectId(str)
@@ -661,62 +652,23 @@ function convertEditSubFieldValueToNoSql({editSubFieldValue}){
              }*/
         }
     }
-           /* console.log(`fromNoSql===>${JSON.stringify(fromNoSql)}`)
-            //设置findByIdAndUpdate中的id
-            if(undefined===fromNoSql[`id`]){
-                fromNoSql[`id`]=singleFieldValue[e_subField.FROM]
-            }
-            //设置findByIdAndUpdate中的operation
-            if(undefined===fromNoSql[`operation`]){
-                fromNoSql[`operation`]={}
-            }
-            // ($pullAll)
-            if(undefined===fromNoSql[`operation`][`$pullAll`]){
-                fromNoSql[`operation`][`$pullAll`]={}
-            }
-            //设置字段
-            if(undefined===fromNoSql[`operation`][`$pullAll`][singleFieldName]){
-                fromNoSql[`operation`][`$pullAll`][singleFieldName]=[]
-            }
-            fromNoSql[`operation`][`$pullAll`][singleFieldName]=fromNoSql[`operation`][`$pullAll`][singleFieldName].concat(singleFieldValue[e_subField.ELE_ARRAY])
-        }
-        //to有值(增加)
-        if(undefined!==singleFieldValue[e_subField.TO]){
-            if(undefined===toNoSql){
-                toNoSql={}
-            }
-            //设置findByIdAndUpdate中的id
-            if(undefined===toNoSql[`id`]){
-                toNoSql[`id`]=singleFieldValue[e_subField.TO]
-            }
-            //设置findByIdAndUpdate中的operation
-            if(undefined===toNoSql[`operation`]){
-                toNoSql[`operation`]={}
-            }
-            // ($addToSet)
-            if(undefined===toNoSql[`operation`][`$addToSet`]){
-                toNoSql[`operation`][`$addToSet`]={}
-            }
-            //设置字段
-            if(undefined===toNoSql[`operation`][`$addToSet`][singleFieldName]){
-                toNoSql[`operation`][`$addToSet`][singleFieldName]={}
-            }
-            //设置字段的$each
-            if(undefined===toNoSql[`operation`][`$addToSet`][singleFieldName][`$each`]){
-                toNoSql[`operation`][`$addToSet`][singleFieldName][`$each`]=[]
-            }
-            toNoSql[`operation`][`$addToSet`][singleFieldName][`$each`]=toNoSql[`operation`][`$addToSet`][singleFieldName][`$each`].concat(singleFieldValue[e_subField.ELE_ARRAY])
-        }
-    }
 
-    let result={fromNoSql,toNoSql}
-    if(undefined===result[`fromNoSql`]){
-        delete result[`fromNoSql`]
-    }
-    if(undefined===result[`toNoSql`]){
-        delete result[`toNoSql`]
-    }*/
     return result
+}
+
+//通过mongoose获得的数据，转换成object
+function convertDocumentToObject({src}){
+    // ap.inf('dataTypeCheck.isArray(src)',dataTypeCheck.isArray(src))
+    if(true===dataTypeCheck.isArray(src)){
+        for(let idx in src){
+            // ap.inf('idx',idx)
+            // ap.inf('src[idx]',src[idx])
+            // ap.inf('src[idx].toObject()',src[idx].toObject())
+            src[idx]=src[idx].toObject()
+        }
+    }else{
+        src=src.toObject()
+    }
 }
 module.exports={
     convertSearchParamsToNoSQL,
@@ -732,55 +684,7 @@ module.exports={
     convertToObjectId,
 
     convertEditSubFieldValueToNoSql,
-}
-/*
 
-let clientSql={
-    user:{
-        [e_searchFieldName.FIELD_OP]:e_fieldOp.AND,
-        [e_searchFieldName.SEARCH_VALUE]: {
-            name: {
-
-                [e_searchFieldName.ARRAY_COMP_OP]: [e_arrayCompOp.ANY,e_arrayCompOp.NONE],
-                [e_searchFieldName.ARRAY_VALUE]: [
-                    {
-                        [e_searchFieldName.SCALAR_COMP_OP]: e_scalarCompOpForString.INCLUDE,
-                        [e_searchFieldName.SCALAR_VALUE]: 'zw',
-                    },
-                    {
-                        [e_searchFieldName.SCALAR_COMP_OP]: e_scalarCompOpForString.INCLUDE,
-                        [e_searchFieldName.SCALAR_VALUE]: 'wzhan039wzhan039wzhan039wzhan039wzhan039wzhan039wzhan039',
-                    },
-                ]
-            },
-            /!*            nickname:{
-                            [e_searchFieldName.FIELD_OP]:[e_fieldOp.AND,e_fieldOp.NOT],
-                            [e_searchFieldName.ARRAY_COMP_OP]:e_arrayCompOp.ANY,
-                            [e_searchFieldName.ARRAY_VALUE]:[
-                                {
-                                    [e_searchFieldName.SCALAR_COMP_OP]:e_scalarCompOpForString.EXACT,
-                                    [e_searchFieldName.SCALAR_VALUE]:'zhangwei',
-                                },
-                            ]
-                        },*!/
-            lastSignInDate: {
-
-                [e_searchFieldName.ARRAY_COMP_OP]: [e_arrayCompOp.ANY,e_arrayCompOp.NONE],
-                [e_searchFieldName.ARRAY_VALUE]: [
-                    {
-                        [e_searchFieldName.SCALAR_COMP_OP]: e_scalarCompOpForDigit.EQUAL,
-                        [e_searchFieldName.SCALAR_VALUE]: 18,
-                    },
-                    {
-                        [e_searchFieldName.SCALAR_COMP_OP]: e_scalarCompOpForDigit.EQUAL,
-                        [e_searchFieldName.SCALAR_VALUE]: 65,
-                    },
-                ]
-            },
-        }
-    }
+    convertDocumentToObject,
 }
 
-santiySearchParams({searchParams:clientSql})
-ap.inf('after sanity',clientSql)
-ap.inf('nosql',convertSearchParamsToNoSQL({searchParams:clientSql}))*/

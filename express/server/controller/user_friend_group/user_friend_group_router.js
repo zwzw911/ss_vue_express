@@ -91,6 +91,22 @@ router.put('/move_friend',function(req,res,next){
         }
     )
 })
+
+/**     查找好友**/
+router.get('/friend',function(req,res,next){
+
+    dispatcher_async({req:req}).then(
+        (v)=>{
+            console.log(`search friend success, result:  ${JSON.stringify(v)}`)
+            return res.json(v)
+        },
+        (err)=>{
+            console.log(`search friend fail: ${JSON.stringify(err)}`)
+            return res.json(genFinalReturnResult(err))
+
+        }
+    )
+})
 router.all('*',function(req,res,next){
     // ap.inf('systemError.systemError.noMatchRESTAPI',systemError.systemError.noMatchRESTAPI)
     return res.json(genFinalReturnResult(systemError.systemError.noMatchRESTAPI))

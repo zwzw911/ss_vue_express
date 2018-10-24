@@ -177,6 +177,7 @@ const maxNumber={
         maxMemberNumberPerPublicGroup:200,//每个群最多200人
         maxAdministratorPerPublicGroup:10,//每个群最多10个管理员
         maxGroupUserCanJoinIn:20,//每个用户最多加入20个群
+        searchMaxFriend:5,//搜索好友时最大返回记录数
     },
     impeach:{
         maxImageNumber:10,//最多插入的图片

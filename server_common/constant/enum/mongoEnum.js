@@ -184,6 +184,8 @@ const PenalizeType={
         NO_IMPEACH:'60',
 
         NO_IMPEACH_ACTION:'61',
+
+        NO_USER:'70',
     },
     SHOW:{
         NO_ARTICLE: '禁止文档',
@@ -209,6 +211,8 @@ const PenalizeType={
         NO_FOLDER:'禁止目录相关操作',
 
         NO_IMPEACH_ACTION:'禁止操作举报',
+
+        NO_USER:'禁止用户相关操作',
     },
 
 }
@@ -219,6 +223,7 @@ const PenalizeSubType={
         READ:'2',
         UPDATE:'3',
         DELETE:'4',
+        SEARCH:'5',
         ALL:'9',
     },
     SHOW:{
@@ -226,6 +231,7 @@ const PenalizeSubType={
         READ:'禁止读取',
         UPDATE:'禁止更新',
         DELETE:'禁止删除',
+        SEARCH:'禁止查询',
         ALL:'禁止所有操作',
     },
 

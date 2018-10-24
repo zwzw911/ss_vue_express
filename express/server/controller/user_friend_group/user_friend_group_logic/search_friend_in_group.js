@@ -1,5 +1,6 @@
 /**
- * Created by ada on 2017/9/1.
+ * Created by zhang wei on 2018-10-23.
+ * 根据名字搜索 好友（范围限定为好友，而不是所有用户）
  */
 'use strict'
 /******************    内置lib和第三方lib  **************/
@@ -62,10 +63,14 @@ const regex=server_common_file_require.regex.regex
 const currentEnv=server_common_file_require.appSetting.currentEnv
 const fkConfig=server_common_file_require.fkConfig.fkConfig
 
+
 /*                      configuration                                               */
 const userGroupFriend_Configuration=server_common_file_require.globalConfiguration.userGroupFriend
-
-async  function getUserFriendGroup_async({req}){
+const maxNum=server_common_file_require.globalConfiguration.maxNumber
+/*
+* arr_queryParams: 和ifQueryStringAllParamValid中一样，保证每个被使用的param都被检查过
+* */
+async  function searchFriendInGroup_async({req,arr_queryParams}){
 
     /********************************************************/
     /*************      define variant        ***************/
@@ -76,9 +81,8 @@ async  function getUserFriendGroup_async({req}){
     let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
     // console.log(`userInfo===> ${JSON.stringify(userInfo)}`)
     let {userId,userCollName,userType,userPriority,tempSalt}=userInfo
-    // ap.inf('userId',userId)
-// console.log(`docValue===> ${JSON.stringify(docValue)}`)
-// console.log(`userInfo===> ${JSON.stringify(userInfo)}`)
+
+
     /**********************************************/
     /***********    用户类型检测    **************/
     /*********************************************/
@@ -115,14 +119,14 @@ async  function getUserFriendGroup_async({req}){
     /**     db操作        **/
     let createdRecord=await businessLogic_async({collName:collName,userId:userId})
 // ap.inf('createdRecord',createdRecord)
-    let fieldsToBeKeep=['id','friendGroupName']
+    let fieldsToDelete=['_id']
     if(createdRecord.length>0){
         for(let singleRecord of createdRecord){
             /*********************************************/
             /**********      删除指定字段       *********/
             /*********************************************/
 
-            controllerHelper.keepFieldInRecord({record:singleRecord,fieldsToBeKeep:fieldsToBeKeep})
+            controllerHelper.deleteFieldInRecord({record:singleRecord,fieldsToBeDeleted:fieldsToDelete})
             /*********************************************/
             /**********      加密 敏感数据       *********/
             /*********************************************/
@@ -137,51 +141,28 @@ async  function getUserFriendGroup_async({req}){
 
 
 }
-async function businessLogic_async({collName,userId}) {
-   /* /!*****************************************************!/
-    /!****            添加internal field，然后检查      ***!/
-    /!******************************************************!/
-    // console.log(`before hash is ${JSON.stringify(docValue)}`)
-    let internalValue={}
-    // internalValue[e_field.USER_FRIEND_GROUP.]=impeachType
-    internalValue[e_field.USER_FRIEND_GROUP.OWNER_USER_ID]=userId
-    /!*              对内部产生的值进行检测（开发时使用，上线后为了减低负荷，无需使用）           *!/
-    if(e_env.DEV===currentEnv){
-        let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInternalRule:internalInputRule[collName],applyRange:applyRange})
-        // console.log(`internalValue check result====>   ${JSON.stringify(tmpResult)}`)
-        if(tmpResult.rc>0){
-            return Promise.reject(tmpResult)
-        }
-    }
-    if(undefined===docValue){
-        docValue=internalValue
-    }else{
-        Object.assign(docValue,internalValue)
-    }
-// console.log(`========================>internal check  done<--------------------------`)
-    /!*******************************************************************************************!/
-    /!*                    复合字段unique check（需要internal field完成后）                     *!/
-    /!*******************************************************************************************!/
-    /!*******************************************************************************************!/
-    /!*                    复合字段unique check（需要internal field完成后）                     *!/
-    /!*******************************************************************************************!/
-    if(undefined!==docValue){
-        let compoundFiledValueUniqueCheckAdditionalCheckCondition
-        await controllerInputValueLogicCheck.ifCompoundFiledValueUnique_returnExistRecord_async({
-            collName:collName,
-            docValue:docValue,
-            additionalCheckCondition:compoundFiledValueUniqueCheckAdditionalCheckCondition,
-        })
-    }*/
+async function businessLogic_async({collName,userId,searchUserName}) {
+
     /*******************************************************************************************/
     /*                                  db operation                                           */
     /*******************************************************************************************/
+    /**     从friend_group中查找朋友  **/
     let condition={
         [e_field.USER_FRIEND_GROUP.OWNER_USER_ID]:userId
     }
+    let populateOpt={
+        path:e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP,
+        match:{
+            [e_field.USER.NAME]:new RegExp(searchUserName,"i"),//采用模糊查询
+        },
+        // select:`{id:0, ${e_field.ARTICLE_ATTACHMENT.NAME}:1, ${e_field.ARTICLE_ATTACHMENT.HASH_NAME}:1}`,
+        select:`${e_field.USER.NAME} `, //${e_field.ARTICLE_ATTACHMENT.HASH_NAME}是为了防止文件名冲突，导致文件覆盖，无需传递到前端
+        options:{limit:maxNumber.friend.searchMaxFriend},
+    }
     // ap.inf('condition',condition)
     // ap.inf('collName',collName)
-    let createdRecord= await common_operation_model.find_returnRecords_async({dbModel:e_dbModel[collName],condition:condition})
+    let neededFieldName=`id ${e_field.USER_FRIEND_GROUP.FRIEND_GROUP_NAME}`
+    let createdRecord= await common_operation_model.find_returnRecords_async({dbModel:e_dbModel[collName],selectedFields:neededFieldName,condition:condition})
     dataConvert.convertDocumentToObject({src:createdRecord})
     /* //插入关联数据（impeach action=create）
      let impeachStateValue={
@@ -196,5 +177,5 @@ async function businessLogic_async({collName,userId}) {
     return Promise.resolve(createdRecord)
 }
 module.exports={
-    getUserFriendGroup_async,
+    searchFriendInGroup_async,
 }

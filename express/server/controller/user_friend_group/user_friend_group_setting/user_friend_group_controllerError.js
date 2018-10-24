@@ -26,6 +26,7 @@ const controllerError={
         },
         'get':{
             notLoginCantGetUserFriendGroup:{rc:51716,msg:`尚未登录，无法获得好友分组`},
+            notLoginCantSearchFriend:{rc:51718,msg:`尚未登录，无法查询好友`},
         },
     },
 

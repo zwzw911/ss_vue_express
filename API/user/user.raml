@@ -1,0 +1,17 @@
+#%RAML 1.0
+title: 用户相关操作
+baseUri: http://127.0.0.1/user
+mediaType: application/json
+protocols: [HTTP,HTTPS]
+version: 1.0
+/:
+  /search:
+    get:
+      description: 如果有queryString，说明是查询用户；否则，是根据session获得自己的信息
+      queryParameters:
+        name:
+          type: string
+          required: false
+        account:
+          type: string
+          required: false
