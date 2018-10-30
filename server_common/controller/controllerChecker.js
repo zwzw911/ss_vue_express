@@ -14,7 +14,7 @@ const checkerError=require('../constant/error/controller/helperError').checker
 /***************  数据库相关常量以及函数   ****************/
 const e_dbModel=require('../constant/genEnum/dbModel')
 const common_operation_model=require('../model/mongo/operation/common_operation_model')
-const common_operation_helper=require('../model/mongo/operation/common_operation_helper')
+// const common_operation_helper=require('../model/mongo/operation/not_used_common_operation_helper')
 
 const redisClient=require('../model/redis/common/redis_connections').redisClient
 

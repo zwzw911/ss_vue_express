@@ -20,7 +20,7 @@ function requireServerCommon(serverCommonRelateBaseDir,absoluteDestFilePath,fina
 
     let dirArray=[
         `${serverCommonRelateBaseDir}constant/config/`,
-        `${serverCommonRelateBaseDir}constant/define/`,
+        // `${serverCommonRelateBaseDir}constant/define/`,//all file in define obsolete
         `${serverCommonRelateBaseDir}constant/enum/`,
         `${serverCommonRelateBaseDir}constant/error/`,
         `${serverCommonRelateBaseDir}constant/regex/`,

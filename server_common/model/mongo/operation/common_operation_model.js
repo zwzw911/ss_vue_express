@@ -185,11 +185,11 @@ async function removeBaseIdArray_async({dbModel,updateOptions,idArray}){
 }
 
 //只做测试用
-async  function removeAll_async({dbModel}){
+async  function deleteAll_async({dbModel}){
     //console.log(`remove all in `)
     //return new Promise(function(resolve,reject){
         //remove放回一个promise
-        await dbModel.remove({}).catch(
+        await dbModel.deleteMany({}).catch(
             function(err){
                 return Promise.reject(mongooseErrorHandler(err))
             }
@@ -741,7 +741,7 @@ module.exports= {
     update_returnRecord_async,//传统的方式（find/update/save）
     updateDirect_returnRecord_async,//直接执行update操作，无需考虑middleware
     removeBaseIdArray_async,  //只是根据idArray设置dData字段
-    removeAll_async,//测试用
+    deleteAll_async,//测试用
     deleteOne_returnRecord_async,
     deleteMany_async,
     deleteArrayFieldValue_async,//直接删除数组字段中一个或者多个值

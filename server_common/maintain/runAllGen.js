@@ -60,6 +60,14 @@ function _genForGeneral_part1(absoluteDestDirForInputRule,absoluteDestDirForEnum
     generateMongoDbModelToEnum(modelCollRootDir,`${absoluteDestDirForEnum}dbModel.js`,skipFilesArray)
     generateMongoDbModelToEnumInArray(modelCollRootDir,`${absoluteDestDirForEnum}dbModelInArray.js`,skipFilesArray)
 
+    if(false===skipGenMongoEnum){
+        ap.inf(`start generateMongoEnum`)
+        // ap.inf(`mongoEnumDir: ${mongoEnumDir}`)
+        // ap.inf(`absoluteDestDirForMongoEnumValue: ${absoluteDestDirForMongoEnumValue}`)
+        const generateMongoEnum=require('./generateFunction/generateMongoEnum').writeResult
+        generateMongoEnum(mongoEnumDir,`${absoluteDestDirForMongoEnumValue}enumValue.js`)
+    }
+
     ap.inf(`start generateMongoFieldToEnum`)
     const generateMongoFieldToEnum=require('./generateFunction/generateMongoFieldToEnum').writeFinalResult
     generateMongoFieldToEnum(modelCollRootDir,`${absoluteDestDirForEnum}DB_field.js`,skipFilesArray)
@@ -68,13 +76,7 @@ function _genForGeneral_part1(absoluteDestDirForInputRule,absoluteDestDirForEnum
     const generateMongoUniqueFieldToEnum=require('./generateFunction/generateMongoUniqueFieldToEnum').writeFinalResult
     generateMongoUniqueFieldToEnum(modelCollRootDir,`${absoluteDestDirForEnum}DB_uniqueField.js`,skipFilesArray)
 
-    if(false===skipGenMongoEnum){
-        ap.inf(`start generateMongoEnum`)
-        // ap.inf(`mongoEnumDir: ${mongoEnumDir}`)
-        // ap.inf(`absoluteDestDirForMongoEnumValue: ${absoluteDestDirForMongoEnumValue}`)
-        const generateMongoEnum=require('./generateFunction/generateMongoEnum').writeResult
-        generateMongoEnum(mongoEnumDir,`${absoluteDestDirForMongoEnumValue}enumValue.js`)
-    }
+
 
     ap.inf(`start generateNodeEnum`)
     // ap.inf(`mongoEnumDir: ${mongoEnumDir}`)

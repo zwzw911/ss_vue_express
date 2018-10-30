@@ -27,7 +27,7 @@ async function remove_all_async(){
     // let dbModelInArray=[e_dbModel.store_path,e_dbModel.category,e_dbModel.resource_profile,e_dbModel.admin_user]
     let promiseTobeExec=[]
     for(let singleDbModel of dbModelArray){
-        promiseTobeExec.push(common_operation_model.removeAll_async({dbModel:singleDbModel}))
+        promiseTobeExec.push(common_operation_model.deleteAll_async({dbModel:singleDbModel}))
     }
     return await Promise.all(promiseTobeExec)
     // ap.inf('remove_all_async done')

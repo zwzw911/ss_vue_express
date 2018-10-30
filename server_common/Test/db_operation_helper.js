@@ -96,7 +96,7 @@ async function deleteAllModelRecord_async({}){
     for(let singleDbModel of dbModelInArray){
         if(-1===skipColl.indexOf(singleDbModel.modelName)){
         //console.log(`model name======>${singleDbModel.modelName}`)
-        await common_operation_model.removeAll_async({dbModel:singleDbModel})
+        await common_operation_model.deleteAll_async({dbModel:singleDbModel})
         }
 
     }

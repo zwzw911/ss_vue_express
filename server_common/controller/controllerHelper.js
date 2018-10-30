@@ -63,7 +63,7 @@ const helperError=require('../constant/error/controller/helperError').helper
 
 
 const common_operation_model=require('../model/mongo/operation/common_operation_model')
-const common_operation_helper=require('../model/mongo/operation/common_operation_helper')
+// const common_operation_helper=require('../model/mongo/operation/not_used_common_operation_helper')
 
 // const misc=require('../function/assist/misc')
 const hashCrypt=require('../function/assist/crypt')

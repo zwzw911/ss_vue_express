@@ -101,11 +101,11 @@ async function createRoot(){
 }
 
 /*async  function removeAll(){
-    await common_operation_model.removeAll_async({dbModel:e_dbModel.store_path})
-    await common_operation_model.removeAll_async({dbModel:e_dbModel.category})
-    await common_operation_model.removeAll_async({dbModel:e_dbModel.resource_profile})
-    await common_operation_model.removeAll_async({dbModel:e_dbModel.admin_user})
-    await common_operation_model.removeAll_async({dbModel:e_dbModel.admin_sugar})
+    await common_operation_model.deleteAll_async({dbModel:e_dbModel.store_path})
+    await common_operation_model.deleteAll_async({dbModel:e_dbModel.category})
+    await common_operation_model.deleteAll_async({dbModel:e_dbModel.resource_profile})
+    await common_operation_model.deleteAll_async({dbModel:e_dbModel.admin_user})
+    await common_operation_model.deleteAll_async({dbModel:e_dbModel.admin_sugar})
 }*/
 
 

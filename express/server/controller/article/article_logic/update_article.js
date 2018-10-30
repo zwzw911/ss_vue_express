@@ -95,7 +95,7 @@ async function updateArticle_async({req,applyRange}){
             additionalCondition:undefined,
         })
         if(false===originalDoc){
-            return Promise.reject(controllerError.update.notAuthorCantUpdateArticle)
+            return Promise.reject(controllerError.update.notAuthorCantUpdatePhotoAlbum)
         }
     }
     /**********************************************/
@@ -139,66 +139,6 @@ async function updateArticle_async({req,applyRange}){
     await controllerInputValueLogicCheck.inputValueLogicValidCheck_async({commonParam:commonParam,stepParam:stepParam})
     // ap.inf('inputValueLogicValidCheck_async done')
 
-    /************************************************/
-    /***                 是否删除了图片          ****/
-    /************************************************/
-    //如果content存在，图片检测
-    if(undefined!==docValue[e_field.ARTICLE.HTML_CONTENT]){
-        // let content=docValue[e_field.ARTICLE.HTML_CONTENT]
-        // console.log(`0`)
-        // let content=docValue[e_field.ARTICLE.HTML_CONTENT]
-        // await controllerHelper.contentXSSCheck_async({content:content,error:controllerError.htmlContentSanityFailed})
-        let collConfig={
-            collName:e_coll.ARTICLE,  //存储内容（包含图片DOM）的coll名字
-            fkFieldName:e_field.ARTICLE.ARTICLE_IMAGES_ID,//coll中，存储图片objectId的字段名
-            contentFieldName:e_field.ARTICLE.HTML_CONTENT, //coll中，存储内容的字段名
-            ownerFieldName:e_field.ARTICLE.AUTHOR_ID,// coll中，作者的字段名
-
-        }
-        // ap.inf('collConfig',collConfig)
-        let collImageConfig={
-            collName:e_coll.ARTICLE_IMAGE,//实际存储图片的coll名
-            fkFieldName:e_field.ARTICLE_IMAGE.ARTICLE_ID, //字段名，记录图片存储在那个coll中
-            sizeFieldName:e_field.ARTICLE_IMAGE.SIZE_IN_MB,//字段名，记录图片的size存储在那个field中，以便需要的话，对user_resource_static更新
-            imageHashFieldName:e_field.ARTICLE_IMAGE.HASH_NAME, //记录图片hash名字的字段名
-            storePathPopulateOpt:[{path:e_field.ARTICLE_IMAGE.PATH_ID,select:e_field.STORE_PATH.PATH}], //需要storePath，以便执行fs.unlink
-        }
-        // ap.inf('collImageConfig',collImageConfig)
-        // ap.inf('content',content)
-        // ap.inf('recordId',recordId)
-        // ap.inf('resourceRange',e_resourceRange.WHOLE_FILE_RESOURCE_PER_PERSON)
-        // content,recordId,collConfig,collImageConfig,resourceRange
-        let {content,deletedFileNum,deletedFileSize}=await controllerHelper.contentDbDeleteNotExistImage_async({
-            content:docValue[e_field.ARTICLE.HTML_CONTENT],
-            recordId:recordId,
-            collConfig:collConfig,
-            collImageConfig:collImageConfig,
-            //resourceRange:e_resourceRange.WHOLE_FILE_RESOURCE_PER_PERSON, //控制是否需要对user_resource_static进行更新时，使用的resourceType，可以为undefined
-        })
-        /***    更新article的size和num    ***/
-        let updateFieldsValue
-        updateFieldsValue={
-            "$inc":{
-                [e_field.IMPEACH.IMAGES_NUM]:-deletedFileNum,
-                [e_field.IMPEACH.IMAGES_SIZE_IN_MB]:-deletedFileSize
-            }
-        }
-        await common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel.article,id:recordId,updateFieldsValue:updateFieldsValue})
-        /***    更新user_resource_static的size和num    ***/
-        await e_dbModel.user_resource_static.update({
-            [e_field.USER_RESOURCE_STATIC.USER_ID]:userId,
-            [e_field.USER_RESOURCE_STATIC.RESOURCE_RANGE]:e_resourceRange.WHOLE_FILE_RESOURCE_PER_PERSON,
-        },{
-            $inc:{
-                [e_field.USER_RESOURCE_STATIC.UPLOADED_FILE_NUM]:-deletedFileNum,
-                [e_field.USER_RESOURCE_STATIC.UPLOADED_FILE_SIZE_IN_MB]:-deletedFileSize,
-            }
-        })
-
-        docValue[e_field.IMPEACH.CONTENT]=content
-    }
-
-    // ap.inf('contentDbDeleteNotExistImage_async done')
 
     /*********************************************/
     /**********          业务处理        *********/

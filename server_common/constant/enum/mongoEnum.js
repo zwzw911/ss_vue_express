@@ -39,7 +39,6 @@ const AdminUserType={
         ADMIN_ROOT:'超级管理员',
         ADMIN_NORMAL:'管理员',
     }
-
 }
 const AddFriendRule={
     DB:{

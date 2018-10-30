@@ -2,7 +2,7 @@
  * Created by Ada on 2017/9/2.
  */
 'use strict'
-// const fs=require(`fs`)
+const ap=require(`awesomeprint`)
 // const runAllGenForCommon=require('./runAllGen').genAllForCommon
 
 const absolutePath=require('../constant/config/appSetting').absolutePath
@@ -25,7 +25,9 @@ genSha().then(function(res){
     // return res
     // return
     // process.exit()
+    ap.inf('gen lus sha done',res)
 },function (err) {
+    ap.wrn('gen lus sha fail',err)
     // return
     // process.exit()
 })

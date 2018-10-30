@@ -101,11 +101,11 @@ async function createRoot(){
 }
 
 /*async  function removeAll(){
-    await common_operation_model.removeAll_async({dbModel:e_dbModel.store_path})
-    await common_operation_model.removeAll_async({dbModel:e_dbModel.category})
-    await common_operation_model.removeAll_async({dbModel:e_dbModel.resource_profile})
-    await common_operation_model.removeAll_async({dbModel:e_dbModel.admin_user})
-    await common_operation_model.removeAll_async({dbModel:e_dbModel.admin_sugar})
+    await common_operation_model.deleteAll_async({dbModel:e_dbModel.store_path})
+    await common_operation_model.deleteAll_async({dbModel:e_dbModel.category})
+    await common_operation_model.deleteAll_async({dbModel:e_dbModel.resource_profile})
+    await common_operation_model.deleteAll_async({dbModel:e_dbModel.admin_user})
+    await common_operation_model.deleteAll_async({dbModel:e_dbModel.admin_sugar})
 }*/
 
 
@@ -125,7 +125,7 @@ async function remove_all_init_data_async(){
     let dbModelInArray=[e_dbModel.store_path,e_dbModel.category,e_dbModel.resource_profile,e_dbModel.admin_user,e_dbModel.admin_sugar]
     let promiseTobeExec=[]
     for(let singleDbModel of dbModelInArray){
-        promiseTobeExec.push(common_operation_model.removeAll_async({dbModel:singleDbModel}))
+        promiseTobeExec.push(common_operation_model.deleteAll_async({dbModel:singleDbModel}))
         // await
     }
     return await Promise.all(promiseTobeExec)
@@ -134,7 +134,7 @@ async function remove_all_async(){
     // let dbModelInArray=[e_dbModel.store_path,e_dbModel.category,e_dbModel.resource_profile,e_dbModel.admin_user]
     let promiseTobeExec=[]
     for(let singleDbModel of dbModelArray){
-        promiseTobeExec.push(common_operation_model.removeAll_async({dbModel:singleDbModel}))
+        promiseTobeExec.push(common_operation_model.deleteAll_async({dbModel:singleDbModel}))
     }
     return await Promise.all(promiseTobeExec)
     // ap.inf('remove_all_async done')

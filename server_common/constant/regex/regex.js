@@ -19,6 +19,7 @@ const regex={
     objectId:/^[0-9a-fA-F]{24}$/,//mongodb objectid
     
     userName:/^[\u4E00-\u9FFF\w]{2,20}$/,//2-20个汉字/英文/数字
+    description:/^[\u4E00-\u9FFF\w]{1,255}$/,//2-20个汉字/英文/数字，
     salt:/^[0-9a-zA-Z]{1,10}$/,
     password:/^[A-Za-z0-9~`!@#%&)(_=}{:"><,;'\[\]\\\^\$\*\+\|\?\.\-]{6,20}$/,
     // encryptedPassword:/^[0-9a-f]{40}$/,
