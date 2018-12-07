@@ -45,7 +45,8 @@ const read_article=require('D:/U/ss_vue_express/server_common/model/mongo/struct
 const user_input_keyword=require('D:/U/ss_vue_express/server_common/model/mongo/structure/user_behavior/user_input_keyword.js').collModel
 /*       user_operation           */
 const collection=require('D:/U/ss_vue_express/server_common/model/mongo/structure/user_operation/collection.js').collModel
-const recommend=require('D:/U/ss_vue_express/server_common/model/mongo/structure/user_operation/recommend.js').collModel
+const receive_recommend=require('D:/U/ss_vue_express/server_common/model/mongo/structure/user_operation/receive_recommend.js').collModel
+const send_recommend=require('D:/U/ss_vue_express/server_common/model/mongo/structure/user_operation/send_recommend.js').collModel
 const topic=require('D:/U/ss_vue_express/server_common/model/mongo/structure/user_operation/topic.js').collModel
 
 
@@ -93,6 +94,7 @@ module.exports={
     user_input_keyword,
     /*       user_operation           */
     collection,
-    recommend,
+    receive_recommend,
+    send_recommend,
     topic,
 }

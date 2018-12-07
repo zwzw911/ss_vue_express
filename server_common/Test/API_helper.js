@@ -31,11 +31,14 @@ async function removeExistsRecord_async(){
 
 /****************       USER            *****************/
 async function createUser_async({userData,app}){
+    // ap.inf('createUser_async userData',userData)
     let data={}
     data.values={}
     data.values[e_part.RECORD_INFO]=userData
 // console.log(`userDate for create user==============>${JSON.stringify(userData)}`)
-    data.values.method=e_method.CREATE
+//     data.values.method=e_method.CREATE
+//     ap.inf('createUser_async data',data)
+//     ap.inf('createUser_async app',app)
     return new Promise(function(resolve,reject){
         request(app).post('/user/').set('Accept', 'application/json').send(data)
             .end(function(err, res) {

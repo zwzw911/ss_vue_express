@@ -13,20 +13,25 @@ const controllerError={
             userInPenalizeCantCreateUserFriendGroup:{rc:51702,msg:`您被禁止创建好友分组`},
         },
         'put':{
-            notLoginCantUpdateUserFriendGroup:{rc:51704,msg:`尚未登录，无法更新好友分组`},
-            userInPenalizeCantUpdateUserFriendGroup:{rc:51706,msg:`您被禁止对好友分组更新`},
+            notLoginCantUpdateUserFriendGroup:{rc:51710,msg:`尚未登录，无法更新好友分组`},
+            userInPenalizeCantUpdateUserFriendGroup:{rc:51712,msg:`您被禁止对好友分组更新`},
 
             // userInPenalizeCantUpdateAddFriend:{rc:51906,msg:`您被禁止添加好友`},
-            notLoginCantMoveFriend:{rc:51708,msg:`尚未登录，无法移动好友`},
-            userInPenalizeCantMoveFriend:{rc:51710,msg:`您被禁止添加好友`},
+            notLoginCantMoveFriend:{rc:51714,msg:`尚未登录，无法移动好友`},
+            userInPenalizeCantMoveFriend:{rc:51715,msg:`您被禁止添加好友`},
         },
         'delete':{
-            notLoginCantDeleteUserFriendGroup:{rc:51712,msg:`尚未登录，无法删除好友分组`},
-            userInPenalizeCantDeleteUserFriendGroup:{rc:51714,msg:`您被禁止删除好友分组`},
+            notLoginCantDeleteUserFriendGroup:{rc:51720,msg:`尚未登录，无法删除好友分组`},
+            userInPenalizeCantDeleteUserFriendGroup:{rc:51722,msg:`您被禁止删除好友分组`},
         },
         'get':{
-            notLoginCantGetUserFriendGroup:{rc:51716,msg:`尚未登录，无法获得好友分组`},
-            notLoginCantSearchFriend:{rc:51718,msg:`尚未登录，无法查询好友`},
+            notLoginCantGetUserFriendGroup:{rc:51730,msg:`尚未登录，无法获得好友分组`},
+            notLoginCantGetUserFriendGroupAndItsMember:{rc:51732,msg:`尚未登录，无法获得好友分组以及其下成员`},
+            notLoginCantGetUserFriendGroupMember:{rc:51734,msg:`尚未登录，无法获得好友分组以及其下成员`},
+            encryptedFriendGroupIdFormatInvalid:{rc:51736,msg:`好友分组编号不正确`},
+            decryptedFriendGroupIdFormatInvalid:{rc:51737,msg:`好友分组编号不正确`},
+
+            notLoginCantSearchFriend:{rc:51738,msg:`尚未登录，无法查询好友`},
         },
     },
 
@@ -38,6 +43,7 @@ const controllerError={
         defaultGroupNumberExceed:{rc:51722,msg:`'我的好友'中，好友数量达到上限`},
         reachMaxUserFriendGroupNum:{rc:51724,msg:`达到最大好友分组数，无法继续创建`},
         groupNameAlreadyExistCantCreate:{rc:51726,msg:`好友分组名已经存在，无法继续创建`},
+        notOwnerCantGetGroupMember:{rc:51727,msg:`不是您的好友分组，无法读取其中成员信息`},
     },
 
     update:{

@@ -1,4 +1,4 @@
-/*    gene by D:\U\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-10-24   */ 
+/*    gene by D:\U\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-11-27   */ 
  
 "use strict"
 const inputRule={
@@ -25,14 +25,14 @@ const inputRule={
             'dataType':"string",
             'applyRange':["create"],
             'require':{"define":{"create":true},"error":{"rc":100410,"msg":"受罚类型不能为空"},"mongoError":{"rc":200410,"msg":"受罚类型不能为空"}},
-            'enum':{"define":["1","2","3","4","10","20","21","30","31","40","50","60","61"],"error":{"rc":100412,"msg":"受罚类型不正确"},"mongoError":{"rc":200412,"msg":"受罚类型不正确"}},
+            'enum':{"define":["1","2","3","4","10","20","21","30","31","40","50","60","61","70","80"],"error":{"rc":100412,"msg":"受罚类型不正确"},"mongoError":{"rc":200412,"msg":"受罚类型不正确"}},
         },
         'penalizeSubType':{
             'chineseName':"受罚子类型",
             'dataType':"string",
             'applyRange':["create"],
             'require':{"define":{"create":true},"error":{"rc":100414,"msg":"受罚子类型不能为空"},"mongoError":{"rc":200414,"msg":"受罚子类型不能为空"}},
-            'enum':{"define":["1","2","3","4","9"],"error":{"rc":100416,"msg":"受罚子类型不正确"},"mongoError":{"rc":200416,"msg":"受罚子类型不正确"}},
+            'enum':{"define":["1","2","3","4","5","9"],"error":{"rc":100416,"msg":"受罚子类型不正确"},"mongoError":{"rc":200416,"msg":"受罚子类型不正确"}},
         },
         'duration':{
             'chineseName':"受罚时长",
@@ -153,7 +153,7 @@ const inputRule={
             'dataType':"string",
             'applyRange':["create"],
             'require':{"define":{"create":true},"error":{"rc":100506,"msg":"资源配置范围不能为空"},"mongoError":{"rc":200506,"msg":"资源配置范围不能为空"}},
-            'enum':{"define":["1","10","12","14","16","18","20","100","102","105","106","110","112","114","116","118","120","122","124","126","128","130"],"error":{"rc":100508,"msg":"资源配置范围的类型不正确"},"mongoError":{"rc":200508,"msg":"资源配置范围的类型不正确"}},
+            'enum':{"define":["1","10","12","14","16","18","20","100","102","105","106","110","112","114","116","118","120","122","124","126","128","130","140","150","151"],"error":{"rc":100508,"msg":"资源配置范围的类型不正确"},"mongoError":{"rc":200508,"msg":"资源配置范围的类型不正确"}},
         },
         'type':{
             'chineseName':"资源配置类型",
@@ -326,29 +326,29 @@ const inputRule={
             'chineseName':"文档附件总数",
             'dataType':["number"],
             'applyRange':["update_scalar"],
-            'require':{"define":{"update_scalar":false},"error":{"rc":101072,"msg":"文档附件总数不能为空"},"mongoError":{"rc":20159,"msg":"附件总数不能为空"}},
-            'max':{"define":5,"error":{"rc":101074,"msg":"文档附件总数不能超过5个"},"mongoError":{"rc":20154,"msg":"附件总数不能为空"}},
+            'require':{"define":{"update_scalar":false},"error":{"rc":101072,"msg":"文档附件总数不能为空"},"mongoError":{"rc":201072,"msg":"附件总数不能为空"}},
+            'max':{"define":5,"error":{"rc":101074,"msg":"文档附件总数不能超过5个"},"mongoError":{"rc":201074,"msg":"附件总数不能为空"}},
         },
         'attachmentsSizeInMb':{
             'chineseName':"文档附件总大小",
             'dataType':["number"],
             'applyRange':["update_scalar"],
-            'require':{"define":{"update_scalar":false},"error":{"rc":101076,"msg":"文档附件总大小不能为空"},"mongoError":{"rc":20159,"msg":"附件总数不能为空"}},
-            'max':{"define":12,"error":{"rc":101078,"msg":"文档附件总大小不能超过12Mb"},"mongoError":{"rc":20154,"msg":"附件总数不能为空"}},
+            'require':{"define":{"update_scalar":false},"error":{"rc":101076,"msg":"文档附件总大小不能为空"},"mongoError":{"rc":201076,"msg":"附件总数不能为空"}},
+            'max':{"define":12,"error":{"rc":101078,"msg":"文档附件总大小不能超过12Mb"},"mongoError":{"rc":201078,"msg":"附件总数不能为空"}},
         },
         'imagesNum':{
             'chineseName':"文档图片总数",
             'dataType':["number"],
             'applyRange':["update_scalar"],
-            'require':{"define":{"update_scalar":false},"error":{"rc":101080,"msg":"文档图片总数不能为空"},"mongoError":{"rc":20159,"msg":"附件总数不能为空"}},
-            'max':{"define":5,"error":{"rc":101082,"msg":"文档图片总数不能超过5个"},"mongoError":{"rc":20154,"msg":"附件总数不能为空"}},
+            'require':{"define":{"update_scalar":false},"error":{"rc":101080,"msg":"文档图片总数不能为空"},"mongoError":{"rc":201080,"msg":"附件总数不能为空"}},
+            'max':{"define":5,"error":{"rc":101082,"msg":"文档图片总数不能超过5个"},"mongoError":{"rc":201082,"msg":"附件总数不能为空"}},
         },
         'imagesSizeInMb':{
             'chineseName':"文档图片总大小",
             'dataType':["number"],
             'applyRange':["update_scalar"],
-            'require':{"define":{"update_scalar":false},"error":{"rc":101084,"msg":"文档图片总大小不能为空"},"mongoError":{"rc":20159,"msg":"附件总数不能为空"}},
-            'max':{"define":2,"error":{"rc":101088,"msg":"文档图片总大小不能超过2Mb"},"mongoError":{"rc":20154,"msg":"附件总数不能为空"}},
+            'require':{"define":{"update_scalar":false},"error":{"rc":101084,"msg":"文档图片总大小不能为空"},"mongoError":{"rc":201084,"msg":"附件总数不能为空"}},
+            'max':{"define":2,"error":{"rc":101088,"msg":"文档图片总大小不能超过2Mb"},"mongoError":{"rc":201086,"msg":"附件总数不能为空"}},
         },
     },
     'article_comment':{
@@ -524,7 +524,7 @@ const inputRule={
             'dataType':"string",
             'applyRange':["create"],
             'require':{"define":{"create":true},"error":{"rc":102208,"msg":"处罚类型不能为空"},"mongoError":{"rc":202208,"msg":"处罚类型不能为空"}},
-            'enum':{"define":["1","2","3","4","10","20","21","30","31","40","50","60","61"],"error":{"rc":102210,"msg":"未知处罚类型"},"mongoError":{"rc":202210,"msg":"未知处罚类型"}},
+            'enum':{"define":["1","2","3","4","10","20","21","30","31","40","50","60","61","70","80"],"error":{"rc":102210,"msg":"未知处罚类型"},"mongoError":{"rc":202210,"msg":"未知处罚类型"}},
         },
         'duration':{
             'chineseName':"处罚时间",
@@ -1194,47 +1194,29 @@ const inputRule={
             'format':{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":10880,"msg":"收藏夹创建人必须是objectId"},"mongoError":{"rc":20880,"msg":"收藏夹创建人必须是objectId"}},
         },
     },
-    'recommend':{
+    'send_recommend':{
         'articleId':{
             'chineseName':"文档",
             'dataType':"objectId",
             'applyRange':["create"],
-            'require':{"define":{"create":true},"error":{"rc":10800,"msg":"文档不能为空"},"mongoError":{"rc":20800,"msg":"文档不能为空"}},
-            'format':{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":10802,"msg":"文档必须是objectId"},"mongoError":{"rc":20802,"msg":"文档必须是objectId"}},
+            'require':{"define":{"create":true},"error":{"rc":105100,"msg":"文档不能为空"},"mongoError":{"rc":205100,"msg":"文档不能为空"}},
+            'format':{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":105102,"msg":"文档必须是objectId"},"mongoError":{"rc":205102,"msg":"文档必须是objectId"}},
         },
-        'toUserId':{
+        'receivers':{
             'chineseName':"被荐人",
             'dataType':["objectId"],
             'applyRange':["create"],
-            'require':{"define":{"create":false},"error":{"rc":10803,"msg":"被荐人不能为空"},"mongoError":{"rc":20803,"msg":"被荐人不能为空"}},
-            'arrayMinLength':{"define":1,"error":{"rc":10804,"msg":"至少推荐给1个用户"},"mongoError":{"rc":20804,"msg":"至少推荐给1个用户"}},
-            'arrayMaxLength':{"define":5,"error":{"rc":10805,"msg":"最多推荐给5个用户"},"mongoError":{"rc":20805,"msg":"最多推荐给5个用户"}},
-            'format':{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":10806,"msg":"被荐人必须是objectId"},"mongoError":{"rc":20806,"msg":"被荐人必须是objectId"}},
+            'require':{"define":{"create":true},"error":{"rc":105104,"msg":"被荐人不能为空"},"mongoError":{"rc":205104,"msg":"被荐人不能为空"}},
+            'arrayMinLength':{"define":1,"error":{"rc":105106,"msg":"至少推荐给1个用户"},"mongoError":{"rc":205106,"msg":"至少推荐给1个用户"}},
+            'arrayMaxLength':{"define":10,"error":{"rc":105108,"msg":"最多推荐给10个用户"},"mongoError":{"rc":205108,"msg":"最多推荐给10个用户"}},
+            'format':{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":105110,"msg":"被荐人必须是objectId"},"mongoError":{"rc":205110,"msg":"被荐人必须是objectId"}},
         },
-        'toGroupId':{
-            'chineseName':"被荐朋友组",
-            'dataType':["objectId"],
-            'applyRange':["create"],
-            'require':{"define":{"create":false},"error":{"rc":10807,"msg":"被荐朋友组不能为空"},"mongoError":{"rc":20807,"msg":"被荐朋友组不能为空"}},
-            'arrayMinLength':{"define":1,"error":{"rc":10808,"msg":"至少推荐给1个朋友组"},"mongoError":{"rc":20808,"msg":"至少推荐给1个朋友组"}},
-            'arrayMaxLength':{"define":5,"error":{"rc":10809,"msg":"最多推荐给5个朋友组"},"mongoError":{"rc":20809,"msg":"最多推荐给5个朋友组"}},
-            'format':{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":10810,"msg":"被荐朋友组必须是objectId"},"mongoError":{"rc":20810,"msg":"被荐朋友组必须是objectId"}},
-        },
-        'toPublicGroupId':{
-            'chineseName':"被荐群",
-            'dataType':["objectId"],
-            'applyRange':["create"],
-            'require':{"define":{"create":false},"error":{"rc":10811,"msg":"被荐群不能为空"},"mongoError":{"rc":20811,"msg":"被荐群不能为空"}},
-            'arrayMinLength':{"define":1,"error":{"rc":10812,"msg":"至少推荐给1个群"},"mongoError":{"rc":20812,"msg":"至少推荐给1个群"}},
-            'arrayMaxLength':{"define":5,"error":{"rc":10813,"msg":"最多推荐给5个群"},"mongoError":{"rc":20813,"msg":"最多推荐给5个群"}},
-            'format':{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":10814,"msg":"被荐群必须是objectId"},"mongoError":{"rc":20814,"msg":"被荐群必须是objectId"}},
-        },
-        'initiatorId':{
+        'sender':{
             'chineseName':"推荐人",
             'dataType':"objectId",
             'applyRange':["create"],
-            'require':{"define":{"create":true},"error":{"rc":10816,"msg":"推荐人不能为空"},"mongoError":{"rc":20816,"msg":"推荐人不能为空"}},
-            'format':{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":10818,"msg":"推荐人必须是objectId"},"mongoError":{"rc":20818,"msg":"推荐人必须是objectId"}},
+            'require':{"define":{"create":true},"error":{"rc":105150,"msg":"推荐人不能为空"},"mongoError":{"rc":205150,"msg":"推荐人不能为空"}},
+            'format':{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":105152,"msg":"推荐人必须是objectId"},"mongoError":{"rc":205152,"msg":"推荐人必须是objectId"}},
         },
     },
     'topic':{
@@ -1413,7 +1395,7 @@ const inputRule={
             'dataType':"string",
             'applyRange':["create"],
             'require':{"define":{"create":true},"error":{"rc":11214,"msg":"统计资源类别不能为空"},"mongoError":{"rc":21214,"msg":"统计资源类别不能为空"}},
-            'enum':{"define":["1","10","12","14","16","18","20","100","102","105","106","110","112","114","116","118","120","122","124","126","128","130"],"error":{"rc":10020,"msg":"用户权限不正确"},"mongoError":{"rc":20020,"msg":"用户权限不正确"}},
+            'enum':{"define":["1","10","12","14","16","18","20","100","102","105","106","110","112","114","116","118","120","122","124","126","128","130","140","150","151"],"error":{"rc":10020,"msg":"用户权限不正确"},"mongoError":{"rc":20020,"msg":"用户权限不正确"}},
         },
         'uploadedFileNum':{
             'chineseName':"上传文件数量",
@@ -1429,6 +1411,41 @@ const inputRule={
         },
     },
     'suagr':{
+    },
+    'receive_recommend':{
+        'receiver':{
+            'chineseName':"接收人",
+            'dataType':"objectId",
+            'applyRange':["create"],
+            'require':{"define":{"create":true},"error":{"rc":105250,"msg":"接收人不能为空"},"mongoError":{"rc":205250,"msg":"接收人不能为空"}},
+            'format':{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":105252,"msg":"接收人必须是objectId"},"mongoError":{"rc":205252,"msg":"接收人必须是objectId"}},
+        },
+        'unreadRecommends':{
+            'chineseName':"未读的分享文档",
+            'dataType':["objectId"],
+            'applyRange':["create","update_array"],
+            'require':{"define":{"create":false,"update_array":true},"error":{"rc":105254,"msg":"未读的分享文档不能为空"},"mongoError":{"rc":205254,"msg":"未读的分享文档不能为空"}},
+            'format':{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":105258,"msg":"未读的分享文档必须是objectId"},"mongoError":{"rc":205258,"msg":"未读的分享文档必须是objectId"}},
+        },
+        'unreadRecommendsNum':{
+            'chineseName':"未读的分享文档数量",
+            'dataType':"number",
+            'applyRange':["create","update_array"],
+            'require':{"define":{"create":false,"update_array":false},"error":{"rc":105260,"msg":"未读的分享文档数量不能为空"},"mongoError":{"rc":205260,"msg":"未读的分享文档数量不能为空"}},
+        },
+        'readRecommends':{
+            'chineseName':"已读的分享文档",
+            'dataType':["objectId"],
+            'applyRange':["create","update_array"],
+            'require':{"define":{"create":false,"update_array":true},"error":{"rc":105262,"msg":"已读的分享文档不能为空"},"mongoError":{"rc":205262,"msg":"已读的分享文档不能为空"}},
+            'format':{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":105264,"msg":"已读的分享文档必须是objectId"},"mongoError":{"rc":205264,"msg":"已读的分享文档必须是objectId"}},
+        },
+        'readRecommendsNum':{
+            'chineseName':"已读的分享文档数量",
+            'dataType':"number",
+            'applyRange':["create","update_array"],
+            'require':{"define":{"create":false,"update_array":false},"error":{"rc":105266,"msg":"已读的分享文档数量不能为空"},"mongoError":{"rc":205266,"msg":"已读的分享文档数量不能为空"}},
+        },
     },
 }
 module.exports={

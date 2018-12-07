@@ -30,7 +30,7 @@ async function getFirstAdminSession({adminApp}){
                 ap.inf('returnSess', res)
                 let returnSess=res['header']['set-cookie'][0].split(';')[0]
                 let parsedRes=JSON.parse(res.text)
-                ap.inf('returnSess', parsedRes)
+                ap.inf('returnSess', returnSess)
                 // assert.deepStrictEqual(parsedRes.rc,0)
                 return resolve(returnSess)
             });
@@ -103,7 +103,7 @@ async function adminUserLogin_returnSess_async({userData,captcha,sess,adminApp})
     delete userDataCopy[e_field.ADMIN_USER.USER_PRIORITY]
     data.values[e_part.RECORD_INFO]=userDataCopy//,notExist:{value:123}
     data.values[e_part.CAPTCHA]=captcha
-    // ap.wrn('data for login',data)
+    ap.wrn('data for login',data)
     // console.log(`adminUser login data ===>${JSON.stringify(data)}`)
     return new Promise(function(resolve,reject){
         request.agent(adminApp).post('/admin_user/login/').set('Accept', 'application/json').set('Cookie',[sess]).send(data)

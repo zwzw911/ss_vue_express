@@ -212,7 +212,7 @@ async  function createJoinPublicGroupRequest_async({req,applyRange}){
     /!*********************************************!/
     /!**********      加密 敏感数据       *********!/
     /!*********************************************!/
-    controllerHelper.cryptRecordValue({record:createdRecord,salt:tempSalt,collName:collName})*/
+    controllerHelper.encryptSingleRecord({record:createdRecord,salt:tempSalt,collName:collName})*/
 
     // ap.inf('createdRecord done',createdRecord)
     return Promise.resolve({rc:0,msg:'入群请求已经发送，等待群管理员处理'})

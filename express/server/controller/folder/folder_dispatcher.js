@@ -113,7 +113,7 @@ async function dispatcher_async(req){
                     return Promise.reject(controllerError.dispatch.get.cryptedFolderIdFormatInvalid)
                 }
                 //解密
-                tmpResult=crypt.decryptSingleFieldValue({fieldValue:cryptedObjectId,salt:tempSalt})
+                tmpResult=crypt.decryptSingleValue({fieldValue:cryptedObjectId,salt:tempSalt})
                 if(tmpResult.rc>0){
                     return Promise.reject(tmpResult)
                 }

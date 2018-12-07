@@ -44,6 +44,9 @@ const controllerSetting=require('./user_friend_group_setting/user_friend_group_s
 
 /*                          controller                          */
 const getUserFriendGroup_async=require('./user_friend_group_logic/get_user_friend_group').getUserFriendGroup_async
+const getUserFriendGroupAndItsMember_async=require('./user_friend_group_logic/get_user_friend_group').getUserFriendGroupAndItsMember_async
+const getUserFriendGroupMember_async=require('./user_friend_group_logic/get_user_friend_group').getUserFriendGroupMember_async
+
 const searchFriendInGroup_async=require('./user_friend_group_logic/search_friend_in_group').searchFriendInGroup_async
 
 const create_async=require('./user_friend_group_logic/create_user_friend_group').createUserFriendGroup_async
@@ -91,6 +94,36 @@ async function dispatcher_async({req}){
                 await controllerPreCheck.userStateCheck_async({req: req,userLoginCheck: userLoginCheck,penalizeCheck: penalizeCheck})
                 return await getUserFriendGroup_async({req: req})
             }
+            if(originalUrl==='/user_friend_group/friends/' || originalUrl==='/user_friend_group/friends'){
+                userLoginCheck = {
+                    needCheck: true,
+                    error: controllerError.dispatch.get.notLoginCantGetUserFriendGroupAndItsMember
+                }
+                await controllerPreCheck.userStateCheck_async({req: req,userLoginCheck: userLoginCheck,penalizeCheck: penalizeCheck})
+                //只返回group，减轻数据流量
+                return await getUserFriendGroup_async({req: req})
+            }
+
+            let friendsInGroup=new RegExp(`/user_friend_group/friendGroup/[0-9a-fA-F]{64}/?`)
+            if (true===friendsInGroup.test(originalUrl)) {
+                // ap.wrn('friendGroup/[0-9a-fA-F]{64} in')
+                userLoginCheck = {
+                    needCheck: true,
+                    error: controllerError.dispatch.get.notLoginCantGetUserFriendGroupMember
+                }
+                await controllerPreCheck.userStateCheck_async({req: req,userLoginCheck: userLoginCheck,penalizeCheck: penalizeCheck})
+                //检测url中objectId并解密
+                await controllerPreCheck.checkObjectIdInReqParams_async({
+                    req:req,
+                    parameterName:'friendGroupId',
+                    cryptedError:controllerError.dispatch.get.encryptedFriendGroupIdFormatInvalid,
+                    decryptedError:controllerError.dispatch.get.decryptedFriendGroupIdFormatInvalid
+                })
+                // ap.wrn('check done')
+                //只返回group，减轻数据流量
+                return await getUserFriendGroupMember_async({req: req})
+            }
+
             /**     搜索朋友    **/
             if ( -1!==originalUrl.search( '/user_friend_group/friend')) {
                 userLoginCheck = {

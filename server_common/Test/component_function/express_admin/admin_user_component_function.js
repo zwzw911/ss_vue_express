@@ -19,7 +19,7 @@ const db_operation_helper=require('../../db_operation_helper')
 /*************************************************************/
 /**************        direct function         **************/
 /*************************************************************/
-const cryptSingleFieldValue=require(`../../../function/assist/crypt`).cryptSingleFieldValue
+const encryptSingleValue=require(`../../../function/assist/crypt`).encryptSingleValue
 const generateSugarAndHashPassword=require(`../../../controller/controllerHelper`).generateSugarAndHashPassword
 const common_operation_model=require(`../../../model/mongo/operation/common_operation_model`)
 const redisOperation=require('../../../model/redis/operation/redis_common_operation')
@@ -31,12 +31,13 @@ async function adminUserLogin_returnSess_async({userData,adminApp}){
     // ap.inf('adminUserLogin_returnSess_async in')
     //获得sessionId
     let sess=await adminUserAPI.getFirstAdminSession({adminApp:adminApp})
+    ap.inf('sess',sess)
     //生成并获得captcha
     // ap.inf('gen admin cpatcha in')
     await adminUserAPI.genAdminCaptcha({sess:sess,adminApp:adminApp})
     let captcha=await adminUserAPI.getAdminCaptcha({sess:sess})
-    // ap.inf('captcha',captcha)
-    // ap.inf('sess',sess)
+    ap.inf('captcha',captcha)
+
     sess=await adminUserAPI.adminUserLogin_returnSess_async({userData:userData,captcha:captcha,sess:sess,adminApp:adminApp})
     return Promise.resolve(sess)
 }
@@ -78,7 +79,7 @@ async function reCreateAdminUser_returnSessUserId_async({userData,adminRootSess,
     //获得tempSalt
 /*    let tempSalt=await commonAPI.getTempSalt_async({sess:rootSess})
     //模拟加密objectId
-    userId=cryptSingleFieldValue({fieldValue:userId,salt:tempSalt}).msg*/
+    userId=encryptSingleValue({fieldValue:userId,salt:tempSalt}).msg*/
 
     return Promise.resolve({userId:userId,sess:rootSess})
 }

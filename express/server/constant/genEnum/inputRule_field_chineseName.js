@@ -204,12 +204,10 @@ const ChineseName={
         'topicsId':'收藏系列',
         'creatorId':'收藏夹创建人',
     },
-    recommend:{
+    send_recommend:{
         'articleId':'文档',
-        'toUserId':'被荐人',
-        'toGroupId':'被荐朋友组',
-        'toPublicGroupId':'被荐群',
-        'initiatorId':'推荐人',
+        'receivers':'被荐人',
+        'sender':'推荐人',
     },
     topic:{
         'name':'系列名',
@@ -247,6 +245,13 @@ const ChineseName={
         'uploadedFileSizeInMb':'上传文件占用空间',
     },
     suagr:{
+    },
+    receive_recommend:{
+        'receiver':'接收人',
+        'unreadRecommends':'未读的分享文档',
+        'unreadRecommendsNum':'未读的分享文档数量',
+        'readRecommends':'已读的分享文档',
+        'readRecommendsNum':'已读的分享文档数量',
     },
 }
 

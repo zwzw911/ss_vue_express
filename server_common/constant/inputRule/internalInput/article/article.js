@@ -65,29 +65,29 @@ const article= {
         [otherRuleFiledName.CHINESE_NAME]: '文档附件总数',
         [otherRuleFiledName.DATA_TYPE]: [serverDataType.NUMBER],
         [otherRuleFiledName.APPLY_RANGE]:[applyRange.UPDATE_SCALAR], //
-        [ruleFiledName.REQUIRE]: {define: {[applyRange.UPDATE_SCALAR]:false}, error: {rc: baseJSErrorCode+72, msg: '文档附件总数不能为空'}, mongoError: {rc: 20159, msg: '附件总数不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
-        [ruleFiledName.MAX]:{define:maxNumber.article.attachmentNumberPerArticle, error: {rc: baseJSErrorCode+74, msg: `文档附件总数不能超过${maxNumber.article.attachmentNumberPerArticle}个`}, mongoError: {rc: 20154, msg: '附件总数不能为空'}},
+        [ruleFiledName.REQUIRE]: {define: {[applyRange.UPDATE_SCALAR]:false}, error: {rc: baseJSErrorCode+72, msg: '文档附件总数不能为空'}, mongoError: {rc: baseMongoErrorCode+72, msg: '附件总数不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        [ruleFiledName.MAX]:{define:maxNumber.article.attachmentNumberPerArticle, error: {rc: baseJSErrorCode+74, msg: `文档附件总数不能超过${maxNumber.article.attachmentNumberPerArticle}个`}, mongoError: {rc: baseMongoErrorCode+74, msg: '附件总数不能为空'}},
     },
     attachmentsSizeInMb:{
         [otherRuleFiledName.CHINESE_NAME]: '文档附件总大小',
         [otherRuleFiledName.DATA_TYPE]: [serverDataType.NUMBER],
         [otherRuleFiledName.APPLY_RANGE]:[applyRange.UPDATE_SCALAR], //
-        [ruleFiledName.REQUIRE]: {define: {[applyRange.UPDATE_SCALAR]:false}, error: {rc: baseJSErrorCode+76, msg: '文档附件总大小不能为空'}, mongoError: {rc: 20159, msg: '附件总数不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
-        [ruleFiledName.MAX]:{define:maxNumber.article.attachmentSizeInMb, error: {rc: baseJSErrorCode+78, msg: `文档附件总大小不能超过${maxNumber.article.attachmentSizeInMb}Mb`}, mongoError: {rc: 20154, msg: '附件总数不能为空'}},
+        [ruleFiledName.REQUIRE]: {define: {[applyRange.UPDATE_SCALAR]:false}, error: {rc: baseJSErrorCode+76, msg: '文档附件总大小不能为空'}, mongoError: {rc: baseMongoErrorCode+76, msg: '附件总数不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        [ruleFiledName.MAX]:{define:maxNumber.article.attachmentSizeInMb, error: {rc: baseJSErrorCode+78, msg: `文档附件总大小不能超过${maxNumber.article.attachmentSizeInMb}Mb`}, mongoError: {rc: baseMongoErrorCode+78, msg: '附件总数不能为空'}},
     },
     imagesNum:{
         [otherRuleFiledName.CHINESE_NAME]: '文档图片总数',
         [otherRuleFiledName.DATA_TYPE]: [serverDataType.NUMBER],
         [otherRuleFiledName.APPLY_RANGE]:[applyRange.UPDATE_SCALAR], //
-        [ruleFiledName.REQUIRE]: {define: {[applyRange.UPDATE_SCALAR]:false}, error: {rc: baseJSErrorCode+80, msg: '文档图片总数不能为空'}, mongoError: {rc: 20159, msg: '附件总数不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
-        [ruleFiledName.MAX]:{define:maxNumber.article.imagesNumberPerArticle, error: {rc: baseJSErrorCode+82, msg: `文档图片总数不能超过${maxNumber.article.imagesNumberPerArticle}个`}, mongoError: {rc: 20154, msg: '附件总数不能为空'}},
+        [ruleFiledName.REQUIRE]: {define: {[applyRange.UPDATE_SCALAR]:false}, error: {rc: baseJSErrorCode+80, msg: '文档图片总数不能为空'}, mongoError: {rc: baseMongoErrorCode+80, msg: '附件总数不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        [ruleFiledName.MAX]:{define:maxNumber.article.imagesNumberPerArticle, error: {rc: baseJSErrorCode+82, msg: `文档图片总数不能超过${maxNumber.article.imagesNumberPerArticle}个`}, mongoError: {rc: baseMongoErrorCode+82, msg: '附件总数不能为空'}},
     },
     imagesSizeInMb:{
         [otherRuleFiledName.CHINESE_NAME]: '文档图片总大小',
         [otherRuleFiledName.DATA_TYPE]: [serverDataType.NUMBER],
         [otherRuleFiledName.APPLY_RANGE]:[applyRange.UPDATE_SCALAR], //
-        [ruleFiledName.REQUIRE]: {define: {[applyRange.UPDATE_SCALAR]:false}, error: {rc: baseJSErrorCode+84, msg: '文档图片总大小不能为空'}, mongoError: {rc: 20159, msg: '附件总数不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
-        [ruleFiledName.MAX]:{define:maxNumber.article.imageSizeInMb, error: {rc: baseJSErrorCode+88, msg: `文档图片总大小不能超过${maxNumber.article.imageSizeInMb}Mb`}, mongoError: {rc: 20154, msg: '附件总数不能为空'}},
+        [ruleFiledName.REQUIRE]: {define: {[applyRange.UPDATE_SCALAR]:false}, error: {rc: baseJSErrorCode+84, msg: '文档图片总大小不能为空'}, mongoError: {rc: baseMongoErrorCode+84, msg: '附件总数不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        [ruleFiledName.MAX]:{define:maxNumber.article.imageSizeInMb, error: {rc: baseJSErrorCode+88, msg: `文档图片总大小不能超过${maxNumber.article.imageSizeInMb}Mb`}, mongoError: {rc: baseMongoErrorCode+86, msg: '附件总数不能为空'}},
     },
 }
 

@@ -130,7 +130,7 @@ async  function searchFriendInGroup_async({req,arr_queryParams}){
             /*********************************************/
             /**********      加密 敏感数据       *********/
             /*********************************************/
-            controllerHelper.cryptRecordValue({record:singleRecord,salt:tempSalt,collName:collName})
+            controllerHelper.encryptSingleRecord({record:singleRecord,salt:tempSalt,collName:collName})
         }
 
     }

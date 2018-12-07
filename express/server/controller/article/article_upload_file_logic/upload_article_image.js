@@ -38,6 +38,7 @@ const e_uploadFileDefinitionFieldName=nodeEnum.UploadFileDefinitionFieldName
 
 const e_fileSizeUnit=nodeRuntimeEnum.FileSizeUnit
 const e_uploadFileRange=nodeRuntimeEnum.UploadFileRange
+const e_gmGetter=nodeRuntimeEnum.GmGetter
 
 const e_resourceRange=mongoEnum.ResourceRange.DB
 // const e_resourceRange=mongoEnum.AdminUserType.DB
@@ -65,7 +66,7 @@ const uploadFileDefine=server_common_file_require.globalConfiguration.uploadFile
 
 const gmImage=server_common_file_require.gmImage//require('../../function/assist/gmImage')
 
-const e_gmGetter=nodeRuntimeEnum.GmGetter
+
 
 async function uploadArticleImage_async({req}){
     // console.log(`uploadArticleImage_async in`)
@@ -137,7 +138,7 @@ async function uploadArticleImage_async({req}){
 
         //判断图片格式是否允许
         let suffix
-        let gmInst=gmImage.initImage({originalFilename})
+        let gmInst=gmImage.initImage(path)
         suffix=await gmImage.getImageProperty_async(gmInst,e_gmGetter.FORMAT)
         if(-1===uploadFileDefine.common.imageType.indexOf(suffix)){
             file.deleteUploadedTmpFile({formParseFiles:filesInfo})
@@ -178,7 +179,7 @@ async function uploadArticleImage_async({req}){
     //获得合适的存储路径，并move文件
     tmpResult=await controllerHelper.chooseStorePath_async({usage:e_storePathUsage.IMPEACH_IMAGE})
     let storePath=tmpResult.path
-    let pathId=tmpResult._id
+    let pathId=tmpResult._id.toString() //_id为object，要转换成string
     for(let singleFileInfo of filesInfo){
         let {originalFilename,path,size,suffix}=singleFileInfo
         //对原始文件名进行md5化，然后加上suffix

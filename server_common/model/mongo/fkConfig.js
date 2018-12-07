@@ -6,7 +6,7 @@
  * @ forSelect: select的时候，返回哪个field
  * @ forSetValue： 设置外键值，对应设置到哪个field
  * @ validCriteria: 判断外键是否存在的时候，使用的标准（查询条件）
- * @ fkCollOwnerFields: 数组。 外键记录中，可能不止一个字段可以用来判断是否有权修改（例如，修改article，除了作者自己，还可能邀请其他人一起修改）
+ * @ fkCollOwnerFields: 数组，如果需要检测priority，从此字段查找记录的owner，如果undefined或者[]，说明无需priority check。 外键记录中，可能不止一个字段可以用来判断是否有权修改（例如，修改article，除了作者自己，还可能邀请其他人一起修改）
  */
 
 const e_coll=require('../../constant/genEnum/DB_Coll').Coll
@@ -189,6 +189,13 @@ const fkConfig={
     [e_coll.FOLDER]:{
         [e_field.FOLDER.AUTHOR_ID]:{relatedColl:e_coll.USER,forSelect:`${e_field.USER.NAME}`,forSetValue:[e_field.USER.NAME],validCriteria:{'dDate':{$exists:false}},fkCollOwnerFields:undefined},
         [e_field.FOLDER.PARENT_FOLDER_ID]:{relatedColl:e_coll.FOLDER,forSelect:`${e_field.FOLDER.NAME}`,forSetValue:[e_field.FOLDER.NAME],validCriteria:{'dDate':{$exists:false}},fkCollOwnerFields:[e_field.FOLDER.AUTHOR_ID]},
+    },
+    /****************************************************************/
+    /****************          RECOMMEND           *****************/
+    /****************************************************************/
+    [e_coll.SEND_RECOMMEND]:{
+        [e_field.SEND_RECOMMEND.ARTICLE_ID]:{relatedColl:e_coll.ARTICLE,forSelect:`${e_field.ARTICLE.NAME}`,forSetValue:[e_field.ARTICLE.NAME],validCriteria:{'dDate':{$exists:false}},fkCollOwnerFields:[]},//可以分享任何文档，而无需priority检测
+        [e_field.SEND_RECOMMEND.RECEIVERS]:{relatedColl:e_coll.USER,forSelect:`${e_field.USER.NAME}`,forSetValue:[e_field.USER.NAME],validCriteria:undefined,fkCollOwnerFields:[]},
     },
 }
 

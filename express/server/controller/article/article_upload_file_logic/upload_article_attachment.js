@@ -195,7 +195,7 @@ async function uploadArticleAttachment_async({req}){
     tmpResult=await controllerHelper.chooseStorePath_async({usage:e_storePathUsage.ARTICLE_INNER_ATTACHMENT})
     // ap.inf('chooseStorePath_async reult',tmpResult)
     let storePath=tmpResult.path
-    let pathId=tmpResult._id
+    let pathId=tmpResult._id.toString() //_id为object，要转换成string
     for(let singleFileInfo of filesInfo) {
         let {originalFilename, path, size, suffix} = singleFileInfo
         //对原始文件名进行md5化，然后加上suffix
@@ -211,7 +211,7 @@ async function uploadArticleAttachment_async({req}){
 
         internalValue[e_field.ARTICLE_ATTACHMENT.NAME]=originalFilename
         internalValue[e_field.ARTICLE_ATTACHMENT.HASH_NAME]=finalFileName
-        internalValue[e_field.ARTICLE_ATTACHMENT.PATH_ID]=pathId.toString() //_id为object，要转换成string
+        internalValue[e_field.ARTICLE_ATTACHMENT.PATH_ID]=pathId//.toString() //_id为object，要转换成string
         internalValue[e_field.ARTICLE_ATTACHMENT.SIZE_IN_MB]=size
         internalValue[e_field.ARTICLE_ATTACHMENT.AUTHOR_ID]=userId
         internalValue[e_field.ARTICLE_ATTACHMENT.ARTICLE_ID]=recordId
@@ -295,7 +295,7 @@ async function uploadArticleAttachment_async({req}){
         /*********************************************/
         /**********      加密 敏感数据       *********/
         /*********************************************/
-        controllerHelper.cryptRecordValue({record:singleCreatedRecord,salt:tempSalt,collName:collName})
+        controllerHelper.encryptSingleRecord({record:singleCreatedRecord,salt:tempSalt,collName:collName})
         // ap.inf('after crypted',createdAttachment)
     }
 

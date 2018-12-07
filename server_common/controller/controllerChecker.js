@@ -29,11 +29,14 @@ const e_adminPriorityType=require('../constant/enum/mongoEnum').AdminPriorityTyp
 const e_allUserType=require('../constant/enum/mongoEnum').AllUserType.DB
 const e_penalizeSubType=require('../constant/enum/mongoEnum').PenalizeSubType.DB
 
+
 const e_userInfoField=require(`../constant/enum/nodeRuntimeEnum`).UserInfoField
 const e_subField=require(`../constant/enum/nodeEnum`).SubField
 const e_part=require(`../constant/enum/nodeEnum`).ValidatePart
 
 const allAdminPriorityType=require('../constant/genEnum/enumValue').AdminPriorityType
+
+const e_serverDataType=require(`../constant/enum/inputDataRuleType`).ServerDataType
 
 const e_uniqueField=require('../constant/genEnum/DB_uniqueField').UniqueField
 const compound_unique_field_config=require(`../model/mongo/compound_unique_field_config`).compound_unique_field_config
@@ -794,6 +797,31 @@ function ifQueryStringAllParamValid({req,arr_queryParams}){
     }
     return true
 }
+
+/*  检查字段rule定义中，dataType是否为objectId（也包含[objectId]）
+* */
+function ifFieldDataTypeObjectId({fieldRule}){
+    let fieldRuleDataTypeDefinition,ifObjectId=false,ifArray=false
+    if(undefined===fieldRule[e_otherRuleFiledName.DATA_TYPE]){
+        return checkerError.ifFieldDataTypeObjectId.ruleTypeNotDefine
+    }
+
+    //如果是array
+    if(true===dataTypeCheck.isArray(fieldRule[e_otherRuleFiledName.DATA_TYPE])){
+        ifArray=true
+        fieldRuleDataTypeDefinition=fieldRule[e_otherRuleFiledName.DATA_TYPE][0]
+    }else{
+        fieldRuleDataTypeDefinition=fieldRule[e_otherRuleFiledName.DATA_TYPE]
+    }
+    return {rc:0,msg:{ifArray:ifArray,ifObjectId:fieldRuleDataTypeDefinition===e_serverDataType.OBJECT_ID}}
+    /*fieldDataTypeIsArray=dataTypeCheck.isArray(fieldRuleDefinition)
+    let fieldDataType=fieldDataTypeIsArray ? fieldRuleDefinition[0]:fieldRuleDefinition
+    // ap.inf('fieldDataType',fieldDataType)
+    if(e_serverDataType.OBJECT_ID===fieldDataType){
+        // ap.inf('fieldDataType is objId')
+        fieldDataTypeIsObjectId=true
+    }*/
+}
 module.exports= {
     // ifFieldValueExistInColl_async,// 检测字段值是否已经在db中存在
     ifSingleFieldFkValueExist_async, //根据coll中的2个字段（外键和外键对应coll），动态确定外键是否在指定的coll中存在
@@ -826,4 +854,5 @@ module.exports= {
 
     ifSingleFieldContainExpectField,
     ifQueryStringAllParamValid,
+    ifFieldDataTypeObjectId,
 }

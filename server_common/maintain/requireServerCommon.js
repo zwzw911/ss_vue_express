@@ -40,7 +40,8 @@ function requireServerCommon(serverCommonRelateBaseDir,absoluteDestFilePath,fina
 
     /*                  临时patch，captcha需要canvas，等待Node支持图像处理                */
     // let skipArray=['awesomeCaptcha.js']
-    let skipArray=[]
+    //产生folder的测试数据，所以无需包含
+    let skipArray=['generateFrontServerTestData.js']
 
     for(let singleDir of dirArray){
         recursiveReadFileAbsPath({fileOrDirPath:singleDir,skipFilesArray:skipArray,absFilesPathResult:filesArray})
@@ -49,7 +50,7 @@ function requireServerCommon(serverCommonRelateBaseDir,absoluteDestFilePath,fina
 
     /*              patch; 2个model+1个配置文件+2个maintain文件                 */
     filesArray.push(`${serverCommonRelateBaseDir}model/mongo/operation/common_operation_model.js`)
-    filesArray.push(`${serverCommonRelateBaseDir}model/mongo/operation/common_operation_helper.js`)
+    // filesArray.push(`${serverCommonRelateBaseDir}model/mongo/operation/common_operation_helper.js`)
     filesArray.push(`${serverCommonRelateBaseDir}model/mongo/operation/common_operation_document.js`)
 
     filesArray.push(`${serverCommonRelateBaseDir}model/mongo/compound_unique_field_config.js`)

@@ -150,7 +150,7 @@ async function uploadImpeachCommentFile_async({req}){
 
     //判断图片格式是否允许
     let suffix
-    let gmInst=gmImage.initImage({originalFilename})
+    let gmInst=gmImage.initImage(path)
     suffix=await gmImage.getImageProperty_async(gmInst,e_gmGetter.FORMAT)
     if(-1===uploadFileDefine.common.imageType.indexOf(suffix)){
         fs.unlink(path)
@@ -231,7 +231,7 @@ async function uploadImpeachCommentFile_async({req}){
         //tmpResult=await controllerHelper.chooseStorePath_async({usage:e_storePathUsage.ARTICLE_INNER_IMAGE,e_field:e_field})
 
     let finalPath=tmpResult.path+finalFileName
-    let pathId=tmpResult._id
+    let pathId=tmpResult._id.toString() //_id为object，要转换成string
     fs.renameSync(path,finalPath)
 
     // console.log(`save fild done ======================`)

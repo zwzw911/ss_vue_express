@@ -122,10 +122,13 @@ async function update_returnRecord_async({dbModel,id,values}){
     return Promise.resolve(result)
 }
 
-/*              直接进行update          */
+/*              对第一个符合条件的记录直接进行update          */
 async function updateDirect_returnRecord_async({dbModel,condition,updateOptions,values}){
     values['uDate']=Date.now()
     let finalUpdateOptions=objectDeepCopy(defaultUpdateOptions)
+    // ap.inf('condition',condition)
+    // ap.inf('updateOptions',updateOptions)
+    // ap.inf('values',values)
     Object.assign(finalUpdateOptions,updateOptions)
     return new Promise(function(resolve,reject){
         dbModel.update(condition,values,finalUpdateOptions,function(err,result){
@@ -142,6 +145,23 @@ async function updateDirect_returnRecord_async({dbModel,condition,updateOptions,
     })
 }
 
+/*              对所有符合条件的记录直接进行update          */
+async function updateManyDirect_returnRecord_async({dbModel,condition,updateOptions,values}){
+    values['uDate']=Date.now()
+    let finalUpdateOptions=objectDeepCopy(defaultUpdateOptions)
+    // ap.inf('condition',condition)
+    // ap.inf('updateOptions',updateOptions)
+    // ap.inf('values',values)
+    Object.assign(finalUpdateOptions,updateOptions)
+    return new Promise(function(resolve,reject){
+        dbModel.updateMany(condition,values,finalUpdateOptions,function(err,result){
+            if(err){
+                return reject(err)
+            }
+            return resolve(result)
+        })
+    })
+}
 //根据Id删除文档（其实只是设置dData）
 //无需返回update后的数据
 async function removeBaseIdArray_async({dbModel,updateOptions,idArray}){
@@ -362,7 +382,7 @@ async function findById_returnRecordWithPopulate_async({dbModel,id,selectedField
 async function find_returnRecords_async({dbModel,condition,selectedFields='-cDate -uDate -dDate',options={},populateOpt}){
     // console.log(`find by id :${id}`)
     // console.log(`find condition==========================>${JSON.stringify(condition)}`)
-    // let result
+    let result
     // ap.inf('find_returnRecords_async dbModel',dbModel)
     // ap.inf('find_returnRecords_async condition',condition)
     // ap.inf('find_returnRecords_async selectedFields',selectedFields)
@@ -373,22 +393,73 @@ async function find_returnRecords_async({dbModel,condition,selectedFields='-cDat
         return await dbModel.find(condition,selectedFields,options)
             .catch(
                 function(err){
-                    // ap.err('find_returnRecords_async err',err)
+                    ap.err('find_returnRecords_async err',err)
                     // console.log(`find errr is ${JSON.stringify(err)}`)
                     // console.log(`converted err is ${JSON.stringify(mongooseErrorHandler(mongooseOpEnum.findById,err))}`)
                     return Promise.reject(mongooseErrorHandler(err))
                 })
     }else{
         // ap.inf('populateOpt defined')
-        return await dbModel.find(condition,selectedFields,options).populate(populateOpt)
-            .catch(
+        if(false===dataTypeCheck.isArray(populateOpt)){
+            return Promise.reject(mongooseError.findReturnRecord.populateOptTypeError)
+        }
+        let populateLength=populateOpt.length
+        // ap.inf('populateLength',populateLength)
+        //防止populate字段过多
+        if(populateLength>5){
+            return Promise.reject(mongooseError.findReturnRecord.populateOptFieldNumExceed)
+        }
+        // result=await dbModel.findById(id,selectedFields)
+        result= await dbModel.find(condition,selectedFields,options).populate(populateOpt)
+        // result=result.toObject()
+        // ap.inf('find result',result)
+           /* .catch(
                 function(err){
                     // console.log(`find errr is ${JSON.stringify(err)}`)
                     // console.log(`converted err is ${JSON.stringify(mongooseErrorHandler(mongooseOpEnum.findById,err))}`)
                     return Promise.reject(mongooseErrorHandler(err))
-                })
-    }
+                })*/
+        /*           .populate(populateOpt[0])
+                   .catch(
+                   function(err){
+                       console.log(`findbyid errr is ${JSON.stringify(err)}`)
+                       // console.log(`converted err is ${JSON.stringify(mongooseErrorHandler(mongooseOpEnum.findById,err))}`)
+                       return Promise.reject(mongooseErrorHandler(err))
+                   })*/
+        // ap.inf('before populate result',result)
+        while (populateLength>0){
+            // ap.inf('before popul;te reult',result)
+            // ap.inf('populateOpt[populateLength-1]',populateOpt[populateLength-1])
+            //采用model.populate，如此，可以populate单个document或者document array
+            result=await dbModel.populate(result,populateOpt[populateLength-1])
+/*                .execPopulate().catch(
+                function(err){
+                    console.log(`find populate is ${JSON.stringify(err)}`)
+                    // console.log(`converted err is ${JSON.stringify(mongooseErrorHandler(mongooseOpEnum.findById,err))}`)
+                    return Promise.reject(mongooseErrorHandler(err))
+                })*/
+            // result=await result.populate(populateOpt[populateLength-1])//.then().end()
+/*                .catch(
+                    function(err){
+                        console.log(`populate errr is ${JSON.stringify(err)}`)
+                        // console.log(`converted err is ${JSON.stringify(mongooseErrorHandler(mongooseOpEnum.findById,err))}`)
+                        return Promise.reject(mongooseErrorHandler(err))
+                    })*/
+            // ap.inf(`the ${populateLength} times result`,result)
+            populateLength--
 
+        }
+        // ap.inf('populate result',result)
+/*        result=result.execPopulate().catch(
+            function(err){
+                console.log(`findbyid errr is ${JSON.stringify(err)}`)
+                // console.log(`converted err is ${JSON.stringify(mongooseErrorHandler(mongooseOpEnum.findById,err))}`)
+                return Promise.reject(mongooseErrorHandler(err))
+            })
+        ap.inf('populate result',result)*/
+
+    }
+    return Promise.resolve(result)
     // let finalResult=result.toObject()
     // delete finalResult.__v
     // console.log(`findbyid result is ${JSON.stringify(result)}`)
@@ -739,7 +810,8 @@ async function group_async({dbModel,aggregateParams}){
 module.exports= {
     create_returnRecord_async,
     update_returnRecord_async,//传统的方式（find/update/save）
-    updateDirect_returnRecord_async,//直接执行update操作，无需考虑middleware
+    updateDirect_returnRecord_async,//update第一个符合条件的记录
+    updateManyDirect_returnRecord_async,//update所有记录
     removeBaseIdArray_async,  //只是根据idArray设置dData字段
     deleteAll_async,//测试用
     deleteOne_returnRecord_async,

@@ -69,7 +69,7 @@ async function deleteFolder_async({req}){
 /*    /!*********************************************!/
     /!************    解密recordId    ************!/
     /!*********************************************!/
-    recordId=crypt.cryptSingleFieldValue({fieldValue:recordId,salt:tempSalt})
+    recordId=crypt.encryptSingleValue({fieldValue:recordId,salt:tempSalt})
     if(false===regex.objectId.test(recordId)){
         return Promise.reject(controllerError.delete.inValidFolderId)
     }*/

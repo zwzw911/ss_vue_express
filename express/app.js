@@ -14,7 +14,8 @@ const e_env=require('./server_common_file_require').nodeEnum.Env
 // ap.inf('app in ')
 const app = express();
 
-const e_intervalCheckPrefix=require('./server_common_file_require').nodeEnum.IntervalCheckPrefix
+const e_intervalCheckPrefix=require('./server_common_file_require').nodeEnum.IntervalCheckPrefix//nodeEnum.IntervalCheckPrefix
+
 // view engine setup
 /*app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');*/
@@ -45,14 +46,15 @@ const session=server_common_file_require.session
 app.use(session.generateSessionStore({durationInMinute:480}))
 
 //只有在生产环境，才需要强制设置session，然后进行interval check
+//测试环境，需要mocha测试，如果出现
 // if(appSetting.currentEnv===e_env.PROD){
     app.use(function(req, res, next) {
         server_common_file_require.controllerHelper.setSessionByServer_async({req}).then(function(result){
             // ap.inf('method',req.route)
-            //ap.inf('ap.use result',result)
+            ap.inf('ap.use result',result)
             next();
         },function(err){
-            ap.inf('ap.use err',err)
+            ap.wrn('ap.use err',err)
             return res.json(err)
         })
     });
@@ -136,6 +138,7 @@ const user_friend_group=require('./server/controller/user_friend_group/user_frie
 const public_group=require('./server/controller/public_group/public_group_router').router
 const join_public_group_request=require('./server/controller/join_public_group_request/join_public_group_request_router').router
 const folder=require('./server/controller/folder/folder_router').router
+const recommend=require('./server/controller/recommend/recommend_router').router
 
 app.use('/user', user);
 app.use('/article', article);
@@ -150,9 +153,9 @@ app.use('/user_friend_group', user_friend_group);
 app.use('/public_group', public_group);
 app.use('/join_public_group_request', join_public_group_request);
 app.use('/folder',folder)
-
-const routerOnly=require('./routerOnly').router
-app.use('/',routerOnly)
+app.use('/recommend',recommend)
+/*const routerOnly=require('./routerOnly').router
+app.use('/',routerOnly)*/
 
 
 // app.use('/register/uniqueCheck', register);

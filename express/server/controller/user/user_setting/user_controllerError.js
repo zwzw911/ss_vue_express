@@ -65,6 +65,8 @@ const controllerError={
 
         imageSizeInvalid:{rc:50178,msg:`头像的宽度或者高度超出最大值`},
         imageFormatInvalid:{rc:50180,msg:`头像的格式不正确`},
+
+
     },
 
     /*              captcha                          */

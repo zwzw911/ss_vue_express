@@ -95,6 +95,13 @@ const helper={
         encryptedObjectIdInvalid:{rc:helperBaseErrorCode+56,msg:{client:`输入的值不正确`,server:`输入的字段值是加密过的objectId，但是格式不正确`}},
     },
 
+    cryptSingleRecord:{
+        populateFieldsMissCollName:{rc:helperBaseErrorCode+58,msg:{client:`内部错误`,server:`加密objectId的时候，传入的populateFields没有collName`}},
+
+    },
+    decryptSingleRecord:{
+        encryptedObjectIdInvalid:{rc:helperBaseErrorCode+60,msg:{client:`输入的值不正确`,server:`输入的字段值是加密过的objectId，但是格式不正确`}},
+    },
 }
 
 const checker={
@@ -234,6 +241,9 @@ const checker={
     },
     ifSingleFieldContainExpectField:{
         singleFieldNotContainExpectedField:{rc:checkerBaseErrorCode+72,msg:{client:`参数错误`,server:'singleField中的字段名称不是期望的字段'}},
+    },
+    ifFieldDataTypeObjectId:{
+        ruleTypeNotDefine:{rc:checkerBaseErrorCode+74,msg:{client:`参数错误`,server:'字段rule中，没有定义数据类型'}},
     },
 }
 
@@ -390,6 +400,15 @@ const resourceCheck={
         /**     add friend      **/
         totalUntreatedFriendRequest({resourceProfileNum}){
             return {rc:resourceCheckBaseErrorCode+128,msg:{client:`申请加好友的数量过多，达到最大数量${resourceProfileNum}，无法继续申请，请等待一段时间后继续`}}
+        },
+        /**     send recommends     **/
+        totalSendRecommendNumExceed({resourceProfileNum}){
+            return {rc:resourceCheckBaseErrorCode+130,msg:{client:`分享的文档达到最大数量${resourceProfileNum}，无法继续分享`}}
+        },
+
+        /**     reeived read recommends     **/
+        totalReadReceivedRecommendNumExceed({resourceProfileNum}){
+            return {rc:resourceCheckBaseErrorCode+132,msg:{client:`已读的分享文档达到最大数量${resourceProfileNum}，无法读取收到的分享文档`}}
         },
     }
 }

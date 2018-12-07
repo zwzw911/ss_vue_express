@@ -52,7 +52,7 @@ async function searchUser_async({req,searchParam}){
             /*********************************************/
             /**********      加密 敏感数据       *********/
             /*********************************************/
-            controllerHelper.cryptRecordValue({record:singleRecord,salt:tempSalt,collName:collName})
+            controllerHelper.encryptSingleRecord({record:singleRecord,salt:tempSalt,collName:collName})
             // ap.inf('after crypt', singleRecord)
         }
 

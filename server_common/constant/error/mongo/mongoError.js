@@ -58,6 +58,8 @@ const mongooseErrorHandler=function(err){
                     return error.common.unknownErrorType(err)
 
             }
+        }else{
+            return error.common.notDealedError(err)
         }
 
     }
@@ -107,6 +109,9 @@ const error={
     common:{
         unknownErrorType:function(err){
             return {rc:30000,msg:{client:`未知数据操作错误`,server:`${JSON.stringify(err)}`}}
+        },
+        notDealedError:function(err){
+            return {rc:30001,msg:{client:`内部错误`,server:`${JSON.stringify(err)}`}}
         },
         duplicate:function(errmsg){
             //'E11000 duplicate key error index: finance.billtypes.$name_1 dup key: { : \"aa\" }'=======>finance  billType   name
@@ -184,7 +189,11 @@ const error={
     findByIdReturnRecord:{
         populateOptTypeError:{rc:30006,msg:{client:`内部错误`,server:`findById_returnRecord的参数populateOpt必须是数组`}},
         populateOptFieldNumExceed:{rc:30008,msg:{client:`内部错误`,server:`findById_returnRecord的参数populateOpt中需要populate的字段数量过多`}},
-    }
+    },
+    findReturnRecord:{
+        populateOptTypeError:{rc:30010,msg:{client:`内部错误`,server:`find_returnRecord的参数populateOpt必须是数组`}},
+        populateOptFieldNumExceed:{rc:30012,msg:{client:`内部错误`,server:`find_returnRecord的参数populateOpt中需要populate的字段数量过多`}},
+    },
 }
 
 module.exports={

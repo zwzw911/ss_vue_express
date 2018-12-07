@@ -36,11 +36,11 @@ async function remove_all_async(){
 
 
 
-remove_all_async().then(
+/*remove_all_async().then(
     (v)=>{ap.inf('remove all data done')},
     (e)=>{ap.err('remove all data failed')},
-)
+)*/
 
-// module.exports={
-//     rePreDeploy_async,
-// }
+module.exports={
+    remove_all_async,
+}

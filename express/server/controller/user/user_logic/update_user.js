@@ -201,6 +201,7 @@ async function updateUser_async({req}){
      }*/
 // ap.inf('update docvalue',docValue)
     await common_operation_model.update_returnRecord_async({dbModel:e_dbModel[e_coll.USER],id:userId,values:docValue})
+    // await common_operation_model.findByIdAndUpdate_returnRecord_async
     return Promise.resolve({rc:0})
 
 }

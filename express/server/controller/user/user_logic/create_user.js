@@ -244,7 +244,7 @@ async  function createUser_async({req}){
     condition={[e_field.RESOURCE_PROFILE.RESOURCE_TYPE]:e_resourceType.BASIC}
     // ap.inf('condition',condition)
     let allBasicResourceProfile=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.resource_profile,condition:condition})
-    // ap.inf('user profile',allBasicResourceProfile)
+    // ap.wrn('user profile',allBasicResourceProfile)
     for(let defaultResourceProfile of allBasicResourceProfile){
         // for(let resourceProfileId)
         // console.log(`defaultResourceProfile==========>${JSON.stringify(defaultResourceProfile)}`)
@@ -259,7 +259,7 @@ async  function createUser_async({req}){
         // ap.inf('folder result',tmp)
     }
     await common_operation_model.insertMany_returnRecord_async({dbModel:e_dbModel.user_resource_profile,docs:userResourceProfile})
-ap.inf('basic insert done')
+// ap.inf('basic insert done')
     //对关联表user_resource_static进行insert操作，为article_image和article_attachment插入fileNum和size为0 的记录
     //现在合并article_image和aricle_attachment=WHOLE_FILE_RESOURCE_PER_PERSON，简化处理
     let userResourceStaticValue=[
@@ -279,9 +279,14 @@ ap.inf('basic insert done')
     // console.log(`sugarValue ${JSON.stringify(sugarValue)}`)
     await common_operation_model.insertMany_returnRecord_async({dbModel:e_dbModel.user_resource_static,docs:userResourceStaticValue})
 
-
-
-
+/**     receiveRecommend(为每个用户创建一个接收分享的记录，初始接收的分享数量为0)    **/
+    let receiveRecommend={
+        [e_field.RECEIVE_RECOMMEND.RECEIVER]:userCreateTmpResult._id,
+    //数组，无需设置，默认是空数组
+        // [e_field.RECEIVE_RECOMMEND.UNREAD_RECOMMENDS]:[],
+        // [e_field.RECEIVE_RECOMMEND.READ_RECOMMENDS]:[],
+    }
+    await common_operation_model.create_returnRecord_async({dbModel:e_dbModel.receive_recommend,value:receiveRecommend})
 // return false
     //最终置user['docStatus']为DONE，且设置lastSignInDate
     await common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel.user,id:userCreateTmpResult._id,updateFieldsValue:{'docStatus':e_docStatus.DONE,'lastSignInDate':Date.now()}})

@@ -17,13 +17,15 @@ const common_operation_model=require(`../model/mongo/operation/common_operation_
 
 const objectDeepCopy=require(`../function/assist/misc`).objectDeepCopy
 
-
+/**     不再使用，因为没有captcha    **/
 async function reCreateUser_returnSessUserId_async({userData,app}){
     //删除用户
-    // ap.inf('start to del account',userData.account)
+    ap.inf('start to del account',userData.account)
     await db_operation_helper.deleteUserAndRelatedInfo_async({account:userData.account,name:userData.name})
     //建立用户
+    ap.inf('start to create account')
     await API_helper.createUser_async({userData:userData,app:app})
+    ap.inf('create account done')
     //获得userId
     let userId=await db_operation_helper.getUserId_async({userAccount:userData.account})
     //登录获得sess

@@ -170,7 +170,7 @@ async  function createPenalize_async({req}){
     /**********      加密 敏感数据       *********/
     /*********************************************/
     // createdRecord=createdRecord.toObject()
-    controllerHelper.cryptRecordValue({record:createdRecord,salt:tempSalt,collName:collName})
+    controllerHelper.encryptSingleRecord({record:createdRecord,salt:tempSalt,collName:collName})
 
 
 

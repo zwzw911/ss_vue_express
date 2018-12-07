@@ -127,7 +127,7 @@ async function getArticle_async({req,forUpdate}){
     /**********      加密 敏感数据       *********/
     /*********************************************/
     // ap.inf('before cryote',getRecord)
-    let populateFields=[
+    /*let populateFields=[
         {
             fieldName:e_field.ARTICLE.AUTHOR_ID,
             fkCollName:e_coll.USER,
@@ -141,9 +141,28 @@ async function getArticle_async({req,forUpdate}){
             fkCollName:e_coll.ARTICLE_COMMENT,
         },
     ]
-    controllerHelper.cryptRecordValue({record:getRecord,salt:tempSalt,collName:e_coll.ARTICLE,populateFields:populateFields})
-
-    //comment还populate了authorId
+    controllerHelper.encryptSingleRecord({record:getRecord,salt:tempSalt,collName:e_coll.ARTICLE,populateFields:populateFields})*/
+    let populateFields={
+        [e_field.ARTICLE.AUTHOR_ID]:{
+            'collName':e_coll.USER,
+            'subPopulateFields':undefined,
+        },
+        [e_field.ARTICLE.ARTICLE_ATTACHMENTS_ID]:{
+            'collName':e_coll.ARTICLE_ATTACHMENT,
+            'subPopulateFields':undefined,
+        },
+        [e_field.ARTICLE.ARTICLE_COMMENTS_ID]:{
+            'collName':e_coll.ARTICLE_COMMENT,
+            'subPopulateFields':{
+                [e_field.ARTICLE_COMMENT.AUTHOR_ID]:{
+                    'collName':e_coll.USER,
+                    'subPopulateFields':undefined,
+                },
+            },
+        },
+    }
+    controllerHelper.encryptSingleRecord({record:getRecord,collName:e_coll.ARTICLE,salt:tempSalt,populateFields:populateFields})
+    /*//comment还populate了authorId
     if(undefined!==getRecord[e_field.ARTICLE.ARTICLE_COMMENTS_ID] && getRecord[e_field.ARTICLE.ARTICLE_COMMENTS_ID].length>0){
         populateFields=[
             {
@@ -151,9 +170,9 @@ async function getArticle_async({req,forUpdate}){
                 fkCollName:e_coll.USER,},
         ]
         for(let singleComment of getRecord[e_field.ARTICLE.ARTICLE_COMMENTS_ID]){
-            controllerHelper.cryptRecordValue({record:singleComment,salt:tempSalt,collName:e_coll.ARTICLE_COMMENT,populateFields:populateFields})
+            controllerHelper.encryptSingleRecord({record:singleComment,salt:tempSalt,collName:e_coll.ARTICLE_COMMENT,populateFields:populateFields})
         }
-    }
+    }*/
 
     /*********************************************/
     /**********      如果是读取文档，则要获得文档统计信息       *********/

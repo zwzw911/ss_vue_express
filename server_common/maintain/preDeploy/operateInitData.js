@@ -149,11 +149,11 @@ async function rePreDeploy_async(){
     await all()
 }
 
-rePreDeploy_async().then(
+/*rePreDeploy_async().then(
     (v)=>{ap.inf('rePreDeploy done')},
     (e)=>{ap.err('rePreDeploy failed')},
-)
+)*/
 
-// module.exports={
-//     rePreDeploy_async,
-// }
+module.exports={
+    rePreDeploy_async,
+}

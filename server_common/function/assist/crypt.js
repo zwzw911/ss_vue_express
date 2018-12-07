@@ -112,13 +112,13 @@ const hmac=function(string,hashType){
 
 
 //对单个字段（objectId）的值进行加密，显示到页面
-function cryptSingleFieldValue({fieldValue,salt,cryptType}){
+function encryptSingleValue({fieldValue,salt,cryptType}){
     if (-1===validCryptType.indexOf(cryptType) || cryptType===null || cryptType===undefined || cryptType===''){
         cryptType='blowfish'
     }
     let cryptResult
     // ap.inf('fieldValue',fieldValue)
-    // ap.inf('cryptSingleFieldValue->salt',salt)
+    // ap.inf('encryptSingleValue->salt',salt)
     if(undefined!==salt){
         fieldValue+=salt
         // cryptResult=crypt(fieldValue+salt,cryptType)
@@ -134,12 +134,12 @@ function cryptSingleFieldValue({fieldValue,salt,cryptType}){
 }
 
 //对单个字段（objectId）的值进行解密
-function decryptSingleFieldValue({fieldValue,salt,cryptType}){
+function decryptSingleValue({fieldValue,salt,cryptType}){
     if (-1===validCryptType.indexOf(cryptType) || cryptType===null || cryptType===undefined || cryptType===''){
         cryptType='blowfish'
     }
-    // ap.inf('decryptSingleFieldValue->value',fieldValue)
-    // ap.inf('decryptSingleFieldValue->salt',salt)
+    // ap.inf('decryptSingleValue->value',fieldValue)
+    // ap.inf('decryptSingleValue->salt',salt)
 
     // let decryptResult=decrypt(fieldValue,cryptType)
     // let key=pem.toString('ascii');
@@ -162,8 +162,8 @@ module.exports={
     decrypt,
     // asyncGenSalt,
 
-    cryptSingleFieldValue,
-    decryptSingleFieldValue
+    encryptSingleValue,
+    decryptSingleValue
 }
 //exports.genSalt=genSalt;
 
@@ -175,10 +175,10 @@ genSalt(16,function(err,result){
 
 
 
-/*let cryptedstr=cryptSingleFieldValue({fieldValue:'asdf1234',salt:'5678'})
+/*let cryptedstr=encryptSingleValue({fieldValue:'asdf1234',salt:'5678'})
 ap.inf('cryptedstr',cryptedstr)
 let start=new Date().getTime()
-let decryptedstr=decryptSingleFieldValue({fieldValue:cryptedstr,salt:'5678'})
+let decryptedstr=decryptSingleValue({fieldValue:cryptedstr,salt:'5678'})
 ap.inf('decryptedstr',decryptedstr)
 let end=new Date().getTime()
 let normal=start-end*/

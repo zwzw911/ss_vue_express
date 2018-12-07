@@ -185,6 +185,9 @@ const PenalizeType={
         NO_IMPEACH_ACTION:'61',
 
         NO_USER:'70',
+
+        //recommend
+        NO_RECOMMEND:'80',
     },
     SHOW:{
         NO_ARTICLE: '禁止文档',
@@ -212,6 +215,9 @@ const PenalizeType={
         NO_IMPEACH_ACTION:'禁止操作举报',
 
         NO_USER:'禁止用户相关操作',
+
+        //recommend
+        NO_RECOMMEND:'禁止分享文档',
     },
 
 }
@@ -481,6 +487,10 @@ const ResourceRange={
 
         MAX_DECLINE_JOIN_REQUEST:'130',//单个public group，每个用户最大可以被拒绝次数
 
+        MAX_SEND_RECOMMENDS:'140',//最大分享文档数量
+
+        MAX_UNREAD_RECEIVE_RECOMMENDS:'150',//最大未读的收到的分享文档数量
+        MAX_READ_RECEIVE_RECOMMENDS:'151',//最大已读的接收到的分享文档数量
         // MAX_USER_FRIEND_GROUP_NUM:'132',//每个用户最大可创建的朋友群
     },
     SHOW:{
@@ -533,7 +543,10 @@ const ResourceRange={
 
         MAX_DECLINE_JOIN_REQUEST:'入群最大被拒次数',//单个public group，每个用户最大可以被拒绝次数
 
+        MAX_SEND_RECOMMENDS:'最大分享文档数量',//最大分享文档数量
 
+        MAX_UNREAD_RECEIVE_RECOMMENDS:'最大未读的收到的分享文档数量',//最大未读的收到的分享文档数量
+        MAX_READ_RECEIVE_RECOMMENDS:'最大已读的接收到的分享文档数量',//最大已读的接收到的分享文档数量
     },
 }
 

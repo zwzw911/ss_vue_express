@@ -41,6 +41,7 @@ async function postDataToAPI_compareCommonRc_async({APIUrl,sess,data,expectedErr
                 // console.log(`parsedRes of common  ===========>${JSON.stringify(parsedRes)}`)
                 // assert.deepStrictEqual(parsedRes.rc, 99999)
                 console.log(`parsedRes  ===========>${JSON.stringify(parsedRes)}`)
+                // ap.inf('expectedErrorRc',expectedErrorRc)
                 assert.deepStrictEqual(parsedRes.rc, expectedErrorRc)
                 return resolve(parsedRes)
             });

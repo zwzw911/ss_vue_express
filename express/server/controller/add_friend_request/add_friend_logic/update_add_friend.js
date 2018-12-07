@@ -58,7 +58,7 @@ const regex=server_common_file_require.regex.regex
 const currentEnv=server_common_file_require.appSetting.currentEnv
 const fkConfig=server_common_file_require.fkConfig.fkConfig
 
-
+const globalConfiguration=server_common_file_require.globalConfiguration
 
 async function acceptAddFriend_async({req,expectedPart,applyRange}){
     return await updateAddFriend_async({req:req,expectedPart:expectedPart,addFriendStatus:e_addFriendStatus.ACCEPT,applyRange:applyRange})
@@ -80,13 +80,13 @@ async function updateAddFriend_async({req,expectedPart,addFriendStatus,applyRang
     let {userId,userCollName,userType,userPriority,tempSalt}=userInfo
     // console.log(`userInfo============>${JSON.stringify(userInfo)}`)
     let {docValue,recordId,subFieldValue}=controllerHelper.getPartValue({req:req,arr_expectedPart:expectedPart})
-
-    /************************************************/
-    /***********        转换null字段      **********/
-    /************************************************/
+ap.wrn('updateAddFriend_async docValue',docValue)
+    /*/!************************************************!/
+    /!***********        转换null字段      **********!/
+    /!************************************************!/
     // ap.inf('before constructUpdateCriteria done',docValue)
     dataConvert.constructUpdateCriteria(docValue)
-    // ap.inf('after constructUpdateCriteria done',docValue)
+    // ap.inf('after constructUpdateCriteria done',docValue)*/
     /*******************************************************************************************/
     /*                                     用户类型和权限检测                                  */
     /*******************************************************************************************/
@@ -134,9 +134,9 @@ async function updateAddFriend_async({req,expectedPart,addFriendStatus,applyRang
         }
     }
 
-    /************************************************/
-    /*** CALL FUNCTION:inputValueLogicValidCheck ****/
-    /************************************************/
+    /*/!************************************************!/
+    /!*** CALL FUNCTION:inputValueLogicValidCheck ****!/
+    /!************************************************!/
     let commonParam={docValue:docValue,userId:userId,collName:collName}
     let stepParam={
         [e_inputValueLogicCheckStep.FK_EXIST_AND_PRIORITY]:{flag:true,optionalParam:undefined},
@@ -152,7 +152,7 @@ async function updateAddFriend_async({req,expectedPart,addFriendStatus,applyRang
         [e_inputValueLogicCheckStep.RESOURCE_USAGE]:{flag:false,optionalParam:{resourceUsageOption:{requiredResource:undefined}}},
     }
     await controllerInputValueLogicCheck.inputValueLogicValidCheck_async({commonParam:commonParam,stepParam:stepParam})
-    // ap.inf('inputValueLogicValidCheck done')
+    // ap.inf('inputValueLogicValidCheck done')*/
     /*********************************************/
     /**********          业务处理        *********/
     /*********************************************/
@@ -161,7 +161,7 @@ async function updateAddFriend_async({req,expectedPart,addFriendStatus,applyRang
 /*    /!*********************************************!/
     /!**********      加密 敏感数据       *********!/
     /!*********************************************!/
-    controllerHelper.cryptRecordValue({record:updatedRecord,salt:tempSalt,collName:collName})
+    controllerHelper.encryptSingleRecord({record:updatedRecord,salt:tempSalt,collName:collName})
     /!*********************************************!/
     /!**********      删除指定字段       *********!/
     /!*********************************************!/
@@ -229,10 +229,26 @@ async function businessLogic_async({docValue,collName,recordId,addFriendStatus,a
             [e_field.ADD_FRIEND_REQUEST.ACCEPT_TIMES]:1
         }
     }
+    // ap.wrn('docValue',docValue)
     /***         数据库操作            ***/
     let updatedRecord= await common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel[collName],id:recordId,updateFieldsValue:docValue,updateOption:undefined})
 
-    return Promise.resolve(updatedRecord.toObject())
+    /**     如果用户接受了request，那么就要自动加入到请求人的“我的好友”中  **/
+    let condition={
+        [e_field.USER_FRIEND_GROUP.OWNER_USER_ID]:updatedRecord[e_field.ADD_FRIEND_REQUEST.ORIGINATOR],
+        [e_field.USER_FRIEND_GROUP.FRIEND_GROUP_NAME]:globalConfiguration.userGroupFriend.defaultGroupName.enumFormat.MyFriend
+    }
+    let updateValue={
+        '$addToSet':{
+            [e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP]:updatedRecord[e_field.ADD_FRIEND_REQUEST.RECEIVER],
+        }
+    }
+    // ap.wrn('condition',condition)
+    // ap.wrn('updateValue',updateValue)
+    await common_operation_model.updateDirect_returnRecord_async({dbModel:e_dbModel.user_friend_group,condition:condition,values:updateValue})
+
+    //无需任何返回值
+    return Promise.resolve()
 }
 
 module.exports={

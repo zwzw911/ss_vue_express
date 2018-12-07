@@ -89,13 +89,13 @@ async function getRootFolder_async({req}){
     // ap.inf('tempSalt',tempSalt)
     for(let singleEle of getRecord['folder']){
         // getRecord['folder'][idx]=getRecord['folder'][idx].toObject()
-        controllerHelper.cryptRecordValue({record:singleEle,salt:tempSalt,collName:collName})
+        controllerHelper.encryptSingleRecord({record:singleEle,salt:tempSalt,collName:collName})
     }
     // ap.inf('after ecftypr getRecord[\'folder\']',getRecord['folder'])
     //顶级目录没有文档
     // for(let singleEle of getRecord['article']){
     //     // getRecord['article'][idx]=getRecord['article'][idx].toObject()
-    //     controllerHelper.cryptRecordValue({record:singleEle,salt:tempSalt,collName:collName})
+    //     controllerHelper.encryptSingleRecord({record:singleEle,salt:tempSalt,collName:collName})
     // }
 
     return Promise.resolve({rc:0,msg:getRecord})
@@ -130,7 +130,7 @@ async function getNonRootFolder_async({req}){
 /*    /!*********************************************!/
     /!************    解密recordId    ************!/
     /!*********************************************!/
-    recordId=crypt.decryptSingleFieldValue({fieldValue:recordId,salt:tempSalt})
+    recordId=crypt.decryptSingleValue({fieldValue:recordId,salt:tempSalt})
     if(false===regex.objectId.test(recordId)){
         return Promise.reject(controllerError.get.inValidFolderId)
     }*/
@@ -182,7 +182,7 @@ async function getNonRootFolder_async({req}){
     if(undefined!==getRecord['folder']){
         for(let singleEle of getRecord['folder']){
             // getRecord['folder'][idx]=getRecord['folder'][idx].toObject()
-            controllerHelper.cryptRecordValue({record:singleEle,salt:tempSalt,collName:e_coll.FOLDER})
+            controllerHelper.encryptSingleRecord({record:singleEle,salt:tempSalt,collName:e_coll.FOLDER})
         }
     }
     ap.wrn('after folder crypt',getRecord)
@@ -191,7 +191,7 @@ async function getNonRootFolder_async({req}){
         for(let singleEle of getRecord['article']){
             ap.wrn('singleEle',singleEle)
             // getRecord['article'][idx]=getRecord['article'][idx].toObject()
-            controllerHelper.cryptRecordValue({record:singleEle,salt:tempSalt,collName:e_coll.ARTICLE})
+            controllerHelper.encryptSingleRecord({record:singleEle,salt:tempSalt,collName:e_coll.ARTICLE})
         }
     }
     ap.wrn('after article crypt',getRecord)

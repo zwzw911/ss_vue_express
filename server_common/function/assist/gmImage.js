@@ -270,21 +270,25 @@ function gmCommand_async({gmInst, command,savePath,sizeParameter}){
     })
 }
 
+/**     根据gmInst，生成dataUrl格式的图片**/
+async function resizeToThumbNailDataUrl_async({gmInst,width,height,imageType='png'}) {
+    return new Promise(function(resolve, reject){
+        // let gmInst=gmImage.initImage(srcImage)
+        gmInst.resize(width,height,'!')
+            .setFormat(imageType)
+            .quality(100)
+            .toBuffer(function(err, buffer){
+                // ap.inf('buffer',buffer.toString())
+                resolve(`data:image/png;base64,`+buffer.toString('base64'))
+            })
+    })
+}
 
-/*gm('H:\\ss_vue_express\\test_data\\userPhoto\\tmp\\QUYrORtOhinHMep1mOw9xZYp.jpg').write('H:/ss_vue_express/test_data/userPhoto/dest/1.png',function(err){
-    if(err){
-        console.log(`convert file type err======${JSON.stringify(err)}`)
-        return Promise.reject(imageErrorDefine.convertImageTypeFail)
-    }else{
-        return Promise.resolve({rc:0})
-    }
-    //return callback(null,)
-})*/
 module.exports={
     initImage,
     getImageProperty_async,
     gmCommand_async,
-
+    resizeToThumbNailDataUrl_async,
 }
 /*let inst=initImage('D:/ss_vue_express/tmp/5abf1a861ec85915e04bcade_1522489712369.png')
 getImageProperty_async(inst,'size').then(function(r){

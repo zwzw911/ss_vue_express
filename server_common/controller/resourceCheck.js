@@ -155,9 +155,9 @@ async function ifEnoughResource_async({requiredResource,resourceProfileRange,use
             // ap.inf('e_resourceRange.ATTACHMENT_PER_ARTICLE',e_resourceRange.ATTACHMENT_PER_ARTICLE)
             switch (singleResourceProfileRange){
                 case e_resourceRange.ATTACHMENT_PER_ARTICLE:
-                    ap.inf('ATTACHMENT_PER_ARTICLE in')
+                    // ap.inf('ATTACHMENT_PER_ARTICLE in')
                     usedResource=await fileResourceCalc.calcArticleResourceUsage_async({singleResourceProfileRange:singleResourceProfileRange,articleId:containerId})
-                    ap.inf('usedResource',usedResource)
+                    // ap.inf('usedResource',usedResource)
                     // ap.inf('usedResource',usedResource)
                     spaceExceedFlag=ifSpaceExceed({currentUsedSpace:usedResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],requiredSpace:requiredResource[e_resourceFieldName.DISK_USAGE_SIZE_IN_MB],resourceProfileRecord:resourceProfile})
                     if(true===spaceExceedFlag){
@@ -410,6 +410,23 @@ async function ifEnoughResource_async({requiredResource,resourceProfileRange,use
                     numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:resourceProfile})
                     if(true===numExceedFlag){
                         return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.totalJoinPubliGroupDeclineNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
+                    }
+                    break
+                case e_resourceRange.MAX_SEND_RECOMMENDS:
+                    usedResource=await numOnlyResourceCalc.calcSendRecommends_async({userId:userId,containerId:containerId})
+                    numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:resourceProfile})
+                    if(true===numExceedFlag){
+                        // ap.err('heer')
+                        return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.totalSendRecommendNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
+                    }
+                    break
+                case e_resourceRange.MAX_READ_RECEIVE_RECOMMENDS:
+                    usedResource=await numOnlyResourceCalc.calcReadReceivedRecommends_async({userId:userId,containerId:containerId})
+                    numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:resourceProfile})
+                    ap.err('numExceedFlag',numExceedFlag)
+                    if(true===numExceedFlag){
+                        ap.err('heer')
+                        return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.totalReadReceivedRecommendNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
                     }
                     break
 

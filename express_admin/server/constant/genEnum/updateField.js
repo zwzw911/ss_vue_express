@@ -27,7 +27,7 @@ const createField={
     'impeach_image':[],
     'user_resource_profile':[],
     'collection':["name","articlesId","topicsId"],
-    'recommend':[],
+    'send_recommend':[],
     'topic':["name","desc","articlesId"],
 }
 module.exports={

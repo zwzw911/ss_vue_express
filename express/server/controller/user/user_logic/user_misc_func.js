@@ -367,7 +367,11 @@ async function uploadFilePhoto_async({req}){
     }
     //格式符合，移动指定位置
     else{
-        fs.renameSync(path,finalPath)
+        fs.rename(path,finalPath,function(err){
+            if(err){
+                return Promise.reject(err)
+            }
+        })
     }
     // console.log(`final size========>${JSON.stringify(size)}`)
     // ap.inf('final size',size)

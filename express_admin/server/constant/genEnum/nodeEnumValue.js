@@ -1,7 +1,7 @@
 /*    gene by server/maintain/generateEnumValueToArray     */ 
  
 "use strict"
-const RandomStringType=["basic","normal","complicated",] 
+const RandomStringType=["basic","normal","complicated","captcha",] 
 const UserState=["noSess","login","not login",] 
 const Env=["development","production",] 
 const MongooseOp=["insertMany","updateMany","findById","findByIdAndUpdate","remove","readAll","readName","search","count",] 

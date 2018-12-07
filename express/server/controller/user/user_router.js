@@ -70,7 +70,7 @@ router.get('/',function(req,res,next){
     // ap.inf('match url')
     userDispatcher_async(req).then(
         (v)=>{
-            ap.inf(`user get success, result:  ${JSON.stringify(v)}`)
+            ap.inf(`user get owner success, result:  ${JSON.stringify(v)}`)
             return res.json(v)
         },
         (err)=>{
@@ -79,20 +79,7 @@ router.get('/',function(req,res,next){
         }
     )
 })
-/**     获取他人信息      **/
-router.get('/:userId',function(req,res,next){
-    // ap.inf('match url')
-    userDispatcher_async(req).then(
-        (v)=>{
-            ap.inf(`user get success, result:  ${JSON.stringify(v)}`)
-            return res.json(v)
-        },
-        (err)=>{
-            ap.err(`user get fail: ${JSON.stringify(err)}`)
-            return res.json(genFinalReturnResult(err))
-        }
-    )
-})
+
 /**     查询用户      **/
 router.get('/search',function(req,res,next){
     ap.inf('search in url')
@@ -120,6 +107,10 @@ router.post('/login',function(req,res,next){
             return res.json(genFinalReturnResult(err))
         }
     )
+})
+router.post('/login',function(req,res,next){
+    ap.wrn('get login in')
+    return res.json({rc:0})
 })
 router.delete('/logout',function(req,res,next){
     // ap.inf('match url')
@@ -216,6 +207,20 @@ router.get('/captcha',function(req,res,next){
 
 })
 
+/**     获取他人信息（放在最后，否则会匹配/user/login等路由）      **/
+router.get('/:userId',function(req,res,next){
+    // ap.inf('match url :userId')
+    userDispatcher_async(req).then(
+        (v)=>{
+            ap.inf(`user get other success, result:  ${JSON.stringify(v)}`)
+            return res.json(v)
+        },
+        (err)=>{
+            ap.err(`user get fail: ${JSON.stringify(err)}`)
+            return res.json(genFinalReturnResult(err))
+        }
+    )
+})
 router.all('*',function(req,res,next){
     // ap.inf('systemError.systemError.noMatchRESTAPI',systemError.systemError.noMatchRESTAPI)
     return res.json(genFinalReturnResult(systemError.systemError.noMatchRESTAPI))

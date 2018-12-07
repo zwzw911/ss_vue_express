@@ -329,7 +329,7 @@ async function uploadImpeachFile_async({req,uploadFileType,forColl}) {
 	//tmpResult=await controllerHelper.chooseStorePath_async({usage:e_storePathUsage.ARTICLE_INNER_ATTACHMENT,e_field:e_field})
     }
     let finalPath=tmpResult.path+finalFileName
-    let pathId=tmpResult._id
+    let pathId=tmpResult._id.toString() //_id为object，要转换成string
     fs.renameSync(path,finalPath)
 
     /*              内部field value检测                            */

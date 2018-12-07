@@ -106,10 +106,16 @@ async function getLatestArticle_async({req}){
             controllerHelper.keepFieldInRecord({record:getRecord[idx],fieldsToBeKeep:keepFields})
             // ap.inf('after keep',getRecord[idx])
             /*********************************************/
+            /********    删除_id(否则和id重复)     *******/
+            /*********************************************/
+            // 删除_id
+            let tmp=JSON.stringify(getRecord[idx]).replace(/"_id":"[0-9a-f]{24}",?/g,'')
+            getRecord[idx]=JSON.parse(tmp)
+            /*********************************************/
             /**********      加密 敏感数据       *********/
             /*********************************************/
             // ap.inf('before cryote',getRecord[idx])
-            controllerHelper.cryptRecordValue({record:getRecord[idx],salt:tempSalt,collName:e_coll.ARTICLE,populateFields:undefined})
+            controllerHelper.encryptSingleRecord({record:getRecord[idx],salt:tempSalt,collName:e_coll.ARTICLE,populateFields:undefined})
             // ap.inf('after cryote',getRecord[idx])
 
         }

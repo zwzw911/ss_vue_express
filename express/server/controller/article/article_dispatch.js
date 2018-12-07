@@ -100,6 +100,7 @@ async function article_dispatcher_async({req}) {
                     return Promise.resolve(result)
                 }
                 /**     读取他人文档        **/
+                //d2f558588dcaf56023a6d4ec554a0ffa55e6a29b30b8e0a4c095ad68616ff592
                 let otherArticleUrl=new RegExp(`/article/[0-9a-fA-F]{64}/?`)
                 if (true===otherArticleUrl.test(originalUrl)) {
                     //检测url中objectId并解密

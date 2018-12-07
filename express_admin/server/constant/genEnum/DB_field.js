@@ -277,13 +277,19 @@ const Field={
         ARTICLES_ID:'articlesId',
         TOPICS_ID:'topicsId',
     },
-    RECOMMEND:{
+    RECEIVE_RECOMMEND:{
         ID:'id',
+        RECEIVER:'receiver',
+        UNREAD_RECOMMENDS:'unreadRecommends',
+        UNREAD_RECOMMENDS_NUM:'unreadRecommendsNum',
+        READ_RECOMMENDS:'readRecommends',
+        READ_RECOMMENDS_NUM:'readRecommendsNum',
+    },
+    SEND_RECOMMEND:{
+        ID:'id',
+        SENDER:'sender',
         ARTICLE_ID:'articleId',
-        INITIATOR_ID:'initiatorId',
-        TO_USER_ID:'toUserId',
-        TO_GROUP_ID:'toGroupId',
-        TO_PUBLIC_GROUP_ID:'toPublicGroupId',
+        RECEIVERS:'receivers',
     },
     TOPIC:{
         ID:'id',

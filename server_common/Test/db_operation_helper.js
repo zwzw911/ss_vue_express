@@ -60,6 +60,8 @@ async function deleteUserAndRelatedInfo_async({account,name}){
         //删除群/入群请求
         await common_operation_model.deleteMany_async({dbModel:e_dbModel.public_group,condition:{[e_field.PUBLIC_GROUP.CREATOR_ID]:userId}})
         await common_operation_model.deleteMany_async({dbModel:e_dbModel.join_public_group_request,condition:{[e_field.JOIN_PUBLIC_GROUP_REQUEST.CREATOR_ID]:userId}})
+        //删除分享的文档
+        await common_operation_model.deleteMany_async({dbModel:e_dbModel.send_recommend,condition:{[e_field.SEND_RECOMMEND.SENDER]:userId}})
     }
 
 }

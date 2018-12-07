@@ -52,7 +52,7 @@ async function getUser_async({req}){
     /*********************************************/
     /**********      加密 敏感数据       *********/
     /*********************************************/
-    controllerHelper.cryptRecordValue({record:getRecord,salt:tempSalt,collName:userCollName})
+    controllerHelper.encryptSingleRecord({record:getRecord,salt:tempSalt,collName:userCollName})
     // ap.inf('after cryptRecordValue',getRecord)
     return Promise.resolve({rc:0,msg:getRecord})
 }

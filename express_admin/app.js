@@ -44,7 +44,7 @@ app.use(session.generateSessionStore({durationInMinute:480}))
     app.use(function(req, res, next) {
         server_common_file_require.controllerHelper.setSessionByServer_async({req}).then(function(result){
             // ap.inf('method',req.route)
-            //ap.inf('ap.use result',result)
+            // ap.wrn('ap.use result',result)
             next();
         },function(err){
             ap.inf('ap.use err',err)

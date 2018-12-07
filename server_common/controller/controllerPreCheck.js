@@ -404,7 +404,7 @@ async function checkObjectIdInReqParams_async({req,parameterName,cryptedError,de
         return Promise.reject(cryptedError)
     }
     //解密
-    let tmpResult=crypt.decryptSingleFieldValue({fieldValue:cryptedObjectId,salt:tempSalt})
+    let tmpResult=crypt.decryptSingleValue({fieldValue:cryptedObjectId,salt:tempSalt})
     // ap.wrn('tmpResult',tmpResult)
     if(tmpResult.rc>0){
         return Promise.reject(tmpResult)

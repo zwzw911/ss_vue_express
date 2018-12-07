@@ -93,11 +93,18 @@ async function getMainPageArticle_async({req}){
             // e_field.ARTICLE.ARTICLE_COMMENTS_ID
         ]
         //那些字段是被populate过的，以便对其中的objectId字段进行加解密
-        let populateFields=[
+        /*let populateFields=[
             {
             fieldName:e_field.ARTICLE.AUTHOR_ID,
             fkCollName:e_coll.USER,},
-        ]
+        ]*/
+        let populateFields={
+            [e_field.ARTICLE.AUTHOR_ID]:{
+                'collName':e_coll.USER,
+                'subPopulateFields':undefined,
+            },
+        }
+
         for(let idx in getRecord){
             /*********************************************/
             /********    删除（保留）指定字段     *******/
@@ -107,7 +114,8 @@ async function getMainPageArticle_async({req}){
             /**********      加密 敏感数据       *********/
             /*********************************************/
             // ap.inf('before cryote',getRecord)
-            controllerHelper.cryptRecordValue({record:getRecord[idx],salt:tempSalt,collName:e_coll.ARTICLE,populateFields:populateFields})
+            controllerHelper.encryptSingleRecord({record:getRecord[idx],collName:e_coll.ARTICLE,salt:tempSalt,populateFields:populateFields})
+            // controllerHelper.encryptSingleRecord({record:getRecord[idx],salt:tempSalt,collName:e_coll.ARTICLE,populateFields:populateFields})
             // ap.inf('after cryote',getRecord)
 
         }

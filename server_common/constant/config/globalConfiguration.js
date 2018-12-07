@@ -1,5 +1,5 @@
 /**
- * Created by wzhan039 on 2016-02-09.
+ * Created by 张伟 on 2016-02-09.
  * 改成和input一样的格式，以便处理
  * 因为本质上这些都是input（可以从页面上进行设置）
  *
@@ -195,8 +195,13 @@ const maxNumber={
         maxArticlePerTopic:10,//每个topic最多包含的文档数
 
         maxRecommendToUser:10,//每次最多推荐给10个用户
-        maxRecommendToGroup:10,//每次最多推荐给10个朋友圈
-        maxRecommendToPublicGroup:10,//每次最多推荐给10个群
+        maxRecommendPerPage:10,//每页显示的推荐文档数量
+
+        // maxRecommendToGroup:10,//每次最多推荐给10个朋友圈
+        // maxRecommendToPublicGroup:10,//每次最多推荐给10个群
+
+        maxUnReadReceiveRecommends:2,//200,//用户最多接受的未读分享数(防止不活跃用户占用太多资源)
+        // maxReadReceiveRecommends:1000,///用户最多接受的已读分享数
 
         maxArticlePerCollection:100,//每个收藏夹最多200篇文档
         maxTopicPerCollection:100,//每个收藏夹最多200篇系列

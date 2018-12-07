@@ -18,7 +18,7 @@ const objectDeepCopy=require('../../function/assist/misc').objectDeepCopy
 const rightResult={rc:0}
 
 //某些需要放到client的设置
-let neededItem=['searchSetting','suggestLimit','uploadFileDefine','maxNumber','userGroupFriend']
+let neededItem=['searchSetting','suggestLimit','uploadFileDefine','maxNumber','userGroupFriend','defaultSetting']
 
 /*  读取rule文件内容并调用checkRule函数对rule检查
 * @absFilePath：rule文件绝对路径

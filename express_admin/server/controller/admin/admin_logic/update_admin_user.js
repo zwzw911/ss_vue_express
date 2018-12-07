@@ -88,7 +88,7 @@ async function updateUser_async({req,applyRange}){
     /!******   传入的敏感数据（objectId）解密   ******!/
     /!************************************************!/
     // controllerHelper.decryptRecordValue({record:docValue,collName:collName})
-    recordId=crypt.cryptSingleFieldValue({fieldValue:recordId})*/
+    recordId=crypt.encryptSingleValue({fieldValue:recordId})*/
 
     /*              如果是root，则只有root可以修改自己（specific）              */
     let userToBeUpdate=await common_operation_model.findById_returnRecord_async({dbModel:e_dbModel.admin_user,id:recordId})

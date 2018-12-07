@@ -88,7 +88,7 @@ async function updateFolder_async({req,applyRange}){
     /!******   传入的敏感数据（recordId）解密，recordInfo中的objectId在dispatch中解密   ******!/
     /!************************************************!/
     // controllerHelper.decryptRecordValue({record:docValue,collName:collName})
-    recordId=crypt.decryptSingleFieldValue({fieldValue:recordId,salt:tempSalt})
+    recordId=crypt.decryptSingleValue({fieldValue:recordId,salt:tempSalt})
     if(false===regex.objectId.test(recordId)){
         return Promise.reject(controllerError.update.inValidFolderId)
     }*/
@@ -152,7 +152,7 @@ async function updateFolder_async({req,applyRange}){
     /*********************************************/
     /**********      加密 敏感数据       *********/
     /*********************************************/
-    controllerHelper.cryptRecordValue({record:updatedRecord,salt:tempSalt,collName:collName})
+    controllerHelper.encryptSingleRecord({record:updatedRecord,salt:tempSalt,collName:collName})
     /*********************************************/
     /**********      删除指定字段       *********/
     /*********************************************/

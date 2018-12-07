@@ -32,7 +32,8 @@ const Field={
     suagr:[],
     user_resource_profile:['startDate','endDate','duration',],
     collection:['creatorId',],
-    recommend:['initiatorId',],
+    receive_recommend:['receiver','unreadRecommends','unreadRecommendsNum','readRecommends','readRecommendsNum',],
+    send_recommend:['sender',],
     topic:['creatorId',],
 }
 

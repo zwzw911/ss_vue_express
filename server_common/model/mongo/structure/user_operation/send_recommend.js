@@ -1,7 +1,7 @@
 /**
- * Created by wzhan039 on 2017-06-10.
- *
- * 定义用户信息
+ * Created by 张伟 on 2018-11-19.
+ * 发送分享
+ * 
  */
 
 'use strict'
@@ -15,8 +15,8 @@ const connectedDb=require('../../common/connection').dbSS;
 //mongoose.Promise = Promise
 const mongoSetting=require('../../common/configuration')
 
-const browserInputRule=require('../../../../constant/inputRule/browserInput/user_operation/recommend').recommend
-const internalInputRule=require('../../../../constant/inputRule/internalInput/user_operation/recommend').recommend
+const browserInputRule=require('../../../../constant/inputRule/browserInput/user_operation/send_recommend').send_recommend
+const internalInputRule=require('../../../../constant/inputRule/internalInput/user_operation/send_recommend').send_recommend
 //根据inputRule的rule设置，对mongoose设置内建validator
 const collInputRule=Object.assign({},browserInputRule,internalInputRule)
 
@@ -35,30 +35,39 @@ const assist=require('../../common/assist')
 * required(all)/min_max(number)/enum_match_minLength_maxLength()
 * */
 
-const collName='recommend'
+const collName='send_recommend'
 
 /*               直接自定义validator（而不是通过函数产生），为了加快执行速度         */
-const toUserId_arrayMinLengthValidator={
+const receivers_arrayMinLengthValidator={
     validator(v){
-        // console.log(`validateo ius ${JSON.stringify(collInputRule['toUserId'])}`)
-        if(false===collInputRule['toUserId'][serverRuleType.REQUIRE]['define']){
+        ap.wrn('min validate length',v.length)
+        // console.log(`validateo ius ${JSON.stringify(collInputRule['receivers'])}`)
+        if(false===collInputRule['receivers'][serverRuleType.REQUIRE]['define']){
+            if(undefined===v){
+                return true
+            }
             if(0===v.length){
                 return true
             }
         }
-        return v.length>=collInputRule['toUserId'][serverRuleType.ARRAY_MIN_LENGTH]['define']
+        return v.length>=collInputRule['receivers'][serverRuleType.ARRAY_MIN_LENGTH]['define']
     },
-    message:`错误代码${collInputRule['toUserId'][serverRuleType.ARRAY_MIN_LENGTH]['mongoError']['rc']}:${collInputRule['toUserId'][serverRuleType.ARRAY_MIN_LENGTH]['mongoError']['msg']}`
+    message:`错误代码${collInputRule['receivers'][serverRuleType.ARRAY_MIN_LENGTH]['mongoError']['rc']}:${collInputRule['receivers'][serverRuleType.ARRAY_MIN_LENGTH]['mongoError']['msg']}`
 }
-const toUserId_arrayMaxLengthValidator= {
+const receivers_arrayMaxLengthValidator= {
     validator(v){
-        return v.length <= collInputRule['toUserId'][serverRuleType.ARRAY_MAX_LENGTH]['define']
+        ap.wrn('max validate length',v.length)
+        //没有输入数组，也通过
+        if(undefined===v){
+            return true
+        }
+        return v.length <= collInputRule['receivers'][serverRuleType.ARRAY_MAX_LENGTH]['define']
     },
-    message: `错误代码${collInputRule['toUserId'][serverRuleType.ARRAY_MAX_LENGTH]['mongoError']['rc']}:${collInputRule['toUserId'][serverRuleType.ARRAY_MAX_LENGTH]['mongoError']['msg']}`
+    message: `错误代码${collInputRule['receivers'][serverRuleType.ARRAY_MAX_LENGTH]['mongoError']['rc']}:${collInputRule['receivers'][serverRuleType.ARRAY_MAX_LENGTH]['mongoError']['msg']}`
 
 }
 
-const toGroupId_arrayMinLengthValidator={
+/*const toGroupId_arrayMinLengthValidator={
     validator(v){
         if(false===collInputRule['toGroupId'][serverRuleType.REQUIRE]['define']){
             if(0===v.length){
@@ -94,15 +103,17 @@ const toPublicGroupId_arrayMaxLengthValidator= {
     },
     message: `错误代码${collInputRule['toPublicGroupId'][serverRuleType.ARRAY_MAX_LENGTH]['mongoError']['rc']}:${collInputRule['toPublicGroupId'][serverRuleType.ARRAY_MAX_LENGTH]['mongoError']['msg']}`
 
-}
+}*/
 
 
 const collFieldDefine={
-        articleId:{type:mongoose.Schema.Types.ObjectId,ref:"article"},
-        initiatorId:{type:mongoose.Schema.Types.ObjectId,ref:"user"},
-        toUserId:{type:[mongoose.Schema.Types.ObjectId],ref:"user",validate:[toUserId_arrayMinLengthValidator,toUserId_arrayMaxLengthValidator]},
-        toGroupId:{type:[mongoose.Schema.Types.ObjectId],ref:"user_friend_group",validate:[toGroupId_arrayMinLengthValidator,toGroupId_arrayMaxLengthValidator]},
-        toPublicGroupId:{type:[mongoose.Schema.Types.ObjectId],ref:"public_group",validate:[toPublicGroupId_arrayMinLengthValidator,toPublicGroupId_arrayMaxLengthValidator]},
+        sender:{type:mongoose.Schema.Types.ObjectId,ref:"user"},//发送人
+        articleId:{type:mongoose.Schema.Types.ObjectId,ref:"article"},//分享的文档
+        
+        receivers:[{type:mongoose.Schema.Types.ObjectId,ref:"user"}],//归根结底，必须细化到单个用户
+    // ,{validate:[receivers_arrayMinLengthValidator,receivers_arrayMaxLengthValidator]}
+        // toGroupId:{type:[mongoose.Schema.Types.ObjectId],ref:"user_friend_group",validate:[toGroupId_arrayMinLengthValidator,toGroupId_arrayMaxLengthValidator]},
+        // toPublicGroupId:{type:[mongoose.Schema.Types.ObjectId],ref:"public_group",validate:[toPublicGroupId_arrayMinLengthValidator,toPublicGroupId_arrayMaxLengthValidator]},
         cDate:{type:Date,default:Date.now},
         //uDate:{type:Date,default:Date.now},
         dDate:{type:Date},

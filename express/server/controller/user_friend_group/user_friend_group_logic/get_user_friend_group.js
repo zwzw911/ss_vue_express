@@ -64,7 +64,9 @@ const fkConfig=server_common_file_require.fkConfig.fkConfig
 
 /*                      configuration                                               */
 const userGroupFriend_Configuration=server_common_file_require.globalConfiguration.userGroupFriend
+const globalConfiguration=server_common_file_require.globalConfiguration
 
+/**     只获得group信息      **/
 async  function getUserFriendGroup_async({req}){
 
     /********************************************************/
@@ -83,96 +85,34 @@ async  function getUserFriendGroup_async({req}){
     /***********    用户类型检测    **************/
     /*********************************************/
     await controllerChecker.ifExpectedUserType_async({currentUserType:userType,arr_expectedUserType:[e_allUserType.USER_NORMAL]})
-    /**********************************************/
-    /********  删除null/undefined的字段  *********/
-    /*********************************************/
-    // dataConvert.constructCreateCriteria(docValue)
-
-    /*/!**********************************************!/
-    /!**  CALL FUNCTION:inputValueLogicValidCheck **!/
-    /!**********************************************!/
-    let commonParam={docValue:docValue,userId:userId,collName:collName}
-    // ap.inf('userId',userId)
-    let stepParam={
-        //fk: impeach的state不能为NEW,EDITING或者DONE
-        [e_inputValueLogicCheckStep.FK_EXIST_AND_PRIORITY]:{flag:true,optionalParam:undefined},
-        [e_inputValueLogicCheckStep.ENUM_DUPLICATE]:{flag:true,optionalParam:undefined},
-        //object：coll中，对单个字段进行unique检测，需要的额外查询条件
-        [e_inputValueLogicCheckStep.SINGLE_FIELD_VALUE_UNIQUE]:{flag:true,optionalParam:{singleValueUniqueCheckAdditionalCondition:undefined}},
-        //数组，元素是字段名。默认对所有dataType===string的字段进行XSS检测，但是可以通过此变量，只选择部分字段
-        [e_inputValueLogicCheckStep.XSS]:{flag:true,optionalParam:{expectedXSSFields:undefined}},
-        //object，对compoundField进行unique检测需要的额外条件，key从model->mongo->compound_unique_field_config.js中获得
-        //在internalValue之后执行
-        // [e_inputValueLogicCheckStep.COMPOUND_VALUE_UNIQUE]:{flag:true,optionalParam:{compoundFiledValueUniqueCheckAdditionalCheckCondition:undefined}},
-        //Object，配置resourceCheck的一些参数,{requiredResource,resourceProfileRange,userId,containerId}
-        /!**   public group num **!/
-        [e_inputValueLogicCheckStep.RESOURCE_USAGE]:{flag:true,optionalParam:{resourceUsageOption:{requiredResource:{[e_resourceFieldName.USED_NUM]:1},resourceProfileRange:[e_resourceRange.MAX_FRIEND_GROUP_NUM_PER_USER],userId:userId,containerId:undefined}}},
-    }
-    await controllerInputValueLogicCheck.inputValueLogicValidCheck_async({commonParam:commonParam,stepParam:stepParam})*/
-
 
 
     /**     db操作        **/
-    let createdRecord=await businessLogic_async({collName:collName,userId:userId})
-// ap.inf('createdRecord',createdRecord)
-    let fieldsToBeKeep=['id','friendGroupName']
-    if(createdRecord.length>0){
-        for(let singleRecord of createdRecord){
+    let getRecord=await businessLogicToGetFriendGroup_async({collName:collName,userId:userId})
+// ap.inf('getRecord',getRecord)
+//     let fieldsToBeKeep=['id','friendGroupName']
+    if(getRecord.length>0){
+        for(let singleRecord of getRecord){
             /*********************************************/
             /**********      删除指定字段       *********/
             /*********************************************/
 
-            controllerHelper.keepFieldInRecord({record:singleRecord,fieldsToBeKeep:fieldsToBeKeep})
+            // controllerHelper.keepFieldInRecord({record:singleRecord,fieldsToBeKeep:fieldsToBeKeep})
             /*********************************************/
             /**********      加密 敏感数据       *********/
             /*********************************************/
-            controllerHelper.cryptRecordValue({record:singleRecord,salt:tempSalt,collName:collName})
+            controllerHelper.encryptSingleRecord({record:singleRecord,salt:tempSalt,collName:collName})
         }
 
     }
 
 
-    // ap.inf('createdRecord done',createdRecord)
-    return Promise.resolve({rc:0,msg:createdRecord})
+    // ap.inf('getRecord done',getRecord)
+    return Promise.resolve({rc:0,msg:getRecord})
 
 
 }
-async function businessLogic_async({collName,userId}) {
-   /* /!*****************************************************!/
-    /!****            添加internal field，然后检查      ***!/
-    /!******************************************************!/
-    // console.log(`before hash is ${JSON.stringify(docValue)}`)
-    let internalValue={}
-    // internalValue[e_field.USER_FRIEND_GROUP.]=impeachType
-    internalValue[e_field.USER_FRIEND_GROUP.OWNER_USER_ID]=userId
-    /!*              对内部产生的值进行检测（开发时使用，上线后为了减低负荷，无需使用）           *!/
-    if(e_env.DEV===currentEnv){
-        let tmpResult=controllerHelper.checkInternalValue({internalValue:internalValue,collInternalRule:internalInputRule[collName],applyRange:applyRange})
-        // console.log(`internalValue check result====>   ${JSON.stringify(tmpResult)}`)
-        if(tmpResult.rc>0){
-            return Promise.reject(tmpResult)
-        }
-    }
-    if(undefined===docValue){
-        docValue=internalValue
-    }else{
-        Object.assign(docValue,internalValue)
-    }
-// console.log(`========================>internal check  done<--------------------------`)
-    /!*******************************************************************************************!/
-    /!*                    复合字段unique check（需要internal field完成后）                     *!/
-    /!*******************************************************************************************!/
-    /!*******************************************************************************************!/
-    /!*                    复合字段unique check（需要internal field完成后）                     *!/
-    /!*******************************************************************************************!/
-    if(undefined!==docValue){
-        let compoundFiledValueUniqueCheckAdditionalCheckCondition
-        await controllerInputValueLogicCheck.ifCompoundFiledValueUnique_returnExistRecord_async({
-            collName:collName,
-            docValue:docValue,
-            additionalCheckCondition:compoundFiledValueUniqueCheckAdditionalCheckCondition,
-        })
-    }*/
+async function businessLogicToGetFriendGroup_async({collName,userId}) {
     /*******************************************************************************************/
     /*                                  db operation                                           */
     /*******************************************************************************************/
@@ -181,20 +121,203 @@ async function businessLogic_async({collName,userId}) {
     }
     // ap.inf('condition',condition)
     // ap.inf('collName',collName)
-    let createdRecord= await common_operation_model.find_returnRecords_async({dbModel:e_dbModel[collName],condition:condition})
-    dataConvert.convertDocumentToObject({src:createdRecord})
-    /* //插入关联数据（impeach action=create）
-     let impeachStateValue={
-         [e_field.IMPEACH_ACTION.IMPEACH_ID]:tmpResult['_id'],
-         // [e_field.IMPEACH_STATE.OWNER_ID]:userId,
-         // [e_field.IMPEACH_STATE.OWNER_COLL]:e_coll.USER,
-         [e_field.IMPEACH_ACTION.ACTION]:e_impeachUserAction.CREATE,
-         [e_field.IMPEACH_ACTION.CREATOR_ID]:userId,
-         [e_field.IMPEACH_ACTION.CREATOR_COLL]:e_coll.USER,
-     }
-     await common_operation_model.create_returnRecord_async({dbModel:e_dbModel.impeach_action,value:impeachStateValue})*/
-    return Promise.resolve(createdRecord)
+    let getRecord= await common_operation_model.find_returnRecords_async({dbModel:e_dbModel[collName],condition:condition,selectedFields:'id friendGroupName'})
+    dataConvert.convertDocumentToObject({src:getRecord})
+
+    return Promise.resolve(getRecord)
 }
+
+
+/**     同时获得group以及其中的成员        **/
+async  function getUserFriendGroupAndItsMember_async({req}){
+
+    /********************************************************/
+    /*************      define variant        ***************/
+    /********************************************************/
+    let tmpResult,condition
+    let collName=controller_setting.MAIN_HANDLED_COLL_NAME
+    // let docValue=req.body.values[e_part.RECORD_INFO]
+    let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
+    // console.log(`userInfo===> ${JSON.stringify(userInfo)}`)
+    let {userId,userCollName,userType,userPriority,tempSalt}=userInfo
+    // ap.inf('userId',userId)
+// console.log(`docValue===> ${JSON.stringify(docValue)}`)
+// console.log(`userInfo===> ${JSON.stringify(userInfo)}`)
+    /**********************************************/
+    /***********    用户类型检测    **************/
+    /*********************************************/
+    await controllerChecker.ifExpectedUserType_async({currentUserType:userType,arr_expectedUserType:[e_allUserType.USER_NORMAL]})
+
+
+    /**     db操作        **/
+    let getRecord=await businessLogicToGetFriendGroupAndItsMember_async({collName:collName,userId:userId})
+    /*********************************************/
+    /********    删除_id(否则和id重复)     *******/
+    /*********************************************/
+    // 删除_id
+    getRecord=JSON.parse(JSON.stringify(getRecord).replace(/"_id":"[0-9a-f]{24}",?/g,''))
+
+    // ap.inf('after replace tmp',tmp)
+    // getRecord=JSON.parse(tmp)
+    
+//     let fieldsToBeKeep=['id','friendGroupName']
+    let populateFields={
+        [e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP]:{
+            'collName':e_coll.USER,
+            'subPopulateFields':undefined,
+        }
+    }
+    if(getRecord.length>0){
+        for(let singleRecord of getRecord){
+            /*********************************************/
+            /**********      删除指定字段       *********/
+            /*********************************************/
+
+            // controllerHelper.keepFieldInRecord({record:singleRecord,fieldsToBeKeep:fieldsToBeKeep})
+            /*********************************************/
+            /**********      加密 敏感数据       *********/
+            /*********************************************/
+
+            controllerHelper.encryptSingleRecord({record:singleRecord,salt:tempSalt,collName:collName,populateFields:populateFields})
+        }
+
+    }
+
+
+    // ap.inf('getRecord done',getRecord)
+    return Promise.resolve({rc:0,msg:getRecord})
+
+
+}
+async function businessLogicToGetFriendGroupAndItsMember_async({collName,userId}) {
+    /*******************************************************************************************/
+    /*                                  db operation                                           */
+    /*******************************************************************************************/
+    let condition={
+        [e_field.USER_FRIEND_GROUP.OWNER_USER_ID]:userId,
+        [e_field.USER_FRIEND_GROUP.FRIEND_GROUP_NAME]:{'$nin':globalConfiguration.userGroupFriend.defaultGroupName.enumFormat.BlackList}
+    }
+    let populateOpt=[{
+        'path':`${e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP}`,
+        select:` ${e_field.USER.NAME} `, //${e_field.ARTICLE_ATTACHMENT.HASH_NAME}是为了防止文件名冲突，导致文件覆盖，无需传递到前端
+        // options:{limit:maxNumber.article.attachmentNumberPerArticle},
+    }]
+    ap.inf('condition',condition)
+    ap.inf('populateOpt',populateOpt)
+    let getRecord= await common_operation_model.find_returnRecords_async({
+        dbModel:e_dbModel[collName],
+        condition:condition,
+        selectedFields:`${[e_field.USER_FRIEND_GROUP.ID]} ${[e_field.USER_FRIEND_GROUP.FRIEND_GROUP_NAME]} ${[e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP]}`,
+        populateOpt:populateOpt,
+    })
+    dataConvert.convertDocumentToObject({src:getRecord})
+
+    return Promise.resolve(getRecord)
+}
+
+
+/**     获得group中的成员        **/
+async  function getUserFriendGroupMember_async({req}){
+// ap.wrn('getUserFriendGroupMember_async in')
+    /********************************************************/
+    /*************      define variant        ***************/
+    /********************************************************/
+    let tmpResult,condition
+    let collName=controller_setting.MAIN_HANDLED_COLL_NAME
+    // let docValue=req.body.values[e_part.RECORD_INFO]
+    let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
+    // console.log(`userInfo===> ${JSON.stringify(userInfo)}`)
+    let {userId,userCollName,userType,userPriority,tempSalt}=userInfo
+    let recordId=req.params['friendGroupId']
+    /**********************************************/
+    /***********    用户类型检测    **************/
+    /*********************************************/
+    await controllerChecker.ifExpectedUserType_async({currentUserType:userType,arr_expectedUserType:[e_allUserType.USER_NORMAL]})
+
+    /**********************************************/
+    /***********    用户权限检测    **************/
+    /*********************************************/
+    if(userType===e_allUserType.USER_NORMAL) {
+        let result = await controllerChecker.ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({
+            dbModel: e_dbModel.user_friend_group,
+            recordId: recordId,
+            ownerFieldsName: [e_field.USER_FRIEND_GROUP.OWNER_USER_ID],
+            userId: userId,
+            additionalCondition: undefined,
+        })
+        // ap.inf('ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async result',result)
+        if (false === result) {
+            return Promise.reject(controllerError.create.notOwnerCantGetGroupMember)
+        }
+    }
+    // ap.wrn('getUserFriendGroupMember_async before db check done')
+    /**     db操作        **/
+    let getRecord=await businessLogicToGetFriendGroupMember_async({collName:collName,userId:userId,recordId:recordId})
+    ap.wrn('getUserFriendGroupMember_async  before db op',getRecord)
+    /*********************************************/
+    /********    删除_id(否则和id重复)     *******/
+    /*********************************************/
+    // 删除_id
+    getRecord=JSON.parse(JSON.stringify(getRecord).replace(/"_id":"[0-9a-f]{24}",?/g,''))
+    ap.wrn('getUserFriendGroupMember_async delete _id',getRecord)
+    // ap.inf('after replace tmp',tmp)
+    // getRecord=JSON.parse(tmp)
+    /*********************************************/
+    /********    删除（保留）指定字段     *******/
+    /*********************************************/
+    //id会被查询，即使没有在select field中，所以要去掉
+    let fieldsToBeKeep=[e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP]
+    controllerHelper.keepFieldInRecord({record:getRecord,fieldsToBeKeep:fieldsToBeKeep})
+
+    let populateFields={
+        [e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP]:{
+            'collName':e_coll.USER,
+            'subPopulateFields':undefined,
+        }
+    }
+
+    /*********************************************/
+    /**********      加密 敏感数据       *********/
+    /*********************************************/
+
+    controllerHelper.encryptSingleRecord({record:getRecord,salt:tempSalt,collName:collName,populateFields:populateFields})
+
+
+    // ap.inf('getRecord done',getRecord)
+    return Promise.resolve({rc:0,msg:getRecord})
+
+
+}
+async function businessLogicToGetFriendGroupMember_async({collName,userId,recordId}) {
+    /*******************************************************************************************/
+    /*                                  db operation                                           */
+    /*******************************************************************************************/
+/*    let condition={
+        [e_field.USER_FRIEND_GROUP.OWNER_USER_ID]:userId,
+        [e_field.USER_FRIEND_GROUP.FRIEND_GROUP_NAME]:{'$nin':globalConfiguration.userGroupFriend.defaultGroupName.enumFormat.BlackList}
+    }*/
+    let populateOpt=[{
+        'path':`${e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP}`,
+        select:` ${e_field.USER.NAME} `, //${e_field.ARTICLE_ATTACHMENT.HASH_NAME}是为了防止文件名冲突，导致文件覆盖，无需传递到前端
+        // options:{limit:maxNumber.article.attachmentNumberPerArticle},
+    }]
+    // ap.inf('condition',condition)
+    // ap.inf('populateOpt',populateOpt)
+    let getRecord= await common_operation_model.findById_returnRecord_async({
+        dbModel:e_dbModel[collName],
+        id:recordId,
+        selectedFields:`${[e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP]}`, //只需要返回FRIENDS_IN_GROUP即可
+        populateOpt:populateOpt,
+    })
+    dataConvert.convertDocumentToObject({src:getRecord})
+
+
+    return Promise.resolve(getRecord)
+}
+
+
 module.exports={
     getUserFriendGroup_async,
+    getUserFriendGroupAndItsMember_async,
+    getUserFriendGroupMember_async,
 }

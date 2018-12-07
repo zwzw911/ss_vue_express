@@ -133,7 +133,7 @@ describe('dispatch', function() {
         /*** create penalize for user3 ***/
         let adminRootSalt=await commonAPI.getTempSalt_async({sess:adminRootSess})
         // ap.inf('root user salt',adminRootSalt)
-        let cryptedUser3Id=crypt.cryptSingleFieldValue({fieldValue:user3Id,salt:adminRootSalt}).msg
+        let cryptedUser3Id=crypt.encryptSingleValue({fieldValue:user3Id,salt:adminRootSalt}).msg
         // ap.inf('cryptedUser3Id',cryptedUser3Id)
         await penalizeAPI.createPenalize_returnPenalizeId_async({adminUserSess:adminRootSess,penalizeInfo:penalizeInfoForUser3,penalizedUserId:cryptedUser3Id,adminApp:adminApp})
 
@@ -147,7 +147,7 @@ describe('dispatch', function() {
         let tmpResult =await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.folder,condition:{[e_field.FOLDER.AUTHOR_ID]:user1Id},[e_field.FOLDER.LEVEL]:1})
         let user1ParentFolderId=tmpResult[0]['id']
         // let user2Salt=await commonAPI.getTempSalt_async({sess:user2Sess})
-        // user1ParentFolderIdGetByUser2Crypted=crypt.cryptSingleFieldValue({fieldValue:user1ParentFolderId,salt:user2Salt}).msg
+        // user1ParentFolderIdGetByUser2Crypted=crypt.encryptSingleValue({fieldValue:user1ParentFolderId,salt:user2Salt}).msg
         user1ParentFolderIdGetByUser2Crypted=await commonAPI.cryptObjectId_async({objectId:user1ParentFolderId,sess:user2Sess})
         /*** user2 get its own folder id ***/
         let user2AllTopLevelFolderResult=await folderAPI.getAllTopLevelFolder_async({sess:user1Sess,app:app})
@@ -156,7 +156,7 @@ describe('dispatch', function() {
         tmpResult =await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.folder,condition:{[e_field.FOLDER.AUTHOR_ID]:user2Id},[e_field.FOLDER.LEVEL]:1})
         let user2ParentFolderId=tmpResult[0]['id']
         // let user1Salt=await commonAPI.getTempSalt_async({sess:user1Sess})
-        // user2ParentFolderIdGetByUser1Crypted=crypt.cryptSingleFieldValue({fieldValue:user2ParentFolderId,salt:user1Salt}).msg
+        // user2ParentFolderIdGetByUser1Crypted=crypt.encryptSingleValue({fieldValue:user2ParentFolderId,salt:user1Salt}).msg
         user2ParentFolderIdGetByUser1Crypted=await commonAPI.cryptObjectId_async({objectId:user2ParentFolderId,sess:user1Sess})
         /*** adminRoot get user1 folder id ***/
         user1ParentFolderIdGetByAdminRoot=await commonAPI.cryptObjectId_async({objectId:user1ParentFolderId,sess:adminRootSess})

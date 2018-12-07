@@ -656,7 +656,7 @@ function convertEditSubFieldValueToNoSql({editSubFieldValue}){
     return result
 }
 
-//通过mongoose获得的数据，转换成object
+//通过mongoose获得的document（单个或者array），转换成object
 function convertDocumentToObject({src}){
     // ap.inf('dataTypeCheck.isArray(src)',dataTypeCheck.isArray(src))
     if(true===dataTypeCheck.isArray(src)){

@@ -268,7 +268,28 @@ async function calcJoinPublicGroupDeclineNum_async({userId,containerId}){
 }
 
 
-
+/**  用户已经分享的文档数量        **/
+async function calcSendRecommends_async({userId,containerId}){
+    let condition={
+        [e_field.SEND_RECOMMEND.SENDER]:userId,
+        // [e_field.JOIN_PUBLIC_GROUP_REQUEST.PUBLIC_GROUP_ID]:containerId,
+        // [e_field.JOIN_PUBLIC_GROUP_REQUEST.HANDLE_RESULT]:e_joinPublicGroupHandleResult.DECLINE,
+        'dDate':{$exists:false},
+    }
+    let untreatedNum=await common_operation_model.count_async({dbModel:e_dbModel.send_recommend,condition:condition})
+    return Promise.resolve({[e_resourceFieldName.USED_NUM]:untreatedNum})
+}
+/**  用户已读 分享文档数        **/
+async function calcReadReceivedRecommends_async({userId,containerId}){
+    let condition={
+        [e_field.RECEIVE_RECOMMEND.RECEIVER]:userId,
+        // [e_field.JOIN_PUBLIC_GROUP_REQUEST.PUBLIC_GROUP_ID]:containerId,
+        // [e_field.JOIN_PUBLIC_GROUP_REQUEST.HANDLE_RESULT]:e_joinPublicGroupHandleResult.DECLINE,
+        'dDate':{$exists:false},
+    }
+    let result=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.receive_recommend,condition:condition})
+    return Promise.resolve({[e_resourceFieldName.USED_NUM]:result[0][e_field.RECEIVE_RECOMMEND.READ_RECOMMENDS_NUM]})
+}
 module.exports={
     calcFolderNum_async,
 
@@ -293,5 +314,6 @@ module.exports={
 
     calcJoinPublicGroupDeclineNum_async,
 
-
+    calcSendRecommends_async,
+    calcReadReceivedRecommends_async,
 }

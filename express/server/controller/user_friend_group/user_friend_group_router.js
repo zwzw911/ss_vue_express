@@ -32,6 +32,36 @@ router.get('/',function(req,res,next){
         }
     )
 })
+/** 读取friend group以及其下的friends  **/
+router.get('/friends',function(req,res,next){
+
+    dispatcher_async({req:req}).then(
+        (v)=>{
+            console.log(`get  user friend group   success, result:  ${JSON.stringify(v)}`)
+            return res.json(v)
+        },
+        (err)=>{
+            console.log(`get   user friend group    fail: ${JSON.stringify(err)}`)
+            return res.json(genFinalReturnResult(err))
+
+        }
+    )
+})
+/** 读取单个friend group下的friends  **/
+router.get('/friendGroup/:friendGroupId',function(req,res,next){
+
+    dispatcher_async({req:req}).then(
+        (v)=>{
+            console.log(`get friend group member  success, result:  ${JSON.stringify(v)}`)
+            return res.json(v)
+        },
+        (err)=>{
+            console.log(`get friend group  member  fail: ${JSON.stringify(err)}`)
+            return res.json(genFinalReturnResult(err))
+
+        }
+    )
+})
 
 router.post('/',function(req,res,next){
 

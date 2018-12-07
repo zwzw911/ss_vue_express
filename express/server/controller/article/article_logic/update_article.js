@@ -148,7 +148,7 @@ async function updateArticle_async({req,applyRange}){
     /*********************************************/
     /**********      加密 敏感数据       *********/
     /*********************************************/
-    controllerHelper.cryptRecordValue({record:updatedRecord,salt:tempSalt,collName:collName})
+    controllerHelper.encryptSingleRecord({record:updatedRecord,salt:tempSalt,collName:collName})
     /*********************************************/
     /**********      删除指定字段       *********/
     /*********************************************/

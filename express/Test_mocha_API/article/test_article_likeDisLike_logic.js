@@ -157,7 +157,7 @@ describe('article comment logic test:',async  function() {
         //create penalize for user3
         let adminRootSalt = await commonAPI.getTempSalt_async({sess: adminRootSess})
         // ap.inf('root user salt',adminRootSalt)
-        let cryptedUser3Id = crypt.cryptSingleFieldValue({fieldValue: user3Id, salt: adminRootSalt}).msg
+        let cryptedUser3Id = crypt.encryptSingleValue({fieldValue: user3Id, salt: adminRootSalt}).msg
         // ap.inf('cryptedUser3Id',cryptedUser3Id)
         let penalizeInfoForUser3 = {
             penalizeType: e_penalizeType.NO_ARTICLE_COMMENT,

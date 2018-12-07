@@ -65,7 +65,7 @@ async function cryptObjectId_async({objectId,sess}){
     let tempSalt=await getTempSalt_async({sess:sess})
     // ap.wrn('tempSalt',tempSalt)
     // ap.inf('objectId',objectId)
-    let cryptedValue=crypt.cryptSingleFieldValue({fieldValue:objectId,salt:tempSalt}).msg
+    let cryptedValue=crypt.encryptSingleValue({fieldValue:objectId,salt:tempSalt}).msg
     return Promise.resolve(cryptedValue)
 }
 
@@ -74,7 +74,7 @@ async function decryptObjectId_async({objectId,sess}){
     let tempSalt=await getTempSalt_async({sess:sess})
     // ap.inf('tempSalt',tempSalt)
     // ap.inf('objectId',objectId)
-    let decryptedValue=crypt.decryptSingleFieldValue({fieldValue:objectId,salt:tempSalt}).msg
+    let decryptedValue=crypt.decryptSingleValue({fieldValue:objectId,salt:tempSalt}).msg
     return Promise.resolve(decryptedValue)
 }
 

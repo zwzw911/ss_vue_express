@@ -21,11 +21,11 @@ const db_operation_helper=require('../../db_operation_helper')
 /*************************************************************/
 const e_part=require('../../../constant/enum/nodeEnum').ValidatePart
 const e_field=require('../../../constant/genEnum/DB_field').Field
-const e_articleStatus=require('../../../constant/enum/mongoEnum').DocumentStatus.DB
+const e_articleStatus=require('../../../constant/enum/mongoEnum').ArticleStatus.DB
 /*************************************************************/
 /**************        direct function         **************/
 /*************************************************************/
-const cryptSingleFieldValue=require(`../../../function/assist/crypt`).cryptSingleFieldValue
+const encryptSingleValue=require(`../../../function/assist/crypt`).encryptSingleValue
 
 
 async function createArticle_setToFinish_returnArticleId_async({userSess,app}){
@@ -34,7 +34,7 @@ async function createArticle_setToFinish_returnArticleId_async({userSess,app}){
     //更新到完成状态
     let data={values:{}}
     data.values[e_part.RECORD_ID]=recordId
-    data.values[e_part.RECORD_INFO]={[e_field.ARTICLE.STATUS]:e_articleStatus.COMMIT}
+    data.values[e_part.RECORD_INFO]={[e_field.ARTICLE.STATUS]:e_articleStatus.FINISHED}
     // ap.wrn('data',data)
     await articleAPI.updateArticle_returnArticleId_async({userSess:userSess,data:data,app:app})
 

@@ -74,7 +74,7 @@ async function deleteUser_async({req,applyRange}){
     /!******   传入的敏感数据（recordId）解密，recordInfo中的objectId在dispatch中解密   ******!/
     /!************************************************!/
     // controllerHelper.decryptRecordValue({record:docValue,collName:collName})
-    recordId=crypt.decryptSingleFieldValue({fieldValue:recordId,salt:tempSalt})*/
+    recordId=crypt.decryptSingleValue({fieldValue:recordId,salt:tempSalt})*/
     /**********************************************/
     /******    当前用户是否有创删除用户的权限   ****/
     /*********************************************/

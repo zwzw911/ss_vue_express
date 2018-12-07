@@ -70,7 +70,7 @@ async function deletePenalize_async({req}){
     /!******   传入的敏感数据（recordId）解密，recordInfo中的objectId在dispatch中解密   ******!/
     /!************************************************!/
     // controllerHelper.decryptRecordValue({record:docValue,collName:collName})
-    recordToBeDeleted=crypt.decryptSingleFieldValue({fieldValue:recordToBeDeleted,salt:tempSalt})*/
+    recordToBeDeleted=crypt.decryptSingleValue({fieldValue:recordToBeDeleted,salt:tempSalt})*/
     /*********************************************/
     /*************    用户类型检测    ************/
     /*********************************************/

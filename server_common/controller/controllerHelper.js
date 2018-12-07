@@ -28,6 +28,7 @@ const e_resourceFieldName=nodeEnum.ResourceFieldName
 const e_partValueToVarName=nodeEnum.PartValueToVarName
 const e_subField=nodeEnum.SubField
 const e_findEleInArray=nodeEnum.FindEleInArray
+const e_env=nodeEnum.Env
 
 const mongoEnum=require('../constant/enum/mongoEnum')
 const e_storePathUsage=mongoEnum.StorePathUsage.DB
@@ -68,8 +69,8 @@ const common_operation_model=require('../model/mongo/operation/common_operation_
 // const misc=require('../function/assist/misc')
 const hashCrypt=require('../function/assist/crypt')
 const hash=hashCrypt.hash
-const cryptSingleFieldValue=hashCrypt.cryptSingleFieldValue
-const decryptSingleFieldValue=hashCrypt.decryptSingleFieldValue
+const encryptSingleValue=hashCrypt.encryptSingleValue
+const decryptSingleValue=hashCrypt.decryptSingleValue
 
 const browserInputRule=require('../constant/inputRule/browserInputRule').browserInputRule
 const internalInputRule=require('../constant/inputRule/internalInputRule').internalInputRule
@@ -91,6 +92,7 @@ const sanityHtml=require('../function/assist/sanityHtml').sanityHtml
 
 const regex=require('../constant/regex/regex').regex
 const currentAppSetting=require('../constant/config/appSetting').currentAppSetting
+const currentEnv=require('../constant/config/appSetting').currentEnv
 const globalConfiguration=require('../constant/config/globalConfiguration')
 
 
@@ -99,6 +101,8 @@ const  redisOperation=require(`../model/redis/operation/redis_common_operation`)
 const captcha_async=require('../function/assist/awesomeCaptcha').captcha_async
 
 const validateSingleValueForSearch=require('../function/validateInput/validateValue').validateSingleValueForSearch
+
+const controllerChecker=require('./controllerChecker')
 // const complicatedCheckInterval_async=redisCommonScript.complicatedCheckInterval_async
 /*  根据findType，在req中检测是否存在optionPart中定义的part
 * @req
@@ -847,17 +851,30 @@ async function setLoginUserInfo_async({req,userInfo}){
         return Promise.reject(helperError.userInfoUndefine)
     }
     let mandatoryFields=[e_userInfoField.USER_ID,e_userInfoField.USER_COLL_NAME,e_userInfoField.USER_TYPE,e_userInfoField.TEMP_SALT]
-    //[e_userInfoField.ADD_FRIEND_RULE]
+    //检查登录成功后，需要设置session的字段是否完备
     for(let singleMandatoryField of mandatoryFields){
         if(undefined===userInfo[singleMandatoryField]){
             return Promise.reject(helperError.mandatoryFieldValueUndefine(singleMandatoryField))
         }
     }
-    // if()
-    //保存信息到session中
-    // console.log(`userInfo to be saved into session==========>${JSON.stringify(userInfo)}`)
-    req.session.userInfo=userInfo
-    return Promise.resolve()
+    /**     登录成功后，需要重新设置sessionId   **/
+    return new Promise(function(resolve, reject){
+        if(req.session){
+            req.session.regenerate(function(err){
+                if(err){
+                    reject(err)
+                }
+                req.session.userInfo=userInfo
+                resolve()
+            })
+        }else{
+            req.session.userInfo=userInfo
+            resolve()
+        }
+    })
+
+
+    // return Promise.resolve()
 }
 
 async function getLoginUserInfo_async({req}){
@@ -1192,7 +1209,16 @@ async function setSessionByServer_async({req}){
             req.session['userInfo'][field]=misc.generateRandomString({})
             // return Promise.reject(helperError.sessionNotSet)
             // ap.inf('helperError.sessionNotSet',helperError.sessionNotSet)
-            reject(misc.genFinalReturnResult(helperError.sessionNotSet))
+            /**     新生成session后，需要返回错误，以便再次发送请求（虽然client处理比较麻烦）。
+             *      如此，就不会出现同一个页面 发送多个请求，生成多个session（防止redis被撑爆）  **/
+            if(currentEnv===e_env.PROD){
+                reject(misc.genFinalReturnResult(helperError.sessionNotSet))
+            }
+            /**     开发环境，直接返回sess(且中断当前处理)   **/
+            if(currentEnv===e_env.DEV){
+                reject('1')
+            }
+
         }
         //一定要返回一个resolve，否则app.js中的调用会无法继续
         else{
@@ -1252,6 +1278,145 @@ async function getCaptchaAndCheck_async({req,db=2}){
     // ap.inf('serverCaptcha',serverCaptcha)
 }
 
+/* 根据records是否为数组，调用cryptSingleRecord进行处理。只能处理原始的数据
+* */
+function encryptRecords({records,collName,salt,populateFields}){
+    if(undefined===records){
+        if(true===dataTypeCheck.isArray(records)){
+            for(let idx in records){
+                encryptSingleRecord({record:records[idx],collName:collName,salt:salt,populateFields:populateFields})
+            }
+        }else{
+            encryptSingleRecord({record:records,collName:collName,salt:salt,populateFields:populateFields})
+        }
+    }
+}
+/**     对单个记录，根据populateFields的设定，对objectId类型的字段进行加密
+ * populateFields：嵌套对象。 {fieldName:{collName:'user',subPopulateFields:{fieldName:{collName:'author',subPopulateFields:{}}}}}
+ * **/
+function encryptSingleRecord({record,collName,salt,populateFields}){
+    // ap.wrn('record',record)
+    // ap.wrn('collName',collName)
+    // ap.wrn('populateFields',populateFields)
+    let collRule=inputRule[collName]
+    let populateFieldsExists=false
+
+    //格式：判断populateFields是否存在
+    if(undefined!==populateFields && true===dataTypeCheck.isObject(populateFields) && Object.keys(populateFields).length>0){
+        // ap.err('undefined!==populateFields',undefined!==populateFields)
+        // ap.err('dataTypeCheck.isObject(populateFields)',dataTypeCheck.isObject(populateFields))
+        // ap.err('Object.keys(populateFields).length',Object.keys(populateFields).length)
+        populateFieldsExists=true
+    }
+// ap.err('populateFieldsExists',populateFieldsExists)
+    //遍历record中每个字段，判断是否为populate字段
+    for(let singleFieldName in record){
+        //字段值的内容是为空，直接pass
+        if(undefined===record[singleFieldName] || null===record[singleFieldName]){
+            continue
+        }
+        // ap.inf('singleFieldName]',singleFieldName)
+        //判断当前字段类型是否为array/objectId
+        let ifObjectId,ifArray
+        //判断字段值类型是objectId
+        if('id'===singleFieldName || '_id'===singleFieldName){
+            ifObjectId=true
+            ifArray=false
+        }else{
+            //如果没有对应的rule，直接pass
+            if(undefined===collRule[singleFieldName]){
+                continue
+            }
+            let tmpResult=controllerChecker.ifFieldDataTypeObjectId({fieldRule:collRule[singleFieldName]})
+            // ap.inf('collRule[singleFieldName]',collRule[singleFieldName])
+            if(tmpResult.rc>0){return tmpResult}
+            ifObjectId=tmpResult.msg['ifObjectId']
+            ifArray=tmpResult.msg['ifArray']
+        }
+
+        // ap.wrn('ifArray',ifArray)
+        // ap.wrn('ifObjectId',ifObjectId)
+        //设定了populateFields，需要判定record中有field被定义在populateFields中否
+        if(true===populateFieldsExists){
+            //record中field被定义在populateFields中，递归调用
+            if(undefined!==populateFields[singleFieldName]){
+                // ap.inf('record[singleFieldName]',record[singleFieldName])
+                // ap.inf('populateFields[singleFieldName][\'subPopulateFields\']',populateFields[singleFieldName]['subPopulateFields'])
+                // ap.inf('record',record[singleFieldName])
+                if(true===ifArray){
+                    for(let idx in record[singleFieldName]){
+                        encryptSingleRecord({record:record[singleFieldName][idx],collName:populateFields[singleFieldName]['collName'],salt:salt,populateFields:populateFields[singleFieldName]['subPopulateFields']})
+                    }
+                }else{
+                    encryptSingleRecord({record:record[singleFieldName],collName:populateFields[singleFieldName]['collName'],salt:salt,populateFields:populateFields[singleFieldName]['subPopulateFields']})
+                }
+
+                continue
+            }
+        }
+
+        //如果是objectId，进行加密
+        if(true===ifObjectId){
+            //array,对每个元素加密
+            if(true===ifArray){
+                for(let idx in record[singleFieldName]){
+                    record[singleFieldName][idx]=encryptSingleValue({fieldValue:record[singleFieldName][idx],salt:salt}).msg
+                }
+            }
+            //非array，直接加密
+            else{
+                record[singleFieldName]=encryptSingleValue({fieldValue:record[singleFieldName],salt:salt}).msg
+            }
+        }
+    }
+}
+/**     对单条记录中的每个ObjectId字段值进行解密
+* */
+function decryptSingleRecord({record,collName,salt}){
+    let collRule=inputRule[collName]
+    for(let singleFieldName in record){
+        // let ifArray,ifObjectId
+        let ifObjectId,ifArray
+        //判断字段值类型是objectId
+        if('id'===singleFieldName || '_id'===singleFieldName){
+            ifObjectId=true
+            ifArray=false
+        }else{
+            //如果没有对应的rule，直接pass
+            if(undefined===collRule[singleFieldName]){
+                continue
+            }
+            let tmpResult=controllerChecker.ifFieldDataTypeObjectId({fieldRule:collRule[singleFieldName]})
+            // ap.inf('collRule[singleFieldName]',collRule[singleFieldName])
+            if(tmpResult.rc>0){return tmpResult}
+            ifObjectId=tmpResult.msg['ifObjectId']
+            ifArray=tmpResult.msg['ifArray']
+        }
+
+        //传入的objectId必须符合条件；1. string，2. 长度64
+        // ap.inf('singleFieldName',singleFieldName)
+        // ap.inf('record[singleFieldName]',record[singleFieldName])
+        if(false===dataTypeCheck.isString(record[singleFieldName]) || false===regex.cryptedObjectId.test(record[singleFieldName])){
+            return helperError.decryptSingleRecord.encryptedObjectIdInvalid
+        }
+        if(true===ifArray){
+            for(let idx in record[singleFieldName]){
+                //数组元素是objectId，直接加解密
+                if(true===ifExactEncryptedObjectId(record[singleFieldName][idx])){
+                    record[singleFieldName][idx]=decryptSingleValue({fieldValue:record[singleFieldName][idx],salt:salt}).msg
+                }
+
+            }
+        }else{
+            if(true===ifExactEncryptedObjectId(record[singleFieldName])){
+                record[singleFieldName]=decryptSingleValue({fieldValue:record[singleFieldName],salt:salt}).msg
+            }
+        }
+    }
+
+
+
+}
 //对单个记录的值(主要是objectId)进行加密
 //record必须是object，可能需要.toObject()方法转换
 //inputRule已经require，无需参数传递
@@ -1264,6 +1429,7 @@ function cryptDecryptSingleRecord({record,collName,salt,populateFields,cryptDecr
         let fieldDataTypeIsObjectId=false
 
         //_id活着id，说明是objectId，但不是array
+        // ap.wrn('loop crypte singleFieldName',singleFieldName)
         if( 'id'===singleFieldName || '_id'===singleFieldName){
             fieldDataTypeIsObjectId=true
         }else{
@@ -1283,10 +1449,13 @@ function cryptDecryptSingleRecord({record,collName,salt,populateFields,cryptDecr
 
 
         //根据实际字段值进行处理（rule中定义为Object，可能实际被populate成一个记录，需要对记录中每个值进行再次判断）
-        if(true===fieldDataTypeIsObjectId && undefined!==record[singleFieldName]){
+        if(true===fieldDataTypeIsObjectId && undefined!==record[singleFieldName] && null!==record[singleFieldName]){
             let fieldPopulated=false //记录字段是否被populate了
             if(undefined!==populateFields ){
                 for(let singlePopulateEle of populateFields){
+                    ap.wrn('populated singleFieldName',singleFieldName)
+                    ap.wrn('singlePopulateEle',singlePopulateEle)
+                    ap.wrn('singlePopulateEle[\'fieldName\']',singlePopulateEle['fieldName'])
                     if(singlePopulateEle['fieldName']===singleFieldName){
                         fieldPopulated=true
                         break
@@ -1298,11 +1467,12 @@ function cryptDecryptSingleRecord({record,collName,salt,populateFields,cryptDecr
             if(cryptDecryptType==='crypt'){
                 //未被populate的field，才进行加解密
                 if(false===fieldPopulated){
+
                     if(true===fieldDataTypeIsArray){
                         for(let idx in record[singleFieldName]){
                             //数组元素是objectId，并未populate，直接加解密
                             if(ifExactObjectId(record[singleFieldName][idx])){
-                                record[singleFieldName][idx]=cryptSingleFieldValue({fieldValue:record[singleFieldName][idx],salt:salt}).msg
+                                record[singleFieldName][idx]=encryptSingleValue({fieldValue:record[singleFieldName][idx],salt:salt}).msg
                                 continue
                             }
                             /*//数组元素是object（已经被populate），遍历每个元素，
@@ -1317,14 +1487,16 @@ function cryptDecryptSingleRecord({record,collName,salt,populateFields,cryptDecr
                                     // ap.inf('regex.objectId.test(value)',regex.objectId.test(ele[singleEleField]))
                                     if(ifExactObjectId(ele[singleEleField])){
 
-                                        ele[singleEleField]=cryptSingleFieldValue({fieldValue:ele[singleEleField],salt:salt}).msg
+                                        ele[singleEleField]=encryptSingleValue({fieldValue:ele[singleEleField],salt:salt}).msg
                                     }
                                 }
                             }*/
                         }
                     }else{
                         if(ifExactObjectId(record[singleFieldName])){
-                            record[singleFieldName]=cryptSingleFieldValue({fieldValue:record[singleFieldName],salt:salt}).msg
+                            ap.wrn('crypte singleFieldName',singleFieldName)
+                            ap.wrn('crypte record',record)
+                            record[singleFieldName]=encryptSingleValue({fieldValue:record[singleFieldName],salt:salt}).msg
                         }
 
                     }
@@ -1342,14 +1514,14 @@ function cryptDecryptSingleRecord({record,collName,salt,populateFields,cryptDecr
                 if(true===fieldDataTypeIsArray){
                     for(let idx in record[singleFieldName]){
                         //数组元素是objectId，直接加解密
-                        if(true===ifExactCryptedObjectId(record[singleFieldName][idx])){
-                            record[singleFieldName][idx]=decryptSingleFieldValue({fieldValue:record[singleFieldName][idx],salt:salt}).msg
+                        if(true===ifExactEncryptedObjectId(record[singleFieldName][idx])){
+                            record[singleFieldName][idx]=decryptSingleValue({fieldValue:record[singleFieldName][idx],salt:salt}).msg
                         }
 
                     }
                 }else{
-                    if(true===ifExactCryptedObjectId(record[singleFieldName])){
-                        record[singleFieldName]=decryptSingleFieldValue({fieldValue:record[singleFieldName],salt:salt}).msg
+                    if(true===ifExactEncryptedObjectId(record[singleFieldName])){
+                        record[singleFieldName]=decryptSingleValue({fieldValue:record[singleFieldName],salt:salt}).msg
                     }
                 }
 
@@ -1381,7 +1553,7 @@ function ifExactObjectId(value){
     // typeof value === 'string' &&
     return  true===regex.objectId.test(value)
 }
-function ifExactCryptedObjectId(value){
+function ifExactEncryptedObjectId(value){
     return typeof value === 'string' && true===regex.cryptedObjectId.test(value)
 }
 
@@ -1389,7 +1561,7 @@ function ifExactCryptedObjectId(value){
 * populateFields：指明单条记录中，那些字段是被populate的，需要检查是否有id，进行加解密
 * [{fieldName:string,fkCollName:string}]
 * */
-function cryptRecordValue({record,collName,salt,populateFields}){
+/*function cryptRecordValue({record,collName,salt,populateFields}){
     //首先，对本记录进行crypt
     cryptDecryptSingleRecord({
         record:record,
@@ -1400,17 +1572,22 @@ function cryptRecordValue({record,collName,salt,populateFields}){
     })
     //对本记录的populate字段进行crypt
     if(undefined!==populateFields && populateFields.length>0){
-        // ap.inf('populateFields',populateFields)
+
         for(let singlePopulateField of populateFields){
-            // ap.inf('singlePopulateField',singlePopulateField)
-            cryptDecryptRecord({
-                records:record[singlePopulateField['fieldName']],
-                salt:salt,
-                collName:singlePopulateField['fkCollName'],
-                populateFields:singlePopulateField['child'],
-                cryptDecryptType:'crypt'
-            })
-/*            //对本记录的populate字段中populate字段进行crypt
+            //populate的字段一般是object，此时可以通过rule，对其中每个字段进行判别是否需要加解密
+            //否则无需加解密（可能已经把objectId字段替换成某个具体值，例如,STORE_PATH，从objectId替换成某个具体的路径）
+            if(dataTypeCheck.isObject(record[singlePopulateField])){
+                // ap.inf('singlePopulateField',singlePopulateField)
+                cryptDecryptRecord({
+                    records:record[singlePopulateField['fieldName']],
+                    salt:salt,
+                    collName:singlePopulateField['fkCollName'],
+                    populateFields:singlePopulateField['child'],
+                    cryptDecryptType:'crypt'
+                })
+            }
+
+/!*            //对本记录的populate字段中populate字段进行crypt
             if(undefined!==singlePopulateField['child']){
                 cryptDecryptRecord({
                     records:record[singlePopulateField['fieldName']],
@@ -1419,16 +1596,16 @@ function cryptRecordValue({record,collName,salt,populateFields}){
                     populateFields:singlePopulateField['child'],
                     cryptDecryptType:'crypt'
                 })
-            }*/
+            }*!/
         }
     }
     // return cryptDecryptSingleRecord({record:record,salt:salt,collName:collName,cryptDecryptType:'crypt'})
 
     // return result
-}
-function decryptRecordValue({record,collName,salt}){
+}*/
+/*function decryptRecordValue({record,collName,salt}){
     return cryptDecryptSingleRecord({record:record,salt:salt,collName:collName,cryptDecryptType:'decrypt'})
-}
+}*/
 
 /****************************************************************/
 /********    对inputValue中加密的objectId进行解密       *********/
@@ -1450,10 +1627,10 @@ function decryptInputValue({req,expectedPart,salt,browserCollRule}){
                         }
                         //检查from/to recordId格式是否正确
                         if(undefined!==partValue[singleFieldName][e_subField.FROM]){
-                            partValue[singleFieldName][e_subField.FROM]=decryptSingleFieldValue({fieldValue:partValue[singleFieldName][e_subField.FROM],salt:salt}).msg
+                            partValue[singleFieldName][e_subField.FROM]=decryptSingleValue({fieldValue:partValue[singleFieldName][e_subField.FROM],salt:salt}).msg
                         }
                         if(undefined!==partValue[singleFieldName][e_subField.TO]){
-                            partValue[singleFieldName][e_subField.TO]=decryptSingleFieldValue({fieldValue:partValue[singleFieldName][e_subField.TO],salt:salt}).msg
+                            partValue[singleFieldName][e_subField.TO]=decryptSingleValue({fieldValue:partValue[singleFieldName][e_subField.TO],salt:salt}).msg
                         }
                         if(undefined!==partValue[singleFieldName][e_subField.ELE_ARRAY] && true===dataTypeCheck.isArray(partValue[singleFieldName][e_subField.ELE_ARRAY]) ){
                             //获得数据类型
@@ -1476,7 +1653,7 @@ function decryptInputValue({req,expectedPart,salt,browserCollRule}){
                                 if( eleArrayValue.length>0){
                                     for(let idx in eleArrayValue){
                                         // let singleEle=eleArrayValue[idx]
-                                        partValue[singleFieldName][e_subField.ELE_ARRAY][idx]=decryptSingleFieldValue({fieldValue:partValue[singleFieldName][e_subField.ELE_ARRAY][idx],salt:salt}).msg
+                                        partValue[singleFieldName][e_subField.ELE_ARRAY][idx]=decryptSingleValue({fieldValue:partValue[singleFieldName][e_subField.ELE_ARRAY][idx],salt:salt}).msg
                                     }
                                 }
                             }
@@ -1504,13 +1681,13 @@ function decryptInputValue({req,expectedPart,salt,browserCollRule}){
                                 if(undefined!==fieldValue['add'] && true===dataTypeCheck.isSetValue(fieldValue['add'])){
                                     fieldSubPartValue=fieldValue['add']
                                     for(let  idx in fieldSubPartValue){
-                                        partValue[singleFieldName]['add'][idx]=decryptSingleFieldValue({fieldValue:fieldSubPartValue[idx],salt:salt}).msg
+                                        partValue[singleFieldName]['add'][idx]=decryptSingleValue({fieldValue:fieldSubPartValue[idx],salt:salt}).msg
                                     }
                                 }
                                 if(undefined!==fieldValue['remove'] && true===dataTypeCheck.isSetValue(fieldValue['remove'])){
                                     fieldSubPartValue=fieldValue['remove']
                                     for(let  idx in fieldSubPartValue){
-                                        partValue[singleFieldName]['remove'][idx]=decryptSingleFieldValue({fieldValue:fieldSubPartValue[idx],salt:salt}).msg
+                                        partValue[singleFieldName]['remove'][idx]=decryptSingleValue({fieldValue:fieldSubPartValue[idx],salt:salt}).msg
                                     }
                                 }
                             }
@@ -1520,7 +1697,7 @@ function decryptInputValue({req,expectedPart,salt,browserCollRule}){
                     break;
                 case e_part.RECORD_ID:
                     //recordId非object，所以是非引用，需要赋值
-                    req.body.values[singlePart]=decryptSingleFieldValue({fieldValue:partValue,salt:salt}).msg
+                    req.body.values[singlePart]=decryptSingleValue({fieldValue:partValue,salt:salt}).msg
                     break;
                 case e_part.SINGLE_FIELD:
                     //获得field的名称
@@ -1538,11 +1715,11 @@ function decryptInputValue({req,expectedPart,salt,browserCollRule}){
                             if(true===dataTypeArrayFlag){
                                 if(partValue[fieldName].length>0){
                                     for(let idx in partValue[fieldName]){
-                                        partValue[fieldName][idx]=decryptSingleFieldValue({fieldValue:partValue[fieldName][idx],salt:salt}).msg
+                                        partValue[fieldName][idx]=decryptSingleValue({fieldValue:partValue[fieldName][idx],salt:salt}).msg
                                     }
                                 }
                             }else{
-                                partValue[fieldName]=decryptSingleFieldValue({fieldValue:partValue[fieldName],salt:salt}).msg
+                                partValue[fieldName]=decryptSingleValue({fieldValue:partValue[fieldName],salt:salt}).msg
                             }
                             // req.body.values[singlePart]=
                         }
@@ -1568,17 +1745,17 @@ function decryptInputValue({req,expectedPart,salt,browserCollRule}){
                                     for(let idx in partValue[singleFieldName]){
                                         //非空值才进行解密
                                         if(true===dataTypeCheck.isSetValue(partValue[singleFieldName][idx])){
-                                            partValue[singleFieldName][idx]=decryptSingleFieldValue({fieldValue:partValue[singleFieldName][idx],salt:salt}).msg
+                                            partValue[singleFieldName][idx]=decryptSingleValue({fieldValue:partValue[singleFieldName][idx],salt:salt}).msg
                                         }
 
                                     }
                                 }else{
-                                    // ap.inf('before decryptSingleFieldValue  partValue[singleFieldName]',partValue[singleFieldName])
-                                    // ap.inf('before decryptSingleFieldValue  salt',salt)
-                                    // ap.inf('decryptSingleFieldValue({fieldValue:partValue[singleFieldName],salt:salt})',decryptSingleFieldValue({fieldValue:partValue[singleFieldName],salt:salt}))
+                                    // ap.inf('before decryptSingleValue  partValue[singleFieldName]',partValue[singleFieldName])
+                                    // ap.inf('before decryptSingleValue  salt',salt)
+                                    // ap.inf('decryptSingleValue({fieldValue:partValue[singleFieldName],salt:salt})',decryptSingleValue({fieldValue:partValue[singleFieldName],salt:salt}))
                                     //非空值才进行解密
                                     if(true===dataTypeCheck.isSetValue(partValue[singleFieldName])){
-                                        partValue[singleFieldName]=decryptSingleFieldValue({fieldValue:partValue[singleFieldName],salt:salt}).msg
+                                        partValue[singleFieldName]=decryptSingleValue({fieldValue:partValue[singleFieldName],salt:salt}).msg
                                     }
 
                                 }
@@ -1597,7 +1774,7 @@ function decryptInputValue({req,expectedPart,salt,browserCollRule}){
 /*  在一个record中删除指定的字段 */
 //record:必须是Object
 function deleteFieldInRecord({record,fieldsToBeDeleted}){
-    if(undefined===fieldsToBeDeleted){
+    if(undefined===fieldsToBeDeleted || fieldsToBeDeleted.length===0){
         fieldsToBeDeleted=['_id']
     }else if(-1===fieldsToBeDeleted.indexOf('_id')){
         fieldsToBeDeleted.push('_id')
@@ -1608,7 +1785,7 @@ function deleteFieldInRecord({record,fieldsToBeDeleted}){
     }
 }
 
-/*  在一个record中保留指定的字段 */
+/*  在单个record中保留指定的字段 */
 //record:必须是Object
 function keepFieldInRecord({record,fieldsToBeKeep}){
 
@@ -1744,8 +1921,12 @@ module.exports= {
     genCaptchaAdnSave_async,
     getCaptchaAndCheck_async,
 
-    cryptRecordValue,
-    decryptRecordValue,
+    /** 新实现，使用递归  加密传递到client的记录中的objectId   **/
+    encryptRecords,
+    encryptSingleRecord, //暴露加密单记录的函数
+
+    // cryptRecordValue, //只能完成2级的populate，废弃
+    // decryptRecordValue,
 
     decryptInputValue,
 

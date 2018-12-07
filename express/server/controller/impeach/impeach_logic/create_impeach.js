@@ -160,7 +160,7 @@ async  function createImpeach_async({req,applyRange,impeachType}){
     /*********************************************/
     /**********      加密 敏感数据       *********/
     /*********************************************/
-    controllerHelper.cryptRecordValue({record:createdRecord,salt:tempSalt,collName:collName})
+    controllerHelper.encryptSingleRecord({record:createdRecord,salt:tempSalt,collName:collName})
 
     // ap.inf('createdRecord done',createdRecord)
     return Promise.resolve({rc:0,msg:createdRecord})

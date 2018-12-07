@@ -19,7 +19,7 @@ const db_operation_helper=require('../../db_operation_helper')
 /*************************************************************/
 /**************        direct function         **************/
 /*************************************************************/
-const cryptSingleFieldValue=require(`../../../function/assist/crypt`).cryptSingleFieldValue
+const encryptSingleValue=require(`../../../function/assist/crypt`).encryptSingleValue
 
 
 async function reCreateUser_returnSessUserId_async({userData,app}){
@@ -48,7 +48,7 @@ async function reCreateUser_returnSessUserId_async({userData,app}){
     ap.inf('userId',userId)
     ap.inf('tempSalt',tempSalt)
     //模拟加密objectId
-    userId=cryptSingleFieldValue({fieldValue:userId,salt:tempSalt}).msg
+    userId=encryptSingleValue({fieldValue:userId,salt:tempSalt}).msg
 
     ap.inf('crypted userId',userId)*/
     return Promise.resolve({userId:userId,sess:sess})

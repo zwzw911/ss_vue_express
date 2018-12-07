@@ -100,7 +100,9 @@ async function login_async({req}){
     userInfo[e_userInfoField.USER_ID]=userTmpResult[0]['id']
     userInfo[e_userInfoField.USER_TYPE]=userTmpResult[0][e_field.USER.USER_TYPE]
     userInfo[e_userInfoField.USER_COLL_NAME]=e_coll.USER
-    //未登录可能已经获得session，且session中已经有tempSalt
+    /**     为了保证安全，即使登录前已经有temp salt，登录后还是要重新设置     **/
+    userInfo[e_userInfoField.TEMP_SALT]=misc.generateRandomString({})
+    /*//未登录可能已经获得session，且session中已经有tempSalt
     if(undefined===req.session || undefined===req.session['userInfo'] || undefined===req.session['userInfo'][e_userInfoField.TEMP_SALT]){//
         // ap.inf('TEMP_SALT not exist,generate')
         userInfo[e_userInfoField.TEMP_SALT]=misc.generateRandomString({})
@@ -108,7 +110,7 @@ async function login_async({req}){
         //为了保证不改变setLoginUserInfo_async中对mandatory field检查
         // ap.inf('TEMP_SALT  exist,reuse')
         userInfo[e_userInfoField.TEMP_SALT]=req.session['userInfo'][e_userInfoField.TEMP_SALT]//
-    }
+    }*/
 
     userInfo[e_userInfoField.ADD_FRIEND_RULE]=userTmpResult[0][e_field.USER.ADD_FRIEND_RULE]
     // ap.inf('data save into redis',userInfo)

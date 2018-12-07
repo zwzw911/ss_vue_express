@@ -381,6 +381,37 @@ const resource_profile= [
         [e_field.RESOURCE_PROFILE.MAX_NUM]:10,
         //[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]:10, //假设每个文件大小为2M
     },
+
+    /**         最大分享文档数量        **/
+    {
+        [e_field.RESOURCE_PROFILE.NAME]:e_resourceRange_name.MAX_SEND_RECOMMENDS,
+        [e_field.RESOURCE_PROFILE.RESOURCE_RANGE]:e_resourceRange.MAX_SEND_RECOMMENDS,
+        [e_field.RESOURCE_PROFILE.RESOURCE_TYPE]:e_resourceType.BASIC,
+        [e_field.RESOURCE_PROFILE.MAX_NUM]:1000,//最大分享1000篇文档
+        //[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]:10, //假设每个文件大小为2M
+    },
+    /**         最大接收到的分享文档数量        **/
+    /*{
+        [e_field.RESOURCE_PROFILE.NAME]:e_resourceRange_name.MAX_UNREAD_RECEIVE_RECOMMENDS,
+        [e_field.RESOURCE_PROFILE.RESOURCE_RANGE]:e_resourceRange.MAX_UNREAD_RECEIVE_RECOMMENDS,
+        [e_field.RESOURCE_PROFILE.RESOURCE_TYPE]:e_resourceType.BASIC,
+        [e_field.RESOURCE_PROFILE.MAX_NUM]:200,//超过200未读分享文档，说明是不活跃用户，需要定期清理unReadComment字段
+        //[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]:10, //假设每个文件大小为2M
+    },*/
+    {
+        [e_field.RESOURCE_PROFILE.NAME]:e_resourceRange_name.MAX_READ_RECEIVE_RECOMMENDS,
+        [e_field.RESOURCE_PROFILE.RESOURCE_RANGE]:e_resourceRange.MAX_READ_RECEIVE_RECOMMENDS,
+        [e_field.RESOURCE_PROFILE.RESOURCE_TYPE]:e_resourceType.BASIC,
+        [e_field.RESOURCE_PROFILE.MAX_NUM]:1000,//超过1000未读分享文档，提示升级
+        //[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]:10, //假设每个文件大小为2M
+    },
+    {
+        [e_field.RESOURCE_PROFILE.NAME]:`高级`+e_resourceRange_name.MAX_READ_RECEIVE_RECOMMENDS,
+        [e_field.RESOURCE_PROFILE.RESOURCE_RANGE]:e_resourceRange.MAX_READ_RECEIVE_RECOMMENDS,
+        [e_field.RESOURCE_PROFILE.RESOURCE_TYPE]:e_resourceType.ADVANCED,
+        [e_field.RESOURCE_PROFILE.MAX_NUM]:2000,//超过1000未读分享文档，提示升级
+        //[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]:10, //假设每个文件大小为2M
+    },
 ]
 
 

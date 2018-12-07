@@ -43,7 +43,8 @@ const Coll={
     USER_INPUT_KEYWORD:'user_input_keyword',
     /*       user_operation           */
     COLLECTION:'collection',
-    RECOMMEND:'recommend',
+    RECEIVE_RECOMMEND:'receive_recommend',
+    SEND_RECOMMEND:'send_recommend',
     TOPIC:'topic',
 }
 

@@ -87,7 +87,9 @@ async function dispatcher_async(req){
     // ap.inf('base url',originalUrl)
     switch (req.route.stack[0].method) {
         case 'get':
-            if(originalUrl==='/user' || originalUrl==='/user/') {
+            let otherUserUrl=new RegExp(`/user/[0-9a-fA-F]{64}/?`)
+            
+            if(originalUrl==='/user' || originalUrl==='/user/' || true===otherUserUrl.test(originalUrl)) {
                 userLoginCheck={
                     needCheck:true,
                     error:controllerError.dispatch.get.notLoginCantGetUserInfo
@@ -108,7 +110,7 @@ async function dispatcher_async(req){
                         return Promise.reject(controllerError.dispatch.get.cryptedUserIdFormatInvalid)
                     }
                     //解密
-                    tmpResult=crypt.decryptSingleFieldValue({fieldValue:cryptedObjectId,salt:tempSalt})
+                    tmpResult=crypt.decryptSingleValue({fieldValue:cryptedObjectId,salt:tempSalt})
                     if(tmpResult.rc>0){
                         return Promise.reject(tmpResult)
                     }

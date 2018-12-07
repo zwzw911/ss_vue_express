@@ -89,7 +89,130 @@ function getFieldDataTypeInfo({fieldRule,collName,fieldName}) {
 
     return {rc:0,msg:dataTypeInfo}
 }
+/**      检测外键是否存在    **/
+async function ifFkValueExist_async({fieldName,fieldValue,collName}){
+    //fkConfig中有fk字段，且当前字段为fk
+    if(undefined!==fkConfig[collName] && undefined!==fkConfig[collName][fieldName]){
+        //外键值不空，才进行 是否存在/权限 的检测
+        if(false===dataTypeCheck.isEmpty(fieldValue)){
+            let collFkConfig=fkConfig[collName]
+            let collFieldChineseName=e_chineseName[collName]
+            let fkFieldRelatedColl=collFkConfig[fieldName]['relatedColl']
+            let fkCollOwnerFields=collFkConfig[fieldName]['fkCollOwnerFields']
+            let chineseName=collFieldChineseName[fieldName]
 
+            let condition //查询外键记录的条件
+            let fkRecordNum //外键记录的数量
+
+            //主表中field类型是否为array
+            if(true===dataTypeCheck.isArray(inputRule[collName][fieldName][e_otherRuleFiledName.DATA_TYPE])){
+                condition={
+                    '_id':{'$in':fieldValue}
+                }
+                //如果有额外判定条件，需要加入
+                if(undefined!==collFkConfig[fieldName][`validCriteria`]){
+                    condition=Object.assign(condition,collFkConfig[fieldName][`validCriteria`])
+                }
+                fkRecordNum=await  common_operation_model.count_async({dbModel:e_dbModel[fkFieldRelatedColl],condition:condition})
+                if(fkRecordNum!==fieldValue.length){
+                    return Promise.reject(inputValueLogicCheckError.ifFkValueExist_And_FkHasPriority_async.fkValueNotExist(chineseName,fieldValue))
+                }
+            }
+            //非array
+            else{
+                condition={
+                    '_id':fieldValue
+
+                }
+                //如果有额外判定条件，需要加入
+                if(undefined!==collFkConfig[fieldName][`validCriteria`]){
+                    condition=Object.assign(condition,collFkConfig[fieldName][`validCriteria`])
+                }
+                // ap.inf('condition',condition)
+                fkRecordNum=await  common_operation_model.count_async({dbModel:e_dbModel[fkFieldRelatedColl],condition:condition})
+                if(fkRecordNum!==1){
+                    return Promise.reject(inputValueLogicCheckError.ifFkValueExist_And_FkHasPriority_async.fkValueNotExist(chineseName,fieldValue))
+                }
+            }
+        }
+    }
+    //不是fk或者fk检测存在，直接返回true
+    return Promise.resolve(true)
+}
+//根据fkConfig中fkCollOwnerFields的设置，判断外键记录的owner，是否为userId（当前用户），以便决定是否有权限进行操作
+async function ifFkHasPriority_async({fieldName,fieldValue,userId,collName}){
+    //需要在fkConfig中有定义，才能进行权限检查
+    if(undefined!==fkConfig[collName] && undefined!==fkConfig[collName][fieldName]){
+        let collFkConfig=fkConfig[collName]
+        let collFieldChineseName=e_chineseName[collName]
+
+        // for(let singleFkFieldName in collFkConfig){
+        let chineseName=collFieldChineseName[fieldName]
+
+        let fkFieldRelatedColl=collFkConfig[fieldName]['relatedColl']
+        let fkCollOwnerFields=collFkConfig[fieldName]['fkCollOwnerFields']
+
+
+        //fkConfig中fkCollOwnerFields设置了，才需要权限检查
+        if(undefined!==fkCollOwnerFields && 0<fkCollOwnerFields.length && undefined!==userId){
+            let condition //查找外键记录的条件
+
+            //主表中field类型是否为array
+            if(true===dataTypeCheck.isArray(inputRule[collName][fieldName][e_otherRuleFiledName.DATA_TYPE])){
+                condition={
+                    '_id':{'$in':fieldValue}
+                }
+            }else{
+                condition={
+                    '_id':fieldValue
+                }
+            }
+
+            //如果有额外判定条件，需要加入
+            if(undefined!==collFkConfig[fieldName][`validCriteria`]){
+                condition=Object.assign(condition,collFkConfig[fieldName][`validCriteria`])
+            }
+
+
+            //根据条件查找外键记录，返回数组（以便后续处理）
+            let fkRecord=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel[fkFieldRelatedColl],condition:condition})
+            // ap.inf('fkRecord',fkRecord)
+            for(let singleFkRecord of fkRecord){
+                // ap.inf('singleFkRecord',singleFkRecord)
+                //对每个owner字段都要检查
+                for(let singleFkOwnerFieldName of fkCollOwnerFields){
+                    // ap.inf('singleFkOwnerFieldName',singleFkOwnerFieldName)
+                    //外键记录中，owner字段的类型
+                    let fkCollFieldDataType=inputRule[fkFieldRelatedColl][singleFkOwnerFieldName][e_otherRuleFiledName.DATA_TYPE]
+                    // ap.inf('fkCollFieldDataType',fkCollFieldDataType)
+                    //如果外键记录中，owner字段的类型是数组
+                    if(true===dataTypeCheck.isArray(fkCollFieldDataType)){
+                        //数组中不包括当前用户
+                        if(undefined===singleFkRecord[singleFkOwnerFieldName] || -1===singleFkRecord[singleFkOwnerFieldName].indexOf(userId)){
+                            return Promise.reject(inputValueLogicCheckError.ifFkValueExist_And_FkHasPriority_async.notHasPriorityForFkField(chineseName,fieldValue))
+                        }
+                    }
+                    //不是数组
+                    else{
+                        // ap.inf('singleFkRecord[singleFkOwnerFieldName]',singleFkRecord[singleFkOwnerFieldName])
+                        // ap.inf('userId',userId)
+                        if(undefined===singleFkRecord[singleFkOwnerFieldName] || userId!==singleFkRecord[singleFkOwnerFieldName].toString()){
+                            return Promise.reject(inputValueLogicCheckError.ifFkValueExist_And_FkHasPriority_async.notHasPriorityForFkField(chineseName,fieldValue))
+                        }
+                    }
+                }
+            }
+
+        }
+    }
+}
+
+async function ifFkValueExist_And_FkHasPriority_async({fieldName,fieldValue,userId,collName}){
+    await ifFkValueExist_async({fieldName:fieldName,fieldValue:fieldValue,collName:collName})
+    // ap.inf('ifFkValueExist_async done')
+    return await ifFkHasPriority_async({fieldName:fieldName,fieldValue:fieldValue,userId:userId,collName:collName})
+    // ap.inf('ifFkHasPriority_async done')
+}
 /*      检测外键是否存在,且用户是否在外键对应记录的owner中（有权操作）
  * @fieldName；待检测的记录的字段名称
  * @fieldValue；待检测的记录的字段值
@@ -97,7 +220,7 @@ function getFieldDataTypeInfo({fieldRule,collName,fieldName}) {
  * @collName: 用来提取fkConfig和chineseName
  * return：存在: {rc:0}   不存在：helperError.fkValueNotExist
  * */
-async function ifFkValueExist_And_FkHasPriority_async({fieldName,fieldValue,userId,collName}){
+/*async function ifFkValueExist_And_FkHasPriority_async({fieldName,fieldValue,userId,collName}){
     //coll中有fk字段，且当前字段为fk
     if(undefined!==fkConfig[collName] && undefined!==fkConfig[collName][fieldName]){
         let collFkConfig=fkConfig[collName]
@@ -134,11 +257,11 @@ async function ifFkValueExist_And_FkHasPriority_async({fieldName,fieldValue,user
                 // return Promise.resolve({rc:0,msg:false})
             }
 
-            /*************   外键对应的记录，当前用户是否有权使用（例如，用户创建文集，使用的文档的作者是否为自己） *****************/
+            /!*************   外键对应的记录，当前用户是否有权使用（例如，用户创建文集，使用的文档的作者是否为自己） *****************!/
             //根据是否设置了validCriteria，可能调用findById或者find，所以需要判断采用什么方式调用查询到的外键记录
             let fkRecord= dataTypeCheck.isArray(tmpResult) ? tmpResult[0]:tmpResult
             //fk有对应记录，且userId不为空，则进行权限（owner）检查
-            if(undefined!==fkCollOwnerFields && undefined!==userId){
+            if(undefined!==fkCollOwnerFields && 0<fkCollOwnerFields.length && undefined!==userId){
                 //对每个字段都要检查
                 for(let singleFkOwnerFieldName of fkCollOwnerFields){
                     let fkCollFieldDataType=inputRule[fkFieldRelatedColl][singleFkOwnerFieldName][e_otherRuleFiledName.DATA_TYPE]
@@ -165,7 +288,7 @@ async function ifFkValueExist_And_FkHasPriority_async({fieldName,fieldValue,user
     // }
 
     return Promise.resolve(true)
-}
+}*/
 
 /*      如果某个字段是enum，且type为数组（单纯为数组可以重复），那么检查字段值是否有重复（例如，分配给admin_user的priority，其中权限就不能重复）
 *
@@ -179,61 +302,14 @@ async function ifFkValueExist_And_FkHasPriority_async({fieldName,fieldValue,user
 *
 * */
 function ifEnumHasDuplicateValue({fieldName,fieldValue,fieldDataTypeInfo}){
-    // console.log(`in`)
-/*    let collRule=inputRule[collName]
-    if(undefined===collRule){
-        return checkerError.ifEnumHasDuplicateValue.collRuleNotDefinedCantCheckEnumArray
-    }
-    //无记录，直接返回正确结果（无需检查）
-    if(undefined===collValue){
-        return {rc:0}
-    }*/
-    // console.log(`1`)
-    // for(let singleFieldName in collValue){
-        //字段有type和enum定义，且type值为数组
-        // let singleFieldRule=collRule[singleFieldName]
-        // if(undefined===fieldRule){
-        //     return checkerError.ifEnumHasDuplicateValue.fieldInValueNoMatchedRule({fieldName:singleFieldName})
-        // }
     if(true===fieldDataTypeInfo[e_dataTypeInfoFieldName.IS_ENUM] && true===fieldDataTypeInfo[e_dataTypeInfoFieldName.IS_ARRAY]){
         return arr.ifArrayHasDuplicate(fieldValue)
-        // if(true===fieldResult){
-        //     return
-        // }
     }
-        // if(undefined!==fieldRule[e_serverRuleType.ENUM] && undefined!==fieldRule[e_otherRuleFiledName.DATA_TYPE] && fieldRule[e_otherRuleFiledName.DATA_TYPE] instanceof Array){
-        //     //字段rule满足条件的情况下，字段值存在，则进行检查
-        //     // if(undefined!==collValue[singleFieldName]){
-        //
-        //     // }
-        // }
-    // }
-    // console.log(`2`)
-    // return {rc:0}
 }
 
-/*/!*      enum字段的值，是否为预订的值
-* *!/
-function ifEnumValueValid({fieldName,fieldValue,fieldDataTypeInfo}){
-
-    if(true===fieldDataTypeInfo[e_dataTypeInfoFieldName.IS_ENUM]){
-        let fieldEnumValue=enumValue[fieldName]
-        if(true===fieldDataTypeInfo[e_dataTypeInfoFieldName.IS_ARRAY]){
-
-        }else{
-            if(-1===fieldEnumValue.indexOf(fieldValue)){
-                return Promise.reject()
-            }
-        }
-    }
-}*/
 //singleValueUniqueCheckAdditionalCondition: 对整个docValue进行检查时，额外需要的检测条件  {field: value1,field2:value2}
 //对传入的docValue中的每个字段进行unique的检测
 async function ifSingleFieldValueUnique_async({fieldName,fieldValue,collName,singleValueUniqueCheckAdditionalCondition}){
-    // ap.inf('[collName]',collName)
-    // ap.inf('[e_uniqueField]',e_uniqueField)
-    // ap.inf('fieldName',fieldName)
-    // ap.inf('e_uniqueField[collName]',e_uniqueField[collName])
     if(undefined!==e_uniqueField[collName] && -1!==e_uniqueField[collName].indexOf(fieldName)){
         // for(let singleFieldName of e_uniqueField[collName]){
 
@@ -440,7 +516,7 @@ async function  inputValueLogicValidCheck_async({commonParam,stepParam}){
     // ap.inf('single field loop check start')
     //将循环放在最外层，避免每个函数执行循环
     for(let singleFieldName in docValue){
-        // ap.inf('single check in')
+        // ap.inf('singleFieldName',singleFieldName)
         let singleFieldValue=docValue[singleFieldName]
         let fieldDataTypeInfo
         //字段在collRule中不存在，直接跳过。（可能是因为field值为null，导致被放入key=>$unset之中）
@@ -554,4 +630,5 @@ module.exports={
     // ifCompoundFiledValueUnique_returnExistRecord_async,
     ifCompoundFiledValueUnique_returnExistRecord_async,//需要检查internal+browser之后的docValue
     inputValueLogicValidCheck_async,
+    ifEnoughResource_async,//有时候需要单独使用（例如update_received_recommend）
 }

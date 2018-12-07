@@ -70,15 +70,7 @@ const collSchema=new mongoose.Schema(
 )
 
 collSchema.virtual('isActive').get(function(){
-    // console.log(`id=======>${this._id}`)
-    // console.log(`userId=======>${this.userId}`)
-    // console.log(`resource_profile_id=======>${this.resource_profile_id}`)
-    // console.log(`duration=======>${this.duration}`)
-    // // console.log(`doc=======>${JSON.stringify(this)}`)
-    // console.log(`cDate=======>${this.cDate}`)
-    // console.log(`cDate to now=======>${this.cDate.getTime()+this.duration*24*60*60*1000}`)
-    // console.log(`now  =======>${Date.now()}`)
-    // console.log(`result===>${(this.cDate.getTime()+this.duration*24*60*1000)<(Date.now())}`)
+
     if(0===this.duration){
         return true
     }else{
