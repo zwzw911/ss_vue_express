@@ -62,9 +62,29 @@ async function updateUserFriendGroup_returnRecord_async({data,sess,app}){
     })
 }
 
-
+async function moveFriend_async({data,sess,app}){
+    // let data={values:{}}
+    let url='/user_friend_group/move_friend/'
+    /*    data.values[e_part.RECORD_INFO]=userDataForRecordInfo
+        data.values[e_part.RECORD_ID]=recordId
+        data.values[e_part.EDIT_SUB_FIELD]=userDataForEditSubField
+        // ap.print('data.values[e_part.RECORD_INFO]',data.values[e_part.RECORD_INFO])
+        data.values[e_part.METHOD]=e_method.UPDATE*/
+    console.log(`data.values==============>${JSON.stringify(data.values)}`)
+    return new Promise(function(resolve,reject){
+        request(app).put(url).set('Accept', 'application/json').set('Cookie',[sess]).send(data)
+            .end(function(err, res) {
+                let parsedRes=JSON.parse(res.text)
+                // console.log(`createAddFriend_async result =========> ${JSON.stringify(parsedRes)}`)
+                // ap.print(`parsedRes.msg`,parsedRes.msg)
+                assert.deepStrictEqual(parsedRes.rc,0)
+                return resolve(parsedRes.msg)
+            });
+    })
+}
 
 module.exports={
     createUserFriendGroup_returnRecord_async,
     updateUserFriendGroup_returnRecord_async,
+    moveFriend_async,
 }

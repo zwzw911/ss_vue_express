@@ -19,7 +19,7 @@ const genFinalReturnResult=server_common_file_require.misc.genFinalReturnResult
 // const article_comment_logic=require('./article_comment_logic')
 // const article_upload_file_logic=require('./article_upload_file_logic')
 // const likeDislike_logic=require('./liekDislike_logic')
-const systemError=server_common_file_require.systemError
+const systemError=server_common_file_require.assistError.systemError
 
 const impeach_dispatcher_async=require('./impeach_dispatch').impeach_dispatcher_async
 

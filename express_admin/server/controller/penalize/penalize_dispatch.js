@@ -63,22 +63,23 @@ async function dispatcher_async(req){
                     needCheck:true,
                     error:controllerError.dispatch.notLoginCantCreatePenalize
                 }
-                await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
+                await controllerPreCheck.userStatusCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
 
                 expectedPart=[e_part.RECORD_INFO]
                 //是否为期望的part
                 result = controllerPreCheck.inputCommonCheck({req:req, expectedPart:expectedPart})
+                // ap.inf('admin_penalize inputCommonCheck result ',result)
                 if (result.rc > 0) {return Promise.reject(result)}
 
                 //对req中的recordId和recordInfo进行objectId（加密过的）格式判断
-                await controllerChecker.ifObjectIdInPartCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName],applyRange:applyRange})
-                // ap.inf('penlize: before decrypt',req.body.values)
+                await controllerChecker.ifObjectIdInPartEncrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName],applyRange:applyRange})
+                // ap.inf('penalize: before decrypt',req.body.values)
                 //对req中的recordId和recordInfo中加密的objectId进行解密
                 let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
                 let tempSalt=userInfo.tempSalt
                 controllerHelper.decryptInputValue({req:req,expectedPart:expectedPart,salt:tempSalt,browserCollRule:browserInputRule[collName]})
 
-                // ap.inf('penlize: after decrypt',req.body.values)
+                // ap.inf('penalize: after decrypt',req.body.values)
                 /*/!**********************************************!/
                 /!****** 传入的敏感数据（objectId）解密  ******!/
                 /!****** 在inputPreCheck前完成，保证解密后的objectId可以使用rule进行判别  ******!/
@@ -97,6 +98,7 @@ async function dispatcher_async(req){
                 }*/
 
                 result=controllerPreCheck.inputPreCheck({req:req,expectedPart:expectedPart,collName:collName,applyRange:e_applyRange.CREATE.CREATE,arr_currentSearchRange:arr_currentSearchRange})
+                // ap.inf('admin_penalize inputPreCheck result ',result)
                 if(result.rc>0){return Promise.reject(result)}
                 result = await create_async({req: req})
                 return Promise.resolve(result)
@@ -119,7 +121,7 @@ async function dispatcher_async(req){
                 if (result.rc > 0) {return Promise.reject(result)}
 
                 //对req中的recordId和recordInfo进行objectId（加密过的）格式判断
-                await controllerChecker.ifObjectIdInPartCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName],applyRange:applyRange})//
+                await controllerChecker.ifObjectIdInPartEncrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName],applyRange:applyRange})//
 
                 //对req中的recordId和recordInfo中加密的objectId进行解密
                 let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})

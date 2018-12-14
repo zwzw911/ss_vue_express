@@ -63,7 +63,7 @@ const validateError=server_common_file_require.validateError//require('../../ser
 const controllerHelperError=server_common_file_require.helperError.helper//require('../../server/constant/error/controller/helperError').helper
 // const controllerCheckerError=server_common_file_require.helperError.checker
 const controllerCheckerError=server_common_file_require.helperError.checker
-const systemError=server_common_file_require.systemError
+const systemError=server_common_file_require.assistError.systemError
 // const objectDeepCopy=server_common_file_require.misc.objectDeepCopy
 
 
@@ -194,7 +194,7 @@ describe('user1 register unique check:',async  function() {
         it('2.4 decrypted RecordId format invalid', async function() {
             data.values={}
             data.values={
-                [e_part.RECORD_ID]:testData.cryptedObjectId,
+                [e_part.RECORD_ID]:testData.encryptedObjectId,
                 [e_part.RECORD_INFO]:{
                     [e_field.ARTICLE.STATUS]:e_articleStatus.EDITING,
                 },

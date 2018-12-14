@@ -32,7 +32,7 @@ const Field={
     user_resource_profile:['startDate','endDate','duration',],
     collection:['creatorId',],
     receive_recommend:['receiver','unreadRecommends','unreadRecommendsNum','readRecommends','readRecommendsNum',],
-    send_recommend:['sender',],
+    send_recommend:['sender','receivers',],
     topic:['creatorId',],
 }
 

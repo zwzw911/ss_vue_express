@@ -40,7 +40,7 @@ async function router_only_dispatcher_async({req}) {
                 //     penalizeSubType: e_penalizeSubType.READ,
                 //     penalizeCheckError: controllerError.dispatch.get.userInPenalizeCantGetArticle
                 // }
-                let result=await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
+                let result=await controllerPreCheck.userStatusCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
                 ap.inf('result',result)
                 return Promise.resolve(result)
             }

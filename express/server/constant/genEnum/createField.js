@@ -27,7 +27,7 @@ const createField={
     'user':["name","account","password","addFriendRule"],
     'user_resource_profile':["userId","resource_profile_id","duration"],
     'collection':["name","articlesId","topicsId"],
-    'send_recommend':["articleId","receivers"],
+    'send_recommend':["articleId"],
     'topic':["name","desc","articlesId"],
 }
 module.exports={

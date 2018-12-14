@@ -71,6 +71,8 @@ const ValidatePart={
     METHOD:'method',    //当前操作对应的是CRUD中哪一个
     CAPTCHA:'captcha',
     SMS:'sms',
+
+    CHOOSE_FRIEND:'chooseFriend',//只是用来传递数据，和是那种CRUD操作无关，虽然需要依附在POST或者PUT中传递
     //DATA_URL:'dataUrl',//上传dataUrl
 }
 
@@ -184,9 +186,12 @@ const IntervalCheckPrefix={
     NORMAL_REQ:'normalReq',//普通的GET/POST/PUT/DELETE
 }
 
-/********************************/
-/*          search              */
-/********************************/
+/**     用户执行选择好友的时候，传入参数的key名字  **/
+const ChooseFriendInfoFieldName={
+    ALL_FRIENDS:'allFriends',
+    FRIEND_GROUPS:'friendGroups',
+    FRIENDS:'friends',
+}
 
 
 
@@ -220,5 +225,5 @@ module.exports={
 
     IntervalCheckPrefix,
 
-
+    ChooseFriendInfoFieldName,
 }

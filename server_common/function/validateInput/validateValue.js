@@ -34,21 +34,25 @@ const e_otherRuleFiledName=inputDataRuleType.OtherRuleFiledName
 const e_applyRange=inputDataRuleType.ApplyRange
 // const e_requireType=inputDataRuleType.RequireType
 // const  e_validatePart=require('../../constant/enum/nodeEnum').ValidatePart
-const e_inputFieldCheckType=require('../../constant/enum/nodeEnum').InputFieldCheckType
+const nodeEnum=require('../../constant/enum/nodeEnum')
+const e_inputFieldCheckType=nodeEnum.InputFieldCheckType
+const e_chooseFriendInfoFieldName=nodeEnum.ChooseFriendInfoFieldName
 // const e_method=require('../../constant/enum/nodeEnum').Method
 
 const regex=require('../../constant/regex/regex').regex
 
 const e_coll=require('../../constant/genEnum/DB_Coll').Coll
+const globalConfiguration=require('../../constant/config/globalConfiguration')
+const searchMaxPage=globalConfiguration.searchMaxPage
 
-const searchMaxPage=require('../../constant/config/globalConfiguration').searchMaxPage
-
+const profileConfiguration=require('../../constant/config/profileConfiguration').profileConfiguration
 const rightResult={rc:0}
 
 const e_eventStatus=require('../../constant/enum/mongoEnum').EventStatus
 // const arr_eventField=require('../../constant/define/node').EVENT_FIELD
 
-
+/**         公共函数            **/
+const dataType=require('../../function/assist/dataType')
 
 /*  对传入格式为{field1:value1,field1:value1}的part进行检查；一般是recordInfo
  * @inputValue:{username::xxx,password:yyy} 由调用函数保证输入参数的格式正确
@@ -118,7 +122,7 @@ function validateScalarInputValue({inputValue,collRule,p_applyRange}){
 
             let fieldType=collRule[fieldName][e_otherRuleFiledName.DATA_TYPE]
             // ap.inf('fieldName',fieldName)
-            // ap.inf('fieldType',fieldType)
+            ap.inf('fieldType',fieldType)
             //数组需要额外检查
             if(true===dataTypeCheck.isArray(fieldType)){
                 // console.log(`field ${fieldName} is array`)
@@ -153,13 +157,14 @@ function validateScalarInputValue({inputValue,collRule,p_applyRange}){
                     // console.log(` dataTypeCheck.isSetValue(singleFieldValue)=========>${JSON.stringify( dataTypeCheck.isSetValue(singleFieldValue))}`)
                     //每个元素不能是null或者undefined
                     if(false===dataTypeCheck.isSetValue(singleFieldValue)){
-                        // ap.inf('in')
+                        ap.inf('1')
                         rc[fieldName]['rc']=validateValueError.CUDTypeWrong.rc
                         rc[fieldName]['msg']=`${fieldRule['chineseName']}${validateValueError.CUDTypeWrong.msg}`
                         break
                     }
-
+                    // console.log(`typeof singleFieldValue=========>${JSON.stringify(typeof singleFieldValue)}`)
                     let tmpRc=validateSingleRecorderFieldValue({fieldValue:singleFieldValue,fieldRule:fieldRule,applyRange:p_applyRange})
+                    // ap.inf('tmprc',tmpRc)
                     if(tmpRc.rc>0){
                         rc[fieldName]=tmpRc
                         break
@@ -175,6 +180,7 @@ function validateScalarInputValue({inputValue,collRule,p_applyRange}){
         }
 
     }
+    // ap.wrn('rc',rc)
     return rc
 //    注意，返回的结果是对象，结构和inputValue类似，不是{rc;xxx,msg:xxx}的格式
 }
@@ -1141,10 +1147,41 @@ function validateDataUrl(dataUrlValue){
     if(false===regex.dataUrlThumbnail.test(dataUrlValue)){
         return validateValueError.dataUrl.valueIncorrect
     }
+    return rightResult
+}
+
+/**     选择好友时，为了减少client输入，输入值采用特殊格式，需要在server端进行检查
+ *  对象:{
+ *      allFriends:true，//说明了选择了所有好友，此时其他选项都被忽略
+ *      friendGroups:[],//只有当allFriends不存在或者为false，才能设置，指定了选择的group；需要通过db查询转换成friends
+ *      friends:[], //
+ *  }
+ *  为了防止恶意尝试，一旦发生错误，直接返回错误，而不是继续处理。
+ * **/
+function validateChooseFriendValue({inputValue}){
+    // 1. 如果key有allFriends，直接返回
+    if(undefined!==inputValue[e_chooseFriendInfoFieldName.ALL_FRIENDS]){
+        return rightResult
+    }
+    // 2. 如果有friendGroups或者friends,其中每个元素必须是合格的objectId
+    let expectedFieldName=[e_chooseFriendInfoFieldName.FRIENDS,e_chooseFriendInfoFieldName.FRIEND_GROUPS]
+    for(let singleExpectedFieldName of expectedFieldName){
+        if(undefined!==inputValue[singleExpectedFieldName]){
+            // ap.wrn('inputValue[singleExpectedFieldName]',inputValue[singleExpectedFieldName])
+            for(let singleEle of inputValue[singleExpectedFieldName]) {
+                // ap.wrn('singleEle',singleEle)
+                if(false===dataType.ifObjectId({objectId:singleEle})){
+                    return validateValueError.validateChooseFriendValue.chooseFriendFieldValueArrayEleInvalidObjectId(singleExpectedFieldName)
+                }
+            }
+        }
+    }
 
 
     return rightResult
 }
+
+
 module.exports= {
     validateScalarInputValue,
     // validateCreateRecorderValue,    //调用_validateRecorderValue
@@ -1178,4 +1215,6 @@ module.exports= {
     validateCaptcha,
     validateSMS,
     validateDataUrl,
+
+    validateChooseFriendValue,
 }

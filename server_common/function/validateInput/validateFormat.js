@@ -15,17 +15,23 @@ const ap=require('awesomeprint')
 const dataTypeCheck=require('./validateHelper').dataTypeCheck
 const searchSetting=require('../../constant/config/globalConfiguration').searchSetting
 const validateFormatError=require('../../constant/error/validateError').validateFormat
-const e_compOp=require('../../constant/enum/nodeEnum').CompOp
+// const e_compOp=require('../../constant/enum/nodeEnum').CompOp
 const dataType=require('../../constant/enum/inputDataRuleType').ServerDataType
 const rightResult={rc:0}
-const e_validatePart=require('../../constant/enum/nodeEnum').ValidatePart
-const e_keyForSearchParams=require('../../constant/enum/nodeEnum').KeyForSearchParams
-const e_method=require('../../constant/enum/nodeEnum').Method
-const e_manipulateOperator=require('../../constant/enum/nodeEnum').ManipulateOperator
+
+const nodeEnum=require('../../constant/enum/nodeEnum')
+const e_validatePart=nodeEnum.ValidatePart
+const e_keyForSearchParams=nodeEnum.KeyForSearchParams
+const e_chooseFriendInfoFieldName=nodeEnum.ChooseFriendInfoFieldName
+// const e_method=require('../../constant/enum/nodeEnum').Method
+const e_manipulateOperator=nodeEnum.ManipulateOperator
 const arr_editSubField=require('../../constant/genEnum/nodeEnumValue').SubField
 const arr_manipulateOperator=require('../../constant/genEnum/nodeEnumValue').ManipulateOperator
 const arr_eventField=require('../../constant/genEnum/nodeEnumValue').EventField
 const regex=require(`../../constant/regex/regex`).regex
+
+const profileConfiguration=require('../../constant/config/profileConfiguration').profileConfiguration
+
 //检测req.body.values是否存在且为object
 function validateReqBody(reqBody){
     //reqBody未定义
@@ -112,7 +118,7 @@ function validatePartValueFormat({part,partValue}){
             }
             break
         case e_validatePart.RECORD_ID:
-            if(false===dataTypeCheck.isString(partValue) || false===regex.cryptedObjectId.test(partValue)) {
+            if(false===dataTypeCheck.isString(partValue) || false===regex.encryptedObjectId.test(partValue)) {
                 return validateFormatError.inputValuePartRecordIdCryptedValueFormatWrong
             }
             break
@@ -182,6 +188,16 @@ function validatePartValueFormat({part,partValue}){
         case e_validatePart.SEARCH_PARAMS:
             if(false===dataTypeCheck.isObject(partValue)){
                 return validateFormatError.searchParams.partValueFormatWrong
+            }
+            break;
+        case e_validatePart.CHOOSE_FRIEND:
+            if(false===dataTypeCheck.isObject(partValue)){
+                return validateFormatError.validateChooseFriendFormat.partValueFormatWrong
+            }
+            //因为chooseFriend没有rule，且需要进行objectId格式检测，所以其下值的格式，需要在检测objectid之前完成，所以大体格式完成之后，直接进行具体格式的检测
+            let tmpResult=validateChooseFriendFormat({inputValue:partValue})
+            if(tmpResult.rc>0){
+                return tmpResult
             }
             break;
         default:
@@ -886,10 +902,57 @@ function validateEventFormat(ev){
     return rightResult
 }
 
+/**     选择好友时，为了减少client输入，输入值采用特殊格式，需要在server端进行检查
+ *  对象:{
+ *      allFriends:true，//说明了选择了所有好友，此时其他选项都被忽略
+ *      friendGroups:[],//只有当allFriends不存在或者为false，才能设置，指定了选择的group；需要通过db查询转换成friends
+ *      friends:[], //
+ *  }
+ *  为了防止恶意尝试，一旦发生错误，直接返回错误，而不是继续处理。
+ * **/
+function validateChooseFriendFormat({inputValue}){
+    // 0. 最少1个，最多2个key
+    let keyLength=Object.keys(inputValue).length
+    if(1>keyLength || keyLength>2){
+        return validateFormatError.validateChooseFriendFormat.keyNumIncorrect
+    }
+    // 1. key中所有键名必须是allFriends/friendGroups/friends中的一个key
+    let preDefinedFieldName=Object.values(e_chooseFriendInfoFieldName)
+    // ap.inf('preDefinedFieldName',preDefinedFieldName)
+    for(let singleFieldName in inputValue){
+        if(-1===preDefinedFieldName.indexOf(singleFieldName)){
+            return validateFormatError.validateChooseFriendFormat.keyNameNotPredefined
+        }
+    }
+    // 2. 排他性检查。如果allFriends存在（无论true/false），不能有其他任何key；如果friendGroups或者friends存在，不能有allFriends存在
+    if(undefined!==inputValue[e_chooseFriendInfoFieldName.ALL_FRIENDS]){
+        if(keyLength>1){
+            return validateFormatError.validateChooseFriendFormat.keyNameAllFriendsAlreadyExists
+        }
+    }
+    // 3. 如果friendGroups或者friends存在，则必须为数组
+    let expectedField=[e_chooseFriendInfoFieldName.FRIEND_GROUPS,e_chooseFriendInfoFieldName.FRIENDS]
+    for(let singleExpectedField of expectedField){
+        if(undefined!==inputValue[singleExpectedField]){
+            if(false===dataTypeCheck.isArray(inputValue[singleExpectedField])){
+                return validateFormatError.validateChooseFriendFormat.keyNameFriendsOrGroupMustBeArray
+            }
+        }
+    }
+    // 4. 如果有friendGroups或者friends，其长度不能查过预定义(简化起见，按照advanced计算)
+    if(undefined!==inputValue[e_chooseFriendInfoFieldName.FRIEND_GROUPS]){
+        if(Object.keys(inputValue[e_chooseFriendInfoFieldName.FRIEND_GROUPS]).length>profileConfiguration.MAX_FRIEND_GROUP_NUM_PER_USER.ADVANCED.maxNum){
+            return validateFormatError.validateChooseFriendFormat.exceedMaxFriendGroups
+        }
+    }
+    if(undefined!==inputValue[e_chooseFriendInfoFieldName.FRIENDS]){
+        if(inputValue[e_chooseFriendInfoFieldName.FRIENDS].length>profileConfiguration.MAX_FRIEND_GROUP_NUM_PER_USER.ADVANCED.maxNum*profileConfiguration.MAX_FRIEND_NUM_PER_USER.ADVANCED.maxNum){
+            return validateFormatError.validateChooseFriendFormat.exceedMaxFriends
+        }
+    }
 
-/*function validateMethodFormat(){
-
-}*/
+    return rightResult
+}
 
 module.exports={
     validateReqBody,//检查req.body.values是否存在
@@ -914,4 +977,6 @@ module.exports={
     validateEventFormat,
 
     validateManipulateArrayFormat,
+
+    validateChooseFriendFormat,
 }

@@ -32,7 +32,7 @@ const mongoEnum=server_common_file_require.mongoEnum
 const e_applyRange=server_common_file_require.inputDataRuleType.ApplyRange
 
 const e_part=nodeEnum.ValidatePart
-
+const e_chooseFriendInfoFieldName=nodeEnum.ChooseFriendInfoFieldName
 const e_coll=require('../../server/constant/genEnum/DB_Coll').Coll
 const e_field=require('../../server/constant/genEnum/DB_field').Field
 //for fkValue check
@@ -57,6 +57,7 @@ const browserInputRule=require('../../server/constant/inputRule/browserInputRule
 const validateError=server_common_file_require.validateError//require('../../server/constant/error/validateError').validateError
 const controllerHelperError=server_common_file_require.helperError.helper//require('../../server/constant/error/controller/helperError').helper
 const controllerCheckerError=server_common_file_require.helperError.checker
+const validatePartObjectIdEncryptedError=validateError.validatePartObjectIdEncrypted
 // const helperError=server_common_file_require.helperError.helper
 // const common_operation_model=server_common_file_require.common_operation_model
 /****************  公共函数 ********************/
@@ -160,8 +161,8 @@ describe('dispatch', function() {
         }
         await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1.sess,data:data,expectedErrorRc:expectedErrorRc,app:user1.app})
     });
-    it('1.4 user1 send req with receivers element not crypted objectId', async function() {
-        expectedErrorRc=controllerCheckerError.ifObjectIdCrypted.recordInfoContainInvalidObjectId.rc
+    it('1.4 user1 send req with receivers element not encrypted objectId', async function() {
+        expectedErrorRc=validatePartObjectIdEncryptedError.validateRecordInfo.recordInfoFieldValueInvalidEncryptedObjectId().rc
         let copyNormalRecord=objectDeepCopy(normalRecord)
         copyNormalRecord[e_field.SEND_RECOMMEND.ARTICLE_ID]=user1_articleId1
         copyNormalRecord[e_field.SEND_RECOMMEND.RECEIVERS]=['test']
@@ -172,19 +173,118 @@ describe('dispatch', function() {
         }
         await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1.sess,data:data,expectedErrorRc:expectedErrorRc,app:user1.app})
     });
-    it('1.5 user1 send req with receivers element decrypted not objectId', async function() {
-        expectedErrorRc=browserInputRule.send_recommend.receivers.format.error.rc
+    /****       chooseFriends check         *****/
+    it('1.5 user1 send req with chooseFriend not object(format wrong)', async function() {
+        expectedErrorRc=validateError.validateFormat.validateChooseFriendFormat.partValueFormatWrong.rc
         let copyNormalRecord=objectDeepCopy(normalRecord)
         copyNormalRecord[e_field.SEND_RECOMMEND.ARTICLE_ID]=user1_articleId1
-        copyNormalRecord[e_field.SEND_RECOMMEND.RECEIVERS]=['90703332d57d436e3f24d52b1735defff8beb03fb8bcd1792592d42d9a30f337']
+        // copyNormalRecord[e_field.SEND_RECOMMEND.RECEIVERS]=['90703332d57d436e3f24d52b1735defff8beb03fb8bcd1792592d42d9a30f337']
         data={
             values:{
-                [e_part.RECORD_INFO]:copyNormalRecord
+                [e_part.RECORD_INFO]:copyNormalRecord,
+                [e_part.CHOOSE_FRIEND]:12,
             }
         }
-        await misc_helper.postDataToAPI_compareFieldRc_async({APIUrl:finalUrl,sess:user1.sess,data:data,expectedErrorRc:expectedErrorRc,app:user1.app,fieldName:'receivers'})
+        await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1.sess,data:data,expectedErrorRc:expectedErrorRc,app:user1.app})
     });
-
+    it('1.5.0 user1 send req with chooseFriend, key num exceed ', async function() {
+        expectedErrorRc=validateError.validateFormat.validateChooseFriendFormat.keyNumIncorrect.rc
+        let copyNormalRecord=objectDeepCopy(normalRecord)
+        copyNormalRecord[e_field.SEND_RECOMMEND.ARTICLE_ID]=user1_articleId1
+        // copyNormalRecord[e_field.SEND_RECOMMEND.RECEIVERS]=['90703332d57d436e3f24d52b1735defff8beb03fb8bcd1792592d42d9a30f337']
+        data={
+            values:{
+                [e_part.RECORD_INFO]:copyNormalRecord,
+                [e_part.CHOOSE_FRIEND]:{
+                    // [e_chooseFriendInfoFieldName.ALL_FRIENDS]:true,
+                    'unexist1':true,
+                    'unexist2':true,
+                    'unexist3':true,
+                },
+            }
+        }
+        await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1.sess,data:data,expectedErrorRc:expectedErrorRc,app:user1.app})
+    });
+    it('1.5.1 user1 send req with chooseFriend, not predefined field name ', async function() {
+        expectedErrorRc=validateError.validateFormat.validateChooseFriendFormat.keyNameNotPredefined.rc
+        let copyNormalRecord=objectDeepCopy(normalRecord)
+        copyNormalRecord[e_field.SEND_RECOMMEND.ARTICLE_ID]=user1_articleId1
+        // copyNormalRecord[e_field.SEND_RECOMMEND.RECEIVERS]=['90703332d57d436e3f24d52b1735defff8beb03fb8bcd1792592d42d9a30f337']
+        data={
+            values:{
+                [e_part.RECORD_INFO]:copyNormalRecord,
+                [e_part.CHOOSE_FRIEND]:{
+                    // [e_chooseFriendInfoFieldName.ALL_FRIENDS]:true,
+                    'unexist':true,
+                },
+            }
+        }
+        await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1.sess,data:data,expectedErrorRc:expectedErrorRc,app:user1.app})
+    });
+    it('1.5.2 user1 send req with chooseFriend contain both allFriends and Friends', async function() {
+        expectedErrorRc=validateError.validateFormat.validateChooseFriendFormat.keyNameAllFriendsAlreadyExists.rc
+        let copyNormalRecord=objectDeepCopy(normalRecord)
+        copyNormalRecord[e_field.SEND_RECOMMEND.ARTICLE_ID]=user1_articleId1
+        // copyNormalRecord[e_field.SEND_RECOMMEND.RECEIVERS]=['90703332d57d436e3f24d52b1735defff8beb03fb8bcd1792592d42d9a30f337']
+        data={
+            values:{
+                [e_part.RECORD_INFO]:copyNormalRecord,
+                [e_part.CHOOSE_FRIEND]:{
+                    [e_chooseFriendInfoFieldName.ALL_FRIENDS]:true,
+                    [e_chooseFriendInfoFieldName.FRIENDS]:true,
+                },
+            }
+        }
+        await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1.sess,data:data,expectedErrorRc:expectedErrorRc,app:user1.app})
+    });
+    it('1.5.3 user1 send req with chooseFriend, Friends or friends group must be array', async function() {
+        expectedErrorRc=validateError.validateFormat.validateChooseFriendFormat.keyNameFriendsOrGroupMustBeArray.rc
+        let copyNormalRecord=objectDeepCopy(normalRecord)
+        copyNormalRecord[e_field.SEND_RECOMMEND.ARTICLE_ID]=user1_articleId1
+        // copyNormalRecord[e_field.SEND_RECOMMEND.RECEIVERS]=['90703332d57d436e3f24d52b1735defff8beb03fb8bcd1792592d42d9a30f337']
+        data={
+            values:{
+                [e_part.RECORD_INFO]:copyNormalRecord,
+                [e_part.CHOOSE_FRIEND]:{
+                    // [e_chooseFriendInfoFieldName.ALL_FRIENDS]:true,
+                    [e_chooseFriendInfoFieldName.FRIENDS]:true,
+                },
+            }
+        }
+        await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1.sess,data:data,expectedErrorRc:expectedErrorRc,app:user1.app})
+    });
+    it('1.5.4 user1 send req with chooseFriend, Friends or friends group not encrypted objectid', async function() {
+        expectedErrorRc=validatePartObjectIdEncryptedError.validateChooseFriend.chooseFriendFieldValueArrayEleInvalidEncryptedObjectId().rc
+        let copyNormalRecord=objectDeepCopy(normalRecord)
+        copyNormalRecord[e_field.SEND_RECOMMEND.ARTICLE_ID]=user1_articleId1
+        // copyNormalRecord[e_field.SEND_RECOMMEND.RECEIVERS]=['90703332d57d436e3f24d52b1735defff8beb03fb8bcd1792592d42d9a30f337']
+        data={
+            values:{
+                [e_part.RECORD_INFO]:copyNormalRecord,
+                [e_part.CHOOSE_FRIEND]:{
+                    // [e_chooseFriendInfoFieldName.ALL_FRIENDS]:true,
+                    [e_chooseFriendInfoFieldName.FRIENDS]:['test'],
+                },
+            }
+        }
+        await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1.sess,data:data,expectedErrorRc:expectedErrorRc,app:user1.app})
+    });
+    it('1.5.5 user1 send req with chooseFriend, Friends or friends group decrypted not objectId', async function() {
+        expectedErrorRc=validateError.validateValue.validateChooseFriendValue.chooseFriendFieldValueArrayEleInvalidObjectId().rc
+        let copyNormalRecord=objectDeepCopy(normalRecord)
+        copyNormalRecord[e_field.SEND_RECOMMEND.ARTICLE_ID]=user1_articleId1
+        // copyNormalRecord[e_field.SEND_RECOMMEND.RECEIVERS]=['90703332d57d436e3f24d52b1735defff8beb03fb8bcd1792592d42d9a30f337']
+        data={
+            values:{
+                [e_part.RECORD_INFO]:copyNormalRecord,
+                [e_part.CHOOSE_FRIEND]:{
+                    // [e_chooseFriendInfoFieldName.ALL_FRIENDS]:true,
+                    [e_chooseFriendInfoFieldName.FRIENDS]:[user2.encryptedObjectId({unCryptedObjectId:user2.userId})],
+                },
+            }
+        }
+        await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1.sess,data:data,expectedErrorRc:expectedErrorRc,app:user1.app})
+    });
     /***************    get recommend list    ***************/
     describe('get recommend list', function() {
         before('before get recommend list', async function(){

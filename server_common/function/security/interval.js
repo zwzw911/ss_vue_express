@@ -9,7 +9,7 @@ const redisCommonScript=require('../../model/redis/operation/redis_common_script
 
 const misc=require('../assist/misc')
 
-const intervalError=require('../../constant/error/securityError').intervalError
+const intervalError=require('../../constant/error/assistError').securityError.intervalError
 
 const e_intervalCheckPrefix=require('../../constant/enum/nodeEnum').IntervalCheckPrefix
 

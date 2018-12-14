@@ -1,4 +1,4 @@
-/*    gene by D:\U\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-11-27   */ 
+/*    gene by D:\U\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-12-12   */ 
  
 "use strict"
 const browserInputRule={
@@ -598,15 +598,6 @@ const browserInputRule={
             'applyRange':["create"],
             'require':{"define":{"create":true},"error":{"rc":105100,"msg":"文档不能为空"},"mongoError":{"rc":205100,"msg":"文档不能为空"}},
             'format':{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":105102,"msg":"文档必须是objectId"},"mongoError":{"rc":205102,"msg":"文档必须是objectId"}},
-        },
-        'receivers':{
-            'chineseName':"被荐人",
-            'dataType':["objectId"],
-            'applyRange':["create"],
-            'require':{"define":{"create":true},"error":{"rc":105104,"msg":"被荐人不能为空"},"mongoError":{"rc":205104,"msg":"被荐人不能为空"}},
-            'arrayMinLength':{"define":1,"error":{"rc":105106,"msg":"至少推荐给1个用户"},"mongoError":{"rc":205106,"msg":"至少推荐给1个用户"}},
-            'arrayMaxLength':{"define":10,"error":{"rc":105108,"msg":"最多推荐给10个用户"},"mongoError":{"rc":205108,"msg":"最多推荐给10个用户"}},
-            'format':{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":105110,"msg":"被荐人必须是objectId"},"mongoError":{"rc":205110,"msg":"被荐人必须是objectId"}},
         },
     },
     'topic':{

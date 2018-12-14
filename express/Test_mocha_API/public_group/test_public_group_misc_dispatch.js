@@ -67,7 +67,7 @@ const validateError=server_common_file_require.validateError//require('../../ser
 const controllerHelperError=server_common_file_require.helperError.helper//require('../../server/constant/error/controller/helperError').helper
 // const controllerCheckerError=server_common_file_require.helperError.checker
 const controllerCheckerError=server_common_file_require.helperError.checker
-const systemError=server_common_file_require.systemError
+const systemError=server_common_file_require.assistError.systemError
 // const objectDeepCopy=server_common_file_require.misc.objectDeepCopy
 
 
@@ -203,7 +203,7 @@ describe('user1 register unique check:',async  function() {
             data={values:{[e_part.RECORD_ID]:publicGroupId1CryptedByUser1,[e_part.MANIPULATE_ARRAY]:normalRecord}}
             await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,fieldName:e_field.PUBLIC_GROUP.ADMINS_ID,app:app})
         });
-        /**         ifObjectIdInPartCrypted_async  for    MANIPULATE_ARRAY   **/
+        /**         ifObjectIdInPartEncrypted_async  for    MANIPULATE_ARRAY   **/
         it('2.1 inputValue MANIPULATE_ARRAY:  encrypted value not objectId ', async function() {
             normalRecord={}
             let tmp=await commonAPI.cryptObjectId_async({objectId:1234,sess:user1Sess})

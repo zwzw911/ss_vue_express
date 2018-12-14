@@ -15,7 +15,7 @@ const server_common_file_require=require('../../../server_common_file_require')
 const genFinalReturnResult=server_common_file_require.misc.genFinalReturnResult//require('../../function/assist/misc').genFinalReturnResult
 const folderDispatcher_async=require('./folder_dispatcher').dispatcher_async
 
-const systemError=server_common_file_require.systemError
+const systemError=server_common_file_require.assistError.systemError
 //用来为uploadUserPhoto失败的req，在redis中设置对应的reject
 const controllerHelper=server_common_file_require.controllerHelper
 const e_intervalCheckPrefix=server_common_file_require.nodeEnum.IntervalCheckPrefix

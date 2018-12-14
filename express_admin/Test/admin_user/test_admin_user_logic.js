@@ -71,7 +71,7 @@ const validateError=server_common_file_require.validateError//require('../../ser
 const controllerHelperError=server_common_file_require.helperError.helper//require('../../server/constant/error/controller/helperError').helper
 // const controllerCheckerError=server_common_file_require.helperError.checker
 const controllerCheckerError=server_common_file_require.helperError.checker
-const systemError=server_common_file_require.systemError
+const systemError=server_common_file_require.assistError.systemError
 const inputValueLogicCheckError=server_common_file_require.helperError.inputValueLogicCheck
 
 let expectedErrorRc

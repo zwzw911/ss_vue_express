@@ -81,7 +81,7 @@ const regex={
 
     SMS:/^\d{6}$/,
 
-    cryptedObjectId:/^[0-9a-fA-F]{64}$/,
+    encryptedObjectId:/^[0-9a-fA-F]{64}$/,
 }
 
 module.exports= {

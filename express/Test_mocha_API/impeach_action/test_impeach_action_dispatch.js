@@ -74,7 +74,7 @@ const controllerHelperError=server_common_file_require.helperError.helper//requi
 const controllerCheckerError=server_common_file_require.helperError.checker
 const resourceCheckError=server_common_file_require.helperError.resourceCheck
 const inputValueLogicCheckError=server_common_file_require.helperError.inputValueLogicCheck
-const systemError=server_common_file_require.systemError
+const systemError=server_common_file_require.assistError.systemError
 
 
 

@@ -84,7 +84,7 @@ async function moveFriends_async({req,applyRange}) {
     let subFieldValue = req.body.values[e_part.EDIT_SUB_FIELD]
     // console.log(`docValue============>${JSON.stringify(docValue)}`)
     // console.log(`recordId============>${JSON.stringify(recordId)}`)
-
+    // ap.wrn('subFieldValue',subFieldValue)
     /************************************************/
     /*****************  用户类型检测     ************/
     /************************************************/
@@ -149,7 +149,7 @@ async function moveFriends_async({req,applyRange}) {
     }
     // ap.wrn('promiseTobeExec',promiseTobeExec)
     if(promiseTobeExec.length>0){
-        return await Promise.all(promiseTobeExec)
+        await Promise.all(promiseTobeExec)
     }
 
     return Promise.resolve({rc:0})

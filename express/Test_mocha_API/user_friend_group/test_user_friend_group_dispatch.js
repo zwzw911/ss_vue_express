@@ -69,7 +69,7 @@ const validateError=server_common_file_require.validateError//require('../../ser
 const controllerHelperError=server_common_file_require.helperError.helper//require('../../server/constant/error/controller/helperError').helper
 // const controllerCheckerError=server_common_file_require.helperError.checker
 const controllerCheckerError=server_common_file_require.helperError.checker
-const systemError=server_common_file_require.systemError
+const systemError=server_common_file_require.assistError.systemError
 // const objectDeepCopy=server_common_file_require.misc.objectDeepCopy
 
 
@@ -255,14 +255,14 @@ describe('user friend group dispatch:',async  function() {
             })
 
             it('3.3 inputValue editSubValue: from value to be decrypt not string', async function() {
-                expectedErrorRc=controllerCheckerError.ifObjectIdCrypted.editSubFromIsInvalidObjectId.rc
+                expectedErrorRc=controllerCheckerError.ifObjectIdCrypted.editSubFromIsInvalidEncryptedObjectId.rc
                 editSubFieldValue[e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP]={'from':1234,'eleArray':['3410cae041c38fcae905d65501cf7f776ea6b127850b0955269481f6a4db1b22']}
                 data={values:{[e_part.EDIT_SUB_FIELD]:editSubFieldValue}}
                 await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
             });
             it('3.4 inputValue editSubValue:  from value to be decrypt is string, but regex check failed', async function() {
                 editSubFieldValue[e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP]={'from':'1234','eleArray':['3410cae041c38fcae905d65501cf7f776ea6b127850b0955269481f6a4db1b22']}
-                expectedErrorRc=controllerCheckerError.ifObjectIdCrypted.editSubFromIsInvalidObjectId.rc
+                expectedErrorRc=controllerCheckerError.ifObjectIdCrypted.editSubFromIsInvalidEncryptedObjectId.rc
                 data={values:{[e_part.EDIT_SUB_FIELD]:editSubFieldValue}}
                 await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
             });
@@ -275,21 +275,21 @@ describe('user friend group dispatch:',async  function() {
 
             it('3.6 inputValue editSubValue: to value to be decrypt not string', async function() {
                 editSubFieldValue[e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP]={'to':1234,'eleArray':['3410cae041c38fcae905d65501cf7f776ea6b127850b0955269481f6a4db1b22']}
-                expectedErrorRc=controllerCheckerError.ifObjectIdCrypted.editSubToIsInvalidObjectId.rc
+                expectedErrorRc=controllerCheckerError.ifObjectIdCrypted.editSubToIsInvalidEncryptedObjectId.rc
                 data={values:{[e_part.EDIT_SUB_FIELD]:editSubFieldValue}}
                 await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
             });
 
             it('3.7 inputValue editSubValue: eleArray value to be decrypt not string', async function() {
                 editSubFieldValue[e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP]={'from':'3410cae041c38fcae905d65501cf7f776ea6b127850b0955269481f6a4db1b22','eleArray':[1234]}
-                expectedErrorRc=controllerCheckerError.ifObjectIdCrypted.editSubEleArrayIsInvalidObjectId.rc
+                expectedErrorRc=controllerCheckerError.ifObjectIdCrypted.editSubEleArrayIsInvalidEncryptedObjectId.rc
                 data={values:{[e_part.EDIT_SUB_FIELD]:editSubFieldValue}}
                 await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
             });
 
 /*            it('3.8 inputValue editSubValue: empty', async function() {
                 editSubFieldValue[e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP]={}
-                expectedErrorRc=controllerCheckerError.ifObjectIdCrypted.editSubEleArrayIsInvalidObjectId.rc
+                expectedErrorRc=controllerCheckerError.ifObjectIdCrypted.editSubEleArrayIsInvalidEncryptedObjectId.rc
                 data={values:{[e_part.EDIT_SUB_FIELD]:editSubFieldValue}}
                 await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
             });*/

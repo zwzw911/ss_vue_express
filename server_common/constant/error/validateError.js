@@ -3,7 +3,7 @@
  */
 'use strict'
 
-
+//40000～40100
 const validateRule={
     //valueTypeCheck
     unknownDataType:{rc:40000,msg:'未知数据类型'},
@@ -33,6 +33,7 @@ const validateRule={
     ruleDefineWrong:function(collName,fieldName,ruleName){return {rc:40038,msg:`${collName}的字段${fieldName}中的rule ${ruleName}的define值不正确`}},
 }
 
+//40100～40400
 const validateFormat={
     reqBodyMustBeObject:{rc:40100,msg:{client:`输入值格式错误`,server:`传入参数必须是对象`}},
     valuesUndefined:{rc:40101,msg:{client:'输入值格式错误',server:'输入值不能为空(未定义)'}},
@@ -204,97 +205,174 @@ const validateFormat={
 /*    singleFiledRValueMustBeObject:{rc:40226,msg:{client:'输入值格式错误',server:'singleField的值必须是object'}},
     singleFiledValueMustContainOneKey:{rc:40228,msg:{client:'输入值格式错误',server:'singleField的值(object)必须只有一个键'}},
     singleFiledValuesKeyNameWrong:{rc:40230,msg:{client:'输入值格式错误',server:'singleField的值(object)的键名必须是value'}},*/
+    validateChooseFriendFormat:{
+        //整体验证错（不是object）
+        partValueFormatWrong:{rc:40300,msg:{client:`查询值格式错误`,server:`查询参数中，searchParams的值必须为对象`}},
+
+        keyNumIncorrect:{rc:40301,msg:{client:`选择的好友不正确`,server:`选择的好友参数中，键值的数量不正确，必须是1个或者2个`}},
+        keyNameNotPredefined:{rc:40302,msg:{client:`选择的好友不正确`,server:`选择的好友参数中，键名不是预订义`}},
+        keyNameAllFriendsAlreadyExists:{rc:40304,msg:{client:`选择的好友不正确`,server:`选择的好友参数中，allFriends已经存在，不能再包含其他键名`}},
+        keyNameFriendsOrGroupMustBeArray:{rc:40306,msg:{client:`选择的好友不正确`,server:`选择的好友参数中，friendGroups或者friends必须是数组`}},
+        exceedMaxFriendGroups:{rc:40308,msg:{client:`选择的好友不正确`,server:`传入的好友分组的数量超过最大数量`}},
+        exceedMaxFriends:{rc:40310,msg:{client:`选择的好友不正确`,server:`传入的好友数量超过最大数量`}},
+    },
 }
 
+//40400～40600
 const validateValue={
     //validateRecorderValue
-    fieldValueShouldNotExistSinceNoRelateApplyRange({fieldName,applyRange}) {return {rc:40300,msg:{client:'输入多余字段',server:`字段${fieldName}的require定义中，没有对applyRange：${applyRange}定义，说明此字段不能输入`}}},
+    fieldValueShouldNotExistSinceNoRelateApplyRange({fieldName,applyRange}) {return {rc:40400,msg:{client:'输入多余字段',server:`字段${fieldName}的require定义中，没有对applyRange：${applyRange}定义，说明此字段不能输入`}}},
     //validateCreateUpdateInputValue
 
-    CUDObjectIdWrong:{rc:40302,msg:'objectId的格式不正确'},
+    CUDObjectIdWrong:{rc:40402,msg:'objectId的格式不正确'},
     mandatoryFieldMiss(fieldName){
-        return {rc:40304,msg:`缺少必填字段${fieldName}`}//create的时候，某些必填字段没有填入
+        return {rc:40404,msg:`缺少必填字段${fieldName}`}//create的时候，某些必填字段没有填入
     },
-    CUDTypeWrong:{rc:40306,msg:'值的数据类型不正确'},
+    CUDTypeWrong:{rc:40406,msg:'值的数据类型不正确'},
 
 
 
-    SValueEmpty:{rc:40308,msg:'查询值为空'},
-    STypeWrong:{rc:40310,msg:'类型不正确'},
+    SValueEmpty:{rc:40408,msg:'查询值为空'},
+    STypeWrong:{rc:40410,msg:'类型不正确'},
     // SRangeOutRange:{rc:69718,msg:'查询值超出范围'},
-    filterFieldValueOutRange:{rc:40312,msg:'查询值超出范围'},//超出min/max/MaxLength，则可以skip查询过程，直接放回空数组给client
+    filterFieldValueOutRange:{rc:40412,msg:'查询值超出范围'},//超出min/max/MaxLength，则可以skip查询过程，直接放回空数组给client
     /*      delete          */
     // deleteValueFieldNumWrong:{rc:69720,msg:'输入键值数量不正确'},
     // deleteValueFieldNameWrong:{rc:69722,msg:'输入键值名称不正确'},
     //deleteValueFieldValueWrong:{rc:69710,msg:'输入键值不正确'},//必须是mongodb objectid
     /*          static          */
-    staticTypeWrong:{rc:40314,msg:'类型不正确'},
+    staticTypeWrong:{rc:40414,msg:'类型不正确'},
 
     /*          currentColl         */
-    undefinedCurrentColl:{rc:40316,msg:'未定义的coll'},
+    undefinedCurrentColl:{rc:40416,msg:'未定义的coll'},
     /*          currentPage         */
-    invalidCurrentPage:{rc:40318,msg:'页码超出范围'},
+    invalidCurrentPage:{rc:40418,msg:'页码超出范围'},
 
     /*          recIdArray          */
-    recIdArrValueCantEmpty:{rc:40320,msg:'recIdArr不能为空'},
-    recIdArrValueExceedMax:{rc:40322,msg:'recIdArr超出最大长度'},//一般根据paganition.pageSize
-    recIdArrValueEleShouldString:{rc:40324,msg:'recIdArr中每个元素必须是字符'},
-    recIdArrValueEleShouldObjectId:{rc:40326,msg:'recIdArr中每个元素必须是objectId'},
+    recIdArrValueCantEmpty:{rc:40420,msg:'recIdArr不能为空'},
+    recIdArrValueExceedMax:{rc:40422,msg:'recIdArr超出最大长度'},//一般根据paganition.pageSize
+    recIdArrValueEleShouldString:{rc:40424,msg:'recIdArr中每个元素必须是字符'},
+    recIdArrValueEleShouldObjectId:{rc:40426,msg:'recIdArr中每个元素必须是objectId'},
     /*              validateEditSubFieldValue           */
-    fieldDataTypeNotArray:{rc:40327,msg:{client:`内部错误`,server:`rule中字段的数据类型不是数组`}},
-    arrayMaxLengthUndefined:{rc:40328,msg:{client:`内部错误`,server:`rule中没有定义arrayMaxLength属性`}},
-    fromMustBeObjectId:{rc:40329,msg:'from的值必须是objectId'},
-    toMustBeObjectId:{rc:40330,msg:'to的值必须是objectId'},
+    fieldDataTypeNotArray:{rc:40427,msg:{client:`内部错误`,server:`rule中字段的数据类型不是数组`}},
+    arrayMaxLengthUndefined:{rc:40428,msg:{client:`内部错误`,server:`rule中没有定义arrayMaxLength属性`}},
+    fromMustBeObjectId:{rc:40429,msg:'from的值必须是objectId'},
+    toMustBeObjectId:{rc:40430,msg:'to的值必须是objectId'},
 
-    eleArrayMustBeArray:{rc:40334,msg:'eleArray必须是数组'},
-    eleArrayCantEmpty:{rc:40336,msg:'eleArray不能为空'},
-    eleArrayEleNumExceed:{rc:40337,msg:'eleArray中元素过多'},
-    eleArrayDataTypeWrong:{rc:40338,msg:'eleArray中元素格式不正确'},
+    eleArrayMustBeArray:{rc:40434,msg:'eleArray必须是数组'},
+    eleArrayCantEmpty:{rc:40436,msg:'eleArray不能为空'},
+    eleArrayEleNumExceed:{rc:40437,msg:'eleArray中元素过多'},
+    eleArrayDataTypeWrong:{rc:40438,msg:'eleArray中元素格式不正确'},
     /*              validateEventValue          */
-    valueNotSet(fieldName){return {rc:40342,msg:`${fieldName}的值未定义`}},
-    eventIdNotValid:{rc:40344,msg:`事件未定义`},
-    sourceIdMustBeObjectId:{rc:40346,msg:'sourceId的值必须是objectId'},
-    targetIdMustBeObjectId:{rc:40348,msg:'targetId的值必须是objectId'},
-    eventStatusNotValid:{rc:40350,msg:'事件状态的值不正确'},
+    valueNotSet(fieldName){return {rc:40442,msg:`${fieldName}的值未定义`}},
+    eventIdNotValid:{rc:40444,msg:`事件未定义`},
+    sourceIdMustBeObjectId:{rc:40446,msg:'sourceId的值必须是objectId'},
+    targetIdMustBeObjectId:{rc:40448,msg:'targetId的值必须是objectId'},
+    eventStatusNotValid:{rc:40450,msg:'事件状态的值不正确'},
 
     //
-    unknownRuleType:{rc:40352,msg:'未知rule类型'},
+    unknownRuleType:{rc:40452,msg:'未知rule类型'},
 
     /*              method              */
-    methodValueUndefined:{rc:40354,msg:{client:'输入值格式错误',server:'method的值不是预定义的值之一'}},
+    methodValueUndefined:{rc:40454,msg:{client:'输入值格式错误',server:'method的值不是预定义的值之一'}},
 
     /*              validateManipulateArrayValue           */
     manipulateArray:{
-        fieldDataTypeNotArray:{rc:40360,msg:{client:`内部错误`,server:`rule中字段的数据类型不是数组`}},
-        arrayMaxLengthUndefined:{rc:40362,msg:{client:`内部错误`,server:`rule中没有定义arrayMaxLength属性`}},
-        fieldKeyValueMustBeArray:{rc:40364,msg:{client:`输入错误`,server:`add/remove的值必须是数组`}},
-        fieldKeyValueCantEmpty:{rc:40366,msg:{client:`输入错误`,server:`add/remove的值不能为空数组`}},
-        fieldKeyValueNumExceed:{rc:40368,msg:{client:`输入错误`,server:`add/remove的值超出最大定义`}},
-        fieldKeyValueDataTypeWrong:{rc:40370,msg:{client:`输入错误`,server:`add/remove的值数据类型不正确`}},
+        fieldDataTypeNotArray:{rc:40460,msg:{client:`内部错误`,server:`rule中字段的数据类型不是数组`}},
+        arrayMaxLengthUndefined:{rc:40462,msg:{client:`内部错误`,server:`rule中没有定义arrayMaxLength属性`}},
+        fieldKeyValueMustBeArray:{rc:40464,msg:{client:`输入错误`,server:`add/remove的值必须是数组`}},
+        fieldKeyValueCantEmpty:{rc:40466,msg:{client:`输入错误`,server:`add/remove的值不能为空数组`}},
+        fieldKeyValueNumExceed:{rc:40468,msg:{client:`输入错误`,server:`add/remove的值超出最大定义`}},
+        fieldKeyValueDataTypeWrong:{rc:40470,msg:{client:`输入错误`,server:`add/remove的值数据类型不正确`}},
     },
     /*              captcha                      */
     captcha:{
-        valueTypeIncorrect:{rc:40380,msg:{client:`图片字符错误`,server:`captcha的值必须是字符`}},
-        valueLengthIncorrect:{rc:40382,msg:{client:`图片字符错误`,server:`captcha的长度必须是4`}},
-        // valueIncorrect:{rc:40382,msg:{client:`图片字符错误`,server:`captcha的值不正确`}},
+        valueTypeIncorrect:{rc:40480,msg:{client:`图片字符错误`,server:`captcha的值必须是字符`}},
+        valueLengthIncorrect:{rc:40482,msg:{client:`图片字符错误`,server:`captcha的长度必须是4`}},
+        // valueIncorrect:{rc:40482,msg:{client:`图片字符错误`,server:`captcha的值不正确`}},
 
     },
     /*              SMS                      */
     SMS:{
-        valueTypeIncorrect:{rc:40390,msg:{client:`验证码错误`,server:`验证码的值必须是字符`}},
-        valueLengthIncorrect:{rc:40392,msg:{client:`验证码错误`,server:`验证码的长度必须是6`}},
-        valueIncorrect:{rc:40396,msg:{client:`验证码错误`,server:`验证码的值的格式不正确`}},
+        valueTypeIncorrect:{rc:40490,msg:{client:`验证码错误`,server:`验证码的值必须是字符`}},
+        valueLengthIncorrect:{rc:40492,msg:{client:`验证码错误`,server:`验证码的长度必须是6`}},
+        valueIncorrect:{rc:40496,msg:{client:`验证码错误`,server:`验证码的值的格式不正确`}},
     },
     /*              dataUrl                      */
     dataUrl:{
-        valueIncorrect:{rc:40398,msg:{client:`图片格式错误`,server:`图片的dataUrl不正确`}},
+        valueIncorrect:{rc:40498,msg:{client:`图片格式错误`,server:`图片的dataUrl不正确`}},
+    },
+
+    validateChooseFriendValue:{
+        chooseFriendFieldValueArrayEleInvalidObjectId(fieldName){
+            return {rc:40626,msg:{client:`参数错误`,server:`chooseFriend中，字段${fieldName}是数组objectId，其中有元素，格式不是objectId`}}
+        },
+
     },
 }
 
+//40600～40700
+const validatePartObjectIdEncrypted={
+    common:{
+        fieldNotMatchApplyRange:{rc:40600,msg:{client:`参数错误`,server:'字段不允许在当前applyRange时输入'}},
+    },
+    validateEditSubField:{
+        editSubFromIsInvalidEncryptedObjectId:{rc:40602,msg:{client:`参数错误`,server:'editSub中，key from的类型为objectId的字段，加密值的格式不正确'}},
+        editSubToIsInvalidEncryptedObjectId:{rc:40604,msg:{client:`参数错误`,server:'editSub中，key to的类型为objectId的字段，加密值的格式不正确'}},
+        editSubEleArrayLengthExceed:{rc:40606,msg:{client:`参数错误`,server:'editSub中，key eleArray的长度超过rule中定义的最大长度'}},
+        editSubEleArrayIsInvalidEncryptedObjectId:{rc:40608,msg:{client:`参数错误`,server:'editSub中，key eleArray中，类型为objectId的字段，加密值的格式不正确'}},
+    },
+    validateManipulateArray:{
+        manipulateArraySubKeyLengthExceed(subKeyName){
+            return {rc:40610,msg:{client:`参数错误`,server:`manipulateArray中，subKey ${subKeyName} 的长度超过rule中定义的最大长度`}}
+        },
+        manipulateArraySubKeyContainInvalidEncryptedObjectId(subKeyName){
+            return {rc:40612,msg:{client:`参数错误`,server:`manipulateArray中，subKey ${subKeyName}，类型为objectId的字段，加密值的格式不正确`}}
+        },
+        // manipulateArraySubParRemoveContainInvalidObjectId:{rc:checkerBaseErrorCode+60,msg:{client:`参数错误`,server:'manipulateArray中，remove中，类型为objectId的字段，值的格式不正确'}},
+    },
+    validateRecordId:{
+        recordIdIsInvalidEncryptedObjectId:{rc:40614,msg:{client:`参数错误`,server:'加密的recordId的格式不正确'}},
+    },
+    validateSingleField:{
+        singleFieldLengthExceed:{rc:40616,msg:{client:`参数错误`,server:'singleField的长度超过rule中定义的最大长度'}},
+        singleFieldArrayValueIsInvalidEncryptedObjectId:{rc:40618,msg:{client:`参数错误`,server:'single field的值是array，其中元素的类型为objectId的字段，但是加密值的格式不正确'}},
+        singleFieldIsInvalidEncryptedObjectId:{rc:40620,msg:{client:`参数错误`,server:'single field的值的类型为objectId，但是加密值的格式不正确'}},
+    },
+    validateRecordInfo:{
+        recordInfoFieldValueLengthExceed(fieldName){
+            return {rc:40622,msg:{client:`参数错误`,server:`recordInfo中，字段${fieldName}的长度超过rule中定义的最大长度`}}
+        },
+        recordInfoFieldValueArrayEleInvalidEncryptedObjectId(fieldName){
+            return {rc:40624,msg:{client:`参数错误`,server:`recordInfo中，字段${fieldName}是数组objectId，其中有元素，加密值的格式不正确`}}
+        },
+        recordInfoFieldValueInvalidEncryptedObjectId(fieldName){
+            return {rc:40624,msg:{client:`参数错误`,server:`recordInfo中，字段${fieldName}是objectId，但其加密值的格式不正确`}}
+        },
+    },
+    validateChooseFriend:{
+        chooseFriendFieldValueArrayEleInvalidEncryptedObjectId(fieldName){
+            return {rc:40626,msg:{client:`参数错误`,server:`chooseFriend中，字段${fieldName}是数组objectId，其中有元素，加密值的格式不正确`}}
+        },
+    },
+
+/*    ifObjectIdCrypted:{
+
+
+        // singleFieldValueContainInvalidObjectId:{rc:checkerBaseErrorCode+55,msg:{client:`参数错误`,server:'singleField中，类型为objectId，值的格式不正确'}},
+        recordInfoContainInvalidObjectId:{rc:checkerBaseErrorCode+56,msg:{client:`参数错误`,server:'recordInfo中，类型为objectId的字段，值的格式不正确'}},
+
+
+
+
+        // unSupportPart:{rc:checkerBaseErrorCode+58,msg:{client:`内部错误，请联系`,server:'recordInfo中，类型为objectId的字段，值的格式不正确'}}
+    },*/
+}
 
 module.exports={
     validateRule,
     validateFormat,
     validateValue,
 
+    validatePartObjectIdEncrypted,//检测part中，如果数据类型是objectId，那么判断是否加密了
 }

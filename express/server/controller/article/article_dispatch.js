@@ -121,7 +121,7 @@ async function article_dispatcher_async({req}) {
                         penalizeSubType: e_penalizeSubType.SEARCH,
                         penalizeCheckError: controllerError.dispatch.get.userInPenalizeCantGetArticle
                     }
-                    await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
+                    await controllerPreCheck.userStatusCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
 
                     //检测url中objectId并解密objectId
                     await controllerPreCheck.checkObjectIdInReqParams_async({req:req,parameterName:'articleId',cryptedError:controllerError.dispatch.get.cryptedArticleIdFormatInvalid,decryptedError:controllerError.dispatch.get.decryptedArticleIdFormatInvalid})
@@ -141,7 +141,7 @@ async function article_dispatcher_async({req}) {
                         penalizeSubType: e_penalizeSubType.READ,
                         penalizeCheckError: controllerError.dispatch.get.userInPenalizeCantGetArticle
                     }
-                    await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
+                    await controllerPreCheck.userStatusCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
 
                     //检测url中objectId并解密objectId
                     await controllerPreCheck.checkObjectIdInReqParams_async({req:req,parameterName:'articleId',cryptedError:controllerError.dispatch.get.cryptedArticleIdFormatInvalid,decryptedError:controllerError.dispatch.get.decryptedArticleIdFormatInvalid})
@@ -161,8 +161,8 @@ async function article_dispatcher_async({req}) {
                         penalizeSubType: e_penalizeSubType.UPDATE,
                         penalizeCheckError: controllerError.dispatch.put.userInPenalizeCantUpdateArticle
                     }*/
-                    await controllerPreCheck.userStateCheck_async({req: req,userLoginCheck: userLoginCheck,penalizeCheck: penalizeCheck})
-    // ap.inf('userStateCheck_async done')
+                    await controllerPreCheck.userStatusCheck_async({req: req,userLoginCheck: userLoginCheck,penalizeCheck: penalizeCheck})
+    // ap.inf('userStatusCheck_async done')
                     //检测url中objectId并解密objectId
                     await controllerPreCheck.checkObjectIdInReqParams_async({req:req,parameterName:'attachmentId',cryptedError:controllerError.dispatch.get.cryptedAAttachmentIdFormatInvalidCantDownload,decryptedError:controllerError.dispatch.get.decryptedAttachmentIdFormatInvalidCantDownload})
                     // ap.inf('checkObjectIdInReqParams_async done')
@@ -188,7 +188,7 @@ async function article_dispatcher_async({req}) {
                         penalizeSubType: e_penalizeSubType.CREATE,
                         penalizeCheckError: controllerError.dispatch.post.userInPenalizeCantCreateArticle
                     }
-                    await controllerPreCheck.userStateCheck_async({
+                    await controllerPreCheck.userStatusCheck_async({
                         req: req,
                         userLoginCheck: userLoginCheck,
                         penalizeCheck: penalizeCheck
@@ -205,7 +205,7 @@ async function article_dispatcher_async({req}) {
                         needCheck: true,
                         error: controllerError.dispatch.post.notLoginCantCreateArticleImage
                     }
-                    await controllerPreCheck.userStateCheck_async({req: req,userLoginCheck: userLoginCheck,penalizeCheck: penalizeCheck})
+                    await controllerPreCheck.userStatusCheck_async({req: req,userLoginCheck: userLoginCheck,penalizeCheck: penalizeCheck})
 
                     //检测url中objectId并解密objectId
                     await controllerPreCheck.checkObjectIdInReqParams_async({req:req,parameterName:'articleId',cryptedError:controllerError.dispatch.post.cryptedArticleIdFormatInvalidCantUploadImage,decryptedError:controllerError.dispatch.post.decryptedArticleIdFormatInvalidCantUploadImage})
@@ -219,7 +219,7 @@ async function article_dispatcher_async({req}) {
                         needCheck: true,
                         error: controllerError.dispatch.post.notLoginCantCreateArticleAttachment
                     }
-                    await controllerPreCheck.userStateCheck_async({req: req,userLoginCheck: userLoginCheck,penalizeCheck: penalizeCheck})
+                    await controllerPreCheck.userStatusCheck_async({req: req,userLoginCheck: userLoginCheck,penalizeCheck: penalizeCheck})
 
 
                     await controllerPreCheck.checkObjectIdInReqParams_async({req:req,parameterName:'articleId',cryptedError:controllerError.dispatch.post.cryptedArticleIdFormatInvalidCantUploadAttachment,decryptedError:controllerError.dispatch.post.decryptedArticleIdFormatInvalidCantUploadAttachment})
@@ -242,16 +242,16 @@ async function article_dispatcher_async({req}) {
                     penalizeSubType: e_penalizeSubType.UPDATE,
                     penalizeCheckError: controllerError.dispatch.put.userInPenalizeCantUpdateArticle
                 }
-                await controllerPreCheck.userStateCheck_async({req: req,userLoginCheck: userLoginCheck,penalizeCheck: penalizeCheck})
-                // ap.inf('create use userStateCheck_async done')
+                await controllerPreCheck.userStatusCheck_async({req: req,userLoginCheck: userLoginCheck,penalizeCheck: penalizeCheck})
+                // ap.inf('create use userStatusCheck_async done')
                 expectedPart = [e_part.RECORD_ID,e_part.RECORD_INFO]
                 //是否为期望的part
                 result = controllerPreCheck.inputCommonCheck({req: req, expectedPart: expectedPart})
                 if (result.rc > 0) {return Promise.reject(result)}
 
                 //对req中的recordId和recordInfo进行objectId（加密过的）格式判断
-                // ap.inf('before check',req.body.values)
-                await controllerChecker.ifObjectIdInPartCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName],applyRange:applyRange})
+                // ap.wrn('before check',req.body.values)
+                await controllerChecker.ifObjectIdInPartEncrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName],applyRange:applyRange})
                 // ap.inf('after check',req.body.values)
                 //对req中的recordId和recordInfo中加密的objectId进行解密
                 let userInfo = await controllerHelper.getLoginUserInfo_async({req: req})
@@ -279,7 +279,7 @@ async function article_dispatcher_async({req}) {
                         needCheck: true,
                         error: controllerError.dispatch.delete.notLoginCantDeleteAttachment
                     }
-                    await controllerPreCheck.userStateCheck_async({req: req,userLoginCheck: userLoginCheck,penalizeCheck: penalizeCheck})
+                    await controllerPreCheck.userStatusCheck_async({req: req,userLoginCheck: userLoginCheck,penalizeCheck: penalizeCheck})
 
 
                     expectedPart = [e_part.RECORD_ID] //此处RECORD_ID为attachment的id
@@ -290,7 +290,7 @@ async function article_dispatcher_async({req}) {
 
                     //对req中的recordId和recordInfo进行objectId（加密过的）格式判断
                     // ap.inf('before check',req.body.values)
-                    await controllerChecker.ifObjectIdInPartCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName],applyRange:applyRange})
+                    await controllerChecker.ifObjectIdInPartEncrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName],applyRange:applyRange})
                     // ap.inf('after check',req.body.values)
                     //对req中的recordId和recordInfo中加密的objectId进行解密
                     let userInfo = await controllerHelper.getLoginUserInfo_async({req: req})

@@ -92,7 +92,7 @@ async function dispatcher_async({req}){
                     penalizeSubType: e_penalizeSubType.CREATE,
                     penalizeCheckError: controllerError.dispatch.post.userInPenalizeCantCreatePublicGroup
                 }
-                await controllerPreCheck.userStateCheck_async({req: req,userLoginCheck: userLoginCheck,penalizeCheck: penalizeCheck})
+                await controllerPreCheck.userStatusCheck_async({req: req,userLoginCheck: userLoginCheck,penalizeCheck: penalizeCheck})
                 expectedPart = [e_part.RECORD_INFO] //impeachId
                 //是否为期望的part
                 result = controllerPreCheck.inputCommonCheck({req: req, expectedPart: expectedPart})
@@ -101,7 +101,7 @@ async function dispatcher_async({req}){
 
                 //对req中的recordId和recordInfo进行objectId（加密过的）格式判断
                 // ap.inf('before check',req.body.values)
-                await controllerChecker.ifObjectIdInPartCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName],applyRange:applyRange})
+                await controllerChecker.ifObjectIdInPartEncrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName],applyRange:applyRange})
                 // ap.inf('after check',req.body.values)
                 //对req中的recordId和recordInfo中加密的objectId进行解密
                 let userInfo = await controllerHelper.getLoginUserInfo_async({req: req})
@@ -133,7 +133,7 @@ async function dispatcher_async({req}){
                         penalizeSubType: e_penalizeSubType.UPDATE,
                         penalizeCheckError: controllerError.dispatch.put.userInPenalizeCantUpdatePublicGroup
                     }
-                    await controllerPreCheck.userStateCheck_async({req: req,userLoginCheck: userLoginCheck,penalizeCheck: penalizeCheck})
+                    await controllerPreCheck.userStatusCheck_async({req: req,userLoginCheck: userLoginCheck,penalizeCheck: penalizeCheck})
                     expectedPart = [e_part.RECORD_ID,e_part.RECORD_INFO] //impeachId
                     //是否为期望的part
                     result = controllerPreCheck.inputCommonCheck({req: req, expectedPart: expectedPart})
@@ -142,7 +142,7 @@ async function dispatcher_async({req}){
 
                     //对req中的recordId和recordInfo进行objectId（加密过的）格式判断
                     // ap.inf('before check',req.body.values)
-                    await controllerChecker.ifObjectIdInPartCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName],applyRange:applyRange})
+                    await controllerChecker.ifObjectIdInPartEncrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName],applyRange:applyRange})
                     // ap.inf('after check',req.body.values)
                     //对req中的recordId和recordInfo中加密的objectId进行解密
                     let userInfo = await controllerHelper.getLoginUserInfo_async({req: req})
@@ -165,7 +165,7 @@ async function dispatcher_async({req}){
                         needCheck: true,
                         error: controllerError.dispatch.put.notLoginCantRemoveMember
                     }
-                    await controllerPreCheck.userStateCheck_async({req: req,userLoginCheck: userLoginCheck,penalizeCheck: penalizeCheck})
+                    await controllerPreCheck.userStatusCheck_async({req: req,userLoginCheck: userLoginCheck,penalizeCheck: penalizeCheck})
                     expectedPart = [e_part.RECORD_ID,e_part.MANIPULATE_ARRAY] //impeachId
                     //是否为期望的part
                     result = controllerPreCheck.inputCommonCheck({req: req, expectedPart: expectedPart})
@@ -174,7 +174,7 @@ async function dispatcher_async({req}){
 
                     //对req中的recordId和recordInfo进行objectId（加密过的）格式判断
                     // ap.inf('before check',req.body.values)
-                    await controllerChecker.ifObjectIdInPartCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName],applyRange:applyRange})
+                    await controllerChecker.ifObjectIdInPartEncrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName],applyRange:applyRange})
                     // ap.inf('after check',req.body.values)
                     //对req中的recordId和recordInfo中加密的objectId进行解密
                     let userInfo = await controllerHelper.getLoginUserInfo_async({req: req})
@@ -197,7 +197,7 @@ async function dispatcher_async({req}){
                         needCheck: true,
                         error: controllerError.dispatch.put.notLoginCantExitPublicGroup
                     }
-                    await controllerPreCheck.userStateCheck_async({req: req,userLoginCheck: userLoginCheck,penalizeCheck: penalizeCheck})
+                    await controllerPreCheck.userStatusCheck_async({req: req,userLoginCheck: userLoginCheck,penalizeCheck: penalizeCheck})
                     expectedPart = [e_part.RECORD_ID] //publicGroupId
                     //是否为期望的part
                     result = controllerPreCheck.inputCommonCheck({req: req, expectedPart: expectedPart})
@@ -206,7 +206,7 @@ async function dispatcher_async({req}){
 
                     //对req中的recordId和recordInfo进行objectId（加密过的）格式判断
                     // ap.inf('before check',req.body.values)
-                    await controllerChecker.ifObjectIdInPartCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName],applyRange:applyRange})
+                    await controllerChecker.ifObjectIdInPartEncrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName],applyRange:applyRange})
                     // ap.inf('after check',req.body.values)
                     //对req中的recordId和recordInfo中加密的objectId进行解密
                     let userInfo = await controllerHelper.getLoginUserInfo_async({req: req})
@@ -230,7 +230,7 @@ async function dispatcher_async({req}){
                         needCheck: true,
                         error: controllerError.dispatch.put.notLoginCantManageAdminMember
                     }
-                    await controllerPreCheck.userStateCheck_async({req: req,userLoginCheck: userLoginCheck,penalizeCheck: penalizeCheck})
+                    await controllerPreCheck.userStatusCheck_async({req: req,userLoginCheck: userLoginCheck,penalizeCheck: penalizeCheck})
                     expectedPart = [e_part.RECORD_ID,e_part.MANIPULATE_ARRAY] //impeachId
                     //是否为期望的part
                     result = controllerPreCheck.inputCommonCheck({req: req, expectedPart: expectedPart})
@@ -239,7 +239,7 @@ async function dispatcher_async({req}){
 
                     //对req中的recordId和recordInfo进行objectId（加密过的）格式判断
                     // ap.inf('before check',req.body.values)
-                    await controllerChecker.ifObjectIdInPartCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName],applyRange:applyRange})
+                    await controllerChecker.ifObjectIdInPartEncrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName],applyRange:applyRange})
                     // ap.wrn('after check',req.body.values)
                     //对req中的recordId和recordInfo中加密的objectId进行解密
                     let userInfo = await controllerHelper.getLoginUserInfo_async({req: req})
@@ -270,7 +270,7 @@ async function dispatcher_async({req}){
                     penalizeSubType: e_penalizeSubType.DELETE,
                     penalizeCheckError: controllerError.dispatch.delete.userInPenalizeCantDeletePublicGroup
                 }
-                await controllerPreCheck.userStateCheck_async({req: req,userLoginCheck: userLoginCheck,penalizeCheck: penalizeCheck})
+                await controllerPreCheck.userStatusCheck_async({req: req,userLoginCheck: userLoginCheck,penalizeCheck: penalizeCheck})
                 expectedPart = [e_part.RECORD_ID] //impeachId
                 //是否为期望的part
                 result = controllerPreCheck.inputCommonCheck({req: req, expectedPart: expectedPart})
@@ -279,7 +279,7 @@ async function dispatcher_async({req}){
 
                 //对req中的recordId和recordInfo进行objectId（加密过的）格式判断
                 // ap.inf('before check',req.body.values)
-                await controllerChecker.ifObjectIdInPartCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName],applyRange:applyRange})
+                await controllerChecker.ifObjectIdInPartEncrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName],applyRange:applyRange})
                 // ap.inf('after check',req.body.values)
                 //对req中的recordId和recordInfo中加密的objectId进行解密
                 let userInfo = await controllerHelper.getLoginUserInfo_async({req: req})

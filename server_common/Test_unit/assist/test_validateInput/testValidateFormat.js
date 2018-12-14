@@ -791,3 +791,59 @@ describe('validateEventFormat', function() {
     })
 })
 
+/***************************************************************************/
+/***************   manipulateArray   *******************/
+/***************************************************************************/
+describe('validateChooseFriendFormat', function() {
+    let func=testModule.validateChooseFriendFormat
+    let value
+    it(`inputValue data type wrong`,function(done){
+        value=12
+        assert.deepStrictEqual(func({inputValue:value}).rc,validateFormatError.validateChooseFriendFormat.keyNumIncorrect.rc)
+        done()
+    })
+    it(`inputValue cant empty`,function(done){
+        value={}
+        assert.deepStrictEqual(func({inputValue:value}).rc,validateFormatError.validateChooseFriendFormat.keyNumIncorrect.rc)
+        done()
+    })
+    it(`inputValue field name not predefined`,function(done){
+        value={
+            'test':'asdf',
+        }
+        assert.deepStrictEqual(func({inputValue:value}).rc,validateFormatError.validateChooseFriendFormat.keyNameNotPredefined.rc)
+        done()
+    })
+    it(`inputValue allFriends already exist`,function(done){
+        value={
+            'allFriends':true,
+            'friendGroups':'a'
+        }
+        assert.deepStrictEqual(func({inputValue:value}).rc,validateFormatError.validateChooseFriendFormat.keyNameAllFriendsAlreadyExists.rc)
+        done()
+    })
+    it(`inputValue friendsGroup or friends exist, must be array`,function(done){
+        value={
+            // 'allFriends':true,
+            'friendGroups':'a'
+        }
+        assert.deepStrictEqual(func({inputValue:value}).rc,validateFormatError.validateChooseFriendFormat.keyNameFriendsOrGroupMustBeArray.rc)
+        done()
+    })
+    it(`inputValue right`,function(done){
+        value={
+            'allFriends':true,
+            // 'friendGroups':'a'
+        }
+        assert.deepStrictEqual(func({inputValue:value}).rc,0)
+        done()
+    })
+    it(`inputValue right`,function(done){
+        value={
+            // 'allFriends':true,
+            'friendGroups':'a'
+        }
+        assert.deepStrictEqual(func({inputValue:value}).rc,0)
+        done()
+    })
+})

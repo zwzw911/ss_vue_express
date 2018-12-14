@@ -7,6 +7,7 @@
 'use strict'
 const fs=require('fs')
 const ap=require('awesomeprint')
+const lodash=require('lodash')
 
 // const server_common_file_require=require('../')
 const validateHelper=require('../function/validateInput/validateHelper')
@@ -29,6 +30,7 @@ const e_partValueToVarName=nodeEnum.PartValueToVarName
 const e_subField=nodeEnum.SubField
 const e_findEleInArray=nodeEnum.FindEleInArray
 const e_env=nodeEnum.Env
+const e_chooseFriendInfoFieldName=nodeEnum.ChooseFriendInfoFieldName
 
 const mongoEnum=require('../constant/enum/mongoEnum')
 const e_storePathUsage=mongoEnum.StorePathUsage.DB
@@ -82,13 +84,14 @@ const e_dataType=require('../constant/enum/inputDataRuleType').ServerDataType
 
 
 const handleSystemError=require('../function/assist/system').handleSystemError
-const systemError=require('../constant/error/systemError').systemError
+const systemError=require('../constant/error/assistError').systemError
 
 // const e_iniSettingObject=require('../constant/genEnum/initSettingObject').iniSettingObject
 const dataTypeCheck=require('../function/validateInput/validateHelper').dataTypeCheck
 const uploadFile=require('../function/assist/upload')
 const convertFileSize=require('../function/assist/misc').convertFileSize
 const sanityHtml=require('../function/assist/sanityHtml').sanityHtml
+const ifFieldDataTypeObjectId=require('../function/assist/dataType').ifFieldDataTypeObjectId
 
 const regex=require('../constant/regex/regex').regex
 const currentAppSetting=require('../constant/config/appSetting').currentAppSetting
@@ -102,7 +105,12 @@ const captcha_async=require('../function/assist/awesomeCaptcha').captcha_async
 
 const validateSingleValueForSearch=require('../function/validateInput/validateValue').validateSingleValueForSearch
 
+const decryptPartObjectId=require('../function/validateInput/decryptPartObjectId')
+
 const controllerChecker=require('./controllerChecker')
+
+const ifObjectId=require('../function/assist/dataType').ifObjectId
+const ifObjectIdEncrypted=require('../function/assist/dataType').ifObjectIdEncrypted
 // const complicatedCheckInterval_async=redisCommonScript.complicatedCheckInterval_async
 /*  根据findType，在req中检测是否存在optionPart中定义的part
 * @req
@@ -1327,7 +1335,7 @@ function encryptSingleRecord({record,collName,salt,populateFields}){
             if(undefined===collRule[singleFieldName]){
                 continue
             }
-            let tmpResult=controllerChecker.ifFieldDataTypeObjectId({fieldRule:collRule[singleFieldName]})
+            let tmpResult=ifFieldDataTypeObjectId({fieldRule:collRule[singleFieldName]})
             // ap.inf('collRule[singleFieldName]',collRule[singleFieldName])
             if(tmpResult.rc>0){return tmpResult}
             ifObjectId=tmpResult.msg['ifObjectId']
@@ -1386,7 +1394,7 @@ function decryptSingleRecord({record,collName,salt}){
             if(undefined===collRule[singleFieldName]){
                 continue
             }
-            let tmpResult=controllerChecker.ifFieldDataTypeObjectId({fieldRule:collRule[singleFieldName]})
+            let tmpResult=ifFieldDataTypeObjectId({fieldRule:collRule[singleFieldName]})
             // ap.inf('collRule[singleFieldName]',collRule[singleFieldName])
             if(tmpResult.rc>0){return tmpResult}
             ifObjectId=tmpResult.msg['ifObjectId']
@@ -1396,19 +1404,19 @@ function decryptSingleRecord({record,collName,salt}){
         //传入的objectId必须符合条件；1. string，2. 长度64
         // ap.inf('singleFieldName',singleFieldName)
         // ap.inf('record[singleFieldName]',record[singleFieldName])
-        if(false===dataTypeCheck.isString(record[singleFieldName]) || false===regex.cryptedObjectId.test(record[singleFieldName])){
+        if(false===dataTypeCheck.isString(record[singleFieldName]) || false===regex.encryptedObjectId.test(record[singleFieldName])){
             return helperError.decryptSingleRecord.encryptedObjectIdInvalid
         }
         if(true===ifArray){
             for(let idx in record[singleFieldName]){
                 //数组元素是objectId，直接加解密
-                if(true===ifExactEncryptedObjectId(record[singleFieldName][idx])){
+                if(true===ifObjectIdEncrypted(record[singleFieldName][idx])){
                     record[singleFieldName][idx]=decryptSingleValue({fieldValue:record[singleFieldName][idx],salt:salt}).msg
                 }
 
             }
         }else{
-            if(true===ifExactEncryptedObjectId(record[singleFieldName])){
+            if(true===ifObjectIdEncrypted(record[singleFieldName])){
                 record[singleFieldName]=decryptSingleValue({fieldValue:record[singleFieldName],salt:salt}).msg
             }
         }
@@ -1471,7 +1479,7 @@ function cryptDecryptSingleRecord({record,collName,salt,populateFields,cryptDecr
                     if(true===fieldDataTypeIsArray){
                         for(let idx in record[singleFieldName]){
                             //数组元素是objectId，并未populate，直接加解密
-                            if(ifExactObjectId(record[singleFieldName][idx])){
+                            if(ifObjectId(record[singleFieldName][idx])){
                                 record[singleFieldName][idx]=encryptSingleValue({fieldValue:record[singleFieldName][idx],salt:salt}).msg
                                 continue
                             }
@@ -1485,7 +1493,7 @@ function cryptDecryptSingleRecord({record,collName,salt,populateFields,cryptDecr
                                     // ap.inf('value',ele[singleEleField])
                                     // ap.inf('typeof value === \'string\'',typeof ele[singleEleField] === 'string')
                                     // ap.inf('regex.objectId.test(value)',regex.objectId.test(ele[singleEleField]))
-                                    if(ifExactObjectId(ele[singleEleField])){
+                                    if(ifObjectId(ele[singleEleField])){
 
                                         ele[singleEleField]=encryptSingleValue({fieldValue:ele[singleEleField],salt:salt}).msg
                                     }
@@ -1493,7 +1501,7 @@ function cryptDecryptSingleRecord({record,collName,salt,populateFields,cryptDecr
                             }*/
                         }
                     }else{
-                        if(ifExactObjectId(record[singleFieldName])){
+                        if(ifObjectId(record[singleFieldName])){
                             ap.wrn('crypte singleFieldName',singleFieldName)
                             ap.wrn('crypte record',record)
                             record[singleFieldName]=encryptSingleValue({fieldValue:record[singleFieldName],salt:salt}).msg
@@ -1508,19 +1516,19 @@ function cryptDecryptSingleRecord({record,collName,salt,populateFields,cryptDecr
                 //传入的objectId必须符合条件；1. string，2. 长度64
                 // ap.inf('singleFieldName',singleFieldName)
                 // ap.inf('record[singleFieldName]',record[singleFieldName])
-                if(false===dataTypeCheck.isString(record[singleFieldName]) || false===regex.cryptedObjectId.test(record[singleFieldName])){
+                if(false===dataTypeCheck.isString(record[singleFieldName]) || false===regex.encryptedObjectId.test(record[singleFieldName])){
                     return helperError.cryptDecryptSingleRecord.encryptedObjectIdInvalid
                 }
                 if(true===fieldDataTypeIsArray){
                     for(let idx in record[singleFieldName]){
                         //数组元素是objectId，直接加解密
-                        if(true===ifExactEncryptedObjectId(record[singleFieldName][idx])){
+                        if(true===ifObjectIdEncrypted(record[singleFieldName][idx])){
                             record[singleFieldName][idx]=decryptSingleValue({fieldValue:record[singleFieldName][idx],salt:salt}).msg
                         }
 
                     }
                 }else{
-                    if(true===ifExactEncryptedObjectId(record[singleFieldName])){
+                    if(true===ifObjectIdEncrypted(record[singleFieldName])){
                         record[singleFieldName]=decryptSingleValue({fieldValue:record[singleFieldName],salt:salt}).msg
                     }
                 }
@@ -1548,14 +1556,15 @@ function cryptDecryptRecord({records,collName,salt,populateFields,cryptDecryptTy
     }
 
 }
-//辅助函数，值是否为objectId
-function ifExactObjectId(value){
+
+/*//辅助函数，值是否为objectId
+function ifObjectId(value){
     // typeof value === 'string' &&
     return  true===regex.objectId.test(value)
 }
-function ifExactEncryptedObjectId(value){
-    return typeof value === 'string' && true===regex.cryptedObjectId.test(value)
-}
+function ifObjectIdEncrypted(value){
+    return typeof value === 'string' && true===regex.encryptedObjectId.test(value)
+}*/
 
 /*
 * populateFields：指明单条记录中，那些字段是被populate的，需要检查是否有id，进行加解密
@@ -1610,159 +1619,38 @@ function ifExactEncryptedObjectId(value){
 /****************************************************************/
 /********    对inputValue中加密的objectId进行解密       *********/
 /****************************************************************/
-//目前只支持recordId和recordInfo
 function decryptInputValue({req,expectedPart,salt,browserCollRule}){
     // ap.inf('decryptInputValue=>salt',salt)
     for(let singlePart of expectedPart){
         // ap.wrn('req.body.values[singlePart]',req.body.values[singlePart])
         // ap.wrn('dataTypeCheck.isSetValue(req.body.values[singlePart])',dataTypeCheck.isSetValue(req.body.values[singlePart]))
         if(true===dataTypeCheck.isSetValue(req.body.values[singlePart])){
-            let partValue=req.body.values[singlePart]
+            // let partValue=req.body.values[singlePart]
             switch (singlePart){
                 case e_part.EDIT_SUB_FIELD:
-                    for(let singleFieldName in partValue){
-
-                        if(false===dataTypeCheck.isSetValue(partValue[singleFieldName])){
-                            continue
-                        }
-                        //检查from/to recordId格式是否正确
-                        if(undefined!==partValue[singleFieldName][e_subField.FROM]){
-                            partValue[singleFieldName][e_subField.FROM]=decryptSingleValue({fieldValue:partValue[singleFieldName][e_subField.FROM],salt:salt}).msg
-                        }
-                        if(undefined!==partValue[singleFieldName][e_subField.TO]){
-                            partValue[singleFieldName][e_subField.TO]=decryptSingleValue({fieldValue:partValue[singleFieldName][e_subField.TO],salt:salt}).msg
-                        }
-                        if(undefined!==partValue[singleFieldName][e_subField.ELE_ARRAY] && true===dataTypeCheck.isArray(partValue[singleFieldName][e_subField.ELE_ARRAY]) ){
-                            //获得数据类型
-                            let singleFieldDataTypeInRule
-                            let dataTypeArrayFlag
-                            let dataType
-                            //获得field的数据类型
-                            if(undefined!==browserCollRule[singleFieldName] ){
-                                if(true===dataTypeCheck.isSetValue(partValue[singleFieldName])) {
-                                    singleFieldDataTypeInRule = browserCollRule[singleFieldName][e_otherRuleFiledName.DATA_TYPE]
-                                    dataTypeArrayFlag = dataTypeCheck.isArray(singleFieldDataTypeInRule)
-                                    dataType = dataTypeArrayFlag ? singleFieldDataTypeInRule[0] : singleFieldDataTypeInRule
-                                }
-                            }
-
-                            //如果数据类型是objectId
-                            if(e_dataType.OBJECT_ID===dataType){
-                                //必定是数组，数组可以为空
-                                let eleArrayValue=partValue[singleFieldName][e_subField.ELE_ARRAY]
-                                if( eleArrayValue.length>0){
-                                    for(let idx in eleArrayValue){
-                                        // let singleEle=eleArrayValue[idx]
-                                        partValue[singleFieldName][e_subField.ELE_ARRAY][idx]=decryptSingleValue({fieldValue:partValue[singleFieldName][e_subField.ELE_ARRAY][idx],salt:salt}).msg
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    decryptPartObjectId.decryptEditSubField({req:req,browserCollRule:browserCollRule,salt:salt})
                     break;
                 case e_part.MANIPULATE_ARRAY:
-                    for(let singleFieldName in partValue){
-                        // ap.inf('singleFieldName',singleFieldName)
-                        //空值则不解密
-                        if(false===dataTypeCheck.isSetValue(partValue[singleFieldName])){
-                            continue
-                        }
-                        if(undefined!==browserCollRule[singleFieldName]){
-                            let singleFieldDataTypeInRule=browserCollRule[singleFieldName][e_otherRuleFiledName.DATA_TYPE]
-                            let dataTypeArrayFlag=dataTypeCheck.isArray(singleFieldDataTypeInRule)
-                            let dataType= dataTypeArrayFlag ? singleFieldDataTypeInRule[0]:singleFieldDataTypeInRule
-                            // ap.inf('dataType',dataType)
-                            if(e_dataType.OBJECT_ID===dataType){
-                                //必定是数组，对每个元素进行解密
-                                // if(true===dataTypeArrayFlag){
-                                let fieldValue=partValue[singleFieldName]
-                                //对每个部分进行检测
-                                let fieldSubPartValue
-                                if(undefined!==fieldValue['add'] && true===dataTypeCheck.isSetValue(fieldValue['add'])){
-                                    fieldSubPartValue=fieldValue['add']
-                                    for(let  idx in fieldSubPartValue){
-                                        partValue[singleFieldName]['add'][idx]=decryptSingleValue({fieldValue:fieldSubPartValue[idx],salt:salt}).msg
-                                    }
-                                }
-                                if(undefined!==fieldValue['remove'] && true===dataTypeCheck.isSetValue(fieldValue['remove'])){
-                                    fieldSubPartValue=fieldValue['remove']
-                                    for(let  idx in fieldSubPartValue){
-                                        partValue[singleFieldName]['remove'][idx]=decryptSingleValue({fieldValue:fieldSubPartValue[idx],salt:salt}).msg
-                                    }
-                                }
-                            }
-                        }
-
-                    }
+                    decryptPartObjectId.decryptManipulateArray({req:req,browserCollRule:browserCollRule,salt:salt})
                     break;
                 case e_part.RECORD_ID:
-                    //recordId非object，所以是非引用，需要赋值
-                    req.body.values[singlePart]=decryptSingleValue({fieldValue:partValue,salt:salt}).msg
+                    decryptPartObjectId.decryptRecordId({req:req,salt:salt})
                     break;
                 case e_part.SINGLE_FIELD:
-                    //获得field的名称
-                    let fieldName=Object.keys(partValue)[0]
-                    //fieldName是有效的（在rule中有定义）
-                    if(true===dataTypeCheck.isSetValue(partValue[fieldName]) && undefined!==browserCollRule[fieldName]){
-                        // let singleFieldValue=req.body.values[singlePart]
-                        //获得field的类型
-                        let fieldDataTypeInRule=browserCollRule[fieldName][e_otherRuleFiledName.DATA_TYPE]
-                        let dataTypeArrayFlag=dataTypeCheck.isArray(fieldDataTypeInRule)
-                        let dataType= dataTypeArrayFlag ? fieldDataTypeInRule[0]:fieldDataTypeInRule
-                        //字段类型是objectId
-                        if(e_dataType.OBJECT_ID===dataType){
-                            //数组，对每个元素进行判别
-                            if(true===dataTypeArrayFlag){
-                                if(partValue[fieldName].length>0){
-                                    for(let idx in partValue[fieldName]){
-                                        partValue[fieldName][idx]=decryptSingleValue({fieldValue:partValue[fieldName][idx],salt:salt}).msg
-                                    }
-                                }
-                            }else{
-                                partValue[fieldName]=decryptSingleValue({fieldValue:partValue[fieldName],salt:salt}).msg
-                            }
-                            // req.body.values[singlePart]=
-                        }
-                    }
+                    decryptPartObjectId.decryptSingleField({req:req,browserCollRule:browserCollRule,salt:salt})
 
                     break;
                 case e_part.RECORD_INFO:
                     // let recordInfoValue=req.body.values[singlePart]
                     // ap.inf('RECORD_INFO in')
-                    for(let singleFieldName in partValue){
-                        // ap.inf('singleFieldName',singleFieldName)
-                        if(false===dataTypeCheck.isSetValue(partValue[singleFieldName])){
-                            continue
-                        }
-                        if(undefined!==browserCollRule[singleFieldName]){
-                            let singleFieldDataTypeInRule=browserCollRule[singleFieldName][e_otherRuleFiledName.DATA_TYPE]
-                            let dataTypeArrayFlag=dataTypeCheck.isArray(singleFieldDataTypeInRule)
-                            let dataType= dataTypeArrayFlag ? singleFieldDataTypeInRule[0]:singleFieldDataTypeInRule
-                            // ap.inf('dataType',dataType)
-                            if(e_dataType.OBJECT_ID===dataType){
-                                //数组，对每个元素进行解密
-                                if(true===dataTypeArrayFlag){
-                                    for(let idx in partValue[singleFieldName]){
-                                        //非空值才进行解密
-                                        if(true===dataTypeCheck.isSetValue(partValue[singleFieldName][idx])){
-                                            partValue[singleFieldName][idx]=decryptSingleValue({fieldValue:partValue[singleFieldName][idx],salt:salt}).msg
-                                        }
-
-                                    }
-                                }else{
-                                    // ap.inf('before decryptSingleValue  partValue[singleFieldName]',partValue[singleFieldName])
-                                    // ap.inf('before decryptSingleValue  salt',salt)
-                                    // ap.inf('decryptSingleValue({fieldValue:partValue[singleFieldName],salt:salt})',decryptSingleValue({fieldValue:partValue[singleFieldName],salt:salt}))
-                                    //非空值才进行解密
-                                    if(true===dataTypeCheck.isSetValue(partValue[singleFieldName])){
-                                        partValue[singleFieldName]=decryptSingleValue({fieldValue:partValue[singleFieldName],salt:salt}).msg
-                                    }
-
-                                }
-                            }
-                        }
-
-                    }
+                    decryptPartObjectId.decryptRecordInfo({req:req,browserCollRule:browserCollRule,salt:salt})
+                    // ap.inf('after RECORD_INFO decrypt',req.body.values)
+                    break;
+                case e_part.CHOOSE_FRIEND:
+                    // let recordInfoValue=req.body.values[singlePart]
+                    // ap.inf('CHOOSE_FRIEND in')
+                    decryptPartObjectId.decryptChooseFriend({req:req,salt:salt})
+                    // ap.inf('after CHOOSE_FRIEND decrypt',req.body.values)
                     break;
                 default:
                     break;
@@ -1854,6 +1742,96 @@ function sanityQueryStringParam({req,arr_queryParams}){
     // return true
 }
 
+/**         根据part CHOOSE_FRIEND,获得对应好友id
+ *  为了预防黑客攻击，有错立刻返回，而不是试图修复错误
+ *  @userId：要查找好友的人
+ *  @chooseFriend：查找好友的信息
+ * **/
+// 1. 如果allFriends存在，从db中获得userId的所有好友，然后直接返回所有好友
+// 2. friendGroup存在，从db中获得userId的指定group的好友
+// 3. friends存在，必须是自己的好友
+// 4. friendGroup和friend获得合集
+async function getFriendThroughPartChooseFriend_async({chooseFriend,userId}){
+    // ap.wrn('chooseFriend',chooseFriend)
+    const e_defaultFriendGroupName=require('../constant/config/globalConfiguration').userGroupFriend.defaultGroupName.enumFormat
+    let condition,tmpResult,result=[]
+    //ALL_FRIENDS存在，直接获得所有好友并返回
+    if(undefined!==chooseFriend[e_chooseFriendInfoFieldName.ALL_FRIENDS]){
+        condition={
+            [e_field.USER_FRIEND_GROUP.OWNER_USER_ID]:userId,
+            [e_field.USER_FRIEND_GROUP.NAME]:{'$nin':[e_defaultFriendGroupName.BlackList]},
+            'dDate':{$exists:false},
+        }
+        tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.user_friend_group,condition:condition})
+        for(let singleRecord of tmpResult){
+            result=result.concat(singleRecord[e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP])
+        }
+        //结果转换成字符（查询得到的是object），以便通过rule检测
+        return Promise.resolve(misc.objectDeepCopy(result))
+    }
+
+    //FRIEND_GROUPS存在，查询获得好友后，和FRIENDS合并（如果FRIENDS存在）
+    if(undefined!==chooseFriend[e_chooseFriendInfoFieldName.FRIEND_GROUPS]){
+        condition={
+            ['_id']:{
+                $in:chooseFriend[e_chooseFriendInfoFieldName.FRIEND_GROUPS],
+            },
+            [e_field.USER_FRIEND_GROUP.FRIEND_GROUP_NAME]:{
+                '$nin':[e_defaultFriendGroupName.BlackList],//不能选择黑名单中的好友
+            },
+            'dDate':{$exists:false},
+        }
+        // ap.wrn('condition',condition)
+        tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.user_friend_group,condition:condition})
+        // ap.wrn('tmpResult',tmpResult)
+        for(let singleRecord of tmpResult){
+            result=result.concat(singleRecord[e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP])
+        }
+        //查询得到的值是object，转换成string，才能使用lodash
+        result=misc.objectDeepCopy(result)
+        // ap.inf('FRIEND_GROUPS result',result)
+        // ap.inf('FRIENDS result',chooseFriend[e_chooseFriendInfoFieldName.FRIENDS])
+        //如果有FRIENDS，需要判断是否和FRIENDGROUPS中查询的friend是否有重复（防止恶意尝试）
+        if(undefined!==chooseFriend[e_chooseFriendInfoFieldName.FRIENDS]){
+            if(lodash.intersection(result,chooseFriend[e_chooseFriendInfoFieldName.FRIENDS]).length>0){
+                return Promise.reject(helperError.getFriendThroughPartChooseFriend_async.duplicateFriends)
+            }
+            //结果转换成字符（查询得到的是object），以便通过rule检测
+            return Promise.resolve(misc.objectDeepCopy(result.concat(chooseFriend[e_chooseFriendInfoFieldName.FRIENDS])))
+            // return Promise.resolve()
+        }
+        //没有FRIENDS，直接返回FRIENDGROUPS的结果
+        //结果转换成字符（查询得到的是object），以便通过rule检测
+        return Promise.resolve(misc.objectDeepCopy(result))
+    }
+
+    //只有FRIENDS存在，判断是否为user的好友，直接返回
+    if(undefined!==chooseFriend[e_chooseFriendInfoFieldName.FRIENDS]){
+        //首先获得所有好友
+        condition={
+            [e_field.USER_FRIEND_GROUP.OWNER_USER_ID]:userId,
+            [e_field.USER_FRIEND_GROUP.NAME]:{'$nin':[e_defaultFriendGroupName.BlackList]},
+            'dDate':{$exists:false},
+        }
+        tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.user_friend_group,condition:condition})
+        for(let singleRecord of tmpResult){
+            result=result.concat(singleRecord[e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP])
+        }
+        //查询得到的值是object，转换成string，才能使用lodash
+        result=misc.objectDeepCopy(result)
+
+        //选择的好友和所有好友进行并集操作，得到的结果和好友是否一致
+        let intersection=lodash.intersection(result,chooseFriend[e_chooseFriendInfoFieldName.FRIENDS])
+        if(intersection.length!==chooseFriend[e_chooseFriendInfoFieldName.FRIENDS].length){
+            return Promise.reject(helperError.getFriendThroughPartChooseFriend_async.notFriends)
+        }
+        return Promise.resolve(chooseFriend[e_chooseFriendInfoFieldName.FRIENDS])
+    }
+
+    //预防性返回错误，理论上不会走到这里，因为在validateFormat中，已经验证过至少有一个keyName(ALL_FRIENDS/FRIEND_GROUPS/FRIENDS)
+    return Promise.reject(helperError.getFriendThroughPartChooseFriend_async.noAnyChooseFriendInfo)
+}
+
 module.exports= {
     checkOptionPartExist,//检查option中那些part是存在
     // inputCommonCheck,//每个请求进来是，都要进行的操作（时间间隔检查等）
@@ -1934,6 +1912,8 @@ module.exports= {
     keepFieldInRecord,
 
     sanityQueryStringParam,
+
+    getFriendThroughPartChooseFriend_async,
 }
 
 

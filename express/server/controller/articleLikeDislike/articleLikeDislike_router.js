@@ -10,7 +10,7 @@ const router = express.Router();
 
 const server_common_file_require=require('../../../server_common_file_require')
 
-const systemError=server_common_file_require.systemError
+const systemError=server_common_file_require.assistError.systemError
 
 const genFinalReturnResult=server_common_file_require.misc.genFinalReturnResult//require('../../function/assist/misc').genFinalReturnResult
 const likeDislikeDispatcher_async=require('./articleLiekDislike_dispatch').article_likeDislike_dispatcher_async

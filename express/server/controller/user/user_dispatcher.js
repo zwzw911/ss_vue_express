@@ -94,7 +94,7 @@ async function dispatcher_async(req){
                     needCheck:true,
                     error:controllerError.dispatch.get.notLoginCantGetUserInfo
                 }
-                await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
+                await controllerPreCheck.userStatusCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
 
                 //如果是获取他人数据，需要验证URL中的userId并重新赋值
                 if(undefined!==req.params.userId){
@@ -103,14 +103,14 @@ async function dispatcher_async(req){
                     let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
                     let tempSalt=userInfo.tempSalt
                     //判断加密的objectId格式
-                    let cryptedObjectId=req.params.userId
-                    // ap.inf('cryptedObjectId',cryptedObjectId)
+                    let encryptedObjectId=req.params.userId
+                    // ap.inf('encryptedObjectId',encryptedObjectId)
                     // ap.inf('tempSalt',tempSalt)
-                    if(false===controllerChecker.ifObjectIdCrypted({objectId:cryptedObjectId})){
+                    if(false===controllerChecker.ifObjectIdCrypted({objectId:encryptedObjectId})){
                         return Promise.reject(controllerError.dispatch.get.cryptedUserIdFormatInvalid)
                     }
                     //解密
-                    tmpResult=crypt.decryptSingleValue({fieldValue:cryptedObjectId,salt:tempSalt})
+                    tmpResult=crypt.decryptSingleValue({fieldValue:encryptedObjectId,salt:tempSalt})
                     if(tmpResult.rc>0){
                         return Promise.reject(tmpResult)
                     }
@@ -128,8 +128,8 @@ async function dispatcher_async(req){
             }
             if(originalUrl==='/user/captcha' || originalUrl==='/user/captcha/') {
                 //captcha一般在注册或者登录时候使用，此时用户尚未登录
-                await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
-                // ap.inf('userStateCheck_async done')
+                await controllerPreCheck.userStatusCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
+                // ap.inf('userStatusCheck_async done')
                 result = await generateCaptcha_async({req: req})
                 return Promise.resolve(result)
             }
@@ -144,7 +144,7 @@ async function dispatcher_async(req){
                     penalizeSubType: e_penalizeSubType.READ,
                     penalizeCheckError: controllerError.dispatch.get.userInPenalizeCantSearch
                 }
-                await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
+                await controllerPreCheck.userStatusCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
                 let searchParam=[
                     {"paramName":"name","fieldName":e_field.USER.NAME,"collName":e_coll.USER},
                     {"paramName":"account","fieldName":e_field.USER.ACCOUNT,"collName":e_coll.USER},
@@ -158,8 +158,8 @@ async function dispatcher_async(req){
             break;
         case 'post':
             if(originalUrl==='/user' || originalUrl==='/user/') {
-                await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
-                // ap.inf('create use userStateCheck_async done')
+                await controllerPreCheck.userStatusCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
+                // ap.inf('create use userStatusCheck_async done')
                 expectedPart=[e_part.RECORD_INFO,e_part.CAPTCHA]
                 //是否为期望的part
                 result = controllerPreCheck.inputCommonCheck({req:req, expectedPart:expectedPart})
@@ -186,8 +186,8 @@ async function dispatcher_async(req){
                 return Promise.resolve(result)
             }
             if(originalUrl==='/user/login' || originalUrl==='/user/login/') {
-                await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
-                // ap.inf('login userStateCheck_async done')
+                await controllerPreCheck.userStatusCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
+                // ap.inf('login userStatusCheck_async done')
                 expectedPart=[e_part.RECORD_INFO,e_part.CAPTCHA]
                 //是否为期望的part
                 result = controllerPreCheck.inputCommonCheck({req:req, expectedPart:expectedPart})
@@ -213,7 +213,7 @@ async function dispatcher_async(req){
                 return Promise.resolve(result)
             }
             if(originalUrl==='/user/uniqueCheck' || originalUrl==='/user/uniqueCheck/') {
-                await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
+                await controllerPreCheck.userStatusCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
                 expectedPart=[e_part.SINGLE_FIELD]
                 //是否为期望的part
                 result = controllerPreCheck.inputCommonCheck({req:req, expectedPart:expectedPart})
@@ -232,7 +232,7 @@ async function dispatcher_async(req){
                     needCheck:true,
                     error:controllerError.dispatch.post.notLoginCantRetrievePassword
                 }
-                await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})*/
+                await controllerPreCheck.userStatusCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})*/
                 expectedPart=[e_part.SINGLE_FIELD]
                 //是否为期望的part
                 result = controllerPreCheck.inputCommonCheck({req:req, expectedPart:expectedPart})
@@ -259,14 +259,14 @@ async function dispatcher_async(req){
                     needCheck:true,
                     error:controllerError.dispatch.put.notLoginCantUpdateUserInfo
                 }
-                await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
+                await controllerPreCheck.userStatusCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
                 expectedPart=[e_part.RECORD_INFO]
                 //是否为期望的part
                 result = controllerPreCheck.inputCommonCheck({req:req, expectedPart:expectedPart})
                 if (result.rc > 0) {return Promise.reject(result)}
 
                 //对req中的recordId和recordInfo进行objectId（加密过的）格式判断
-                await controllerChecker.ifObjectIdInPartCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName],applyRange:applyRange})
+                await controllerChecker.ifObjectIdInPartEncrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName],applyRange:applyRange})
 
                 //对req中的recordId和recordInfo中加密的objectId进行解密
                 let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
@@ -296,7 +296,7 @@ async function dispatcher_async(req){
                     needCheck:true,
                     error:controllerError.dispatch.notLoginCantUpdatePassword
                 }
-                await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
+                await controllerPreCheck.userStatusCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
                 result = await changePassword_async({req: req})
                 return Promise.resolve(result)
             }
@@ -311,8 +311,8 @@ async function dispatcher_async(req){
                     penalizeSubType:e_penalizeSubType.UPDATE,
                     penalizeCheckError:controllerError.dispatch.put.userInPenalizeNoPhotoUpload
                 }
-                await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
-                // ap.inf('userStateCheck_async done')
+                await controllerPreCheck.userStatusCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
+                // ap.inf('userStatusCheck_async done')
                 expectedPart=[e_part.SINGLE_FIELD]
                 //是否为期望的part
                 result = controllerPreCheck.inputCommonCheck({req:req, expectedPart:expectedPart})

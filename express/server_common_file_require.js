@@ -4,6 +4,7 @@
 
 const appSetting=require('../server_common/constant/config/appSetting.js')
 const globalConfiguration=require('../server_common/constant/config/globalConfiguration.js')
+const profileConfiguration=require('../server_common/constant/config/profileConfiguration.js')
 const collEnum=require('../server_common/constant/enum/collEnum.js')
 const inputDataRuleType=require('../server_common/constant/enum/inputDataRuleType.js')
 const mongoEnum=require('../server_common/constant/enum/mongoEnum.js')
@@ -14,8 +15,6 @@ const helperError=require('../server_common/constant/error/controller/helperErro
 const maintainError=require('../server_common/constant/error/maintainError.js')
 const mongoError=require('../server_common/constant/error/mongo/mongoError.js')
 const redisError=require('../server_common/constant/error/redis/redisError.js')
-const securityError=require('../server_common/constant/error/securityError.js')
-const systemError=require('../server_common/constant/error/systemError.js')
 const validateError=require('../server_common/constant/error/validateError.js')
 const regex=require('../server_common/constant/regex/regex.js')
 const controllerChecker=require('../server_common/controller/controllerChecker.js')
@@ -30,6 +29,7 @@ const array=require('../server_common/function/assist/array.js')
 const awesomeCaptcha=require('../server_common/function/assist/awesomeCaptcha.js')
 const checkRobot=require('../server_common/function/assist/checkRobot.js')
 const crypt=require('../server_common/function/assist/crypt.js')
+const dataType=require('../server_common/function/assist/dataType.js')
 const file=require('../server_common/function/assist/file.js')
 const gmImage=require('../server_common/function/assist/gmImage.js')
 const misc=require('../server_common/function/assist/misc.js')
@@ -43,6 +43,7 @@ const interval=require('../server_common/function/security/interval.js')
 const supervisor=require('../server_common/function/supervisor/supervisor.js')
 const validateFormat=require('../server_common/function/validateInput/validateFormat.js')
 const validateHelper=require('../server_common/function/validateInput/validateHelper.js')
+const validatePartObjectIdEncrypted=require('../server_common/function/validateInput/validatePartObjectIdEncrypted.js')
 const validateSearchFormat=require('../server_common/function/validateInput/validateSearchFormat.js')
 const validateValue=require('../server_common/function/validateInput/validateValue.js')
 const common_API=require('../server_common/Test/API/common_API.js')
@@ -85,6 +86,7 @@ const genLuaSHA=require('../server_common/maintain/genLuaSHA.js')
 module.exports={
     appSetting,
     globalConfiguration,
+    profileConfiguration,
     collEnum,
     inputDataRuleType,
     mongoEnum,
@@ -95,8 +97,6 @@ module.exports={
     maintainError,
     mongoError,
     redisError,
-    securityError,
-    systemError,
     validateError,
     regex,
     controllerChecker,
@@ -111,6 +111,7 @@ module.exports={
     awesomeCaptcha,
     checkRobot,
     crypt,
+    dataType,
     file,
     gmImage,
     misc,
@@ -124,6 +125,7 @@ module.exports={
     supervisor,
     validateFormat,
     validateHelper,
+    validatePartObjectIdEncrypted,
     validateSearchFormat,
     validateValue,
     common_API,

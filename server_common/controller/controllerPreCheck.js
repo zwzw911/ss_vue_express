@@ -1,6 +1,6 @@
 /**
  * Created by zhang wei on 2018/3/30.
- * 对req进行安全检测。例如interval检测等
+ * 对req进行安全检测。例如interval检测等，POST参数格式/值检测，以及URL中参数检测
  */
 'use strict'
 const ap=require('awesomeprint')
@@ -8,6 +8,7 @@ const interval=require('../function/security/interval')
 const checkRobot_async=require('../function/assist/checkRobot').checkRobot_async
 const ifPenalizeOngoing_async=require(`./controllerChecker`).ifPenalizeOngoing_async
 const dataTypeCheck=require('../function/validateInput/validateHelper').dataTypeCheck
+const dataType=require('../function/assist/dataType')
 const controllerHelper=require('./controllerHelper')
 const controllerChecker=require('./controllerChecker')
 const crypt=require('../function/assist/crypt')
@@ -55,8 +56,8 @@ async function commonPreCheck_async({req,collName}){
 
 /*  检查用户是否登录，或者是否处于处罚，因为无法操作
 * */
-async function userStateCheck_async({req,userLoginCheck={needCheck:false},penalizeCheck}){
-    // ap.inf('userStateCheck_async in ')
+async function userStatusCheck_async({req,userLoginCheck={needCheck:false},penalizeCheck}){
+    // ap.inf('userStatusCheck_async in ')
     let tmpResult
 
     /*              检查用户是否登录            */
@@ -70,7 +71,7 @@ async function userStateCheck_async({req,userLoginCheck={needCheck:false},penali
             return Promise.reject(error)
         }
     }
-// ap.inf('userStateCheck_async->userLogin done')
+// ap.inf('userStatusCheck_async->userLogin done')
     /*        检查用户是否被处罚                                 */
     let {penalizeType,penalizeSubType,penalizeCheckError}=penalizeCheck
     //参数检测
@@ -94,7 +95,7 @@ async function userStateCheck_async({req,userLoginCheck={needCheck:false},penali
         }
 
     }
-    // ap.inf('userStateCheck_async penalize done')
+    // ap.inf('userStatusCheck_async penalize done')
     return Promise.resolve()
 }
 
@@ -155,7 +156,7 @@ function inputCommonCheck({req,expectedPart}){
     return result
 }
 
-/*      对partValue进行细致的格式检查（objectId解密后）
+/*      对partValue进行细致的格式检查（objectId解密后,chooseFriend例外，因为没有rule，所以放在inputCommonCheck中执行）
 * */
 function validatePartValueFormat({req,expectedPart,collName,fkConfig,arr_currentSearchRange}){
     // ap.inf('expectedPart in',expectedPart)
@@ -249,6 +250,16 @@ function validatePartValueFormat({req,expectedPart,collName,fkConfig,arr_current
             case e_part.CAPTCHA:
                 // ap.inf('captcha in')
                 //格式简单，无需检查format，直接在value中检查
+                break;
+            case e_part.CHOOSE_FRIEND:
+                /** 因为没有对应的rule，所以format的检测要提前放到inputCommonCheck/validatePartFormat下，
+                 * 赶在encryptedObject检测前完成，以便 encryptedObject无需care格式问题  **/
+
+/*                checkPartFormatResult=validateFormat.validateChooseFriendFormat({inputValue:req.body.values[e_part.CHOOSE_FRIEND]})
+                // console.log(   `checkFilterFieldValueResult check result is  ${JSON.stringify(checkPartFormatResult)}`)
+                if(checkPartFormatResult.rc>0){
+                    return checkPartFormatResult
+                }*/
                 break;
             default:
                 return helperError.unknownPartInFormatCheck
@@ -385,26 +396,33 @@ function validatePartValue({req,expectedPart,collName,applyRange,fkConfig}){
                     return checkPartValueResult
                 }
                 break;
+            case e_part.CHOOSE_FRIEND:
+                checkPartValueResult=validateValue.validateChooseFriendValue({inputValue:req.body.values[e_part.CHOOSE_FRIEND]})
+                // console.log(   `checkFilterFieldValueResult check result is  ${JSON.stringify(checkFilterFieldValueResult)}`)
+                if(checkPartValueResult.rc>0){
+                    return checkPartValueResult
+                }
+                break;
         }
     }
     return {rc:0}
 }
 
 /**    在get中，如果填入的参数是objectId，那么通过这个函数检测    **/
-//req+parameterName: 组成cryptedObjectId http://127.0.0.1/article/cryptedObjectId
+//req+parameterName: 组成cryptedObjectId http://127.0.0.1/article/encryptedObjectId
 //cryptedError: cryptedObjectId格式错误，返回的error
 //decryptedError：解密后objectId的格式错误，返回的error
 async function checkObjectIdInReqParams_async({req,parameterName,cryptedError,decryptedError}){
     let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
     let tempSalt=userInfo.tempSalt
     //判断加密的objectId格式
-    let cryptedObjectId=req.params[parameterName]
-    // ap.wrn('cryptedObjectId',cryptedObjectId)
-    if(false===controllerChecker.ifObjectIdCrypted({objectId:cryptedObjectId})){
+    let encryptedObjectId=req.params[parameterName]
+    // ap.wrn('encryptedObjectId',encryptedObjectId)
+    if(false===dataType.ifObjectIdEncrypted({objectId:encryptedObjectId})){
         return Promise.reject(cryptedError)
     }
     //解密
-    let tmpResult=crypt.decryptSingleValue({fieldValue:cryptedObjectId,salt:tempSalt})
+    let tmpResult=crypt.decryptSingleValue({fieldValue:encryptedObjectId,salt:tempSalt})
     // ap.wrn('tmpResult',tmpResult)
     if(tmpResult.rc>0){
         return Promise.reject(tmpResult)
@@ -425,7 +443,7 @@ async function checkObjectIdInReqParams_async({req,parameterName,cryptedError,de
 module.exports={
     inputCommonCheck,
     commonPreCheck_async,
-    userStateCheck_async,
+    userStatusCheck_async,
     inputPreCheck,
     checkObjectIdInReqParams_async,
     // queryStringPreCheck,

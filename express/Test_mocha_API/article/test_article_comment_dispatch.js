@@ -63,7 +63,7 @@ const validateError=server_common_file_require.validateError//require('../../ser
 const controllerHelperError=server_common_file_require.helperError.helper//require('../../server/constant/error/controller/helperError').helper
 // const controllerCheckerError=server_common_file_require.helperError.checker
 const controllerCheckerError=server_common_file_require.helperError.checker
-const systemError=server_common_file_require.systemError
+const systemError=server_common_file_require.assistError.systemError
 // const objectDeepCopy=server_common_file_require.misc.objectDeepCopy
 
 
@@ -185,7 +185,7 @@ describe('user1 register unique check:',async  function() {
             await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
         });
         it('1.4 decrypted objectId format wrong', async function() {
-            normalRecord[e_field.ARTICLE_COMMENT.ARTICLE_ID]=testData.cryptedObjectId
+            normalRecord[e_field.ARTICLE_COMMENT.ARTICLE_ID]=testData.encryptedObjectId
             data.values={[e_part.RECORD_INFO]:normalRecord}
             expectedErrorRc=browserInputRule.article_comment.articleId.format.error.rc
             await misc_helper.postDataToAPI_compareFieldRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app,fieldName:'articleId'})

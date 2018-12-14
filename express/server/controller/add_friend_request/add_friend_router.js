@@ -4,11 +4,12 @@
 'use strict'
 
 /*              common  require                 */
+const ap=require('awesomeprint')
 const express = require('express');
 const router = express.Router();
 const server_common_file_require=require('../../../server_common_file_require')
 const genFinalReturnResult=server_common_file_require.misc.genFinalReturnResult//require('../../function/assist/misc').genFinalReturnResult
-const systemError=server_common_file_require.systemError
+const systemError=server_common_file_require.assistError.systemError
 
 /*              dispatch require                 */
 const addFriendDispatcher_async=require('./add_friend_dispatch').dispatcher_async
@@ -23,13 +24,13 @@ router.post('/',function(req,res,next){
     addFriendDispatcher_async({req:req}).then(
         (v)=>{
             if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV){
-                console.log(`create   add friend    success, result:  ${JSON.stringify(v)}`)
+                ap.inf(`create   add friend    success, result:  ${JSON.stringify(v)}`)
             }
             return res.json(v)
         },
         (err)=>{
             if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV){
-                console.log(`create   add friend     fail: ${JSON.stringify(err)}`)
+                ap.err(`create   add friend     fail: ${JSON.stringify(err)}`)
             }
             return res.json(genFinalReturnResult(err))
 
@@ -44,14 +45,14 @@ router.put('/accept',function(req,res,next){
     addFriendDispatcher_async({req:req}).then(
         (v)=>{
             if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV){
-                console.log(`accept add friend success, result:  ${JSON.stringify(v)}`)
+               ap.inf(`accept add friend success, result:  ${JSON.stringify(v)}`)
             }
 
             return res.json(v)
         },
         (err)=>{
             if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV){
-                console.log(`accept add friend fail: ${JSON.stringify(err)}`)
+                ap.err(`accept add friend fail: ${JSON.stringify(err)}`)
             }
 
             return res.json(genFinalReturnResult(err))
@@ -64,14 +65,14 @@ router.put('/decline',function(req,res,next){
     addFriendDispatcher_async({req:req}).then(
         (v)=>{
             if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV){
-                console.log(`decline add friend success, result:  ${JSON.stringify(v)}`)
+                ap.inf(`decline add friend success, result:  ${JSON.stringify(v)}`)
             }
 
             return res.json(v)
         },
         (err)=>{
             if(server_common_file_require.appSetting.currentEnv===server_common_file_require.nodeEnum.Env.DEV){
-                console.log(`decline add friend fail: ${JSON.stringify(err)}`)
+                ap.err(`decline add friend fail: ${JSON.stringify(err)}`)
             }
 
             return res.json(genFinalReturnResult(err))

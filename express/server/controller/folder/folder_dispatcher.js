@@ -95,7 +95,7 @@ async function dispatcher_async(req){
                 error:controllerError.dispatch.get.notLoginCantGetFolder
             }
 
-            await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
+            await controllerPreCheck.userStatusCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
 
             //获得顶级目录
             if(undefined===req.params.folderId){
@@ -108,12 +108,12 @@ async function dispatcher_async(req){
                 /*let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
                 let tempSalt=userInfo.tempSalt
                 //判断加密的objectId格式
-                let cryptedObjectId=req.params.folderId
-                if(false===controllerChecker.ifObjectIdCrypted({objectId:cryptedObjectId})){
+                let encryptedObjectId=req.params.folderId
+                if(false===controllerChecker.ifObjectIdCrypted({objectId:encryptedObjectId})){
                     return Promise.reject(controllerError.dispatch.get.cryptedFolderIdFormatInvalid)
                 }
                 //解密
-                tmpResult=crypt.decryptSingleValue({fieldValue:cryptedObjectId,salt:tempSalt})
+                tmpResult=crypt.decryptSingleValue({fieldValue:encryptedObjectId,salt:tempSalt})
                 if(tmpResult.rc>0){
                     return Promise.reject(tmpResult)
                 }
@@ -143,8 +143,8 @@ async function dispatcher_async(req){
                     penalizeSubType:e_penalizeSubType.UPDATE,
                     penalizeCheckError:controllerError.dispatch.post.userInPenalizeCantCreateComment
                 }
-                await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
-                // ap.inf('create use userStateCheck_async done')
+                await controllerPreCheck.userStatusCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
+                // ap.inf('create use userStatusCheck_async done')
                 expectedPart=[e_part.RECORD_INFO]
                 //是否为期望的part
                 result = controllerPreCheck.inputCommonCheck({req:req, expectedPart:expectedPart})
@@ -152,7 +152,7 @@ async function dispatcher_async(req){
 
                 //对req中的recordId和recordInfo进行objectId（加密过的）格式判断
                 // ap.inf('before check decrypt',req.body.values[e_part.RECORD_INFO])
-                await controllerChecker.ifObjectIdInPartCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName],applyRange:applyRange})
+                await controllerChecker.ifObjectIdInPartEncrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName],applyRange:applyRange})
                 // ap.inf('after check decrypt',req.body.values[e_part.RECORD_INFO])
                 //对req中的recordId和recordInfo中加密的objectId进行解密
                 let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
@@ -178,9 +178,9 @@ async function dispatcher_async(req){
                     needCheck:true,
                     error:controllerError.dispatch.delete.notLoginCantDeleteFolder
                 }
-                // ap.inf('before userStateCheck_async ')
-                await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
-// ap.inf('userStateCheck_async done')
+                // ap.inf('before userStatusCheck_async ')
+                await controllerPreCheck.userStatusCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
+// ap.inf('userStatusCheck_async done')
                 expectedPart=[e_part.RECORD_ID]
                 //是否为期望的part
                 result = controllerPreCheck.inputCommonCheck({req:req, expectedPart:expectedPart})
@@ -189,7 +189,7 @@ async function dispatcher_async(req){
 
                 //对req中的recordId和recordInfo进行objectId（加密过的）格式判断
                 // ap.inf('before check decrypt',req.body.values[e_part.RECORD_ID])
-                await controllerChecker.ifObjectIdInPartCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName],applyRange:applyRange})
+                await controllerChecker.ifObjectIdInPartEncrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName],applyRange:applyRange})
                 // ap.inf('after check decrypt',req.body.values[e_part.RECORD_ID])
                 //对req中的recordId和recordInfo中加密的objectId进行解密
                 let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
@@ -213,8 +213,8 @@ async function dispatcher_async(req){
                     penalizeSubType:e_penalizeSubType.UPDATE,
                     penalizeCheckError:controllerError.dispatch.put.userInPenalizeCantUpdateComment
                 }
-                await controllerPreCheck.userStateCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
-                // ap.inf('create use userStateCheck_async done')
+                await controllerPreCheck.userStatusCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
+                // ap.inf('create use userStatusCheck_async done')
                 expectedPart=[e_part.RECORD_INFO,e_part.RECORD_ID]
                 //是否为期望的part
                 result = controllerPreCheck.inputCommonCheck({req:req, expectedPart:expectedPart})
@@ -222,7 +222,7 @@ async function dispatcher_async(req){
 
                 //对req中的recordId和recordInfo进行objectId（加密过的）格式判断
                 // ap.inf('before check',req.body.values)
-                await controllerChecker.ifObjectIdInPartCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName],applyRange:applyRange})
+                await controllerChecker.ifObjectIdInPartEncrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName],applyRange:applyRange})
                 // ap.inf('after check',req.body.values)
                 //对req中的recordId和recordInfo中加密的objectId进行解密
                 let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})

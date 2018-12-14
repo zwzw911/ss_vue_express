@@ -117,9 +117,9 @@ function ifSpaceExceed({currentUsedSpace,requiredSpace,resourceProfileRecord}){
     return currentUsedSpace+requiredSpace > resourceProfileRecord[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]
 }
 function ifNumExceed({currentUsedNum,requiredNum,resourceProfileRecord}){
-    ap.inf('currentUsedNum',currentUsedNum)
-    ap.inf('requiredNum',requiredNum)
-    ap.inf('resourceProfileRecord',resourceProfileRecord)
+    // ap.inf('currentUsedNum',currentUsedNum)
+    // ap.inf('requiredNum',requiredNum)
+    // ap.inf('resourceProfileRecord',resourceProfileRecord)
     return currentUsedNum+requiredNum > resourceProfileRecord[e_field.RESOURCE_PROFILE.MAX_NUM]
 }
 

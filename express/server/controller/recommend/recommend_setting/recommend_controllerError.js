@@ -46,7 +46,7 @@ const controllerError={
         //52150~52160
         post:{
             cantSendRecommendToSelf:{rc:52150,msg:`不能把文档分享给自己`},
-            allReceiversHasAlreadyGetRecommend:{rc:52152,msg:`所有的接收者都已经收到过此分享文档`},
+            receiversHasAlreadyGetRecommend:{rc:52152,msg:`接收者已经收到过此分享文档`},
             articleStatusNotFinish:{rc:52154,msg:`文档作者尚未完成文档，无法分享`},
         },
         //52160~52170

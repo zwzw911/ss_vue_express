@@ -19,6 +19,7 @@ const recommendAPI=require('../API/express/recommend_API')
 const folderAPI=require('../API/express/folder_API')
 const friendGroupAPI=require('../API/express/friend_group_API')
 const addFriendAPI=require('../API/express/add_friend_API')
+// const addFriendAPI=require('../API/express/add_friend_API')
 
 const adminUserAPI=require('../API/express_admin/admin_user_API')
 /**     common function         **/
@@ -46,7 +47,7 @@ const testData=require('../testData')
 class c_user{
     constructor({userData}) {
         // ap.inf('start constructor')
-        ap.inf('userData',userData)
+        // ap.inf('userData',userData)
         this.userData=misc.objectDeepCopy(userData)
         // delete this.userData['addFriendRule']
         this.app=require('../../../express/app')
@@ -107,7 +108,7 @@ class c_user{
 
         this.tempSalt=await commonAPI.getTempSalt_async({sess:this.sess})
     }
-    cryptedObjectId({unCryptedObjectId}){
+    encryptedObjectId({unCryptedObjectId}){
         return crypt.encryptSingleValue({fieldValue:unCryptedObjectId,salt:this.tempSalt}).msg
     }
     decryptedObjectId({decryptedObjectId}){
@@ -126,7 +127,7 @@ class c_user{
         data.values[e_part.RECORD_INFO][e_field.FOLDER.NAME]=folderName
 
         let result=await folderAPI.createFolder_async({sess:this.sess,data:data,app:this.app})
-        ap.inf('create folder result',result)
+        // ap.inf('create folder result',result)
         return Promise.resolve(result['id'])
     }
     /**     创建文档        **/
@@ -157,13 +158,27 @@ class c_user{
         let result=await friendGroupAPI.createUserFriendGroup_returnRecord_async({data:data,app:this.app,sess:this.sess})
         return Promise.resolve(result['id'])
     }
-
+    /**     获得好友分组Id    **/
+    async getFriendGroupId_async({friendGroupName}){
+        let condition={
+            [e_field.USER_FRIEND_GROUP.OWNER_USER_ID]:this.userId,
+            [e_field.USER_FRIEND_GROUP.FRIEND_GROUP_NAME]:friendGroupName,
+            'dDate':{'$exists':false},
+        }
+        let tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.user_friend_group,condition:condition})
+        if(tmpResult.length>0){
+            return Promise.resolve(tmpResult[0]['id'])
+        }else{
+            return Promise.resolve(null)
+        }
+    }
+    /**     请求添加好友，如果被请求人的rule是any_allow,则无需返回requestId     **/
     async sendAddFriendRequest_returnId_async({friendId}){
         // ap.wrn('sendAddFriendRequest_returnId_async in')
         let data={
             values:{
                 [e_part.SINGLE_FIELD]:{
-                    [e_field.ADD_FRIEND_REQUEST.RECEIVER]:this.cryptedObjectId({unCryptedObjectId:friendId}),
+                    [e_field.ADD_FRIEND_REQUEST.RECEIVER]:this.encryptedObjectId({unCryptedObjectId:friendId}),
                     // [e_field.SEND_RECOMMEND.RECEIVERS]:receivers
                 }
             }
@@ -177,19 +192,55 @@ class c_user{
             [e_field.ADD_FRIEND_REQUEST.STATUS]:e_addFriendStatus.UNTREATED,
         }
         result=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.add_friend_request,condition:{}})
-        // let requestId=this.decryptedObjectId({decryptedObjectId:result[0]['id']})
-        return Promise.resolve(result[0]['id'])
-
+        //如果被请求的用户的加好友rule是allow_anyone，则无requestId
+        //如果被请求的用户的加好友rule是permit，才返回requestId
+        // ap.wrn('result',result)
+        if(result[0]){
+            return Promise.resolve(result[0]['id'])
+        }else{
+            return Promise.resolve()
+        }
     }
+    /**     同意添加好友请求        **/
     async acceptFriendRequest_returnId_async({requestId}){
         // ap.wrn('requestId',requestId)
         let data={
             values: {
-                [e_part.RECORD_ID]: this.cryptedObjectId({unCryptedObjectId: requestId})
+                [e_part.RECORD_ID]: this.encryptedObjectId({unCryptedObjectId: requestId})
             }
         }
         // ap.wrn('data',data)
         await addFriendAPI.acceptAddFriend_returnRecord_async({data:data,app:this.app,sess:this.sess})
+    }
+    /**     移动好友到新好友分组        **/
+    async moveFriendToNewGriendGroup_async({originFriendGroupName,newFriendGroupName,arr_moveEncryptedFriends}){
+        // ap.wrn('arr_moveEncryptedFriends',arr_moveEncryptedFriends)
+        let condition={
+            [e_field.USER_FRIEND_GROUP.OWNER_USER_ID]:this.userId,
+            [e_field.USER_FRIEND_GROUP.FRIEND_GROUP_NAME]:originFriendGroupName,
+        }
+        let tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.user_friend_group,condition:condition})
+        let originFriendGroupId=tmpResult[0]['_id']
+        condition={
+            [e_field.USER_FRIEND_GROUP.OWNER_USER_ID]:this.userId,
+            [e_field.USER_FRIEND_GROUP.FRIEND_GROUP_NAME]:newFriendGroupName,
+        }
+        tmpResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.user_friend_group,condition:condition})
+        let newFriendGroupId=tmpResult[0]['_id']
+
+        let data={
+            values: {
+                [e_part.EDIT_SUB_FIELD]:{
+                    [e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP]:{
+                        'from':this.encryptedObjectId({unCryptedObjectId:originFriendGroupId}),
+                        'to':this.encryptedObjectId({unCryptedObjectId:newFriendGroupId}),
+                        'eleArray':arr_moveEncryptedFriends,
+                    }
+                },
+            }
+        }
+        // ap.wrn('data',data)
+        await friendGroupAPI.moveFriend_async({data:data,app:this.app,sess:this.sess})
 
     }
     /**     创建分享        **/
@@ -202,7 +253,6 @@ class c_user{
                 }
             }
         }
-        // console.log(this.app)
         let recordId=await recommendAPI.createSendRecommend_returnCryptedId_async({data:data,app:this.app,userSess:this.sess})
         return Promise.resolve(recordId)
     }
@@ -213,7 +263,6 @@ class c_user{
                 [e_part.RECORD_ID]:unreadRecommendId
             }
         }
-        // console.log(data)
         let recordId=await recommendAPI.updateReceivedUnreadCommendToRead_async({data:data,app:this.app,userSess:this.sess})
         // ap.wrn('recordId',recordId)
         return Promise.resolve(recordId)
@@ -249,14 +298,14 @@ class c_adminUser{
         this.tempSalt=await commonAPI.getTempSalt_async({sess:this.sess})
         // ap.inf('adminLoginGetSessAdnUserId tempSalt',this.tempSalt)
     }
-    cryptedObjectId({unCryptedObjectId}){
+    encryptedObjectId({unCryptedObjectId}){
         return crypt.encryptSingleValue({fieldValue:unCryptedObjectId,salt:this.tempSalt}).msg
     }
     decryptedObjectId({decryptedObjectId}){
         return crypt.decryptSingleValue({fieldValue:decryptedObjectId,salt:this.tempSalt}).msg
     }
     async createPenalize_async({penalizeInfo,unCryptedUserId}){
-        let cryptedUserId=this.cryptedObjectId({unCryptedObjectId:unCryptedUserId})
+        let cryptedUserId=this.encryptedObjectId({unCryptedObjectId:unCryptedUserId})
         return await penalizeAPI.createPenalize_returnPenalizeId_async({
             adminUserSess:this.sess,
             penalizeInfo:penalizeInfo,

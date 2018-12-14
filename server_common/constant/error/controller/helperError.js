@@ -25,10 +25,6 @@ const helper={
     undefinedBaseRuleType:{rc:helperBaseErrorCode+4,msg:{client:'参数错误',server:'非预定义的baseType'}},
     unknownPartInValueCheck:{rc:helperBaseErrorCode+6,msg:{client:'输入数据错误',server:'输入数据中有未知的part'}},
 
-
-
-
-
     /*            CRUDPreCheck                        */
     // undefinedUserState:{rc:60008,msg:{client:'内部错误',server:'非预定义的用户状态'}},
 
@@ -101,6 +97,11 @@ const helper={
     },
     decryptSingleRecord:{
         encryptedObjectIdInvalid:{rc:helperBaseErrorCode+60,msg:{client:`输入的值不正确`,server:`输入的字段值是加密过的objectId，但是格式不正确`}},
+    },
+    getFriendThroughPartChooseFriend_async:{
+        duplicateFriends:{rc:helperBaseErrorCode+62,msg:{client:`选择的好友信息不正确`,server:`choose friend中，查询得到的好友，有重复`}},
+        noAnyChooseFriendInfo:{rc:helperBaseErrorCode+64,msg:{client:`选择的好友信息不正确`,server:`choose friend中，没有任何可用的key，用来选择好友`}},
+        notFriends:{rc:helperBaseErrorCode+66,msg:{client:`选择的好友信息不正确`,server:`choose friend中，friends中的用户不是当前用户的好友`}},
     },
 }
 
@@ -224,27 +225,14 @@ const checker={
 
     /*      ifFileSuffixMatchContentType_async          */
     uploadFileHasNoSuffix:{rc:checkerBaseErrorCode+52,msg:{client:`上传文件没有后缀，无法区分文件类型`}},
-    ifObjectIdCrypted:{
-        fieldNotMatchApplyRange:{rc:checkerBaseErrorCode+53,msg:{client:`参数错误`,server:'字段不允许在当前applyRange时输入'}},
-        recordIdFormatWrong:{rc:checkerBaseErrorCode+54,msg:{client:`参数错误`,server:'加密的recordId的格式不正确'}},
-        singleFieldValueContainInvalidObjectId:{rc:checkerBaseErrorCode+55,msg:{client:`参数错误`,server:'singleField中，类型为objectId，值的格式不正确'}},
-        recordInfoContainInvalidObjectId:{rc:checkerBaseErrorCode+56,msg:{client:`参数错误`,server:'recordInfo中，类型为objectId的字段，值的格式不正确'}},
-        manipulateArraySubPartAddContainInvalidObjectId:{rc:checkerBaseErrorCode+58,msg:{client:`参数错误`,server:'manipulateArray中，add中，类型为objectId的字段，值的格式不正确'}},
-        manipulateArraySubParRemoveContainInvalidObjectId:{rc:checkerBaseErrorCode+60,msg:{client:`参数错误`,server:'manipulateArray中，remove中，类型为objectId的字段，值的格式不正确'}},
-        editSubFromIsInvalidObjectId:{rc:checkerBaseErrorCode+62,msg:{client:`参数错误`,server:'editSub中，key from的类型为objectId的字段，值的格式不正确'}},
-        editSubToIsInvalidObjectId:{rc:checkerBaseErrorCode+64,msg:{client:`参数错误`,server:'editSub中，key to的类型为objectId的字段，值的格式不正确'}},
-        editSubEleArrayIsInvalidObjectId:{rc:checkerBaseErrorCode+66,msg:{client:`参数错误`,server:'editSub中，key elearray中，类型为objectId的字段，值的格式不正确'}},
-        // unSupportPart:{rc:checkerBaseErrorCode+58,msg:{client:`内部错误，请联系`,server:'recordInfo中，类型为objectId的字段，值的格式不正确'}}
-    },
-    ifObjectIdInGetCrypted:{
+
+/*    ifObjectIdInGetCrypted:{
         cryptedObjectIdInvalid:{rc:checkerBaseErrorCode+70,msg:{client:`参数错误`,server:'get的url中，objectId不是加密的objectId'}},
-    },
+    },*/
     ifSingleFieldContainExpectField:{
         singleFieldNotContainExpectedField:{rc:checkerBaseErrorCode+72,msg:{client:`参数错误`,server:'singleField中的字段名称不是期望的字段'}},
     },
-    ifFieldDataTypeObjectId:{
-        ruleTypeNotDefine:{rc:checkerBaseErrorCode+74,msg:{client:`参数错误`,server:'字段rule中，没有定义数据类型'}},
-    },
+
 }
 
 const preCheck={

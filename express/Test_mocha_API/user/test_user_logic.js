@@ -37,7 +37,7 @@ const controllerHelperError=server_common_file_require.helperError.helper//requi
 const controllerCheckerError=server_common_file_require.helperError.checker
 const inputValueLogicCheckError=server_common_file_require.helperError.inputValueLogicCheck
 const resourceCheckError=server_common_file_require.helperError.resourceCheck
-const systemError=server_common_file_require.systemError.systemError
+const systemError=server_common_file_require.assistError.systemError.systemError
 /****************  公共函数 ********************/
 const objectDeepCopy=server_common_file_require.misc.objectDeepCopy
 const db_operation_helper=server_common_file_require.db_operation_helper//require("../API_helper/db_operation_helper")

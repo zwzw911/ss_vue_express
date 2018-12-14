@@ -80,7 +80,8 @@ async function updateAddFriend_async({req,expectedPart,addFriendStatus,applyRang
     let {userId,userCollName,userType,userPriority,tempSalt}=userInfo
     // console.log(`userInfo============>${JSON.stringify(userInfo)}`)
     let {docValue,recordId,subFieldValue}=controllerHelper.getPartValue({req:req,arr_expectedPart:expectedPart})
-ap.wrn('updateAddFriend_async docValue',docValue)
+// ap.wrn('updateAddFriend_async recordId',recordId)
+//     ap.wrn('updateAddFriend_async userId',userId)
     /*/!************************************************!/
     /!***********        转换null字段      **********!/
     /!************************************************!/

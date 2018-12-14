@@ -98,7 +98,7 @@ async function recommend_dispatcher_async({req}) {
                     penalizeSubType: e_penalizeSubType.READ,
                     penalizeCheckError: controllerError.dispatch.get.userInPenalizeCantGetUnreadRecommend
                 }
-                await controllerPreCheck.userStateCheck_async({
+                await controllerPreCheck.userStatusCheck_async({
                     req: req,
                     userLoginCheck: userLoginCheck,
                     penalizeCheck: penalizeCheck
@@ -123,7 +123,7 @@ async function recommend_dispatcher_async({req}) {
                     penalizeSubType: e_penalizeSubType.READ,
                     penalizeCheckError: controllerError.dispatch.get.userInPenalizeCantGetReadRecommend
                 }
-                await controllerPreCheck.userStateCheck_async({
+                await controllerPreCheck.userStatusCheck_async({
                     req: req,
                     userLoginCheck: userLoginCheck,
                     penalizeCheck: penalizeCheck
@@ -147,7 +147,7 @@ async function recommend_dispatcher_async({req}) {
                     penalizeSubType: e_penalizeSubType.READ,
                     penalizeCheckError: controllerError.dispatch.get.userInPenalizeCantGetSendRecommend
                 }
-                await controllerPreCheck.userStateCheck_async({
+                await controllerPreCheck.userStatusCheck_async({
                     req: req,
                     userLoginCheck: userLoginCheck,
                     penalizeCheck: penalizeCheck
@@ -175,20 +175,21 @@ async function recommend_dispatcher_async({req}) {
                     penalizeSubType: e_penalizeSubType.CREATE,
                     penalizeCheckError: controllerError.dispatch.post.userInPenalizeCantCreateRecommend
                 }
-                await controllerPreCheck.userStateCheck_async({
+                await controllerPreCheck.userStatusCheck_async({
                     req: req,
                     userLoginCheck: userLoginCheck,
                     penalizeCheck: penalizeCheck
                 })
-                expectedPart=[e_part.RECORD_INFO]
+                expectedPart=[e_part.RECORD_INFO,e_part.CHOOSE_FRIEND] //receivers是通过CHOOSE_FRIEND转换后得到，而不是直接获取到
                 //是否为期望的part
                 result = controllerPreCheck.inputCommonCheck({req:req, expectedPart:expectedPart})
+                // ap.inf('inputCommonCheck check result',result)
                 if (result.rc > 0) {return Promise.reject(result)}
 
                 //对req中的recordId和recordInfo中（加密过的）objectId进行格式判断
-                // ap.inf('before check decrypt',req.body.values[e_part.RECORD_INFO])
-                await controllerChecker.ifObjectIdInPartCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[e_coll.SEND_RECOMMEND],applyRange:applyRange})
-                // ap.inf('after check decrypt',req.body.values[e_part.RECORD_INFO])
+                // ap.inf('before check decrypt',req.body.values[e_part.CHOOSE_FRIEND])
+                await controllerChecker.ifObjectIdInPartEncrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[e_coll.SEND_RECOMMEND],applyRange:applyRange})
+                // ap.inf('after check decrypt',req.body.values[e_part.CHOOSE_FRIEND])
                 //对req中的recordId和recordInfo中加密的objectId进行解密
                 let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
                 // ap.inf('userInfo',userInfo)
@@ -196,7 +197,7 @@ async function recommend_dispatcher_async({req}) {
                 // ap.inf('before decrypt',req.body.values)
                 // ap.inf('salt',tempSalt)
                 controllerHelper.decryptInputValue({req:req,expectedPart:expectedPart,salt:tempSalt,browserCollRule:browserInputRule[e_coll.SEND_RECOMMEND]})
-// ap.inf('after decrypt',req.body.values[e_part.RECORD_INFO])
+// ap.inf('after decrypt',req.body.values)
                 //recordInfo的检查
                 result=controllerPreCheck.inputPreCheck({req:req,expectedPart:expectedPart,collName:e_coll.SEND_RECOMMEND,applyRange:applyRange,arr_currentSearchRange:arr_currentSearchRange})
                 // ap.inf('create use inputPreCheck result',result)
@@ -219,7 +220,7 @@ async function recommend_dispatcher_async({req}) {
                     penalizeSubType: e_penalizeSubType.CREATE,
                     penalizeCheckError: controllerError.dispatch.post.userInPenalizeCantCreateRecommend
                 }*/
-                await controllerPreCheck.userStateCheck_async({
+                await controllerPreCheck.userStatusCheck_async({
                     req: req,
                     userLoginCheck: userLoginCheck,
                     penalizeCheck: penalizeCheck
@@ -231,7 +232,7 @@ async function recommend_dispatcher_async({req}) {
                     return Promise.reject(result)
                 }
 
-                await controllerChecker.ifObjectIdInPartCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[e_coll.SEND_RECOMMEND],applyRange:applyRange})
+                await controllerChecker.ifObjectIdInPartEncrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[e_coll.SEND_RECOMMEND],applyRange:applyRange})
                 // ap.inf('after check decrypt',req.body.values[e_part.RECORD_INFO])
                 //对req中的recordId和recordInfo中加密的objectId进行解密
                 let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})

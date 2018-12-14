@@ -32,7 +32,8 @@ const send_recommend= {
         // [ruleFiledName.MAX_LENGTH]: {define: 20, error: {rc: 10004}, mongoError: {rc: 20004, msg: '密码的长度不能超过20个字符'}},
         [ruleFiledName.FORMAT]: {define: regex.objectId, error: {rc: baseJSErrorCode+2, msg: '文档必须是objectId'}, mongoError: {rc: baseMongoErrorCode+2, msg: '文档必须是objectId'}} //server端使用
     },
-    receivers:{
+    /**     不能直接输入receivers，而是通过CHOOSE_FRIEND，经过转换后得到   **/
+/*    receivers:{
         [otherRuleFiledName.CHINESE_NAME]: '被荐人',
         [otherRuleFiledName.DATA_TYPE]: [serverDataType.OBJECT_ID],
         [otherRuleFiledName.APPLY_RANGE]:[applyRange.CREATE],
@@ -40,7 +41,7 @@ const send_recommend= {
         'arrayMinLength': {define: 1, error: {rc: baseJSErrorCode+6, msg: '至少推荐给1个用户'}, mongoError: {rc: baseMongoErrorCode+6, msg: '至少推荐给1个用户'}},
         'arrayMaxLength': {define: maxNumber.user_operation.maxRecommendToUser, error: {rc: baseJSErrorCode+8, msg: `最多推荐给${maxNumber.user_operation.maxRecommendToUser}个用户`}, mongoError: {rc: baseMongoErrorCode+8, msg: `最多推荐给${maxNumber.user_operation.maxRecommendToUser}个用户`}},
         [ruleFiledName.FORMAT]: {define: regex.objectId, error: {rc: baseJSErrorCode+10, msg: '被荐人必须是objectId'}, mongoError: {rc: baseMongoErrorCode+10, msg: '被荐人必须是objectId'}} //server端使用
-    },
+    },*/
     /*toGroupId:{
         [otherRuleFiledName.CHINESE_NAME]: '被荐朋友组',
         [otherRuleFiledName.DATA_TYPE]: [serverDataType.OBJECT_ID],

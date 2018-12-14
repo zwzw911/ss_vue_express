@@ -5,7 +5,7 @@ const RandomStringType=["basic","normal","complicated","captcha",]
 const UserState=["noSess","login","not login",] 
 const Env=["development","production",] 
 const MongooseOp=["insertMany","updateMany","findById","findByIdAndUpdate","remove","readAll","readName","search","count",] 
-const ValidatePart=["searchParams","recordInfo","recordId","currentPage","filterFieldValue","recIdArr","editSubField","event","singleField","manipulateArray","method","captcha","sms",] 
+const ValidatePart=["searchParams","recordInfo","recordId","currentPage","filterFieldValue","recIdArr","editSubField","event","singleField","manipulateArray","method","captcha","sms","chooseFriend",] 
 const KeyForSearchParams=["value","compOp",] 
 const TimeUnit=["ms","second","minute","hour",] 
 const InputFieldCheckType=["1","2",] 
@@ -20,6 +20,7 @@ const UpdateType=["normal","subField",]
 const FindEleInArray=["atLeastOne",] 
 const ManipulateOperator=["add","remove",] 
 const IntervalCheckPrefix=["captcha","uploadUserPhoto","normalReq",] 
+const ChooseFriendInfoFieldName=["allFriends","friendGroups","friends",] 
 module.exports={
     RandomStringType,
     UserState,
@@ -40,4 +41,5 @@ module.exports={
     FindEleInArray,
     ManipulateOperator,
     IntervalCheckPrefix,
+    ChooseFriendInfoFieldName,
 }

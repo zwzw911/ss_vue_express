@@ -124,7 +124,7 @@ async function updateReceiveRecommend_async({req}){
         }*/
     }
 
-ap.wrn('originalDoc',originalDoc)
+// ap.wrn('originalDoc',originalDoc)
     /**********************************************/
     /**  CALL FUNCTION:inputValueLogicValidCheck **/
     /**********************************************/
@@ -158,7 +158,7 @@ ap.wrn('originalDoc',originalDoc)
         })
     // }
 
-    ap.wrn('inputValueLogicValidCheck_async done')
+    // ap.wrn('inputValueLogicValidCheck_async done')
 
 
 

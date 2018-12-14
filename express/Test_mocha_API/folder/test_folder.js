@@ -272,7 +272,7 @@ describe('dispatch', function() {
         await misc_helper.getDataFromAPI_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
     });
     it('2.3 get child folder: decrypted folder id format valid', async function() {
-        // url=testData.cryptedObjectId //16c8277c10df1212212acd05acd64f7b8acb644469a8a008c23c7dd76da06863
+        // url=testData.encryptedObjectId //16c8277c10df1212212acd05acd64f7b8acb644469a8a008c23c7dd76da06863
         url='3410cae041c38fcae905d65501cf7f776ea6b127850b0955269481f6a4db1b22'
         finalUrl=baseUrl+url
         expectedErrorRc=controllerError.dispatch.get.decryptedFolderIdFormatInvalid.rc
@@ -281,7 +281,7 @@ describe('dispatch', function() {
         await misc_helper.getDataFromAPI_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
     });
     it('2.4 get: user type incorrect', async function() {
-        // url=testData.cryptedObjectId //16c8277c10df1212212acd05acd64f7b8acb644469a8a008c23c7dd76da06863
+        // url=testData.encryptedObjectId //16c8277c10df1212212acd05acd64f7b8acb644469a8a008c23c7dd76da06863
         url=user1ParentFolderIdGetByAdminRoot
         finalUrl=baseUrl+url
         expectedErrorRc=controllerCheckerError.userTypeNotExpected.rc
@@ -290,7 +290,7 @@ describe('dispatch', function() {
         await misc_helper.getDataFromAPI_async({APIUrl:finalUrl,sess:adminRootSess,data:data,expectedErrorRc:expectedErrorRc,app:app})
     });
     it('2.5 get: user2 try to get user1 folder', async function() {
-        // url=testData.cryptedObjectId //16c8277c10df1212212acd05acd64f7b8acb644469a8a008c23c7dd76da06863
+        // url=testData.encryptedObjectId //16c8277c10df1212212acd05acd64f7b8acb644469a8a008c23c7dd76da06863
         url=user1ParentFolderIdGetByUser2Crypted
         finalUrl=baseUrl+url
         expectedErrorRc=controllerError.get.notAuthorCantGetFolder.rc

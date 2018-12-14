@@ -206,8 +206,8 @@ const ChineseName={
     },
     send_recommend:{
         'articleId':'文档',
-        'receivers':'被荐人',
         'sender':'推荐人',
+        'receivers':'被荐人',
     },
     topic:{
         'name':'系列名',

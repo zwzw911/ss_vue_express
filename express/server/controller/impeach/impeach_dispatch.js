@@ -91,7 +91,7 @@ async function impeach_dispatcher_async({req}) {
                         penalizeSubType: e_penalizeSubType.CREATE,
                         penalizeCheckError: controllerError.dispatch.post.userInPenalizeCantCreateImpeach
                     }
-                    await controllerPreCheck.userStateCheck_async({req: req,userLoginCheck: userLoginCheck,penalizeCheck: penalizeCheck})
+                    await controllerPreCheck.userStatusCheck_async({req: req,userLoginCheck: userLoginCheck,penalizeCheck: penalizeCheck})
                     expectedPart = [e_part.RECORD_INFO] //articleId
                     //是否为期望的part
                     result = controllerPreCheck.inputCommonCheck({req: req, expectedPart: expectedPart})
@@ -100,7 +100,7 @@ async function impeach_dispatcher_async({req}) {
 
                     //对req中的recordId和recordInfo进行objectId（加密过的）格式判断
                     // ap.inf('before check',req.body.values)
-                    await controllerChecker.ifObjectIdInPartCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName],applyRange:applyRange})
+                    await controllerChecker.ifObjectIdInPartEncrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName],applyRange:applyRange})
                     // ap.inf('after check',req.body.values)
                     //对req中的recordId和recordInfo中加密的objectId进行解密
                     let userInfo = await controllerHelper.getLoginUserInfo_async({req: req})
@@ -130,7 +130,7 @@ async function impeach_dispatcher_async({req}) {
                         needCheck: true,
                         error: controllerError.dispatch.post.notLoginCantCreateArticleImage
                     }
-                    await controllerPreCheck.userStateCheck_async({req: req,userLoginCheck: userLoginCheck,penalizeCheck: penalizeCheck})
+                    await controllerPreCheck.userStatusCheck_async({req: req,userLoginCheck: userLoginCheck,penalizeCheck: penalizeCheck})
                     // expectedPart = [e_part.RECORD_ID] //articleId
                     // //是否为期望的part
                     // result = controllerPreCheck.inputCommonCheck({req: req, expectedPart: expectedPart})
@@ -139,7 +139,7 @@ async function impeach_dispatcher_async({req}) {
 
                     //对req中的recordId和recordInfo进行objectId（加密过的）格式判断
                     // ap.inf('before check',req.body.values)
-                    await controllerChecker.ifObjectIdInPartCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName],applyRange:applyRange})
+                    await controllerChecker.ifObjectIdInPartEncrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName],applyRange:applyRange})
                     // ap.inf('after check',req.body.values)
                     //对req中的recordId和recordInfo中加密的objectId进行解密
                     let userInfo = await controllerHelper.getLoginUserInfo_async({req: req})
@@ -172,7 +172,7 @@ async function impeach_dispatcher_async({req}) {
                     penalizeSubType: e_penalizeSubType.UPDATE,
                     penalizeCheckError: controllerError.dispatch.put.userInPenalizeCantUpdateImpeach
                 }
-                await controllerPreCheck.userStateCheck_async({req: req,userLoginCheck: userLoginCheck,penalizeCheck: penalizeCheck})
+                await controllerPreCheck.userStatusCheck_async({req: req,userLoginCheck: userLoginCheck,penalizeCheck: penalizeCheck})
                 expectedPart = [e_part.RECORD_ID,e_part.RECORD_INFO] //articleId
                 //是否为期望的part
                 // ap.wrn('req.body.values',req.body.values)
@@ -182,7 +182,7 @@ async function impeach_dispatcher_async({req}) {
 
                 //对req中的recordId和recordInfo进行objectId（加密过的）格式判断
                 // ap.inf('before check',req.body.values)
-                await controllerChecker.ifObjectIdInPartCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName],applyRange:applyRange})
+                await controllerChecker.ifObjectIdInPartEncrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName],applyRange:applyRange})
                 // ap.inf('after check',req.body.values)
                 //对req中的recordId和recordInfo中加密的objectId进行解密
                 let userInfo = await controllerHelper.getLoginUserInfo_async({req: req})
@@ -213,7 +213,7 @@ async function impeach_dispatcher_async({req}) {
                     penalizeSubType: e_penalizeSubType.UPDATE,
                     penalizeCheckError: controllerError.dispatch.put.userInPenalizeCantUpdateImpeach
                 }*/
-                await controllerPreCheck.userStateCheck_async({req: req,userLoginCheck: userLoginCheck,penalizeCheck: penalizeCheck})
+                await controllerPreCheck.userStatusCheck_async({req: req,userLoginCheck: userLoginCheck,penalizeCheck: penalizeCheck})
                 expectedPart = [e_part.RECORD_ID] //articleId
                 //是否为期望的part
                 result = controllerPreCheck.inputCommonCheck({req: req, expectedPart: expectedPart})
@@ -222,7 +222,7 @@ async function impeach_dispatcher_async({req}) {
 
                 //对req中的recordId和recordInfo进行objectId（加密过的）格式判断
                 // ap.inf('before check',req.body.values)
-                await controllerChecker.ifObjectIdInPartCrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName],applyRange:applyRange})
+                await controllerChecker.ifObjectIdInPartEncrypted_async({req:req,expectedPart:expectedPart,browserCollRule:browserInputRule[collName],applyRange:applyRange})
                 // ap.inf('after check',req.body.values)
                 //对req中的recordId和recordInfo中加密的objectId进行解密
                 let userInfo = await controllerHelper.getLoginUserInfo_async({req: req})

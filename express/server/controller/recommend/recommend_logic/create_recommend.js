@@ -69,51 +69,20 @@ async  function createRecommend_async({req,applyRange}){
      [e_field.IMPEACH.CONTENT]:'对文档/评论的内容进行举报',
      }*/
     let docValue=req.body.values[e_part.RECORD_INFO]
+    let chooseFriend=req.body.values[e_part.CHOOSE_FRIEND]
+
     let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
     // console.log(`userInfo===> ${JSON.stringify(userInfo)}`)
     let {userId,userCollName,userType,userPriority,tempSalt}=userInfo
 // console.log(`userId ====>${userId}`)
-
+//     ap.inf('chooseFriend',chooseFriend)
     /**********************************************/
     /***********    用户类型检测    **************/
     /*********************************************/
     await controllerChecker.ifExpectedUserType_async({currentUserType:userType,arr_expectedUserType:[e_allUserType.USER_NORMAL]})
-    ap.inf('用户类型检测 done')
+    // ap.inf('用户类型检测 done')
 
-    /**********************************************/
-    /**              特殊检测（在inputValueLogicValidCheck前执行，尽可能减少receivers中的数据量）                  **/
-    /**********************************************/
-    //1. receivers中不能包含发送者（不能自己分享给自己）
-    if(-1!==docValue[e_field.SEND_RECOMMEND.RECEIVERS].indexOf(userId)){
-        return Promise.reject(controllerError.logic.post.cantSendRecommendToSelf)
-    }
-    ap.inf('self check done')
-    //2. 如果以前分享过此文档，检测以前的记录中的receviers是否还是在当前的记录中存在（不能为同一个用户多次分享同一文档）
-    condition={
-        [e_field.SEND_RECOMMEND.ARTICLE_ID]:docValue[e_field.SEND_RECOMMEND.ARTICLE_ID]
-    }
-    let sendedRecommends=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.send_recommend,condition:condition})
-    // sendedRecommends=sendedRecommends.toObject()
-    // ap.inf('ready to create recommend with docValue',docValue)
-    // ap.inf('ready to create recommend with sendedRecommends',sendedRecommends)
-    if(sendedRecommends.length>0){
-        for(let singleExistRecommend of sendedRecommends){
 
-            //需要把记录中的数组的元素 从 object 变成 字符，以便lodash操作
-
-            singleExistRecommend=JSON.parse(JSON.stringify(singleExistRecommend))
-            // ap.inf('docValue[e_field.SEND_RECOMMEND.RECEIVERS]',typeof docValue[e_field.SEND_RECOMMEND.RECEIVERS][0] )
-            // ap.inf('singleExistRecommend[e_field.SEND_RECOMMEND.RECEIVERS]',typeof singleExistRecommend[e_field.SEND_RECOMMEND.RECEIVERS][0] )
-            // ap.inf('difference',lodash.difference(docValue[e_field.SEND_RECOMMEND.RECEIVERS],singleExistRecommend[e_field.SEND_RECOMMEND.RECEIVERS]))
-            // ap.inf('equal',docValue[e_field.SEND_RECOMMEND.RECEIVERS]===singleExistRecommend[e_field.SEND_RECOMMEND.RECEIVERS])
-            docValue[e_field.SEND_RECOMMEND.RECEIVERS]=lodash.difference(docValue[e_field.SEND_RECOMMEND.RECEIVERS],singleExistRecommend[e_field.SEND_RECOMMEND.RECEIVERS])
-            // ap.inf('after difference docValue',docValue)
-        }
-    }
-
-    if(0===docValue[e_field.SEND_RECOMMEND.RECEIVERS].length){
-        return Promise.reject(controllerError.logic.post.allReceiversHasAlreadyGetRecommend)
-    }
     /**********************************************/
     /**  CALL FUNCTION:inputValueLogicValidCheck **/
     /**********************************************/
@@ -136,19 +105,22 @@ async  function createRecommend_async({req,applyRange}){
     // ap.inf('stepParam',stepParam)
     await controllerInputValueLogicCheck.inputValueLogicValidCheck_async({commonParam:commonParam,stepParam:stepParam})
 
+    // ap.inf('inputValueLogicValidCheck_async done')
     /**********************************************/
-    /**              特殊检测（cont)            **/
+    /**                    特殊检测              **/
     /**********************************************/
     //1. article 的状态必须是FINISH
     let article=await common_operation_model.findById_returnRecord_async({dbModel:e_dbModel.article,id:docValue[e_field.SEND_RECOMMEND.ARTICLE_ID]})
+    // ap.inf('article',article)
     if(article[e_field.ARTICLE.STATUS]!==e_articleStatus.FINISHED){
         return Promise.reject(controllerError.logic.post.articleStatusNotFinish)
     }
+    // ap.inf('article status done')
 
     /*************************************************************/
     /***************   业务处理    *******************************/
     /*************************************************************/
-    let createdRecord=await businessLogic_async({docValue:docValue,collName:collName,userId:userId,applyRange:applyRange})
+    let createdRecord=await businessLogic_async({docValue:docValue,collName:collName,chooseFriend:chooseFriend,userId:userId,applyRange:applyRange})
 // ap.inf('createdRecord',createdRecord)
     /*********************************************/
     /**********      保留指定字段       *********/
@@ -172,12 +144,67 @@ async  function createRecommend_async({req,applyRange}){
 /*************************************************************/
 /***************   业务处理    *******************************/
 /*************************************************************/
-async function businessLogic_async({docValue,collName,userId,applyRange}){
+async function businessLogic_async({docValue,collName,chooseFriend,userId,applyRange}){
     /*******************************************************************************************/
     /*                         添加internal field，然后检查                                    */
     /*******************************************************************************************/
     let internalValue={}
+    /**********************************************/
+    /**              特殊处理，将chooseFriend 转换成receivers                  **/
+    /**********************************************/
+    let receivers=await controllerHelper.getFriendThroughPartChooseFriend_async({chooseFriend:chooseFriend,userId:userId})
+
+    // dataConvert.convertDocumentToObject({src:receivers})
+    // ap.wrn('receivers',receivers)
+    // ap.wrn('docValue',docValue)
+    if(receivers.length>0){
+        // ap.wrn('userId',userId)
+        // ap.wrn('receivers',receivers)
+        /**********************************************/
+        /**              特殊检测（在inputValueLogicValidCheck前执行，尽可能减少receivers中的数据量）                  **/
+        /**********************************************/
+        //1. receivers中不能包含发送者（不能自己分享给自己）
+        if(-1!==receivers.indexOf(userId)){
+            return Promise.reject(controllerError.logic.post.cantSendRecommendToSelf)
+        }
+        // ap.inf('self check done')
+        //2. 如果以前分享过此文档，检测以前的记录中的receviers是否还是在当前的记录中存在（不能为同一个用户多次分享同一文档）
+        let condition={
+            [e_field.SEND_RECOMMEND.ARTICLE_ID]:docValue[e_field.SEND_RECOMMEND.ARTICLE_ID]
+        }
+        // ap.wrn('condition',condition)
+        let sendedRecommends=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.send_recommend,condition:condition})
+        // sendedRecommends=sendedRecommends.toObject()
+        // ap.inf('sendedRecommends',sendedRecommends)
+        //记录已经接受过当前分享文档的用户
+        let recommendArticleReceivers=[]
+        if(sendedRecommends.length>0){
+            for(let singleExistRecommend of sendedRecommends){
+
+                //需要把记录中的数组的元素 从 object 变成 字符，以便lodash操作
+                recommendArticleReceivers=recommendArticleReceivers.concat(singleExistRecommend[e_field.SEND_RECOMMEND.RECEIVERS])
+                // singleExistRecommend=JSON.parse(JSON.stringify(singleExistRecommend))
+
+                // ap.inf('after difference receivers',receivers)
+            }
+        }
+        //此文档已经分享给某些用户了，判断这些用户是否在当前请求中存在
+        if(recommendArticleReceivers.length>0){
+            recommendArticleReceivers=misc.objectDeepCopy(recommendArticleReceivers)
+            // ap.inf('recommendArticleReceivers',recommendArticleReceivers)
+            // ap.inf('typeof recommendArticleReceivers[0]',typeof recommendArticleReceivers[0] )
+            // ap.inf('receivers',receivers)
+            // ap.inf('typeof receivers[0]',typeof receivers[0] )
+            // ap.inf('lodash.intersection(receivers,recommendArticleReceivers)',lodash.intersection(receivers,recommendArticleReceivers))
+            if(0<lodash.intersection(receivers,recommendArticleReceivers).length){
+                return Promise.reject(controllerError.logic.post.receiversHasAlreadyGetRecommend)
+            }
+        }
+
+    }
     internalValue[e_field.SEND_RECOMMEND.SENDER]=userId
+    internalValue[e_field.SEND_RECOMMEND.RECEIVERS]=receivers
+// ap.wrn('internalValue',internalValue)
     if(e_env.DEV===currentEnv && Object.keys(internalValue).length>0){
         // console.log(`before newDocValue====>${JSON.stringify(internalValue)}`)
         // let newDocValue=dataConvert.addSubFieldKeyValue(internalValue)

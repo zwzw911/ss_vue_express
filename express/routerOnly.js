@@ -9,7 +9,7 @@ const express = require('express');
 const router = express.Router();
 
 const server_common_file_require=require('./server_common_file_require')
-const systemError=server_common_file_require.systemError
+const systemError=server_common_file_require.assistError.systemError
 const genFinalReturnResult=server_common_file_require.misc.genFinalReturnResult
 
 const route_only_dispatcher_async=require('./routerOnlyDispatch').router_only_dispatcher_async
