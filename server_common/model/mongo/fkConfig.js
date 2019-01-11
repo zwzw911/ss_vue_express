@@ -197,6 +197,15 @@ const fkConfig={
         [e_field.SEND_RECOMMEND.ARTICLE_ID]:{relatedColl:e_coll.ARTICLE,forSelect:`${e_field.ARTICLE.NAME}`,forSetValue:[e_field.ARTICLE.NAME],validCriteria:{'dDate':{$exists:false}},fkCollOwnerFields:[]},//可以分享任何文档，而无需priority检测
         [e_field.SEND_RECOMMEND.RECEIVERS]:{relatedColl:e_coll.USER,forSelect:`${e_field.USER.NAME}`,forSetValue:[e_field.USER.NAME],validCriteria:undefined,fkCollOwnerFields:[]},
     },
+    /****************************************************************/
+    /****************       COLLECTION      *****************/
+    /****************************************************************/
+    [e_coll.COLLECTION]:{
+        [e_field.COLLECTION.ARTICLES_ID]:{relatedColl:e_coll.ARTICLE,forSelect:`${e_field.ARTICLE.NAME}`,forSetValue:[e_field.ARTICLE.NAME],validCriteria:undefined,fkCollOwnerFields:undefined},
+        [e_field.COLLECTION.TOPICS_ID]:{relatedColl:e_coll.TOPIC,forSelect:`${e_field.TOPIC.NAME}`,forSetValue:[e_field.TOPIC.NAME],validCriteria:undefined,fkCollOwnerFields:undefined},
+        [e_field.COLLECTION.PARENT_ID]:{relatedColl:e_coll.COLLECTION,forSelect:`${e_field.COLLECTION.NAME}`,forSetValue:[e_field.COLLECTION.NAME],validCriteria:undefined,fkCollOwnerFields:[e_field.COLLECTION.CREATOR_ID]},
+        // [e_field.ADMIN_PENALIZE.PUNISHED_ID]:{relatedColl:e_coll.USER,forSelect:`${e_field.USER.NAME}`,forSetValue:[e_field.USER.NAME]},
+    },
 }
 
 // console.log(`${JSON.stringify(fkConfig)}`)

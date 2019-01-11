@@ -423,13 +423,42 @@ async function ifEnoughResource_async({requiredResource,resourceProfileRange,use
                 case e_resourceRange.MAX_READ_RECEIVE_RECOMMENDS:
                     usedResource=await numOnlyResourceCalc.calcReadReceivedRecommends_async({userId:userId,containerId:containerId})
                     numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:resourceProfile})
-                    ap.err('numExceedFlag',numExceedFlag)
+                    // ap.err('numExceedFlag',numExceedFlag)
                     if(true===numExceedFlag){
-                        ap.err('heer')
+                        // ap.err('heer')
                         return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.totalReadReceivedRecommendNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
                     }
                     break
-
+                /**         collection          **/
+                case e_resourceRange.MAX_COLLECTION_PER_USER:
+                    usedResource=await numOnlyResourceCalc.calcExistsCollectionNum_async({userId:userId,containerId:containerId})
+                    numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:resourceProfile})
+                    // ap.err('numExceedFlag',numExceedFlag)
+                    if(true===numExceedFlag){
+                        // ap.err('heer')
+                        return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.totalCollectionNumExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
+                    }
+                    break
+                case e_resourceRange.MAX_ARTICLE_PER_COLLECTION:
+                    usedResource=await numOnlyResourceCalc.calcCollectionArticleNum_async({userId:userId,containerId:containerId})
+                    // ap.wrn('usedResource',usedResource)
+                    // ap.wrn('requiredResource[e_resourceFieldName.USED_NUM]',requiredResource[e_resourceFieldName.USED_NUM])
+                    numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:resourceProfile})
+                    // ap.err('numExceedFlag',numExceedFlag)
+                    if(true===numExceedFlag){
+                        // ap.err('heer')
+                        return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.totalArticleNumInCollectionExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
+                    }
+                    break
+                case e_resourceRange.MAX_TOPIC_PER_COLLECTION:
+                    usedResource=await numOnlyResourceCalc.calcCollectionTopicNum_async({userId:userId,containerId:containerId})
+                    numExceedFlag=ifNumExceed({currentUsedNum:usedResource[e_resourceFieldName.USED_NUM],requiredNum:requiredResource[e_resourceFieldName.USED_NUM],resourceProfileRecord:resourceProfile})
+                    // ap.err('numExceedFlag',numExceedFlag)
+                    if(true===numExceedFlag){
+                        // ap.err('heer')
+                        return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.totalTopicNumInCollectionExceed({resourceProfileNum:resourceProfile[e_field.RESOURCE_PROFILE.MAX_NUM]}))
+                    }
+                    break
                 default:
                     return Promise.reject(helperError.resourceCheck.ifEnoughResource_async.noHandleCodeProfileRange())
                 //ap.err(`ResourceRange ${singleResourceProfileRange} no related method to calc resource usage`)

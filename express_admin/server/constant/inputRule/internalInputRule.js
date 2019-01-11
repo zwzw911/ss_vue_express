@@ -1,4 +1,4 @@
-/*    gene by D:\U\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-12-12   */ 
+/*    gene by D:\U\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-12-26   */ 
  
 "use strict"
 const internalInputRule={
@@ -672,7 +672,7 @@ const internalInputRule={
             'dataType':"string",
             'applyRange':["create"],
             'require':{"define":{"create":true},"error":{"rc":11214,"msg":"统计资源类别不能为空"},"mongoError":{"rc":21214,"msg":"统计资源类别不能为空"}},
-            'enum':{"define":["1","10","12","14","16","18","20","100","102","105","106","110","112","114","116","118","120","122","124","126","128","130","140","150","151"],"error":{"rc":10020,"msg":"用户权限不正确"},"mongoError":{"rc":20020,"msg":"用户权限不正确"}},
+            'enum':{"define":["1","10","12","14","16","18","20","100","102","105","106","110","112","114","116","118","120","122","124","126","128","130","140","150","151","160","161","162"],"error":{"rc":10020,"msg":"用户权限不正确"},"mongoError":{"rc":20020,"msg":"用户权限不正确"}},
         },
         'uploadedFileNum':{
             'chineseName':"上传文件数量",
@@ -716,8 +716,27 @@ const internalInputRule={
             'chineseName':"收藏夹创建人",
             'dataType':"objectId",
             'applyRange':["create"],
-            'require':{"define":{"create":true},"error":{"rc":10878,"msg":"收藏夹创建人不能为空"},"mongoError":{"rc":20878,"msg":"收藏夹创建人不能为空"}},
-            'format':{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":10880,"msg":"收藏夹创建人必须是objectId"},"mongoError":{"rc":20880,"msg":"收藏夹创建人必须是objectId"}},
+            'require':{"define":{"create":true},"error":{"rc":105450,"msg":"收藏夹创建人不能为空"},"mongoError":{"rc":205450,"msg":"收藏夹创建人不能为空"}},
+            'format':{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":105452,"msg":"收藏夹创建人必须是objectId"},"mongoError":{"rc":205452,"msg":"收藏夹创建人必须是objectId"}},
+        },
+        'parentId':{
+            'chineseName':"父级收藏夹",
+            'dataType':"objectId",
+            'applyRange':["create"],
+            'require':{"define":{"create":true},"error":{"rc":105454,"msg":"父级收藏夹不能为空"},"mongoError":{"rc":205454,"msg":"父级收藏夹不能为空"}},
+            'format':{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":105456,"msg":"父级收藏夹必须是objectId"},"mongoError":{"rc":205456,"msg":"父级收藏夹必须是objectId"}},
+        },
+        'articleNum':{
+            'chineseName':"收藏文档的数量",
+            'dataType':"number",
+            'applyRange':["create","update_scalar"],
+            'require':{"define":{"create":false,"update_array":false},"error":{"rc":105458,"msg":"收藏夹中文档数量不能为空"},"mongoError":{"rc":205458,"msg":"收藏夹中文档数量不能为空"}},
+        },
+        'topicNum':{
+            'chineseName':"收藏主题的数量",
+            'dataType':"number",
+            'applyRange':["create","update_scalar"],
+            'require':{"define":{"create":false,"update_array":false},"error":{"rc":105460,"msg":"收藏夹中主题数量不能为空"},"mongoError":{"rc":205460,"msg":"收藏夹中主题数量不能为空"}},
         },
     },
     'receive_recommend':{

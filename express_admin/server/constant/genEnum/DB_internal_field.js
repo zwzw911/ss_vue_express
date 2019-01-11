@@ -31,7 +31,7 @@ const Field={
     user_resource_static:['userId','resourceRange','uploadedFileNum','uploadedFileSizeInMb',],
     suagr:[],
     user_resource_profile:['startDate','endDate','duration',],
-    collection:['creatorId',],
+    collection:['creatorId','parentId','articleNum','topicNum',],
     receive_recommend:['receiver','unreadRecommends','unreadRecommendsNum','readRecommends','readRecommendsNum',],
     send_recommend:['sender','receivers',],
     topic:['creatorId',],

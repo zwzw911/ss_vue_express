@@ -126,10 +126,10 @@ describe('dispatch', function() {
         await adminRoot.adminLoginGetSessUserIdSalt_async()
 
 
-        await adminRoot.createPenalize_async({penalizeInfo:penalizeInfo,unCryptedUserId:user3.userId})
+        await adminRoot.createPenalize_async({penalizeInfo:penalizeInfo,decryptedUserId:user3.userId})
         // ap.inf('test')
         // parameter[`APIUrl`]=finalUrl
-        user1_articleId1=await user1.createArticleReturnId_async({setStatusFinish:true})
+        user1_articleId1=await user1.createArticleReturnEncryptedId_async({setStatusFinish:true})
         // ap.inf('user1ParentFolderIdGetByUser2Crypted',user1ParentFolderIdGetByUser2Crypted)
         console.log(`==============================================================`)
         console.log(`=================    before all done      ====================`)
@@ -279,7 +279,7 @@ describe('dispatch', function() {
                 [e_part.RECORD_INFO]:copyNormalRecord,
                 [e_part.CHOOSE_FRIEND]:{
                     // [e_chooseFriendInfoFieldName.ALL_FRIENDS]:true,
-                    [e_chooseFriendInfoFieldName.FRIENDS]:[user2.encryptedObjectId({unCryptedObjectId:user2.userId})],
+                    [e_chooseFriendInfoFieldName.FRIENDS]:[user2.encryptedObjectId({decryptedObjectId:user2.userId})],
                 },
             }
         }

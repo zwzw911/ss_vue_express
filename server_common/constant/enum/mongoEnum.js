@@ -188,6 +188,8 @@ const PenalizeType={
 
         //recommend
         NO_RECOMMEND:'80',
+
+        NO_COLLECTION:'90',
     },
     SHOW:{
         NO_ARTICLE: '禁止文档',
@@ -218,6 +220,8 @@ const PenalizeType={
 
         //recommend
         NO_RECOMMEND:'禁止分享文档',
+
+        NO_COLLECTION:'禁止收藏文档',
     },
 
 }
@@ -492,6 +496,10 @@ const ResourceRange={
         MAX_UNREAD_RECEIVE_RECOMMENDS:'150',//最大未读的收到的分享文档数量
         MAX_READ_RECEIVE_RECOMMENDS:'151',//最大已读的接收到的分享文档数量
         // MAX_USER_FRIEND_GROUP_NUM:'132',//每个用户最大可创建的朋友群
+
+        MAX_COLLECTION_PER_USER:'160',//每个用户最大可创建的收藏夹数量
+        MAX_ARTICLE_PER_COLLECTION:'161',//每个收藏夹中，最大文档数量
+        MAX_TOPIC_PER_COLLECTION:'162',//每个收藏夹中，最大主题数量
     },
     SHOW:{
         /**     存储在coll中    **/
@@ -547,6 +555,10 @@ const ResourceRange={
 
         MAX_UNREAD_RECEIVE_RECOMMENDS:'最大未读的收到的分享文档数量',//最大未读的收到的分享文档数量
         MAX_READ_RECEIVE_RECOMMENDS:'最大已读的接收到的分享文档数量',//最大已读的接收到的分享文档数量
+
+        MAX_COLLECTION_PER_USER:'每个用户最大可创建的收藏夹数量',//每个用户最大可创建的收藏夹数量
+        MAX_ARTICLE_PER_COLLECTION:'每个收藏夹中最大文档数量',//每个收藏夹中，最大文档数量
+        MAX_TOPIC_PER_COLLECTION:'每个收藏夹中最大主题数量',//每个收藏夹中，最大主题数量
     },
 }
 

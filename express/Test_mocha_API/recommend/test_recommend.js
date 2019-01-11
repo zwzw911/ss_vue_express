@@ -125,13 +125,16 @@ describe('dispatch', function() {
         await adminRoot.adminLoginGetSessUserIdSalt_async()
 
         /**         user1 create article        **/
-        user1_articleId1=await user1.createArticleReturnId_async({setStatusFinish:true})
-        user1_decryptedArticleId1=user1.decryptedObjectId({decryptedObjectId:user1_articleId1})
-        user1_articleId2=await user1.createArticleReturnId_async({setStatusFinish:false})
-        user1_decryptedArticleId2=user1.decryptedObjectId({decryptedObjectId:user1_articleId2})
-        /**         user1/user2ask to be friend of user3(rule is allow anyone), and user3 accept      **/
+        user1_articleId1=await user1.createArticleReturnEncryptedId_async({setStatusFinish:true})
+        user1_decryptedArticleId1=user1.decryptedObjectId({encryptedObjectId:user1_articleId1})
+        user1_articleId2=await user1.createArticleReturnEncryptedId_async({setStatusFinish:false})
+        user1_decryptedArticleId2=user1.decryptedObjectId({encryptedObjectId:user1_articleId2})
+        /**         user1/user2 ask to be friend of user3(rule is allow anyone), and user3 accept      **/
         await user1.sendAddFriendRequest_returnId_async({friendId:user3.userId})
         await user2.sendAddFriendRequest_returnId_async({friendId:user3.userId})
+        /**         user1 ask to be friends of user2 and user3        **/
+        let requestId=await user1.sendAddFriendRequest_returnId_async({friendId:user2.userId})
+        await user2.acceptFriendRequest_returnId_async({requestId:requestId})
 
         user3_myFriend=await user3.getFriendGroupId_async({friendGroupName:e_defaultFriendGroupName.MyFriend})
         user3_blackList=await user3.getFriendGroupId_async({friendGroupName:e_defaultFriendGroupName.BlackList})
@@ -148,8 +151,8 @@ describe('dispatch', function() {
     describe('create', function() {
         it('1.1 create:unexpected user type', async function() {
             copyNormalRecord=objectDeepCopy(normalRecord)
-            copyNormalRecord[e_field.SEND_RECOMMEND.ARTICLE_ID]=adminRoot.encryptedObjectId({unCryptedObjectId:user1_decryptedArticleId1})
-            // copyNormalRecord[e_field.SEND_RECOMMEND.RECEIVERS]=[adminRoot.encryptedObjectId({unCryptedObjectId:user1.userId})]
+            copyNormalRecord[e_field.SEND_RECOMMEND.ARTICLE_ID]=adminRoot.encryptedObjectId({decryptedObjectId:user1_decryptedArticleId1})
+            // copyNormalRecord[e_field.SEND_RECOMMEND.RECEIVERS]=[adminRoot.encryptedObjectId({decryptedObjectId:user1.userId})]
             expectedErrorRc=controllerCheckerError.userTypeNotExpected.rc
             data.values={
                 [e_part.RECORD_INFO]:copyNormalRecord,
@@ -161,8 +164,8 @@ describe('dispatch', function() {
         });
         it('1.2 create:articleId not exist', async function() {
             copyNormalRecord=objectDeepCopy(normalRecord)
-            copyNormalRecord[e_field.SEND_RECOMMEND.ARTICLE_ID]=user1.encryptedObjectId({unCryptedObjectId:testData.unExistObjectId})
-            // copyNormalRecord[e_field.SEND_RECOMMEND.RECEIVERS]=[user1.encryptedObjectId({unCryptedObjectId:user1.userId})]
+            copyNormalRecord[e_field.SEND_RECOMMEND.ARTICLE_ID]=user1.encryptedObjectId({decryptedObjectId:testData.unExistObjectId})
+            // copyNormalRecord[e_field.SEND_RECOMMEND.RECEIVERS]=[user1.encryptedObjectId({decryptedObjectId:user1.userId})]
             expectedErrorRc=inputValueLogicCheckError.ifFkValueExist_And_FkHasPriority_async.fkValueNotExist().rc
             data.values={
                 [e_part.RECORD_INFO]:copyNormalRecord,
@@ -174,8 +177,8 @@ describe('dispatch', function() {
         });
         it('1.3 create:articleId status not finished', async function() {
             copyNormalRecord=objectDeepCopy(normalRecord)
-            copyNormalRecord[e_field.SEND_RECOMMEND.ARTICLE_ID]=user1.encryptedObjectId({unCryptedObjectId:user1_decryptedArticleId2})
-            // copyNormalRecord[e_field.SEND_RECOMMEND.RECEIVERS]=[user1.encryptedObjectId({unCryptedObjectId:user1.userId})]
+            copyNormalRecord[e_field.SEND_RECOMMEND.ARTICLE_ID]=user1.encryptedObjectId({decryptedObjectId:user1_decryptedArticleId2})
+            // copyNormalRecord[e_field.SEND_RECOMMEND.RECEIVERS]=[user1.encryptedObjectId({decryptedObjectId:user1.userId})]
             expectedErrorRc=controllerError.logic.post.articleStatusNotFinish.rc
             data.values={
                 [e_part.RECORD_INFO]:copyNormalRecord,
@@ -187,62 +190,62 @@ describe('dispatch', function() {
         });
         it('1.4 create:getFriendThroughPartChooseFriend_async, friendsGroup and friend has duplicate friends', async function() {
             copyNormalRecord=objectDeepCopy(normalRecord)
-            copyNormalRecord[e_field.SEND_RECOMMEND.ARTICLE_ID]=user3.encryptedObjectId({unCryptedObjectId:user1_decryptedArticleId1})
-            // copyNormalRecord[e_field.SEND_RECOMMEND.RECEIVERS]=[user1.encryptedObjectId({unCryptedObjectId:user1.userId})]
+            copyNormalRecord[e_field.SEND_RECOMMEND.ARTICLE_ID]=user3.encryptedObjectId({decryptedObjectId:user1_decryptedArticleId1})
+            // copyNormalRecord[e_field.SEND_RECOMMEND.RECEIVERS]=[user1.encryptedObjectId({decryptedObjectId:user1.userId})]
             expectedErrorRc=controllerHelperError.getFriendThroughPartChooseFriend_async.duplicateFriends.rc
             data.values={
                 [e_part.RECORD_INFO]:copyNormalRecord,
                 [e_part.CHOOSE_FRIEND]:{
                     [e_chooseFriendInfoFieldName.FRIEND_GROUPS]:
-                        [user3.encryptedObjectId({unCryptedObjectId:user3_myFriend}),user3.encryptedObjectId({unCryptedObjectId:user3_blackList})],
-                    [e_chooseFriendInfoFieldName.FRIENDS]:[user3.encryptedObjectId({unCryptedObjectId:user1.userId})]
+                        [user3.encryptedObjectId({decryptedObjectId:user3_myFriend}),user3.encryptedObjectId({decryptedObjectId:user3_blackList})],
+                    [e_chooseFriendInfoFieldName.FRIENDS]:[user3.encryptedObjectId({decryptedObjectId:user1.userId})]
                 },
             }
             await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user3.sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
         });
         it('1.5 create:getFriendThroughPartChooseFriend_async, user in friends not sender friend', async function() {
             copyNormalRecord=objectDeepCopy(normalRecord)
-            copyNormalRecord[e_field.SEND_RECOMMEND.ARTICLE_ID]=user3.encryptedObjectId({unCryptedObjectId:user1_decryptedArticleId1})
-            // copyNormalRecord[e_field.SEND_RECOMMEND.RECEIVERS]=[user1.encryptedObjectId({unCryptedObjectId:user1.userId})]
+            copyNormalRecord[e_field.SEND_RECOMMEND.ARTICLE_ID]=user3.encryptedObjectId({decryptedObjectId:user1_decryptedArticleId1})
+            // copyNormalRecord[e_field.SEND_RECOMMEND.RECEIVERS]=[user1.encryptedObjectId({decryptedObjectId:user1.userId})]
             expectedErrorRc=controllerHelperError.getFriendThroughPartChooseFriend_async.notFriends.rc
             data.values={
                 [e_part.RECORD_INFO]:copyNormalRecord,
                 [e_part.CHOOSE_FRIEND]:{
                     // [e_chooseFriendInfoFieldName.FRIEND_GROUPS]:
-                    //     [user3.encryptedObjectId({unCryptedObjectId:user3_myFriend}),user3.encryptedObjectId({unCryptedObjectId:user3_blackList})],
-                    [e_chooseFriendInfoFieldName.FRIENDS]:[user3.encryptedObjectId({unCryptedObjectId:user4.userId})]
+                    //     [user3.encryptedObjectId({decryptedObjectId:user3_myFriend}),user3.encryptedObjectId({decryptedObjectId:user3_blackList})],
+                    [e_chooseFriendInfoFieldName.FRIENDS]:[user3.encryptedObjectId({decryptedObjectId:user4.userId})]
                 },
             }
             await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user3.sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
         });
         it('1.6 create:sender in receivers', async function() {
             copyNormalRecord=objectDeepCopy(normalRecord)
-            copyNormalRecord[e_field.SEND_RECOMMEND.ARTICLE_ID]=user3.encryptedObjectId({unCryptedObjectId:user1_decryptedArticleId1})
-            // copyNormalRecord[e_field.SEND_RECOMMEND.RECEIVERS]=[user1.encryptedObjectId({unCryptedObjectId:user1.userId})]
+            copyNormalRecord[e_field.SEND_RECOMMEND.ARTICLE_ID]=user3.encryptedObjectId({decryptedObjectId:user1_decryptedArticleId1})
+            // copyNormalRecord[e_field.SEND_RECOMMEND.RECEIVERS]=[user1.encryptedObjectId({decryptedObjectId:user1.userId})]
 
             expectedErrorRc=controllerError.logic.post.cantSendRecommendToSelf.rc
             data.values={
                 [e_part.RECORD_INFO]:copyNormalRecord,
                 [e_part.CHOOSE_FRIEND]:{
                     [e_chooseFriendInfoFieldName.FRIEND_GROUPS]:
-                        [user3.encryptedObjectId({unCryptedObjectId:user3_myFriend}),user3.encryptedObjectId({unCryptedObjectId:user3_blackList})],
-                    [e_chooseFriendInfoFieldName.FRIENDS]:[user3.encryptedObjectId({unCryptedObjectId:user3.userId})]
+                        [user3.encryptedObjectId({decryptedObjectId:user3_myFriend}),user3.encryptedObjectId({decryptedObjectId:user3_blackList})],
+                    [e_chooseFriendInfoFieldName.FRIENDS]:[user3.encryptedObjectId({decryptedObjectId:user3.userId})]
                 },
             }
             await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user3.sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
         });
         it('1.7 create:duplicate recommend to same friendGroups', async function() {
             copyNormalRecord=objectDeepCopy(normalRecord)
-            copyNormalRecord[e_field.SEND_RECOMMEND.ARTICLE_ID]=user3.encryptedObjectId({unCryptedObjectId:user1_decryptedArticleId1})
-            // copyNormalRecord[e_field.SEND_RECOMMEND.RECEIVERS]=[user1.encryptedObjectId({unCryptedObjectId:user1.userId})]
+            copyNormalRecord[e_field.SEND_RECOMMEND.ARTICLE_ID]=user3.encryptedObjectId({decryptedObjectId:user1_decryptedArticleId1})
+            // copyNormalRecord[e_field.SEND_RECOMMEND.RECEIVERS]=[user1.encryptedObjectId({decryptedObjectId:user1.userId})]
 
             expectedErrorRc=controllerError.logic.post.receiversHasAlreadyGetRecommend.rc
             data.values={
                 [e_part.RECORD_INFO]:copyNormalRecord,
                 [e_part.CHOOSE_FRIEND]:{
                     [e_chooseFriendInfoFieldName.FRIEND_GROUPS]:
-                        [user3.encryptedObjectId({unCryptedObjectId:user3_myFriend}),user3.encryptedObjectId({unCryptedObjectId:user3_blackList})],
-                    // [e_chooseFriendInfoFieldName.FRIENDS]:[user3.encryptedObjectId({unCryptedObjectId:user1.userId})]
+                        [user3.encryptedObjectId({decryptedObjectId:user3_myFriend}),user3.encryptedObjectId({decryptedObjectId:user3_blackList})],
+                    // [e_chooseFriendInfoFieldName.FRIENDS]:[user3.encryptedObjectId({decryptedObjectId:user1.userId})]
                 },
             }
             await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user3.sess,data:data,expectedErrorRc:0,app:app})
@@ -252,8 +255,8 @@ describe('dispatch', function() {
             // ap.wrn('first recommend')
             copyNormalRecord=objectDeepCopy(normalRecord)
             // copyNormalRecord[e_field.SEND_RECOMMEND.ARTICLE_ID]=user1_articleId1
-            // copyNormalRecord[e_field.SEND_RECOMMEND.RECEIVERS]=[user1.encryptedObjectId({unCryptedObjectId:user2.userId})]
-            await user1.createRecommendReturnEncryptedId_async({articleId:user1_articleId1,receivers:[user1.encryptedObjectId({unCryptedObjectId:user2.userId})]})
+            // copyNormalRecord[e_field.SEND_RECOMMEND.RECEIVERS]=[user1.encryptedObjectId({decryptedObjectId:user2.userId})]
+            await user1.createRecommendReturnEncryptedId_async({articleId:user1_articleId1,receivers:[user1.encryptedObjectId({decryptedObjectId:user2.userId})]})
             // ap.wrn('first done')
             expectedErrorRc=controllerError.logic.post.allReceiversHasAlreadyGetRecommend.rc
             data.values={[e_part.RECORD_INFO]:copyNormalRecord}
@@ -261,10 +264,10 @@ describe('dispatch', function() {
         });
         it('1.12 create:user1 try to recommend not finished article', async function() {
             // ap.wrn('first recommend')
-            let articleId=await user1.createArticleReturnId_async({setStatusFinish:false})
+            let articleId=await user1.createArticleReturnEncryptedId_async({setStatusFinish:false})
             copyNormalRecord=objectDeepCopy(normalRecord)
             copyNormalRecord[e_field.SEND_RECOMMEND.ARTICLE_ID]=articleId
-            copyNormalRecord[e_field.SEND_RECOMMEND.RECEIVERS]=[user1.encryptedObjectId({unCryptedObjectId:user2.userId})]
+            copyNormalRecord[e_field.SEND_RECOMMEND.RECEIVERS]=[user1.encryptedObjectId({decryptedObjectId:user2.userId})]
             // await user1.createRecommendReturnEncryptedId_async({value:copyNormalRecord})
             // ap.wrn('first done')
             expectedErrorRc=controllerError.logic.post.articleStatusNotFinish.rc
@@ -274,7 +277,7 @@ describe('dispatch', function() {
         it('2.1 create:receivers not exist', async function() {
             copyNormalRecord=objectDeepCopy(normalRecord)
             copyNormalRecord[e_field.SEND_RECOMMEND.ARTICLE_ID]=user1_articleId1
-            copyNormalRecord[e_field.SEND_RECOMMEND.RECEIVERS]=[user1.encryptedObjectId({unCryptedObjectId:testData.unExistObjectId})]
+            copyNormalRecord[e_field.SEND_RECOMMEND.RECEIVERS]=[user1.encryptedObjectId({decryptedObjectId:testData.unExistObjectId})]
             expectedErrorRc=inputValueLogicCheckError.ifFkValueExist_And_FkHasPriority_async.fkValueNotExist().rc
             data.values={[e_part.RECORD_INFO]:copyNormalRecord}
             await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1.sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
@@ -282,8 +285,8 @@ describe('dispatch', function() {
         it('2.2 create:article priority(ownership) failed', async function() {
             copyNormalRecord=objectDeepCopy(normalRecord)
             fkConfig[e_coll.SEND_RECOMMEND][e_field.SEND_RECOMMEND.ARTICLE_ID]['fkCollOwnerFields']=[e_field.ARTICLE.AUTHOR_ID]
-            copyNormalRecord[e_field.SEND_RECOMMEND.ARTICLE_ID]=user2.encryptedObjectId({unCryptedObjectId:user1_decryptedArticleId1})
-            copyNormalRecord[e_field.SEND_RECOMMEND.RECEIVERS]=[user2.encryptedObjectId({unCryptedObjectId:user1.userId})]
+            copyNormalRecord[e_field.SEND_RECOMMEND.ARTICLE_ID]=user2.encryptedObjectId({decryptedObjectId:user1_decryptedArticleId1})
+            copyNormalRecord[e_field.SEND_RECOMMEND.RECEIVERS]=[user2.encryptedObjectId({decryptedObjectId:user1.userId})]
             expectedErrorRc=inputValueLogicCheckError.ifFkValueExist_And_FkHasPriority_async.notHasPriorityForFkField().rc
             data.values={[e_part.RECORD_INFO]:copyNormalRecord}
             await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user2.sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
@@ -293,8 +296,8 @@ describe('dispatch', function() {
         it('2.3 create:receivers priority(ownership) failed', async function() {
             copyNormalRecord=objectDeepCopy(normalRecord)
             fkConfig[e_coll.SEND_RECOMMEND][e_field.SEND_RECOMMEND.RECEIVERS]['fkCollOwnerFields']=['photoPathId']
-            copyNormalRecord[e_field.SEND_RECOMMEND.ARTICLE_ID]=user2.encryptedObjectId({unCryptedObjectId:user1_decryptedArticleId1})
-            copyNormalRecord[e_field.SEND_RECOMMEND.RECEIVERS]=[user2.encryptedObjectId({unCryptedObjectId:user1.userId}),user2.encryptedObjectId({unCryptedObjectId:user3.userId})]
+            copyNormalRecord[e_field.SEND_RECOMMEND.ARTICLE_ID]=user2.encryptedObjectId({decryptedObjectId:user1_decryptedArticleId1})
+            copyNormalRecord[e_field.SEND_RECOMMEND.RECEIVERS]=[user2.encryptedObjectId({decryptedObjectId:user1.userId}),user2.encryptedObjectId({decryptedObjectId:user3.userId})]
             expectedErrorRc=inputValueLogicCheckError.ifFkValueExist_And_FkHasPriority_async.notHasPriorityForFkField().rc
             data.values={[e_part.RECORD_INFO]:copyNormalRecord}
             await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user2.sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
@@ -306,8 +309,8 @@ describe('dispatch', function() {
             await class_user.c_user.setResourceProfileSetting_async({resourceRange:e_resourceRange.MAX_SEND_RECOMMENDS,resourceType:e_resourceType.BASIC,num:0})
 
             copyNormalRecord=objectDeepCopy(normalRecord)
-            copyNormalRecord[e_field.SEND_RECOMMEND.ARTICLE_ID]=user2.encryptedObjectId({unCryptedObjectId:user1_decryptedArticleId1})
-            copyNormalRecord[e_field.SEND_RECOMMEND.RECEIVERS]=[user2.encryptedObjectId({unCryptedObjectId:user1.userId}),user2.encryptedObjectId({unCryptedObjectId:user3.userId})]
+            copyNormalRecord[e_field.SEND_RECOMMEND.ARTICLE_ID]=user2.encryptedObjectId({decryptedObjectId:user1_decryptedArticleId1})
+            copyNormalRecord[e_field.SEND_RECOMMEND.RECEIVERS]=[user2.encryptedObjectId({decryptedObjectId:user1.userId}),user2.encryptedObjectId({decryptedObjectId:user3.userId})]
             expectedErrorRc=resourceCheckError.ifEnoughResource_async.totalSendRecommendNumExceed({}).rc
             data.values={[e_part.RECORD_INFO]:copyNormalRecord}
             await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user2.sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
@@ -318,14 +321,14 @@ describe('dispatch', function() {
         it('3.1 create: user1 share own article to user2 success,user2 share own article to user2, cause user1s article pop', async function() {
             copyNormalRecord=objectDeepCopy(normalRecord)
             copyNormalRecord[e_field.SEND_RECOMMEND.ARTICLE_ID]=user1_articleId1
-            copyNormalRecord[e_field.SEND_RECOMMEND.RECEIVERS]=[user1.encryptedObjectId({unCryptedObjectId:user2.userId})]
+            copyNormalRecord[e_field.SEND_RECOMMEND.RECEIVERS]=[user1.encryptedObjectId({decryptedObjectId:user2.userId})]
             expectedErrorRc=0
             data.values={[e_part.RECORD_INFO]:copyNormalRecord}
             await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1.sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
 
             copyNormalRecord=objectDeepCopy(normalRecord)
-            copyNormalRecord[e_field.SEND_RECOMMEND.ARTICLE_ID]=await user3.createArticleReturnId_async({setStatusFinish:true})
-            copyNormalRecord[e_field.SEND_RECOMMEND.RECEIVERS]=[user3.encryptedObjectId({unCryptedObjectId:user2.userId})]
+            copyNormalRecord[e_field.SEND_RECOMMEND.ARTICLE_ID]=await user3.createArticleReturnEncryptedId_async({setStatusFinish:true})
+            copyNormalRecord[e_field.SEND_RECOMMEND.RECEIVERS]=[user3.encryptedObjectId({decryptedObjectId:user2.userId})]
             expectedErrorRc=0
             data.values={[e_part.RECORD_INFO]:copyNormalRecord}
             await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user3.sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
@@ -336,7 +339,7 @@ describe('dispatch', function() {
 
             copyNormalRecord=objectDeepCopy(normalRecord)
             copyNormalRecord[e_field.SEND_RECOMMEND.ARTICLE_ID]=user1_articleId1
-            copyNormalRecord[e_field.SEND_RECOMMEND.RECEIVERS]=[user1.encryptedObjectId({unCryptedObjectId:user2.userId})]
+            copyNormalRecord[e_field.SEND_RECOMMEND.RECEIVERS]=[user1.encryptedObjectId({decryptedObjectId:user2.userId})]
             expectedErrorRc=0
             data.values={[e_part.RECORD_INFO]:copyNormalRecord}
             await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1.sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
@@ -354,11 +357,15 @@ describe('dispatch', function() {
             finalUrl=baseUrl+url
             // ap.wrn('finalUrl',finalUrl)
 
-            //user1 share own doc to user2/user3
-            user1_sendRecommendId=await user1.createRecommendReturnEncryptedId_async({articleId:user1_articleId1,receivers:[user1.encryptedObjectId({unCryptedObjectId:user2.userId}),user1.encryptedObjectId({unCryptedObjectId:user3.userId})]})
-            sendRecommendId=user1.decryptedObjectId({decryptedObjectId:user1_sendRecommendId})
-            //user3 read this shared doc
-            await user3.updateReceivedUnreadCommendToRead_async({unreadRecommendId:user3.encryptedObjectId({unCryptedObjectId:sendRecommendId})})
+            /**         user1 share own doc to user2/user3        **/
+            // user1_sendRecommendId=await user1.createRecommendReturnEncryptedId_async({articleId:user1_articleId1,receivers:[user1.encryptedObjectId({decryptedObjectId:user2.userId}),user1.encryptedObjectId({decryptedObjectId:user3.userId})]})
+            // sendRecommendId=user1.decryptedObjectId({encryptedObjectId:user1_sendRecommendId})
+
+            /**         user3 share own doc to user1/user2        **/
+            user1_sendRecommendId=await user3.createRecommendReturnEncryptedId_async({articleId:user3.encryptedObjectId({decryptedObjectId:user1_decryptedArticleId1}),receivers:[user3.encryptedObjectId({decryptedObjectId:user1.userId}),user3.encryptedObjectId({decryptedObjectId:user2.userId})]})
+            sendRecommendId=user3.decryptedObjectId({encryptedObjectId:user1_sendRecommendId})
+            //user1 read this shared doc
+            await user1.updateReceivedUnreadCommendToRead_async({unreadRecommendId:user1.encryptedObjectId({decryptedObjectId:sendRecommendId})})
             console.log(`==============================================================`)
             console.log(`=======    before get receive recommend list done      =======`)
             console.log(`==============================================================`)
@@ -369,7 +376,7 @@ describe('dispatch', function() {
             await misc_helper.getDataFromAPI_async({APIUrl:finalUrl,sess:user2.sess,expectedErrorRc:expectedErrorRc,app:app})
         })
         //无法直接获得结果，需要人工检测db（user3 unread=0， read=1）
-        it('4.2 get recommend list: user3 get read recommends', async function() {
+        it('4.2 get recommend list: user2 get read recommends', async function() {
             // ap.wrn('case finalUrl',finalUrl)
             expectedErrorRc=0
             await misc_helper.getDataFromAPI_async({APIUrl:finalUrl,sess:user2.sess,expectedErrorRc:expectedErrorRc,app:app})
@@ -381,12 +388,25 @@ describe('dispatch', function() {
             await class_user.c_user.setResourceProfileSetting_async({resourceType:e_resourceType.BASIC,resourceRange:e_resourceRange.MAX_READ_RECEIVE_RECOMMENDS,num:0})
             data={
                 values:{
-                    [e_part.RECORD_ID]:user2.encryptedObjectId({unCryptedObjectId:sendRecommendId})
+                    [e_part.RECORD_ID]:user2.encryptedObjectId({decryptedObjectId:sendRecommendId})
                 }
             }
             expectedErrorRc=0
             await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user2.sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
             await class_user.c_user.setResourceProfileSetting_async({resourceType:e_resourceType.BASIC,resourceRange:e_resourceRange.MAX_READ_RECEIVE_RECOMMENDS,num:originNum})
+        })
+        it('4.4 get recommend list success', async function() {
+            // let originNum=await class_user.c_user.getResourceProfileSetting_async({resourceType:e_resourceType.BASIC,resourceRange:e_resourceRange.MAX_READ_RECEIVE_RECOMMENDS})
+            // ap.wrn('originNum',originNum)
+            // await class_user.c_user.setResourceProfileSetting_async({resourceType:e_resourceType.BASIC,resourceRange:e_resourceRange.MAX_READ_RECEIVE_RECOMMENDS,num:0})
+            data={
+                values:{
+                    [e_part.RECORD_ID]:user3.encryptedObjectId({decryptedObjectId:sendRecommendId})
+                }
+            }
+            expectedErrorRc=0
+            await misc_helper.getDataFromAPI_async({APIUrl:finalUrl,sess:user3.sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+            // await class_user.c_user.setResourceProfileSetting_async({resourceType:e_resourceType.BASIC,resourceRange:e_resourceRange.MAX_READ_RECEIVE_RECOMMENDS,num:originNum})
         })
     })
 
@@ -399,10 +419,10 @@ describe('dispatch', function() {
             // ap.wrn('finalUrl',finalUrl)
 
             //user1 share own doc to user2/user3
-            user1_sendRecommendId=await user1.createRecommendReturnEncryptedId_async({articleId:user1_articleId1,receivers:[user1.encryptedObjectId({unCryptedObjectId:user2.userId}),user1.encryptedObjectId({unCryptedObjectId:user3.userId})]})
-            sendRecommendId=user1.decryptedObjectId({decryptedObjectId:user1_sendRecommendId})
+            user1_sendRecommendId=await user1.createRecommendReturnEncryptedId_async({articleId:user1_articleId1,receivers:[user1.encryptedObjectId({decryptedObjectId:user2.userId}),user1.encryptedObjectId({decryptedObjectId:user3.userId})]})
+            sendRecommendId=user1.decryptedObjectId({encryptedObjectId:user1_sendRecommendId})
             //user3 read this shared doc
-            // await user3.updateReceivedUnreadCommendToRead_async({unreadRecommendId:user3.encryptedObjectId({unCryptedObjectId:sendRecommendId})})
+            // await user3.updateReceivedUnreadCommendToRead_async({unreadRecommendId:user3.encryptedObjectId({decryptedObjectId:sendRecommendId})})
             console.log(`==============================================================`)
             console.log(`=======    before get receive recommend list done      =======`)
             console.log(`==============================================================`)
@@ -425,7 +445,7 @@ describe('dispatch', function() {
             await class_user.c_user.setResourceProfileSetting_async({resourceType:e_resourceType.BASIC,resourceRange:e_resourceRange.MAX_READ_RECEIVE_RECOMMENDS,num:0})
             data={
                 values:{
-                    [e_part.RECORD_ID]:user2.encryptedObjectId({unCryptedObjectId:sendRecommendId})
+                    [e_part.RECORD_ID]:user2.encryptedObjectId({decryptedObjectId:sendRecommendId})
                 }
             }
             expectedErrorRc=0
@@ -443,10 +463,10 @@ describe('dispatch', function() {
             // ap.wrn('finalUrl',finalUrl)
 
             //user1 share own doc to user2/user3
-            user1_sendRecommendId=await user1.createRecommendReturnEncryptedId_async({articleId:user1_articleId1,receivers:[user1.encryptedObjectId({unCryptedObjectId:user2.userId}),user1.encryptedObjectId({unCryptedObjectId:user3.userId})]})
-            sendRecommendId=user1.decryptedObjectId({decryptedObjectId:user1_sendRecommendId})
+            user1_sendRecommendId=await user1.createRecommendReturnEncryptedId_async({articleId:user1_articleId1,receivers:[user1.encryptedObjectId({decryptedObjectId:user2.userId}),user1.encryptedObjectId({decryptedObjectId:user3.userId})]})
+            sendRecommendId=user1.decryptedObjectId({encryptedObjectId:user1_sendRecommendId})
             //user3 read this shared doc
-            // await user3.updateReceivedUnreadCommendToRead_async({unreadRecommendId:user3.encryptedObjectId({unCryptedObjectId:sendRecommendId})})
+            // await user3.updateReceivedUnreadCommendToRead_async({unreadRecommendId:user3.encryptedObjectId({decryptedObjectId:sendRecommendId})})
             console.log(`==============================================================`)
             console.log(`=======    before update receive recommend list done      =======`)
             console.log(`==============================================================`)
@@ -459,7 +479,7 @@ describe('dispatch', function() {
             await class_user.c_user.setResourceProfileSetting_async({resourceType:e_resourceType.BASIC,resourceRange:e_resourceRange.MAX_READ_RECEIVE_RECOMMENDS,num:0})
             data={
                 values:{
-                    [e_part.RECORD_ID]:user2.encryptedObjectId({unCryptedObjectId:sendRecommendId})
+                    [e_part.RECORD_ID]:user2.encryptedObjectId({decryptedObjectId:sendRecommendId})
                 }
             }
             expectedErrorRc=resourceCheckError.ifEnoughResource_async.totalReadReceivedRecommendNumExceed({}).rc

@@ -116,7 +116,7 @@ async function dispatcher_async({req}){
                 await controllerPreCheck.checkObjectIdInReqParams_async({
                     req:req,
                     parameterName:'friendGroupId',
-                    cryptedError:controllerError.dispatch.get.encryptedFriendGroupIdFormatInvalid,
+                    encryptedError:controllerError.dispatch.get.encryptedFriendGroupIdFormatInvalid,
                     decryptedError:controllerError.dispatch.get.decryptedFriendGroupIdFormatInvalid
                 })
                 // ap.wrn('check done')
@@ -233,10 +233,12 @@ async function dispatcher_async({req}){
                         penalizeCheckError: controllerError.dispatch.put.userInPenalizeCantMoveFriend
                     }
                     await controllerPreCheck.userStatusCheck_async({req: req,userLoginCheck: userLoginCheck,penalizeCheck: penalizeCheck})
+                    // ap.wrn('userStatusCheck_async done')
+
                     expectedPart = [e_part.EDIT_SUB_FIELD] //在2个不同的group中移动用户
                     //是否为期望的part
                     result = controllerPreCheck.inputCommonCheck({req: req, expectedPart: expectedPart})
-                    // ap.inf('inputCommonCheck result',result)
+                    // ap.wrn('inputCommonCheck result',result)
                     if (result.rc > 0) {return Promise.reject(result)}
 
                     //对req中的recordId和recordInfo进行objectId（加密过的）格式判断
@@ -248,10 +250,10 @@ async function dispatcher_async({req}){
                     // ap.inf('userInfo',userInfo)
                     let tempSalt = userInfo.tempSalt
                     // ap.inf('userInfo。tempSalt',userInfo.tempSalt)
-                    // ap.inf('before decrypt',req.body.values)
-                    // ap.inf('salt',tempSalt)
+                    // ap.wrn('before decrypt',req.body.values)
+                    // ap.wrn('decrypt salt',tempSalt)
                     controllerHelper.decryptInputValue({req: req,expectedPart: expectedPart,salt: tempSalt,browserCollRule: browserInputRule[collName]})
-                    // ap.inf('after decrypt',req.body.values)
+                    // ap.wrn('after decrypt',req.body.values)
                     //对输入值进行检测（此时objectId已经解密）
                     result = controllerPreCheck.inputPreCheck({req: req,expectedPart: expectedPart,collName: collName,applyRange: applyRange, arr_currentSearchRange: arr_currentSearchRange})
                     // ap.inf('create use inputPreCheck result',result)

@@ -57,9 +57,12 @@ const topicsId_arrayMaxLengthValidator= {
 const collFieldDefine={
 
     name:{type:String},
+    parentId:{type:mongoose.Schema.Types.ObjectId,ref:"collection"},//为了适应树形结构，需要一个父目录
     creatorId:{type:mongoose.Schema.Types.ObjectId}, //收藏夹创建者
-    articlesId:{type:[mongoose.Schema.Types.ObjectId],ref:"article",validate:[articlesId_arrayMaxLengthValidator]},
-    topicsId:{type:[mongoose.Schema.Types.ObjectId],ref:"topic",validate:[topicsId_arrayMaxLengthValidator]},
+    articlesId:[{type:mongoose.Schema.Types.ObjectId,ref:"article",validate:[articlesId_arrayMaxLengthValidator]}],
+    articleNum:{type:Number,default:0},//记录array的数量，以便不用aggregate计算
+    topicsId:[{type:mongoose.Schema.Types.ObjectId,ref:"topic",validate:[topicsId_arrayMaxLengthValidator]}],
+    topicNum:{type:Number,default:0},//记录array的数量，以便不用aggregate计算
     cDate:{type:Date,default:Date.now},
     uDate:{type:Date,default:Date.now},
     dDate:{type:Date},

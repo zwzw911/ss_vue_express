@@ -41,6 +41,7 @@ const system=require('../server_common/function/assist/system.js')
 const upload=require('../server_common/function/assist/upload.js')
 const interval=require('../server_common/function/security/interval.js')
 const supervisor=require('../server_common/function/supervisor/supervisor.js')
+const decryptPartObjectId=require('../server_common/function/validateInput/decryptPartObjectId.js')
 const validateFormat=require('../server_common/function/validateInput/validateFormat.js')
 const validateHelper=require('../server_common/function/validateInput/validateHelper.js')
 const validatePartObjectIdEncrypted=require('../server_common/function/validateInput/validatePartObjectIdEncrypted.js')
@@ -49,6 +50,7 @@ const validateValue=require('../server_common/function/validateInput/validateVal
 const common_API=require('../server_common/Test/API/common_API.js')
 const add_friend_API=require('../server_common/Test/API/express/add_friend_API.js')
 const article_API=require('../server_common/Test/API/express/article_API.js')
+const collection_API=require('../server_common/Test/API/express/collection_API.js')
 const folder_API=require('../server_common/Test/API/express/folder_API.js')
 const friend_group_API=require('../server_common/Test/API/express/friend_group_API.js')
 const impeachAction_API=require('../server_common/Test/API/express/impeachAction_API.js')
@@ -80,6 +82,7 @@ const common_operation_model=require('../server_common/model/mongo/operation/com
 const common_operation_document=require('../server_common/model/mongo/operation/common_operation_document.js')
 const compound_unique_field_config=require('../server_common/model/mongo/compound_unique_field_config.js')
 const fkConfig=require('../server_common/model/mongo/fkConfig.js')
+const connection=require('../server_common/model/mongo/common/connection.js')
 const generateMongoEnumKeyValueExchange=require('../server_common/maintain/generateFunction/generateMongoEnumKeyValueExchange.js')
 const genLuaSHA=require('../server_common/maintain/genLuaSHA.js')
 
@@ -123,6 +126,7 @@ module.exports={
     upload,
     interval,
     supervisor,
+    decryptPartObjectId,
     validateFormat,
     validateHelper,
     validatePartObjectIdEncrypted,
@@ -131,6 +135,7 @@ module.exports={
     common_API,
     add_friend_API,
     article_API,
+    collection_API,
     folder_API,
     friend_group_API,
     impeachAction_API,
@@ -162,6 +167,7 @@ module.exports={
     common_operation_document,
     compound_unique_field_config,
     fkConfig,
+    connection,
     generateMongoEnumKeyValueExchange,
     genLuaSHA,
 }

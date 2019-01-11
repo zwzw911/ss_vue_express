@@ -194,6 +194,10 @@ const error={
         populateOptTypeError:{rc:30010,msg:{client:`内部错误`,server:`find_returnRecord的参数populateOpt必须是数组`}},
         populateOptFieldNumExceed:{rc:30012,msg:{client:`内部错误`,server:`find_returnRecord的参数populateOpt中需要populate的字段数量过多`}},
     },
+    create_returnRecord_async:{
+        dbModelUndefined:{},
+        valueUndefined:{},
+    },
 }
 
 module.exports={

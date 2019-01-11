@@ -104,7 +104,7 @@ async function dispatcher_async(req){
             }else{
                 //获得非顶层目录的内容
                 /*********  url（get）中的objectId的检查，不使用单一函数，因为需要具体的错误信息  *********/
-                await controllerPreCheck.checkObjectIdInReqParams_async({req:req,parameterName:'folderId',cryptedError:controllerError.dispatch.get.cryptedFolderIdFormatInvalid,decryptedError:controllerError.dispatch.get.decryptedFolderIdFormatInvalid})
+                await controllerPreCheck.checkObjectIdInReqParams_async({req:req,parameterName:'folderId',encryptedError:controllerError.dispatch.get.cryptedFolderIdFormatInvalid,decryptedError:controllerError.dispatch.get.decryptedFolderIdFormatInvalid})
                 /*let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
                 let tempSalt=userInfo.tempSalt
                 //判断加密的objectId格式

@@ -139,6 +139,7 @@ const public_group=require('./server/controller/public_group/public_group_router
 const join_public_group_request=require('./server/controller/join_public_group_request/join_public_group_request_router').router
 const folder=require('./server/controller/folder/folder_router').router
 const recommend=require('./server/controller/recommend/recommend_router').router
+const collection=require('./server/controller/collection/collection_router').router
 
 app.use('/user', user);
 app.use('/article', article);
@@ -154,6 +155,7 @@ app.use('/public_group', public_group);
 app.use('/join_public_group_request', join_public_group_request);
 app.use('/folder',folder)
 app.use('/recommend',recommend)
+app.use('/collection',collection)
 /*const routerOnly=require('./routerOnly').router
 app.use('/',routerOnly)*/
 

@@ -61,7 +61,7 @@ async function updateArticle_returnArticleId_async({userSess,data,app}){
                 // if (err) return done(err);
                 // console.log(`res ios ${JSON.stringify(res)}`)
                 let parsedRes=JSON.parse(res.text)
-                console.log(`update article result ${JSON.stringify(parsedRes)}`)
+                // console.log(`update article result ${JSON.stringify(parsedRes)}`)
                 // articleId=
                 assert.deepStrictEqual(parsedRes.rc,0)
                 return resolve(parsedRes)

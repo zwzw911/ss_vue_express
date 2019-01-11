@@ -212,6 +212,9 @@ const ChineseName={
         'articlesId':'收藏文档',
         'topicsId':'收藏系列',
         'creatorId':'收藏夹创建人',
+        'parentId':'父级收藏夹',
+        'articleNum':'收藏文档的数量',
+        'topicNum':'收藏主题的数量',
     },
     send_recommend:{
         'articleId':'文档',

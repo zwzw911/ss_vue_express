@@ -18,6 +18,8 @@ const adminApp=require('../../../express_admin/app')
 
 
 const server_common_file_require=require('../../server_common_file_require')
+/****************  class ********************/
+const class_user=server_common_file_require.class_user
 /******************    数据库函数  **************/
 const common_operation_model=server_common_file_require.common_operation_model
 
@@ -78,16 +80,20 @@ let globalConfiguration=server_common_file_require.globalConfiguration
 /****************  变量 ********************/
 let  baseUrl="/folder/",finalUrl,url
 //管理员登录信息
-let adminUser1Info,adminUser2Info,adminUser3Info,adminUser1Id,adminUser2Id,adminUser3Id,adminUser1Sess,adminUser2Sess,adminUser3Sess,adminUser1Data,adminUser2Data,adminUser3Data
-//用户登录信息
-let user1Info,user2Info,user3Info,user1Id,user2Id,user3Id,user1Sess,user2Sess,user3Sess,user1Data,user2Data,user3Data
+
 let userData,tmpResult,copyNormalRecord
 let adminRootSess,adminRootId,data={values:{}}
 
 let recordId1,recordId2,recordId3,expectedErrorRc
 
-let user1ParentFolderIdCrypted,user1ParentFolderIdGetByUser2Crypted,user1ParentFolderIdGetByAdminRoot,unExistCryptedFolderIdForUser1
-let user2ParentFolderIdCrypted,user2ParentFolderIdGetByUser1Crypted//,user1ParentFolderIdGetByAdminRoot
+
+
+let user1=new class_user.c_user({userData:testData.user.user1})
+let user2=new class_user.c_user({userData:testData.user.user2})
+let user3=new class_user.c_user({userData:testData.user.user3})
+let user4=new class_user.c_user({userData:testData.user.user4})
+
+let adminRoot=new class_user.c_adminUser({adminUserData:testData.admin_user.adminRoot})
 
 let normalRecord={
     // [e_field.FOLDER.AUTHOR_ID]:undefined,
@@ -113,95 +119,41 @@ describe('dispatch', function() {
         }
         // ap.inf('test')
         // parameter[`APIUrl`]=finalUrl
-        user1Info =await userComponentFunction.reCreateUser_returnSessUserId_async({userData:testData.user.user1,app:app})
-        user1Id=user1Info[`userId`]
-        user1Sess=user1Info[`sess`]
+        await user1.reCreateUserGetSessUserIdSalt_async()
+        await user2.reCreateUserGetSessUserIdSalt_async()
+        await user3.reCreateUserGetSessUserIdSalt_async()
+        await user4.reCreateUserGetSessUserIdSalt_async()
+        await adminRoot.adminLoginGetSessUserIdSalt_async()
 
-        user2Info =await userComponentFunction.reCreateUser_returnSessUserId_async({userData:testData.user.user2,app:app})
-        user2Id=user2Info[`userId`]
-        user2Sess=user2Info[`sess`]
-
-        user3Info =await userComponentFunction.reCreateUser_returnSessUserId_async({userData:testData.user.user3,app:app})
-        // ap.inf('user3Info',user3Info)
-        user3Id=user3Info[`userId`]//非加密
-        user3Sess=user3Info[`sess`]
-        // ap.wrn('user recreate done')
-        // adminRootSess=await API_helper.adminUserLogin_returnSess_async({userData:testData.admin_user.adminRoot,adminApp:adminApp})
-        adminRootSess=await adminUserComponentFunction.adminUserLogin_returnSess_async({userData:testData.admin_user.adminRoot,adminApp:adminApp})
-        adminRootId=db_operation_helper.getAdminUserId_async({userName:testData.admin_user.adminRoot.name})
-        // ap.wrn('admin root recreate done')
         /*** create penalize for user3 ***/
-        let adminRootSalt=await commonAPI.getTempSalt_async({sess:adminRootSess})
-        // ap.inf('root user salt',adminRootSalt)
-        let cryptedUser3Id=crypt.encryptSingleValue({fieldValue:user3Id,salt:adminRootSalt}).msg
-        // ap.inf('cryptedUser3Id',cryptedUser3Id)
-        await penalizeAPI.createPenalize_returnPenalizeId_async({adminUserSess:adminRootSess,penalizeInfo:penalizeInfoForUser3,penalizedUserId:cryptedUser3Id,adminApp:adminApp})
+        await adminRoot.createPenalize_async({penalizeInfo:penalizeInfoForUser3,decryptedUserId:user3.userId})
 
-        // data.values={[e_part.RECORD_INFO]:normalRecord}
-        // // ap.inf('data',data)
-        /*** user1 get its own folder id ***/
-        let user1AllTopLevelFolderResult=await folderAPI.getAllTopLevelFolder_async({sess:user1Sess,app:app})
-        user1ParentFolderIdCrypted=user1AllTopLevelFolderResult['folder'][0][e_field.FOLDER.ID]
 
-        /*** user2 get user1 folder id ***/
-        let tmpResult =await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.folder,condition:{[e_field.FOLDER.AUTHOR_ID]:user1Id},[e_field.FOLDER.LEVEL]:1})
-        let user1ParentFolderId=tmpResult[0]['id']
-        // let user2Salt=await commonAPI.getTempSalt_async({sess:user2Sess})
-        // user1ParentFolderIdGetByUser2Crypted=crypt.encryptSingleValue({fieldValue:user1ParentFolderId,salt:user2Salt}).msg
-        user1ParentFolderIdGetByUser2Crypted=await commonAPI.cryptObjectId_async({objectId:user1ParentFolderId,sess:user2Sess})
-        /*** user2 get its own folder id ***/
-        let user2AllTopLevelFolderResult=await folderAPI.getAllTopLevelFolder_async({sess:user1Sess,app:app})
-        user2ParentFolderIdCrypted=user2AllTopLevelFolderResult['folder'][0][e_field.FOLDER.ID]
-        /*** user1 get user2 folder id ***/
-        tmpResult =await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.folder,condition:{[e_field.FOLDER.AUTHOR_ID]:user2Id},[e_field.FOLDER.LEVEL]:1})
-        let user2ParentFolderId=tmpResult[0]['id']
-        // let user1Salt=await commonAPI.getTempSalt_async({sess:user1Sess})
-        // user2ParentFolderIdGetByUser1Crypted=crypt.encryptSingleValue({fieldValue:user2ParentFolderId,salt:user1Salt}).msg
-        user2ParentFolderIdGetByUser1Crypted=await commonAPI.cryptObjectId_async({objectId:user2ParentFolderId,sess:user1Sess})
-        /*** adminRoot get user1 folder id ***/
-        user1ParentFolderIdGetByAdminRoot=await commonAPI.cryptObjectId_async({objectId:user1ParentFolderId,sess:adminRootSess})
-
-        unExistCryptedFolderIdForUser1=await commonAPI.cryptObjectId_async({objectId:testData.unExistObjectId,sess:user1Sess})
 
         /***    user1 create child folder in root folder    ***/
-        let data={values:{}}
-        data.values[e_part.RECORD_INFO]={}
-        data.values[e_part.RECORD_INFO][e_field.FOLDER.PARENT_FOLDER_ID]=await commonAPI.cryptObjectId_async({objectId:user1ParentFolderId,sess:user1Sess})
-        data.values[e_part.RECORD_INFO][e_field.FOLDER.NAME]='test'
-        tmpResult=await folderAPI.createFolder_async({sess:user1Sess,data:data,app:app})
-        // ap.inf('tmpreuslt',tmpResult)
-        recordId1=tmpResult['id']
+        recordId1=await user1.createFolderReturnId_async({folderName:'user1_new_folder',parentEncryptedFolderId:user1.encryptedObjectId({decryptedObjectId:user1.topFolderId})})
+
         console.log(`==============================================================`)
         console.log(`=================    before all done      ====================`)
         console.log(`==============================================================`)
     });
 
-    /*    it(`penalize check`,async function(){
-            //reason:,penalizeType:,penalizeSubype:,duration:
-            let penalizeInfo={
-                [e_field.ADMIN_PENALIZE.REASON]:'test for test test test',
-                [e_field.ADMIN_PENALIZE.PENALIZE_TYPE]:e_penalizeType.NO_IMPEACH,
-                [e_field.ADMIN_PENALIZE.PENALIZE_SUB_TYPE]:e_penalizeSubType.CREATE,
-                [e_field.ADMIN_PENALIZE.DURATION]:1,
-            }
-            await API_helper.createPenalize_async({adminUserSess:rootSess,penalizeInfo:penalizeInfo,pernalizedUserData:testData.user.user1,adminApp:adminApp})
-        })*/
     /**              create                      **/
 
     it('1.1 create:unexpected user type', async function() {
-        normalRecord[e_field.FOLDER.PARENT_FOLDER_ID]=user1ParentFolderIdGetByAdminRoot
+        normalRecord[e_field.FOLDER.PARENT_FOLDER_ID]=adminRoot.encryptedObjectId({decryptedObjectId:user1.userId})
         expectedErrorRc=controllerCheckerError.userTypeNotExpected.rc
         // let sess=await userAPI.getFirstSession({app})
         data.values={[e_part.RECORD_INFO]:normalRecord}
-        await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:adminRootSess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:adminRoot.sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
     });
     it('1.2 create:success', async function() {
         finalUrl=baseUrl
-        normalRecord[e_field.FOLDER.PARENT_FOLDER_ID]=user1ParentFolderIdCrypted
+        normalRecord[e_field.FOLDER.PARENT_FOLDER_ID]=user1.encryptedObjectId({decryptedObjectId:user1.topFolderId})
         expectedErrorRc=0
         // let sess=await userAPI.getFirstSession({app})
         data.values={[e_part.RECORD_INFO]:normalRecord}
-        await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1.sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
     });
     //创建 不允许字段为null（类型不正确，而 update是允许的）
     it('1.3 create:parentId cant be null', async function() {
@@ -210,7 +162,7 @@ describe('dispatch', function() {
         expectedErrorRc=validateError.validateValue.CUDTypeWrong.rc
         // let sess=await userAPI.getFirstSession({app})
         data.values={[e_part.RECORD_INFO]:normalRecord}
-        await misc_helper.postDataToAPI_compareFieldRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,fieldName:[e_field.FOLDER.PARENT_FOLDER_ID],app:app})
+        await misc_helper.postDataToAPI_compareFieldRc_async({APIUrl:finalUrl,sess:user1.sess,data:data,expectedErrorRc:expectedErrorRc,fieldName:[e_field.FOLDER.PARENT_FOLDER_ID],app:app})
     });
     /*** 无法测试，因为parentFolderId会预先进行objectId的检测  ***/
 /*    it('1.4 create:parentId cant be null', async function() {
@@ -219,23 +171,23 @@ describe('dispatch', function() {
         expectedErrorRc=validateError.validateValue.CUDTypeWrong.rc
         // let sess=await userAPI.getFirstSession({app})
         data.values={[e_part.RECORD_INFO]:normalRecord}
-        await misc_helper.postDataToAPI_compareFieldRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,fieldName:[e_field.FOLDER.PARENT_FOLDER_ID],app:app})
+        await misc_helper.postDataToAPI_compareFieldRc_async({APIUrl:finalUrl,sess:user1.sess,data:data,expectedErrorRc:expectedErrorRc,fieldName:[e_field.FOLDER.PARENT_FOLDER_ID],app:app})
     });*/
     it('1.5 create:unExist parentId', async function() {
         finalUrl=baseUrl
-        normalRecord[e_field.FOLDER.PARENT_FOLDER_ID]=unExistCryptedFolderIdForUser1
+        normalRecord[e_field.FOLDER.PARENT_FOLDER_ID]=user1.encryptedObjectId({decryptedObjectId:testData.unExistObjectId})
         expectedErrorRc=inputValueLogicCheckError.ifFkValueExist_And_FkHasPriority_async.fkValueNotExist().rc
         // let sess=await userAPI.getFirstSession({app})
         data.values={[e_part.RECORD_INFO]:normalRecord}
-        await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1.sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
     });
     it('1.6 create: user1 try to user user2 folderId as parentId', async function() {
         finalUrl=baseUrl
-        normalRecord[e_field.FOLDER.PARENT_FOLDER_ID]=user2ParentFolderIdGetByUser1Crypted
+        normalRecord[e_field.FOLDER.PARENT_FOLDER_ID]=user1.encryptedObjectId({decryptedObjectId:user2.userId})
         expectedErrorRc=inputValueLogicCheckError.ifFkValueExist_And_FkHasPriority_async.notHasPriorityForFkField().rc
         // let sess=await userAPI.getFirstSession({app})
         data.values={[e_part.RECORD_INFO]:normalRecord}
-        await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1.sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
     });
     /*** 无法测试，rule阻止输入符号  ***/
 /*    it('1.7 create: name XSS', async function() {
@@ -245,23 +197,23 @@ describe('dispatch', function() {
         expectedErrorRc=inputValueLogicCheckError.ifFkValueExist_And_FkHasPriority_async.notHasPriorityForFkField().rc
         // let sess=await userAPI.getFirstSession({app})
         data.values={[e_part.RECORD_INFO]:normalRecord}
-        await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1.sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
     });*/
 
     it('1.8 create: user1 created sub folder successfully', async function() {
         finalUrl=baseUrl
-        normalRecord[e_field.FOLDER.PARENT_FOLDER_ID]=user1ParentFolderIdCrypted
+        normalRecord[e_field.FOLDER.PARENT_FOLDER_ID]=user1.encryptedObjectId({decryptedObjectId:user1.topFolderId})
         expectedErrorRc=0
         // let sess=await userAPI.getFirstSession({app})
         data.values={[e_part.RECORD_INFO]:normalRecord}
-        await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1.sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
     });
     /**              get                      **/
     it('2.1 get root folder', async function() {
         expectedErrorRc=0
         // let sess=await userAPI.getFirstSession({app})
         // data.values={[e_part.RECORD_INFO]:normalRecord}
-        await misc_helper.getDataFromAPI_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        await misc_helper.getDataFromAPI_async({APIUrl:finalUrl,sess:user1.sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
     });
     it('2.2 get child folder: crypted folder id format invalid', async function() {
         url='12345243535636576785'
@@ -269,7 +221,7 @@ describe('dispatch', function() {
         expectedErrorRc=controllerError.dispatch.get.cryptedFolderIdFormatInvalid.rc
         // let sess=await userAPI.getFirstSession({app})
         // data.values={[e_part.RECORD_INFO]:normalRecord}
-        await misc_helper.getDataFromAPI_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        await misc_helper.getDataFromAPI_async({APIUrl:finalUrl,sess:user1.sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
     });
     it('2.3 get child folder: decrypted folder id format valid', async function() {
         // url=testData.encryptedObjectId //16c8277c10df1212212acd05acd64f7b8acb644469a8a008c23c7dd76da06863
@@ -278,92 +230,101 @@ describe('dispatch', function() {
         expectedErrorRc=controllerError.dispatch.get.decryptedFolderIdFormatInvalid.rc
         // let sess=await userAPI.getFirstSession({app})
         // data.values={[e_part.RECORD_INFO]:normalRecord}
-        await misc_helper.getDataFromAPI_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        await misc_helper.getDataFromAPI_async({APIUrl:finalUrl,sess:user1.sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
     });
     it('2.4 get: user type incorrect', async function() {
         // url=testData.encryptedObjectId //16c8277c10df1212212acd05acd64f7b8acb644469a8a008c23c7dd76da06863
-        url=user1ParentFolderIdGetByAdminRoot
+        url=adminRoot.encryptedObjectId({decryptedObjectId:user1.topFolderId})//user1ParentFolderIdGetByAdminRoot
         finalUrl=baseUrl+url
         expectedErrorRc=controllerCheckerError.userTypeNotExpected.rc
         // let sess=await userAPI.getFirstSession({app})
         // data.values={[e_part.RECORD_INFO]:normalRecord}
-        await misc_helper.getDataFromAPI_async({APIUrl:finalUrl,sess:adminRootSess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        await misc_helper.getDataFromAPI_async({APIUrl:finalUrl,sess:adminRoot.sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
     });
     it('2.5 get: user2 try to get user1 folder', async function() {
         // url=testData.encryptedObjectId //16c8277c10df1212212acd05acd64f7b8acb644469a8a008c23c7dd76da06863
-        url=user1ParentFolderIdGetByUser2Crypted
+        url=user2.encryptedObjectId({decryptedObjectId:user1.topFolderId})//user1ParentFolderIdGetByUser2Crypted
         finalUrl=baseUrl+url
         expectedErrorRc=controllerError.get.notAuthorCantGetFolder.rc
         // let sess=await userAPI.getFirstSession({app})
         // data.values={[e_part.RECORD_INFO]:normalRecord}
-        await misc_helper.getDataFromAPI_async({APIUrl:finalUrl,sess:user2Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        await misc_helper.getDataFromAPI_async({APIUrl:finalUrl,sess:user2.sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
     });
     /********** update   ***********/
     it('3.1 update: user type incorrect ', async function() {
         finalUrl=baseUrl
         expectedErrorRc=controllerCheckerError.userTypeNotExpected.rc
-        data={values:{[e_part.RECORD_ID]:user1ParentFolderIdGetByAdminRoot,[e_part.RECORD_INFO]:{[e_field.FOLDER.NAME]:'test'}}}
-        await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:adminRootSess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        data={values:{[e_part.RECORD_ID]:adminRoot.encryptedObjectId({decryptedObjectId:user1.topFolderId}),[e_part.RECORD_INFO]:{[e_field.FOLDER.NAME]:'test'}}}
+        await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:adminRoot.sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
     });
 
     it('3.2 update: priority check, user not the owner of folderId ', async function() {
         finalUrl=baseUrl
         expectedErrorRc=controllerError.update.notAuthorCantUpdateFolder.rc
-        data={values:{[e_part.RECORD_ID]:user1ParentFolderIdGetByUser2Crypted,[e_part.RECORD_INFO]:{[e_field.FOLDER.NAME]:'test'}}}
-        await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user2Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        data={values:{[e_part.RECORD_ID]:user2.encryptedObjectId({decryptedObjectId:user1.topFolderId}),[e_part.RECORD_INFO]:{[e_field.FOLDER.NAME]:'test'}}}
+        await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user2.sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
     });
     it('3.2.2 update: recordId not exist ', async function() {
         finalUrl=baseUrl
         expectedErrorRc=controllerError.update.notAuthorCantUpdateFolder.rc
-        let unExistRecordId=await commonAPI.cryptObjectId_async({objectId:testData.unExistObjectId,sess:user2Sess})
-        data={values:{[e_part.RECORD_ID]:unExistRecordId,[e_part.RECORD_INFO]:{[e_field.FOLDER.NAME]:'test'}}}
-        await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user2Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        // let unExistRecordId=await commonAPI.cryptObjectId_async({objectId:testData.unExistObjectId,sess:user2.sess})
+        data={values:{[e_part.RECORD_ID]:user2.encryptedObjectId({decryptedObjectId:testData.unExistObjectId}),[e_part.RECORD_INFO]:{[e_field.FOLDER.NAME]:'test'}}}
+        await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user2.sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
     });
     it('3.3 update:parentId cant be self', async function() {
         finalUrl=baseUrl
         expectedErrorRc=controllerError.update.parentFolderIdCantBeSelf.rc
-        normalRecord[e_field.FOLDER.PARENT_FOLDER_ID]=user1ParentFolderIdCrypted
-        data.values={[e_part.RECORD_INFO]:normalRecord,[e_part.RECORD_ID]:user1ParentFolderIdCrypted}
-        await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        normalRecord[e_field.FOLDER.PARENT_FOLDER_ID]=user1.encryptedObjectId({decryptedObjectId:user1.topFolderId}) //user1ParentFolderIdCrypted
+        data.values={[e_part.RECORD_INFO]:normalRecord,[e_part.RECORD_ID]:user1.encryptedObjectId({decryptedObjectId:user1.topFolderId})}
+        await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1.sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+    });
+    it('3.3.1 update:parentId not current users', async function() {
+        finalUrl=baseUrl
+        expectedErrorRc=inputValueLogicCheckError.ifFkValueExist_And_FkHasPriority_async.notHasPriorityForFkField().rc
+        normalRecord[e_field.FOLDER.PARENT_FOLDER_ID]=user1.encryptedObjectId({decryptedObjectId:user2.topFolderId}) //user1ParentFolderIdCrypted
+        data.values={
+            [e_part.RECORD_INFO]:normalRecord,
+            [e_part.RECORD_ID]:user1.encryptedObjectId({decryptedObjectId:user1.topFolderId})}
+        await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1.sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
     });
     it('3.4 update: empty data', async function() {
         finalUrl=baseUrl
         expectedErrorRc=validateError.validateFormat.recordInfoCantEmpty.rc
-        normalRecord[e_field.FOLDER.PARENT_FOLDER_ID]=user1ParentFolderIdCrypted
-        data.values={[e_part.RECORD_INFO]:{},[e_part.RECORD_ID]:user1ParentFolderIdCrypted}
-        await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        normalRecord[e_field.FOLDER.PARENT_FOLDER_ID]=user1.encryptedObjectId({decryptedObjectId:user1.topFolderId})
+        data.values={[e_part.RECORD_INFO]:{},[e_part.RECORD_ID]:user1.encryptedObjectId({decryptedObjectId:user1.topFolderId})}
+        await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1.sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
     });
     it('3.5 update: no data change', async function() {
         finalUrl=baseUrl
         expectedErrorRc=0
-        normalRecord[e_field.FOLDER.PARENT_FOLDER_ID]=user1ParentFolderIdCrypted
-        data.values={[e_part.RECORD_INFO]:{[e_field.FOLDER.NAME]:'我的文档'},[e_part.RECORD_ID]:user1ParentFolderIdCrypted}
-        await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        normalRecord[e_field.FOLDER.PARENT_FOLDER_ID]=user1.encryptedObjectId({decryptedObjectId:user1.topFolderId})
+        data.values={[e_part.RECORD_INFO]:{[e_field.FOLDER.NAME]:'我的文档'},[e_part.RECORD_ID]:user1.encryptedObjectId({decryptedObjectId:user1.topFolderId})}
+        await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1.sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
     });
     /********** delete   ***********/
     it('4.1 delete: user type incorrect ', async function() {
         finalUrl=baseUrl
         expectedErrorRc=controllerCheckerError.userTypeNotExpected.rc
-        data={values:{[e_part.RECORD_ID]:user1ParentFolderIdGetByAdminRoot}}
-        await misc_helper.deleteAPI_compareCommonRc_async({APIUrl:finalUrl,sess:adminRootSess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        data={values:{[e_part.RECORD_ID]:adminRoot.encryptedObjectId({decryptedObjectId:user1.topFolderId})}}
+        await misc_helper.deleteAPI_compareCommonRc_async({APIUrl:finalUrl,sess:adminRoot.sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
     });
     it('4.2 delete: priority check, user not the owner of folderId ', async function() {
         finalUrl=baseUrl
         expectedErrorRc=controllerError.delete.notAuthorCantDeleteFolder.rc
-        data={values:{[e_part.RECORD_ID]:user1ParentFolderIdGetByUser2Crypted}}
-        await misc_helper.deleteAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user2Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        data={values:{[e_part.RECORD_ID]:user2.encryptedObjectId({decryptedObjectId:user1.topFolderId})}}
+        await misc_helper.deleteAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user2.sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
     });
     it('4.3 delete: has child folder cant be delete ', async function() {
         finalUrl=baseUrl
         expectedErrorRc=controllerError.delete.childFolderInFolderCanDelete.rc
-        data={values:{[e_part.RECORD_ID]:user1ParentFolderIdCrypted}}
-        await misc_helper.deleteAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        data={values:{[e_part.RECORD_ID]:user1.encryptedObjectId({decryptedObjectId:user1.topFolderId})}}
+        await misc_helper.deleteAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1.sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
     });
     it('4.4 delete: successful ', async function() {
         finalUrl=baseUrl
         expectedErrorRc=0
         data={values:{[e_part.RECORD_ID]:recordId1}}
-        await misc_helper.deleteAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        await misc_helper.deleteAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1.sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
     });
     /****** manual test   *******/
     /** 需要手工在db中改门限值 ***/
@@ -375,11 +336,11 @@ describe('dispatch', function() {
 
         finalUrl=baseUrl
         // normalRecord[e_field.FOLDER.NAME]='test'
-        normalRecord[e_field.FOLDER.PARENT_FOLDER_ID]=user1ParentFolderIdCrypted
+        normalRecord[e_field.FOLDER.PARENT_FOLDER_ID]=user1.encryptedObjectId({decryptedObjectId:user1.topFolderId})
         expectedErrorRc=resourceCheckError.ifEnoughResource_async.totalFolderNumExceed({}).rc
         // let sess=await userAPI.getFirstSession({app})
         data.values={[e_part.RECORD_INFO]:normalRecord}
-        await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        await misc_helper.postDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1.sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
 
         //恢复原始设置
         await db_operation_helper.changeResourceProfileSetting_async({resourceRange:resourceRange,resourceType:e_resourceType.BASIC,num:originalSetting['num'],size:originalSetting['size']})
@@ -388,8 +349,8 @@ describe('dispatch', function() {
         finalUrl=baseUrl
         expectedErrorRc=0
         normalRecord[e_field.FOLDER.PARENT_FOLDER_ID]=null
-        data.values={[e_part.RECORD_INFO]:normalRecord,[e_part.RECORD_ID]:user1ParentFolderIdCrypted}
-        await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1Sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
+        data.values={[e_part.RECORD_INFO]:normalRecord,[e_part.RECORD_ID]:user1.encryptedObjectId({decryptedObjectId:user1.topFolderId})}
+        await misc_helper.putDataToAPI_compareCommonRc_async({APIUrl:finalUrl,sess:user1.sess,data:data,expectedErrorRc:expectedErrorRc,app:app})
     });
 })
 

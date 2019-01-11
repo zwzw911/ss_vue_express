@@ -412,18 +412,19 @@ function validatePartValue({req,expectedPart,collName,applyRange,fkConfig}){
 //req+parameterName: 组成cryptedObjectId http://127.0.0.1/article/encryptedObjectId
 //cryptedError: cryptedObjectId格式错误，返回的error
 //decryptedError：解密后objectId的格式错误，返回的error
-async function checkObjectIdInReqParams_async({req,parameterName,cryptedError,decryptedError}){
+async function checkObjectIdInReqParams_async({req,parameterName,encryptedError,decryptedError}){
+    // ap.wrn('checkObjectIdInReqParams_async in')
     let userInfo=await controllerHelper.getLoginUserInfo_async({req:req})
     let tempSalt=userInfo.tempSalt
     //判断加密的objectId格式
     let encryptedObjectId=req.params[parameterName]
     // ap.wrn('encryptedObjectId',encryptedObjectId)
     if(false===dataType.ifObjectIdEncrypted({objectId:encryptedObjectId})){
-        return Promise.reject(cryptedError)
+        return Promise.reject(encryptedError)
     }
     //解密
     let tmpResult=crypt.decryptSingleValue({fieldValue:encryptedObjectId,salt:tempSalt})
-    // ap.wrn('tmpResult',tmpResult)
+    // ap.wrn('decrypted tmpResult',tmpResult)
     if(tmpResult.rc>0){
         return Promise.reject(tmpResult)
     }

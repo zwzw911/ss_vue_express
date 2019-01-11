@@ -155,7 +155,7 @@ async function impeach_dispatcher_async({req}) {
                     // ap.inf('create use inputPreCheck result',result)
                     if (result.rc > 0) {return Promise.reject(result)}
 //检测url中objectId并解密objectId
-                    await controllerPreCheck.checkObjectIdInReqParams_async({req:req,parameterName:'articleId',cryptedError:controllerError.dispatch.get.cryptedArticleIdFormatInvalid,decryptedError:controllerError.dispatch.get.decryptedArticleIdFormatInvalid})
+                    await controllerPreCheck.checkObjectIdInReqParams_async({req:req,parameterName:'articleId',encryptedError:controllerError.dispatch.get.cryptedArticleIdFormatInvalid,decryptedError:controllerError.dispatch.get.decryptedArticleIdFormatInvalid})
                     return await uploadImage_async({req: req,applyRange:applyRange})
                 }
             }

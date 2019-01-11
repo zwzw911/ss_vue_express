@@ -32,7 +32,7 @@ const Field={
     suagr:[],
     user:['userType','password','photoPathId','photoHashName','docStatus','accountType','usedAccount','lastAccountUpdateDate','lastSignInDate','photoSize',],
     user_resource_profile:['startDate','endDate','duration',],
-    collection:['creatorId',],
+    collection:['creatorId','parentId','articleNum','topicNum',],
     receive_recommend:['receiver','unreadRecommends','unreadRecommendsNum','readRecommends','readRecommendsNum',],
     send_recommend:['sender','receivers',],
     topic:['creatorId',],

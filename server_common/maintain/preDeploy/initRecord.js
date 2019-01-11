@@ -412,6 +412,29 @@ const resource_profile= [
         [e_field.RESOURCE_PROFILE.MAX_NUM]:2000,//超过1000未读分享文档，提示升级
         //[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]:10, //假设每个文件大小为2M
     },
+
+    /**         最大收藏数量        **/
+    {
+        [e_field.RESOURCE_PROFILE.NAME]:e_resourceRange_name.MAX_COLLECTION_PER_USER,
+        [e_field.RESOURCE_PROFILE.RESOURCE_RANGE]:e_resourceRange.MAX_COLLECTION_PER_USER,
+        [e_field.RESOURCE_PROFILE.RESOURCE_TYPE]:e_resourceType.BASIC,
+        [e_field.RESOURCE_PROFILE.MAX_NUM]:20,//最多20个收藏夹
+        //[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]:10, //假设每个文件大小为2M
+    },
+    {
+        [e_field.RESOURCE_PROFILE.NAME]:e_resourceRange_name.MAX_ARTICLE_PER_COLLECTION,
+        [e_field.RESOURCE_PROFILE.RESOURCE_RANGE]:e_resourceRange.MAX_ARTICLE_PER_COLLECTION,
+        [e_field.RESOURCE_PROFILE.RESOURCE_TYPE]:e_resourceType.BASIC,
+        [e_field.RESOURCE_PROFILE.MAX_NUM]:100,//每个收藏夹最多收藏100个文档
+        //[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]:10, //假设每个文件大小为2M
+    },
+    {
+        [e_field.RESOURCE_PROFILE.NAME]:`高级`+e_resourceRange_name.MAX_TOPIC_PER_COLLECTION,
+        [e_field.RESOURCE_PROFILE.RESOURCE_RANGE]:e_resourceRange.MAX_TOPIC_PER_COLLECTION,
+        [e_field.RESOURCE_PROFILE.RESOURCE_TYPE]:e_resourceType.BASIC,
+        [e_field.RESOURCE_PROFILE.MAX_NUM]:100,//每个收藏夹最多收藏100个主题
+        //[e_field.RESOURCE_PROFILE.MAX_DISK_SPACE_IN_MB]:10, //假设每个文件大小为2M
+    },
 ]
 
 

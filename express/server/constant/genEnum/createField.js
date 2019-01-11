@@ -26,7 +26,7 @@ const createField={
     'impeach_image':["impeachId"],
     'user':["name","account","password","addFriendRule"],
     'user_resource_profile':["userId","resource_profile_id","duration"],
-    'collection':["name","articlesId","topicsId"],
+    'collection':["name"],
     'send_recommend':["articleId"],
     'topic':["name","desc","articlesId"],
 }

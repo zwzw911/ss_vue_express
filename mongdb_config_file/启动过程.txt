@@ -1,0 +1,36 @@
+﻿1. 执行installAsService，将所有mongod/mongos安装为service
+2. 运行startAllService，启动mongod/mongos实例。此时mongos无法启动，因为mongos中配置的cfgsvr还没有设置成复制集
+
+
+4. 通过mongo登录shard1/2的任意一个非仲裁实例，设置shard1/2的复制集
+    4.1 mongo  127.0.0.1:30001/30011
+    4.2 use  admin
+    4.3    从D:\U\ss_vue_express\server_common\model\mongo\common\replicateConfiguration拷贝对应的配置.config=拷贝内容 （通过正则替换，将copy内容变成一行字符：\/\/.+\r\n  \r\n  space  tab  4个变成空）
+    4.4 运行D:\U\ss_vue_express\server_common\model\mongo\common\replicateConfiguration，自动输入替换后的值
+    4.5 rs.initiate(config)
+    4.6 执行rs.status()查看复制集状态
+    4.7 执行rs.conf()查看复制集配置信息
+
+5. 通过mongo登录configsvr的任意一个实例（config server不能有仲裁节点），设置configsvr的复制集
+    5.1 mongo  127.0.0.1:30021
+    5.2 use  admin
+    5.3    从D:\U\ss_vue_express\server_common\model\mongo\common\replicateConfiguration拷贝对应的配置.config=拷贝内容
+    5.4 rs.initiate(config)    
+    5.5 执行rs.status()查看复制集状态
+    5.6 执行rs.conf()查看复制集配置信息
+    
+6. 通过mongo登录mongos的某个实例，添加shard复制集（config server复制集已经在mongos的配置文件中设置）。其他mongos会自动同步配置信息
+    6.1 mongo  127.0.0.1:30031
+    6.2 use  admin
+    6.3 #串联cfg server和分配shard1。注意，如果IP无效，使用hostname
+	db.runCommand( { addshard : "rs_shard1/localhost:30001,localhost:30002,localhost:30003"});  
+    6.4 #串联cfg server和分配shard2
+	db.runCommand( { addshard : "rs_shard2/localhost:30011,localhost:30012,localhost:30013"});  
+    6.5 db.runCommand( { listshards : 1 } ); 查看复制集状态     
+
+
+7. 通过mongo连接在mongos上，准备让指定的数据库、指定的集合分片生效。
+	use admin
+    7.1 db.runCommand( { enablesharding :"ss"});
+    7.2 db.runCommand( { shardcollection : "ss.article",key : {id: 1} } )
+        db.runCommand( { shardcollection : "ss.table",key : {id: 1} } )

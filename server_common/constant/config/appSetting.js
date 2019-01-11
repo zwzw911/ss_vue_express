@@ -24,8 +24,8 @@ const appSetting={
         'trust_proxy':true,
         hostDomain:'172.24.251.56',
 
-        mongoSwitchForNormal:'127.0.0.1:27017',//mongo switch的ip
-        mongoSwitchForAdmin:'127.0.0.1:27017',//mongo switch的ip
+        mongoSwitchForNormal:'127.0.0.1:30031,127.0.0.1:30032,127.0.0.1:30033,',//mongo switch的ip
+        mongoSwitchForAdmin:'127.0.0.1:30031,127.0.0.1:30032,127.0.0.1:30033,',//mongo switch的ip
 
         redisIPForNormal:'127.0.0.1',
         redisPortForNormal:'6379',

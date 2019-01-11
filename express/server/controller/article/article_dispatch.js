@@ -104,7 +104,7 @@ async function article_dispatcher_async({req}) {
                 let otherArticleUrl=new RegExp(`/article/[0-9a-fA-F]{64}/?`)
                 if (true===otherArticleUrl.test(originalUrl)) {
                     //检测url中objectId并解密
-                    await controllerPreCheck.checkObjectIdInReqParams_async({req:req,parameterName:'articleId',cryptedError:controllerError.dispatch.get.cryptedArticleIdFormatInvalid,decryptedError:controllerError.dispatch.get.decryptedArticleIdFormatInvalid})
+                    await controllerPreCheck.checkObjectIdInReqParams_async({req:req,parameterName:'articleId',encryptedError:controllerError.dispatch.get.cryptedArticleIdFormatInvalid,decryptedError:controllerError.dispatch.get.decryptedArticleIdFormatInvalid})
 
                     result = await getArticle_async({req: req})
                     return Promise.resolve(result)
@@ -124,7 +124,7 @@ async function article_dispatcher_async({req}) {
                     await controllerPreCheck.userStatusCheck_async({req:req,userLoginCheck:userLoginCheck,penalizeCheck:penalizeCheck})
 
                     //检测url中objectId并解密objectId
-                    await controllerPreCheck.checkObjectIdInReqParams_async({req:req,parameterName:'articleId',cryptedError:controllerError.dispatch.get.cryptedArticleIdFormatInvalid,decryptedError:controllerError.dispatch.get.decryptedArticleIdFormatInvalid})
+                    await controllerPreCheck.checkObjectIdInReqParams_async({req:req,parameterName:'articleId',encryptedError:controllerError.dispatch.get.cryptedArticleIdFormatInvalid,decryptedError:controllerError.dispatch.get.decryptedArticleIdFormatInvalid})
 
                     result = await getUpdateArticle_async({req: req})
                     return Promise.resolve(result)
@@ -164,7 +164,7 @@ async function article_dispatcher_async({req}) {
                     await controllerPreCheck.userStatusCheck_async({req: req,userLoginCheck: userLoginCheck,penalizeCheck: penalizeCheck})
     // ap.inf('userStatusCheck_async done')
                     //检测url中objectId并解密objectId
-                    await controllerPreCheck.checkObjectIdInReqParams_async({req:req,parameterName:'attachmentId',cryptedError:controllerError.dispatch.get.cryptedAAttachmentIdFormatInvalidCantDownload,decryptedError:controllerError.dispatch.get.decryptedAttachmentIdFormatInvalidCantDownload})
+                    await controllerPreCheck.checkObjectIdInReqParams_async({req:req,parameterName:'attachmentId',encryptedError:controllerError.dispatch.get.cryptedAAttachmentIdFormatInvalidCantDownload,decryptedError:controllerError.dispatch.get.decryptedAttachmentIdFormatInvalidCantDownload})
                     // ap.inf('checkObjectIdInReqParams_async done')
                     result = await downloadArticleAttachment_async({req: req})
                     // ap.inf('result done',result)
@@ -208,7 +208,7 @@ async function article_dispatcher_async({req}) {
                     await controllerPreCheck.userStatusCheck_async({req: req,userLoginCheck: userLoginCheck,penalizeCheck: penalizeCheck})
 
                     //检测url中objectId并解密objectId
-                    await controllerPreCheck.checkObjectIdInReqParams_async({req:req,parameterName:'articleId',cryptedError:controllerError.dispatch.post.cryptedArticleIdFormatInvalidCantUploadImage,decryptedError:controllerError.dispatch.post.decryptedArticleIdFormatInvalidCantUploadImage})
+                    await controllerPreCheck.checkObjectIdInReqParams_async({req:req,parameterName:'articleId',encryptedError:controllerError.dispatch.post.cryptedArticleIdFormatInvalidCantUploadImage,decryptedError:controllerError.dispatch.post.decryptedArticleIdFormatInvalidCantUploadImage})
                     return await uploadArticleImage_async({req: req})
 
                 }
@@ -222,7 +222,7 @@ async function article_dispatcher_async({req}) {
                     await controllerPreCheck.userStatusCheck_async({req: req,userLoginCheck: userLoginCheck,penalizeCheck: penalizeCheck})
 
 
-                    await controllerPreCheck.checkObjectIdInReqParams_async({req:req,parameterName:'articleId',cryptedError:controllerError.dispatch.post.cryptedArticleIdFormatInvalidCantUploadAttachment,decryptedError:controllerError.dispatch.post.decryptedArticleIdFormatInvalidCantUploadAttachment})
+                    await controllerPreCheck.checkObjectIdInReqParams_async({req:req,parameterName:'articleId',encryptedError:controllerError.dispatch.post.cryptedArticleIdFormatInvalidCantUploadAttachment,decryptedError:controllerError.dispatch.post.decryptedArticleIdFormatInvalidCantUploadAttachment})
 // ap.inf('articleAttachment in')
                     result= await uploadArticleAttachment_async({req: req})
                     return Promise.resolve(result)

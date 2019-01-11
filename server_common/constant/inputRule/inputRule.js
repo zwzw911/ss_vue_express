@@ -1,4 +1,4 @@
-/*    gene by D:\U\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-12-12   */ 
+/*    gene by D:\U\ss_vue_express\server_common\maintain\generateFunction\generateAllRuleInOneFile.js  at 2018-12-26   */ 
  
 "use strict"
 const inputRule={
@@ -25,7 +25,7 @@ const inputRule={
             'dataType':"string",
             'applyRange':["create"],
             'require':{"define":{"create":true},"error":{"rc":100410,"msg":"受罚类型不能为空"},"mongoError":{"rc":200410,"msg":"受罚类型不能为空"}},
-            'enum':{"define":["1","2","3","4","10","20","21","30","31","40","50","60","61","70","80"],"error":{"rc":100412,"msg":"受罚类型不正确"},"mongoError":{"rc":200412,"msg":"受罚类型不正确"}},
+            'enum':{"define":["1","2","3","4","10","20","21","30","31","40","50","60","61","70","80","90"],"error":{"rc":100412,"msg":"受罚类型不正确"},"mongoError":{"rc":200412,"msg":"受罚类型不正确"}},
         },
         'penalizeSubType':{
             'chineseName':"受罚子类型",
@@ -153,7 +153,7 @@ const inputRule={
             'dataType':"string",
             'applyRange':["create"],
             'require':{"define":{"create":true},"error":{"rc":100506,"msg":"资源配置范围不能为空"},"mongoError":{"rc":200506,"msg":"资源配置范围不能为空"}},
-            'enum':{"define":["1","10","12","14","16","18","20","100","102","105","106","110","112","114","116","118","120","122","124","126","128","130","140","150","151"],"error":{"rc":100508,"msg":"资源配置范围的类型不正确"},"mongoError":{"rc":200508,"msg":"资源配置范围的类型不正确"}},
+            'enum':{"define":["1","10","12","14","16","18","20","100","102","105","106","110","112","114","116","118","120","122","124","126","128","130","140","150","151","160","161","162"],"error":{"rc":100508,"msg":"资源配置范围的类型不正确"},"mongoError":{"rc":200508,"msg":"资源配置范围的类型不正确"}},
         },
         'type':{
             'chineseName':"资源配置类型",
@@ -409,7 +409,7 @@ const inputRule={
             'chineseName':"上级目录",
             'dataType':"objectId",
             'applyRange':["create","update_scalar"],
-            'require':{"define":{"create":false,"update_scalar":false},"error":{"rc":101204,"msg":"上级目录不能为空"},"mongoError":{"rc":201204,"msg":"上级目录不能为空"}},
+            'require':{"define":{"create":true,"update_scalar":false},"error":{"rc":101204,"msg":"上级目录不能为空"},"mongoError":{"rc":201204,"msg":"上级目录不能为空"}},
             'format':{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":101206,"msg":"上级目录必须是objectId"},"mongoError":{"rc":201206,"msg":"上级目录必须是objectId"}},
         },
         'authorId':{
@@ -524,7 +524,7 @@ const inputRule={
             'dataType':"string",
             'applyRange':["create"],
             'require':{"define":{"create":true},"error":{"rc":102208,"msg":"处罚类型不能为空"},"mongoError":{"rc":202208,"msg":"处罚类型不能为空"}},
-            'enum':{"define":["1","2","3","4","10","20","21","30","31","40","50","60","61","70","80"],"error":{"rc":102210,"msg":"未知处罚类型"},"mongoError":{"rc":202210,"msg":"未知处罚类型"}},
+            'enum':{"define":["1","2","3","4","10","20","21","30","31","40","50","60","61","70","80","90"],"error":{"rc":102210,"msg":"未知处罚类型"},"mongoError":{"rc":202210,"msg":"未知处罚类型"}},
         },
         'duration':{
             'chineseName':"处罚时间",
@@ -1166,32 +1166,51 @@ const inputRule={
             'chineseName':"收藏夹名",
             'dataType':"string",
             'applyRange':["create","update_scalar"],
-            'require':{"define":{"create":true,"update_scalar":false},"error":{"rc":10860,"msg":"收藏夹名不能为空"},"mongoError":{"rc":20860,"msg":"收藏夹名不能为空"}},
-            'minLength':{"define":1,"error":{"rc":10862,"msg":"收藏夹名至少1个字符"},"mongoError":{"rc":20862,"msg":"收藏夹名至少1个字符"}},
-            'maxLength':{"define":50,"error":{"rc":10864,"msg":"收藏夹名的字符数不能超过50个字符"},"mongoError":{"rc":20864,"msg":"收藏夹名的字符数不能超过50个字符"}},
+            'require':{"define":{"create":true,"update_scalar":false},"error":{"rc":105400,"msg":"收藏夹名不能为空"},"mongoError":{"rc":205400,"msg":"收藏夹名不能为空"}},
+            'minLength':{"define":1,"error":{"rc":105402,"msg":"收藏夹名至少1个字符"},"mongoError":{"rc":205402,"msg":"收藏夹名至少1个字符"}},
+            'maxLength':{"define":50,"error":{"rc":105404,"msg":"收藏夹名的字符数不能超过50个字符"},"mongoError":{"rc":205404,"msg":"收藏夹名的字符数不能超过50个字符"}},
         },
         'articlesId':{
             'chineseName':"收藏文档",
             'dataType':["objectId"],
-            'applyRange':["create","update_scalar"],
-            'require':{"define":{"create":false,"update_scalar":false},"error":{"rc":10866,"msg":"收藏文档不能为空"},"mongoError":{"rc":20866,"msg":"收藏文档不能为空"}},
-            'arrayMaxLength':{"define":100,"error":{"rc":10868,"msg":"最多收藏100篇文档"},"mongoError":{"rc":20868,"msg":"最多收藏100篇文档"}},
-            'format':{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":10870,"msg":"文档必须是objectId"},"mongoError":{"rc":20870,"msg":"文档必须是objectId"}},
+            'applyRange':["update_array"],
+            'require':{"define":{"update_array":false},"error":{"rc":105410,"msg":"收藏文档不能为空"},"mongoError":{"rc":205410,"msg":"收藏文档不能为空"}},
+            'arrayMaxLength':{"define":100,"error":{"rc":105412,"msg":"最多收藏100篇文档"},"mongoError":{"rc":205412,"msg":"最多收藏100篇文档"}},
+            'format':{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":105414,"msg":"文档必须是objectId"},"mongoError":{"rc":205414,"msg":"文档必须是objectId"}},
         },
         'topicsId':{
             'chineseName':"收藏系列",
             'dataType':["objectId"],
-            'applyRange':["create","update_scalar"],
-            'require':{"define":{"create":false,"update_scalar":false},"error":{"rc":10872,"msg":"系列不能为空"},"mongoError":{"rc":20872,"msg":"系列不能为空"}},
-            'arrayMaxLength':{"define":100,"error":{"rc":10874,"msg":"最多收藏100个系列"},"mongoError":{"rc":20874,"msg":"最多收藏100个系列"}},
-            'format':{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":10876,"msg":"系列必须是objectId"},"mongoError":{"rc":20876,"msg":"系列必须是objectId"}},
+            'applyRange':["update_array"],
+            'require':{"define":{"update_array":false},"error":{"rc":105416,"msg":"系列不能为空"},"mongoError":{"rc":205416,"msg":"系列不能为空"}},
+            'arrayMaxLength':{"define":100,"error":{"rc":105418,"msg":"最多收藏100个系列"},"mongoError":{"rc":205418,"msg":"最多收藏100个系列"}},
+            'format':{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":105420,"msg":"系列必须是objectId"},"mongoError":{"rc":205420,"msg":"系列必须是objectId"}},
         },
         'creatorId':{
             'chineseName':"收藏夹创建人",
             'dataType':"objectId",
             'applyRange':["create"],
-            'require':{"define":{"create":true},"error":{"rc":10878,"msg":"收藏夹创建人不能为空"},"mongoError":{"rc":20878,"msg":"收藏夹创建人不能为空"}},
-            'format':{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":10880,"msg":"收藏夹创建人必须是objectId"},"mongoError":{"rc":20880,"msg":"收藏夹创建人必须是objectId"}},
+            'require':{"define":{"create":true},"error":{"rc":105450,"msg":"收藏夹创建人不能为空"},"mongoError":{"rc":205450,"msg":"收藏夹创建人不能为空"}},
+            'format':{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":105452,"msg":"收藏夹创建人必须是objectId"},"mongoError":{"rc":205452,"msg":"收藏夹创建人必须是objectId"}},
+        },
+        'parentId':{
+            'chineseName':"父级收藏夹",
+            'dataType':"objectId",
+            'applyRange':["create"],
+            'require':{"define":{"create":true},"error":{"rc":105454,"msg":"父级收藏夹不能为空"},"mongoError":{"rc":205454,"msg":"父级收藏夹不能为空"}},
+            'format':{"define":/^[0-9a-fA-F]{24}$/,"error":{"rc":105456,"msg":"父级收藏夹必须是objectId"},"mongoError":{"rc":205456,"msg":"父级收藏夹必须是objectId"}},
+        },
+        'articleNum':{
+            'chineseName':"收藏文档的数量",
+            'dataType':"number",
+            'applyRange':["create","update_scalar"],
+            'require':{"define":{"create":false,"update_array":false},"error":{"rc":105458,"msg":"收藏夹中文档数量不能为空"},"mongoError":{"rc":205458,"msg":"收藏夹中文档数量不能为空"}},
+        },
+        'topicNum':{
+            'chineseName':"收藏主题的数量",
+            'dataType':"number",
+            'applyRange':["create","update_scalar"],
+            'require':{"define":{"create":false,"update_array":false},"error":{"rc":105460,"msg":"收藏夹中主题数量不能为空"},"mongoError":{"rc":205460,"msg":"收藏夹中主题数量不能为空"}},
         },
     },
     'send_recommend':{
@@ -1395,7 +1414,7 @@ const inputRule={
             'dataType':"string",
             'applyRange':["create"],
             'require':{"define":{"create":true},"error":{"rc":11214,"msg":"统计资源类别不能为空"},"mongoError":{"rc":21214,"msg":"统计资源类别不能为空"}},
-            'enum':{"define":["1","10","12","14","16","18","20","100","102","105","106","110","112","114","116","118","120","122","124","126","128","130","140","150","151"],"error":{"rc":10020,"msg":"用户权限不正确"},"mongoError":{"rc":20020,"msg":"用户权限不正确"}},
+            'enum':{"define":["1","10","12","14","16","18","20","100","102","105","106","110","112","114","116","118","120","122","124","126","128","130","140","150","151","160","161","162"],"error":{"rc":10020,"msg":"用户权限不正确"},"mongoError":{"rc":20020,"msg":"用户权限不正确"}},
         },
         'uploadedFileNum':{
             'chineseName':"上传文件数量",

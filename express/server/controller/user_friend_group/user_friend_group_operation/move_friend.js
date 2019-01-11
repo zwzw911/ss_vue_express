@@ -5,7 +5,7 @@
 'use strict'
 /******************    内置lib和第三方lib  **************/
 const ap=require(`awesomeprint`)
-
+const lodash=require('lodash')
 /**************  controller相关常量  ****************/
 const controller_setting=require('../user_friend_group_setting/user_friend_group_setting').setting
 const controllerError=require('../user_friend_group_setting/user_friend_group_controllerError').controllerError
@@ -82,6 +82,7 @@ async function moveFriends_async({req,applyRange}) {
     // let docValue = req.body.values[e_part.RECORD_INFO]
     // let recordId = req.body.values[e_part.RECORD_ID]
     let subFieldValue = req.body.values[e_part.EDIT_SUB_FIELD]
+    ap.wrn('subFieldValue',subFieldValue)
     // console.log(`docValue============>${JSON.stringify(docValue)}`)
     // console.log(`recordId============>${JSON.stringify(recordId)}`)
     // ap.wrn('subFieldValue',subFieldValue)
@@ -91,6 +92,10 @@ async function moveFriends_async({req,applyRange}) {
     await controllerChecker.ifExpectedUserType_async({currentUserType:userType,arr_expectedUserType:[e_allUserType.USER_NORMAL]})
     // ap.wrn('ifExpectedUserType_async done')
     // ap.wrn('subFieldValue',subFieldValue)
+
+    /************************************************/
+    /*****************  eitSubField检测     ************/
+    /************************************************/
     for(let singleFieldName in subFieldValue){
         // if(userType===e_allUserType.USER_NORMAL){
             /**        检查eleArray中数据是否合格        **/
@@ -105,14 +110,37 @@ async function moveFriends_async({req,applyRange}) {
             })
         // }
     }
+
+    /************************************************/
+    /******   特殊检测 ：eleArray中的元素，  ********/
+    /** 是否已经是好友（防止通过只设置to来实现添加好友的功能） *******/
+    /************************************************/
+    tmpResult=await common_operation_model.findById_returnRecord_async({dbModel:e_dbModel.user_friend_group,id:subFieldValue[e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP][e_subField.FROM]})
+    //null由后续代码检测
+    //判断是否eleArray中，所有好友都是from记录中的好友
+    if(null!==tmpResult){
+        let intersection=lodash.intersection(
+            JSON.parse(JSON.stringify(tmpResult[e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP])),
+            subFieldValue[e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP][e_subField.ELE_ARRAY])
+        if(intersection.length!==subFieldValue[e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP][e_subField.ELE_ARRAY].length){
+            return Promise.reject(controllerError.moveFriend.cantMoveNonFriend)
+        }
+
+    }
+
+
+
+
+
+
     // ap.wrn('checkEditSubFieldEleArray_async done')
-        //转换成nosql
-        convertedNoSql=await dataConvert.convertEditSubFieldValueToNoSql({editSubFieldValue:subFieldValue})
-        // ap.wrn('convertedNoSql',convertedNoSql)
-        //从convertedNoSql中的key，查询id是否valid(convertedNoSql合并了form/to的id，检查更快)
-    /*******************************************************************************************/
-    /*                                       authorization check                               */
-    /*******************************************************************************************/
+    //转换成nosql
+    convertedNoSql=await dataConvert.convertEditSubFieldValueToNoSql({editSubFieldValue:subFieldValue})
+    // ap.wrn('convertedNoSql',convertedNoSql)
+    //从convertedNoSql中的key，查询id是否valid(convertedNoSql合并了form/to的id，检查更快)
+    /************************************************/
+    /******        authorization check       *******/
+    /************************************************/
     //from/to 对应的记录的拥有者是否为当前用户
     let fromToError={
         fromToRecordIdNotExists:controllerError.moveFriend.fromToRecordIdNotExists,
@@ -134,19 +162,46 @@ async function moveFriends_async({req,applyRange}) {
     // controllerHelper.deleteNotChangedValue({inputValue:docValue,originalValue:originalDoc})
 //如果editSubFieldValue不存在；或者存在，但是转换后的nosql为空。那么说明editSub不需要做update
     if(undefined===subFieldValue || undefined===convertedNoSql){
-        editSubFieldValueNotChange=true
-    }
-    if(true===editSubFieldValueNotChange){
+        // editSubFieldValueNotChange=true
         return Promise.resolve({rc:0})
     }
-
-//edit_sub_field对应的nosql，转换成db操作
-    let promiseTobeExec=[]
-    if(false===editSubFieldValueNotChange){
-        for(let singleRecordId in convertedNoSql){
-            promiseTobeExec.push(common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel[collName],id:singleRecordId,updateFieldsValue:convertedNoSql[singleRecordId]}))
+    // if(true===editSubFieldValueNotChange){
+    //
+    // }
+    /**     只需要控制好友总数，每个group中好友数量不限        **/
+    /*/!***        数量的判断       **!/
+//如果是移动或者添加，判断to对应的recordId中，是否会超出限制
+    if(undefined!==subFieldValue[e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP]){
+        let fieldName=[e_field.USER_FRIEND_GROUP.FRIENDS_IN_GROUP]
+        if(undefined!==subFieldValue[fieldName][e_subField.ELE_ARRAY] && subFieldValue[fieldName][e_subField.ELE_ARRAY].length>0 && undefined!==subFieldValue[fieldName][e_subField.TO]){
+            let optionalParam={
+                resourceUsageOption:{
+                    requiredResource:{[e_resourceFieldName.USED_NUM]:subFieldValue[fieldName][e_subField.ELE_ARRAY]},
+                    resourceProfileRange:[e_resourceRange.MAX_FR,],
+                    userId:userId,
+                    containerId:subFieldValue[fieldName][e_subField.TO]
+                }
+            }
+            // if(undefined!==stepParam[e_inputValueLogicCheckStep.RESOURCE_USAGE]['optionalParam']){
+            let resourceUsageOption=optionalParam['resourceUsageOption']
+            // ap.wrn('stepParam[e_inputValueLogicCheckStep.RESOURCE_USAGE][\'optionalParam\'][\'resourceUsageOption\']',stepParam[e_inputValueLogicCheckStep.RESOURCE_USAGE]['optionalParam']['resourceUsageOption'])
+            await controllerInputValueLogicCheck.ifEnoughResource_async({
+                requiredResource:resourceUsageOption.requiredResource,//{num:xx,sizeInMb;yy,filesAbsPath:[]}
+                resourceProfileRange:resourceUsageOption.resourceProfileRange,
+                userId:userId,
+                containerId:resourceUsageOption.containerId,
+                // filesAbsPath:resourceUsageOption.filesAbsPath,
+            })
         }
+    }*/
+
+    /**         edit_sub_field对应的nosql，转换成db操作        **/
+    let promiseTobeExec=[]
+    // if(false===editSubFieldValueNotChange){
+    for(let singleRecordId in convertedNoSql){
+        promiseTobeExec.push(common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel[collName],id:singleRecordId,updateFieldsValue:convertedNoSql[singleRecordId]}))
     }
+    // }
     // ap.wrn('promiseTobeExec',promiseTobeExec)
     if(promiseTobeExec.length>0){
         await Promise.all(promiseTobeExec)

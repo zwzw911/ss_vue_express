@@ -185,7 +185,7 @@ async function getNonRootFolder_async({req}){
             controllerHelper.encryptSingleRecord({record:singleEle,salt:tempSalt,collName:e_coll.FOLDER})
         }
     }
-    ap.wrn('after folder crypt',getRecord)
+    // ap.wrn('after folder crypt',getRecord)
     // ap.inf('after ecftypr getRecord[\'folder\']',getRecord['folder'])
     if(undefined!==getRecord['article']){
         for(let singleEle of getRecord['article']){
@@ -204,17 +204,19 @@ async function getNonRootFolder_async({req}){
 /**************************************/
 async function businessLogic_async({folderId,userId}){
     // ap.inf('businessLogic_async in')
-    const mongoose=require('mongoose');//用于转换objectId，以便aggreate使用
+    // const mongoose=require('mongoose');//用于转换objectId，以便aggreate使用
     let parentFolderId,folderResult,articleResult,childArticleResult,childFolderResult
     //使用aggregate，则objectId必须是mongoose格式
     let folderCondition={},articleCondition={},childFolderCondition={},childArticleCondition={}
 
-    childFolderCondition[e_field.FOLDER.AUTHOR_ID]=mongoose.Types.ObjectId(userId)
+    let userIdInObjectId=dataConvert.convertToObjectId(userId) //使用aggregate，则objectId必须是mongoose格式
+
+    childFolderCondition[e_field.FOLDER.AUTHOR_ID]=userIdInObjectId //mongoose.Types.ObjectId(userId)
     childFolderCondition['dDate']={"$exists":false}
-    folderCondition[e_field.FOLDER.AUTHOR_ID]=mongoose.Types.ObjectId(userId)
+    folderCondition[e_field.FOLDER.AUTHOR_ID]=userIdInObjectId//mongoose.Types.ObjectId(userId)
     folderCondition['dDate']={"$exists":false}
 
-    childArticleCondition[e_field.FOLDER.AUTHOR_ID]=mongoose.Types.ObjectId(userId)
+    childArticleCondition[e_field.FOLDER.AUTHOR_ID]=userIdInObjectId//mongoose.Types.ObjectId(userId)
     childArticleCondition['dDate']={"$exists":false}
     //顶级目录的查询条件
     if(undefined===folderId){
@@ -239,8 +241,9 @@ async function businessLogic_async({folderId,userId}){
         //查询所有folder下的folder/article数量
         if(folderResult.length>0){
             for(let singleFolder of folderResult){
-                childFolderCondition[e_field.FOLDER.PARENT_FOLDER_ID]['$in'].push(mongoose.Types.ObjectId(singleFolder['id']))
-                childArticleCondition[e_field.ARTICLE.FOLDER_ID]['$in'].push(mongoose.Types.ObjectId(singleFolder['id']))
+                let folderIdInObjectId=dataConvert.convertToObjectId(singleFolder['id'])
+                childFolderCondition[e_field.FOLDER.PARENT_FOLDER_ID]['$in'].push(folderIdInObjectId)
+                childArticleCondition[e_field.ARTICLE.FOLDER_ID]['$in'].push(folderIdInObjectId)
             }
         }
         // childFolderCondition[e_field.FOLDER.AUTHOR_ID]={"$in":[]}
@@ -249,7 +252,7 @@ async function businessLogic_async({folderId,userId}){
     }
     //非顶级目录
     else{
-        folderCondition[e_field.FOLDER.PARENT_FOLDER_ID]=mongoose.Types.ObjectId(folderId)
+        folderCondition[e_field.FOLDER.PARENT_FOLDER_ID]=dataConvert.convertToObjectId(folderId)//mongoose.Types.ObjectId(folderId)
         //获得所有目录的id，加入查询条件
         folderResult=await common_operation_model.find_returnRecords_async({dbModel:e_dbModel.folder,condition:folderCondition})
         // ap.wrn('folderResult',folderResult)
@@ -266,8 +269,9 @@ async function businessLogic_async({folderId,userId}){
         //查询所有folder下的folder/article数量
         if(folderResult.length>0){
             for(let singleFolder of folderResult){
-                childFolderCondition[e_field.FOLDER.PARENT_FOLDER_ID]['$in'].push(mongoose.Types.ObjectId(singleFolder['id']))
-                childArticleCondition[e_field.ARTICLE.FOLDER_ID]['$in'].push(mongoose.Types.ObjectId(singleFolder['id']))
+                let folderIdInObjectId=dataConvert.convertToObjectId(singleFolder['id']) //aggregate必须使用objectId（而不是字符）
+                childFolderCondition[e_field.FOLDER.PARENT_FOLDER_ID]['$in'].push(folderIdInObjectId)
+                childArticleCondition[e_field.ARTICLE.FOLDER_ID]['$in'].push(folderIdInObjectId)
             }
         }
 // ap.wrn('childFolderCondition',childFolderCondition)

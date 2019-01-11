@@ -200,9 +200,14 @@ async  function createUser_async({req}){
         })
     }
     // console.log(`docValue ${JSON.stringify(docValue)}`)
-    //用户插入 db
-    let userCreateTmpResult= await common_operation_model.create_returnRecord_async({dbModel:e_dbModel.user,value:docValue})
-
+    /**     事务不支持shard   **/
+/*    let transSession=await server_common_file_require.connection.dbSS.startSession()
+    transSession.startTransaction();
+ap.wrn('session start')
+    console.log('stransSession',transSession)*/
+    /***        用户插入 db       ***/
+    let userCreateTmpResult= await common_operation_model.new_create_returnRecord_async({dbModel:e_dbModel.user,value:docValue})
+    // ap.wrn('user create session start')
 
     // console.log(`user created  ==========> ${JSON.stringify(userCreateTmpResult)}`)
 
@@ -232,11 +237,17 @@ async  function createUser_async({req}){
     // await common_operation_model.create_returnRecord_async({dbModel:e_dbModel.user_friend_group,value:userFriendGroupValue})
     // console.log(`tmpResult is ${JSON.stringify(tmpResult)}`)
 
-    //对关联表folder进行insert操作
-    let folderValue={authorId:userCreateTmpResult._id,name:'我的文档',[e_field.FOLDER.LEVEL]:1}
-    // console.log(`sugarValue ${JSON.stringify(sugarValue)}`)
-    await common_operation_model.create_returnRecord_async({dbModel:e_dbModel.folder,value:folderValue})
-
+    /**         对关联表folder进行insert操作      **/
+    let folderValue={
+        authorId:userCreateTmpResult._id,
+        name:'我的文档',
+        [e_field.FOLDER.LEVEL]:1,
+        [e_field.FOLDER.PARENT_FOLDER_ID]:userCreateTmpResult._id,//任意设置一个parentId，以便符合rule中对parentId require的设置，之后删除这个字段
+    }
+    // ap.wrn('create top folder',folderValue)
+    tmpResult=await common_operation_model.create_returnRecord_async({dbModel:e_dbModel.folder,value:folderValue})
+    // ap.wrn('create top folder result',tmpResult)
+    await common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel.folder,id:tmpResult['_id'],updateFieldsValue:{$unset:{[e_field.FOLDER.PARENT_FOLDER_ID]:1}}})
     //对关联表user_resource_profile进行insert操作,插入默认资源设置
     let userResourceProfile=[]
     // console.log(`e_iniSettingObject.resource_profile.DEFAULT==========>${JSON.stringify(e_iniSettingObject.resource_profile.DEFAULT)}`)
@@ -287,7 +298,19 @@ async  function createUser_async({req}){
         // [e_field.RECEIVE_RECOMMEND.READ_RECOMMENDS]:[],
     }
     await common_operation_model.create_returnRecord_async({dbModel:e_dbModel.receive_recommend,value:receiveRecommend})
-// return false
+    /**     创建默认的收藏目录（我的收藏，根目录）   **/
+    let myCollection={
+        [e_field.COLLECTION.NAME]:'我的收藏',
+        [e_field.COLLECTION.CREATOR_ID]:userCreateTmpResult._id,
+        [e_field.COLLECTION.PARENT_ID]:userCreateTmpResult._id,//为了符合rule中定义的，parentId必须存在，先随意设置一个parentId
+/*        [e_field.COLLECTION.ARTICLES_ID]:[],
+        [e_field.COLLECTION.TOPICS_ID]:[],*/
+    }
+    // ap.wrn('myCollection',myCollection)
+    tmpResult=await common_operation_model.create_returnRecord_async({dbModel:e_dbModel.collection,value:myCollection})
+    // ap.wrn('created collection result',tmpResult)
+    //然后将顶级collect的parentId删除点
+    await common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel.collection,id:tmpResult['_id'],updateFieldsValue:{$unset:{[e_field.COLLECTION.PARENT_ID]:1}}})
     //最终置user['docStatus']为DONE，且设置lastSignInDate
     await common_operation_model.findByIdAndUpdate_returnRecord_async({dbModel:e_dbModel.user,id:userCreateTmpResult._id,updateFieldsValue:{'docStatus':e_docStatus.DONE,'lastSignInDate':Date.now()}})
     /*    if(tmpResult.rc>0){

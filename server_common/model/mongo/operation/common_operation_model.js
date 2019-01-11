@@ -19,8 +19,42 @@ const mongooseOpEnum=require('../../../constant/enum/nodeEnum').MongooseOp
 const defaultUpdateOptions=require('../common/configuration').updateOptions
 
 const objectDeepCopy=require('../../../function/assist/misc').objectDeepCopy
+
+/**     插入数据，封装了insertMany      **/
+async function new_create_returnRecord_async({dbModel,value,transSession}){
+    let option={
+        writeConcern:undefined,//transaction不能设置
+        ordered:true,//true,按照数组的顺序插入；fasle，mongod拆分，无序插入，可能会提高性能
+    }
+    if(undefined===dbModel){
+        return Promise.reject(mongooseError.create_returnRecord_async.dbModelUndefined)
+    }
+    if(undefined===value){
+        return Promise.reject(mongooseError.create_returnRecord_async.valueUndefined)
+    }
+
+    //包装成数组，以便使用insertMany
+    if(true!==dataTypeCheck.isArray(value)){
+        value=[value]
+    }
+    //决定是否传入session
+    if(undefined!==transSession){
+        option['session']=transSession
+    }
+ap.wrn('insert value',value)
+    console.log('option value',option)
+    return new Promise(function(resolve, reject){
+        dbModel.insertMany(value,option,function(err,result){
+            if(err){
+                return reject(err)
+            }else{
+                return resolve(result)
+            }
+        })
+    })
+}
 //无需返回任何paginationInfo，因为search已经返回，并存储在client端了
-async function create_returnRecord_async({dbModel,value}){
+async function create_returnRecord_async({dbModel,value,transSession}){
 //使用Promise方式，以便catch可能的错误
     /*          原本使用insertMany，输入参数是数据，返回结果也是数据         */
 /*    let result=await dbModel.insertMany(values).catch((err)=>{
@@ -32,16 +66,49 @@ async function create_returnRecord_async({dbModel,value}){
     return Promise.resolve({rc:0,msg:result})*/
 
     /*          为了使用mongoose的pre功能（为bill，判断正负），使用save保存         */
-    // console.log(`create value is ${JSON.stringify(value)}`)
-    let doc=new dbModel(value)
-    let result=await doc.save(doc)
+    // console.log(`transSession ${transSession}`)
+    if(undefined!==transSession){
+        ap.wrn('transSession',transSession)
+    }
+
+    /*let doc=new dbModel(value)
+    let result
+    if(undefined===transSession){
+        result=await doc.save(doc)
+            .catch((err)=>{
+                console.log(`create err is ${JSON.stringify(err)}`)
+                //1. mongoose返回的是reject，只能通过catch捕获
+                //     2. 捕获后，通过reject在await中返回。因为reject后，此错误会在async/await直接传递到最外层，所以需要returnResult对错误处理
+                return Promise.reject(mongooseErrorHandler(err))
+                // return mongooseErrorHandler(mongooseOpEnum.insertMany,err)
+            })
+    }else{
+        result=await doc.save(doc).session(transSession)
+            .catch((err)=>{
+                console.log(`create transSession err is ${JSON.stringify(err)}`)
+                //1. mongoose返回的是reject，只能通过catch捕获
+                //     2. 捕获后，通过reject在await中返回。因为reject后，此错误会在async/await直接传递到最外层，所以需要returnResult对错误处理
+                return Promise.reject(mongooseErrorHandler(err))
+                // return mongooseErrorHandler(mongooseOpEnum.insertMany,err)
+            })
+    }*/
+    let doc
+    let result
+    if(undefined===transSession){
+        doc=new dbModel(value)
+
+    }else{
+        doc=new dbModel(value).session(transSession)
+
+    }
+    result=await doc.save(doc)
         .catch((err)=>{
-        console.log(`create err is ${JSON.stringify(err)}`)
-        //1. mongoose返回的是reject，只能通过catch捕获
-        //     2. 捕获后，通过reject在await中返回。因为reject后，此错误会在async/await直接传递到最外层，所以需要returnResult对错误处理
+            console.log(`create err is ${JSON.stringify(err)}`)
+            //1. mongoose返回的是reject，只能通过catch捕获
+            //     2. 捕获后，通过reject在await中返回。因为reject后，此错误会在async/await直接传递到最外层，所以需要returnResult对错误处理
             return Promise.reject(mongooseErrorHandler(err))
             // return mongooseErrorHandler(mongooseOpEnum.insertMany,err)
-    })
+        })
 /*    let finalResult=result.toObject()
     delete finalResult.__v*/
     //result.name=undefined
@@ -475,7 +542,9 @@ async function findByIdAndUpdate_returnRecord_async({dbModel,id,updateFieldsValu
     // console.log(`find by id :${id}`)
     let finalUpdateOptions=objectDeepCopy(defaultUpdateOptions)
     Object.assign(finalUpdateOptions,updateOption)
-    let result=await dbModel.findByIdAndUpdate(id,updateFieldsValue,finalUpdateOptions)
+    // ap.wrn('updateFieldsValue',updateFieldsValue)
+/*    let result=await dbModel.findByIdAndUpdate(id,updateFieldsValue,finalUpdateOptions)*/
+let result=await dbModel.findOneAndUpdate({'_id':id},updateFieldsValue,finalUpdateOptions)
         .catch(
             function(err){
                 // console.log(`findbyid errr is ${JSON.stringify(err)}`)
@@ -808,6 +877,7 @@ async function group_async({dbModel,aggregateParams}){
 
 
 module.exports= {
+    new_create_returnRecord_async,
     create_returnRecord_async,
     update_returnRecord_async,//传统的方式（find/update/save）
     updateDirect_returnRecord_async,//update第一个符合条件的记录

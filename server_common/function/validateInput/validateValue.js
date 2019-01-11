@@ -122,7 +122,7 @@ function validateScalarInputValue({inputValue,collRule,p_applyRange}){
 
             let fieldType=collRule[fieldName][e_otherRuleFiledName.DATA_TYPE]
             // ap.inf('fieldName',fieldName)
-            ap.inf('fieldType',fieldType)
+            // ap.inf('fieldType',fieldType)
             //数组需要额外检查
             if(true===dataTypeCheck.isArray(fieldType)){
                 // console.log(`field ${fieldName} is array`)
@@ -910,7 +910,7 @@ function validateEditSubFieldValue({inputValue,browseInputRule}){
         }
         //然后检测eleArray
         //1. 必须是数组
-        //1. 数量，不能超过字段arrMaxLength
+        //1. 数量，不能为0或者超过字段arrMaxLength
         //2. 每个元素类型必须正确
 
         if(false===dataTypeCheck.isArray(fieldValue['eleArray'])){

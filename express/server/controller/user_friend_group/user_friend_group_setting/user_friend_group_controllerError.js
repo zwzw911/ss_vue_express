@@ -48,8 +48,9 @@ const controllerError={
 
     update:{
         notUserGroupOwnerCantUpdate:{rc:51740,msg:{'client':"无法更新他人数据",server:`recordId对应数据的owner不是当前用户`}},
-        forbidUpdateFieldExist(fieldName){return {rc:51742,msg:{client:`输入错误`,server:`字段${fieldName}不允许被用户更新`}}},
+        // forbidUpdateFieldExist(fieldName){return {rc:51742,msg:{client:`输入错误`,server:`字段${fieldName}不允许被用户更新`}}},
         notAllowUpdateDefaultRecord:{rc:51742,msg:'无法更改默认记录'},
+        onlyUpdateName:{rc:51744,msg:'只能更新好友分组名称'},
         // mandatoryFieldNotExist:{rc:51743,msg:{client:'输入错误',server:'更新必须字段不存在'}},
         // groupNameAlreadyExistCantUpdate:{rc:51744,msg:{'client':"好友分组名已经存在，无法更新",server:`好友分组名已经存在，无法更新`}},
         //edit sub field
@@ -63,8 +64,10 @@ const controllerError={
     },
     //delete
     moveFriend:{
-        fromToRecordIdNotExists:{rc:51746,msg:{'client':"数据不存在，无法操作",server:`editSubField中，from或者to所指的记录不存在`}},
-        notOwnFromToRecordId:{rc:51748,msg:{'client':"无法操作他人好友分组",server:`editSubField中，from或者to所指的记录非当前用户所有`}},
+        fromMustExist:{rc:51770,msg:{'client':"输入数据错误",server:`editSubField中，from必须存在，以便说明`}},
+        cantMoveNonFriend:{rc:51772,msg:{'client':"有用户不是好友",server:`editSubField中，eleArray中，有用户不是好友，无法移动`}},
+        fromToRecordIdNotExists:{rc:51774,msg:{'client':"数据不存在，无法操作",server:`editSubField中，from或者to所指的记录不存在`}},
+        notOwnFromToRecordId:{rc:51776,msg:{'client':"无法操作他人好友分组",server:`editSubField中，from或者to所指的记录非当前用户所有`}},
         // fromRecordIdNotExists:{rc:51724,msg:{'client':"数据不存在，无法操作",server:`editSubField中，from所指的记录不存在`}},
         // notOwnFromRecordId:{rc:51726,msg:{'client':"无法操作他人好友分组",server:`editSubField中，from所指的记录非当前用户所有`}},
         // toRecordIdNotExists:{rc:51720,msg:{'client':"数据不存在，无法操作",server:`editSubField中，to所指的记录不存在`}},

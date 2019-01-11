@@ -854,7 +854,7 @@ function generateSugarAndHashPassword({ifAdminUser,ifUser,password}){
 * */
 async function setLoginUserInfo_async({req,userInfo}){
     // console.log(`setLoginUserInfo in==========>`)
-    ap.inf('userInfo',userInfo)
+    // ap.inf('userInfo',userInfo)
     if(undefined===userInfo){
         return Promise.reject(helperError.userInfoUndefine)
     }
@@ -1210,6 +1210,7 @@ async function setSessionByServer_async({req}){
         // ap.inf('setSessionByServer_async in')
         let field='tempSalt'
         // ap.inf('session id',req.session.id)
+        // ap.inf('req.session[\'userInfo\']',req.session['userInfo'])
         if(undefined===req.session['userInfo'] ){
             req.session['userInfo']={}
         }

@@ -6,6 +6,26 @@
 
 const mongoEnum=require('./enum')
 
+const commonConnectionOptions={
+    bufferCommands:true,//boolean,是否缓存命令，以便mongoose还未启动，就可执行命令，而不返回错误。true，提高性能；false：提高鲁棒性
+    user:undefined,//等同mongodb的auth.user
+    pass:undefined,//等同mongodb的auth.password
+    autoIndex:true,//boolean,默认true，适合开发。即当连接成功，自动对schema中定义的index进行build；设成false，此connection上所有schema都不会build index，提高性能
+    dbName:'ss',//要连接的db名称
+
+    useNewUrlParser: true ,//mongodb使用了新的url parser，如果要使用此新rul parser，useNewUrlParser设为true（此时url必须为host:port）
+    useCreateIndex:true,//使用CreateIndex()代替ensureIndex，避免deprecation warnings
+    useFindAndModify:true,//boolean。默认true。false：findOneAndUpdate() and findOneAndRemove()=native findOneAndUpdate()；  true:findOneAndUpdate() and findOneAndRemove()=native findOneAndUpdate()=findAndModify()
+    autoReconnect:true,//除非确定，否则不要设成false
+    reconnectTries:undefined,//如果连接单个server或者mongos代理，重试次数
+    reconnectInterval:undefined,    //同上，重试间隔次数
+    poolSize:5,//默认5
+    bufferMaxEntries:undefined,//如果bufferCommands=true，如果mongodb disconnect，最大缓存的命令数？
+    family:4,//connection的url，使用的是IPv4还是IPv6
+
+    keepAlive: true,                //某些mongodb操作时间很长，可能会导致connection close。所以需要设置为true，保持connection
+    keepAliveInitialDelay: 300000,//毫秒，初始化keepAlive之前需要等待的时间。
+}
 //convert mongodb data to objet, so that nodejs can manipulate directly
 const toObjectOptions={
     getters:true,//apply all getters (path and virtual getters)
@@ -26,7 +46,8 @@ const schemaOptions={
     _id:true,//schema中不用显示设置objectid，mongoose会自动产生objectId
     minimize:true,	//如果schema中的field是对象，则minimize=true时，当document中此field为空**对象**，此doc被save时，空对象的字段不会被保存
     read:mongoEnum.mongoRead.PRIMARY,//如果是nearest：从网络延迟最下的读,需要在connect时候设置var options = { replset: { strategy: 'ping' }};）
-    safe:true,	//设为true，如果出错，返回error到callback。设为{j:1,w:2,wtimeout:5000}，除了error返回callback，还能保证写操作被提交到日志和至少2个rep中，并且写操作超过5秒就超时
+    // safe:true,	//设为true，如果出错，返回error到callback。设为{j:1,w:2,wtimeout:5000}，除了error返回callback，还能保证写操作被提交到日志和至少2个rep中，并且写操作超过5秒就超时
+    writeConcern: { w: 'majority', j: true, wtimeout: 5000 },
     Strict:true,//默认true，如果要保存的数据中，字段没有在schema中定义，数据将无法保存。也可以设置成throw，如此便抛出错误，而不是仅仅drop数据。
     //shardKey:{f1:1,f2:1}		//为collection设置shardKey（每个schema不同）
     toJSON:toObjectOptions,		//类似toObject，除了还可以使用JSON.stringify(doc)
@@ -77,6 +98,8 @@ const populateOpt={
 
 }
 module.exports={
+    commonConnectionOptions,
+
     schemaOptions,
     toObjectOptions,
     configuration,

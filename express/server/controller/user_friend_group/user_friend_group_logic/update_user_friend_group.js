@@ -87,6 +87,16 @@ async function updateUserFriendGroup_async({req,applyRange}){
     if(Object.keys(docValue).length===0){
         return {rc:0}
     }
+    /**********************************************/
+    /*********    特殊检测        ************/
+    /*********************************************/
+    //recordInfo只能包好name一个字段
+    if(1!==Object.keys(docValue).length){
+        return Promise.reject(controllerError.update.onlyUpdateName)
+    }
+    if(undefined===docValue[e_field.USER_FRIEND_GROUP.FRIEND_GROUP_NAME]){
+        return Promise.reject(controllerError.update.onlyUpdateName)
+    }
     /************************************************/
     /*****************  用户类型检测     ************/
     /************************************************/

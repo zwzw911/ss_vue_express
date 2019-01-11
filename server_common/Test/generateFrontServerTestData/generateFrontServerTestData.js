@@ -45,10 +45,12 @@ async function generateFrontTestData_async(){
     await user2.reCreateUserGetSessUserIdSalt_async()
     await user3.reCreateUserGetSessUserIdSalt_async()
     await user4.reCreateUserGetSessUserIdSalt_async()
-    /**             user create folder              **/
+    /**             user1 create folder              **/
     let user1_topFolderId1=await user1.createFolderReturnId_async({folderName:'顶级目录1'})
     await user1.createFolderReturnId_async({folderName:'顶级目录1的子目录1',parentEncryptedFolderId:user1_topFolderId1})
     await user1.createFolderReturnId_async({folderName:'顶级目录1的子目录2',parentEncryptedFolderId:user1_topFolderId1})
+    /**             user1 create collection              **/
+    let user1_encrypted_collection=await user1.createCollection_ReturnEncryptedId_async({collectionName:'new_collection'})
     /**             user add friend and friend accept             **/
     //以为user1的添加好友的rule是any_allow,所以无需返回requestId，直接accept
     await user1.createFriendGroupReturnEncryptedId_async({friendGroupName:'测试'})
@@ -56,10 +58,20 @@ async function generateFrontTestData_async(){
     await user3.sendAddFriendRequest_returnId_async({friendId:user1.userId})
     await user4.sendAddFriendRequest_returnId_async({friendId:user1.userId})
     //move user2/user3 from default 我的好友 to 测试
-    await user1.moveFriendToNewGriendGroup_async({
+    await user1.moveFriendToNewFriendGroup_async({
         originFriendGroupName:defaultFriendGroupName.MyFriend,
         newFriendGroupName:'测试',
-        arr_moveEncryptedFriends:[user1.encryptedObjectId({unCryptedObjectId:user2.userId}),user1.encryptedObjectId({unCryptedObjectId:user3.userId})]
+        arr_moveEncryptedFriends:[user1.encryptedObjectId({decryptedObjectId:user2.userId}),user1.encryptedObjectId({decryptedObjectId:user3.userId})]
+    })
+    /***    user1 create article        ***/
+    let user1_encrypted_articleId=await user1.createArticleReturnEncryptedId_async({setStatusFinish:true})
+    let user1_encrypted_articleId1=await user1.createArticleReturnEncryptedId_async({setStatusFinish:true})
+    let user1_encrypted_articleId2=await user1.createArticleReturnEncryptedId_async({setStatusFinish:true})
+
+    /***    user1 collect self article        ***/
+    await user1.addArticleToCollection_async({
+        articlesId:[user1_encrypted_articleId,user1_encrypted_articleId1,user1_encrypted_articleId2],
+        destCollectionId:user1.decryptedObjectId({encryptedObjectId:user1_encrypted_collection}),
     })
 }
 

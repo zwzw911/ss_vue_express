@@ -116,7 +116,7 @@ async function dispatcher_async({req}){
                 await controllerPreCheck.checkObjectIdInReqParams_async({
                     req:req,
                     parameterName:'friendGroupId',
-                    cryptedError:controllerError.dispatch.get.encryptedFriendGroupIdFormatInvalid,
+                    encryptedError:controllerError.dispatch.get.encryptedFriendGroupIdFormatInvalid,
                     decryptedError:controllerError.dispatch.get.decryptedFriendGroupIdFormatInvalid
                 })
                 // ap.wrn('check done')

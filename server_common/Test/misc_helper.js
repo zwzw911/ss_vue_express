@@ -28,7 +28,7 @@ async function postDataToAPI_compareFieldRc_async({APIUrl,sess,data,expectedErro
 }
 
 async function postDataToAPI_compareCommonRc_async({APIUrl,sess,data,expectedErrorRc,app}){
-    ap.inf('postDataToAPI_compareCommonRc_async data',data)
+    // ap.inf('postDataToAPI_compareCommonRc_async data',data)
     return new Promise(function(resolve,reject){
 
         supertest(app).post(APIUrl).set('Accept', 'application/json').set('Cookie', [sess]).send(data)
@@ -114,7 +114,7 @@ async function getDataFromAPI_async({APIUrl,sess,expectedErrorRc,app}){
             .end(function (err, res) {
                 if (err) return reject(err);
                 // console.log(`res is ${JSON.stringify(res)}`)
-                // ap.inf('get result',res)
+                ap.inf('get result',res)
                 let parsedRes = JSON.parse(res.text)
                 // console.log(`sess=======>${JSON.stringify(sess)}`)
                 // console.log(`data.values of common===========>${JSON.stringify(data.values)}`)

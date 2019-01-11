@@ -538,7 +538,7 @@ async function  inputValueLogicValidCheck_async({commonParam,stepParam}){
         if(true===runStepFlag[e_inputValueLogicCheckStep.FK_EXIST_AND_PRIORITY]){
             await ifFkValueExist_And_FkHasPriority_async({fieldName:singleFieldName,fieldValue:singleFieldValue,userId:commonParam.userId,collName:commonParam.collName})
         }
-        // ap.inf('ifFkValueExist_And_FkHasPriority_async done')
+        // ap.wrn('ifFkValueExist_And_FkHasPriority_async done')
         /*******************************************************************************************/
         /******************              enum(array) unique check                       ************/
         /*******************************************************************************************/
@@ -567,7 +567,7 @@ async function  inputValueLogicValidCheck_async({commonParam,stepParam}){
                 singleValueUniqueCheckAdditionalCondition:stepParam[e_inputValueLogicCheckStep.SINGLE_FIELD_VALUE_UNIQUE]['optionalParam']['singleValueUniqueCheckAdditionalCondition'],
             })
         }
-        // ap.inf('ifSingleFieldValueUnique_async done')
+        // ap.wrn('ifSingleFieldValueUnique_async done')
 
         /*******************************************************************************************/
         /******************                      XSS check                              ************/
@@ -583,7 +583,7 @@ async function  inputValueLogicValidCheck_async({commonParam,stepParam}){
                 return Promise.reject(inputValueLogicCheckError.ifValueXSS.fieldValueXSS({fieldName:singleFieldName}))
             }
         }
-        // ap.inf('ifValueXSS done')
+        // ap.wrn('ifValueXSS done')
     }
     // ap.inf('single field loop check end')
 

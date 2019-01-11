@@ -280,9 +280,12 @@ const Field={
     COLLECTION:{
         ID:'id',
         NAME:'name',
+        PARENT_ID:'parentId',
         CREATOR_ID:'creatorId',
         ARTICLES_ID:'articlesId',
+        ARTICLE_NUM:'articleNum',
         TOPICS_ID:'topicsId',
+        TOPIC_NUM:'topicNum',
     },
     RECEIVE_RECOMMEND:{
         ID:'id',

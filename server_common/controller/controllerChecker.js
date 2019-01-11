@@ -337,9 +337,9 @@ async function ifCurrentUserTheOwnerOfCurrentRecord_yesReturnRecord_async({dbMod
     if(undefined!==additionalCondition){
         Object.assign(condition,additionalCondition)
     }
-    // ap.inf('condition',condition)
+    // ap.wrn('condition',condition)
     tmpResult=await  common_operation_model.find_returnRecords_async({dbModel:dbModel,condition:condition})
-    // ap.inf('result',tmpResult)
+    // ap.wrn('result',tmpResult)
 
     if(tmpResult.length===1){
         return Promise.resolve(tmpResult[0])
@@ -452,10 +452,11 @@ async function ifObjectIdInPartEncrypted_async({req,expectedPart,browserCollRule
                 }
                 break;
             case e_part.RECORD_ID:
-                tmpResult=validatePartObjectIdEncrypted.validateRecordId({req:req})
+                /**     recordId 检测是否加密，在validateFormat->validatePartValueFormat中已经完成，所以无需再次测试  **/
+/*                tmpResult=validatePartObjectIdEncrypted.validateRecordId({req:req})
                 if(tmpResult.rc>0){
                     return Promise.reject(tmpResult)
-                }
+                }*/
                 break;
             case e_part.SINGLE_FIELD:
                 tmpResult=validatePartObjectIdEncrypted.validateSingleField({req:req,browserCollRule:browserCollRule,applyRange:applyRange})

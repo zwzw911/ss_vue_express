@@ -398,6 +398,16 @@ const resourceCheck={
         totalReadReceivedRecommendNumExceed({resourceProfileNum}){
             return {rc:resourceCheckBaseErrorCode+132,msg:{client:`已读的分享文档达到最大数量${resourceProfileNum}，无法读取收到的分享文档`}}
         },
+        /**     collection          **/
+        totalCollectionNumExceed({resourceProfileNum}){
+            return {rc:resourceCheckBaseErrorCode+134,msg:{client:`收藏夹达到最大数量${resourceProfileNum}，无法继续创建`}}
+        },
+        totalArticleNumInCollectionExceed({resourceProfileNum}){
+            return {rc:resourceCheckBaseErrorCode+136,msg:{client:`收藏夹中文档达到最大数量${resourceProfileNum}，无法继续添加`}}
+        },
+        totalTopicNumInCollectionExceed({resourceProfileNum}){
+            return {rc:resourceCheckBaseErrorCode+136,msg:{client:`收藏夹中主题达到最大数量${resourceProfileNum}，无法继续添加`}}
+        },
     }
 }
 

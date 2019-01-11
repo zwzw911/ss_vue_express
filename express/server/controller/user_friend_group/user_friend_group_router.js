@@ -115,7 +115,7 @@ router.delete('/',function(req,res,next){
 
 /**     将好友在好友分组间移动     **/
 router.put('/move_friend',function(req,res,next){
-
+// ap.wrn('move_friend in')
     dispatcher_async({req:req}).then(
         (v)=>{
             ap.inf(`move friend success, result:  ${JSON.stringify(v)}`)

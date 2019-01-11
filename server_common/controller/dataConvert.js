@@ -565,7 +565,10 @@ function convertToObjectId(str){
     return mongoose.Types.ObjectId(str)
 }
 
-
+/**     删除db中读取到的记录中的_id字段（防止和id重复发送）       **/
+function delete_id({srcObj}){
+    return JSON.parse(JSON.stringify(srcObj).replace(/"_id":"[0-9a-f]{24}",?/g,''))
+}
 /*  将editSubField的整个part值，转换成NOSQL语句（使用findByIdAndUpdate）
 * @editSubFieldValue: 整个part的值
 *
@@ -667,9 +670,26 @@ function convertDocumentToObject({src}){
             src[idx]=src[idx].toObject()
         }
     }else{
+        ap.wrn('not array in')
         src=src.toObject()
     }
+    return src
 }
+
+//通过mongoose获得的document（单个或者array），转换成object
+/*function convertDocumentToJSON({src}){
+    // ap.inf('dataTypeCheck.isArray(src)',dataTypeCheck.isArray(src))
+    if(true===dataTypeCheck.isArray(src)){
+        for(let idx in src){
+            // ap.inf('idx',idx)
+            // ap.inf('src[idx]',src[idx])
+            // ap.inf('src[idx].toObject()',src[idx].toObject())
+            src[idx]=src[idx].toJSON()
+        }
+    }else{
+        src=JSON.parse(JSON.stringify(src))
+    }
+}*/
 module.exports={
     convertSearchParamsToNoSQL,
     genNativeSearchCondition,
@@ -686,5 +706,8 @@ module.exports={
     convertEditSubFieldValueToNoSql,
 
     convertDocumentToObject,
+    // convertDocumentToJSON,
+
+    delete_id,//删除db中获得记录的_id，防止和id重复发送到client
 }
 

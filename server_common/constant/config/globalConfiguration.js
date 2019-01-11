@@ -197,6 +197,8 @@ const maxNumber={
         maxRecommendToUser:10,//每次最多推荐给10个用户
         maxRecommendPerPage:10,//每页显示的推荐文档数量
 
+        maxReadCollectionPerPage:10,//每页最多显示多少收藏夹
+
         // maxRecommendToGroup:10,//每次最多推荐给10个朋友圈
         // maxRecommendToPublicGroup:10,//每次最多推荐给10个群
 

@@ -26,7 +26,7 @@ const createField={
     'impeach_comment_image':["impeachCommentId"],
     'impeach_image':["impeachId"],
     'user_resource_profile':["userId","resource_profile_id","duration"],
-    'collection':["name","articlesId","topicsId"],
+    'collection':["name"],
     'send_recommend':["articleId"],
     'topic':["name","desc","articlesId"],
 }
