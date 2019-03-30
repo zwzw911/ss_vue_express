@@ -152,7 +152,7 @@ class c_user{
     /**     创建目录        **/
     async createFolderReturnId_async({folderName,parentEncryptedFolderId}){
         let data={values:{[e_part.RECORD_INFO]:{}}}
-        if(undefined===parentEncryptedFolderId){
+        if(undefined!==parentEncryptedFolderId){
             data.values[e_part.RECORD_INFO]={
                 [e_field.FOLDER.PARENT_FOLDER_ID]:parentEncryptedFolderId
             }
@@ -162,6 +162,14 @@ class c_user{
         let result=await folderAPI.createFolder_async({sess:this.sess,data:data,app:this.app})
         // ap.inf('create folder result',result)
         return Promise.resolve(result['id'])
+    }
+    /**     获取用户顶级目录        **/
+    async getTopFolderReturnEnryptedId_async({}){
+
+
+        let result=await folderAPI.getAllTopLevelFolder_async({sess:this.sess,app:this.app})
+        // ap.inf('create folder result',result)
+        return Promise.resolve(result['folder'][0]['id'])
     }
     /**     创建文档        **/
     async createArticleReturnEncryptedId_async({setStatusFinish=true}){

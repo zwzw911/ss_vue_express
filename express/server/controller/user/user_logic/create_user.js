@@ -206,7 +206,7 @@ async  function createUser_async({req}){
 ap.wrn('session start')
     console.log('stransSession',transSession)*/
     /***        用户插入 db       ***/
-    let userCreateTmpResult= await common_operation_model.new_create_returnRecord_async({dbModel:e_dbModel.user,value:docValue})
+    let userCreateTmpResult= await common_operation_model.create_returnRecord_async({dbModel:e_dbModel.user,value:docValue})
     // ap.wrn('user create session start')
 
     // console.log(`user created  ==========> ${JSON.stringify(userCreateTmpResult)}`)

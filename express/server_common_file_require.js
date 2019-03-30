@@ -6,6 +6,7 @@ const appSetting=require('../server_common/constant/config/appSetting.js')
 const globalConfiguration=require('../server_common/constant/config/globalConfiguration.js')
 const profileConfiguration=require('../server_common/constant/config/profileConfiguration.js')
 const collEnum=require('../server_common/constant/enum/collEnum.js')
+const elasticEnum=require('../server_common/constant/enum/elasticEnum.js')
 const inputDataRuleType=require('../server_common/constant/enum/inputDataRuleType.js')
 const mongoEnum=require('../server_common/constant/enum/mongoEnum.js')
 const nodeEnum=require('../server_common/constant/enum/nodeEnum.js')
@@ -85,12 +86,15 @@ const fkConfig=require('../server_common/model/mongo/fkConfig.js')
 const connection=require('../server_common/model/mongo/common/connection.js')
 const generateMongoEnumKeyValueExchange=require('../server_common/maintain/generateFunction/generateMongoEnumKeyValueExchange.js')
 const genLuaSHA=require('../server_common/maintain/genLuaSHA.js')
+const appOperation=require('../server_common/model/elastic/operation/appOperation.js')
+const operation=require('../server_common/model/elastic/operation/operation.js')
 
 module.exports={
     appSetting,
     globalConfiguration,
     profileConfiguration,
     collEnum,
+    elasticEnum,
     inputDataRuleType,
     mongoEnum,
     nodeEnum,
@@ -170,4 +174,6 @@ module.exports={
     connection,
     generateMongoEnumKeyValueExchange,
     genLuaSHA,
+    appOperation,
+    operation,
 }

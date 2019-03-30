@@ -58,7 +58,7 @@ const globalConfiguration=server_common_file_require.globalConfiguration
 
 /*              新article无任何输入，所有的值都是内部产生                */
 async  function createCollection_async({req,applyRange}){
-    console.log(`createCollection_async in`)
+    // console.log(`createCollection_async in`)
     /********************************************************/
     /*************      define variant        ***************/
     /********************************************************/

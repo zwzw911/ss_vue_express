@@ -126,6 +126,7 @@ const ServerRuleMatchClientRule={
     [RuleFiledName.MIN]:ClientRuleType.MIN,
     [RuleFiledName.MAX_LENGTH]:ClientRuleType.MAX,
     [RuleFiledName.MIN_LENGTH]:ClientRuleType.MIN,
+    // [RuleFiledName.OBJECT_ID]:ClientRuleType.,
 }
 
 const ServerDataTypeMatchClientDataType={

@@ -32,7 +32,7 @@ const article= {
         [otherRuleFiledName.DATA_TYPE]: serverDataType.STRING,
         [otherRuleFiledName.APPLY_RANGE]:[applyRange.CREATE,applyRange.UPDATE_SCALAR], //必须在create，可以在update，的recordInfo中出现
         [otherRuleFiledName.PLACE_HOLDER]:['文档标题，至多50个字符'],
-        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true,[applyRange.UPDATE_SCALAR]:false}, error: {rc: baseJSErrorCode, msg: '文档名不能为空'}, mongoError: {rc: baseMongoErrorCode, msg: '文档名不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true,[applyRange.UPDATE_SCALAR]:true}, error: {rc: baseJSErrorCode, msg: '文档名不能为空'}, mongoError: {rc: baseMongoErrorCode, msg: '文档名不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         // [ruleFiledName.MIN_LENGTH]: {define: 1, error: {rc: 10102}, mongoError: {rc: 20102, msg: '文档名至少1个字符'}},
         [ruleFiledName.MAX_LENGTH]: {define: 50, error: {rc: baseJSErrorCode+2, msg: '文档名的长度不能超过50个字符'}, mongoError: {rc: baseMongoErrorCode+2, msg: '文档名的长度不能超过50个字符'}},
         // [ruleFiledName.FORMAT]: {define: regex.fileName, error: {rc: 10005}, mongoError: {rc: 30005, msg: '文档名必须由1-255个字符组成'}} //server端使用
@@ -42,7 +42,7 @@ const article= {
         [otherRuleFiledName.DATA_TYPE]: serverDataType.STRING,
         [otherRuleFiledName.APPLY_RANGE]:[applyRange.CREATE,applyRange.UPDATE_SCALAR], //必须在create，可以在update，的recordInfo中出现
         [otherRuleFiledName.PLACE_HOLDER]:['文档状态'],
-        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true,[applyRange.UPDATE_SCALAR]:false}, error: {rc: baseJSErrorCode+4, msg: '文档状态不能为空'}, mongoError: {rc: baseMongoErrorCode+4, msg: '文档状态不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true,[applyRange.UPDATE_SCALAR]:true}, error: {rc: baseJSErrorCode+4, msg: '文档状态不能为空'}, mongoError: {rc: baseMongoErrorCode+4, msg: '文档状态不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         [ruleFiledName.ENUM]:{define:enumValue.ArticleStatus,error:{rc:baseJSErrorCode+6,msg:'文档状态不正确'},mongoError:{rc:baseMongoErrorCode+6,msg:'文档状态不正确'}},//server端使用
 
     },
@@ -70,7 +70,7 @@ const article= {
         [otherRuleFiledName.DATA_TYPE]: serverDataType.STRING,
         [otherRuleFiledName.APPLY_RANGE]:[applyRange.CREATE,applyRange.UPDATE_SCALAR], //必须在create，可以在update，的recordInfo中出现
         [otherRuleFiledName.PLACE_HOLDER]:['文档内容'],
-        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true,[applyRange.UPDATE_SCALAR]:false}, error: {rc: baseJSErrorCode+12, msg: '文档内容不能为空'}, mongoError: {rc: baseMongoErrorCode+12, msg: '文档内容不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+        [ruleFiledName.REQUIRE]: {define: {[applyRange.CREATE]:true,[applyRange.UPDATE_SCALAR]:true}, error: {rc: baseJSErrorCode+12, msg: '文档内容不能为空'}, mongoError: {rc: baseMongoErrorCode+12, msg: '文档内容不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
         [ruleFiledName.MIN_LENGTH]: {define: 15, error: {rc: baseJSErrorCode+14, msg: '文档内容至少15个字符'}, mongoError: {rc: baseMongoErrorCode+14, msg: '文档内容至少15个字符'}},
         [ruleFiledName.MAX_LENGTH]: {define: 50000, error: {rc: baseJSErrorCode+16, msg: '文档内容的长度不能超过50000个字符'}, mongoError: {rc: baseMongoErrorCode+16, msg: '文档内容的长度不能超过50000个字符'}},
         // [ruleFiledName.FORMAT]: {define: regex.folderFileName, error: {rc: 10005}, mongoError: {rc: 30005, msg: '文档名必须由1-255个字符组成'}} //server端使用

@@ -29,6 +29,8 @@ const miscConfiguration=server_common_file_require.globalConfiguration.misc
 const maxNumber=server_common_file_require.globalConfiguration.maxNumber
 const fkConfig=server_common_file_require.fkConfig
 const crypt=server_common_file_require.crypt
+
+
 /****************  公共常量 ********************/
 const mongoEnum=server_common_file_require.mongoEnum
 const e_allUserType=mongoEnum.AllUserType.DB

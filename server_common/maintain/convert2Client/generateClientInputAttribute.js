@@ -124,6 +124,11 @@ function generateSingleCollInputAttribute({collName,collRuleDefinition,absFilesP
                 collAttribute[field][e_inputAttributeFieldName.PLACE_HOLDER_BKUP]=collRuleDefinition[field][otherRuleFiledName.PLACE_HOLDER]
             }
 
+
+            //生成required，新式formItem用来验证总体验证结果，以及是否显示*
+            //required在create和update中可能是不一样的，因此在client端生成
+            //collAttribute[field][e_inputAttributeFieldName.REQUIRED]=collRuleDefinition[field][ruleFiledName.REQUIRE]['define']
+
             //inputType在client手工测试
 /*            if(field===e_field.USER.PASSWORD){
                 collAttribute[field][e_inputAttributeFieldName.INPUT_TYPE]='password'
@@ -193,21 +198,23 @@ function writeClientInitInputValueResult({content,resultPath}){
     // let relativePath='src/constant/rule/'
     let description=`/*    gene by ${__filename}  \r\n`
     let intent=`    `
-    description+=`* 字段的非rule属性，例如label，placeHolder，unique等 \r\n`
+    description+=`* 字段的必要属性，例如label，placeHolder等 \r\n`
     description+=`*/\r\n\r\n`
     let head=`"use strict"\r\n\r\n`
 
-    let fileContent=`const inputAttribute={\r\n`
+    let fileContent=`const inputAttribute=`
 
-    for(let singleColl in content){
+/*    for(let singleColl in content){
         fileContent+=`${intent}${singleColl}:{\r\n`
         for(let singleFieldName in content[singleColl]){
-            fileContent+=`${intent}${intent}${singleFieldName}:${JSON.stringify(content[singleColl][singleFieldName])},\r\n`
+            fileContent+=`${intent}${intent}${singleFieldName}:${JSON.stringify(content[singleColl][singleFieldName],undefined,'    ')},\r\n`
         }
         // fileContent+=`${intent}${intent}\r\n`
         fileContent+=`${intent}},\r\n`
-    }
-    fileContent+=`}\r\n`
+    }*/
+    fileContent+=`${JSON.stringify(content,undefined,'    ')}`
+
+    // fileContent+=`}\r\n`
     let exportStr=`export {inputAttribute}` //client段采用es6的export写法
     //将require中的applyRange（CREATE，UPDATE_SCRLAR）区分
 

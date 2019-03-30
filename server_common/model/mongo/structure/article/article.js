@@ -103,6 +103,7 @@ const collFieldDefine={
     articleAttachmentsId:[{type:mongoose.Schema.Types.ObjectId,ref:'article_attachment',validate:attachment_arrayMaxLengthValidator}],
     // articleCommentsId:{type:[mongoose.Schema.Types.ObjectId],ref:'article_comment',validate:[comment_arrayMaxLengthValidator]},
     articleCommentsId:[{type:mongoose.Schema.Types.ObjectId,ref:'article_comment',validate:comment_arrayMaxLengthValidator}],
+
     attachmentsNum:{type:Number, default:0},//记录文档中附件总数
     attachmentsSizeInMb:{type:Number, default:0},//记录文档中附件总大小
     imagesNum:{type:Number, default:0},//记录文档中图片总数

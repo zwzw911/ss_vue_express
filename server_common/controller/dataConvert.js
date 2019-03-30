@@ -670,7 +670,7 @@ function convertDocumentToObject({src}){
             src[idx]=src[idx].toObject()
         }
     }else{
-        ap.wrn('not array in')
+        // ap.wrn('not array in')
         src=src.toObject()
     }
     return src

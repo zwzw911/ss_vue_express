@@ -1210,25 +1210,32 @@ async function setSessionByServer_async({req}){
         // ap.inf('setSessionByServer_async in')
         let field='tempSalt'
         // ap.inf('session id',req.session.id)
+        ap.inf('session ',req.session)
         // ap.inf('req.session[\'userInfo\']',req.session['userInfo'])
         if(undefined===req.session['userInfo'] ){
-            req.session['userInfo']={}
+            req.session['userInfo']={
+                [field]:misc.generateRandomString({})
+            }
+            /**     新生成session后，需要返回错误，以便再次发送请求（虽然client处理比较麻烦）。
+             *      如此，就不会出现同一个页面 发送多个请求，生成多个session（防止redis被撑爆）  **/
+            // ap.inf('session new',req.session)
+            reject(misc.genFinalReturnResult(helperError.sessionNotSet))
         }
-        if(undefined===req.session['userInfo'][field]){
+        /*if(undefined===req.session['userInfo'][field]){
             req.session['userInfo'][field]=misc.generateRandomString({})
             // return Promise.reject(helperError.sessionNotSet)
             // ap.inf('helperError.sessionNotSet',helperError.sessionNotSet)
-            /**     新生成session后，需要返回错误，以便再次发送请求（虽然client处理比较麻烦）。
-             *      如此，就不会出现同一个页面 发送多个请求，生成多个session（防止redis被撑爆）  **/
-            if(currentEnv===e_env.PROD){
+            /!**     新生成session后，需要返回错误，以便再次发送请求（虽然client处理比较麻烦）。
+             *      如此，就不会出现同一个页面 发送多个请求，生成多个session（防止redis被撑爆）  **!/
+            // if(currentEnv===e_env.PROD){
                 reject(misc.genFinalReturnResult(helperError.sessionNotSet))
-            }
-            /**     开发环境，直接返回sess(且中断当前处理)   **/
-            if(currentEnv===e_env.DEV){
+            // }
+            /!**     开发环境，直接返回sess(且中断当前处理)   **!/
+/!*            if(currentEnv===e_env.DEV){
                 reject('1')
-            }
+            }*!/
 
-        }
+        }*/
         //一定要返回一个resolve，否则app.js中的调用会无法继续
         else{
             resolve('1')

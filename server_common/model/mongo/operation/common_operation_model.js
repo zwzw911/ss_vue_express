@@ -21,7 +21,7 @@ const defaultUpdateOptions=require('../common/configuration').updateOptions
 const objectDeepCopy=require('../../../function/assist/misc').objectDeepCopy
 
 /**     插入数据，封装了insertMany      **/
-async function new_create_returnRecord_async({dbModel,value,transSession}){
+async function new_insert_many_with_transaction_async({dbModel,value,transSession}){
     let option={
         writeConcern:undefined,//transaction不能设置
         ordered:true,//true,按照数组的顺序插入；fasle，mongod拆分，无序插入，可能会提高性能
@@ -742,7 +742,7 @@ async function search_returnRecords_async ({dbModel,populateOpt,searchParams,pag
 
 async function count_async({dbModel,condition}) {
     return new Promise(function (resolve, reject) {
-        dbModel.count(condition, function (err, count) {
+        dbModel.countDocuments(condition, function (err, count) {
             if (err) {
 // console.log(`count_async err========>${JSON.stringify(err)}`)
                 return reject(mongooseErrorHandler(err))
@@ -877,7 +877,7 @@ async function group_async({dbModel,aggregateParams}){
 
 
 module.exports= {
-    new_create_returnRecord_async,
+    new_insert_many_with_transaction_async,
     create_returnRecord_async,
     update_returnRecord_async,//传统的方式（find/update/save）
     updateDirect_returnRecord_async,//update第一个符合条件的记录

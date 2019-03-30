@@ -1,0 +1,1 @@
+sc config MongoDB_shard1_1 start= demand 

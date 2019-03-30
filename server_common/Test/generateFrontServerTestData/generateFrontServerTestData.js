@@ -46,7 +46,8 @@ async function generateFrontTestData_async(){
     await user3.reCreateUserGetSessUserIdSalt_async()
     await user4.reCreateUserGetSessUserIdSalt_async()
     /**             user1 create folder              **/
-    let user1_topFolderId1=await user1.createFolderReturnId_async({folderName:'顶级目录1'})
+    let user1_topFolderId1=await user1.getTopFolderReturnEnryptedId_async({})
+    ap.inf('user1_topFolderId1',user1_topFolderId1)
     await user1.createFolderReturnId_async({folderName:'顶级目录1的子目录1',parentEncryptedFolderId:user1_topFolderId1})
     await user1.createFolderReturnId_async({folderName:'顶级目录1的子目录2',parentEncryptedFolderId:user1_topFolderId1})
     /**             user1 create collection              **/

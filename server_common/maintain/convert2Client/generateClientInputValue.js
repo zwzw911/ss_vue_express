@@ -94,7 +94,7 @@ function generateInitInputValue({collName,collRuleDefinition}){
             }
 
             if(undefined!==collRuleDefinition[field][ruleFiledName.REQUIRE]['define'][e_applyRange.UPDATE_SCALAR] || undefined!==collRuleDefinition[field][ruleFiledName.REQUIRE]['define'][e_applyRange.UPDATE_ARRAY]){
-                inputValueForUpdate[field]='notUsed' //设成notUsed(null会影响update的fieldValue；undefined，会导致字段会存在)
+                inputValueForUpdate[field]='notUsed' //设成notUsed(null会影响update的fieldValue，导致server认为字段需要被删除；undefined，会导致字段不存在，而在赋值时出错；notUsed最好，即避免了以上问题，又可以提示开发，update的时候，那些字段没有被初始化)
             }
 
         }
@@ -114,27 +114,20 @@ function writeClientInitInputValueResult({content,resultPath}){
     description+=`*/\r\n\r\n`
     let head=`"use strict"\r\n\r\n`
 
-    let fileContentForCreate=`const inputValueForCreate={\r\n`
-    for(let singleColl in content['inputValueForCreate']){
+    let fileContentForCreate=`const inputValueForCreate=`
+/*    for(let singleColl in content['inputValueForCreate']){
         fileContentForCreate+=`${intent}${singleColl}:${JSON.stringify(content['inputValueForCreate'][singleColl])},\r\n`
-/*        for(let singleFieldName in content[singleColl]){
-            fileContentForCreate+=`${intent}${intent}${singleFieldName}:${JSON.stringify(content[singleColl][singleFieldName])},\r\n`
-        }
-        // fileContent+=`${intent}${intent}\r\n`
-        fileContentForCreate+=`${intent}},\r\n`*/
-    }
-    fileContentForCreate+=`}\r\n`
+    }*/
+    fileContentForCreate+=JSON.stringify(content['inputValueForCreate'],undefined,'    ')
+    fileContentForCreate+=`\r\n`
 
-    let fileContentForUpdate=`const inputValueForUpdate={\r\n`
-    for(let singleColl in content['inputValueForUpdate']){
+    fileContentForCreate+=`//设成notUsed(null会影响update的fieldValue，导致server认为字段需要被删除；undefined，会导致字段不存在，而在赋值时出错；notUsed最好，即避免了以上问题，又可以提示开发，update的时候，那些字段没有被初始化)`
+    let fileContentForUpdate=`const inputValueForUpdate=`
+    fileContentForUpdate+=JSON.stringify(content['inputValueForUpdate'],undefined,'    ')
+/*    for(let singleColl in content['inputValueForUpdate']){
         fileContentForUpdate+=`${intent}${singleColl}:${JSON.stringify(content['inputValueForUpdate'][singleColl])},\r\n`
-        /*        for(let singleFieldName in content[singleColl]){
-                    fileContentForCreate+=`${intent}${intent}${singleFieldName}:${JSON.stringify(content[singleColl][singleFieldName])},\r\n`
-                }
-                // fileContent+=`${intent}${intent}\r\n`
-                fileContentForCreate+=`${intent}},\r\n`*/
-    }
-    fileContentForUpdate+=`}\r\n`
+    }*/
+    // fileContentForUpdate+=`}\r\n`
 
     let exportStr=`export {inputValueForCreate,inputValueForUpdate}` //client段采用es6的export写法
     //将require中的applyRange（CREATE，UPDATE_SCRLAR）区分

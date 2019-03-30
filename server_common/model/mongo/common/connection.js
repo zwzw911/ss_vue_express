@@ -30,7 +30,7 @@ const url={
 let ssConnectionOptions=JSON.parse(JSON.stringify(commonConnectionOptions))
 ssConnectionOptions['dbName']='ss'
 let sugarConnectionOptions=JSON.parse(JSON.stringify(commonConnectionOptions))
-ssConnectionOptions['dbName']='sugar'
+sugarConnectionOptions['dbName']='sugar'
 
 const dbSS=mongoose.createConnection(url.default,ssConnectionOptions)
 const dbSugar=mongoose.createConnection(url.sugar,sugarConnectionOptions)

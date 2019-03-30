@@ -47,9 +47,9 @@ async function getAllTopLevelFolder_async({sess,app}){
 }
 /***    创建目录    ***/
 async function createFolder_async({sess,data,app}){
-    // ap.wrn('createFolder_async data',data)
+    //ap.wrn('createFolder_async data',data)
     // let data={values:{}}
-    // data.values={}
+    // data.values[e_part.RECORD_INFO]=data
     // console.log(`sess1 ===>${JSON.stringify(sess1)}`)
     // console.log(`data.values ===>${JSON.stringify(data.values)}`)
     // data.values[e_part.METHOD]=e_method.CREATE

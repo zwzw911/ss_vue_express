@@ -1,4 +1,4 @@
-cd "D:/u/ss1"
+cd "D:/ss_repilcaset"
 mkdir mongo
 cd mongo
 mkdir log
@@ -48,4 +48,4 @@ mkdir mongos_1
 mkdir mongos_2
 mkdir mongos_3
 
-cd ../..
+cd "d:\u\ss_vue_express\mongdb_config_file"

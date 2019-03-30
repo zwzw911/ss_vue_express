@@ -62,7 +62,6 @@ let absFilesPath=[] //使用全局变量记录递归的中间值（文件）
 function generateClientRule({originRulePath,absResultPath}){
     //1. 读取originRulePath下所有文件
     let absFilesPath=[]
-    //skipDirArray:['admin']
     file.recursiveReadFileAbsPath({fileOrDirPath:originRulePath,absFilesPathResult:absFilesPath})
     // ap.inf('absFilesPath',absFilesPath)
     //2. 对每个文件，读取export定义
@@ -94,154 +93,75 @@ function generateClientRule({originRulePath,absResultPath}){
 
 // 对传入的ruleDefinition进行检测,并转换成iview的格式(但是require尚未分离)
 // @ruleDefinitionOfFile： 一个coll的rule文件的definition
-//特殊处理：如果是enum,在处理enum list的时候，type要设置成enum====>[{type:"string",message:"",trigger:"",required:true},{type:"enum",message:"",trigger:"",enum:[1,2,3,4]}]
-//          如果是array，需要额外添加一个defaultField字段，适用于数组的元素======>[{type:array,message:"",trigger:"",required:true}]
 function convertRule_iview({collName,ruleDefinitionOfFile}){
     let tmpResult={}
 
     for(let singleFieldName in ruleDefinitionOfFile){
         tmpResult[singleFieldName]=[]  //iview的格式
 // ap.inf('singleFieldName',singleFieldName)
-        let clientDataType//,clientEleDataType  //获得field的dataType，如果是array，还要获得array元素的类型
+        let clientDataType,clientEleDataType  //获得field的dataType，如果是array，还要获得array元素的类型
         let dataTypeDefinition=ruleDefinitionOfFile[singleFieldName][otherRuleFiledName.DATA_TYPE]
-        let ifArray=false   //判断数据类型是否为array，初始设为false
-        let ifEnum=false //因为enum的dataType是string，但是需要额外指出type=enum，以便检测enum是否位于范围内
-        // let isEnumArray=false,isNormalArray=false //字段是否为enumArray还是普通array，默认不是任何array
+        let isEnumArray=false,isNormalArray=false //字段是否为enumArray还是普通array，默认不是任何array
 
         //获得field的数据类型
         //是array，判断enumArray还是normalArray
         if(true===dataTypeCheck.isArray(dataTypeDefinition)){
-            // clientDataType=e_clientDataType.ARRAY   //{type:'array'}
-            // clientEleDataType=dataTypeDefinition[0]
-            clientDataType=dataTypeDefinition[0]
-            ifArray=true
-/*            if(undefined!==ruleDefinitionOfFile[singleFieldName][ruleFiledName.ENUM]){
+            clientDataType=e_clientDataType.ARRAY   //{type:'array'}
+            clientEleDataType=dataTypeDefinition[0]
+            if(undefined!==ruleDefinitionOfFile[singleFieldName][ruleFiledName.ENUM]){
                 isEnumArray=true
             }else{
                 isNormalArray=true
-            }*/
+            }
         }else{
             clientDataType=dataTypeDefinition
         }
-
-        //需要从server的dataTYpe转换成client的dataType。例如，server的objectId，在client必须是string
-        clientDataType=e_serverDataTypeMatchClientDataType[clientDataType]
-/*if('array'===clientDataType){
-            ap.wrn(`field ${singleFieldName} type is array`)
-}*/
-        //enum的dataType是string，所以需要额外进行判断
-        if(undefined!==ruleDefinitionOfFile[singleFieldName][ruleFiledName.ENUM]){
-            ifEnum=true
-        }
         // ap.inf('singleFieldName isEnumArray',isEnumArray)
         // ap.inf('singleFieldName isNormalArray',isNormalArray)
-
-        //如果是array，需要添加额外的defaultField
-        let defaultField
-        if(true===ifArray){
-            defaultField={type:clientDataType}
-        }
-
         for(let singleRuleName in ruleDefinitionOfFile[singleFieldName]){
-            let newClientDataType=clientDataType  //后续（例如enum可能会更改原始数据类型，因此每次都要重新赋值，防止临时更改影响后续的rule）
             // ap.inf('ruleDefinitionOfFile[singleFieldName]',ruleDefinitionOfFile[singleFieldName])
             // ap.inf('singleRuleName',singleRuleName)
-            //判断单条rule的定义是否合法（是否为预定义（REQUIRE/FORMAT等）的一种）。如果不是(chineseName/applyrange/dataType/placeHolder)，打印错误，并继续下一条
-            if(-1===Object.values(ruleFiledName).indexOf(singleRuleName)){
-                ap.wrn(`coll ${collName} field ${singleFieldName}: rule ${singleRuleName} not predefined`)
-                continue
-            }
-
-            //提取通用部分: rule定义和错误信息（iview的一个rule包含4部分，type,message,trigger,define）
-            let singleRuleDefinition=ruleDefinitionOfFile[singleFieldName][singleRuleName]['define']
-            let errorMsg=ruleDefinitionOfFile[singleFieldName][singleRuleName]['error']['msg']
-            //根据不同的rule进行处理
-            switch (singleRuleName){
-                case ruleFiledName.REQUIRE:
-                    if(true===ifArray && false===ifEnum){
+            if(-1!==Object.values(ruleFiledName).indexOf(singleRuleName)){
+                let singleRuleDefinition=ruleDefinitionOfFile[singleFieldName][singleRuleName]['define']
+                let errorMsg=ruleDefinitionOfFile[singleFieldName][singleRuleName]['error']['msg']
+                if(singleRuleName===ruleFiledName.REQUIRE){
+                    //如果是普通array，那么必定为true（array的元素必须设置值；原始中设置的true/false对应的为array中是否有元素）
+                    if(isNormalArray===true){
                         singleRuleDefinition[e_applyRange.CREATE]=true //普通array，create必定为true
                     }
                     tmpResult[singleFieldName].push({[e_serverRuleMatchClientRule[singleRuleName]]:singleRuleDefinition})
-                    break;
-                case ruleFiledName.FORMAT:
-                    //如果是数组，则MIN属性是对应数组元素的属性，需要被加入到defaultField中，最后在被push到tmpResult；否则直接在default中，直接加入整体验证规则中（而不是defaultField）
-                    if(true===ifArray){
-                        defaultField[e_serverRuleMatchClientRule[singleRuleName]]=singleRuleDefinition.toString()
-                        continue
+
+
+                }else if(singleRuleName===ruleFiledName.FORMAT){
+                    tmpResult[singleFieldName].push({[e_serverRuleMatchClientRule[singleRuleName]]:singleRuleDefinition.toString()})
+                }
+                //如果是数组，需要判断是否为enum（type:array,max:5,message）还是非enum(无视ARRAY_MIN/MAX_LENGTH,在clientNumRange中产生numRange.js)
+                else if(singleRuleName===ruleFiledName.ARRAY_MIN_LENGTH || singleRuleName===ruleFiledName.ARRAY_MAX_LENGTH){
+                    //enum+数组,才把ARRAY_MIN/MAX_LENGTH放入rule，normalArray，ARRAY_MIN/MAX_LENGTH放入独立文件numRange.js
+                    if(true===isEnumArray){
+                        tmpResult[singleFieldName].push({[e_serverRuleMatchClientRule[singleRuleName]]:singleRuleDefinition})
                     }else{
-                        //正则要先变成string（然后将""去掉，便会正则）
-                        tmpResult[singleFieldName].push({[e_serverRuleMatchClientRule[singleRuleName]]:singleRuleDefinition.toString()})
+                        continue
                     }
+                }
+                else{
+                    tmpResult[singleFieldName].push({[e_serverRuleMatchClientRule[singleRuleName]]:singleRuleDefinition})
+                }
+                let lastIdx=tmpResult[singleFieldName].length-1
+                tmpResult[singleFieldName][lastIdx]['trigger']='blur,change'
+                tmpResult[singleFieldName][lastIdx]['message']=errorMsg
+                
+                if(true===isNormalArray){
+                    tmpResult[singleFieldName][lastIdx]['type']=clientEleDataType
+                }else{
+                    tmpResult[singleFieldName][lastIdx]['type']=clientDataType
+                }
 
-                    break;
-                case ruleFiledName.MIN_LENGTH:
-                    //如果是数组，则MIN属性是对应数组元素的属性，需要被加入到defaultField中，最后在被push到tmpResult；否则直接在default中，直接加入整体验证规则中（而不是defaultField）
-                    if(true===ifArray){
-                        defaultField[e_serverRuleMatchClientRule[singleRuleName]]=singleRuleDefinition
-                        continue
-                    }
-                    tmpResult[singleFieldName].push({[e_serverRuleMatchClientRule[singleRuleName]]:singleRuleDefinition})
-                    break;
-                case ruleFiledName.MAX_LENGTH:
-/*                    if('article'===collName && 'name'===singleFieldName){
-                        ap.err('ifarray',ifArray)
-                    }*/
-                    //如果是数组，则MIN属性是对应数组元素的属性，需要被加入到defaultField中，最后在被push到tmpResult；否则直接在default中，直接加入整体验证规则中（而不是defaultField）
-                    if(true===ifArray){
-                        defaultField[e_serverRuleMatchClientRule[singleRuleName]]=singleRuleDefinition
-                        continue
-                    }
-                    tmpResult[singleFieldName].push({[e_serverRuleMatchClientRule[singleRuleName]]:singleRuleDefinition})
-                    break;
-                case ruleFiledName.ARRAY_MIN_LENGTH:
-                    if(false===ifArray){
-                        ap.err(`coll ${collName} field ${singleFieldName}: rule ${singleRuleName} has ARRAY_MIN_LENGTH, but type not array`)
-                        continue
-                    }
-                    //不能论是不是enum，只要是array，就要push {type:array,message:"",trigger:"",min:1}
-                    tmpResult[singleFieldName].push({[e_serverRuleMatchClientRule[singleRuleName]]:singleRuleDefinition})
-                    /*//数组enum，才需要ARRAY_MIN/MAX；其他数组，直接使用numberRange
-                    if(true===ifEnum && true===ifArray){
-                        tmpResult[singleFieldName].push({[e_serverRuleMatchClientRule[singleRuleName]]:singleRuleDefinition})
-                    }*/
-                    break;
-                case ruleFiledName.ARRAY_MAX_LENGTH:
-                    if(false===ifArray){
-                        ap.err(`coll ${collName} field ${singleFieldName}: rule ${singleRuleName} has ARRAY_MAX_LENGTH, but type not array`)
-                        continue
-                    }
-                    //不能论是不是enum，只要是array，就要push {type:array,message:"",trigger:"",min:1}
-                    tmpResult[singleFieldName].push({[e_serverRuleMatchClientRule[singleRuleName]]:singleRuleDefinition})
-/*                    //数组enum，才需要ARRAY_MIN/MAX；其他数组，直接使用numberRange
-                    if(true===ifEnum && true===ifArray){
-                        tmpResult[singleFieldName].push({[e_serverRuleMatchClientRule[singleRuleName]]:singleRuleDefinition})
-                    }*/
-                    break;
-                case ruleFiledName.ENUM:
-                    //如果是enum，type需要设定为enum。[{type:"enum",enum:[1,2,3,4],message:"error",trigger:"blur change"}]
-                    newClientDataType=e_clientDataType.ENUM
-                    tmpResult[singleFieldName].push({[e_serverRuleMatchClientRule[singleRuleName]]:singleRuleDefinition})
-                    break;
-                default:
-                    tmpResult[singleFieldName].push({[e_serverRuleMatchClientRule[singleRuleName]]:singleRuleDefinition})
+                    // , :errorMsg
             }
 
-            let lastIdx=tmpResult[singleFieldName].length-1
-            tmpResult[singleFieldName][lastIdx]['trigger']='blur,change'
-            tmpResult[singleFieldName][lastIdx]['message']=errorMsg
+        }
 
-            //普通array
-            if(true===ifArray && false===ifEnum){
-                tmpResult[singleFieldName][lastIdx]['type']=e_clientDataType.ARRAY
-            }else{
-                tmpResult[singleFieldName][lastIdx]['type']=newClientDataType
-            }
-        }
-        //如果是array，且defaultField的key数量大于1（1是type，是数组则必定设置）
-        // ap.wrn('defaultField',defaultField)
-        if(true===ifArray && Object.keys(defaultField).length>1){
-            tmpResult[singleFieldName].push({defaultField:defaultField})
-        }
     }
 // ap.inf('tmpResult',tmpResult.tags)
     return tmpResult

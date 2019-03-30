@@ -72,7 +72,7 @@ const regex={
     removeDoubleQuoteForRegExp:/("define"\:)(")(.+?)(",)"/g,  //    '$1/$3/,"'
     removeDoubleSlash:/(\/){2}/g,    // '\\'  正则toString后，一个\会变成2个\\，需要变回去
     removeEscapedSlash:/\\\\/g,    // '\\'  正则toString后，斜杠的跳脱符\会变成\\,要变回去
-    clientRemoveDoubleQuotes:/("pattern":)("\/)(.+?)(\/",)"/g,  //    '$1/$3/,"'
+    clientRemoveDoubleQuotes:/("pattern":)\s("\/)(.+?)(\/")/g,  //    '$1/$3/,"'
 
     moduleExports:/module\.exports={\s*(.+)\r\n\s*}/,
     moduleExportsNew:/module\.exports={(.*)}/,

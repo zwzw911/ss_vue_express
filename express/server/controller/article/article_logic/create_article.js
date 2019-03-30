@@ -32,6 +32,7 @@ const common_operation_model=server_common_file_require.common_operation_model
 const misc=server_common_file_require.misc
 const crypt=server_common_file_require.crypt
 const controllerInputValueLogicCheck=server_common_file_require.controllerInputValueLogicCheck
+const esAppOperation=server_common_file_require.appOperation
 /****************  公共常量 ********************/
 const nodeEnum=server_common_file_require.nodeEnum
 const e_env=nodeEnum.Env
@@ -126,7 +127,11 @@ async  function createArticle_async({req,applyRange}){
     /***************   业务处理    *******************************/
     /*************************************************************/
     let createdRecord=await businessLogic_async({docValue:docValue,collName:collName,userId:userId,applyRange:applyRange})
-// ap.inf('createdRecord',createdRecord)
+    ap.wrn('created record',createdRecord)
+    /*************************************************************/
+    /***************   插入es    *******************************/
+    /*************************************************************/
+    await esAppOperation.mongoDataToEsForCreate_async({collName:e_coll.ARTICLE,mongoData:createdRecord})
     /*********************************************/
     /**********      保留指定字段       *********/
     /*********************************************/

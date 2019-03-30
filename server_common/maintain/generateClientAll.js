@@ -7,7 +7,7 @@ const fs=require('fs')
 const ap=require('awesomeprint')
 
 const generateClientRule=require('./convert2Client/generateClientRule').generateClientRule
-const generateClientInputValue=require('./convert2Client/generateClientInput').generateClientInputValue
+const generateClientInputValue=require('./convert2Client/generateClientInputValue').generateClientInputValue
 const generateClientInputAttribute=require('./convert2Client/generateClientInputAttribute').generateClientInputAttribute
 const generateClientInputTempResult=require('./convert2Client/generateClientInputTempData').generateClientInputTempResult
 const generateClientNumRange=require('./convert2Client/generateClientNumRange').generateClientNumRange

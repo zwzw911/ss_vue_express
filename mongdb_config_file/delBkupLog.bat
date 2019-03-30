@@ -1,4 +1,4 @@
-cd "D:/u/ss"
+cd "D:/ss_repilcaset"
 
 cd mongo
 
