@@ -1,6 +1,6 @@
 /**
  * Created by zhangwei on 2018/4/19.
- * 某些字段，需要在刻苦段连续产生多个（例如文档的tags），此时需要验证单个input的输入（例如tag是否为空，长度），以及所有input的数量。
+ * 某些字段，需要连续产生多个（例如文档的tags），此时需要验证单个input的输入（例如tag是否为空，长度），以及所有input的数量。
  * 需要分隔两种不同的validator，单个input的 输入 验证放入rule( [{type:'string',max:20,message:'err'}] )，数量放入maxNum(  {field:{min:1,max:5}} )
  * 如果不需要单个input输入验证，只要求数量验证，还是可以直接放入rule中[{type:'array',max:'5',message:'test'}]
  
