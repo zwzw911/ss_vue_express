@@ -162,8 +162,11 @@ function convertRule_iview({collName,ruleDefinitionOfFile}){
                 case ruleFiledName.REQUIRE:
                     if(true===ifArray){
                         singleRuleDefinition[e_applyRange.CREATE]=true //普通array，create必定为true
-                        // ifRuleBelongToEle=true
-
+                        //require比较特殊，如果是array，那么对于其中元素来说，内容必须不为空（require必须为true，否则生成的这个元素将毫无意义）
+                        tmpResult[eleRuleKeyName].push({[e_serverRuleMatchClientRule[singleRuleName]]:singleRuleDefinition})
+                        let lastIdx=tmpResult[eleRuleKeyName].length-1
+                        tmpResult[eleRuleKeyName][lastIdx]['trigger']='blur,change'
+                        tmpResult[eleRuleKeyName][lastIdx]['message']=errorMsg
                     }
                     tmpResult[singleFieldName].push({[e_serverRuleMatchClientRule[singleRuleName]]:singleRuleDefinition})
 
@@ -273,8 +276,8 @@ function convertRule_iview({collName,ruleDefinitionOfFile}){
             if(true===ifArray && true===ifRuleBelongToEle){
                 let lastIdx=tmpResult[eleRuleKeyName].length-1
                 if(lastIdx>=0){
-                    ap.inf('lastIdx',lastIdx)
-                    ap.inf('tmpResult[eleRuleKeyName][lastIdx]',tmpResult[eleRuleKeyName][lastIdx])
+                    // ap.inf('lastIdx',lastIdx)
+                    // ap.inf('tmpResult[eleRuleKeyName][lastIdx]',tmpResult[eleRuleKeyName][lastIdx])
                     tmpResult[eleRuleKeyName][lastIdx]['trigger']='blur,change'
                     tmpResult[eleRuleKeyName][lastIdx]['message']=errorMsg
                     ifEnum ? tmpResult[eleRuleKeyName][lastIdx]['type']=e_clientDataType.ENUM : tmpResult[eleRuleKeyName][lastIdx]['type']=newClientDataType
