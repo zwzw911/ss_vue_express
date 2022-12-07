@@ -12,7 +12,7 @@
     "debug": "^2.6.9",
     "dompurify": "^1.0.3",
     "elasticsearch": "^15.4.1",
-    "express": "^4.16.2",
+    "express": "^4.17.3",
     "express-session": "^1.15.6",
     "forever": "^0.15.3",
     "gm": "^1.23.1",
